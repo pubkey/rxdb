@@ -2412,7 +2412,7 @@ RxDB.plugin(require('pouchdb-adapter-idb'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
 
-window.RxDB = RxDB;
+window['RxDB'] = RxDB;
 },{"./index.js":10,"pouchdb-adapter-http":135,"pouchdb-adapter-idb":139,"pouchdb-replication":181}],10:[function(require,module,exports){
 'use strict';
 
@@ -2420,6 +2420,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.PouchDB = exports.RxSchema = exports.create = undefined;
+
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -2477,12 +2481,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function plugin(mod) {
+    if ((typeof mod === 'undefined' ? 'undefined' : (0, _typeof3.default)(mod)) === 'object' && mod.default) mod = mod.default;
     _PouchDB2.default.plugin(mod);
 }
 
 exports.RxSchema = RxSchema;
 exports.PouchDB = _PouchDB2.default;
-},{"./PouchDB":2,"./RxDatabase":5,"./RxSchema":8,"babel-runtime/helpers/asyncToGenerator":19,"babel-runtime/regenerator":23}],11:[function(require,module,exports){
+},{"./PouchDB":2,"./RxDatabase":5,"./RxSchema":8,"babel-runtime/helpers/asyncToGenerator":19,"babel-runtime/helpers/typeof":22,"babel-runtime/regenerator":23}],11:[function(require,module,exports){
 /**
  * this is copied from
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
