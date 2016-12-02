@@ -152,7 +152,7 @@ myCollection
 
 <h3>Reactive</h3>
 <p>
-  RxDB implements <a href="https://github.com/Reactive-Extensions/RxJS">rxjs</a> to make your data reactive.
+  RxDB implements <a href="https://github.com/ReactiveX/rxjs">rxjs</a> to make your data reactive.
   This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.
 </p>
 
