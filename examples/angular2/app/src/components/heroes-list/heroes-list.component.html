@@ -1,0 +1,10 @@
+<div class="loading" *ngIf="!heroes">
+    <md-spinner class="app-spinner"></md-spinner>
+</div>
+
+<md-list *ngIf="heroes">
+    <md-list-item *ngFor="let hero of heroes" class="listHero">
+        <div class="color-box" [style.background-color]="hero.get('color')"></div>
+        <div class="name">{{hero.get('name')}}</div>
+    </md-list-item>
+</md-list>

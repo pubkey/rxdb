@@ -1,0 +1,29 @@
+language: node_js
+node_js:
+- stable
+git:
+  depth: 10
+sudo: false
+addons:
+  sauce_connect: true
+before_script:
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+script: npm run $COMMAND
+env:
+  matrix:
+  - COMMAND=test
+  - COMMAND=report-coverage
+  - COMMAND=test-saucelabs BROWSER_NAME=iphone BROWSER_VERSION="8.0..latest"
+  - COMMAND=test-saucelabs BROWSER_NAME=safari BROWSER_VERSION="7..latest"
+  - COMMAND=test-saucelabs BROWSER_NAME=android BROWSER_VERSION="4.1..latest"
+  - COMMAND=test-saucelabs BROWSER_NAME=ie BROWSER_VERSION="9..latest"
+  - COMMAND=test-saucelabs BROWSER_NAME=microsoftedge BROWSER_VERSION="latest"
+  - COMMAND=test-saucelabs BROWSER_NAME=firefox BROWSER_VERSION="43..latest"
+  - COMMAND=test-saucelabs BROWSER_NAME=chrome BROWSER_VERSION="47..beta"
+  global:
+  - secure: sg7XninkGV8c95tZgZDu9dDL22TqrDKUdES+I92H+3A9vY9GZVtFpp9l5AKLLrdj7FjJ+fSsMT1XN+zE3Ljj2EpHVJqNAqo0CmNYm+lfeyI6Z50eOeuGCsjaJPiMNpeD32nghG7tIBl4JVG0hcHs+AkFtWGQoj7n+8sJXWNwE9E=
+  - secure: iHZwuxZUEYRujfoDt2rZJXq0o/15j0FpJFEoV2pzhq+zUIuqbuS9vUzvE0dpfvYq+MkrIe77O2q8cRilNjw5zRZltmU6HXHKq6qRyS+vbhiXEMzm4ucvQLDHDejSq5Xrfv+yOg0z5JBzSesrP4h6l50ohvRZGtkmGXRFN/zA0Rs=
+branches:
+  only:
+  - master

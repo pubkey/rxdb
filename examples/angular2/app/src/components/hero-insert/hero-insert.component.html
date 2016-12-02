@@ -1,0 +1,7 @@
+<form autocomplete="off">
+    <md-input #input [(ngModel)]="name" [autofocus]="true" name="name" placeholder="Name"></md-input>
+    <br/>
+    <md-input [(ngModel)]="color" name="color" placeholder="Color"></md-input>
+    <br/>
+    <button md-raised-button color="primary" (click)=submit()>insert</button>
+</form>

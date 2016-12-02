@@ -1,0 +1,21 @@
+{
+  "name": "rxdb-adapter-localstorage",
+  "version": "1.0.0",
+  "description": "This is a monkey-patch to prevent the caching of database-keys which destroys multi-window-support",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pouchdb-adapter-leveldb-core": "^6.0.7",
+    "pouchdb-utils": "^6.0.7",
+    "abstract-leveldown": "0.12.3",
+    "argsarray": "0.0.1",
+    "d64": "^1.0.0",
+    "humble-localstorage": "^1.4.2",
+    "inherits": "^2.0.1",
+    "tiny-queue": "0.2.0"
+  }
+}

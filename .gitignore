@@ -1,0 +1,11 @@
+node_modules/
+npm-debug.log
+test_tmp/
+psrqlbn-db/
+coverage/
+core
+
+
+log.txt
+config.json
+.config.json

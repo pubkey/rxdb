@@ -1,0 +1,6 @@
+test_tmp/
+examples/
+docfiles/
+.git/
+.docs/
+log.txt

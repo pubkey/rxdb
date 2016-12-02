@@ -1,0 +1,69 @@
+/**
+ * RxChangeEvents a emitted when something in the database changes
+ * they can be grabbed by the observables of database, collection and document
+ */
+
+import * as util from './util';
+
+class RxChangeEvent {
+    constructor(data) {
+        this.data = data;
+    }
+    toJSON() {
+        const ret = {
+            op: this.data.op,
+            t: this.data.t,
+            db: this.data.db,
+            it: this.data.it
+        };
+        if (this.data.col) ret.col = this.data.col;
+        if (this.data.doc) ret.doc = this.data.doc;
+        if (this.data.v) ret.v = this.data.v;
+        return ret;
+    }
+
+    isIntern() {
+        if (this.data.col && this.data.col.charAt(0) == '_')
+            return true;
+        return false;
+    }
+
+    hash() {
+        if (!this._hash)
+            this._hash = util.hash(this.data);
+        return this._hash;
+    }
+}
+
+
+export function fromJSON(data) {
+    return new RxChangeEvent(data);
+}
+
+export function fromPouchChange(changeDoc, collection) {
+
+    const op = changeDoc._rev.startsWith('1-') ? 'RxDocument.save' : 'RxDocument.insert';
+    const data = {
+        op,
+        t: new Date().getTime(),
+        db: 'remote',
+        col: collection.name,
+        it: collection.database.token,
+        doc: changeDoc._id,
+        v: changeDoc
+    };
+    return new RxChangeEvent(data);
+}
+
+export function create(op, database, collection, doc, value) {
+    const data = {
+        op: op,
+        t: new Date().getTime(),
+        db: database.prefix,
+        it: database.token,
+    };
+    if (collection) data.col = collection.name;
+    if (doc) data.doc = doc.rawData._id;
+    if (value) data.v = value;
+    return new RxChangeEvent(data);
+}
