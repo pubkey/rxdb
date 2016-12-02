@@ -247,7 +247,7 @@ By setting a schema-field to <code>encrypted: true</code>, the value of this fie
 
 ```js
 // this requires the localstorage-adapter
-RxDB.plugin(require('pouchdb-adapter-localstorage'));
+RxDB.plugin(require('rxdb-adapter-localstorage'));
 // this creates a database with the localstorage-adapter
 RxDB.create('heroesDB', 'localstorage');
 ```
