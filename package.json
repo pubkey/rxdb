@@ -21,7 +21,7 @@
   ],
   "license": "ISC",
   "main": "./lib/index.js",
-  "types": "./index.d.ts",
+  "types": "./src/index.d.ts",
   "scripts": {
     "pretest": "npm run transpile",
     "test": "gulp test && karma start karma.conf.js",
