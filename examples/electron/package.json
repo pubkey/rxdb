@@ -1,0 +1,23 @@
+{
+  "name": "rxdb-example-electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run electron\"",
+    "electron": "electron .",
+    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
+  },
+  "dependencies": {
+    "rxdb": "../../",
+    "babel-runtime": "6.18.0",
+    "concurrently": "3.1.0",
+    "electron": "1.4.1",
+    "electron-tabs": "0.4.2",
+    "electron-window-manager": "1.0.1",
+    "pouchdb-adapter-http": "6.0.7",
+    "pouchdb-adapter-websql": "6.0.7",
+    "pouchdb-replication": "6.0.7",
+    "pouchdb-server": "1.2.1",
+    "watchjs": "0.0.0"
+  }
+}
