@@ -20,7 +20,7 @@
     "nosql"
   ],
   "license": "ISC",
-  "main": "./lib/index.js",
+  "main": "./dist/lib/index.js",
   "types": "./src/index.d.ts",
   "scripts": {
     "pretest": "npm run transpile",
@@ -30,15 +30,15 @@
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "posttest": "rimraf -rf test_tmp/",
     "lint": "eslint --ignore-path ./config/.eslintignore src test ./config/gulpfile.js",
-    "transpile:src": "rimraf -rf lib/ && node node_modules/babel-cli/bin/babel.js src --out-dir lib",
+    "transpile:src": "rimraf -rf dist/lib/ && node node_modules/babel-cli/bin/babel.js src --out-dir dist/lib",
     "transpile:test:helper": "rimraf -rf test_tmp/helper && node node_modules/babel-cli/bin/babel.js test/helper --out-dir test_tmp/helper/",
     "transpile:test:node": "rimraf -rf test_tmp/node && node node_modules/babel-cli/bin/babel.js test/node --out-dir test_tmp/node/",
     "transpile:test:browser": "rimraf -rf test_tmp/browser && node node_modules/babel-cli/bin/babel.js test/browser --out-dir test_tmp/browser",
     "transpile": "concurrently \"npm run transpile:test:helper\" \"npm run transpile:src\" \"npm run transpile:test:node\" \"npm run transpile:test:browser\"",
     "build:rollup": "rollup -c --environment UGLIFY:false --config ./config/rollup.config.js && rollup -c --environment UGLIFY:true --config ./config/rollup.config.js",
     "build:webpack": "webpack --optimize-minimize --config ./config/webpack.config.js",
-    "build:browserify": "npm run transpile && browserify lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
-    "disc": "npm run transpile && browserify lib/index.js --full-paths | uglifyjs --compress --mangle | discify --open --full-paths",
+    "build:browserify": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
+    "disc": "npm run transpile && browserify dist/lib/index.js --full-paths | uglifyjs --compress --mangle | discify --open --full-paths",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm test' src/ test/"
   },

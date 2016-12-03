@@ -18,8 +18,8 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 import * as SpawnServer from '../helper/spawnServer';
 
-import * as util from '../../lib/util';
-import * as RxDB from '../../lib/index';
+import * as util from '../../dist/lib/util';
+import * as RxDB from '../../dist/lib/index';
 
 const request = require('request-promise');
 

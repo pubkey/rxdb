@@ -6,8 +6,8 @@ import {
     default as randomToken
 } from 'random-token';
 
-import * as RxDB from '../../lib/index';
-import * as util from '../../lib/util';
+import * as RxDB from '../../dist/lib/index';
+import * as util from '../../dist/lib/util';
 
 describe('Adapters.test.js', () => {
     describe('memory', () => {

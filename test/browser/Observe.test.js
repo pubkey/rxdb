@@ -3,8 +3,8 @@ import {
     default as randomToken
 } from 'random-token';
 
-import * as RxDB from '../../lib/index';
-import * as util from '../../lib/util';
+import * as RxDB from '../../dist/lib/index';
+import * as util from '../../dist/lib/util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';

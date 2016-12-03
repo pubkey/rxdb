@@ -4,8 +4,8 @@ import {
 } from 'random-token';
 import * as _ from 'lodash';
 
-import * as RxSchema from '../../lib/RxSchema';
-import * as util from '../../lib/util';
+import * as RxSchema from '../../dist/lib/RxSchema';
+import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 

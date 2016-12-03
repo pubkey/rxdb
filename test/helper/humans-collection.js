@@ -5,10 +5,10 @@ import {
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
-import * as RxDatabase from '../../lib/RxDatabase';
-import * as util from '../../lib/util';
+import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as util from '../../dist/lib/util';
 
-import * as RxDB from '../../lib/index';
+import * as RxDB from '../../dist/lib/index';
 
 export async function create(size = 20, name='human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
