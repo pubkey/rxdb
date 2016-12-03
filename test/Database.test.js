@@ -27,7 +27,7 @@ describe('RxDatabase.test.js', () => {
                 assert.equal(db.constructor.name, 'RxDatabase');
             });
             it('leveldown', async() => {
-                const db = await RxDatabase.create('test_tmp/' + randomToken(10), leveldown);
+                const db = await RxDatabase.create('../test_tmp/' + randomToken(10), leveldown);
                 assert.equal(db.constructor.name, 'RxDatabase');
             });
             it('with password', async() => {
