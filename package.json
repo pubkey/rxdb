@@ -19,7 +19,7 @@
     "encryption",
     "nosql"
   ],
-  "license": "ISC",
+  "license": "Apache-2.0",
   "main": "./dist/lib/index.js",
   "types": "./src/index.d.ts",
   "scripts": {
@@ -98,7 +98,7 @@
     "mocha": "3.2.0",
     "pouchdb": "6.0.7",
     "pouchdb-adapter-http": "6.0.7",
-    "pouchdb-adapter-idb": "^6.0.7",
+    "pouchdb-adapter-idb": "6.0.7",
     "pouchdb-adapter-indexeddb": "0.0.0",
     "pouchdb-adapter-leveldb": "6.0.7",
     "pouchdb-adapter-localstorage": "6.0.7",
