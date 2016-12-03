@@ -10,8 +10,8 @@ import {
     default as leveldown
 } from 'leveldown';
 
-import * as RxDB from '../lib/index';
-import * as util from '../lib/util';
+import * as RxDB from '../../lib/index';
+import * as util from '../../lib/util';
 
 process.on('unhandledRejection', function(err) {
     throw err;

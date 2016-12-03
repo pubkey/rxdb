@@ -4,10 +4,10 @@ import {
 } from 'random-token';
 import * as _ from 'lodash';
 
-import * as RxSchema from '../lib/RxSchema';
-import * as util from '../lib/util';
-import * as schemas from './helper/schemas';
-import * as schemaObjects from './helper/schema-objects';
+import * as RxSchema from '../../lib/RxSchema';
+import * as util from '../../lib/util';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
 
 
 process.on('unhandledRejection', function(err) {

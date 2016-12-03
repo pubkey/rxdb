@@ -13,13 +13,14 @@ import {
 } from 'memdown';
 import * as _ from 'lodash';
 
-import * as schemas from './helper/schemas';
-import * as schemaObjects from './helper/schema-objects';
-import * as humansCollection from './helper/humans-collection';
-import * as util from '../lib/util';
-import * as RxDB from '../lib/index';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection';
+import * as SpawnServer from '../helper/spawnServer';
 
-import * as SpawnServer from './helper/spawnServer';
+import * as util from '../../lib/util';
+import * as RxDB from '../../lib/index';
+
 const request = require('request-promise');
 
 RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));

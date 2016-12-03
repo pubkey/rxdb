@@ -8,13 +8,13 @@ import {
 import * as _ from 'lodash';
 
 
-import * as schemas from './helper/schemas';
-import * as schemaObjects from './helper/schema-objects';
-import * as humansCollection from './helper/humans-collection';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../lib/RxDatabase';
-import * as RxSchema from '../lib/RxSchema';
-import * as util from '../lib/util';
+import * as RxDatabase from '../../lib/RxDatabase';
+import * as RxSchema from '../../lib/RxSchema';
+import * as util from '../../lib/util';
 
 process.on('unhandledRejection', function(err) {
     throw err;

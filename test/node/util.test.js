@@ -6,7 +6,7 @@ import {
     default as randomToken
 } from 'random-token';
 
-import * as util from '../lib/util';
+import * as util from '../../lib/util';
 
 
 describe('util.test.js', () => {

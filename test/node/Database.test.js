@@ -10,9 +10,9 @@ import {
     default as leveldown
 } from 'leveldown';
 
-import * as RxDatabase from '../lib/index';
-import * as util from '../lib/util';
-import * as schemas from './helper/schemas';
+import * as RxDatabase from '../../lib/index';
+import * as util from '../../lib/util';
+import * as schemas from '../helper/schemas';
 
 process.on('unhandledRejection', function(err) {
     throw err;

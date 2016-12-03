@@ -5,8 +5,8 @@ import {
 import * as _ from 'lodash';
 
 
-import * as humansCollection from './helper/humans-collection';
-import * as util from '../lib/util';
+import * as humansCollection from './../helper/humans-collection';
+import * as util from '../../lib/util';
 
 process.on('unhandledRejection', function(err) {
     throw err;
