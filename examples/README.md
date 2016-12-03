@@ -6,9 +6,9 @@ Environment      | Status
 ---------------- | ------------------
 plain javascript | [done](./vanilla)
 angular2         | [done](./angular2)
-nodeJS           |
+nodeJS           | 
 react            |
 ionic            |
 cordova          |
 nativescript     |
-electron         |
+electron         | [done](./electron)
