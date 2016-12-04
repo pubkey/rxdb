@@ -5,10 +5,10 @@ import * as RxDB from '../../../../../';
 import { RxDatabase } from '../../../../../';
 
 
-RxDB.plugin(require('../../../../../plugins/adapter-localstorage/'));
+//RxDB.plugin(require('../../../../../plugins/adapter-localstorage/'));
 // RxDB.plugin(require('pouchdb-adapter-websql'));
 // RxDB.plugin(require('pouchdb-adapter-fruitdown'));
-// RxDB.plugin(require('pouchdb-adapter-idb'));
+RxDB.plugin(require('pouchdb-adapter-idb'));
 
 
 RxDB.plugin(require('pouchdb-adapter-http'));
@@ -34,7 +34,7 @@ export class DatabaseService {
 
 
     static db$: Observable<RxDatabase> = Observable.fromPromise(RxDB
-        .create('heroesDB', 'localstorage', 'myLongAndStupidPassword', true)
+        .create('heroesDB', 'idb', 'myLongAndStupidPassword', true)
         // create collections
         .then(db => {
             window['db'] = db; // write to window for debugging
