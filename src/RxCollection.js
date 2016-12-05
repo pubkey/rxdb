@@ -244,6 +244,12 @@ class RxCollection {
      * because it will have document-conflicts when 2 syncs write to the same storage
      */
     sync(serverURL) {
+
+        if (typeof this.pouch.sync !== 'function')
+            throw new Error(
+                `RxCollection.sync needs 'pouchdb-replication'. Code:
+                 RxDB.plugin(require('pouchdb-replication')); `
+            );
         if (!this.synced) {
             /**
              * this will grap the changes and publish them to the rx-stream
