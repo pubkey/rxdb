@@ -2,7 +2,7 @@
 
 This is a monkey-patch to prevent the caching of database-keys which destroys multi-window-support.
 
-The monkey-patch is located [here](https://github.com/pubkey/rxdb/blob/master/plugins/adapter-localstorage/localstorage-down/lib/localstorage.js#L44)
+The monkey-patch is located [here](./localstorage-down/lib/localstorage.js#L44)
 
 Use via:
 
