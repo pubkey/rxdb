@@ -4574,15 +4574,6 @@ memdown@1.1.2:
     inherits "~2.0.1"
     ltgt "~1.0.2"
 
-memdown@1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/memdown/-/memdown-1.2.2.tgz#51034b03728fa527b9bc8990b068020fb9b4828e"
-  dependencies:
-    abstract-leveldown "2.4.1"
-    functional-red-black-tree "^1.0.1"
-    inherits "~2.0.1"
-    ltgt "~1.0.2"
-
 memory-fs@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/memory-fs/-/memory-fs-0.2.0.tgz#f2bb25368bc121e391c2520de92969caee0a0290"
@@ -5553,7 +5544,7 @@ pouchdb-adapter-idb:
     pouchdb-promise "6.0.7"
     pouchdb-utils "6.0.7"
 
-pouchdb-adapter-leveldb-core@^6.0.7, pouchdb-adapter-leveldb-core@6.0.7:
+pouchdb-adapter-leveldb-core@6.0.7:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/pouchdb-adapter-leveldb-core/-/pouchdb-adapter-leveldb-core-6.0.7.tgz#451820549a0c29603e6ed9c1349b8f6ba22b5776"
   dependencies:
@@ -5577,14 +5568,6 @@ pouchdb-adapter-localstorage@6.0.7:
   resolved "https://registry.yarnpkg.com/pouchdb-adapter-localstorage/-/pouchdb-adapter-localstorage-6.0.7.tgz#b421cb5fc439aca7942e449c156b38d1d76d002f"
   dependencies:
     localstorage-down "0.6.6"
-    pouchdb-adapter-leveldb-core "6.0.7"
-    pouchdb-utils "6.0.7"
-
-pouchdb-adapter-memory:
-  version "6.0.7"
-  resolved "https://registry.yarnpkg.com/pouchdb-adapter-memory/-/pouchdb-adapter-memory-6.0.7.tgz#09afc5916429ebf8c0aeda57fb5935a157da1fc7"
-  dependencies:
-    memdown "1.2.2"
     pouchdb-adapter-leveldb-core "6.0.7"
     pouchdb-utils "6.0.7"
 
@@ -5974,7 +5957,7 @@ pouchdb-upsert@~2.0.1:
   dependencies:
     pouchdb-promise "^5.4.3"
 
-pouchdb-utils@^6.0.7, pouchdb-utils@6.0.7:
+pouchdb-utils@6.0.7:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/pouchdb-utils/-/pouchdb-utils-6.0.7.tgz#e6764bcfe354f65c50e60abf4ac628670af166ac"
   dependencies:
@@ -6704,19 +6687,6 @@ rxdb:
     rxjs "5.0.0-rc.4"
     sliced "1.0.1"
     spark-md5 "0.0.5"
-
-rxdb-adapter-localstorage:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/rxdb-adapter-localstorage/-/rxdb-adapter-localstorage-1.0.0.tgz#c06d05e1459c822d8b15988e665caf66b5401ebf"
-  dependencies:
-    abstract-leveldown "0.12.3"
-    argsarray "0.0.1"
-    d64 "^1.0.0"
-    humble-localstorage "^1.4.2"
-    inherits "^2.0.1"
-    pouchdb-adapter-leveldb-core "^6.0.7"
-    pouchdb-utils "^6.0.7"
-    tiny-queue "0.2.0"
 
 rxjs@5.0.0-rc.4:
   version "5.0.0-rc.4"

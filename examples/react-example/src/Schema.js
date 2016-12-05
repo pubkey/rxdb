@@ -12,7 +12,7 @@ var heroSchema = {
             "type": "string"
         }
     },
-    "required": ["color"],
+    "required": ["color"]
 };
 
 export default heroSchema
