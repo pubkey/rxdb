@@ -15,9 +15,11 @@ If the tests dont success, run node and browser-tests seperat:
 
 Now you can submitt a ticket with a description what has gone wrong or event better, you can fix the issue by yourself.
 
-
 ## Extend the example-projects
 Feel free to add and extend the [example-projects](../examples). This is very helpfull to find bugs when combining RxDB with different technologies.
+
+## Check out the pending features
+[Help here](https://github.com/pubkey/rxdb/projects)
 
 
 ## Optimize the build-size
