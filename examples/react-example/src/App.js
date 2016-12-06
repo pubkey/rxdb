@@ -4,7 +4,7 @@ import './App.css';
 import * as RxDB from '../../../';
 import schema from './Schema'
 
-RxDB.plugin(require('pouchdb-adapter-memory'))
+RxDB.plugin(require('pouchdb-adapter-idb'))
 RxDB.plugin(require('pouchdb-replication'))  //enable syncing
 RxDB.plugin(require('pouchdb-adapter-http')) //enable syncing over http
 const syncURL = 'http://' + window.location.hostname + ':10102/';
@@ -15,7 +15,6 @@ class App extends Component {
   constructor(props){
     super(props)
     this.state = {
-      loading: false,
       heroes: [],
       name: '',
       color: '',
@@ -27,26 +26,25 @@ class App extends Component {
 
   }
   componentDidMount(){
-    RxDB.create('heroesReactDataBase', 'memory', 'myLongAndStupidPassword', {synced: true}).then((db) => {
+    RxDB.create('heroesReactDataBase', 'idb', 'myLongAndStupidPassword', {synced: true}).then((db) => {
         window.db = db;
-        return db.collection('hero2', schema);
+        return db.collection('heroes', schema);
     }).then((col) => {
-      console.log("col: ", col);
         this.col = col;
         return col;
     }).then((col) => {
         console.log('DatabaseService: sync');
-        col.sync(syncURL + 'hero2/');
+        col.sync(syncURL + 'heroes/');
         return col;
     }).then((col) => {
         col.query().sort({name: 1}).$.subscribe((heroes) => {
             if (!heroes) {
-                this.setState({loading: true})
+
                 return
             }
             console.log('observable fired');
             console.dir(heroes);
-            this.setState({heroes: heroes, loading: false})
+            this.setState({heroes: heroes})
         });
     });
   }
@@ -79,8 +77,9 @@ class App extends Component {
             <ul id="heroes-list">
               {
                 this.state.heroes.length === 0 &&
-                <span>Loading ...</span>
+                <span>No super hero available ... just the bad guys</span>
               }
+
               {
                 this.state.heroes.map(hero=>{
                   return (
@@ -101,7 +100,7 @@ class App extends Component {
             <input
               type="text" placeholder="Color" value={this.state.color}
               onChange={this.handleColorChange} onKeyPress={this.handleKeyPress} />
-            <button onClick={this.addHero}>Insert</button>
+            <button onClick={this.addHero}>Insert a Hero</button>
         </div>
       </div>
     );
