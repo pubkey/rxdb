@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "preinstall": "echo \"PREINSTALL\" && npm install --production --prefix ../../",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "npm-run-all --parallel dev:serve",
