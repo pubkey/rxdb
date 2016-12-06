@@ -1,0 +1,30 @@
+{
+  "name": "react-example",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "react-scripts": "0.8.1",
+    "rimraf": "2.5.4"
+  },
+  "dependencies": {
+    "concurrently": "^3.1.0",
+    "local-web-server": "1.2.6",
+    "pouchdb-adapter-http": "6.0.7",
+    "pouchdb-adapter-idb": "^6.0.7",
+    "pouchdb-replication": "6.0.7",
+    "pouchdb-server": "1.2.1",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1"
+  },
+  "scripts": {
+    "startReact": "PORT=8003 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "cp": "rimraf dist/ && cp -r ../../dist .",
+    "start": "npm run cp && concurrently \"npm run server\" \"npm run startReact\"",
+    "serve": "ws -p 20202 -n",
+    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true",
+    "refresh": "rimraf -r node_modules/rxdb/ && npm i"
+  }
+}
