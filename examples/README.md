@@ -6,8 +6,8 @@ Environment      | Status
 ---------------- | ------------------
 plain javascript | [done](./vanilla)
 angular2         | [done](./angular2)
-nodeJS           | 
-react            |
+nodeJS           |
+react            | [done](./react-example)
 ionic            |
 cordova          |
 nativescript     |
