@@ -1,5 +1,5 @@
 # RxCollection
-A collection stroes documents of the same type.
+A collection stores documents of the same type.
 
 
 ## Creating a Collection
