@@ -16,4 +16,5 @@ Use via:
 
 
 #### TODO
+- This plugin is obsolete after [this](https://github.com/No9/localstorage-down/pull/82) pull-request
 - optimize performance by only refreshing keys when socket has something new
