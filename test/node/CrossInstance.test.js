@@ -33,6 +33,7 @@ describe('CrossInstance.test.js', () => {
         it('create a multiInstance database', async() => {
             const db = await RxDatabase.create(randomToken(10), memdown, null, true);
             assert.equal(db.constructor.name, 'RxDatabase');
+            db.destroy();
         });
         it('create a 2 multiInstance databases', async() => {
             const name = randomToken(10);
@@ -40,6 +41,8 @@ describe('CrossInstance.test.js', () => {
             const db2 = await RxDatabase.create(name, memdown, null, true);
             assert.equal(db.constructor.name, 'RxDatabase');
             assert.equal(db2.constructor.name, 'RxDatabase');
+            db.destroy();
+            db2.destroy();
         });
     });
     describe('RxDatabase.$', () => {
@@ -170,6 +173,9 @@ describe('CrossInstance.test.js', () => {
             await doc1.save();
             await c2.database.$pull();
             assert.equal(secretAfter, 'foobar');
+
+            db1.destroy();
+            db2.destroy();
         });
         it('should work with nested encrypted fields', async() => {
             const name = randomToken(10);
@@ -208,6 +214,9 @@ describe('CrossInstance.test.js', () => {
                 name: 'foo',
                 subname: 'bar'
             });
+
+            db1.destroy();
+            db2.destroy();
         });
     });
     describe('AutoPull', () => {
