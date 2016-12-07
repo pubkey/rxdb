@@ -1,6 +1,6 @@
 <h1><a href="https://github.com/pubkey/rxdb">RxDB</a></h1>
 <p>
-  The <a href="http://offlinefirst.org/" target="_blank">offline-first</a> database for your next applications.
+  The <a href="http://offlinefirst.org/" target="_blank">offline-first</a> database for your next application.
 </p>
 
 
