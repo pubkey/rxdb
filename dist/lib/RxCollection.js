@@ -22,15 +22,15 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7(database, name, schema) {
+    var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
         var collection;
-        return _regenerator2.default.wrap(function _callee7$(_context7) {
+        return _regenerator2.default.wrap(function _callee8$(_context8) {
             while (1) {
-                switch (_context7.prev = _context7.next) {
+                switch (_context8.prev = _context8.next) {
                     case 0:
                         if (!(schema.constructor.name != 'RxSchema')) {
-                            _context7.next = 2;
+                            _context8.next = 2;
                             break;
                         }
 
@@ -38,7 +38,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(database.constructor.name != 'RxDatabase')) {
-                            _context7.next = 4;
+                            _context8.next = 4;
                             break;
                         }
 
@@ -46,7 +46,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof name != 'string' || name.length == 0)) {
-                            _context7.next = 6;
+                            _context8.next = 6;
                             break;
                         }
 
@@ -54,22 +54,22 @@ var create = exports.create = function () {
 
                     case 6:
                         collection = new RxCollection(database, name, schema);
-                        _context7.next = 9;
+                        _context8.next = 9;
                         return collection.prepare();
 
                     case 9:
-                        return _context7.abrupt('return', collection);
+                        return _context8.abrupt('return', collection);
 
                     case 10:
                     case 'end':
-                        return _context7.stop();
+                        return _context8.stop();
                 }
             }
-        }, _callee7, this);
+        }, _callee8, this);
     }));
 
     return function create(_x6, _x7, _x8, _x9) {
-        return _ref7.apply(this, arguments);
+        return _ref8.apply(this, arguments);
     };
 }();
 
@@ -129,6 +129,9 @@ var RxCollection = function () {
                 adapter: this.database.adapter
             };
         }
+
+        this.subs = [];
+        this.pouchSyncs = [];
 
         this.pouch = new _PouchDB2.default(database.prefix + ':RxDB:' + name, adapterObj, pouchSettings);
 
@@ -500,6 +503,9 @@ var RxCollection = function () {
         value: function sync(serverURL) {
             var _this8 = this;
 
+            if (typeof this.pouch.sync !== 'function') {
+                throw new Error('RxCollection.sync needs \'pouchdb-replication\'. Code:\n                 RxDB.plugin(require(\'pouchdb-replication\')); ');
+            }
             if (!this.synced) {
                 (function () {
                     /**
@@ -528,19 +534,20 @@ var RxCollection = function () {
                     }).filter(function (doc) {
                         return doc != null;
                     }).subscribe(function (doc) {
-                        // TODO unsubscribe at destroy
                         _this8.$emit(RxChangeEvent.fromPouchChange(doc, _this8));
                     });
+                    _this8.subs.push(pouch$);
 
                     var ob2 = _this8.$.map(function (cE) {
                         return cE.data.v;
                     }).map(function (doc) {
                         if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                    }).subscribe(); // TODO unsubscribe at destroy
+                    }).subscribe();
+                    _this8.subs.push(ob2);
                 })();
             }
             this.synced = true;
-            return this.pouch.sync(serverURL, {
+            var sync = this.pouch.sync(serverURL, {
                 live: true,
                 retry: true
             }).on('error', function (err) {
@@ -548,7 +555,39 @@ var RxCollection = function () {
                 console.log(JSON.stringify(err));
                 throw new Error(err);
             });
+            this.pouchSyncs.push(sync);
+            return sync;
         }
+    }, {
+        key: 'destroy',
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
+                return _regenerator2.default.wrap(function _callee7$(_context7) {
+                    while (1) {
+                        switch (_context7.prev = _context7.next) {
+                            case 0:
+                                this.subs.map(function (sub) {
+                                    return sub.unsubscribe();
+                                });
+                                this.pouchSyncs.map(function (sync) {
+                                    return sync.cancel();
+                                });
+                                delete this.database.collections[this.name];
+
+                            case 3:
+                            case 'end':
+                                return _context7.stop();
+                        }
+                    }
+                }, _callee7, this);
+            }));
+
+            function destroy() {
+                return _ref7.apply(this, arguments);
+            }
+
+            return destroy;
+        }()
     }, {
         key: '$',
         get: function get() {
