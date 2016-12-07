@@ -254,6 +254,9 @@ RxDB.create('heroesDB', 'localstorage');
 
 <ul>
   <li>
+    <a href="https://www.npmjs.com/package/pouchdb-adapter-idb">indexedDB</a>
+  </li>
+  <li>
     <a href="./plugins/adapter-localstorage/">localstorage</a>
   </li>
   <li>
