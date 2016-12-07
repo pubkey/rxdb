@@ -25,6 +25,10 @@ class RxDatabase {
 
         this.token = randomToken(10);
 
+        this.subs = [];
+        this.destroyed = false;
+
+
         // cache for collection-objects
         this.collections = {};
 
@@ -55,6 +59,7 @@ class RxDatabase {
             this.autoPull$ = util.Rx.Observable
                 .interval(pullTime) // TODO evaluate pullTime value or make it settable
                 .subscribe(x => this.$pull());
+            this.subs.push(this.autoPull$);
         }
 
     }
@@ -288,13 +293,6 @@ class RxDatabase {
         return this.collections[name];
     }
 
-
-
-    async destroy() {
-        this.bc$.close();
-    }
-
-
     /**
      * export to json
      * @param {boolean} decrypted
@@ -340,6 +338,17 @@ class RxDatabase {
             .map(colDump => this.collections[colDump.name].importDump(colDump))
         );
     }
+
+    async destroy() {
+        if (this.destroyed) return;
+        this.destroyed = true;
+        if (this.bc$) this.bc$.close();
+        this.subs.map(sub => sub.unsubscribe());
+        Object.keys(this.collections)
+            .map(key => this.collections[key])
+            .map(col => col.destroy());
+    }
+
 }
 
 

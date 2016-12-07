@@ -42,6 +42,7 @@ declare class RxCollection {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     sync(serverURL: string)
+    destroy(): Promise<boolean>;
 }
 
 declare class RxQuery {

@@ -32,6 +32,9 @@ class RxCollection {
             };
         }
 
+        this.subs = [];
+        this.pouchSyncs = [];
+
         this.pouch = new PouchDB(
             database.prefix + ':RxDB:' + name,
             adapterObj,
@@ -278,19 +281,21 @@ class RxCollection {
                     return ret;
                 })
                 .filter(doc => doc != null)
-                .subscribe(doc => { // TODO unsubscribe at destroy
+                .subscribe(doc => {
                     this.$emit(RxChangeEvent.fromPouchChange(doc, this));
                 });
+            this.subs.push(pouch$);
 
             const ob2 = this.$
                 .map(cE => cE.data.v)
                 .map(doc => {
                     if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
                 })
-                .subscribe(); // TODO unsubscribe at destroy
+                .subscribe();
+            this.subs.push(ob2);
         }
         this.synced = true;
-        return this.pouch.sync(serverURL, {
+        const sync = this.pouch.sync(serverURL, {
             live: true,
             retry: true
         }).on('error', function(err) {
@@ -298,6 +303,14 @@ class RxCollection {
             console.log(JSON.stringify(err));
             throw new Error(err);
         });
+        this.pouchSyncs.push(sync);
+        return sync;
+    }
+
+    async destroy() {
+        this.subs.map(sub => sub.unsubscribe());
+        this.pouchSyncs.map(sync => sync.cancel());
+        delete this.database.collections[this.name];
     }
 
 }
