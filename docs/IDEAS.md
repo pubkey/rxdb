@@ -9,7 +9,7 @@ Things that could be usefull but are not implemented yet.
 Emits a diff$-Observable where the emitted objects contains information on what Document got changed/deleted/added
 
 ## default and custom [conflict-strategies](https://pouchdb.com/guides/conflicts.html)
-Pouchdb requires the developer to solve conflicts manually.
+Pouchdb requires the developer to solve [conflicts manually](https://pouchdb.com/guides/conflicts.html).
 
 A solution is to introduct a new keyword to the RxSchema conflictStrategy
 
