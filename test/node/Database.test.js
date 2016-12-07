@@ -167,7 +167,23 @@ describe('RxDatabase.test.js', () => {
         });
     });
 
-
+    describe('.destroy()', () => {
+        describe('positive', () => {
+            it('should not crash on destroy', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                await db.collection(randomToken(10), schemas.human);
+                db.destroy();
+                assert.equal(db.destroyed, true);
+            });
+            it('should not crash if destroy is called twice', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                await db.collection(randomToken(10), schemas.human);
+                db.destroy();
+                db.destroy();
+                assert.equal(db.destroyed, true);
+            });
+        });
+    });
 
     describe('wait a bit', () => {
         it('w8 a bit', (done) => {
