@@ -12,10 +12,11 @@ import {
 import React from 'react'
 const { width, height } = Dimensions.get('window')
 
-import * as RxDB from 'rxdb'
+// import * as RxDB from 'rxdb'
 import schema from './Schema'
 
-RxDB.plugin(require('pouchdb-adapter-asyncstorage').default)
+// RxDB.plugin(require('pouchdb-adapter-leveldb'));
+// RxDB.plugin(require('pouchdb-adapter-asyncstorage').default)
 const syncURL = 'http://localhost:10102/';
 
 export default class App extends React.Component{
@@ -32,28 +33,28 @@ export default class App extends React.Component{
     this.handleNameChange = this.handleNameChange.bind(this)
     this.addHero = this.addHero.bind(this)
   }
-  componentDidMount(){
-    RxDB.create('heroesReactDataBase', 'asyncstorage', 'myLongAndStupidPassword', {synced: true}).then((db) => {
-        window.db = db;
-        return db.collection('heroes', schema);
-    }).then((col) => {
-        this.col = col;
-        return col;
-    }).then((col) => {
-        console.log('DatabaseService: sync');
-        col.sync(syncURL + 'heroes/');
-        return col;
-    }).then((col) => {
-        col.query().sort({name: 1}).$.subscribe((heroes) => {
-            if (!heroes) {
-                return
-            }
-            console.log('observable fired');
-            console.dir(heroes);
-            this.setState({heroes: heroes})
-        });
-    });
-  }
+  // componentDidMount(){
+  //   RxDB.create('heroesReactDataBase', 'asyncstorage', 'myLongAndStupidPassword', {synced: true}).then((db) => {
+  //       window.db = db;
+  //       return db.collection('heroes', schema);
+  //   }).then((col) => {
+  //       this.col = col;
+  //       return col;
+  //   }).then((col) => {
+  //       console.log('DatabaseService: sync');
+  //       col.sync(syncURL + 'heroes/');
+  //       return col;
+  //   }).then((col) => {
+  //       col.query().sort({name: 1}).$.subscribe((heroes) => {
+  //           if (!heroes) {
+  //               return
+  //           }
+  //           console.log('observable fired');
+  //           console.dir(heroes);
+  //           this.setState({heroes: heroes})
+  //       });
+  //   });
+  // }
   addHero() {
     const { name } = this.state
     const color = this.getRandomColor()

@@ -8,6 +8,7 @@
 	},
 	"dependencies": {
 		"pouchdb-adapter-asyncstorage": "^6.1.21",
+		"pouchdb-adapter-leveldb": "^6.0.7",
 		"react": "15.4.1",
 		"react-native": "0.39.0",
 		"rxdb": "^1.4.4"
