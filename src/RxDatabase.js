@@ -7,6 +7,7 @@ import * as RxCollection from './RxCollection';
 import * as RxSchema from './RxSchema';
 import * as DatabaseSchemas from './Database.schemas';
 import * as RxChangeEvent from './RxChangeEvent';
+import * as RxDatabaseLeaderElector from './RxDatabaseLeaderElector';
 import {
     default as PouchDB
 } from './PouchDB';
@@ -100,6 +101,10 @@ class RxDatabase {
         }
         if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.get('value'))
             throw new Error('another instance on this adapter has a different password');
+
+
+        // leader elector
+        this.leaderElector = await RxDatabaseLeaderElector.create(this);
     }
 
     async writeToSocket(changeEvent) {
