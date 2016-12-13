@@ -63,6 +63,9 @@ class RxDatabase {
             this.subs.push(this.autoPull$);
         }
 
+        this.socketRoundtripTime = 50;
+        if (!this.bc$ && typeof pullTime !== 'undefined')
+            this.socketRoundtripTime += pullTime;
     }
 
     /**
