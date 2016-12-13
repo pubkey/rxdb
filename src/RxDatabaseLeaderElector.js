@@ -26,7 +26,7 @@ class RxDatabaseLeaderElector {
             .filter(m => !this.deathLeaders.includes(m.token))
             .do(m => {
                 if (m.type == 'death')
-                    this.deathLeaders.push(m.token)
+                    this.deathLeaders.push(m.token);
             });
 
         this.tellSub = null;
