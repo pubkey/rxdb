@@ -6,7 +6,12 @@ import * as util from './util';
  */
 class RxDatabaseLeaderElector {
     constructor(database) {
+        this.subs = [];
         this.database = database;
+        this.deathLeaders = []; // tokens of death leaders
+        this.isLeader = false;
+        this.isDead = false;
+        this.isApplying = false;
         this.socketMessages$ = database.observable$
             .filter(cEvent => cEvent.data.it != this.database.token)
             .filter(cEvent => cEvent.data.op.startsWith('Leader.'))
@@ -16,10 +21,15 @@ class RxDatabaseLeaderElector {
                     token: cEvent.data.it,
                     time: cEvent.data.t
                 };
+            })
+            // do not handle messages from death leaders
+            .filter(m => !this.deathLeaders.includes(m.token))
+            .do(m => {
+                if (m.type == 'death')
+                    this.deathLeaders.push(m.token)
             });
-        this.isLeader = false;
 
-        this.isApplying = false;
+        this.tellSub = null;
     }
 
     async prepare() {
@@ -51,21 +61,30 @@ class RxDatabaseLeaderElector {
     async beLeader() {
         this.isLeader = true;
 
-        //  await this.socketMessage('tell');
-
         // reply to 'apply'-messages
-        const sub = this.socketMessages$
+        this.tellSub = this.socketMessages$
             .filter(message => message.type == 'apply')
             .subscribe(message => this.socketMessage('tell'));
-        this.database.subs.push(sub);
+        this.subs.push(this.tellSub);
+
+        await this.socketMessage('tell');
+    }
+    async die() {
+        if (!this.isLeader) return;
+        this.isDead = true;
+        this.isLeader = false;
+        this.tellSub.unsubscribe();
+        await this.socketMessage('death');
     }
 
     /**
      * starts applying for leadership
      */
     async startApplying() {
+        if (this.isDead) return;
         if (this.isLeader) return;
         if (this.isApplying) return;
+
         this.isApplying = true;
         const startTime = new Date().getTime();
 
@@ -102,6 +121,12 @@ class RxDatabaseLeaderElector {
 
         if (this.isApplying) await this.beLeader();
         this.isApplying = false;
+    }
+
+
+    async destroy() {
+        this.subs.map(sub => sub.unsubscribe());
+        this.die();
     }
 
 }

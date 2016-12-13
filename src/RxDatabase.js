@@ -110,6 +110,15 @@ class RxDatabase {
         this.leaderElector = await RxDatabaseLeaderElector.create(this);
     }
 
+    get isLeader() {
+        if (!this.multiInstance) return true;
+        return this.leaderElector.isLeader;
+    }
+    async waitForLeadership() {
+        if (!this.multiInstance) return true;
+        return await this.leaderElector.waitForLeadership();
+    }
+
     async writeToSocket(changeEvent) {
         const socketDoc = changeEvent.toJSON();
         delete socketDoc.db;
@@ -351,6 +360,7 @@ class RxDatabase {
     async destroy() {
         if (this.destroyed) return;
         this.destroyed = true;
+        await this.leaderElector.destroy();
         if (this.bc$) this.bc$.close();
         this.subs.map(sub => sub.unsubscribe());
         Object.keys(this.collections)

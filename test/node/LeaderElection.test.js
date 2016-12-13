@@ -74,9 +74,7 @@ describe('LeaderElection.test.js', () => {
             assert.equal(recieved[0].token, db1.token);
         });
     });
-
     describe('election', () => {
-
         it('a single instance should always elect itself as leader', async() => {
             const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
@@ -128,12 +126,68 @@ describe('LeaderElection.test.js', () => {
                 .length;
             assert.equal(leaderCount, 1);
         });
+        it('when the leader dies, a new one should be elected', async() => {
+            const name = randomToken(10);
+            const dbs = [];
+            while (dbs.length < 6) {
+                const c = await humansCollection.createMultiInstance(name);
+                dbs.push(c.database);
+            }
+            await Promise.all(
+                dbs.map(db => db.leaderElector.startApplying())
+            );
+
+            let leaderCount = dbs
+                .filter(db => db.leaderElector.isLeader == true)
+                .length;
+            assert.equal(leaderCount, 1);
+
+            // let leader die
+            let leader = dbs
+                .filter(db => db.leaderElector.isLeader == true)[0];
+            let leaderToken = leader.token;
+            await leader.destroy();
+
+            // noone should be leader
+            leaderCount = dbs
+                .filter(db => db.leaderElector.isLeader == true)
+                .length;
+            assert.equal(leaderCount, 0);
+
+            // restart election
+            await Promise.all(
+                dbs.map(db => db.leaderElector.startApplying())
+            );
+
+            leaderCount = dbs
+                .filter(db => db.leaderElector.isLeader == true)
+                .length;
+            assert.equal(leaderCount, 1);
+
+            let leader2 = dbs
+                .filter(db => db.leaderElector.isLeader == true)[0];
+            let leaderToken2 = leader2.token;
+
+            assert.notEqual(leaderToken, leaderToken2);
+        });
+    });
+
+    describe('integration', () => {
+        it('non-multiInstance should always be leader', async() => {
+            const c = await humansCollection.create(0);
+            const db = c.database;
+            assert.equal(db.isLeader, true);
+        });
+        it('non-multiInstance: waitForLeadership should instant', async() => {
+            const c = await humansCollection.create(0);
+            const db = c.database;
+            await db.waitForLeadership();
+        });
 
         it('exit', () => {
             console.log('exit');
             process.exit();
         });
-
     });
 
 });
