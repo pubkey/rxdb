@@ -102,6 +102,18 @@ class RxDatabase {
             throw new Error('another instance on this adapter has a different password');
     }
 
+    async writeToSocket(changeEvent) {
+        const socketDoc = changeEvent.toJSON();
+        delete socketDoc.db;
+        if (socketDoc.v) {
+            if (this.password) socketDoc.v = this._encrypt(socketDoc.v);
+            else socketDoc.v = JSON.stringify(socketDoc.v);
+        }
+        await this.socketCollection.insert(socketDoc);
+        this.bc$ && this.bc$.postMessage(this.token);
+
+        return true;
+    }
 
     async $emit(changeEvent) {
         if (!changeEvent) return;
@@ -115,18 +127,7 @@ class RxDatabase {
             !changeEvent.isIntern() &&
             changeEvent.data.it == this.token
         ) {
-            const socketDoc = changeEvent.toJSON();
-            delete socketDoc.db;
-
-            if (socketDoc.v) {
-                if (this.password) socketDoc.v = this._encrypt(socketDoc.v);
-                else socketDoc.v = JSON.stringify(socketDoc.v);
-            }
-
-            this.socketCollection.insert(socketDoc)
-                .then(() => {
-                    this.bc$ && this.bc$.postMessage(this.token);
-                });
+            this.writeToSocket(changeEvent);
 
             /**
              * check if the cleanup of _socket should be run
