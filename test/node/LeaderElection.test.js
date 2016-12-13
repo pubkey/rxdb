@@ -96,6 +96,38 @@ describe('LeaderElection.test.js', () => {
 
             assert.equal(db2.leaderElector.isLeader, false);
         });
+        it('when 2 instances apply at the same time, one should win', async() => {
+            // run often
+            let tries = 0;
+            while (tries < 3) {
+                tries++;
+                const name = randomToken(10);
+                const c1 = await humansCollection.createMultiInstance(name);
+                const c2 = await humansCollection.createMultiInstance(name);
+                const db1 = c1.database;
+                const db2 = c2.database;
+                await db1.leaderElector.startApplying();
+                await db2.leaderElector.startApplying();
+                assert.ok(db1.leaderElector.isLeader != db2.leaderElector.isLeader);
+            }
+        });
+        it('when many instances apply, one should win', async() => {
+            const name = randomToken(10);
+            const dbs = [];
+            while (dbs.length < 10) {
+                const c = await humansCollection.createMultiInstance(name);
+                dbs.push(c.database);
+            }
+            await Promise.all(
+                dbs.map(db => db.leaderElector.startApplying())
+            );
+
+            const leaderCount = dbs
+                .map(db => db.leaderElector.isLeader)
+                .filter(is => is == true)
+                .length;
+            assert.equal(leaderCount, 1);
+        });
 
         it('exit', () => {
             console.log('exit');

@@ -88,12 +88,14 @@ class RxDatabaseLeaderElector {
             .filter(m => this.database.token < m.token)
             .subscribe(m => this.isApplying = false);
 
-        await this.socketMessage('apply');
-        await util.promiseWait(this.database.socketRoundtripTime * 3);
+        let tries = 0;
+        while (tries < 3 && this.isApplying) {
+            tries++;
+            await this.socketMessage('apply');
+            await util.promiseWait(this.database.socketRoundtripTime);
+        }
         await this.database.$pull();
-        await util.promiseWait(10);
-        await this.database.$pull();
-
+        await util.promiseWait(50);
 
         sub.unsubscribe();
         sub2.unsubscribe();
