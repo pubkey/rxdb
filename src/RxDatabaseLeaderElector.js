@@ -1,12 +1,17 @@
 import * as RxChangeEvent from './RxChangeEvent';
 import * as util from './util';
+import * as unload from 'unload';
 
 /**
  * this handles the leader-election for the given RxDatabase-instance
  */
 class RxDatabaseLeaderElector {
     constructor(database) {
+
+        // things that must be cleared ondestroy
         this.subs = [];
+        this.unloads = [];
+
         this.database = database;
         this.deathLeaders = []; // tokens of death leaders
         this.isLeader = false;
@@ -101,6 +106,11 @@ class RxDatabaseLeaderElector {
             .subscribe(message => this.socketMessage('tell'));
         this.subs.push(this.tellSub);
 
+        // send 'death' when process exits
+        this.unloads.push(
+            unload.add(() => this.die())
+        );
+
         await this.socketMessage('tell');
     }
     async die() {
@@ -157,9 +167,9 @@ class RxDatabaseLeaderElector {
         this.isApplying = false;
     }
 
-
     async destroy() {
         this.subs.map(sub => sub.unsubscribe());
+        this.unloads.map(fn => fn());
         this.die();
     }
 
