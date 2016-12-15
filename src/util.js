@@ -184,5 +184,12 @@ export function hasBroadcastChannel() {
         typeof window.BroadcastChannel.prototype.close === 'function'
     ) return true;
     return false;
+}
 
+
+export function filledArray(size = 0) {
+    const ret = [];
+    while (ret.length < size)
+        ret.push(ret.lenght);
+    return ret;
 }

@@ -116,7 +116,7 @@ class RxDatabase {
     }
     async waitForLeadership() {
         if (!this.multiInstance) return true;
-        return await this.leaderElector.waitForLeadership();
+        return this.leaderElector.waitForLeadership();
     }
 
     async writeToSocket(changeEvent) {
@@ -289,10 +289,12 @@ class RxDatabase {
             ) throw new Error(`collection(${name}): schema encrypted but no password given`);
 
             if (!collectionDoc) {
-                await this.collectionsCollection.insert({
-                    name,
-                    schemaHash
-                });
+                try {
+                    await this.collectionsCollection.insert({
+                        name,
+                        schemaHash
+                    });
+                } catch (e) {}
             }
 
             const cEvent = RxChangeEvent.create(

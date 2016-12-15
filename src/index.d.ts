@@ -25,6 +25,14 @@ declare class RxDatabase {
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
+
+    isLeader: boolean;
+
+    /**
+     * returns a promise which resolves when the instance becomes leader
+     * @return {Promise<boolean>}
+     */
+    waitForLeadership(): Promise<boolean>;
 }
 
 declare class RxCollection {
@@ -103,13 +111,13 @@ export function create(
 export function plugin(mod: any)
 
 export const PouchDB: {
-  plugin(plugin: any)
+    plugin(plugin: any)
 };
 
 export {
-  RxDatabase as RxDatabase,
-  RxCollection as RxCollection,
-  RxSchema as RxSchema,
-  RxDocument as RxDocument,
-  RxChangeEvent as RxChangeEvent
+RxDatabase as RxDatabase,
+RxCollection as RxCollection,
+RxSchema as RxSchema,
+RxDocument as RxDocument,
+RxChangeEvent as RxChangeEvent
 };

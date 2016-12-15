@@ -10,6 +10,7 @@ class RxDatabaseLeaderElector {
         this.database = database;
         this.deathLeaders = []; // tokens of death leaders
         this.isLeader = false;
+        this.becomeLeader$ = new util.Rx.BehaviorSubject(this.isLeader);
         this.isDead = false;
         this.isApplying = false;
         this.socketMessages$ = database.observable$
@@ -30,10 +31,42 @@ class RxDatabaseLeaderElector {
             });
 
         this.tellSub = null;
+        this.isWaiting = false;
     }
 
-    async prepare() {
+    async prepare() {}
 
+    /**
+     * @return {Promise} promise which resolve when the instance becomes leader
+     */
+    async waitForLeadership() {
+        if (this.isLeader) return Promise.resolve(true);
+        if (!this.isWaiting) {
+            this.isWaiting = true;
+
+            // apply on death
+            this.applySub = this.socketMessages$
+                .filter(message => message.type == 'death')
+                .filter(m => !this.isLeader)
+                .subscribe(message => this.applyOnce());
+            this.subs.push(this.applySub);
+
+            // apply on interval (backup when leader dies without message)
+            this.backupApply = util.Rx.Observable
+                .interval(5 * 1000) // TODO evaluate this time
+                .subscribe(x => this.applyOnce());
+            this.subs.push(this.backupApply);
+
+            // apply now
+            this.applyOnce();
+        }
+
+        return new Promise(res => {
+            this.becomeSub = this.becomeLeader$
+                .filter(i => i == true)
+                .subscribe(i => res());
+            this.subs.push(this.becomeSub);
+        });
     }
 
     /**
@@ -60,6 +93,7 @@ class RxDatabaseLeaderElector {
      */
     async beLeader() {
         this.isLeader = true;
+        this.becomeLeader$.next(true);
 
         // reply to 'apply'-messages
         this.tellSub = this.socketMessages$
@@ -80,7 +114,7 @@ class RxDatabaseLeaderElector {
     /**
      * starts applying for leadership
      */
-    async startApplying() {
+    async applyOnce() {
         if (this.isDead) return;
         if (this.isLeader) return;
         if (this.isApplying) return;

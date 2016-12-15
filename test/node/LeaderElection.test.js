@@ -79,7 +79,7 @@ describe('LeaderElection.test.js', () => {
             const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const db1 = c1.database;
-            await db1.leaderElector.startApplying();
+            await db1.leaderElector.applyOnce();
             assert.equal(db1.leaderElector.isLeader, true);
         });
         it('should not elect as leader if other instance is leader', async() => {
@@ -90,7 +90,7 @@ describe('LeaderElection.test.js', () => {
             const db2 = c2.database;
 
             await db1.leaderElector.beLeader();
-            await db2.leaderElector.startApplying();
+            await db2.leaderElector.applyOnce();
 
             assert.equal(db2.leaderElector.isLeader, false);
         });
@@ -104,8 +104,8 @@ describe('LeaderElection.test.js', () => {
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
                 const db2 = c2.database;
-                await db1.leaderElector.startApplying();
-                await db2.leaderElector.startApplying();
+                await db1.leaderElector.applyOnce();
+                await db2.leaderElector.applyOnce();
                 assert.ok(db1.leaderElector.isLeader != db2.leaderElector.isLeader);
             }
         });
@@ -117,7 +117,7 @@ describe('LeaderElection.test.js', () => {
                 dbs.push(c.database);
             }
             await Promise.all(
-                dbs.map(db => db.leaderElector.startApplying())
+                dbs.map(db => db.leaderElector.applyOnce())
             );
 
             const leaderCount = dbs
@@ -134,7 +134,7 @@ describe('LeaderElection.test.js', () => {
                 dbs.push(c.database);
             }
             await Promise.all(
-                dbs.map(db => db.leaderElector.startApplying())
+                dbs.map(db => db.leaderElector.applyOnce())
             );
 
             let leaderCount = dbs
@@ -156,7 +156,7 @@ describe('LeaderElection.test.js', () => {
 
             // restart election
             await Promise.all(
-                dbs.map(db => db.leaderElector.startApplying())
+                dbs.map(db => db.leaderElector.applyOnce())
             );
 
             leaderCount = dbs
@@ -184,10 +184,33 @@ describe('LeaderElection.test.js', () => {
             await db.waitForLeadership();
         });
 
-        it('exit', () => {
+        it('waitForLeadership: run once when instance becomes leader', async() => {
+            const name = randomToken(10);
+            const cols = await Promise.all(
+                util.filledArray(5)
+                .map(i => humansCollection.createMultiInstance(name))
+            );
+            const dbs = cols.map(col => col.database);
+
+            let count = 0;
+            dbs.forEach(db => db.waitForLeadership().then(is => count++));
+
+            await util.promiseWait(400);
+            assert.equal(count, 1);
+
+            // let leader die
+            await dbs
+                .filter(db => db.isLeader)[0]
+                .leaderElector.die();
+
+            await util.promiseWait(400);
+            assert.equal(count, 2);
+        });
+
+/*        it('exit', () => {
             console.log('exit');
             process.exit();
         });
-    });
+  */  });
 
 });

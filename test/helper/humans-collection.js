@@ -101,7 +101,6 @@ export async function createMultiInstance(prefix, amount = 0, password = null) {
     const db = await RxDatabase.create(prefix, 'memory', password, true);
     setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('human', schemas.human);
-
     // insert data
     const fns = [];
     for (let i = 0; i < amount; i++)
