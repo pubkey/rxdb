@@ -206,11 +206,6 @@ describe('LeaderElection.test.js', () => {
             await util.promiseWait(400);
             assert.equal(count, 2);
         });
-
-/*        it('exit', () => {
-            console.log('exit');
-            process.exit();
-        });
-  */  });
+    });
 
 });
