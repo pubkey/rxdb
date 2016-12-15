@@ -10,7 +10,7 @@ import {
     default as leveldown
 } from 'leveldown';
 
-var path = require('path');
+const path = require('path');
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -29,9 +29,9 @@ describe('RxDatabase.test.js', () => {
                 assert.equal(db.constructor.name, 'RxDatabase');
             });
             it('leveldown', async() => {
-                if(path.join('..','x') != '..\\x'){ // leveldown does not work on windows
-                  const db = await RxDatabase.create('../test_tmp/' + randomToken(10), leveldown);
-                  assert.equal(db.constructor.name, 'RxDatabase');
+                if (path.join('..', 'x') != '..\\x') { // leveldown does not work on windows
+                    const db = await RxDatabase.create('../test_tmp/' + randomToken(10), leveldown);
+                    assert.equal(db.constructor.name, 'RxDatabase');
                 }
             });
             it('with password', async() => {
