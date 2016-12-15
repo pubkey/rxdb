@@ -6,6 +6,8 @@
 var listBox = document.querySelector('#list-box');
 var insertBox = document.querySelector('#insert-box');
 var heroesList = document.querySelector('#heroes-list');
+var leaderIcon = document.querySelector('#leader-icon');
+
 
 var heroSchema = {
     "title": "hero schema",
@@ -30,6 +32,9 @@ window.RxDB
     .create('heroesDB', 'idb', 'myLongAndStupidPassword', true)
     .then(function(db) {
         window.db = db;
+        db.waitForLeadership().then(function() {
+            leaderIcon.style.display = 'block';
+        });
         return db.collection('hero', heroSchema);
     })
     .then(function(col) {

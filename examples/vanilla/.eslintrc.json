@@ -1,7 +1,7 @@
 {
-    "esversion": 6,
-    "esnext": true,
-    "parser": "babel-eslint",
+    "esversion": 5,
+    "esnext": false,
+    "parser": "eslint",
     "env": {
         "browser": true,
         "es6": true,
