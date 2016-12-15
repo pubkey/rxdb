@@ -56,6 +56,10 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
+var _unload = require('unload');
+
+var unload = _interopRequireWildcard(_unload);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -69,7 +73,11 @@ var RxDatabaseLeaderElector = function () {
 
         (0, _classCallCheck3.default)(this, RxDatabaseLeaderElector);
 
+
+        // things that must be cleared ondestroy
         this.subs = [];
+        this.unloads = [];
+
         this.database = database;
         this.deathLeaders = []; // tokens of death leaders
         this.isLeader = false;
@@ -262,10 +270,15 @@ var RxDatabaseLeaderElector = function () {
                                 });
                                 this.subs.push(this.tellSub);
 
-                                _context4.next = 6;
+                                // send 'death' when process exits
+                                this.unloads.push(unload.add(function () {
+                                    return _this3.die();
+                                }));
+
+                                _context4.next = 7;
                                 return this.socketMessage('tell');
 
-                            case 6:
+                            case 7:
                             case 'end':
                                 return _context4.stop();
                         }
@@ -454,9 +467,12 @@ var RxDatabaseLeaderElector = function () {
                                 this.subs.map(function (sub) {
                                     return sub.unsubscribe();
                                 });
+                                this.unloads.map(function (fn) {
+                                    return fn();
+                                });
                                 this.die();
 
-                            case 2:
+                            case 3:
                             case 'end':
                                 return _context7.stop();
                         }

@@ -221,15 +221,15 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(database, name, schema) {
+    var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
         var collection;
-        return _regenerator2.default.wrap(function _callee8$(_context8) {
+        return _regenerator2.default.wrap(function _callee9$(_context9) {
             while (1) {
-                switch (_context8.prev = _context8.next) {
+                switch (_context9.prev = _context9.next) {
                     case 0:
                         if (!(schema.constructor.name != 'RxSchema')) {
-                            _context8.next = 2;
+                            _context9.next = 2;
                             break;
                         }
 
@@ -237,7 +237,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(database.constructor.name != 'RxDatabase')) {
-                            _context8.next = 4;
+                            _context9.next = 4;
                             break;
                         }
 
@@ -245,7 +245,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof name != 'string' || name.length == 0)) {
-                            _context8.next = 6;
+                            _context9.next = 6;
                             break;
                         }
 
@@ -253,22 +253,22 @@ var create = exports.create = function () {
 
                     case 6:
                         collection = new RxCollection(database, name, schema);
-                        _context8.next = 9;
+                        _context9.next = 9;
                         return collection.prepare();
 
                     case 9:
-                        return _context8.abrupt('return', collection);
+                        return _context9.abrupt('return', collection);
 
                     case 10:
                     case 'end':
-                        return _context8.stop();
+                        return _context9.stop();
                 }
             }
-        }, _callee8, this);
+        }, _callee9, this);
     }));
 
-    return function create(_x5, _x6, _x7) {
-        return _ref8.apply(this, arguments);
+    return function create(_x7, _x8, _x9) {
+        return _ref9.apply(this, arguments);
     };
 }();
 
@@ -699,71 +699,108 @@ var RxCollection = function () {
 
     }, {
         key: 'sync',
-        value: function sync(serverURL) {
-            var _this8 = this;
-
-            if (typeof this.pouch.sync !== 'function') {
-                throw new Error('RxCollection.sync needs \'pouchdb-replication\'. Code:\n                 RxDB.plugin(require(\'pouchdb-replication\')); ');
-            }
-            if (!this.synced) {
-                (function () {
-                    /**
-                     * this will grap the changes and publish them to the rx-stream
-                     * this is to ensure that changes from 'synced' dbs will be published
-                     */
-                    var sendChanges = {};
-                    var pouch$ = util.Rx.Observable.fromEvent(_this8.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: true
-                    }), 'change').filter(function (c) {
-                        return c.id.charAt(0) != '_';
-                    }).map(function (c) {
-                        return c.doc;
-                    }).map(function (doc) {
-                        doc._ext = true;
-                        return doc;
-                    }).filter(function (doc) {
-                        return sendChanges[doc._rev] = 'YES';
-                    }).delay(10).map(function (doc) {
-                        var ret = null;
-                        if (sendChanges[doc._rev] == 'YES') ret = doc;
-                        delete sendChanges[doc._rev];
-                        return ret;
-                    }).filter(function (doc) {
-                        return doc != null;
-                    }).subscribe(function (doc) {
-                        _this8.$emit(RxChangeEvent.fromPouchChange(doc, _this8));
-                    });
-                    _this8.subs.push(pouch$);
-
-                    var ob2 = _this8.$.map(function (cE) {
-                        return cE.data.v;
-                    }).map(function (doc) {
-                        if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                    }).subscribe();
-                    _this8.subs.push(ob2);
-                })();
-            }
-            this.synced = true;
-            var sync = this.pouch.sync(serverURL, {
-                live: true,
-                retry: true
-            }).on('error', function (err) {
-                console.log('sync error:');
-                console.log(JSON.stringify(err));
-                throw new Error(err);
-            });
-            this.pouchSyncs.push(sync);
-            return sync;
-        }
-    }, {
-        key: 'destroy',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
+            var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7(serverURL) {
+                var _this8 = this;
+
+                var alsoIfNotLeader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+                var sync;
                 return _regenerator2.default.wrap(function _callee7$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
+                            case 0:
+                                if (!(typeof this.pouch.sync !== 'function')) {
+                                    _context7.next = 2;
+                                    break;
+                                }
+
+                                throw new Error('RxCollection.sync needs \'pouchdb-replication\'. Code:\n                 RxDB.plugin(require(\'pouchdb-replication\')); ');
+
+                            case 2:
+                                if (alsoIfNotLeader) {
+                                    _context7.next = 5;
+                                    break;
+                                }
+
+                                _context7.next = 5;
+                                return this.database.waitForLeadership();
+
+                            case 5:
+
+                                if (!this.synced) {
+                                    (function () {
+                                        /**
+                                         * this will grap the changes and publish them to the rx-stream
+                                         * this is to ensure that changes from 'synced' dbs will be published
+                                         */
+                                        var sendChanges = {};
+                                        var pouch$ = util.Rx.Observable.fromEvent(_this8.pouch.changes({
+                                            since: 'now',
+                                            live: true,
+                                            include_docs: true
+                                        }), 'change').filter(function (c) {
+                                            return c.id.charAt(0) != '_';
+                                        }).map(function (c) {
+                                            return c.doc;
+                                        }).map(function (doc) {
+                                            doc._ext = true;
+                                            return doc;
+                                        }).filter(function (doc) {
+                                            return sendChanges[doc._rev] = 'YES';
+                                        }).delay(10).map(function (doc) {
+                                            var ret = null;
+                                            if (sendChanges[doc._rev] == 'YES') ret = doc;
+                                            delete sendChanges[doc._rev];
+                                            return ret;
+                                        }).filter(function (doc) {
+                                            return doc != null;
+                                        }).subscribe(function (doc) {
+                                            _this8.$emit(RxChangeEvent.fromPouchChange(doc, _this8));
+                                        });
+                                        _this8.subs.push(pouch$);
+
+                                        var ob2 = _this8.$.map(function (cE) {
+                                            return cE.data.v;
+                                        }).map(function (doc) {
+                                            if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                                        }).subscribe();
+                                        _this8.subs.push(ob2);
+                                    })();
+                                }
+                                this.synced = true;
+                                sync = this.pouch.sync(serverURL, {
+                                    live: true,
+                                    retry: true
+                                }).on('error', function (err) {
+                                    console.log('sync error:');
+                                    console.log(JSON.stringify(err));
+                                    throw new Error(err);
+                                });
+
+                                this.pouchSyncs.push(sync);
+                                return _context7.abrupt('return', sync);
+
+                            case 10:
+                            case 'end':
+                                return _context7.stop();
+                        }
+                    }
+                }, _callee7, this);
+            }));
+
+            function sync(_x5) {
+                return _ref7.apply(this, arguments);
+            }
+
+            return sync;
+        }()
+    }, {
+        key: 'destroy',
+        value: function () {
+            var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
+                return _regenerator2.default.wrap(function _callee8$(_context8) {
+                    while (1) {
+                        switch (_context8.prev = _context8.next) {
                             case 0:
                                 this.subs.map(function (sub) {
                                     return sub.unsubscribe();
@@ -775,14 +812,14 @@ var RxCollection = function () {
 
                             case 3:
                             case 'end':
-                                return _context7.stop();
+                                return _context8.stop();
                         }
                     }
-                }, _callee7, this);
+                }, _callee8, this);
             }));
 
             function destroy() {
-                return _ref7.apply(this, arguments);
+                return _ref8.apply(this, arguments);
             }
 
             return destroy;
@@ -1721,6 +1758,10 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
+var _unload = require('unload');
+
+var unload = _interopRequireWildcard(_unload);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -1734,7 +1775,11 @@ var RxDatabaseLeaderElector = function () {
 
         (0, _classCallCheck3.default)(this, RxDatabaseLeaderElector);
 
+
+        // things that must be cleared ondestroy
         this.subs = [];
+        this.unloads = [];
+
         this.database = database;
         this.deathLeaders = []; // tokens of death leaders
         this.isLeader = false;
@@ -1927,10 +1972,15 @@ var RxDatabaseLeaderElector = function () {
                                 });
                                 this.subs.push(this.tellSub);
 
-                                _context4.next = 6;
+                                // send 'death' when process exits
+                                this.unloads.push(unload.add(function () {
+                                    return _this3.die();
+                                }));
+
+                                _context4.next = 7;
                                 return this.socketMessage('tell');
 
-                            case 6:
+                            case 7:
                             case 'end':
                                 return _context4.stop();
                         }
@@ -2119,9 +2169,12 @@ var RxDatabaseLeaderElector = function () {
                                 this.subs.map(function (sub) {
                                     return sub.unsubscribe();
                                 });
+                                this.unloads.map(function (fn) {
+                                    return fn();
+                                });
                                 this.die();
 
-                            case 2:
+                            case 3:
                             case 'end':
                                 return _context7.stop();
                         }
@@ -2138,7 +2191,7 @@ var RxDatabaseLeaderElector = function () {
     }]);
     return RxDatabaseLeaderElector;
 }();
-},{"./RxChangeEvent":3,"./util":14,"babel-runtime/helpers/asyncToGenerator":20,"babel-runtime/helpers/classCallCheck":21,"babel-runtime/helpers/createClass":22,"babel-runtime/regenerator":24}],7:[function(require,module,exports){
+},{"./RxChangeEvent":3,"./util":14,"babel-runtime/helpers/asyncToGenerator":20,"babel-runtime/helpers/classCallCheck":21,"babel-runtime/helpers/createClass":22,"babel-runtime/regenerator":24,"unload":269}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -14758,7 +14811,7 @@ exports.encodePath = function encodePointer(a){
 	return a.map(function(v){ return '/'+encodeURIComponent(v).replace(/~/g,'%7E'); }).join('');
 };
 
-},{"url":268}],131:[function(require,module,exports){
+},{"url":271}],131:[function(require,module,exports){
 'use strict';
 
 var Validator = module.exports.Validator = require('./validator');
@@ -15094,7 +15147,7 @@ types.object = function testObject (instance) {
 
 module.exports = Validator;
 
-},{"./attribute":129,"./helpers":130,"url":268}],133:[function(require,module,exports){
+},{"./attribute":129,"./helpers":130,"url":271}],133:[function(require,module,exports){
 'use strict';
 var immediate = require('immediate');
 
@@ -26038,7 +26091,7 @@ function safeJsonStringify(json) {
 
 exports.safeJsonParse = safeJsonParse;
 exports.safeJsonStringify = safeJsonStringify;
-},{"vuvuzela":270}],178:[function(require,module,exports){
+},{"vuvuzela":273}],178:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -34975,6 +35028,181 @@ module.exports = function (args, slice, sliceEnd) {
 }));
 
 },{}],268:[function(require,module,exports){
+module.exports = (function() {
+    var exports = {};
+
+    exports.add = function(fn) {
+        var ret = {};
+        if (
+            typeof window === 'object' &&
+            window.addEventListener &&
+            typeof window.addEventListener === 'function'
+        ) {
+            window.addEventListener('beforeunload', fn, false);
+            ret.beforeunload = fn;
+        }
+
+        /**
+         * TODO add fallback for safari-mobile
+         * @link http://stackoverflow.com/questions/3239834/window-onbeforeunload-not-working-on-the-ipad
+         */
+
+        return ret;
+    };
+
+    exports.remove = function(fn, listeners) {
+        Object.keys(listeners).forEach(function(key) {
+            var fn = listeners[key];
+            switch (key) {
+                case 'beforeunload':
+                    window.removeEventListener('beforeunload',
+                        fn,
+                        false
+                    );
+                    break;
+            }
+        });
+    };
+    return exports;
+})();
+
+},{}],269:[function(require,module,exports){
+module.exports = (function(
+    envs
+) {
+    var exports = {};
+    var unloaded = false;
+    var count = 0;
+    var cache = {};
+
+    /**
+     * start listening with the handler
+     * @param  {Function({})} fn the handler which takes the unload-event as attr
+     * @return {Function} stopListening : a function which is used to stop listening
+     */
+    exports.add = function(fn) {
+        count++;
+
+        // wrap fn to ensure it executes once
+        var fnWrapped = function(arg1, arg2, arg3) {
+            if (unloaded) return;
+            unloaded = true;
+            return fn(arg1, arg2, arg3);
+        };
+
+        var hasListeners = {};
+        Object.keys(envs).forEach(function(envKey) {
+            hasListeners[envKey] = envs[envKey].add(fnWrapped);
+        });
+        var retFn = function stopListening() {
+            Object.keys(hasListeners).forEach(function(envKey) {
+                envs[envKey].remove(fnWrapped, hasListeners[envKey]);
+            });
+        };
+
+        cache[count] = {
+            fn: fn,
+            remove: retFn,
+            listeners: hasListeners
+        };
+
+        return retFn;
+    };
+
+    exports.runAll = function() {
+        if (unloaded) return;
+        unloaded = true;
+        Object.keys(cache).forEach(function(key) {
+            cache[key].fn();
+        });
+    }
+
+    exports.removeAll = function() {
+        Object.keys(cache).forEach(function(key) {
+            cache[key].remove();
+        });
+    }
+
+    return exports;
+
+})({
+    node: require('./nodeJS.js'),
+    browser: require('./browser.js')
+});
+
+},{"./browser.js":268,"./nodeJS.js":270}],270:[function(require,module,exports){
+(function (process){
+module.exports = (function() {
+    var exports = {};
+
+    exports.add = function(fn) {
+        var ret = {};
+        if (
+            typeof process === 'object' &&
+            process.on &&
+            typeof process.on === 'function'
+        ) {
+            ret.beforeExit = function(e) {
+                var maybePromise = fn(e);
+                Promise.resolve(maybePromise)
+                    .then(function() {
+                        process.exit();
+                    });
+            }
+            process.on('beforeExit', ret.beforeExit);
+
+            ret.exit = function(e) {
+                var maybePromise = fn(e);
+                Promise.resolve(maybePromise);
+            };
+            process.on('exit', ret.exit);
+
+
+            //catches ctrl+c event
+            ret.SIGINT = function(e) {
+                var maybePromise = fn(e);
+                Promise.resolve(maybePromise)
+                    .then(function() {
+                        process.exit();
+                    });
+            };
+            process.on('SIGINT', ret.SIGINT);
+
+            //catches uncaught exceptions
+            ret.uncaughtException = function(e) {
+                var maybePromise = fn(e);
+                Promise.resolve(maybePromise)
+                    .then(function() {
+                        process.exit();
+                    });
+            };
+            process.on('uncaughtException', ret.uncaughtException);
+        }
+        return ret;
+    };
+
+    exports.remove = function(fn, listeners) {
+        Object.keys(listeners).forEach(function(key) {
+            var fn = listeners[key];
+            switch (key) {
+                case 'beforeExit':
+                case 'SIGINT':
+                case 'uncaughtException':
+                case 'exit':
+                    console.log('remove');
+                    process.removeListener(key, fn);
+                    break;
+            }
+        });
+    };
+
+
+    return exports;
+
+})();
+
+}).call(this,require('_process'))
+},{"_process":190}],271:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -35708,7 +35936,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":269,"punycode":191,"querystring":194}],269:[function(require,module,exports){
+},{"./util":272,"punycode":191,"querystring":194}],272:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -35726,7 +35954,7 @@ module.exports = {
   }
 };
 
-},{}],270:[function(require,module,exports){
+},{}],273:[function(require,module,exports){
 'use strict';
 
 /**
