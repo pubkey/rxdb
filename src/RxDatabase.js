@@ -7,6 +7,7 @@ import * as RxCollection from './RxCollection';
 import * as RxSchema from './RxSchema';
 import * as DatabaseSchemas from './Database.schemas';
 import * as RxChangeEvent from './RxChangeEvent';
+import * as RxDatabaseLeaderElector from './RxDatabaseLeaderElector';
 import {
     default as PouchDB
 } from './PouchDB';
@@ -62,6 +63,9 @@ class RxDatabase {
             this.subs.push(this.autoPull$);
         }
 
+        this.socketRoundtripTime = 50;
+        if (!this.bc$ && typeof pullTime !== 'undefined')
+            this.socketRoundtripTime += pullTime;
     }
 
     /**
@@ -100,8 +104,33 @@ class RxDatabase {
         }
         if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.get('value'))
             throw new Error('another instance on this adapter has a different password');
+
+
+        // leader elector
+        this.leaderElector = await RxDatabaseLeaderElector.create(this);
     }
 
+    get isLeader() {
+        if (!this.multiInstance) return true;
+        return this.leaderElector.isLeader;
+    }
+    async waitForLeadership() {
+        if (!this.multiInstance) return true;
+        return await this.leaderElector.waitForLeadership();
+    }
+
+    async writeToSocket(changeEvent) {
+        const socketDoc = changeEvent.toJSON();
+        delete socketDoc.db;
+        if (socketDoc.v) {
+            if (this.password) socketDoc.v = this._encrypt(socketDoc.v);
+            else socketDoc.v = JSON.stringify(socketDoc.v);
+        }
+        await this.socketCollection.insert(socketDoc);
+        this.bc$ && this.bc$.postMessage(this.token);
+
+        return true;
+    }
 
     async $emit(changeEvent) {
         if (!changeEvent) return;
@@ -115,18 +144,7 @@ class RxDatabase {
             !changeEvent.isIntern() &&
             changeEvent.data.it == this.token
         ) {
-            const socketDoc = changeEvent.toJSON();
-            delete socketDoc.db;
-
-            if (socketDoc.v) {
-                if (this.password) socketDoc.v = this._encrypt(socketDoc.v);
-                else socketDoc.v = JSON.stringify(socketDoc.v);
-            }
-
-            this.socketCollection.insert(socketDoc)
-                .then(() => {
-                    this.bc$ && this.bc$.postMessage(this.token);
-                });
+            this.writeToSocket(changeEvent);
 
             /**
              * check if the cleanup of _socket should be run
@@ -342,6 +360,7 @@ class RxDatabase {
     async destroy() {
         if (this.destroyed) return;
         this.destroyed = true;
+        await this.leaderElector.destroy();
         if (this.bc$) this.bc$.close();
         this.subs.map(sub => sub.unsubscribe());
         Object.keys(this.collections)
