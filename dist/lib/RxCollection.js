@@ -68,7 +68,7 @@ var create = exports.create = function () {
         }, _callee8, this);
     }));
 
-    return function create(_x6, _x7, _x8, _x9) {
+    return function create(_x5, _x6, _x7) {
         return _ref8.apply(this, arguments);
     };
 }();
@@ -407,7 +407,7 @@ var RxCollection = function () {
                 }, _callee5, this);
             }));
 
-            function dump(_x3) {
+            function dump() {
                 return _ref5.apply(this, arguments);
             }
 
@@ -486,7 +486,7 @@ var RxCollection = function () {
                 }, _callee6, this);
             }));
 
-            function importDump(_x5) {
+            function importDump(_x4) {
                 return _ref6.apply(this, arguments);
             }
 
