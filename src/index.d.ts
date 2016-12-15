@@ -49,7 +49,7 @@ declare class RxCollection {
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
 
-    sync(serverURL: string)
+    sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
     destroy(): Promise<boolean>;
 }
 
