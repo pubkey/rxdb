@@ -87,6 +87,10 @@ class RxDatabaseLeaderElector {
             leaderObj.t = new Date().getTime();
             await this.setLeaderObject(leaderObj);
 
+            // check if someone overwrote it
+            leaderObj = await this.getLeaderObject();
+            if (leaderObj.apply != this.id)
+                throw new Error('someone else overwrote apply');
 
 
             // I am leader now

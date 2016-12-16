@@ -80,7 +80,8 @@ class RxDatabase {
                 this,
                 '_admin',
                 DatabaseSchemas.administration, {
-                    auto_compaction: true
+                    auto_compaction: true,
+                    revs_limit: 1
                 })
             .then(col => this.administrationCollection = col),
             // create collections-collection
@@ -93,7 +94,8 @@ class RxDatabase {
                 this,
                 '_socket',
                 DatabaseSchemas.socket, {
-                    auto_compaction: true
+                    auto_compaction: true,
+                    revs_limit: 1
                 })
             .then(col => this.socketCollection = col)
         ]);
