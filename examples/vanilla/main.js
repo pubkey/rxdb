@@ -31,7 +31,10 @@ const syncURL = 'http://' + window.location.hostname + ':10102/';
 window.RxDB
     .create('heroesDB', 'idb', 'myLongAndStupidPassword', true)
     .then(function(db) {
+        console.log('created database');
         window.db = db;
+        heroesList.innerHTML = 'Create collection..';
+
         db.waitForLeadership().then(function() {
             document.title = '♛ ' + document.title;
             leaderIcon.style.display = 'block';
@@ -65,7 +68,7 @@ window.RxDB
                         '<li>' +
                         '<div class="color-box" style="background:' + hero.get('color') + '"></div>' +
                         '<div class="name">' + hero.get('name') + '</div>' +
-                        '</li>'
+                        '</li>';
                 });
             });
     });
