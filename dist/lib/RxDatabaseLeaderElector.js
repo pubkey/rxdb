@@ -85,7 +85,7 @@ var RxDatabaseLeaderElector = function () {
         this.isApplying = false;
         this.isWaiting = false;
 
-        this.signalTime = 200; // TODO evaluate this time
+        this.signalTime = 500; // TODO evaluate this time
     }
 
     (0, _createClass3.default)(RxDatabaseLeaderElector, [{
@@ -236,6 +236,8 @@ var RxDatabaseLeaderElector = function () {
                             case 6:
                                 this.isApplying = true;
 
+                                //        console.log('start applying');
+
                                 _context4.prev = 7;
                                 _context4.next = 10;
                                 return this.getLeaderObject();
@@ -261,7 +263,7 @@ var RxDatabaseLeaderElector = function () {
 
                             case 18:
                                 _context4.next = 20;
-                                return util.promiseWait(this.signalTime * 2);
+                                return util.promiseWait(this.signalTime * 0.5);
 
                             case 20:
                                 _context4.next = 22;
@@ -278,27 +280,34 @@ var RxDatabaseLeaderElector = function () {
                                 throw new Error('someone else overwrote apply');
 
                             case 25:
-                                _context4.next = 27;
+
+                                // write once again to ensure no update-conflict
+                                leaderObj.t = new Date().getTime();
+                                _context4.next = 28;
+                                return this.setLeaderObject(leaderObj);
+
+                            case 28:
+                                _context4.next = 30;
                                 return this.beLeader();
 
-                            case 27:
-                                _context4.next = 31;
+                            case 30:
+                                _context4.next = 34;
                                 break;
 
-                            case 29:
-                                _context4.prev = 29;
+                            case 32:
+                                _context4.prev = 32;
                                 _context4.t0 = _context4['catch'](7);
 
-                            case 31:
+                            case 34:
                                 this.isApplying = false;
                                 return _context4.abrupt('return', true);
 
-                            case 33:
+                            case 36:
                             case 'end':
                                 return _context4.stop();
                         }
                     }
-                }, _callee4, this, [[7, 29]]);
+                }, _callee4, this, [[7, 32]]);
             }));
 
             function applyOnce() {
