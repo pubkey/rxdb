@@ -222,7 +222,9 @@ var RxDatabase = function () {
                                     return _this2.collectionsCollection = col;
                                 }),
                                 // create socket-collection
-                                RxCollection.create(this, '_socket', DatabaseSchemas.socket).then(function (col) {
+                                RxCollection.create(this, '_socket', DatabaseSchemas.socket, {
+                                    auto_compaction: true
+                                }).then(function (col) {
                                     return _this2.socketCollection = col;
                                 })]);
 

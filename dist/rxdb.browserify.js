@@ -153,6 +153,12 @@ var RxChangeEvent = function () {
             return false;
         }
     }, {
+        key: 'isSocket',
+        value: function isSocket() {
+            if (this.data.col && this.data.col == '_socket') return true;
+            return false;
+        }
+    }, {
         key: 'hash',
         value: function hash() {
             if (!this._hash) this._hash = util.hash(this.data);
@@ -1057,7 +1063,9 @@ var RxDatabase = function () {
                                     return _this2.collectionsCollection = col;
                                 }),
                                 // create socket-collection
-                                RxCollection.create(this, '_socket', DatabaseSchemas.socket).then(function (col) {
+                                RxCollection.create(this, '_socket', DatabaseSchemas.socket, {
+                                    auto_compaction: true
+                                }).then(function (col) {
                                     return _this2.socketCollection = col;
                                 })]);
 
@@ -1724,29 +1732,29 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(database) {
+    var _ref10 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10(database) {
         var elector;
-        return _regenerator2.default.wrap(function _callee8$(_context8) {
+        return _regenerator2.default.wrap(function _callee10$(_context10) {
             while (1) {
-                switch (_context8.prev = _context8.next) {
+                switch (_context10.prev = _context10.next) {
                     case 0:
                         elector = new RxDatabaseLeaderElector(database);
-                        _context8.next = 3;
+                        _context10.next = 3;
                         return elector.prepare();
 
                     case 3:
-                        return _context8.abrupt('return', elector);
+                        return _context10.abrupt('return', elector);
 
                     case 4:
                     case 'end':
-                        return _context8.stop();
+                        return _context10.stop();
                 }
             }
-        }, _callee8, this);
+        }, _callee10, this);
     }));
 
     return function create(_x2) {
-        return _ref8.apply(this, arguments);
+        return _ref10.apply(this, arguments);
     };
 }();
 
@@ -1771,8 +1779,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 var RxDatabaseLeaderElector = function () {
     function RxDatabaseLeaderElector(database) {
-        var _this = this;
-
         (0, _classCallCheck3.default)(this, RxDatabaseLeaderElector);
 
 
@@ -1781,31 +1787,15 @@ var RxDatabaseLeaderElector = function () {
         this.unloads = [];
 
         this.database = database;
-        this.deathLeaders = []; // tokens of death leaders
+        this.id = this.database.token;
+
         this.isLeader = false;
         this.becomeLeader$ = new util.Rx.BehaviorSubject(this.isLeader);
         this.isDead = false;
         this.isApplying = false;
-        this.socketMessages$ = database.observable$.filter(function (cEvent) {
-            return cEvent.data.it != _this.database.token;
-        }).filter(function (cEvent) {
-            return cEvent.data.op.startsWith('Leader.');
-        }).map(function (cEvent) {
-            return {
-                type: cEvent.data.op.split('.')[1],
-                token: cEvent.data.it,
-                time: cEvent.data.t
-            };
-        })
-        // do not handle messages from death leaders
-        .filter(function (m) {
-            return !_this.deathLeaders.includes(m.token);
-        }).do(function (m) {
-            if (m.type == 'death') _this.deathLeaders.push(m.token);
-        });
-
-        this.tellSub = null;
         this.isWaiting = false;
+
+        this.signalTime = 200; // TODO evaluate this time
     }
 
     (0, _createClass3.default)(RxDatabaseLeaderElector, [{
@@ -1829,6 +1819,403 @@ var RxDatabaseLeaderElector = function () {
 
             return prepare;
         }()
+    }, {
+        key: 'createLeaderObject',
+        value: function createLeaderObject() {
+            return {
+                _id: 'leader',
+                is: '', // token of leader-instance
+                apply: '', // token of applying instance
+                t: 0 // time when the leader send a signal the last time
+            };
+        }
+    }, {
+        key: 'getLeaderObject',
+        value: function () {
+            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
+                var obj, ret;
+                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                obj = void 0;
+                                _context2.prev = 1;
+                                _context2.next = 4;
+                                return this.database.administrationCollection.pouch.get('leader');
+
+                            case 4:
+                                obj = _context2.sent;
+                                _context2.next = 14;
+                                break;
+
+                            case 7:
+                                _context2.prev = 7;
+                                _context2.t0 = _context2['catch'](1);
+
+                                obj = this.createLeaderObject();
+                                _context2.next = 12;
+                                return this.database.administrationCollection.pouch.put(obj);
+
+                            case 12:
+                                ret = _context2.sent;
+
+                                obj._rev = ret.rev;
+
+                            case 14:
+                                return _context2.abrupt('return', obj);
+
+                            case 15:
+                            case 'end':
+                                return _context2.stop();
+                        }
+                    }
+                }, _callee2, this, [[1, 7]]);
+            }));
+
+            function getLeaderObject() {
+                return _ref2.apply(this, arguments);
+            }
+
+            return getLeaderObject;
+        }()
+    }, {
+        key: 'setLeaderObject',
+        value: function () {
+            var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(newObj) {
+                return _regenerator2.default.wrap(function _callee3$(_context3) {
+                    while (1) {
+                        switch (_context3.prev = _context3.next) {
+                            case 0:
+                                _context3.next = 2;
+                                return this.database.administrationCollection.pouch.put(newObj);
+
+                            case 2:
+                                return _context3.abrupt('return');
+
+                            case 3:
+                            case 'end':
+                                return _context3.stop();
+                        }
+                    }
+                }, _callee3, this);
+            }));
+
+            function setLeaderObject(_x) {
+                return _ref3.apply(this, arguments);
+            }
+
+            return setLeaderObject;
+        }()
+
+        /**
+         * starts applying for leadership
+         */
+
+    }, {
+        key: 'applyOnce',
+        value: function () {
+            var _ref4 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
+                var leaderObj, minTime;
+                return _regenerator2.default.wrap(function _callee4$(_context4) {
+                    while (1) {
+                        switch (_context4.prev = _context4.next) {
+                            case 0:
+                                if (!this.isLeader) {
+                                    _context4.next = 2;
+                                    break;
+                                }
+
+                                return _context4.abrupt('return', false);
+
+                            case 2:
+                                if (!this.isDead) {
+                                    _context4.next = 4;
+                                    break;
+                                }
+
+                                return _context4.abrupt('return', false);
+
+                            case 4:
+                                if (!this.isApplying) {
+                                    _context4.next = 6;
+                                    break;
+                                }
+
+                                return _context4.abrupt('return', false);
+
+                            case 6:
+                                this.isApplying = true;
+
+                                _context4.prev = 7;
+                                _context4.next = 10;
+                                return this.getLeaderObject();
+
+                            case 10:
+                                leaderObj = _context4.sent;
+                                minTime = new Date().getTime() - this.signalTime * 2;
+
+                                if (!(leaderObj.t >= minTime)) {
+                                    _context4.next = 14;
+                                    break;
+                                }
+
+                                throw new Error('someone else is applying/leader');
+
+                            case 14:
+
+                                // write applying to db
+                                leaderObj.apply = this.id;
+                                leaderObj.t = new Date().getTime();
+                                _context4.next = 18;
+                                return this.setLeaderObject(leaderObj);
+
+                            case 18:
+                                _context4.next = 20;
+                                return util.promiseWait(this.signalTime * 2);
+
+                            case 20:
+                                _context4.next = 22;
+                                return this.getLeaderObject();
+
+                            case 22:
+                                leaderObj = _context4.sent;
+
+                                if (!(leaderObj.apply != this.id)) {
+                                    _context4.next = 25;
+                                    break;
+                                }
+
+                                throw new Error('someone else overwrote apply');
+
+                            case 25:
+                                _context4.next = 27;
+                                return this.beLeader();
+
+                            case 27:
+                                _context4.next = 31;
+                                break;
+
+                            case 29:
+                                _context4.prev = 29;
+                                _context4.t0 = _context4['catch'](7);
+
+                            case 31:
+                                this.isApplying = false;
+                                return _context4.abrupt('return', true);
+
+                            case 33:
+                            case 'end':
+                                return _context4.stop();
+                        }
+                    }
+                }, _callee4, this, [[7, 29]]);
+            }));
+
+            function applyOnce() {
+                return _ref4.apply(this, arguments);
+            }
+
+            return applyOnce;
+        }()
+    }, {
+        key: 'leaderSignal',
+        value: function () {
+            var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5() {
+                var success, leaderObj;
+                return _regenerator2.default.wrap(function _callee5$(_context5) {
+                    while (1) {
+                        switch (_context5.prev = _context5.next) {
+                            case 0:
+                                success = false;
+
+                            case 1:
+                                if (success) {
+                                    _context5.next = 18;
+                                    break;
+                                }
+
+                                _context5.prev = 2;
+                                _context5.next = 5;
+                                return this.getLeaderObject();
+
+                            case 5:
+                                leaderObj = _context5.sent;
+
+                                leaderObj.is = this.id;
+                                leaderObj.apply = this.id;
+                                leaderObj.t = new Date().getTime();
+                                _context5.next = 11;
+                                return this.setLeaderObject(leaderObj);
+
+                            case 11:
+                                success = true;
+                                _context5.next = 16;
+                                break;
+
+                            case 14:
+                                _context5.prev = 14;
+                                _context5.t0 = _context5['catch'](2);
+
+                            case 16:
+                                _context5.next = 1;
+                                break;
+
+                            case 18:
+                                return _context5.abrupt('return');
+
+                            case 19:
+                            case 'end':
+                                return _context5.stop();
+                        }
+                    }
+                }, _callee5, this, [[2, 14]]);
+            }));
+
+            function leaderSignal() {
+                return _ref5.apply(this, arguments);
+            }
+
+            return leaderSignal;
+        }()
+
+        /**
+         * assigns leadership to this instance
+         */
+
+    }, {
+        key: 'beLeader',
+        value: function () {
+            var _ref6 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6() {
+                var _this = this;
+
+                return _regenerator2.default.wrap(function _callee6$(_context6) {
+                    while (1) {
+                        switch (_context6.prev = _context6.next) {
+                            case 0:
+                                if (!this.isDead) {
+                                    _context6.next = 2;
+                                    break;
+                                }
+
+                                return _context6.abrupt('return', false);
+
+                            case 2:
+                                if (!this.isLeader) {
+                                    _context6.next = 4;
+                                    break;
+                                }
+
+                                return _context6.abrupt('return', false);
+
+                            case 4:
+                                this.isLeader = true;
+                                this.becomeLeader$.next(true);
+
+                                this.applyInterval && this.applyInterval.unsubscribe();
+
+                                _context6.next = 9;
+                                return this.leaderSignal();
+
+                            case 9:
+                                this.signalLeadership = util.Rx.Observable.interval(this.signalTime).subscribe(function () {
+                                    _this.leaderSignal();
+                                });
+                                this.subs.push(this.signalLeadership);
+                                return _context6.abrupt('return', true);
+
+                            case 12:
+                            case 'end':
+                                return _context6.stop();
+                        }
+                    }
+                }, _callee6, this);
+            }));
+
+            function beLeader() {
+                return _ref6.apply(this, arguments);
+            }
+
+            return beLeader;
+        }()
+    }, {
+        key: 'die',
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
+                var success, leaderObj;
+                return _regenerator2.default.wrap(function _callee7$(_context7) {
+                    while (1) {
+                        switch (_context7.prev = _context7.next) {
+                            case 0:
+                                if (this.isLeader) {
+                                    _context7.next = 2;
+                                    break;
+                                }
+
+                                return _context7.abrupt('return', false);
+
+                            case 2:
+                                if (!this.isDead) {
+                                    _context7.next = 4;
+                                    break;
+                                }
+
+                                return _context7.abrupt('return', false);
+
+                            case 4:
+                                this.isDead = true;
+                                this.isLeader = false;
+                                this.signalLeadership.unsubscribe();
+
+                                // force.write to db
+                                success = false;
+
+                            case 8:
+                                if (success) {
+                                    _context7.next = 23;
+                                    break;
+                                }
+
+                                _context7.prev = 9;
+                                _context7.next = 12;
+                                return this.getLeaderObject();
+
+                            case 12:
+                                leaderObj = _context7.sent;
+
+                                leaderObj.t = 0;
+                                _context7.next = 16;
+                                return this.setLeaderObject(leaderObj);
+
+                            case 16:
+                                success = true;
+                                _context7.next = 21;
+                                break;
+
+                            case 19:
+                                _context7.prev = 19;
+                                _context7.t0 = _context7['catch'](9);
+
+                            case 21:
+                                _context7.next = 8;
+                                break;
+
+                            case 23:
+                                return _context7.abrupt('return', true);
+
+                            case 24:
+                            case 'end':
+                                return _context7.stop();
+                        }
+                    }
+                }, _callee7, this, [[9, 19]]);
+            }));
+
+            function die() {
+                return _ref7.apply(this, arguments);
+            }
+
+            return die;
+        }()
 
         /**
          * @return {Promise} promise which resolve when the instance becomes leader
@@ -1837,46 +2224,36 @@ var RxDatabaseLeaderElector = function () {
     }, {
         key: 'waitForLeadership',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
+            var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
                 var _this2 = this;
 
-                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context8.prev = _context8.next) {
                             case 0:
                                 if (!this.isLeader) {
-                                    _context2.next = 2;
+                                    _context8.next = 2;
                                     break;
                                 }
 
-                                return _context2.abrupt('return', Promise.resolve(true));
+                                return _context8.abrupt('return', Promise.resolve(true));
 
                             case 2:
                                 if (!this.isWaiting) {
                                     this.isWaiting = true;
+                                    // TODO emit socketMessage on die() and subscribe here to it
 
-                                    // apply on death
-                                    this.applySub = this.socketMessages$.filter(function (message) {
-                                        return message.type == 'death';
-                                    }).filter(function (m) {
-                                        return !_this2.isLeader;
-                                    }).subscribe(function (message) {
+                                    // apply on interval
+                                    this.applyInterval = util.Rx.Observable.interval(this.signalTime).subscribe(function (x) {
                                         return _this2.applyOnce();
                                     });
-                                    this.subs.push(this.applySub);
-
-                                    // apply on interval (backup when leader dies without message)
-                                    this.backupApply = util.Rx.Observable.interval(5 * 1000) // TODO evaluate this time
-                                    .subscribe(function (x) {
-                                        return _this2.applyOnce();
-                                    });
-                                    this.subs.push(this.backupApply);
+                                    this.subs.push(this.applyInterval);
 
                                     // apply now
                                     this.applyOnce();
                                 }
 
-                                return _context2.abrupt('return', new Promise(function (res) {
+                                return _context8.abrupt('return', new Promise(function (res) {
                                     _this2.becomeSub = _this2.becomeLeader$.filter(function (i) {
                                         return i == true;
                                     }).subscribe(function (i) {
@@ -1887,284 +2264,25 @@ var RxDatabaseLeaderElector = function () {
 
                             case 4:
                             case 'end':
-                                return _context2.stop();
+                                return _context8.stop();
                         }
                     }
-                }, _callee2, this);
+                }, _callee8, this);
             }));
 
             function waitForLeadership() {
-                return _ref2.apply(this, arguments);
+                return _ref8.apply(this, arguments);
             }
 
             return waitForLeadership;
         }()
-
-        /**
-         * send a leader-election message over the socket
-         * @param {string} type (apply, death, tell)
-         * apply: tells the others I want to be leader
-         * death: tells the others I will die and they must elect a new leader
-         * tell:  tells the others I am leader and they should not elect a new one
-         */
-
-    }, {
-        key: 'socketMessage',
-        value: function () {
-            var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(type) {
-                var changeEvent;
-                return _regenerator2.default.wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                if (['apply', 'death', 'tell'].includes(type)) {
-                                    _context3.next = 2;
-                                    break;
-                                }
-
-                                throw new Error('type ' + type + ' is not valid');
-
-                            case 2:
-                                changeEvent = RxChangeEvent.create('Leader.' + type, this.database);
-                                _context3.next = 5;
-                                return this.database.writeToSocket(changeEvent);
-
-                            case 5:
-                                return _context3.abrupt('return', true);
-
-                            case 6:
-                            case 'end':
-                                return _context3.stop();
-                        }
-                    }
-                }, _callee3, this);
-            }));
-
-            function socketMessage(_x) {
-                return _ref3.apply(this, arguments);
-            }
-
-            return socketMessage;
-        }()
-
-        /**
-         * assigns leadership to this instance
-         */
-
-    }, {
-        key: 'beLeader',
-        value: function () {
-            var _ref4 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
-                var _this3 = this;
-
-                return _regenerator2.default.wrap(function _callee4$(_context4) {
-                    while (1) {
-                        switch (_context4.prev = _context4.next) {
-                            case 0:
-                                this.isLeader = true;
-                                this.becomeLeader$.next(true);
-
-                                // reply to 'apply'-messages
-                                this.tellSub = this.socketMessages$.filter(function (message) {
-                                    return message.type == 'apply';
-                                }).subscribe(function (message) {
-                                    return _this3.socketMessage('tell');
-                                });
-                                this.subs.push(this.tellSub);
-
-                                // send 'death' when process exits
-                                this.unloads.push(unload.add(function () {
-                                    return _this3.die();
-                                }));
-
-                                _context4.next = 7;
-                                return this.socketMessage('tell');
-
-                            case 7:
-                            case 'end':
-                                return _context4.stop();
-                        }
-                    }
-                }, _callee4, this);
-            }));
-
-            function beLeader() {
-                return _ref4.apply(this, arguments);
-            }
-
-            return beLeader;
-        }()
-    }, {
-        key: 'die',
-        value: function () {
-            var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5() {
-                return _regenerator2.default.wrap(function _callee5$(_context5) {
-                    while (1) {
-                        switch (_context5.prev = _context5.next) {
-                            case 0:
-                                if (this.isLeader) {
-                                    _context5.next = 2;
-                                    break;
-                                }
-
-                                return _context5.abrupt('return');
-
-                            case 2:
-                                this.isDead = true;
-                                this.isLeader = false;
-                                this.tellSub.unsubscribe();
-                                _context5.next = 7;
-                                return this.socketMessage('death');
-
-                            case 7:
-                            case 'end':
-                                return _context5.stop();
-                        }
-                    }
-                }, _callee5, this);
-            }));
-
-            function die() {
-                return _ref5.apply(this, arguments);
-            }
-
-            return die;
-        }()
-
-        /**
-         * starts applying for leadership
-         */
-
-    }, {
-        key: 'applyOnce',
-        value: function () {
-            var _ref6 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6() {
-                var _this4 = this;
-
-                var startTime, sub, sub2, tries;
-                return _regenerator2.default.wrap(function _callee6$(_context6) {
-                    while (1) {
-                        switch (_context6.prev = _context6.next) {
-                            case 0:
-                                if (!this.isDead) {
-                                    _context6.next = 2;
-                                    break;
-                                }
-
-                                return _context6.abrupt('return');
-
-                            case 2:
-                                if (!this.isLeader) {
-                                    _context6.next = 4;
-                                    break;
-                                }
-
-                                return _context6.abrupt('return');
-
-                            case 4:
-                                if (!this.isApplying) {
-                                    _context6.next = 6;
-                                    break;
-                                }
-
-                                return _context6.abrupt('return');
-
-                            case 6:
-
-                                this.isApplying = true;
-                                startTime = new Date().getTime();
-
-                                /*        this.socketMessages$.subscribe(m => {
-                                            console.log('aaaaa:');
-                                            console.dir(m);
-                                        });*/
-
-                                // stop applying when other is leader
-
-                                sub = this.socketMessages$.filter(function (m) {
-                                    return m.type == 'tell';
-                                }).filter(function (m) {
-                                    return m.time > startTime;
-                                }).subscribe(function (message) {
-                                    return _this4.isApplying = false;
-                                });
-
-                                // stop applyling when better is applying (higher lexixal token)
-
-                                sub2 = this.socketMessages$.filter(function (m) {
-                                    return m.type == 'apply';
-                                }).filter(function (m) {
-                                    return m.time > startTime;
-                                }).filter(function (m) {
-                                    return _this4.database.token < m.token;
-                                }).subscribe(function (m) {
-                                    return _this4.isApplying = false;
-                                });
-                                tries = 0;
-
-                            case 11:
-                                if (!(tries < 3 && this.isApplying)) {
-                                    _context6.next = 19;
-                                    break;
-                                }
-
-                                tries++;
-                                _context6.next = 15;
-                                return this.socketMessage('apply');
-
-                            case 15:
-                                _context6.next = 17;
-                                return util.promiseWait(this.database.socketRoundtripTime);
-
-                            case 17:
-                                _context6.next = 11;
-                                break;
-
-                            case 19:
-                                _context6.next = 21;
-                                return this.database.$pull();
-
-                            case 21:
-                                _context6.next = 23;
-                                return util.promiseWait(50);
-
-                            case 23:
-
-                                sub.unsubscribe();
-                                sub2.unsubscribe();
-
-                                if (!this.isApplying) {
-                                    _context6.next = 28;
-                                    break;
-                                }
-
-                                _context6.next = 28;
-                                return this.beLeader();
-
-                            case 28:
-                                this.isApplying = false;
-
-                            case 29:
-                            case 'end':
-                                return _context6.stop();
-                        }
-                    }
-                }, _callee6, this);
-            }));
-
-            function applyOnce() {
-                return _ref6.apply(this, arguments);
-            }
-
-            return applyOnce;
-        }()
     }, {
         key: 'destroy',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
-                return _regenerator2.default.wrap(function _callee7$(_context7) {
+            var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9() {
+                return _regenerator2.default.wrap(function _callee9$(_context9) {
                     while (1) {
-                        switch (_context7.prev = _context7.next) {
+                        switch (_context9.prev = _context9.next) {
                             case 0:
                                 this.subs.map(function (sub) {
                                     return sub.unsubscribe();
@@ -2172,18 +2290,19 @@ var RxDatabaseLeaderElector = function () {
                                 this.unloads.map(function (fn) {
                                     return fn();
                                 });
-                                this.die();
+                                _context9.next = 4;
+                                return this.die();
 
-                            case 3:
+                            case 4:
                             case 'end':
-                                return _context7.stop();
+                                return _context9.stop();
                         }
                     }
-                }, _callee7, this);
+                }, _callee9, this);
             }));
 
             function destroy() {
-                return _ref7.apply(this, arguments);
+                return _ref9.apply(this, arguments);
             }
 
             return destroy;
@@ -35072,8 +35191,13 @@ module.exports = (function(
 ) {
     var exports = {};
     var unloaded = false;
+    var debug = false;
     var count = 0;
     var cache = {};
+
+    exports.debug = function() {
+        debug = true;
+    };
 
     /**
      * start listening with the handler
@@ -35098,6 +35222,12 @@ module.exports = (function(
             Object.keys(hasListeners).forEach(function(envKey) {
                 envs[envKey].remove(fnWrapped, hasListeners[envKey]);
             });
+
+            debug && console.log('unload.stopListening()');
+            debug && console.dir(cache[count]);
+        };
+        retFn.run = function() {
+            fnWrapped();
         };
 
         cache[count] = {
@@ -35105,6 +35235,9 @@ module.exports = (function(
             remove: retFn,
             listeners: hasListeners
         };
+
+        debug && console.log('unload.add()');
+        debug && console.dir(cache[count]);
 
         return retFn;
     };
@@ -35115,13 +35248,13 @@ module.exports = (function(
         Object.keys(cache).forEach(function(key) {
             cache[key].fn();
         });
-    }
+    };
 
     exports.removeAll = function() {
         Object.keys(cache).forEach(function(key) {
             cache[key].remove();
         });
-    }
+    };
 
     return exports;
 
@@ -35148,7 +35281,7 @@ module.exports = (function() {
                     .then(function() {
                         process.exit();
                     });
-            }
+            };
             process.on('beforeExit', ret.beforeExit);
 
             ret.exit = function(e) {
@@ -35189,7 +35322,6 @@ module.exports = (function() {
                 case 'SIGINT':
                 case 'uncaughtException':
                 case 'exit':
-                    console.log('remove');
                     process.removeListener(key, fn);
                     break;
             }
