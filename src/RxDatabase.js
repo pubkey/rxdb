@@ -88,7 +88,12 @@ class RxDatabase {
             .then(col => this.collectionsCollection = col),
             // create socket-collection
             RxCollection
-            .create(this, '_socket', DatabaseSchemas.socket)
+            .create(
+                this,
+                '_socket',
+                DatabaseSchemas.socket, {
+                    auto_compaction: true
+                })
             .then(col => this.socketCollection = col)
         ]);
 

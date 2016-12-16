@@ -125,7 +125,6 @@ class RxCollection {
     }
 
     findOne(queryObj) {
-
         let query;
 
         if (typeof queryObj === 'string') {
@@ -150,7 +149,6 @@ class RxCollection {
         };
         return query;
     }
-
 
     /**
      * get a query only

@@ -21,59 +21,111 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('LeaderElection.test.js', () => {
-    describe('messaging', () => {
-        it('should recieve a Leader-message over the socket', async() => {
-            const name = randomToken(10);
-            const c1 = await humansCollection.createMultiInstance(name);
-            const c2 = await humansCollection.createMultiInstance(name);
-            const db1 = c1.database;
-            const db2 = c2.database;
 
-            const pW = util.promiseWaitResolveable(1000);
-            const recieved = [];
-            const sub = db1.leaderElector.socketMessages$
-                .subscribe(message => {
-                    recieved.push(message);
-                    pW.resolve();
-                });
-            const sub2 = db2.leaderElector.socketMessages$
-                .subscribe(message => recieved.push(message));
-
-            db2.leaderElector.socketMessage('tell');
-            await pW.promise;
-            assert.equal(recieved.length, 1);
-            assert.equal(recieved[0].type, 'tell');
-            assert.equal(recieved[0].token, db2.token);
-            assert.ok(recieved[0].time > 100);
-            assert.ok(recieved[0].time < new Date().getTime());
-            sub.unsubscribe();
-            sub2.unsubscribe();
+    describe('leaderObject', () => {
+        it('should not have a leaderObject', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const db = c.database;
+            await util.assertThrowsAsync(
+                () => db.administrationCollection.pouch.get('leader'),
+                Error
+            );
         });
-        it('leader should reply with tell when apply comes in', async() => {
-            const name = randomToken(10);
-            const c1 = await humansCollection.createMultiInstance(name);
-            const c2 = await humansCollection.createMultiInstance(name);
-            const db1 = c1.database;
-            const db2 = c2.database;
+        it('should get an empty leaderObject', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            const obj = await leaderElector.getLeaderObject();
+            delete obj._rev;
+            assert.deepEqual(obj, leaderElector.createLeaderObject());
+            assert.equal(obj._id, 'leader');
 
-            db1.leaderElector.beLeader();
-
-            const pW = util.promiseWaitResolveable(1000);
-            const recieved = [];
-            const sub = db2.leaderElector.socketMessages$
-                .subscribe(message => {
-                    recieved.push(message);
-                    pW.resolve();
-                    sub.unsubscribe();
-                });
-            db2.leaderElector.socketMessage('apply');
-
-            await pW.promise;
-            assert.equal(recieved.length, 1);
-            assert.equal(recieved[0].type, 'tell');
-            assert.equal(recieved[0].token, db1.token);
+            // make sure its also in db
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
+            delete dbObj._rev;
+            assert.deepEqual(obj, dbObj);
         });
     });
+    describe('beLeader()', () => {
+        it('leaderSignal()', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            await leaderElector.leaderSignal();
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
+            assert.equal(dbObj.is, leaderElector.id);
+            assert.equal(dbObj.apply, leaderElector.id);
+            assert.ok(dbObj.t > new Date().getTime() - 1000);
+        });
+        it('assing self to leader', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            const is = await leaderElector.beLeader();
+            assert.ok(is);
+
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
+            assert.equal(dbObj.is, leaderElector.id);
+        });
+        it('should signal after time', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            await leaderElector.beLeader();
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
+            const t = dbObj.t;
+            await util.promiseWait(leaderElector.signalTime * 2);
+            const dbObj2 = await c.database.administrationCollection.pouch.get('leader');
+            assert.ok(dbObj2.t > t);
+        });
+    });
+    describe('applyOnce()', () => {
+        it('should apply', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            const is = await leaderElector.applyOnce();
+            assert.ok(is);
+        });
+        it('should assing self to leader', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            await leaderElector.applyOnce();
+            assert.ok(leaderElector.isLeader);
+        });
+        it('should not apply when other is leader', async() => {
+            const name = randomToken(10);
+            const c = await humansCollection.createMultiInstance(name);
+            const leaderElector = c.database.leaderElector;
+            await leaderElector.beLeader();
+
+            const c2 = await humansCollection.createMultiInstance(name);
+            const leaderElector2 = c2.database.leaderElector;
+            const is = await leaderElector.applyOnce();
+            assert.equal(is, false);
+        });
+    });
+
+    describe('.die()', () => {
+        it('leader: write status on death', async() => {
+            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const leaderElector = c.database.leaderElector;
+            await leaderElector.beLeader();
+            const is = await leaderElector.die();
+            assert.ok(is);
+
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
+            assert.equal(dbObj.t, 0);
+        });
+        it('other instance applies on death of leader', async() => {
+            const name = randomToken(10);
+            const c = await humansCollection.createMultiInstance(name);
+            const leaderElector = c.database.leaderElector;
+            await leaderElector.beLeader();
+            await leaderElector.die();
+
+            const c2 = await humansCollection.createMultiInstance(name);
+            const leaderElector2 = c2.database.leaderElector;
+            await leaderElector2.applyOnce();
+            assert.ok(leaderElector2.isLeader);
+        });
+    });
+
     describe('election', () => {
         it('a single instance should always elect itself as leader', async() => {
             const name = randomToken(10);
@@ -195,7 +247,7 @@ describe('LeaderElection.test.js', () => {
             let count = 0;
             dbs.forEach(db => db.waitForLeadership().then(is => count++));
 
-            await util.promiseWait(400);
+            await util.promiseWait(800);
             assert.equal(count, 1);
 
             // let leader die
@@ -203,9 +255,8 @@ describe('LeaderElection.test.js', () => {
                 .filter(db => db.isLeader)[0]
                 .leaderElector.die();
 
-            await util.promiseWait(400);
+            await util.promiseWait(800);
             assert.equal(count, 2);
         });
     });
-
 });

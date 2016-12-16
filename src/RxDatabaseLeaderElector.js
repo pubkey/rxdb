@@ -13,33 +13,141 @@ class RxDatabaseLeaderElector {
         this.unloads = [];
 
         this.database = database;
-        this.deathLeaders = []; // tokens of death leaders
+        this.id = this.database.token;
+
         this.isLeader = false;
         this.becomeLeader$ = new util.Rx.BehaviorSubject(this.isLeader);
         this.isDead = false;
         this.isApplying = false;
-        this.socketMessages$ = database.observable$
-            .filter(cEvent => cEvent.data.it != this.database.token)
-            .filter(cEvent => cEvent.data.op.startsWith('Leader.'))
-            .map(cEvent => {
-                return {
-                    type: cEvent.data.op.split('.')[1],
-                    token: cEvent.data.it,
-                    time: cEvent.data.t
-                };
-            })
-            // do not handle messages from death leaders
-            .filter(m => !this.deathLeaders.includes(m.token))
-            .do(m => {
-                if (m.type == 'death')
-                    this.deathLeaders.push(m.token);
-            });
-
-        this.tellSub = null;
         this.isWaiting = false;
+
+        this.signalTime = 200; // TODO evaluate this time
     }
 
     async prepare() {}
+
+    createLeaderObject() {
+        return {
+            _id: 'leader',
+            is: '', // token of leader-instance
+            apply: '', // token of applying instance
+            t: 0 // time when the leader send a signal the last time
+        };
+    }
+    async getLeaderObject() {
+        let obj;
+        try {
+            obj = await this.database.administrationCollection.pouch.get('leader');
+        } catch (e) {
+            obj = this.createLeaderObject();
+            const ret = await this.database.administrationCollection.pouch.put(obj);
+            obj._rev = ret.rev;
+        }
+        return obj;
+    }
+
+    async setLeaderObject(newObj) {
+        await this.database.administrationCollection.pouch.put(newObj);
+        return;
+    }
+
+    /**
+     * starts applying for leadership
+     */
+    async applyOnce() {
+        if (this.isLeader) return false;
+        if (this.isDead) return false;
+        if (this.isApplying) return false;
+        this.isApplying = true;
+
+        try {
+            let leaderObj = await this.getLeaderObject();
+            const minTime = new Date().getTime() - this.signalTime * 2;
+
+            if (leaderObj.t >= minTime)
+                throw new Error('someone else is applying/leader');
+
+            // write applying to db
+            leaderObj.apply = this.id;
+            leaderObj.t = new Date().getTime();
+            await this.setLeaderObject(leaderObj);
+
+            // w8 one cycle
+            await util.promiseWait(this.signalTime * 2);
+
+            // check if someone overwrote it
+            leaderObj = await this.getLeaderObject();
+            if (leaderObj.apply != this.id)
+                throw new Error('someone else overwrote apply');
+
+            // I am leader now
+            await this.beLeader();
+
+        } catch (e) {
+            // console.log('applyOnce:error:');
+            // console.dir(e);
+        }
+        this.isApplying = false;
+        return true;
+    }
+
+
+    async leaderSignal() {
+        let success = false;
+        while (!success) {
+            try {
+                const leaderObj = await this.getLeaderObject();
+                leaderObj.is = this.id;
+                leaderObj.apply = this.id;
+                leaderObj.t = new Date().getTime();
+                await this.setLeaderObject(leaderObj);
+                success = true;
+            } catch (e) {}
+        }
+        return;
+    }
+
+    /**
+     * assigns leadership to this instance
+     */
+    async beLeader() {
+        if (this.isDead) return false;
+        if (this.isLeader) return false;
+        this.isLeader = true;
+        this.becomeLeader$.next(true);
+
+        this.applyInterval && this.applyInterval.unsubscribe();
+
+        await this.leaderSignal();
+        this.signalLeadership = util.Rx.Observable
+            .interval(this.signalTime)
+            .subscribe(() => {
+                this.leaderSignal();
+            });
+        this.subs.push(this.signalLeadership);
+        return true;
+    }
+
+
+    async die() {
+        if (!this.isLeader) return false;
+        if (this.isDead) return false;
+        this.isDead = true;
+        this.isLeader = false;
+        this.signalLeadership.unsubscribe();
+
+        // force.write to db
+        let success = false;
+        while (!success) {
+            try {
+                const leaderObj = await this.getLeaderObject();
+                leaderObj.t = 0;
+                await this.setLeaderObject(leaderObj);
+                success = true;
+            } catch (e) {}
+        }
+        return true;
+    }
 
     /**
      * @return {Promise} promise which resolve when the instance becomes leader
@@ -48,19 +156,13 @@ class RxDatabaseLeaderElector {
         if (this.isLeader) return Promise.resolve(true);
         if (!this.isWaiting) {
             this.isWaiting = true;
+            // TODO emit socketMessage on die() and subscribe here to it
 
-            // apply on death
-            this.applySub = this.socketMessages$
-                .filter(message => message.type == 'death')
-                .filter(m => !this.isLeader)
-                .subscribe(message => this.applyOnce());
-            this.subs.push(this.applySub);
-
-            // apply on interval (backup when leader dies without message)
-            this.backupApply = util.Rx.Observable
-                .interval(5 * 1000) // TODO evaluate this time
+            // apply on interval
+            this.applyInterval = util.Rx.Observable
+                .interval(this.signalTime)
                 .subscribe(x => this.applyOnce());
-            this.subs.push(this.backupApply);
+            this.subs.push(this.applyInterval);
 
             // apply now
             this.applyOnce();
@@ -74,105 +176,12 @@ class RxDatabaseLeaderElector {
         });
     }
 
-    /**
-     * send a leader-election message over the socket
-     * @param {string} type (apply, death, tell)
-     * apply: tells the others I want to be leader
-     * death: tells the others I will die and they must elect a new leader
-     * tell:  tells the others I am leader and they should not elect a new one
-     */
-    async socketMessage(type) {
-        if (!['apply', 'death', 'tell'].includes(type))
-            throw new Error('type ' + type + ' is not valid');
-
-        const changeEvent = RxChangeEvent.create(
-            'Leader.' + type,
-            this.database
-        );
-        await this.database.writeToSocket(changeEvent);
-        return true;
-    }
-
-    /**
-     * assigns leadership to this instance
-     */
-    async beLeader() {
-        this.isLeader = true;
-        this.becomeLeader$.next(true);
-
-        // reply to 'apply'-messages
-        this.tellSub = this.socketMessages$
-            .filter(message => message.type == 'apply')
-            .subscribe(message => this.socketMessage('tell'));
-        this.subs.push(this.tellSub);
-
-        // send 'death' when process exits
-        this.unloads.push(
-            unload.add(() => this.die())
-        );
-
-        await this.socketMessage('tell');
-    }
-    async die() {
-        if (!this.isLeader) return;
-        this.isDead = true;
-        this.isLeader = false;
-        this.tellSub.unsubscribe();
-        await this.socketMessage('death');
-    }
-
-    /**
-     * starts applying for leadership
-     */
-    async applyOnce() {
-        if (this.isDead) return;
-        if (this.isLeader) return;
-        if (this.isApplying) return;
-
-        this.isApplying = true;
-        const startTime = new Date().getTime();
-
-
-        /*        this.socketMessages$.subscribe(m => {
-                    console.log('aaaaa:');
-                    console.dir(m);
-                });*/
-
-        // stop applying when other is leader
-        const sub = this.socketMessages$
-            .filter(m => m.type == 'tell')
-            .filter(m => m.time > startTime)
-            .subscribe(message => this.isApplying = false);
-
-        // stop applyling when better is applying (higher lexixal token)
-        const sub2 = this.socketMessages$
-            .filter(m => m.type == 'apply')
-            .filter(m => m.time > startTime)
-            .filter(m => this.database.token < m.token)
-            .subscribe(m => this.isApplying = false);
-
-        let tries = 0;
-        while (tries < 3 && this.isApplying) {
-            tries++;
-            await this.socketMessage('apply');
-            await util.promiseWait(this.database.socketRoundtripTime);
-        }
-        await this.database.$pull();
-        await util.promiseWait(50);
-
-        sub.unsubscribe();
-        sub2.unsubscribe();
-
-        if (this.isApplying) await this.beLeader();
-        this.isApplying = false;
-    }
 
     async destroy() {
         this.subs.map(sub => sub.unsubscribe());
         this.unloads.map(fn => fn());
-        this.die();
+        await this.die();
     }
-
 }
 
 
