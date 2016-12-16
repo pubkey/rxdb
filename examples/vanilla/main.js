@@ -33,6 +33,7 @@ window.RxDB
     .then(function(db) {
         window.db = db;
         db.waitForLeadership().then(function() {
+            document.title = '♛ ' + document.title;
             leaderIcon.style.display = 'block';
         });
         return db.collection('hero', heroSchema);
