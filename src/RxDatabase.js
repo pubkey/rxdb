@@ -72,6 +72,7 @@ class RxDatabase {
      * make the async things for this database
      */
     async prepare() {
+
         // create internal collections
         await Promise.all([
             // create admin-collection
@@ -102,10 +103,12 @@ class RxDatabase {
             key: 'pwHash'
         }).exec();
         if (!pwHashDoc && this.password) {
-            await this.administrationCollection.insert({
-                key: 'pwHash',
-                value: util.hash(this.password)
-            });
+            try {
+                await this.administrationCollection.insert({
+                    key: 'pwHash',
+                    value: util.hash(this.password)
+                });
+            } catch (e) {}
         }
         if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.get('value'))
             throw new Error('another instance on this adapter has a different password');
@@ -194,7 +197,6 @@ class RxDatabase {
      */
     async $pull() {
         this.pull$Count++;
-        //        console.log('.....');
         if (!this.subject || !this.socketCollection) return;
 
         if (this.isPulling) {

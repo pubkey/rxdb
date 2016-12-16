@@ -67,6 +67,9 @@ class RxCollection {
         if (json._id)
             throw new Error('do not provide ._id, it will be generated');
 
+        //console.log('RxCollection.insert():');
+        //console.dir(json);
+
         json = clone(json);
         json._id = util.generate_id();
 
