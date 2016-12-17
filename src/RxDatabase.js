@@ -77,24 +77,24 @@ class RxDatabase {
             .then(col => this.socketCollection = col)
         ]);
 
-        // handle password-hash
-        let pwHashDoc = null;
-        try {
-            pwHashDoc = await this.administrationCollection
-                .pouch.get('_local/pwHash');
-        } catch (e) {}
-
-        if (!pwHashDoc && this.password) {
+        // validate/insert password-hash
+        if (this.password) {
+            let pwHashDoc = null;
             try {
-                await this.administrationCollection.pouch.put({
-                    _id: '_local/pwHash',
-                    value: util.hash(this.password)
-                });
+                pwHashDoc = await this.administrationCollection
+                    .pouch.get('_local/pwHash');
             } catch (e) {}
+            if (!pwHashDoc) {
+                try {
+                    await this.administrationCollection.pouch.put({
+                        _id: '_local/pwHash',
+                        value: util.hash(this.password)
+                    });
+                } catch (e) {}
+            }
+            if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)
+                throw new Error('another instance on this adapter has a different password');
         }
-        if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)
-            throw new Error('another instance on this adapter has a different password');
-
 
         if (this.multiInstance) {
 
