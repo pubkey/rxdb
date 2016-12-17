@@ -21,7 +21,7 @@ class RxDatabaseLeaderElector {
         this.isApplying = false;
         this.isWaiting = false;
 
-        this.signalTime = 500; // TODO evaluate this time
+        this.signalTime = 2000; // TODO evaluate this time
     }
 
     async prepare() {}
@@ -60,38 +60,30 @@ class RxDatabaseLeaderElector {
         if (this.isApplying) return false;
         this.isApplying = true;
 
-        //        console.log('start applying');
+        console.log('applyOnce()');
 
         try {
             let leaderObj = await this.getLeaderObject();
-            const minTime = new Date().getTime() - this.signalTime * 2;
+            const minTime = new Date().getTime() - this.signalTime * 10;
 
             if (leaderObj.t >= minTime)
                 throw new Error('someone else is applying/leader');
-
+            console.log('applyOnce()1');
             // write applying to db
             leaderObj.apply = this.id;
             leaderObj.t = new Date().getTime();
             await this.setLeaderObject(leaderObj);
+            console.log('applyOnce()2');
 
             // w8 one cycle
             await util.promiseWait(this.signalTime * 0.5);
+            console.log('applyOnce()3');
 
             // check if someone overwrote it
             leaderObj = await this.getLeaderObject();
             if (leaderObj.apply != this.id)
                 throw new Error('someone else overwrote apply');
-
-
-            // write once again to ensure no update-conflict
-            leaderObj.t = new Date().getTime();
-            await this.setLeaderObject(leaderObj);
-
-            // check if someone overwrote it
-            leaderObj = await this.getLeaderObject();
-            if (leaderObj.apply != this.id)
-                throw new Error('someone else overwrote apply');
-
+            console.log('applyOnce()4');
 
             // I am leader now
             await this.beLeader();
@@ -101,14 +93,21 @@ class RxDatabaseLeaderElector {
             // console.log('applyOnce:error:');
             // console.dir(e);
         }
+        console.log('applyOnce():done');
         this.isApplying = false;
         return true;
     }
 
 
     async leaderSignal() {
+        if (this.leaderSignal_run) return;
+        this.leaderSignal_run = true;
+
+        console.log('leaderSignal()');
         let success = false;
         while (!success) {
+            console.log('leaderSignal: once');
+
             try {
                 const leaderObj = await this.getLeaderObject();
                 leaderObj.is = this.id;
@@ -116,8 +115,14 @@ class RxDatabaseLeaderElector {
                 leaderObj.t = new Date().getTime();
                 await this.setLeaderObject(leaderObj);
                 success = true;
-            } catch (e) {}
+            } catch (e) {
+                console.log('leaderSignal:error:');
+                console.dir(e);
+            }
         }
+        console.log('leaderSignalDone()');
+
+        this.leaderSignal_run = false;
         return;
     }
 
@@ -133,12 +138,20 @@ class RxDatabaseLeaderElector {
         this.applyInterval && this.applyInterval.unsubscribe();
 
         await this.leaderSignal();
+
+        // signal leadership on interval
         this.signalLeadership = util.Rx.Observable
             .interval(this.signalTime)
             .subscribe(() => {
                 this.leaderSignal();
             });
         this.subs.push(this.signalLeadership);
+
+        // this.die() on unload
+        this.unloads.push(
+            unload.add(this.die)
+        );
+
         return true;
     }
 
@@ -174,7 +187,7 @@ class RxDatabaseLeaderElector {
 
             // apply on interval
             this.applyInterval = util.Rx.Observable
-                .interval(this.signalTime)
+                .interval(this.signalTime * 2)
                 .subscribe(x => this.applyOnce());
             this.subs.push(this.applyInterval);
 

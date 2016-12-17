@@ -43,29 +43,6 @@ class RxDatabase {
         this.lastPull = new Date().getTime();
         this.recievedEvents = {};
         this.autoPull$;
-        if (this.multiInstance) {
-
-            let pullTime = 200;
-
-            // BroadcastChannel
-            if (util.hasBroadcastChannel()) {
-                pullTime = 1000;
-                this.bc$ = new BroadcastChannel('RxDB:' + this.prefix);
-                this.bc$.onmessage = (msg) => {
-                    if (msg.data != this.token) this.$pull();
-                };
-            }
-
-            // pull on intervall
-            this.autoPull$ = util.Rx.Observable
-                .interval(pullTime) // TODO evaluate pullTime value or make it settable
-                .subscribe(x => this.$pull());
-            this.subs.push(this.autoPull$);
-        }
-
-        this.socketRoundtripTime = 50;
-        if (!this.bc$ && typeof pullTime !== 'undefined')
-            this.socketRoundtripTime += pullTime;
     }
 
     /**
@@ -115,6 +92,25 @@ class RxDatabase {
         if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.get('value'))
             throw new Error('another instance on this adapter has a different password');
 
+        if (this.multiInstance) {
+
+            let pullTime = 200;
+
+            // BroadcastChannel
+            if (util.hasBroadcastChannel()) {
+                pullTime = 3000;
+                this.bc$ = new BroadcastChannel('RxDB:' + this.prefix);
+                this.bc$.onmessage = (msg) => {
+                    if (msg.data != this.token) this.$pull();
+                };
+            }
+
+            // pull on intervall
+            this.autoPull$ = util.Rx.Observable
+                .interval(pullTime) // TODO evaluate pullTime value or make it settable
+                .subscribe(x => this.$pull());
+            this.subs.push(this.autoPull$);
+        }
 
         // leader elector
         this.leaderElector = await RxDatabaseLeaderElector.create(this);
@@ -200,6 +196,8 @@ class RxDatabase {
     async $pull() {
         this.pull$Count++;
         if (!this.subject || !this.socketCollection) return;
+
+        console.log('$pull()');
 
         if (this.isPulling) {
             /**
