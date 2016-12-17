@@ -5,7 +5,12 @@ import * as unload from 'unload';
 /**
  * this handles the leader-election for the given RxDatabase-instance
  */
-class RxDatabaseLeaderElector {
+
+const documentID = '_local/leader';
+
+class LeaderElector {
+
+
     constructor(database) {
 
         // things that must be cleared ondestroy
@@ -21,14 +26,14 @@ class RxDatabaseLeaderElector {
         this.isApplying = false;
         this.isWaiting = false;
 
-        this.signalTime = 2000; // TODO evaluate this time
+        this.signalTime = 200; // TODO evaluate this time
     }
 
     async prepare() {}
 
     createLeaderObject() {
         return {
-            _id: 'leader',
+            _id: documentID,
             is: '', // token of leader-instance
             apply: '', // token of applying instance
             t: 0 // time when the leader send a signal the last time
@@ -37,7 +42,8 @@ class RxDatabaseLeaderElector {
     async getLeaderObject() {
         let obj;
         try {
-            obj = await this.database.administrationCollection.pouch.get('leader');
+            obj = await this.database.administrationCollection
+                .pouch.get(documentID);
         } catch (e) {
             obj = this.createLeaderObject();
             const ret = await this.database.administrationCollection.pouch.put(obj);
@@ -213,7 +219,11 @@ class RxDatabaseLeaderElector {
 
 
 export async function create(database) {
-    const elector = new RxDatabaseLeaderElector(database);
+    const elector = new LeaderElector(database);
     await elector.prepare();
     return elector;
 }
+
+export {
+    documentID as documentID
+};
