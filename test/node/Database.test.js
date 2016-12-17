@@ -75,6 +75,16 @@ describe('RxDatabase.test.js', () => {
                     Error
                 );
             });
+            it('BUG: should have a pwHash-doc after creating the database', async() => {
+                const dbname = randomToken(10);
+                const pw = randomToken(10);
+                const db = await RxDatabase.create(dbname, memdown, pw);
+                const doc = await db.administrationCollection.pouch.get('_local/pwHash');
+                assert.equal(typeof doc.value, 'string');
+                const db2 = await RxDatabase.create(dbname, memdown, pw);
+                const doc2 = await db.administrationCollection.pouch.get('_local/pwHash');
+                assert.equal(typeof doc.value, 'string');
+            });
             it('prevent 2 instances with different passwords on same adapter', async() => {
                 const dbname = randomToken(10);
                 const db = await RxDatabase.create(dbname, memdown, randomToken(10));

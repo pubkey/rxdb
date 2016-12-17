@@ -7,7 +7,7 @@ import * as RxCollection from './RxCollection';
 import * as RxSchema from './RxSchema';
 import * as DatabaseSchemas from './Database.schemas';
 import * as RxChangeEvent from './RxChangeEvent';
-import * as RxDatabaseLeaderElector from './RxDatabaseLeaderElector';
+import * as LeaderElector from './LeaderElector';
 import {
     default as PouchDB
 } from './PouchDB';
@@ -78,19 +78,23 @@ class RxDatabase {
         ]);
 
         // handle password-hash
-        const pwHashDoc = await this.administrationCollection.findOne({
-            key: 'pwHash'
-        }).exec();
+        let pwHashDoc = null;
+        try {
+            pwHashDoc = await this.administrationCollection
+                .pouch.get('_local/pwHash');
+        } catch (e) {}
+
         if (!pwHashDoc && this.password) {
             try {
-                await this.administrationCollection.insert({
-                    key: 'pwHash',
+                await this.administrationCollection.pouch.put({
+                    _id: '_local/pwHash',
                     value: util.hash(this.password)
                 });
             } catch (e) {}
         }
-        if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.get('value'))
+        if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)
             throw new Error('another instance on this adapter has a different password');
+
 
         if (this.multiInstance) {
 
@@ -113,7 +117,7 @@ class RxDatabase {
         }
 
         // leader elector
-        this.leaderElector = await RxDatabaseLeaderElector.create(this);
+        this.leaderElector = await LeaderElector.create(this);
     }
 
     get isLeader() {
