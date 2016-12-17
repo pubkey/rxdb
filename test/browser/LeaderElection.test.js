@@ -2,33 +2,21 @@ import assert from 'assert';
 import {
     default as randomToken
 } from 'random-token';
-import {
-    default as memdown
-} from 'memdown';
-import * as _ from 'lodash';
+
+import * as RxDB from '../../dist/lib/index';
+import * as util from '../../dist/lib/util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/RxDatabase';
-import * as RxSchema from '../../dist/lib/RxSchema';
-import * as RxCollection from '../../dist/lib/RxCollection';
-import * as util from '../../dist/lib/util';
-import * as LeaderElector from '../../dist/lib/LeaderElector.js';
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('LeaderElection.test.js', () => {
-
     describe('leaderObject', () => {
         it('should not have a leaderObject', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const db = c.database;
             await util.assertThrowsAsync(
-                () => db.administrationCollection.pouch.get(LeaderElector.documentID),
+                () => db.administrationCollection.pouch.get('leader'),
                 Error
             );
         });
@@ -38,10 +26,10 @@ describe('LeaderElection.test.js', () => {
             const obj = await leaderElector.getLeaderObject();
             delete obj._rev;
             assert.deepEqual(obj, leaderElector.createLeaderObject());
-            assert.equal(obj._id, LeaderElector.documentID);
+            assert.equal(obj._id, 'leader');
 
             // make sure its also in db
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
             delete dbObj._rev;
             assert.deepEqual(obj, dbObj);
         });
@@ -51,7 +39,7 @@ describe('LeaderElection.test.js', () => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.leaderSignal();
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
             assert.equal(dbObj.is, leaderElector.id);
             assert.equal(dbObj.apply, leaderElector.id);
             assert.ok(dbObj.t > new Date().getTime() - 1000);
@@ -62,17 +50,17 @@ describe('LeaderElection.test.js', () => {
             const is = await leaderElector.beLeader();
             assert.ok(is);
 
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
             assert.equal(dbObj.is, leaderElector.id);
         });
         it('should signal after time', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
             const t = dbObj.t;
             await util.promiseWait(leaderElector.signalTime * 2);
-            const dbObj2 = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj2 = await c.database.administrationCollection.pouch.get('leader');
             assert.ok(dbObj2.t > t);
         });
     });
@@ -110,7 +98,7 @@ describe('LeaderElection.test.js', () => {
             const is = await leaderElector.die();
             assert.ok(is);
 
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database.administrationCollection.pouch.get('leader');
             assert.equal(dbObj.t, 0);
         });
         it('other instance applies on death of leader', async() => {

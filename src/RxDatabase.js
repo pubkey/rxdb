@@ -7,6 +7,7 @@ import * as RxCollection from './RxCollection';
 import * as RxSchema from './RxSchema';
 import * as DatabaseSchemas from './Database.schemas';
 import * as RxChangeEvent from './RxChangeEvent';
+import * as Socket from './Socket';
 import * as LeaderElector from './LeaderElector';
 import {
     default as PouchDB
@@ -34,15 +35,9 @@ class RxDatabase {
         this.collections = {};
 
         // rx
-        this.pull$Count = 0;
         this.subject = new util.Rx.Subject();
         this.observable$ = this.subject.asObservable()
             .filter(cEvent => cEvent.constructor.name == 'RxChangeEvent');
-
-        this.isPulling = false;
-        this.lastPull = new Date().getTime();
-        this.recievedEvents = {};
-        this.autoPull$;
     }
 
     /**
@@ -64,17 +59,7 @@ class RxDatabase {
             // create collections-collection
             RxCollection
             .create(this, '_collections', DatabaseSchemas.collections)
-            .then(col => this.collectionsCollection = col),
-            // create socket-collection
-            RxCollection
-            .create(
-                this,
-                '_socket',
-                DatabaseSchemas.socket, {
-                    auto_compaction: true,
-                    revs_limit: 1
-                })
-            .then(col => this.socketCollection = col)
+            .then(col => this.collectionsCollection = col)
         ]);
 
         // validate/insert password-hash
@@ -97,23 +82,11 @@ class RxDatabase {
         }
 
         if (this.multiInstance) {
+            // socket
+            this.socket = await Socket.create(this);
 
-            let pullTime = 200;
-
-            // BroadcastChannel
-            if (util.hasBroadcastChannel()) {
-                pullTime = 3000;
-                this.bc$ = new BroadcastChannel('RxDB:' + this.prefix);
-                this.bc$.onmessage = (msg) => {
-                    if (msg.data != this.token) this.$pull();
-                };
-            }
-
-            // pull on intervall
-            this.autoPull$ = util.Rx.Observable
-                .interval(pullTime) // TODO evaluate pullTime value or make it settable
-                .subscribe(x => this.$pull());
-            this.subs.push(this.autoPull$);
+            //TODO only subscribe when sth is listening to the event-chain
+            this.socket.messages$.subscribe(cE => this.$emit(cE));
         }
 
         // leader elector
@@ -130,41 +103,30 @@ class RxDatabase {
     }
 
     async writeToSocket(changeEvent) {
-        const socketDoc = changeEvent.toJSON();
-        delete socketDoc.db;
-        if (socketDoc.v) {
-            if (this.password) socketDoc.v = this._encrypt(socketDoc.v);
-            else socketDoc.v = JSON.stringify(socketDoc.v);
+        if (
+            this.multiInstance &&
+            changeEvent.data.it != this.token &&
+            !changeEvent.isIntern() &&
+            this.socket
+        ) {
+            await this.socket.write(changeEvent);
+            return true;
         }
-        await this.socketCollection.insert(socketDoc);
-        this.bc$ && this.bc$.postMessage(this.token);
-
-        return true;
+        return false;
     }
 
+    /**
+     * throw a new event into the event-cicle
+     */
     async $emit(changeEvent) {
         if (!changeEvent) return;
 
         // throw in own cycle
         this.subject.next(changeEvent);
 
-        // write to socket
-        if (
-            this.multiInstance &&
-            !changeEvent.isIntern() &&
-            changeEvent.data.it == this.token
-        ) {
+        // write to socket if event was created by self
+        if (changeEvent.data.it == this.token)
             this.writeToSocket(changeEvent);
-
-            /**
-             * check if the cleanup of _socket should be run
-             * this is decided with the hash to prevent that 2 instances
-             * cleanup at the same time (not prevent but make more unlikely)
-             */
-            const decideHash = util.fastUnsecureHash(this.token + changeEvent.hash());
-            const decidedVal = decideHash % 10;
-            if (decidedVal == 0) this._cleanSocket();
-        }
     }
 
 
@@ -175,91 +137,6 @@ class RxDatabase {
         return this.observable$;
     }
 
-
-    _cleanSocket_running = false;
-    async _cleanSocket() {
-        if (this._cleanSocket_running) return;
-        this._cleanSocket_running = true;
-
-        const maxTime = new Date().getTime() - 1200;
-        const socketDocs = await this.socketCollection.find({
-            t: {
-                $lt: maxTime
-            }
-        }).exec();
-        await Promise.all(socketDocs.map(doc => doc.remove()));
-
-        this._cleanSocket_running = false;
-    }
-
-
-    /**
-     * triggers the grabbing of new events from other instances
-     * from the socket
-     */
-    async $pull() {
-        this.pull$Count++;
-        if (!this.subject || !this.socketCollection) return;
-
-        console.log('$pull()');
-
-        if (this.isPulling) {
-            /**
-             * if pull is called again while running,
-             * it can happen that the change wont be noticed until the next
-             * pull-cycle. This will ensure than in this case pull$ is called again
-             */
-            this._repull = true;
-            return;
-        }
-        this.isPulling = true;
-
-        const minTime = this.lastPull - 50; // TODO evaluate this value (50)
-
-        await this.socketCollection
-            .find({
-                it: {
-                    $ne: this.token
-                },
-                t: {
-                    $gt: minTime
-                }
-            }).exec()
-            // sort docs by timestamp
-            .then(docs => docs.sort(function(a, b) {
-                if (a.data.t > b.data.t) return 1;
-                return -1;
-            }))
-            .then(eventDocs => {
-                eventDocs
-                    .map(doc => RxChangeEvent.fromJSON(doc.data))
-                    // make sure the same event is not emitted twice
-                    .filter(cE => {
-                        if (this.recievedEvents[cE.hash()]) return false;
-                        return this.recievedEvents[cE.hash()] = new Date().getTime();
-                    })
-                    // prevent memory leak of this.recievedEvents
-                    .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash()], 20 * 1000))
-                    // decrypt if data.v is encrypted
-                    .map(cE => {
-                        if (cE.data.v) {
-                            if (this.password) cE.data.v = this._decrypt(cE.data.v);
-                            else cE.data.v = JSON.parse(cE.data.v);
-                        }
-                        return cE;
-                    })
-                    .forEach(cE => this.$emit(cE));
-            });
-
-        this.lastPull = new Date().getTime();
-        this.isPulling = false;
-
-        if (this._repull) {
-            this._repull = false;
-            this.$pull();
-        }
-        return true;
-    }
 
     _encrypt(value) {
         if (!this.password) throw new Error('no passord given');
@@ -373,8 +250,8 @@ class RxDatabase {
     async destroy() {
         if (this.destroyed) return;
         this.destroyed = true;
+        this.socket && this.socket.destroy();
         await this.leaderElector.destroy();
-        if (this.bc$) this.bc$.close();
         this.subs.map(sub => sub.unsubscribe());
         Object.keys(this.collections)
             .map(key => this.collections[key])

@@ -10,7 +10,7 @@ import * as util from '../../dist/lib/util';
 
 import * as RxDB from '../../dist/lib/index';
 
-const dbLifetime = 1000 * 3; // db.destroy() will be called after this time
+const dbLifetime = 1000 * 2; // db.destroy() will be called after this time
 
 export async function create(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));

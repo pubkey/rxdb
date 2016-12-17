@@ -308,6 +308,7 @@ describe('Primary.test.js', () => {
                     assert.equal(docs.length, 1);
                 });
                 it('get new field-value when other db changes', async() => {
+                    console.log('..........');
                     const name = randomToken(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);

@@ -36,6 +36,7 @@ describe('PouchDB-integration.test.js', () => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-leveldb'));
             const db = await RxDB.create(randomToken(10), memdown);
             assert.equal(db.constructor.name, 'RxDatabase');
+            db.destroy();
         });
     });
 
@@ -50,6 +51,7 @@ describe('PouchDB-integration.test.js', () => {
             RxDB.plugin(require('pouchdb-adapter-memory'));
             const db = await RxDB.create(randomToken(10), 'memory');
             assert.equal(db.constructor.name, 'RxDatabase');
+            db.destroy();
         });
     });
 
@@ -60,6 +62,40 @@ describe('PouchDB-integration.test.js', () => {
                 () => RxDB.create(randomToken(10), 'localstorage'),
                 Error
             );
+        });
+    });
+
+
+    describe('BUGS: pouchdb', () => {
+        it('_local documents should not be cached by pouchdb', async() => {
+            const name = randomToken(10);
+            const _id = '_local/foobar';
+            const createPouch = () => {
+                return new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }, {
+                        auto_compaction: true,
+                        revs_limit: 1
+                    }
+                );
+            };
+            const pouch1 = createPouch();
+            const pouch2 = createPouch();
+            await util.assertThrowsAsync(
+                () => pouch2.get(_id),
+                Error
+            );
+            // insert
+            await pouch1.put({
+                _id,
+                value: 'foo'
+            });
+            const doc2 = await pouch2.get(_id);
+            assert.equal(doc2.value, 'foo');
+
+            pouch1.destroy();
+            pouch2.destroy();
         });
     });
 });

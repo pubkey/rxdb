@@ -10,7 +10,8 @@ module.exports = function(config) {
             '../test_tmp/browser/Adapters.test.js',
             '../test_tmp/browser/Insert.test.js',
             '../test_tmp/browser/Observe.test.js',
-            '../test_tmp/browser/CrossInstance.test.js'
+            '../test_tmp/browser/CrossInstance.test.js',
+            '../test_tmp/browser/LeaderElection.test.js'
         ],
 
         port: 9876,

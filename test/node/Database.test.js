@@ -27,27 +27,34 @@ describe('RxDatabase.test.js', () => {
             it('memdown', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 assert.equal(db.constructor.name, 'RxDatabase');
+                db.destroy();
             });
             it('leveldown', async() => {
                 if (path.join('..', 'x') != '..\\x') { // leveldown does not work on windows
                     const db = await RxDatabase.create('../test_tmp/' + randomToken(10), leveldown);
                     assert.equal(db.constructor.name, 'RxDatabase');
+                    db.destroy();
                 }
             });
             it('with password', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown, randomToken(12));
                 assert.equal(db.constructor.name, 'RxDatabase');
+                db.destroy();
             });
             it('2 instances on same adapter', async() => {
                 const dbname = randomToken(10);
                 const db = await RxDatabase.create(dbname, memdown);
                 const db2 = await RxDatabase.create(dbname, memdown);
+                db.destroy();
+                db2.destroy();
             });
             it('2 password-instances on same adapter', async() => {
                 const dbname = randomToken(10);
                 const password = randomToken(12);
                 const db = await RxDatabase.create(dbname, memdown, password);
                 const db2 = await RxDatabase.create(dbname, memdown, password);
+                db.destroy();
+                db2.destroy();
             });
         });
         describe('negative', () => {
@@ -84,6 +91,9 @@ describe('RxDatabase.test.js', () => {
                 const db2 = await RxDatabase.create(dbname, memdown, pw);
                 const doc2 = await db.administrationCollection.pouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
+
+                db.destroy();
+                db2.destroy();
             });
             it('prevent 2 instances with different passwords on same adapter', async() => {
                 const dbname = randomToken(10);
@@ -92,6 +102,7 @@ describe('RxDatabase.test.js', () => {
                     () => RxDatabase.create(dbname, memdown, randomToken(10)),
                     Error
                 );
+                db.destroy();
             });
         });
     });
@@ -101,22 +112,26 @@ describe('RxDatabase.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const collection = await db.collection('human0', schemas.human);
                 assert.equal(collection.constructor.name, 'RxCollection');
+                db.destroy();
             });
             it('use Schema-Object', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxDatabase.RxSchema.create(schemas.human);
                 const collection = await db.collection('human1', schema);
                 assert.equal(collection.constructor.name, 'RxCollection');
+                db.destroy();
             });
             it('use encrypted db', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown, randomToken(12));
                 const collection = await db.collection('humanEnc', schemas.encryptedHuman);
                 assert.equal(collection.constructor.name, 'RxCollection');
+                db.destroy();
             });
             it('call 2 times with same params', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 await db.collection('human2', schemas.human);
                 await db.collection('human2', schemas.human);
+                db.destroy();
             });
 
             it('call to times when one is encrypted', async() => {
@@ -125,6 +140,9 @@ describe('RxDatabase.test.js', () => {
                 await db1.collection('human3', schemas.human);
                 await db2.collection('human4', schemas.encryptedHuman);
                 await db1.collection('human3', schemas.human);
+
+                db1.destroy();
+                db2.destroy();
             });
             it('create 2 times on same adapter', async() => {
                 const dbname = randomToken(10);
@@ -133,6 +151,8 @@ describe('RxDatabase.test.js', () => {
                 const db2 = await RxDatabase.create(dbname, memdown);
                 await db1.collection(collectionName, schemas.human);
                 await db2.collection(collectionName, schemas.human);
+                db1.destroy();
+                db2.destroy();
             });
         });
         describe('negative', () => {
@@ -142,6 +162,7 @@ describe('RxDatabase.test.js', () => {
                     () => db.collection('human6', schemas.nostringIndex),
                     Error
                 );
+                db.destroy();
             });
 
             it('crypt-schema without db-password', async() => {
@@ -150,6 +171,7 @@ describe('RxDatabase.test.js', () => {
                     () => db.collection('human7', schemas.encryptedHuman),
                     Error
                 );
+                db.destroy();
             });
 
             it('2 different schemas on same collection', async() => {
@@ -159,6 +181,7 @@ describe('RxDatabase.test.js', () => {
                     () => db.collection('human8', schemas.bigHuman),
                     Error
                 );
+                db.destroy();
             });
             it('not allow collectionNames starting with lodash', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
@@ -166,6 +189,7 @@ describe('RxDatabase.test.js', () => {
                     () => db.collection('_test', schemas.human),
                     Error
                 );
+                db.destroy();
             });
             it('create 2 times on same adapter with different schema', async() => {
                 const dbname = randomToken(10);
@@ -177,6 +201,8 @@ describe('RxDatabase.test.js', () => {
                     () => db2.collection(collectionName, schemas.bigHuman),
                     Error
                 );
+                db1.destroy();
+                db2.destroy();
             });
         });
     });
@@ -188,6 +214,7 @@ describe('RxDatabase.test.js', () => {
                 await db.collection(randomToken(10), schemas.human);
                 db.destroy();
                 assert.equal(db.destroyed, true);
+                db.destroy();
             });
             it('should not crash if destroy is called twice', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
