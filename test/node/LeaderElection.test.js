@@ -15,7 +15,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
-import * as LeaderElector from '../../dist/lib/LeaderElector.js';
+import * as LeaderElector from '../../dist/lib/LeaderElector';
 
 process.on('unhandledRejection', function(err) {
     throw err;
@@ -54,8 +54,8 @@ describe('LeaderElection.test.js', () => {
             const leaderElector = c.database.leaderElector;
             await leaderElector.leaderSignal();
             const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
-            assert.equal(dbObj.is, leaderElector.id);
-            assert.equal(dbObj.apply, leaderElector.id);
+            assert.equal(dbObj.is, leaderElector.token);
+            assert.equal(dbObj.apply, leaderElector.token);
             assert.ok(dbObj.t > new Date().getTime() - 1000);
             c.database.destroy();
         });
@@ -66,7 +66,7 @@ describe('LeaderElection.test.js', () => {
             assert.ok(is);
 
             const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
-            assert.equal(dbObj.is, leaderElector.id);
+            assert.equal(dbObj.is, leaderElector.token);
             c.database.destroy();
         });
         it('should signal after time', async() => {
@@ -75,7 +75,7 @@ describe('LeaderElection.test.js', () => {
             await leaderElector.beLeader();
             const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
             const t = dbObj.t;
-            await util.promiseWait(leaderElector.signalTime * 2);
+            await util.promiseWait(LeaderElector.SIGNAL_TIME * 2);
             const dbObj2 = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
             assert.ok(dbObj2.t > t);
             c.database.destroy();

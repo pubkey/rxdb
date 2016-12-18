@@ -15,6 +15,7 @@ describe('CrossInstance.test.js', () => {
         it('create a multiInstance database', async() => {
             const db = await RxDB.create(randomToken(10), 'memory', null, true);
             assert.equal(db.constructor.name, 'RxDatabase');
+            db.destroy();
         });
         it('create a 2 multiInstance databases', async() => {
             const name = randomToken(10);
@@ -22,6 +23,8 @@ describe('CrossInstance.test.js', () => {
             const db2 = await RxDB.create(name, 'memory', null, true);
             assert.equal(db.constructor.name, 'RxDatabase');
             assert.equal(db2.constructor.name, 'RxDatabase');
+            db.destroy();
+            db2.destroy();
         });
     });
 
@@ -36,8 +39,10 @@ describe('CrossInstance.test.js', () => {
                 assert.equal(cEvent.constructor.name, 'RxChangeEvent');
             });
             await c1.insert(schemaObjects.human());
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             assert.ok(recieved > 0);
+            c1.database.destroy();
+            c2.database.destroy();
         });
     });
 
@@ -63,10 +68,12 @@ describe('CrossInstance.test.js', () => {
 
             doc1.set('firstName', 'foobar');
             await doc1.save();
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             await util.promiseWait(100);
 
             assert.equal(firstNameAfter, 'foobar');
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('should work with encrypted fields', async() => {
             const name = randomToken(10);
@@ -97,8 +104,10 @@ describe('CrossInstance.test.js', () => {
 
             doc1.set('secret', 'foobar');
             await doc1.save();
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             assert.equal(secretAfter, 'foobar');
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('should work with nested encrypted fields', async() => {
             const name = randomToken(10);
@@ -132,12 +141,13 @@ describe('CrossInstance.test.js', () => {
                 subname: 'bar'
             });
             await doc1.save();
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'
             });
+            c1.database.destroy();
+            c2.database.destroy();
         });
     });
-
 });

@@ -52,7 +52,7 @@ class RxDatabase {
                 this,
                 '_admin',
                 DatabaseSchemas.administration, {
-                    auto_compaction: true,
+                    auto_compaction: false, // no compaction because this only stores local documents
                     revs_limit: 1
                 })
             .then(col => this.administrationCollection = col),

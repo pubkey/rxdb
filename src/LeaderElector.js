@@ -7,6 +7,9 @@ import * as unload from 'unload';
  */
 
 const documentID = '_local/leader';
+const SIGNAL_TIME = 200; // TODO evaluate this time
+// const ELECTION_CHANNEL =X
+
 
 class LeaderElector {
 
@@ -18,15 +21,13 @@ class LeaderElector {
         this.unloads = [];
 
         this.database = database;
-        this.id = this.database.token;
+        this.token = this.database.token;
 
         this.isLeader = false;
         this.becomeLeader$ = new util.Rx.BehaviorSubject(this.isLeader);
         this.isDead = false;
         this.isApplying = false;
         this.isWaiting = false;
-
-        this.signalTime = 200; // TODO evaluate this time
     }
 
     async prepare() {}
@@ -70,24 +71,24 @@ class LeaderElector {
 
         try {
             let leaderObj = await this.getLeaderObject();
-            const minTime = new Date().getTime() - this.signalTime * 10;
+            const minTime = new Date().getTime() - SIGNAL_TIME * 2;
 
             if (leaderObj.t >= minTime)
                 throw new Error('someone else is applying/leader');
             console.log('applyOnce()1');
             // write applying to db
-            leaderObj.apply = this.id;
+            leaderObj.apply = this.token;
             leaderObj.t = new Date().getTime();
             await this.setLeaderObject(leaderObj);
             console.log('applyOnce()2');
 
             // w8 one cycle
-            await util.promiseWait(this.signalTime * 0.5);
+            await util.promiseWait(SIGNAL_TIME * 0.5);
             console.log('applyOnce()3');
 
             // check if someone overwrote it
             leaderObj = await this.getLeaderObject();
-            if (leaderObj.apply != this.id)
+            if (leaderObj.apply != this.token)
                 throw new Error('someone else overwrote apply');
             console.log('applyOnce()4');
 
@@ -116,8 +117,8 @@ class LeaderElector {
 
             try {
                 const leaderObj = await this.getLeaderObject();
-                leaderObj.is = this.id;
-                leaderObj.apply = this.id;
+                leaderObj.is = this.token;
+                leaderObj.apply = this.token;
                 leaderObj.t = new Date().getTime();
                 await this.setLeaderObject(leaderObj);
                 success = true;
@@ -147,7 +148,7 @@ class LeaderElector {
 
         // signal leadership on interval
         this.signalLeadership = util.Rx.Observable
-            .interval(this.signalTime)
+            .interval(SIGNAL_TIME)
             .subscribe(() => {
                 this.leaderSignal();
             });
@@ -193,7 +194,7 @@ class LeaderElector {
 
             // apply on interval
             this.applyInterval = util.Rx.Observable
-                .interval(this.signalTime * 2)
+                .interval(SIGNAL_TIME * 2)
                 .subscribe(x => this.applyOnce());
             this.subs.push(this.applyInterval);
 
@@ -225,5 +226,6 @@ export async function create(database) {
 }
 
 export {
-    documentID as documentID
+    documentID as documentID,
+    SIGNAL_TIME as SIGNAL_TIME
 };

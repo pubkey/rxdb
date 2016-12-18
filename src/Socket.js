@@ -32,7 +32,7 @@ class Socket {
             this.database,
             '_socket',
             DatabaseSchemas.socket, {
-                auto_compaction: true,
+                auto_compaction: false, // this is false because its done manually at .pull()
                 revs_limit: 1
             });
 
@@ -141,9 +141,11 @@ class Socket {
 
         // delete old documents
         const maxAge = new Date().getTime() - EVENT_TTL;
-        docs
+        const delDocs = docs
             .filter(doc => doc.t < maxAge)
-            .forEach(doc => this.deleteDoc(doc));
+            .map(doc => this.deleteDoc(doc));
+        if (delDocs.length > 0)
+            await this.collection.pouch.compact();
 
 
         this.lastPull = new Date().getTime();
