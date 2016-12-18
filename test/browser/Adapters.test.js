@@ -11,7 +11,7 @@ import * as util from '../../dist/lib/util';
 
 console.dir = (d) => {
     console.log(JSON.stringify(d));
-}
+};
 
 describe('Adapters.test.js', () => {
     describe('memory', () => {
