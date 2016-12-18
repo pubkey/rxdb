@@ -99,7 +99,7 @@ class RxDatabase {
     }
     async waitForLeadership() {
         if (!this.multiInstance) return true;
-        await this.leaderElector.waitForLeadership();
+        return this.leaderElector.waitForLeadership();
     }
 
     async writeToSocket(changeEvent) {

@@ -295,21 +295,13 @@ describe('LeaderElection.test.js', () => {
             assert.equal(count, 1);
 
             const leaderToken = dbs.filter(db => !!db.leaderElector.isLeader)[0].token;
-            console.log('leader: ' + leaderToken);
 
-            console.log('instances:');
-            dbs.forEach(db => console.log(db.token + ' | ' + db.isLeader));
-
-            console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
             // let leader die
             await dbs
                 .filter(db => db.isLeader)[0]
                 .leaderElector.die();
 
             await util.promiseWait(3500);
-
-            console.log('instances:');
-            dbs.forEach(db => console.log(db.token + ' | ' + db.isLeader));
 
             assert.equal(count, 2);
             await Promise.all(dbs.map(db => db.destroy()));

@@ -22,7 +22,9 @@ class LeaderElector {
         this.token = this.database.token;
 
         this.isLeader = false;
-        this.becomeLeader$ = new util.Rx.Subject();
+        this.becomeLeader$ = new util.Rx.BehaviorSubject({
+            isLeader: false
+        });
 
         this.isDead = false;
         this.isApplying = false;
@@ -69,8 +71,6 @@ class LeaderElector {
         if (this.isApplying) return false;
         this.isApplying = true;
 
-        console.log('applyOnce(' + this.electionChannel + ')');
-
         const elected = await this['apply_' + this.electionChannel]();
 
         if (elected) {
@@ -78,7 +78,6 @@ class LeaderElector {
             await this.beLeader();
         }
 
-        console.log('applyOnce():done: ' + elected);
         this.isApplying = false;
         return true;
     }
@@ -219,12 +218,12 @@ class LeaderElector {
         if (this.isDead) return false;
         if (this.isLeader) return false;
         this.isLeader = true;
-        this.becomeLeader$.next(true);
 
-        console.log('beLEADER:: ' + this.token);
+        this.becomeLeader$.next({
+            isLeader: true
+        });
 
         this.applyInterval && this.applyInterval.unsubscribe();
-
         await this.leaderSignal();
 
         // signal leadership on interval
@@ -248,7 +247,6 @@ class LeaderElector {
         this.unloads.push(
             unload.add(this.die)
         );
-
         return true;
     }
 
@@ -311,18 +309,17 @@ class LeaderElector {
                     break;
             }
         }
-
         return new Promise(res => {
-            console.log('................');
-
-            this.becomeSub = this.becomeLeader$
-                .filter(i => i == true)
-                .do(a => console.log('dddddddd: ' + this.token + ' | ' + a))
-                .subscribe(i => res());
-            this.subs.push(this.becomeSub);
+            const sub = this.becomeLeader$
+                .asObservable()
+                .filter(i => i.isLeader == true)
+                .first()
+                .subscribe(i => {
+                    sub.unsubscribe();
+                    res();
+                });
         });
     }
-
 
     async destroy() {
         this.subs.map(sub => sub.unsubscribe());
@@ -331,7 +328,6 @@ class LeaderElector {
         this.bc && this.bc.destroy();
     }
 }
-
 
 export async function create(database) {
     const elector = new LeaderElector(database);
