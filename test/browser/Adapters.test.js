@@ -9,6 +9,10 @@ import {
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 
+console.dir = (d) => {
+    console.log(JSON.stringify(d));
+}
+
 describe('Adapters.test.js', () => {
     describe('memory', () => {
         describe('negative', () => {

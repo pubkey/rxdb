@@ -170,23 +170,6 @@ export function promiseWaitResolveable(ms = 0) {
 
 
 
-/**
- * Detect if client can use BroadcastChannel
- * @link https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
- * @return {Boolean}
- */
-export function hasBroadcastChannel() {
-    if (
-        typeof window === 'object' &&
-        window.BroadcastChannel &&
-        typeof window.BroadcastChannel === 'function' &&
-        typeof window.BroadcastChannel.prototype.postMessage === 'function' &&
-        typeof window.BroadcastChannel.prototype.close === 'function'
-    ) return true;
-    return false;
-}
-
-
 export function filledArray(size = 0) {
     const ret = [];
     while (ret.length < size)

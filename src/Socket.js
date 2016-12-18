@@ -1,10 +1,11 @@
 import * as DatabaseSchemas from './Database.schemas';
 import * as RxCollection from './RxCollection';
 import * as RxChangeEvent from './RxChangeEvent';
+import * as RxBroadcastChannel from './RxBroadcastChannel';
 import * as util from './util';
 
 const EVENT_TTL = 5000; // after this age, events will be deleted
-const PULL_TIME = util.hasBroadcastChannel() ? EVENT_TTL / 2 : 200;
+const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
 class Socket {
 
@@ -19,7 +20,7 @@ class Socket {
         this.lastPull = new Date().getTime();
         this.recievedEvents = {};
 
-        this.bc$; // BroadcastChannel
+        this.bc = RxBroadcastChannel.create(this.database, 'socket');
         this.messages$ = new util.Rx.Subject();
     }
     get $() {
@@ -36,13 +37,13 @@ class Socket {
                 revs_limit: 1
             });
 
-        // BroadcastChannel
-        if (util.hasBroadcastChannel()) {
-            this.bc$ = new BroadcastChannel('RxDB_socket:' + this.database.prefix);
-            this.bc$.onmessage = (msg) => {
-                const data = JSON.parse(msg.data);
-                if (data.type == '_socket.pull' && data.it != this.token) this.pull();
-            };
+        // pull on BroadcastChannel-message
+        if (this.bc) {
+            this.subs.push(
+                this.bc.$
+                .filter(msg => msg.type == 'pull')
+                .subscribe(msg => this.pull())
+            );
         }
 
         // pull on intervall
@@ -72,10 +73,7 @@ class Socket {
         //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
         socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;
         await this.collection.pouch.put(socketDoc);
-        this.bc$ && this.bc$.postMessage(JSON.stringify({
-            type: '_socket.pull',
-            it: this.token
-        }));
+        this.bc && await this.bc.write('pull');
         return true;
     }
 
@@ -161,7 +159,7 @@ class Socket {
 
     destroy() {
         this.subs.map(sub => sub.unsubscribe());
-        if (this.bc$) this.bc$.close();
+        if (this.bc) this.bc.destroy();
         this.collection.destroy();
     }
 
