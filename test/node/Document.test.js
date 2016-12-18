@@ -20,6 +20,7 @@ describe('Document.test.js', () => {
                 const doc = await c.findOne().exec();
                 const value = doc.get('passportId');
                 assert.equal(typeof value, 'string');
+                c.database.destroy();
             });
             it('get a nested value', async() => {
                 const c = await humansCollection.createNested(5);
@@ -28,12 +29,14 @@ describe('Document.test.js', () => {
                 assert.equal(typeof value, 'string');
                 const value2 = doc.get('mainSkill.level');
                 assert.equal(typeof value2, 'number');
+                c.database.destroy();
             });
             it('get null on undefined value', async() => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const value = doc.get('foobar');
                 assert.equal(value, null);
+                c.database.destroy();
             });
         });
         describe('negative', () => {
@@ -47,6 +50,7 @@ describe('Document.test.js', () => {
                     () => doc.get(path),
                     Error
                 );
+                c.database.destroy();
             });
         });
     });
@@ -59,6 +63,7 @@ describe('Document.test.js', () => {
                 doc.set('passportId', val);
                 assert.equal(doc.data.passportId, val);
                 assert.equal(doc.get('passportId'), val);
+                c.database.destroy();
             });
             it('set object', async() => {
                 const c = await humansCollection.createNested(5);
@@ -70,6 +75,7 @@ describe('Document.test.js', () => {
                 doc.set('mainSkill', val);
                 assert.equal(doc.data.mainSkill, val);
                 assert.equal(doc.get('mainSkill'), val);
+                c.database.destroy();
             });
             it('set nested', async() => {
                 const c = await humansCollection.createNested(5);
@@ -78,6 +84,7 @@ describe('Document.test.js', () => {
                 doc.set('mainSkill.name', val);
                 assert.equal(doc.data.mainSkill.name, val);
                 assert.equal(doc.get('mainSkill.name'), val);
+                c.database.destroy();
             });
         });
         describe('negative', () => {
@@ -91,6 +98,7 @@ describe('Document.test.js', () => {
                     () => doc.set(path, 'foo'),
                     Error
                 );
+                c.database.destroy();
             });
             it('throw if not validates schema', async() => {
                 const c = await humansCollection.createNested(5);
@@ -102,6 +110,7 @@ describe('Document.test.js', () => {
                     () => doc.set('passportId', val),
                     Error
                 );
+                c.database.destroy();
             });
             it('throw if not validates schema (additional property)', async() => {
                 const c = await humansCollection.createNested(5);
@@ -111,6 +120,7 @@ describe('Document.test.js', () => {
                     () => doc.set('newone', val),
                     Error
                 );
+                c.database.destroy();
             });
             it('cannot modifiy _id', async() => {
                 const c = await humansCollection.createNested(5);
@@ -120,6 +130,7 @@ describe('Document.test.js', () => {
                     () => doc.set('_id', val),
                     Error
                 );
+                c.database.destroy();
             });
             it('cannot set a nested key if root-path is not given', async() => {
                 const c = await humansCollection.createNested(5);
@@ -132,6 +143,7 @@ describe('Document.test.js', () => {
                     () => doc.set('mainSkill.name', 'foobar'),
                     Error
                 );
+                c.database.destroy();
             });
         });
     });
@@ -145,6 +157,7 @@ describe('Document.test.js', () => {
                 await doc.save();
                 const docNew = await c.findOne().exec();
                 assert.equal(docNew.get('passportId'), val);
+                c.database.destroy();
             });
             it('save object', async() => {
                 const c = await humansCollection.createNested(10);
@@ -157,6 +170,7 @@ describe('Document.test.js', () => {
                 await doc.save();
                 const doc2 = await c.findOne().exec();
                 assert.deepEqual(doc2.get('mainSkill'), val);
+                c.database.destroy();
             });
             it('save twice', async() => {
                 const c = await humansCollection.createNested(5);
@@ -171,6 +185,7 @@ describe('Document.test.js', () => {
                 const docNew2 = await c.findOne().exec();
                 docNew2.set('passportId', val2);
                 assert.equal(docNew2.get('passportId'), val2);
+                c.database.destroy();
             });
             it('save same Doc twice', async() => {
                 const c = await humansCollection.createNested(5);
@@ -182,6 +197,7 @@ describe('Document.test.js', () => {
                 doc.set('passportId', val2);
                 await doc.save();
                 assert.equal(doc.get('passportId'), val2);
+                c.database.destroy();
             });
             it('be faster on nonchanged-save (string)', async() => {
                 const amount = 50;
@@ -209,6 +225,7 @@ describe('Document.test.js', () => {
                 }
                 let duration2 = new Date().getTime() - start2;
                 assert.ok(Math.round(duration / 2) > duration2);
+                c.database.destroy();
             });
             it('be faster on nonchanged-save (object)', async() => {
                 const amount = 50;
@@ -252,6 +269,7 @@ describe('Document.test.js', () => {
                     level: 5
                 };
                 assert.ok((duration / 5) > duration2);
+                c.database.destroy();
             });
             it('save one field while another field was not selected', async() => {
                 const c = await humansCollection.createNested(5);
@@ -277,6 +295,7 @@ describe('Document.test.js', () => {
                 assert.equal(sameDoc.get('passportId'), passportId);
                 assert.deepEqual(sameDoc.get('mainSkill'), mainSkill);
                 assert.equal(sameDoc.get('firstName'), newFirstName);
+                c.database.destroy();
             });
 
         });
@@ -293,6 +312,7 @@ describe('Document.test.js', () => {
                     () => doc_same.save(),
                     Error
                 );
+                c.database.destroy();
             });
 
             it('save deleted', async() => {
@@ -304,6 +324,7 @@ describe('Document.test.js', () => {
                     () => doc.save(),
                     Error
                 );
+                c.database.destroy();
             });
 
         });
@@ -323,6 +344,7 @@ describe('Document.test.js', () => {
                     if (doc.data.passportId == first.data.passportId)
                         throw new Error('still here after remove()');
                 });
+                c.database.destroy();
             });
             it('delete all in parrallel', async() => {
                 const c = await humansCollection.create(5);
@@ -332,6 +354,7 @@ describe('Document.test.js', () => {
                 await Promise.all(fns);
                 const docsAfter = await c.find().exec();
                 assert.equal(docsAfter.length, 0);
+                c.database.destroy();
             });
         });
         describe('negative', () => {
@@ -343,11 +366,8 @@ describe('Document.test.js', () => {
                     () => doc.remove(),
                     Error
                 );
+                c.database.destroy();
             });
         });
     });
-
-
-
-
 });

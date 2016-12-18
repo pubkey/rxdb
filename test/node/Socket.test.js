@@ -51,8 +51,10 @@ describe('Socket.test.js', () => {
     it('socket-observable should emit changeEvent on pull', async() => {
         const name = randomToken(10);
         const db = await RxDatabase.create(name, 'memory', null, true);
+        const db2 = await RxDatabase.create(name, 'memory', null, true);
+
         const socket1 = await Socket.create(db);
-        const socket2 = await Socket.create(db);
+        const socket2 = await Socket.create(db2);
 
         const events = [];
         socket2.messages$.subscribe(cE => events.push(cE));
@@ -64,12 +66,13 @@ describe('Socket.test.js', () => {
         assert.equal(events[0].data.op, 'test');
 
         db.destroy();
+        db2.destroy();
         socket1.destroy();
         socket2.destroy();
     });
 
 
-    it('cleanup should delete old events', async function() {
+    it('cleanup should delete old events (takes 5 seconds)', async function() {
         this.timeout(10 * 1000);
         const db = await RxDatabase.create(randomToken(10), 'memory', null, true);
         const socket = db.socket;

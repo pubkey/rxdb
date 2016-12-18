@@ -105,7 +105,6 @@ class RxDatabase {
     async writeToSocket(changeEvent) {
         if (
             this.multiInstance &&
-            changeEvent.data.it != this.token &&
             !changeEvent.isIntern() &&
             this.socket
         ) {

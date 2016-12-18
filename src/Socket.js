@@ -106,15 +106,14 @@ class Socket {
             return false;
         }
         this.isPulling = true;
-
         this.pullCount++;
-        console.log('Socket.pull()');
 
         const minTime = this.lastPull - 100; // TODO evaluate this value (100)
-
         const docs = await this.fetchDocs();
         docs
-            .filter(doc => doc.t > minTime) // do not get events older than minTime
+            .filter(doc => doc.it != this.token) // do not get events emitted by self
+            // do not get events older than minTime
+            .filter(doc => doc.t > minTime)
             // sort timestamp
             .sort((a, b) => {
                 if (a.t > b.t) return 1;
@@ -161,6 +160,7 @@ class Socket {
     destroy() {
         this.subs.map(sub => sub.unsubscribe());
         if (this.bc$) this.bc$.close();
+        this.collection.destroy();
     }
 
 }
