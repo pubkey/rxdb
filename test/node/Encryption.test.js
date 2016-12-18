@@ -64,6 +64,8 @@ describe('Encryption.test.js', () => {
                 assert.notEqual(value, crypted);
                 const decrypted = db._decrypt(crypted);
                 assert.equal(value, decrypted);
+
+                db.destroy();
             });
             it('should en/decrypt (object)', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
@@ -79,6 +81,7 @@ describe('Encryption.test.js', () => {
                 assert.notEqual(value, crypted);
                 const decrypted = db._decrypt(crypted);
                 assert.deepEqual(value, decrypted);
+                db.destroy();
             });
         });
         describe('negative', () => {
@@ -89,6 +92,7 @@ describe('Encryption.test.js', () => {
                     () => db._encrypt(value),
                     Error
                 );
+                db.destroy();
             });
         });
     });
@@ -102,6 +106,7 @@ describe('Encryption.test.js', () => {
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
                 assert.equal(agent.secret, secret);
+                c.database.destroy();
             });
             it('should insert one encrypted value (object)', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
@@ -111,6 +116,7 @@ describe('Encryption.test.js', () => {
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
                 assert.deepEqual(agent.secret, secret);
+                db.destroy();
             });
         });
         describe('negative', () => {
@@ -128,6 +134,7 @@ describe('Encryption.test.js', () => {
                     () => doc.set('secret.subname', randomToken(10)),
                     Error
                 );
+                db.destroy();
             });
         });
     });
@@ -148,6 +155,7 @@ describe('Encryption.test.js', () => {
                 await doc.save();
                 const docNew = await c.findOne().exec();
                 assert.equal(newSecret, docNew.get('secret'));
+                c.database.destroy();
             });
 
             it('should save one encrypted value (object)', async() => {
@@ -166,6 +174,7 @@ describe('Encryption.test.js', () => {
                 await doc.save();
                 const docNew = await c.findOne().exec();
                 assert.deepEqual(newSecret, docNew.get('secret'));
+                db.destroy();
             });
 
         });

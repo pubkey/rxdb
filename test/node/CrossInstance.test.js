@@ -62,6 +62,9 @@ describe('CrossInstance.test.js', () => {
                 await c1.insert(schemaObjects.human());
                 await db2.socket.pull();
                 assert.ok(recieved > 0);
+
+                db1.destroy();
+                db2.destroy();
             });
         });
         describe('negative', () => {
@@ -80,6 +83,8 @@ describe('CrossInstance.test.js', () => {
                 await db2.socket.pull();
                 await db2.socket.pull();
                 assert.equal(recieved, 1);
+                db1.destroy();
+                db2.destroy();
             });
         });
     });
@@ -96,6 +101,9 @@ describe('CrossInstance.test.js', () => {
             await c1.insert(schemaObjects.human());
             await c2.database.socket.pull();
             assert.ok(recieved > 0);
+
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('get no changes via pouchdb on different dbs', async() => {
             const name = randomToken(10);
@@ -112,6 +120,8 @@ describe('CrossInstance.test.js', () => {
             await c1.insert(schemaObjects.human());
             await util.promiseWait(50);
             assert.equal(got, null);
+            c1.database.destroy();
+            c2.database.destroy();
         });
     });
 
@@ -141,6 +151,8 @@ describe('CrossInstance.test.js', () => {
             await util.promiseWait(100);
 
             assert.equal(firstNameAfter, 'foobar');
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('should work with encrypted fields', async() => {
             const name = randomToken(10);
@@ -237,6 +249,8 @@ describe('CrossInstance.test.js', () => {
 
                 await waitPromise.promise;
                 assert.equal(recieved, 1);
+                c1.database.destroy();
+                c2.database.destroy();
             });
             it('should recieve 2 events', async() => {
                 const name = randomToken(10);
@@ -254,6 +268,8 @@ describe('CrossInstance.test.js', () => {
 
                 await waitPromise.promise;
                 assert.equal(recieved, 2);
+                c1.database.destroy();
+                c2.database.destroy();
             });
         });
     });
