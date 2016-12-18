@@ -31,6 +31,7 @@ describe('LeaderElection.test.js', () => {
                 () => db.administrationCollection.pouch.get(LeaderElector.documentID),
                 Error
             );
+            db.destroy();
         });
         it('should get an empty leaderObject', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
@@ -44,6 +45,7 @@ describe('LeaderElection.test.js', () => {
             const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
             delete dbObj._rev;
             assert.deepEqual(obj, dbObj);
+            c.database.destroy();
         });
     });
     describe('beLeader()', () => {
@@ -55,6 +57,7 @@ describe('LeaderElection.test.js', () => {
             assert.equal(dbObj.is, leaderElector.id);
             assert.equal(dbObj.apply, leaderElector.id);
             assert.ok(dbObj.t > new Date().getTime() - 1000);
+            c.database.destroy();
         });
         it('assing self to leader', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
@@ -64,6 +67,7 @@ describe('LeaderElection.test.js', () => {
 
             const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
             assert.equal(dbObj.is, leaderElector.id);
+            c.database.destroy();
         });
         it('should signal after time', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
@@ -74,6 +78,7 @@ describe('LeaderElection.test.js', () => {
             await util.promiseWait(leaderElector.signalTime * 2);
             const dbObj2 = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
             assert.ok(dbObj2.t > t);
+            c.database.destroy();
         });
     });
     describe('applyOnce()', () => {
@@ -82,12 +87,14 @@ describe('LeaderElection.test.js', () => {
             const leaderElector = c.database.leaderElector;
             const is = await leaderElector.applyOnce();
             assert.ok(is);
+            c.database.destroy();
         });
         it('should assing self to leader', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.applyOnce();
             assert.ok(leaderElector.isLeader);
+            c.database.destroy();
         });
         it('should not apply when other is leader', async() => {
             const name = randomToken(10);
@@ -99,6 +106,8 @@ describe('LeaderElection.test.js', () => {
             const leaderElector2 = c2.database.leaderElector;
             const is = await leaderElector.applyOnce();
             assert.equal(is, false);
+            c.database.destroy();
+            c2.database.destroy();
         });
     });
 
@@ -112,6 +121,7 @@ describe('LeaderElection.test.js', () => {
 
             const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
             assert.equal(dbObj.t, 0);
+            c.database.destroy();
         });
         it('other instance applies on death of leader', async() => {
             const name = randomToken(10);
@@ -124,6 +134,8 @@ describe('LeaderElection.test.js', () => {
             const leaderElector2 = c2.database.leaderElector;
             await leaderElector2.applyOnce();
             assert.ok(leaderElector2.isLeader);
+            c.database.destroy();
+            c2.database.destroy();
         });
     });
 
@@ -134,6 +146,7 @@ describe('LeaderElection.test.js', () => {
             const db1 = c1.database;
             await db1.leaderElector.applyOnce();
             assert.equal(db1.leaderElector.isLeader, true);
+            c1.database.destroy();
         });
         it('should not elect as leader if other instance is leader', async() => {
             const name = randomToken(10);
@@ -146,6 +159,8 @@ describe('LeaderElection.test.js', () => {
             await db2.leaderElector.applyOnce();
 
             assert.equal(db2.leaderElector.isLeader, false);
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('when 2 instances apply at the same time, one should win', async() => {
             // run often
@@ -160,6 +175,8 @@ describe('LeaderElection.test.js', () => {
                 await db1.leaderElector.applyOnce();
                 await db2.leaderElector.applyOnce();
                 assert.ok(db1.leaderElector.isLeader != db2.leaderElector.isLeader);
+                await db1.destroy();
+                await db2.destroy();
             }
         });
         it('when many instances apply, one should win', async() => {
@@ -178,6 +195,7 @@ describe('LeaderElection.test.js', () => {
                 .filter(is => is == true)
                 .length;
             assert.equal(leaderCount, 1);
+            await Promise.all(dbs.map(db => db.destroy()));
         });
         it('when the leader dies, a new one should be elected', async() => {
             const name = randomToken(10);
@@ -222,6 +240,7 @@ describe('LeaderElection.test.js', () => {
             let leaderToken2 = leader2.token;
 
             assert.notEqual(leaderToken, leaderToken2);
+            await Promise.all(dbs.map(db => db.destroy()));
         });
     });
 
@@ -230,11 +249,13 @@ describe('LeaderElection.test.js', () => {
             const c = await humansCollection.create(0);
             const db = c.database;
             assert.equal(db.isLeader, true);
+            db.destroy();
         });
         it('non-multiInstance: waitForLeadership should instant', async() => {
             const c = await humansCollection.create(0);
             const db = c.database;
             await db.waitForLeadership();
+            db.destroy();
         });
 
         it('waitForLeadership: run once when instance becomes leader', async() => {
@@ -258,6 +279,7 @@ describe('LeaderElection.test.js', () => {
 
             await util.promiseWait(800);
             assert.equal(count, 2);
+            await Promise.all(dbs.map(db => db.destroy()));
         });
     });
 });
