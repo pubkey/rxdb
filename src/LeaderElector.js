@@ -1,22 +1,20 @@
-import * as RxChangeEvent from './RxChangeEvent';
-import * as util from './util';
-import * as unload from 'unload';
-
 /**
  * this handles the leader-election for the given RxDatabase-instance
  */
 
+import * as unload from 'unload';
+
+import * as util from './util';
+import * as RxChangeEvent from './RxChangeEvent';
+import * as RxBroadcastChannel from './RxBroadcastChannel';
+
 const documentID = '_local/leader';
 const SIGNAL_TIME = 200; // TODO evaluate this time
-// const ELECTION_CHANNEL =X
-
 
 class LeaderElector {
-
-
     constructor(database) {
 
-        // things that must be cleared ondestroy
+        // things that must be cleared on destroy
         this.subs = [];
         this.unloads = [];
 
@@ -24,10 +22,14 @@ class LeaderElector {
         this.token = this.database.token;
 
         this.isLeader = false;
-        this.becomeLeader$ = new util.Rx.BehaviorSubject(this.isLeader);
+        this.becomeLeader$ = new util.Rx.Subject();
+
         this.isDead = false;
         this.isApplying = false;
         this.isWaiting = false;
+
+        this.bc = RxBroadcastChannel.create(this.database, 'leader');
+        this.electionChannel = this.bc ? 'broadcast' : 'socket';
     }
 
     async prepare() {}
@@ -67,42 +69,113 @@ class LeaderElector {
         if (this.isApplying) return false;
         this.isApplying = true;
 
-        console.log('applyOnce()');
+        console.log('applyOnce(' + this.electionChannel + ')');
 
+        const elected = await this['apply_' + this.electionChannel]();
+
+        if (elected) {
+            // I am leader now
+            await this.beLeader();
+        }
+
+        console.log('applyOnce():done: ' + elected);
+        this.isApplying = false;
+        return true;
+    }
+
+    /**
+     * apply via socket
+     * (critical on chrome with indexedDB due to write-locks)
+     */
+    async apply_socket() {
         try {
             let leaderObj = await this.getLeaderObject();
             const minTime = new Date().getTime() - SIGNAL_TIME * 2;
 
             if (leaderObj.t >= minTime)
                 throw new Error('someone else is applying/leader');
-            console.log('applyOnce()1');
             // write applying to db
             leaderObj.apply = this.token;
             leaderObj.t = new Date().getTime();
             await this.setLeaderObject(leaderObj);
-            console.log('applyOnce()2');
 
             // w8 one cycle
             await util.promiseWait(SIGNAL_TIME * 0.5);
-            console.log('applyOnce()3');
 
             // check if someone overwrote it
             leaderObj = await this.getLeaderObject();
             if (leaderObj.apply != this.token)
                 throw new Error('someone else overwrote apply');
-            console.log('applyOnce()4');
 
-            // I am leader now
-            await this.beLeader();
-
+            return true;
         } catch (e) {
-            //          console.log('error applying');
-            // console.log('applyOnce:error:');
-            // console.dir(e);
+            return false;
         }
-        console.log('applyOnce():done');
-        this.isApplying = false;
-        return true;
+    }
+
+    /**
+     * apply via BroadcastChannel-API
+     * (better performance than socket)
+     */
+    async apply_broadcast() {
+
+        const applyTime = new Date().getTime();
+        const subs = [];
+        const errors = [];
+
+        const whileNoError = async() => {
+            subs.push(this.bc.$
+                .filter(msg => !!this.isApplying)
+                .filter(msg => msg.t >= applyTime)
+                .filter(msg => msg.type == 'apply')
+                .filter(msg => {
+                    if (
+                        msg.data < applyTime ||
+                        (
+                            msg.data == applyTime &&
+                            msg.it > this.token
+                        )
+                    ) return true;
+                    else return false;
+                })
+                .filter(msg => errors.length < 1)
+                .subscribe(msg => errors.push('other is applying:' + msg.it))
+            );
+            subs.push(this.bc.$
+                .filter(msg => !!this.isApplying)
+                .filter(msg => msg.t >= applyTime)
+                .filter(msg => msg.type == 'tell')
+                .filter(msg => errors.length < 1)
+                .subscribe(msg => errors.push('other is leader' + msg.it))
+            );
+            subs.push(this.bc.$
+                .filter(msg => !!this.isApplying)
+                .filter(msg => msg.type == 'apply')
+                .filter(msg => {
+                    if (
+                        msg.data > applyTime ||
+                        (
+                            msg.data == applyTime &&
+                            msg.it > this.token
+                        )
+                    ) return true;
+                    else return false;
+                })
+                .subscribe(msg => this.bc.write('apply', applyTime))
+            );
+
+            let circles = 3;
+            while (circles > 0) {
+                circles--;
+                await this.bc.write('apply', applyTime);
+                await util.promiseWait(100); // give others time to respond
+                if (errors.length > 0) return false;
+            }
+            return true;
+        };
+        const ret = await whileNoError();
+        subs.map(sub => sub.unsubscribe());
+        return ret;
     }
 
 
@@ -110,22 +183,28 @@ class LeaderElector {
         if (this.leaderSignal_run) return;
         this.leaderSignal_run = true;
 
-        console.log('leaderSignal()');
-        let success = false;
-        while (!success) {
-            console.log('leaderSignal: once');
-
-            try {
-                const leaderObj = await this.getLeaderObject();
-                leaderObj.is = this.token;
-                leaderObj.apply = this.token;
-                leaderObj.t = new Date().getTime();
-                await this.setLeaderObject(leaderObj);
-                success = true;
-            } catch (e) {
-                console.log('leaderSignal:error:');
-                console.dir(e);
-            }
+        console.log('leaderSignal(' + this.electionChannel + ')');
+        switch (this.electionChannel) {
+            case 'broadcast':
+                await this.bc.write('tell');
+                break;
+            case 'socket':
+                let success = false;
+                while (!success) {
+                    console.log('leaderSignal: once');
+                    try {
+                        const leaderObj = await this.getLeaderObject();
+                        leaderObj.is = this.token;
+                        leaderObj.apply = this.token;
+                        leaderObj.t = new Date().getTime();
+                        await this.setLeaderObject(leaderObj);
+                        success = true;
+                    } catch (e) {
+                        console.log('leaderSignal:error:');
+                        console.dir(e);
+                    }
+                }
+                break;
         }
         console.log('leaderSignalDone()');
 
@@ -142,17 +221,28 @@ class LeaderElector {
         this.isLeader = true;
         this.becomeLeader$.next(true);
 
+        console.log('beLEADER:: ' + this.token);
+
         this.applyInterval && this.applyInterval.unsubscribe();
 
         await this.leaderSignal();
 
         // signal leadership on interval
-        this.signalLeadership = util.Rx.Observable
-            .interval(SIGNAL_TIME)
-            .subscribe(() => {
-                this.leaderSignal();
-            });
-        this.subs.push(this.signalLeadership);
+        switch (this.electionChannel) {
+            case 'broadcast':
+                this.signalLeadership = this.bc.$
+                    .filter(m => !!this.isLeader)
+                    .subscribe(msg => this.leaderSignal());
+                this.subs.push(this.signalLeadership);
+                break;
+            case 'socket':
+                this.signalLeadership = util.Rx.Observable
+                    .interval(SIGNAL_TIME)
+                    .filter(m => !!this.isLeader)
+                    .subscribe(() => this.leaderSignal());
+                this.subs.push(this.signalLeadership);
+                break;
+        }
 
         // this.die() on unload
         this.unloads.push(
@@ -171,14 +261,21 @@ class LeaderElector {
         this.signalLeadership.unsubscribe();
 
         // force.write to db
-        let success = false;
-        while (!success) {
-            try {
-                const leaderObj = await this.getLeaderObject();
-                leaderObj.t = 0;
-                await this.setLeaderObject(leaderObj);
-                success = true;
-            } catch (e) {}
+        switch (this.electionChannel) {
+            case 'broadcast':
+                await this.bc.write('death');
+                break;
+            case 'socket':
+                let success = false;
+                while (!success) {
+                    try {
+                        const leaderObj = await this.getLeaderObject();
+                        leaderObj.t = 0;
+                        await this.setLeaderObject(leaderObj);
+                        success = true;
+                    } catch (e) {}
+                }
+                break;
         }
         return true;
     }
@@ -188,23 +285,39 @@ class LeaderElector {
      */
     async waitForLeadership() {
         if (this.isLeader) return Promise.resolve(true);
+
+        const subs = [];
+
         if (!this.isWaiting) {
             this.isWaiting = true;
-            // TODO emit socketMessage on die() and subscribe here to it
-
-            // apply on interval
-            this.applyInterval = util.Rx.Observable
-                .interval(SIGNAL_TIME * 2)
-                .subscribe(x => this.applyOnce());
-            this.subs.push(this.applyInterval);
 
             // apply now
             this.applyOnce();
+
+            switch (this.electionChannel) {
+                case 'broadcast':
+                    this.subs.push(
+                        this.bc.$
+                        .filter(msg => msg.type == 'death')
+                        .subscribe(msg => this.applyOnce())
+                    );
+                    break;
+                case 'socket':
+                    // apply on interval
+                    this.applyInterval = util.Rx.Observable
+                        .interval(SIGNAL_TIME * 2)
+                        .subscribe(x => this.applyOnce());
+                    this.subs.push(this.applyInterval);
+                    break;
+            }
         }
 
         return new Promise(res => {
+            console.log('................');
+
             this.becomeSub = this.becomeLeader$
                 .filter(i => i == true)
+                .do(a => console.log('dddddddd: ' + this.token + ' | ' + a))
                 .subscribe(i => res());
             this.subs.push(this.becomeSub);
         });
@@ -215,6 +328,7 @@ class LeaderElector {
         this.subs.map(sub => sub.unsubscribe());
         this.unloads.map(fn => fn());
         await this.die();
+        this.bc && this.bc.destroy();
     }
 }
 

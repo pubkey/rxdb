@@ -30,10 +30,12 @@ class RxBroadcastChannel {
      * @param {Object} data
      */
     async write(type, data) {
+        console.log('w: ' + type);
         await this.bc.postMessage(JSON.stringify({
             type,
             it: this.token,
-            data
+            data,
+            t: new Date().getTime()
         }));
     }
 
