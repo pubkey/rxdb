@@ -194,7 +194,8 @@ describe('LeaderElection.test.js', () => {
                 .length;
             assert.equal(leaderCount, 1);
         });
-        it('when leader dies, other should apply', async() => {
+        it('when leader dies, other should apply', async function() {
+            this.timeout(5000);
             const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
@@ -213,7 +214,8 @@ describe('LeaderElection.test.js', () => {
             c1.database.destroy();
             c2.database.destroy();
         });
-        it('when the leader dies, a new one should be elected', async() => {
+        it('when the leader dies, a new one should be elected', async function() {
+            this.timeout(5000);
             const name = randomToken(10);
             const dbs = [];
             while (dbs.length < 6) {

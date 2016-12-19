@@ -9,7 +9,7 @@ import * as RxChangeEvent from './RxChangeEvent';
 import * as RxBroadcastChannel from './RxBroadcastChannel';
 
 const documentID = '_local/leader';
-const SIGNAL_TIME = 200; // TODO evaluate this time
+const SIGNAL_TIME = 500; // TODO evaluate this time
 
 class LeaderElector {
     constructor(database) {
@@ -167,7 +167,7 @@ class LeaderElector {
             while (circles > 0) {
                 circles--;
                 await this.bc.write('apply', applyTime);
-                await util.promiseWait(100); // give others time to respond
+                await util.promiseWait(300); // give others time to respond
                 if (errors.length > 0) return false;
             }
             return true;
@@ -245,7 +245,11 @@ class LeaderElector {
 
         // this.die() on unload
         this.unloads.push(
-            unload.add(this.die)
+            unload.add(() => {
+                console.log('unload:die');
+                this.bc.write('death');
+                this.die();
+            })
         );
         return true;
     }

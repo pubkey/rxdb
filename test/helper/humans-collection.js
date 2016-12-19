@@ -15,7 +15,7 @@ const dbLifetime = 1000 * 2; // db.destroy() will be called after this time
 export async function create(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create(randomToken(10), 'memory');
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection(name, schemas.human);
 
     // insert data
@@ -31,7 +31,7 @@ export async function create(size = 20, name = 'human') {
 export async function createAgeIndex() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create(randomToken(10), 'memory');
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('humana', schemas.humanAgeIndex);
 
     // insert data
@@ -47,7 +47,7 @@ export async function createAgeIndex() {
 export async function multipleOnSameDB() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create(randomToken(10), 'memory');
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('human', schemas.human);
     const collection2 = await db.collection('human2', schemas.human);
 
@@ -67,7 +67,7 @@ export async function multipleOnSameDB() {
 export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create(randomToken(10), adapter);
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('nestedHuman', schemas.nestedHuman);
 
     // insert data
@@ -84,7 +84,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
 
 export async function createEncrypted(amount = 10) {
     const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('encryptedhuman', schemas.encryptedHuman);
 
     // insert data
@@ -99,7 +99,7 @@ export async function createEncrypted(amount = 10) {
 
 export async function createMultiInstance(prefix, amount = 0, password = null) {
     const db = await RxDatabase.create(prefix, 'memory', password, true);
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('human', schemas.human);
     // insert data
     const fns = [];
@@ -113,7 +113,7 @@ export async function createMultiInstance(prefix, amount = 0, password = null) {
 
 export async function createPrimary(amount = 10, name = randomToken(10)) {
     const db = await RxDatabase.create(name, 'memory', null, true);
-    setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('encryptedhuman', schemas.primaryHuman);
 
     // insert data
