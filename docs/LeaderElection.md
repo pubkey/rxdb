@@ -25,7 +25,7 @@ The pulling starts at the moment where the opened tab is becoming leader.
 const db = await RxDB.create('weatherDB','localstorage','myPassword',true);
 const collection = await db.collection('temperature', mySchema);
 
-db.assureLeader()
+db.waitForLeadership()
   .then(() => {
     console.log('Long lives the king!'); // <- runs when db becomes leader
     setInterval(async () => {
