@@ -54,6 +54,9 @@ Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/ov
 myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
+### waitForLeadership()
+Returns a Promise which resolves when the RxDatabase becomes [elected leader](./LeaderElection.md).
+
 ### dump()
 Use this function to create a json-export from every piece of data in every collection of this database. You can pass true as parameter to decrypted the encrypted data-fields of your document.
 ```js

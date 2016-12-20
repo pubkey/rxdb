@@ -76,4 +76,4 @@ console.dir(isName); // isName is now 'foobar2'
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](../examples)
+If you are new to RxDB, you should continue [here](./LeaderElection.md)
