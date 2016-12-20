@@ -38,6 +38,11 @@ db.waitForLeadership()
   });
 ```
 
+# Live-Example
+In this example the leader is marked with the crown &#9819;
+
+![reactive.gif](./files/leader-election.gif)
+
 # Try it out
 Run the [vanillaJS-example](../examples/vanilla/) where the leading tab is marked with a crown on the top-right-corner.
 
