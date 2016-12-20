@@ -325,6 +325,8 @@ myRxDatabase.waitForLeadership()
   });
 ```
 
+<p>In this example the leader is marked with the crown &#9819;</p>
+
 ![reactive.gif](docs/files/leader-election.gif)
 
 <h2>Getting started</h2>
