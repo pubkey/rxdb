@@ -5,10 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.promiseWait = exports.assertThrowsAsync = exports.Rx = undefined;
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -110,7 +106,6 @@ exports.hash = hash;
 exports.generate_id = generate_id;
 exports.jsonSchemaValidate = jsonSchemaValidate;
 exports.promiseWaitResolveable = promiseWaitResolveable;
-exports.hasBroadcastChannel = hasBroadcastChannel;
 exports.filledArray = filledArray;
 
 var _randomToken = require('random-token');
@@ -254,16 +249,6 @@ function jsonSchemaValidate(schema, obj) {
         setTimeout(res, ms);
     });
     return ret;
-}
-
-/**
- * Detect if client can use BroadcastChannel
- * @link https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
- * @return {Boolean}
- */
-function hasBroadcastChannel() {
-    if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3.default)(window)) === 'object' && window.BroadcastChannel && typeof window.BroadcastChannel === 'function' && typeof window.BroadcastChannel.prototype.postMessage === 'function' && typeof window.BroadcastChannel.prototype.close === 'function') return true;
-    return false;
 }
 
 function filledArray() {

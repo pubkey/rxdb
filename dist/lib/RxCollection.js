@@ -198,6 +198,9 @@ var RxCollection = function () {
 
                             case 2:
 
+                                //console.log('RxCollection.insert():');
+                                //console.dir(json);
+
                                 json = (0, _clone2.default)(json);
                                 json._id = util.generate_id();
 
