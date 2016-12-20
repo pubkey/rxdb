@@ -5,10 +5,15 @@ import * as RxDB from '../../../../../';
 import { RxDatabase } from '../../../../../';
 
 
-//RxDB.plugin(require('../../../../../plugins/adapter-localstorage/'));
-// RxDB.plugin(require('pouchdb-adapter-websql'));
-// RxDB.plugin(require('pouchdb-adapter-fruitdown'));
-RxDB.plugin(require('pouchdb-adapter-idb'));
+
+const adapters = {
+    localstorage: require('../../../../../plugins/adapter-localstorage/'),
+    websql: require('pouchdb-adapter-websql'),
+    idb: require('pouchdb-adapter-idb')
+};
+
+const useAdapter = 'idb';
+RxDB.plugin(adapters[useAdapter]);
 
 
 RxDB.plugin(require('pouchdb-adapter-http'));
@@ -34,10 +39,17 @@ export class DatabaseService {
 
 
     static db$: Observable<RxDatabase> = Observable.fromPromise(RxDB
-        .create('heroesDB', 'idb', 'myLongAndStupidPassword', true)
+        .create('heroesDB', useAdapter, 'myLongAndStupidPassword', true)
         // create collections
         .then(db => {
+            console.log('created database');
             window['db'] = db; // write to window for debugging
+
+            db.waitForLeadership()
+                .then(() => {
+                    console.log('isLeader now');
+                    document.title = '♛ ' + document.title;
+                });
             console.log('DatabaseService: create collections');
             const fns = collections
                 .map(col => db.collection(col.name, col.schema));
@@ -58,8 +70,7 @@ export class DatabaseService {
             return db;
         })
         .then(db => {
-            console.log('created db:');
-            console.dir(db);
+            console.log('created collections');
             return db;
         })
     );

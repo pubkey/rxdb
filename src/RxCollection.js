@@ -67,6 +67,9 @@ class RxCollection {
         if (json._id)
             throw new Error('do not provide ._id, it will be generated');
 
+        //console.log('RxCollection.insert():');
+        //console.dir(json);
+
         json = clone(json);
         json._id = util.generate_id();
 
@@ -125,7 +128,6 @@ class RxCollection {
     }
 
     findOne(queryObj) {
-
         let query;
 
         if (typeof queryObj === 'string') {
@@ -150,7 +152,6 @@ class RxCollection {
         };
         return query;
     }
-
 
     /**
      * get a query only
@@ -246,7 +247,7 @@ class RxCollection {
      * TODO make sure that on multiInstances only one can sync
      * because it will have document-conflicts when 2 syncs write to the same storage
      */
-    sync(serverURL) {
+    async sync(serverURL, alsoIfNotLeader = false) {
 
         if (typeof this.pouch.sync !== 'function') {
             throw new Error(
@@ -254,6 +255,10 @@ class RxCollection {
                  RxDB.plugin(require('pouchdb-replication')); `
             );
         }
+
+        if (!alsoIfNotLeader)
+            await this.database.waitForLeadership();
+
         if (!this.synced) {
             /**
              * this will grap the changes and publish them to the rx-stream

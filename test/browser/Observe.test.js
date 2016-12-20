@@ -22,6 +22,7 @@ describe('Observe.test.js', () => {
                 });
                 await col.insert(schemaObjects.human());
                 assert.equal(recieved, 1);
+                col.database.destroy();
             });
         });
         describe('.query()', () => {
@@ -46,6 +47,7 @@ describe('Observe.test.js', () => {
                         isHere = true;
                 });
                 assert.ok(isHere);
+                c.database.destroy();
             });
         });
     });
@@ -57,6 +59,7 @@ describe('Observe.test.js', () => {
             doc.save();
             const changeEvent = await doc.$.first().toPromise();
             assert.equal(changeEvent.data.doc, doc.rawData._id);
+            c.database.destroy();
         });
         it('should observe a single field', async() => {
             const c = await humansCollection.create();
@@ -72,6 +75,7 @@ describe('Observe.test.js', () => {
             await doc.save();
             util.promiseWait(5);
             assert.equal(valueObj.v, setName);
+            c.database.destroy();
         });
     });
 });

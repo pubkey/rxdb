@@ -9,6 +9,10 @@ import {
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 
+console.dir = (d) => {
+    console.log(JSON.stringify(d));
+};
+
 describe('Adapters.test.js', () => {
     describe('memory', () => {
         describe('negative', () => {
@@ -25,6 +29,7 @@ describe('Adapters.test.js', () => {
                 const db = await RxDB.create(randomToken(10), 'memory');
                 assert.equal(db.constructor.name, 'RxDatabase');
                 await util.promiseWait(1000);
+                db.destroy();
             });
         });
     });
@@ -43,6 +48,7 @@ describe('Adapters.test.js', () => {
                 const db = await RxDB.create(randomToken(10), 'websql');
                 assert.equal(db.constructor.name, 'RxDatabase');
                 await util.promiseWait(1000);
+                db.destroy();
             });
         });
     });

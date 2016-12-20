@@ -28,6 +28,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(json.passwordHash, null);
                 assert.equal(json.docs.length, 5);
                 json.docs.map(doc => assert.equal(typeof doc, 'object'));
+                col.database.destroy();
             });
             it('export encrypted as encrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -44,6 +45,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(typeof json.passwordHash, 'string');
                 assert.equal(json.docs.length, 10);
                 json.docs.map(doc => assert.equal(typeof doc.secret, 'string'));
+                db.destroy();
             });
             it('export encrypted as decrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -63,6 +65,7 @@ describe('ImportExport.test.js', () => {
                     assert.equal(typeof doc.secret.name, 'string');
                     assert.equal(typeof doc.secret.subname, 'string');
                 });
+                db.destroy();
             });
             it('decrypt a single value from an encrypted export', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -79,6 +82,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(typeof decrypted, 'object');
                 assert.equal(typeof decrypted.name, 'string');
                 assert.equal(typeof decrypted.subname, 'string');
+                db.destroy();
             });
         });
 
@@ -96,6 +100,7 @@ describe('ImportExport.test.js', () => {
 
                     const docs = await emptyCol.find().exec();
                     assert.equal(docs.length, 5);
+                    col.destroy();
                 });
                 it('import encrypted', async() => {
                     const password = randomToken(10);
@@ -127,6 +132,8 @@ describe('ImportExport.test.js', () => {
                     assert.equal(typeof firstDocAfter.get('secret'), 'object');
                     assert.equal(typeof firstDocAfter.get('secret').name, 'string');
                     assert.equal(typeof firstDocAfter.get('secret').subname, 'string');
+                    db.destroy();
+                    db2.destroy();
                 });
             });
             describe('negative', () => {
@@ -138,6 +145,7 @@ describe('ImportExport.test.js', () => {
                         () => differentSchemaCol.importDump(json),
                         Error
                     );
+                    col.database.destroy();
                 });
                 it('should not import encrypted if password is different', async() => {
                     const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -156,6 +164,8 @@ describe('ImportExport.test.js', () => {
                         () => col2.importDump(json),
                         Error
                     );
+                    db.destroy();
+                    db2.destroy();
                 });
                 it('should not import when schema not matching', async() => {
                     const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -175,6 +185,7 @@ describe('ImportExport.test.js', () => {
                         () => col2.importDump(json),
                         Error
                     );
+                    db.destroy();
                 });
             });
         });
@@ -200,6 +211,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(colDump.passwordHash, null);
                 assert.equal(colDump.docs.length, 5);
                 colDump.docs.map(doc => assert.equal(typeof doc, 'object'));
+                col.database.destroy();
             });
             it('export encrypted as encrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -215,6 +227,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(typeof json.collections[0].passwordHash, 'string');
                 json.collections[0].docs
                     .forEach(docData => assert.equal(typeof docData.secret, 'string'));
+                db.destroy();
             });
             it('export encrypted as decrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -237,6 +250,7 @@ describe('ImportExport.test.js', () => {
                         assert.equal(typeof docData.secret.name, 'string');
                         assert.equal(typeof docData.secret.subname, 'string');
                     });
+                db.destroy();
             });
             it('export with multiple collections', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -254,6 +268,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(json.collections.length, 2);
                 json.collections
                     .forEach(col => assert.equal(col.docs.length, 10));
+                db.destroy();
             });
             it('export 1 of 2 collections', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
@@ -271,6 +286,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(json.collections.length, 1);
                 json.collections
                     .forEach(col => assert.equal(col.docs.length, 10));
+                db.destroy();
             });
         });
         describe('.importDump()', () => {
@@ -286,6 +302,7 @@ describe('ImportExport.test.js', () => {
 
                     const docs = await col2.find().exec();
                     assert.equal(docs.length, 5);
+                    db.destroy();
                 });
                 it('import encrypted', async() => {
                     const password = randomToken(10);
@@ -305,6 +322,8 @@ describe('ImportExport.test.js', () => {
 
                     const docs = await col2.find().exec();
                     assert.equal(docs.length, 10);
+                    db.destroy();
+                    db2.destroy();
                 });
             });
             describe('negative', () => {});

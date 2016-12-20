@@ -29,12 +29,14 @@ describe('RxCollection.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     const collection = await RxCollection.create(db, 'humanx', schema);
                     assert.equal(collection.constructor.name, 'RxCollection');
+                    db.destroy();
                 });
                 it('use Schema-Object', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     const collection = await RxCollection.create(db, 'human', schema);
                     assert.equal(collection.constructor.name, 'RxCollection');
+                    db.destroy();
                 });
             });
             describe('negative', () => {
@@ -44,6 +46,7 @@ describe('RxCollection.test.js', () => {
                         () => Collection.create(db, 'human', schemas.human),
                         Error
                     );
+                    db.destroy();
                 });
                 it('crash if no database-object', async() => {
                     const db = {};
@@ -60,6 +63,7 @@ describe('RxCollection.test.js', () => {
                         () => RxCollection.create(db, null, schema),
                         Error
                     );
+                    db.destroy();
                 });
             });
         });
@@ -71,17 +75,20 @@ describe('RxCollection.test.js', () => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
                     const collection = await db.collection('human', schemas.human);
                     await collection.insert(schemaObjects.human());
+                    db.destroy();
                 });
                 it('should insert nested human', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
                     const collection = await db.collection('nestedHuman', schemas.nestedHuman);
                     await collection.insert(schemaObjects.nestedHuman());
+                    db.destroy();
                 });
                 it('should insert more than once', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
                     const collection = await db.collection('nestedHuman', schemas.nestedHuman);
                     for (let i = 0; i < 10; i++)
                         await collection.insert(schemaObjects.nestedHuman());
+                    db.destroy();
                 });
             });
             describe('negative', () => {
@@ -94,6 +101,7 @@ describe('RxCollection.test.js', () => {
                         () => collection.insert(human),
                         Error
                     );
+                    db.destroy();
                 });
                 it('should not insert broken human (_id given)', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
@@ -104,6 +112,7 @@ describe('RxCollection.test.js', () => {
                         () => collection.insert(human),
                         Error
                     );
+                    db.destroy();
                 });
                 it('should not insert a non-json object', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
@@ -112,6 +121,7 @@ describe('RxCollection.test.js', () => {
                         () => collection.insert(Collection),
                         Error
                     );
+                    db.destroy();
                 });
                 it('should not insert human with additional prop', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
@@ -122,6 +132,7 @@ describe('RxCollection.test.js', () => {
                         () => collection.insert(human),
                         Error
                     );
+                    db.destroy();
                 });
             });
         });
@@ -148,6 +159,7 @@ describe('RxCollection.test.js', () => {
                         const collection = await RxCollection.create(db, 'humanx', schema);
                         const docs = await collection.find({}).exec();
                         assert.deepEqual(docs, []);
+                        db.destroy();
                     });
                     it('BUG: insert and find very often', async() => {
                         const amount = 10;
@@ -160,6 +172,7 @@ describe('RxCollection.test.js', () => {
                             let docs = await collection.find().exec();
                             let doc = docs[0];
                             assert.equal(passportId, doc.data.passportId);
+                            db.destroy();
                         }
                     });
                 });

@@ -32,6 +32,7 @@ describe('Observe.test.js', () => {
                         .first().toPromise();
                     assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
                     assert.equal(changeEvent.data.v, 'myname');
+                    db.destroy();
                 });
             });
             describe('negative', () => {
@@ -48,6 +49,7 @@ describe('Observe.test.js', () => {
 
                     await util.promiseWait(10);
                     assert.equal(calls, 1);
+                    db.destroy();
                 });
             });
         });
@@ -66,6 +68,7 @@ describe('Observe.test.js', () => {
                     assert.equal(changeEvent.data.col, colName);
                     assert.equal(typeof changeEvent.data.doc, 'string');
                     assert.ok(changeEvent.data.v);
+                    db.destroy();
                 });
             });
             describe('negative', () => {
@@ -83,6 +86,7 @@ describe('Observe.test.js', () => {
                         Error
                     );
                     assert.equal(calls, 0);
+                    db.destroy();
                 });
             });
         });
@@ -97,6 +101,7 @@ describe('Observe.test.js', () => {
                     doc.save();
                     const changeEvent = await doc.$.first().toPromise();
                     assert.equal(changeEvent.data.doc, doc.rawData._id);
+                    c.database.destroy();
                 });
                 it('should observe a single field', async() => {
                     const c = await humansCollection.create();
@@ -112,6 +117,7 @@ describe('Observe.test.js', () => {
                     await doc.save();
                     util.promiseWait(5);
                     assert.equal(valueObj.v, setName);
+                    c.database.destroy();
                 });
                 it('should observe a nested field', async() => {
                     const c = await humansCollection.createNested();
@@ -127,6 +133,7 @@ describe('Observe.test.js', () => {
                     await doc.save();
                     util.promiseWait(5);
                     assert.equal(valueObj.v, setName);
+                    c.database.destroy();
                 });
                 it('get equal values when subscribing again later', async() => {
                     const c = await humansCollection.create(1);
@@ -143,6 +150,7 @@ describe('Observe.test.js', () => {
 
                     assert.equal(v1, v2);
                     assert.equal(v1, 'foobar');
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -153,6 +161,7 @@ describe('Observe.test.js', () => {
                         () => doc.get$('foobar').subscribe(newVal => newVal),
                         Error
                     );
+                    c.database.destroy();
                 });
             });
         });
@@ -170,6 +179,7 @@ describe('Observe.test.js', () => {
                     await doc.remove();
                     util.promiseWait(5);
                     assert.equal(valueObj.v, undefined);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -181,6 +191,7 @@ describe('Observe.test.js', () => {
                     const doc = await c.findOne().exec();
                     doc.$.subscribe(newVal => newVal);
                     doc.destroy();
+                    c.database.destroy();
                 });
                 it('should no more change data when destroyed', async() => {
                     const c = await humansCollection.create();
@@ -196,6 +207,7 @@ describe('Observe.test.js', () => {
                     doc.destroy();
                     util.promiseWait(50);
                     assert.equal(valueObj.v, firstValue);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -215,6 +227,7 @@ describe('Observe.test.js', () => {
                 await util.promiseWait(15);
                 assert.ok(lastValue);
                 assert.equal(lastValue.length, 1);
+                c.database.destroy();
             });
             it('get the updated docs on Collection.insert()', async() => {
                 const c = await humansCollection.create(1);
@@ -237,6 +250,7 @@ describe('Observe.test.js', () => {
                         isHere = true;
                 });
                 assert.ok(isHere);
+                c.database.destroy();
             });
             it('get the value twice when subscribing 2 times', async() => {
                 const c = await humansCollection.create(1);
@@ -252,6 +266,7 @@ describe('Observe.test.js', () => {
                 await util.promiseWait(50);
                 assert.equal(lastValue2.length, 1);
                 assert.deepEqual(lastValue, lastValue2);
+                c.database.destroy();
             });
             it('get the base-value when subscribing again later', async() => {
                 const c = await humansCollection.create(1);
@@ -268,6 +283,7 @@ describe('Observe.test.js', () => {
                 await util.promiseWait(150);
                 assert.equal(lastValue2.length, 1);
                 assert.deepEqual(lastValue, lastValue2);
+                c.database.destroy();
             });
             it('get new values on Document.save', async() => {
                 const c = await humansCollection.create(1);
@@ -285,6 +301,7 @@ describe('Observe.test.js', () => {
                 await doc.save();
                 await util.promiseWait(50);
                 assert.equal(values.length, 0);
+                c.database.destroy();
             });
         });
         describe('negative', () => {
@@ -297,10 +314,8 @@ describe('Observe.test.js', () => {
                 });
                 await util.promiseWait(50);
                 assert.equal(recieved, 2);
+                c.database.destroy();
             });
         });
-
-
     });
-
 });

@@ -5,10 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.promiseWait = exports.assertThrowsAsync = exports.Rx = undefined;
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -90,7 +86,7 @@ var promiseWait = exports.promiseWait = function () {
         }, _callee2, this);
     }));
 
-    return function promiseWait(_x3) {
+    return function promiseWait() {
         return _ref2.apply(this, arguments);
     };
 }();
@@ -110,7 +106,7 @@ exports.hash = hash;
 exports.generate_id = generate_id;
 exports.jsonSchemaValidate = jsonSchemaValidate;
 exports.promiseWaitResolveable = promiseWaitResolveable;
-exports.hasBroadcastChannel = hasBroadcastChannel;
+exports.filledArray = filledArray;
 
 var _randomToken = require('random-token');
 
@@ -133,6 +129,8 @@ require('rxjs/add/observable/fromEvent');
 require('rxjs/add/operator/timeout');
 
 require('rxjs/add/operator/delay');
+
+require('rxjs/add/operator/do');
 
 require('rxjs/add/operator/map');
 
@@ -158,6 +156,12 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// rxjs cherry-pick
+/**
+ * this contains a mapping to basic dependencies
+ * which should be easy to change
+ */
+
 var Rx = exports.Rx = {
     Observable: _Observable.Observable,
     Subject: _Subject.Subject,
@@ -165,14 +169,6 @@ var Rx = exports.Rx = {
 };
 
 // crypto-js
-
-
-// rxjs cherry-pick
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-
 function encrypt(value, password) {
     var encrypted = crypto_AES.encrypt(value, password);
     return encrypted.toString();
@@ -255,12 +251,11 @@ function jsonSchemaValidate(schema, obj) {
     return ret;
 }
 
-/**
- * Detect if client can use BroadcastChannel
- * @link https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
- * @return {Boolean}
- */
-function hasBroadcastChannel() {
-    if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3.default)(window)) === 'object' && window.BroadcastChannel && typeof window.BroadcastChannel === 'function' && typeof window.BroadcastChannel.prototype.postMessage === 'function' && typeof window.BroadcastChannel.prototype.close === 'function') return true;
-    return false;
+function filledArray() {
+    var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+    var ret = [];
+    while (ret.length < size) {
+        ret.push(ret.lenght);
+    }return ret;
 }

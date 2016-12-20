@@ -60,8 +60,11 @@ describe('CrossInstance.test.js', () => {
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
-                await db2.$pull();
+                await db2.socket.pull();
                 assert.ok(recieved > 0);
+
+                db1.destroy();
+                db2.destroy();
             });
         });
         describe('negative', () => {
@@ -77,9 +80,11 @@ describe('CrossInstance.test.js', () => {
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
-                await db2.$pull();
-                await db2.$pull();
+                await db2.socket.pull();
+                await db2.socket.pull();
                 assert.equal(recieved, 1);
+                db1.destroy();
+                db2.destroy();
             });
         });
     });
@@ -94,8 +99,11 @@ describe('CrossInstance.test.js', () => {
                 assert.equal(cEvent.constructor.name, 'RxChangeEvent');
             });
             await c1.insert(schemaObjects.human());
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             assert.ok(recieved > 0);
+
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('get no changes via pouchdb on different dbs', async() => {
             const name = randomToken(10);
@@ -112,6 +120,8 @@ describe('CrossInstance.test.js', () => {
             await c1.insert(schemaObjects.human());
             await util.promiseWait(50);
             assert.equal(got, null);
+            c1.database.destroy();
+            c2.database.destroy();
         });
     });
 
@@ -137,10 +147,12 @@ describe('CrossInstance.test.js', () => {
 
             doc1.set('firstName', 'foobar');
             await doc1.save();
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             await util.promiseWait(100);
 
             assert.equal(firstNameAfter, 'foobar');
+            c1.database.destroy();
+            c2.database.destroy();
         });
         it('should work with encrypted fields', async() => {
             const name = randomToken(10);
@@ -171,7 +183,7 @@ describe('CrossInstance.test.js', () => {
 
             doc1.set('secret', 'foobar');
             await doc1.save();
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             assert.equal(secretAfter, 'foobar');
 
             db1.destroy();
@@ -209,7 +221,7 @@ describe('CrossInstance.test.js', () => {
                 subname: 'bar'
             });
             await doc1.save();
-            await c2.database.$pull();
+            await c2.database.socket.pull();
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'
@@ -221,7 +233,7 @@ describe('CrossInstance.test.js', () => {
     });
     describe('AutoPull', () => {
         describe('positive', () => {
-            it('should recieve events without calling .$pull()', async() => {
+            it('should recieve events without calling .socket.pull()', async() => {
                 const name = randomToken(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -237,6 +249,8 @@ describe('CrossInstance.test.js', () => {
 
                 await waitPromise.promise;
                 assert.equal(recieved, 1);
+                c1.database.destroy();
+                c2.database.destroy();
             });
             it('should recieve 2 events', async() => {
                 const name = randomToken(10);
@@ -254,48 +268,9 @@ describe('CrossInstance.test.js', () => {
 
                 await waitPromise.promise;
                 assert.equal(recieved, 2);
+                c1.database.destroy();
+                c2.database.destroy();
             });
         });
     });
-
-
-
-    /**
-     * pouchdb stores all docs forever
-     * but the socked should be cleaned up to not overfill the database
-     * this will test this behaviour
-     * @link https://pouchdb.com/guides/compact-and-destroy.html
-     */
-    describe('_socket-CleanUp', () => {
-        it('should also get the deleted docs', async function() {
-            this.timeout(5000);
-
-            const name = randomToken(10);
-            const collection = await humansCollection.createMultiInstance(name);
-            const collection2 = await humansCollection.createMultiInstance(name);
-            const collection3 = await humansCollection.createMultiInstance(name);
-
-            const db = collection.database;
-
-            // add many docs
-            const amount = 100;
-            let fns = [];
-            for (let i = 0; i < amount; i++)
-                fns.push(collection.insert(schemaObjects.human()));
-            await Promise.all(fns);
-            await util.promiseWait(1600);
-
-            // insert again to trigger cleanup
-            fns = [];
-            for (let i = 0; i < amount; i++)
-                fns.push(collection.insert(schemaObjects.human()));
-            await Promise.all(fns);
-
-            // get socket-docs
-            const socketDocs = await db.socketCollection.find().exec();
-
-            assert.ok(socketDocs.length < (amount * 2));
-        });
-    });
-
 });
