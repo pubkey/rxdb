@@ -48,7 +48,7 @@ describe('LeaderElection.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('beLeader()', () => {
+    describe('.beLeader()', () => {
         it('leaderSignal()', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;
@@ -81,7 +81,7 @@ describe('LeaderElection.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('applyOnce()', () => {
+    describe('.applyOnce()', () => {
         it('should apply', async() => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;

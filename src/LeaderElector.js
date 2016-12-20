@@ -182,7 +182,6 @@ class LeaderElector {
         if (this.leaderSignal_run) return;
         this.leaderSignal_run = true;
 
-        console.log('leaderSignal(' + this.electionChannel + ')');
         switch (this.electionChannel) {
             case 'broadcast':
                 await this.bc.write('tell');
@@ -190,7 +189,6 @@ class LeaderElector {
             case 'socket':
                 let success = false;
                 while (!success) {
-                    console.log('leaderSignal: once');
                     try {
                         const leaderObj = await this.getLeaderObject();
                         leaderObj.is = this.token;
@@ -199,13 +197,11 @@ class LeaderElector {
                         await this.setLeaderObject(leaderObj);
                         success = true;
                     } catch (e) {
-                        console.log('leaderSignal:error:');
                         console.dir(e);
                     }
                 }
                 break;
         }
-        console.log('leaderSignalDone()');
 
         this.leaderSignal_run = false;
         return;
@@ -231,6 +227,8 @@ class LeaderElector {
             case 'broadcast':
                 this.signalLeadership = this.bc.$
                     .filter(m => !!this.isLeader)
+                    // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
+                    .filter(msg => msg.type!='tell')
                     .subscribe(msg => this.leaderSignal());
                 this.subs.push(this.signalLeadership);
                 break;
@@ -246,7 +244,6 @@ class LeaderElector {
         // this.die() on unload
         this.unloads.push(
             unload.add(() => {
-                console.log('unload:die');
                 this.bc.write('death');
                 this.die();
             })
