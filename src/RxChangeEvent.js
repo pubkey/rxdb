@@ -28,6 +28,12 @@ class RxChangeEvent {
         return false;
     }
 
+    isSocket() {
+        if (this.data.col && this.data.col == '_socket')
+            return true;
+        return false;
+    }
+
     hash() {
         if (!this._hash)
             this._hash = util.hash(this.data);

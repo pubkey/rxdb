@@ -28,6 +28,7 @@ describe('Insert.test.js', () => {
         const collection = await state.db.collection('human', schemas.human);
         assert.equal(collection.constructor.name, 'RxCollection');
         state.collection = collection;
+        collection.database.destroy();
     });
 
     describe('Collection', () => {
@@ -95,6 +96,12 @@ describe('Insert.test.js', () => {
                 passportId
             }).exec();
             assert.equal(docNull, null);
+        });
+    });
+
+    describe('cleaup', () => {
+        it('destroy state.collection', () => {
+            state.db.destroy();
         });
     });
 });

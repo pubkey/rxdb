@@ -39,10 +39,14 @@ var collections = exports.collections = RxSchema.create({
 
 var socket = exports.socket = RxSchema.create({
     properties: {
+        h: {
+            description: 'hash of the whole event',
+            primary: true,
+            type: 'string'
+        },
         it: {
             description: 'token of the db-instance',
-            type: 'string',
-            index: true
+            type: 'string'
         },
         t: {
             description: 'timestamp unix',

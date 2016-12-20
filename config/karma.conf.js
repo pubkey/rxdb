@@ -8,9 +8,11 @@ module.exports = function(config) {
 
         files: [
             '../test_tmp/browser/Adapters.test.js',
+            '../test_tmp/browser/RxBroadcastChannel.test.js',
             '../test_tmp/browser/Insert.test.js',
             '../test_tmp/browser/Observe.test.js',
-            '../test_tmp/browser/CrossInstance.test.js'
+            '../test_tmp/browser/CrossInstance.test.js',
+            '../test_tmp/browser/LeaderElection.test.js'
         ],
 
         port: 9876,
@@ -35,7 +37,11 @@ module.exports = function(config) {
             '../test_tmp/browser/*.test.js': ['browserify']
         },
 
-
+        client: {
+            mocha: {
+                bail: true
+            }
+        },
 
 
         singleRun: true

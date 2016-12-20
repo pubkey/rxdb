@@ -12,6 +12,7 @@ If you are new to RxDB, you should start [here](./RxDatabase.md).
     - [importDump()](./RxDatabase.md#importDump)
     - [dump()](./RxDatabase.md#dump)
     - [$()](./RxDatabase.md#observe-with-)
+    - [waitForLeadership()](./RxDatabase.md#waitforleadership)
 - [RxSchema](./RxSchema.md)
   - [Example](./RxSchema.md#example)
   - [Create a collection with the schema](./RxSchema.md#create-a-collection-with-the-schema)
@@ -37,4 +38,4 @@ If you are new to RxDB, you should start [here](./RxDatabase.md).
     - [save()](./RxDocument.md#save)
     - [remove()](./RxDocument.md#remove)
     - [$()](./RxDocument.md#observe-path)
-
+- [LeaderElection](./LeaderElection.md)

@@ -91,6 +91,9 @@ describe('Replication.test.js', () => {
             const docs = await c2.find().exec();
             assert.equal(docs.length, 1);
             assert.equal(docs[0].get('firstName'), obj.firstName);
+
+            c.database.destroy();
+            c2.database.destroy();
         });
 
         it('Observable.fromEvent should fire on sync-change', async() => {
@@ -125,6 +128,9 @@ describe('Replication.test.js', () => {
 
             assert.equal(e1.length, 2);
             assert.equal(e1.length, e2.length);
+
+            c.database.destroy();
+            c2.database.destroy();
         });
 
 
@@ -156,6 +162,9 @@ describe('Replication.test.js', () => {
                 await util.promiseWait(100);
                 assert.equal(events.length, 1);
                 assert.equal(events[0].constructor.name, 'RxChangeEvent');
+
+                c.database.destroy();
+                c2.database.destroy();
             });
 
             it('query: should re-find when a docs syncs', async() => {
@@ -184,6 +193,9 @@ describe('Replication.test.js', () => {
                 await util.promiseWait(50);
 
                 assert.equal(results.length, 1);
+
+                c.database.destroy();
+                c2.database.destroy();
             });
 
 
@@ -224,6 +236,9 @@ describe('Replication.test.js', () => {
 
                 await pw8.promise;
                 assert.equal(lastValue, 'foobar');
+
+                c.database.destroy();
+                c2.database.destroy();
             });
 
 

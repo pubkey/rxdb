@@ -52,6 +52,12 @@ var RxChangeEvent = function () {
             return false;
         }
     }, {
+        key: 'isSocket',
+        value: function isSocket() {
+            if (this.data.col && this.data.col == '_socket') return true;
+            return false;
+        }
+    }, {
         key: 'hash',
         value: function hash() {
             if (!this._hash) this._hash = util.hash(this.data);

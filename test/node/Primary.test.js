@@ -112,6 +112,7 @@ describe('Primary.test.js', () => {
                     });
                     const first = all.rows[0].doc;
                     assert.equal(obj.passportId, first._id);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -125,6 +126,7 @@ describe('Primary.test.js', () => {
                         () => c.insert(obj2),
                         Error
                     );
+                    c.database.destroy();
                 });
                 it('do not allow primary==null', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -134,6 +136,7 @@ describe('Primary.test.js', () => {
                         () => c.insert(obj),
                         Error
                     );
+                    c.database.destroy();
                 });
             });
         });
@@ -145,6 +148,7 @@ describe('Primary.test.js', () => {
                     await c.insert(obj);
                     const docs = await c.find().exec();
                     assert.equal(docs.length, 1);
+                    c.database.destroy();
                 });
                 it('find by primary', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -154,6 +158,7 @@ describe('Primary.test.js', () => {
                         passportId: obj.passportId
                     }).exec();
                     assert.equal(docs.length, 1);
+                    c.database.destroy();
                 });
                 it('sort by primary', async() => {
                     const c = await humansCollection.createPrimary(5);
@@ -169,6 +174,7 @@ describe('Primary.test.js', () => {
                         docsASC[0].rawData.firstName,
                         docsDESC.pop().rawData.firstName
                     );
+                    c.database.destroy();
                 });
                 it('select primary field', async() => {
                     const c = await humansCollection.createPrimary(5);
@@ -176,6 +182,7 @@ describe('Primary.test.js', () => {
                         passportId: 1
                     }).exec();
                     assert.equal(docs.length, 5);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -188,11 +195,13 @@ describe('Primary.test.js', () => {
                     await c.insert(obj);
                     const doc = await c.findOne(obj.passportId).exec();
                     assert.equal(doc.rawData._id, obj.passportId);
+                    c.database.destroy();
                 });
                 it('find nothing', async() => {
                     const c = await humansCollection.createPrimary(10);
                     const doc = await c.findOne('foobar').exec();
                     assert.equal(doc, null);
+                    c.database.destroy();
                 });
 
                 it('find with more selectors', async() => {
@@ -203,6 +212,7 @@ describe('Primary.test.js', () => {
                         firstName: obj.firstName
                     }).exec();
                     assert.equal(doc.rawData._id, obj.passportId);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -217,6 +227,7 @@ describe('Primary.test.js', () => {
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
                     assert.equal(obj.passportId, doc.get('passportId'));
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -229,6 +240,7 @@ describe('Primary.test.js', () => {
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
                     doc.set('firstName', 'foobar');
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -241,6 +253,7 @@ describe('Primary.test.js', () => {
                         () => doc.set('passportId', 'foobar'),
                         Error
                     );
+                    c.database.destroy();
                 });
             });
         });
@@ -256,6 +269,7 @@ describe('Primary.test.js', () => {
                     const doc2 = await c.findOne().exec();
                     assert.equal(doc2.get('firstName'), 'foobar');
                     assert.equal(doc.get('passportId'), doc2.get('passportId'));
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -272,6 +286,7 @@ describe('Primary.test.js', () => {
                         () => sameDoc.save(),
                         Error
                     );
+                    c.database.destroy();
                 });
             });
         });
@@ -288,6 +303,7 @@ describe('Primary.test.js', () => {
                     await doc.save();
                     await util.promiseWait(10);
                     assert.equal(value, 'foobar');
+                    c.database.destroy();
                 });
                 it('subscribe to collection', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -296,6 +312,7 @@ describe('Primary.test.js', () => {
                     await c.insert(schemaObjects.simpleHuman());
                     await util.promiseWait(10);
                     assert.equal(docs.length, 1);
+                    c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async() => {
                     const name = randomToken(10);
@@ -306,6 +323,8 @@ describe('Primary.test.js', () => {
                     await c1.insert(schemaObjects.simpleHuman());
                     await util.promiseWait(10);
                     assert.equal(docs.length, 1);
+                    c1.database.destroy();
+                    c2.database.destroy();
                 });
                 it('get new field-value when other db changes', async() => {
                     const name = randomToken(10);
@@ -327,6 +346,8 @@ describe('Primary.test.js', () => {
                     await doc2.save();
                     await pW8.promise;
                     assert.equal(value, 'foobar');
+                    c1.database.destroy();
+                    c2.database.destroy();
                 });
             });
             describe('negative', () => {});

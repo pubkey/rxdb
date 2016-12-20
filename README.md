@@ -34,6 +34,8 @@
         <li>Import/Export (.json)</li>
         <br/>
         <li>MultiWindow-Support</li>
+        <br/>
+        <li>Leader-Election</li>
       </ul>
     </td>
     <td>
@@ -90,6 +92,7 @@
       <li><a href="#encryption">Encryption</a></li>
       <li><a href="#level-adapters">Level-adapters</a></li>
       <li><a href="#import--export">Import / Export</a></li>
+      <li><a href="#leader-election">Leader-Election</a></li>
     </ul>
   </li>
   <li>
@@ -306,6 +309,25 @@ emptyDatabase.importDump(json)
     console.log('done');
   });
 ```
+
+<h3>Leader-Election</h3>
+<p>
+  Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
+  you create a websocket or pull-intervall. If your user now opens the site in 5 tabs parallel, it will run the intervall
+  or create the socket 5 times. This is a waste of ressources which can be solved by RxDB's LeaderElection.
+</p>
+
+```js
+myRxDatabase.waitForLeadership()
+  .then(() => {
+      // this will only run when the instance becomes leader.
+      mySocket = createWebSocket();
+  });
+```
+
+<p>In this example the leader is marked with the crown &#9819;</p>
+
+![reactive.gif](docs/files/leader-election.gif)
 
 <h2>Getting started</h2>
 
