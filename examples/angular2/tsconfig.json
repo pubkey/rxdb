@@ -17,12 +17,12 @@
         ]
     },
     "exclude": [
-        "node_modules",
-        "log.txt",
-        "config.json"
+        "./node_modules",
+        "./log.txt",
+        "./config.json"
     ],
     "include": [
-        "app/**/*.ts"
+        "./app/**/*.ts"
     ],
     "filesGlob": [
         "**/*.ts",
