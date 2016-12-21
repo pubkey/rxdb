@@ -1,3 +1,9 @@
+## 1.5.6 (December 22, 2016)
+
+Bugfixes:
+  - direct import 'url'-module for react native
+
+
 ## 1.5.5 (December 20, 2016)
 
 Features:
