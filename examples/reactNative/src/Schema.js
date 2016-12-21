@@ -1,18 +1,17 @@
-
-var heroSchema = {
-    "title": "hero schema",
-    "description": "describes a simple hero",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "primary": true
+const heroSchema = {
+    'title': 'hero schema',
+    'description': 'describes a simple hero',
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'primary': true
         },
-        "color": {
-            "type": "string"
+        'color': {
+            'type': 'string'
         }
     },
-    "required": ["color"]
+    'required': ['color']
 };
 
-export default heroSchema
+export default heroSchema;

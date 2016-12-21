@@ -1,25 +1,31 @@
 {
-	"name": "reactNative",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"start": "node node_modules/react-native/local-cli/cli.js start",
-		"test": "jest"
-	},
-	"dependencies": {
-		"pouchdb-adapter-asyncstorage": "^6.1.21",
-		"pouchdb-adapter-leveldb": "^6.0.7",
-		"react": "15.4.1",
-		"react-native": "0.39.0",
-		"rxdb": "^1.4.4"
-	},
-	"devDependencies": {
-		"babel-jest": "17.0.2",
-		"babel-preset-react-native": "1.9.0",
-		"jest": "17.0.3",
-		"react-test-renderer": "15.4.1"
-	},
-	"jest": {
-		"preset": "react-native"
-	}
+  "name": "reactNative",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "(cd android/ && ./gradlew assembleDebug)",
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "bundle-android": "react-native bundle --platform android --dev false --entry-file index.android.js --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output android/app/src/main/assets/index.android.map --assets-dest android/app/src/main/res/",
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "pouchdb-adapter-asyncstorage": "^6.1.21",
+    "pouchdb-adapter-leveldb": "^6.0.7",
+    "react": "15.4.1",
+    "react-native": "0.39.0",
+    "rxdb": "^1.4.4"
+  },
+  "devDependencies": {
+    "babel-jest": "17.0.2",
+    "babel-preset-react-native": "1.9.0",
+    "eslint": "^3.12.2",
+    "eslint-plugin-react": "6.8.0",
+    "eslint-plugin-react-native": "2.2.1",
+    "jest": "17.0.3",
+    "react-test-renderer": "15.4.1"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
 }
