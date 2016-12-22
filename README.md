@@ -25,7 +25,7 @@
         <br/>
         <li>Schemas (jsonschema)</li>
         <br/>
-        <li>Mango-Query (MongoDB)</li>
+        <li>Mongo-Query (MongoDB)</li>
         <br/>
         <li>Encryption</li>
         <br/>
