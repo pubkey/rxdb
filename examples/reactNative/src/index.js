@@ -12,56 +12,72 @@ import {
 import React from 'react';
 const {width, height} = Dimensions.get('window');
 
+import {
+    default as randomToken
+} from 'random-token';
 import * as RxDB from 'rxdb';
-//import schema from './Schema';
+import schema from './Schema';
 
 //RxDB.plugin(require('pouchdb-adapter-leveldb'));
-//RxDB.plugin(require('pouchdb-adapter-asyncstorage').default);
+RxDB.plugin(require('pouchdb-adapter-asyncstorage').default);
 const syncURL = 'http://localhost:10102/';
+
+const testPouch = async function() {
+    const pouch = new RxDB.PouchDB('testpouch', {adapter: 'asyncstorage'});
+    const _id=randomToken(6);
+    await pouch.put({_id, value: 'val'});
+    const doc = pouch.get(_id);
+    return doc;
+};
 
 export default class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            heroes: [
-                {
-                    name: 'Abdellah',
-                    color: 'papayawhip'
-                }
-            ],
+            heroes: [],
             name: '',
-            color: 'steelblue'
+            color: 'steelblue',
+            pouchWorks: null,
+            col: null
         };
-        this.handleNameChange = this.handleNameChange.bind(this);
         this.addHero = this.addHero.bind(this);
+        this.col = null;
     }
     componentDidMount() {
         console.log('componentDidMount');
 
-  //      RxDB.create('heroesReactDataBase', 'asyncstorage', 'myLongAndStupidPassword', {synced: true});
-        /*        RxDB.create('heroesReactDataBase', 'asyncstorage', 'myLongAndStupidPassword', {synced: true}).then((db) => {
+        testPouch().then(ok => {
+            this.setState({pouchWorks: JSON.stringify(ok)});
+        });
+
+        RxDB.create('heroesReactDataBase', 'asyncstorage', 'myLongAndStupidPassword', {synced: true}).then((db) => {
             window.db = db;
             return db.collection('heroes', schema);
-        }).then((col) => {
+        }).then(col => {
+            console.log('created collection:');
             this.col = col;
             return col;
-        }).then((col) => {
+        });
+        // TODO fix sync
+        /*        .then((col) => {
             console.log('DatabaseService: sync');
             col.sync(syncURL + 'heroes/');
             return col;
-        }).then((col) => {
-            col.query().sort({name: 1}).$.subscribe((heroes) => {
-                if (!heroes)
-                    return;
+        })*/
+/*            .then(col => {
+              col.query().sort({name: 1}).$.subscribe((heroes) => {
+               if (!heroes) return;
 
                 console.log('observable fired');
                 console.dir(heroes);
                 this.setState({heroes: heroes});
             });
+
         });*/
     }
     addHero() {
-        const {name} = this.state;
+        const name = this.state.name;
+        console.log('addHero: '+name);
         const color = this.getRandomColor();
 
         this.col.insert({name, color});
@@ -69,13 +85,11 @@ export default class App extends React.Component {
     }
     getRandomColor() {
         const letters = '0123456789ABCDEF';
+        let color ='';
         for (let i = 0, color = '#'; i < 6; i++)
             color += letters[Math.floor(Math.random() * 16)];
 
         return color;
-    }
-    handleNameChange(event) {
-        this.setState({name: event.target.value});
     }
     render() {
         return (
@@ -86,13 +100,18 @@ export default class App extends React.Component {
                 <ScrollView style={styles.heroesList}>
 
                     <View style={styles.card}>
+                      { this.state.name.length>1 &&
                         <TouchableOpacity onPress={this.addHero}>
                             <Image style={styles.plusImage} source={require('./plusIcon.png')}/>
                         </TouchableOpacity>
-                        <TextInput style={styles.input} value={this.state.name} onChange={this.handleNameChange}/>
+                      }
+                        <TextInput style={styles.input}
+                          value={this.state.name}
+                          onChangeText={(name) => this.setState({name})}
+                          />
                     </View>
-                    {this.state.heroes.length === 0 && <Text>No heroes to display ...</Text>
-}
+                    <TextInput value={this.state.pouchWorks}/>
+                    {this.state.heroes.length === 0 && <Text>No heroes to display ...</Text>}
                     {this.state.heroes.map((hero, index) => (
                         <View style={styles.card} key={index}>
                             <View style={[
