@@ -187,10 +187,7 @@ export function create(collection, jsonData, query) {
 
 
 export function createAr(collection, jsonDataAr, query) {
-    const ret = [];
-    for (let jsonData of jsonDataAr) {
-        if (!jsonData._id.startsWith('_design'))
-            ret.push(create(collection, jsonData, query));
-    }
-    return ret;
+    return jsonDataAr
+        .filter(jsonData => !jsonData._id.startsWith('_design'))
+        .map(jsonData => create(collection, jsonData, query));
 }
