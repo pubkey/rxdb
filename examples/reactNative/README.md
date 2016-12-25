@@ -11,3 +11,4 @@ This is an example usage of RxDB with React-native. It implements a simple heroe
 # Screenshot
 
 ![Screenshot](docfiles/screenshot.png?raw=true)
+![Android](docfiles/android.png?raw=true)
