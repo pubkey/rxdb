@@ -1,3 +1,5 @@
+import { Subject } from 'rxjs';
+
 import {
     ScrollView,
     StyleSheet,
@@ -11,6 +13,7 @@ import {
 } from 'react-native';
 import React from 'react';
 const {width, height} = Dimensions.get('window');
+
 
 import {
     default as randomToken
@@ -28,6 +31,10 @@ const testPouch = async function() {
     await pouch.put({_id, value: 'val'});
     const doc = pouch.get(_id);
     return doc;
+};
+
+const testRxJS = async function(){
+  const sub  = new Subject();
 };
 
 export default class App extends React.Component {
@@ -50,13 +57,21 @@ export default class App extends React.Component {
             this.setState({pouchWorks: JSON.stringify(ok)});
         });
 
-        RxDB.create('heroesReactDataBase', 'asyncstorage', 'myLongAndStupidPassword', {synced: true}).then((db) => {
+        testRxJS();
+
+        RxDB.create('heroesReactDataBase1', 'asyncstorage', 'myLongAndStupidPassword', true).then((db) => {
             window.db = db;
             return db.collection('heroes', schema);
         }).then(col => {
             console.log('created collection:');
             this.col = col;
             return col;
+        }).then(col => {
+          col.query().sort({name: 1}).$.subscribe((heroes) => {
+            if (!heroes) return;
+            console.log('observable fired');
+            this.setState({heroes: heroes});
+          });
         });
         // TODO fix sync
         /*        .then((col) => {
@@ -64,31 +79,21 @@ export default class App extends React.Component {
             col.sync(syncURL + 'heroes/');
             return col;
         })*/
-/*            .then(col => {
-              col.query().sort({name: 1}).$.subscribe((heroes) => {
-               if (!heroes) return;
 
-                console.log('observable fired');
-                console.dir(heroes);
-                this.setState({heroes: heroes});
-            });
-
-        });*/
     }
     addHero() {
         const name = this.state.name;
         console.log('addHero: '+name);
         const color = this.getRandomColor();
-
+        console.log('color: '+color);
         this.col.insert({name, color});
         this.setState({name: '', color: ''});
     }
     getRandomColor() {
         const letters = '0123456789ABCDEF';
-        let color ='';
-        for (let i = 0, color = '#'; i < 6; i++)
+        let color ='#';
+        while(color.length < 7)
             color += letters[Math.floor(Math.random() * 16)];
-
         return color;
     }
     render() {
@@ -98,7 +103,6 @@ export default class App extends React.Component {
                 <Text style={styles.title}>React native rxdb example</Text>
 
                 <ScrollView style={styles.heroesList}>
-
                     <View style={styles.card}>
                       { this.state.name.length>1 &&
                         <TouchableOpacity onPress={this.addHero}>
@@ -110,16 +114,15 @@ export default class App extends React.Component {
                           onChangeText={(name) => this.setState({name})}
                           />
                     </View>
-                    <TextInput value={this.state.pouchWorks}/>
                     {this.state.heroes.length === 0 && <Text>No heroes to display ...</Text>}
                     {this.state.heroes.map((hero, index) => (
                         <View style={styles.card} key={index}>
                             <View style={[
                                 styles.colorBadge, {
-                                    backgroundColor: hero.color
+                                    backgroundColor: hero.get('color')
                                 }
                             ]}/>
-                            <Text style={styles.heroName}>{hero.name}</Text>
+                          <Text style={styles.heroName}>{hero.get('name')}</Text>
                         </View>
                     ))}
                 </ScrollView>
