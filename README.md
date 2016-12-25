@@ -56,6 +56,9 @@
           <img src="docs/files/icons/react.png" width="24px" />
           react
           <br /><br />
+          <img src="docs/files/icons/react-native.png" width="24px" />
+          react-native
+          <br /><br />
           <img src="docs/files/icons/ionic.ico" width="24px" />
           ionic <br /><br />
 
