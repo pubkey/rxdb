@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "Offline-first database with Reactive, Sync, Schema, Promises, Mongo-Query, Encryption, LevelDown",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "author": "pubkey",
   "repository": {
     "type": "git",
