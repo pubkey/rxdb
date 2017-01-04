@@ -17,11 +17,16 @@ import * as RxChangeEvent from './RxChangeEvent';
 
 class RxCollection {
 
+    static HOOKS_WHEN = ['pre', 'post'];
+    static HOOKS_KEYS = ['insert', 'save', 'update', 'remove'];
+
     constructor(database, name, schema, pouchSettings = {}) {
         this.database = database;
         this.name = name;
         this.schema = schema;
         this.synced = false;
+
+        this.hooks = {};
 
         let adapterObj = {
             db: this.database.adapter
@@ -45,6 +50,7 @@ class RxCollection {
             .filter(event => event.data.col == this.name);
     }
     async prepare() {
+        // INDEXES
         await Promise.all(
             this.schema.indexes
             .map(indexAr => this.pouch.createIndex({
@@ -52,6 +58,14 @@ class RxCollection {
                     fields: indexAr
                 }
             })));
+
+        // HOOKS
+        RxCollection.HOOKS_KEYS.forEach(key => {
+            RxCollection.HOOKS_WHEN.map(when => {
+                const fnName = when + util.ucfirst(key);
+                this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
+            });
+        });
     }
 
     /**
@@ -76,6 +90,10 @@ class RxCollection {
 
         this.schema.validate(json);
 
+
+        this._runHooks('pre', 'insert', json);
+
+
         // handle encrypted fields
         const encPaths = this.schema.getEncryptedPaths();
         Object.keys(encPaths).map(path => {
@@ -94,8 +112,9 @@ class RxCollection {
         newDocData._rev = insertResult.rev;
         const newDoc = RxDocument.create(this, newDocData, {});
 
-        // event
+        this._runHooks('post', 'insert', newDoc);
 
+        // event
         const emitEvent = RxChangeEvent.create(
             'RxCollection.insert',
             this.database,
@@ -312,6 +331,52 @@ class RxCollection {
         this.pouchSyncs.push(sync);
         return sync;
     }
+
+    /**
+     * HOOKS
+     */
+    addHook(when, key, fun, parallel = false) {
+        if (typeof fun != 'function')
+            throw new TypeError(key + '-hook must be a function');
+
+        if (!RxCollection.HOOKS_WHEN.includes(when))
+            throw new TypeError('hooks-when not known');
+
+        if (!RxCollection.HOOKS_KEYS.includes(key))
+            throw new Error('hook-name ' + key + 'not known');
+
+        const runName = parallel ? 'parallel' : 'series';
+
+        this.hooks[key] = this.hooks[key] || {};
+        this.hooks[key][when] = this.hooks[key][when] || {
+            series: [],
+            parallel: []
+        };
+        this.hooks[key][when][runName].push(fun);
+    }
+    getHooks(when, key) {
+        try {
+            return this.hooks[key][when];
+        } catch (e) {
+            return {
+                series: [],
+                parallel: []
+            };
+        }
+    };
+    async _runHooks(when, key, doc) {
+        const hooks = this.getHooks(when, key);
+        if (!hooks) return;
+
+        for (let i = 0; i < hooks.series.length; i++)
+            hooks.series[i](doc);
+
+        await Promise.all(
+            hooks.parallel
+            .map(hook => hook(doc))
+        );
+    }
+
 
     async destroy() {
         this.subs.map(sub => sub.unsubscribe());

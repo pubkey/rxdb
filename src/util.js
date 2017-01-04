@@ -176,3 +176,10 @@ export function filledArray(size = 0) {
         ret.push(ret.lenght);
     return ret;
 }
+
+export function ucfirst(str) {
+    str += '';
+    const f = str.charAt(0)
+        .toUpperCase();
+    return f + str.substr(1);
+}

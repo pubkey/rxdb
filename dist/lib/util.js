@@ -107,6 +107,7 @@ exports.generate_id = generate_id;
 exports.jsonSchemaValidate = jsonSchemaValidate;
 exports.promiseWaitResolveable = promiseWaitResolveable;
 exports.filledArray = filledArray;
+exports.ucfirst = ucfirst;
 
 var _randomToken = require('random-token');
 
@@ -258,4 +259,10 @@ function filledArray() {
     while (ret.length < size) {
         ret.push(ret.lenght);
     }return ret;
+}
+
+function ucfirst(str) {
+    str += '';
+    var f = str.charAt(0).toUpperCase();
+    return f + str.substr(1);
 }
