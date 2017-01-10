@@ -4,7 +4,6 @@ import {
 } from 'random-token';
 import * as _ from 'lodash';
 
-
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -16,7 +15,6 @@ import * as util from '../../dist/lib/util';
 process.on('unhandledRejection', function(err) {
     throw err;
 });
-
 
 describe('Hooks.test.js', () => {
     describe('get/set', () => {
@@ -39,50 +37,144 @@ describe('Hooks.test.js', () => {
             assert.equal(hooks.parallel.length, 1);
         });
     });
-
     describe('insert', () => {
+        describe('pre', () => {
+            describe('positive', () => {
+                it('series', async() => {
+                    const c = await humansCollection.create(0);
+                    const human = schemaObjects.human();
+                    let count = 0;
+                    c.preInsert(function(doc) {
+                        assert.equal(doc.constructor.name, 'Object');
+                        count++;
+                    }, false);
+                    await c.insert(human);
+                    assert.equal(count, 1);
+                });
+                it('parallel', async() => {
+                    const c = await humansCollection.create(0);
+                    const human = schemaObjects.human();
+                    let count = 0;
+                    c.preInsert(function(doc) {
+                        assert.equal(doc.constructor.name, 'Object');
+                        count++;
+                    }, false);
+                    let countp = 0;
+                    c.preInsert(function(doc) {
+                        assert.equal(doc.constructor.name, 'Object');
+                        countp++;
+                    }, true);
+                    await c.insert(human);
+                    assert.equal(count, 1);
+                    assert.equal(countp, 1);
+                });
+                it('should save a modified document', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
 
-        it('pre: series', async() => {
-            const c = await humansCollection.create(0);
-            const human = schemaObjects.human();
-            let count = 0;
-            c.preInsert(function(doc) {
-                assert.equal(doc.constructor.name, 'Object');
-                count++;
-            }, false);
-            await c.insert(human);
-            assert.equal(count, 1);
-        });
-        it('pre: parallel', async() => {
-            const c = await humansCollection.create(0);
-            const human = schemaObjects.human();
-            let count = 0;
-            c.preInsert(function(doc) {
-                assert.equal(doc.constructor.name, 'Object');
-                count++;
-            }, false);
-            let countp = 0;
-            c.preInsert(function(doc) {
-                assert.equal(doc.constructor.name, 'Object');
-                countp++;
-            }, true);
-            c.insert(human);
-            assert.equal(count, 1);
-            assert.equal(countp, 1);
-        });
+                    c.preInsert(function(doc) {
+                        doc.lastName = 'foobar';
+                    }, false);
 
-        it('post: series', async() => {
-            const c = await humansCollection.create(0);
-            const human = schemaObjects.human();
-            let count = 0;
-            c.postInsert(function(doc) {
-                assert.equal(doc.constructor.name, 'RxDocument');
-                count++;
-            }, false);
-            await c.insert(human);
-            assert.equal(count, 1);
-        });
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    assert.equal(doc.get('lastName'), 'foobar');
+                });
+                it('async: should save a modified document', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
 
+                    c.preInsert(async function(doc) {
+                        await util.promiseWait(10);
+                        doc.lastName = 'foobar';
+                    }, false);
+
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    assert.equal(doc.get('lastName'), 'foobar');
+                });
+                it('should not insert if hook throws', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    c.preInsert(function(doc) {
+                        throw new Error('foobar');
+                    }, false);
+
+                    let failC = 0;
+                    try {
+                        await c.insert(human);
+                    } catch (e) {
+                        failC++;
+                    }
+                    assert.equal(failC, 1);
+                    const doc = await c.findOne(human.passportId).exec();
+                    assert.equal(doc, null);
+                });
+            });
+            describe('negative', () => {
+                it('should throw if hook invalidates schema', async() => {
+                    const c = await humansCollection.create(0);
+                    const human = schemaObjects.human();
+
+                    c.preInsert(function(doc) {
+                        doc.lastName = 1337;
+                    }, false);
+
+                    await util.assertThrowsAsync(
+                        () => c.insert(human),
+                        Error
+                    );
+                });
+            });
+        });
+        describe('post', () => {
+            describe('positive', () => {
+                it('series', async() => {
+                    const c = await humansCollection.create(0);
+                    const human = schemaObjects.human();
+                    let count = 0;
+                    c.postInsert(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, false);
+                    await c.insert(human);
+                    assert.equal(count, 1);
+                });
+                it('parallel', async() => {
+                    const c = await humansCollection.create(0);
+                    const human = schemaObjects.human();
+                    let count = 0;
+                    c.postInsert(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, true);
+                    await c.insert(human);
+                    assert.equal(count, 1);
+                });
+            });
+        });
+    });
+
+    describe('save', () => {
+        describe('pre', () => {
+            describe('positive', () => {});
+            describe('negative', () => {});
+        });
+        describe('post', () => {
+            describe('positive', () => {});
+            describe('negative', () => {});
+        });
+    });
+
+    describe('remove', () => {
+        describe('pre', () => {
+            describe('positive', () => {});
+            describe('negative', () => {});
+        });
+        describe('post', () => {
+            describe('positive', () => {});
+            describe('negative', () => {});
+        });
     });
 
     describe('exit', () => {

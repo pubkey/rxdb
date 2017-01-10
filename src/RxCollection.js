@@ -18,7 +18,7 @@ import * as RxChangeEvent from './RxChangeEvent';
 class RxCollection {
 
     static HOOKS_WHEN = ['pre', 'post'];
-    static HOOKS_KEYS = ['insert', 'save', 'update', 'remove'];
+    static HOOKS_KEYS = ['insert', 'save', 'remove'];
 
     constructor(database, name, schema, pouchSettings = {}) {
         this.database = database;
@@ -87,11 +87,9 @@ class RxCollection {
         json = clone(json);
         json._id = util.generate_id();
 
+        await this._runHooks('pre', 'insert', json);
 
         this.schema.validate(json);
-
-
-        this._runHooks('pre', 'insert', json);
 
 
         // handle encrypted fields
@@ -112,7 +110,7 @@ class RxCollection {
         newDocData._rev = insertResult.rev;
         const newDoc = RxDocument.create(this, newDocData, {});
 
-        this._runHooks('post', 'insert', newDoc);
+        await this._runHooks('post', 'insert', newDoc);
 
         // event
         const emitEvent = RxChangeEvent.create(
@@ -369,7 +367,7 @@ class RxCollection {
         if (!hooks) return;
 
         for (let i = 0; i < hooks.series.length; i++)
-            hooks.series[i](doc);
+            await hooks.series[i](doc);
 
         await Promise.all(
             hooks.parallel
