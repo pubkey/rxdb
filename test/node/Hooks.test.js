@@ -157,11 +157,139 @@ describe('Hooks.test.js', () => {
 
     describe('save', () => {
         describe('pre', () => {
-            describe('positive', () => {});
-            describe('negative', () => {});
+            describe('positive', () => {
+                it('series', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.preSave(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, false);
+                    doc.set('firstName', 'foobar');
+                    await doc.save();
+                    assert.equal(count, 1);
+                });
+                it('parallel', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.preSave(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, true);
+                    doc.set('firstName', 'foobar');
+                    await doc.save();
+                    assert.equal(count, 1);
+                });
+                it('should save a modified document', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+
+                    c.preSave(function(doc) {
+                        doc.set('lastName', 'foobar');
+                    }, false);
+                    doc.set('firstName', 'foobar');
+                    await doc.save();
+                    const doc2 = await c.findOne(human.passportId).exec();
+                    assert.equal(doc2.get('lastName'), 'foobar');
+
+                });
+                it('async: should save a modified document', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+
+                    c.preSave(async function(doc) {
+                        await util.promiseWait(10);
+                        doc.set('lastName', 'foobar');
+                    }, false);
+                    doc.set('firstName', 'foobar');
+                    await doc.save();
+                    const doc2 = await c.findOne(human.passportId).exec();
+                    assert.equal(doc2.get('lastName'), 'foobar');
+                });
+                it('should not save if hook throws', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    human.firstName = 'test';
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+
+                    c.preSave(function(doc) {
+                        throw new Error('fail');
+                    }, false);
+
+                    doc.set('firstName', 'foobar');
+                    let failC = 0;
+                    try {
+                        await doc.save();
+                    } catch (e) {
+                        failC++;
+                    }
+                    assert.equal(failC, 1);
+                    const doc2 = await c.findOne(human.passportId).exec();
+                    assert.equal(doc2.get('firstName'), 'test');
+                });
+            });
+            describe('negative', () => {
+                it('should throw if hook invalidates schema', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+
+                    c.preSave(function(doc) {
+                        doc.set('firstName', 1337);
+                    }, false);
+
+                    doc.set('firstName', 'foobar');
+
+                    await util.assertThrowsAsync(
+                        () => doc.save(),
+                        Error
+                    );
+                });
+            });
         });
         describe('post', () => {
-            describe('positive', () => {});
+            describe('positive', () => {
+                it('series', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.postSave(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, false);
+                    doc.set('firstName', 'foobar');
+                    await doc.save();
+                    assert.equal(count, 1);
+                });
+                it('parallel', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.postSave(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, true);
+                    doc.set('firstName', 'foobar');
+                    await doc.save();
+                    assert.equal(count, 1);
+                });
+            });
             describe('negative', () => {});
         });
     });

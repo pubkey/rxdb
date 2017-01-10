@@ -129,7 +129,14 @@ class RxDocument {
             this.data = Object.assign(rootDoc.data, this.data);
         }
 
+        await this.collection._runHooks('pre', 'save', this);
         const emitValue = clone(this.rawData);
+
+        this.collection.schema.validate(
+            this.collection.schema.swapIdToPrimary(
+                clone(this.rawData)
+            )
+        );
 
         // handle encrypted data
         const encPaths = this.collection.schema.getEncryptedPaths();
@@ -143,6 +150,8 @@ class RxDocument {
         if (!ret.ok)
             throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
         this.rawData._rev = ret.rev;
+
+        await this.collection._runHooks('post', 'save', this);
 
         // event
         this.$emit(RxChangeEvent.create(
