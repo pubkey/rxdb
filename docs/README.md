@@ -38,4 +38,5 @@ If you are new to RxDB, you should start [here](./RxDatabase.md).
     - [save()](./RxDocument.md#save)
     - [remove()](./RxDocument.md#remove)
     - [$()](./RxDocument.md#observe-path)
+- [Middleware-hooks](./Middleware.md)
 - [LeaderElection](./LeaderElection.md)
