@@ -17,6 +17,7 @@ declare class RxDatabase {
     token: string;
     multiInstance: boolean;
     password: string;
+    collections: any;
 
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
@@ -48,6 +49,16 @@ declare class RxCollection {
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
+
+    // HOOKS
+    preInsert(fun: Function, parallel: boolean);
+    preSave(fun: Function, parallel: boolean);
+    preRemove(fun: Function, parallel: boolean);
+
+    postInsert(fun: Function, parallel: boolean);
+    postSave(fun: Function, parallel: boolean);
+    postRemove(fun: Function, parallel: boolean);
+
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
     destroy(): Promise<boolean>;

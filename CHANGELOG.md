@@ -1,8 +1,12 @@
+## 1.6.7 (January 11, 2017)
+
+Features:
+  - add [middleware-hooks](./docs/Middleware.md)
+
 ## 1.5.6 (December 22, 2016)
 
 Bugfixes:
   - direct import 'url'-module for react native
-
 
 ## 1.5.5 (December 20, 2016)
 
