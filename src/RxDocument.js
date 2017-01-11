@@ -129,14 +129,10 @@ class RxDocument {
             this.data = Object.assign(rootDoc.data, this.data);
         }
 
-        await this.collection._runHooks('pre', 'save', this);
         const emitValue = clone(this.rawData);
 
-        this.collection.schema.validate(
-            this.collection.schema.swapIdToPrimary(
-                clone(this.rawData)
-            )
-        );
+        await this.collection._runHooks('pre', 'save', this);
+
 
         // handle encrypted data
         const encPaths = this.collection.schema.getEncryptedPaths();
@@ -170,8 +166,12 @@ class RxDocument {
         if (this.deleted)
             throw new Error('RxDocument.remove(): Document is already deleted');
 
+        await this.collection._runHooks('pre', 'remove', this);
+
         this.deleted = true;
         await this.collection.pouch.remove(this.rawData._id, this.rawData._rev);
+
+        await this.collection._runHooks('post', 'remove', this);
 
         this.$emit(RxChangeEvent.create(
             'RxDocument.remove',

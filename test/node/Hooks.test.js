@@ -296,17 +296,87 @@ describe('Hooks.test.js', () => {
 
     describe('remove', () => {
         describe('pre', () => {
-            describe('positive', () => {});
+            describe('positive', () => {
+                it('series', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.preRemove(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, false);
+                    await doc.remove();
+                    assert.equal(count, 1);
+                });
+                it('parallel', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.preRemove(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, true);
+                    await doc.remove();
+                    assert.equal(count, 1);
+                });
+                it('should not remove if hook throws', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+
+                    c.preRemove(function(doc) {
+                        throw new Error('fail');
+                    }, false);
+
+                    let failC = 0;
+                    try {
+                        await doc.remove();
+                    } catch (e) {
+                        failC++;
+                    }
+                    assert.equal(failC, 1);
+                    const doc2 = await c.findOne(human.passportId).exec();
+                    assert.notEqual(doc2, null);
+                    assert.equal(doc2.get('passportId'), human.passportId);
+                });
+            });
             describe('negative', () => {});
         });
         describe('post', () => {
-            describe('positive', () => {});
+            describe('positive', () => {
+                it('series', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.postRemove(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, false);
+                    await doc.remove();
+                    assert.equal(count, 1);
+                });
+                it('parallel', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const human = schemaObjects.simpleHuman();
+                    await c.insert(human);
+                    const doc = await c.findOne(human.passportId).exec();
+                    let count = 0;
+                    c.postRemove(function(doc) {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        count++;
+                    }, true);
+                    await doc.remove();
+                    assert.equal(count, 1);
+                });
+            });
             describe('negative', () => {});
         });
     });
-
-    describe('exit', () => {
-        it('e', () => process.exit());
-    });
-
 });

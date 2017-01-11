@@ -50,13 +50,12 @@ declare class RxCollection {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preSave(fun: function, parallel=true);
     preInsert(fun: function, parallel=true);
-    preUpdate(fun: function, parallel=true);
+    preSave(fun: function, parallel=true);
     preRemove(fun: function, parallel=true);
-    postSave(fun: function, parallel=true);
+
     postInsert(fun: function, parallel=true);
-    postUpdate(fun: function, parallel=true);
+    postSave(fun: function, parallel=true);
     postRemove(fun: function, parallel=true);
 
 
