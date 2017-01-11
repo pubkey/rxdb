@@ -194,9 +194,12 @@ var RxDocument = function () {
 
                             case 10:
                                 emitValue = (0, _clone2.default)(this.rawData);
+                                _context.next = 13;
+                                return this.collection._runHooks('pre', 'save', this);
+
+                            case 13:
 
                                 // handle encrypted data
-
                                 encPaths = this.collection.schema.getEncryptedPaths();
 
                                 Object.keys(encPaths).map(function (path) {
@@ -205,28 +208,33 @@ var RxDocument = function () {
                                     _objectPath2.default.set(_this2.rawData, path, encrypted);
                                 });
 
-                                _context.next = 15;
+                                _context.next = 17;
                                 return this.collection.pouch.put(this.rawData);
 
-                            case 15:
+                            case 17:
                                 ret = _context.sent;
 
                                 if (ret.ok) {
-                                    _context.next = 18;
+                                    _context.next = 20;
                                     break;
                                 }
 
                                 throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
 
-                            case 18:
+                            case 20:
                                 this.rawData._rev = ret.rev;
+
+                                _context.next = 23;
+                                return this.collection._runHooks('post', 'save', this);
+
+                            case 23:
 
                                 // event
                                 this.$emit(RxChangeEvent.create('RxDocument.save', this.collection.database, this.collection, this, emitValue));
 
                                 this.changed = false;
 
-                            case 21:
+                            case 25:
                             case 'end':
                                 return _context.stop();
                         }
@@ -256,16 +264,24 @@ var RxDocument = function () {
                                 throw new Error('RxDocument.remove(): Document is already deleted');
 
                             case 2:
+                                _context2.next = 4;
+                                return this.collection._runHooks('pre', 'remove', this);
+
+                            case 4:
 
                                 this.deleted = true;
-                                _context2.next = 5;
+                                _context2.next = 7;
                                 return this.collection.pouch.remove(this.rawData._id, this.rawData._rev);
 
-                            case 5:
+                            case 7:
+                                _context2.next = 9;
+                                return this.collection._runHooks('post', 'remove', this);
+
+                            case 9:
 
                                 this.$emit(RxChangeEvent.create('RxDocument.remove', this.collection.database, this.collection, this, null));
 
-                            case 6:
+                            case 10:
                             case 'end':
                                 return _context2.stop();
                         }

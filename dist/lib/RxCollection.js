@@ -218,9 +218,12 @@ var RxCollection = function () {
                                 json = (0, _clone2.default)(json);
                                 json._id = util.generate_id();
 
-                                this.schema.validate(json);
+                                _context2.next = 6;
+                                return this._runHooks('pre', 'insert', json);
 
-                                this._runHooks('pre', 'insert', json);
+                            case 6:
+
+                                this.schema.validate(json);
 
                                 // handle encrypted fields
                                 encPaths = this.schema.getEncryptedPaths();
@@ -233,19 +236,20 @@ var RxCollection = function () {
 
                                 // primary swap
                                 swappedDoc = this.schema.swapPrimaryToId(json);
-                                _context2.next = 11;
+                                _context2.next = 12;
                                 return this.pouch.put(swappedDoc);
 
-                            case 11:
+                            case 12:
                                 insertResult = _context2.sent;
                                 newDocData = json;
 
                                 newDocData._id = insertResult.id;
                                 newDocData._rev = insertResult.rev;
                                 newDoc = RxDocument.create(this, newDocData, {});
+                                _context2.next = 19;
+                                return this._runHooks('post', 'insert', newDoc);
 
-
-                                this._runHooks('post', 'insert', newDoc);
+                            case 19:
 
                                 // event
                                 emitEvent = RxChangeEvent.create('RxCollection.insert', this.database, this, newDoc, newDocData);
@@ -254,7 +258,7 @@ var RxCollection = function () {
 
                                 return _context2.abrupt('return', newDoc);
 
-                            case 20:
+                            case 22:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -672,15 +676,29 @@ var RxCollection = function () {
                                 return _context8.abrupt('return');
 
                             case 3:
+                                i = 0;
 
-                                for (i = 0; i < hooks.series.length; i++) {
-                                    hooks.series[i](doc);
-                                }_context8.next = 6;
+                            case 4:
+                                if (!(i < hooks.series.length)) {
+                                    _context8.next = 10;
+                                    break;
+                                }
+
+                                _context8.next = 7;
+                                return hooks.series[i](doc);
+
+                            case 7:
+                                i++;
+                                _context8.next = 4;
+                                break;
+
+                            case 10:
+                                _context8.next = 12;
                                 return Promise.all(hooks.parallel.map(function (hook) {
                                     return hook(doc);
                                 }));
 
-                            case 6:
+                            case 12:
                             case 'end':
                                 return _context8.stop();
                         }
@@ -734,4 +752,4 @@ var RxCollection = function () {
 }();
 
 RxCollection.HOOKS_WHEN = ['pre', 'post'];
-RxCollection.HOOKS_KEYS = ['insert', 'save', 'update', 'remove'];
+RxCollection.HOOKS_KEYS = ['insert', 'save', 'remove'];

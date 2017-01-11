@@ -1246,15 +1246,15 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9(database, name, schema) {
+    var _ref10 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
         var collection;
-        return _regenerator2.default.wrap(function _callee9$(_context9) {
+        return _regenerator2.default.wrap(function _callee10$(_context10) {
             while (1) {
-                switch (_context9.prev = _context9.next) {
+                switch (_context10.prev = _context10.next) {
                     case 0:
                         if (!(schema.constructor.name != 'RxSchema')) {
-                            _context9.next = 2;
+                            _context10.next = 2;
                             break;
                         }
 
@@ -1262,7 +1262,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(database.constructor.name != 'RxDatabase')) {
-                            _context9.next = 4;
+                            _context10.next = 4;
                             break;
                         }
 
@@ -1270,7 +1270,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof name != 'string' || name.length == 0)) {
-                            _context9.next = 6;
+                            _context10.next = 6;
                             break;
                         }
 
@@ -1278,22 +1278,22 @@ var create = exports.create = function () {
 
                     case 6:
                         collection = new RxCollection(database, name, schema);
-                        _context9.next = 9;
+                        _context10.next = 9;
                         return collection.prepare();
 
                     case 9:
-                        return _context9.abrupt('return', collection);
+                        return _context10.abrupt('return', collection);
 
                     case 10:
                     case 'end':
-                        return _context9.stop();
+                        return _context10.stop();
                 }
             }
-        }, _callee9, this);
+        }, _callee10, this);
     }));
 
-    return function create(_x7, _x8, _x9) {
-        return _ref9.apply(this, arguments);
+    return function create(_x11, _x12, _x13) {
+        return _ref10.apply(this, arguments);
     };
 }();
 
@@ -1345,6 +1345,8 @@ var RxCollection = function () {
         this.schema = schema;
         this.synced = false;
 
+        this.hooks = {};
+
         var adapterObj = {
             db: this.database.adapter
         };
@@ -1384,6 +1386,18 @@ var RxCollection = function () {
                                 }));
 
                             case 2:
+
+                                // HOOKS
+                                RxCollection.HOOKS_KEYS.forEach(function (key) {
+                                    RxCollection.HOOKS_WHEN.map(function (when) {
+                                        var fnName = when + util.ucfirst(key);
+                                        _this2[fnName] = function (fun, parallel) {
+                                            return _this2.addHook(when, key, fun, parallel);
+                                        };
+                                    });
+                                });
+
+                            case 3:
                             case 'end':
                                 return _context.stop();
                         }
@@ -1428,6 +1442,11 @@ var RxCollection = function () {
                                 json = (0, _clone2.default)(json);
                                 json._id = util.generate_id();
 
+                                _context2.next = 6;
+                                return this._runHooks('pre', 'insert', json);
+
+                            case 6:
+
                                 this.schema.validate(json);
 
                                 // handle encrypted fields
@@ -1441,26 +1460,29 @@ var RxCollection = function () {
 
                                 // primary swap
                                 swappedDoc = this.schema.swapPrimaryToId(json);
-                                _context2.next = 10;
+                                _context2.next = 12;
                                 return this.pouch.put(swappedDoc);
 
-                            case 10:
+                            case 12:
                                 insertResult = _context2.sent;
                                 newDocData = json;
 
                                 newDocData._id = insertResult.id;
                                 newDocData._rev = insertResult.rev;
                                 newDoc = RxDocument.create(this, newDocData, {});
+                                _context2.next = 19;
+                                return this._runHooks('post', 'insert', newDoc);
+
+                            case 19:
 
                                 // event
-
                                 emitEvent = RxChangeEvent.create('RxCollection.insert', this.database, this, newDoc, newDocData);
 
                                 this.$emit(emitEvent);
 
                                 return _context2.abrupt('return', newDoc);
 
-                            case 18:
+                            case 22:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -1822,13 +1844,105 @@ var RxCollection = function () {
 
             return sync;
         }()
+
+        /**
+         * HOOKS
+         */
+
     }, {
-        key: 'destroy',
+        key: 'addHook',
+        value: function addHook(when, key, fun) {
+            var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+
+            if (typeof fun != 'function') throw new TypeError(key + '-hook must be a function');
+
+            if (!RxCollection.HOOKS_WHEN.includes(when)) throw new TypeError('hooks-when not known');
+
+            if (!RxCollection.HOOKS_KEYS.includes(key)) throw new Error('hook-name ' + key + 'not known');
+
+            var runName = parallel ? 'parallel' : 'series';
+
+            this.hooks[key] = this.hooks[key] || {};
+            this.hooks[key][when] = this.hooks[key][when] || {
+                series: [],
+                parallel: []
+            };
+            this.hooks[key][when][runName].push(fun);
+        }
+    }, {
+        key: 'getHooks',
+        value: function getHooks(when, key) {
+            try {
+                return this.hooks[key][when];
+            } catch (e) {
+                return {
+                    series: [],
+                    parallel: []
+                };
+            }
+        }
+    }, {
+        key: '_runHooks',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
+            var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(when, key, doc) {
+                var hooks, i;
                 return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
+                            case 0:
+                                hooks = this.getHooks(when, key);
+
+                                if (hooks) {
+                                    _context8.next = 3;
+                                    break;
+                                }
+
+                                return _context8.abrupt('return');
+
+                            case 3:
+                                i = 0;
+
+                            case 4:
+                                if (!(i < hooks.series.length)) {
+                                    _context8.next = 10;
+                                    break;
+                                }
+
+                                _context8.next = 7;
+                                return hooks.series[i](doc);
+
+                            case 7:
+                                i++;
+                                _context8.next = 4;
+                                break;
+
+                            case 10:
+                                _context8.next = 12;
+                                return Promise.all(hooks.parallel.map(function (hook) {
+                                    return hook(doc);
+                                }));
+
+                            case 12:
+                            case 'end':
+                                return _context8.stop();
+                        }
+                    }
+                }, _callee8, this);
+            }));
+
+            function _runHooks(_x8, _x9, _x10) {
+                return _ref8.apply(this, arguments);
+            }
+
+            return _runHooks;
+        }()
+    }, {
+        key: 'destroy',
+        value: function () {
+            var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9() {
+                return _regenerator2.default.wrap(function _callee9$(_context9) {
+                    while (1) {
+                        switch (_context9.prev = _context9.next) {
                             case 0:
                                 this.subs.map(function (sub) {
                                     return sub.unsubscribe();
@@ -1840,14 +1954,14 @@ var RxCollection = function () {
 
                             case 3:
                             case 'end':
-                                return _context8.stop();
+                                return _context9.stop();
                         }
                     }
-                }, _callee8, this);
+                }, _callee9, this);
             }));
 
             function destroy() {
-                return _ref8.apply(this, arguments);
+                return _ref9.apply(this, arguments);
             }
 
             return destroy;
@@ -1860,6 +1974,9 @@ var RxCollection = function () {
     }]);
     return RxCollection;
 }();
+
+RxCollection.HOOKS_WHEN = ['pre', 'post'];
+RxCollection.HOOKS_KEYS = ['insert', 'save', 'remove'];
 },{"./PouchDB":3,"./RxChangeEvent":5,"./RxDocument":8,"./RxQuery":9,"./util":16,"babel-runtime/helpers/asyncToGenerator":22,"babel-runtime/helpers/classCallCheck":23,"babel-runtime/helpers/createClass":24,"babel-runtime/regenerator":26,"clone":31,"object-path":136}],7:[function(require,module,exports){
 'use strict';
 
@@ -2759,9 +2876,12 @@ var RxDocument = function () {
 
                             case 10:
                                 emitValue = (0, _clone2.default)(this.rawData);
+                                _context.next = 13;
+                                return this.collection._runHooks('pre', 'save', this);
+
+                            case 13:
 
                                 // handle encrypted data
-
                                 encPaths = this.collection.schema.getEncryptedPaths();
 
                                 Object.keys(encPaths).map(function (path) {
@@ -2770,28 +2890,33 @@ var RxDocument = function () {
                                     _objectPath2.default.set(_this2.rawData, path, encrypted);
                                 });
 
-                                _context.next = 15;
+                                _context.next = 17;
                                 return this.collection.pouch.put(this.rawData);
 
-                            case 15:
+                            case 17:
                                 ret = _context.sent;
 
                                 if (ret.ok) {
-                                    _context.next = 18;
+                                    _context.next = 20;
                                     break;
                                 }
 
                                 throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
 
-                            case 18:
+                            case 20:
                                 this.rawData._rev = ret.rev;
+
+                                _context.next = 23;
+                                return this.collection._runHooks('post', 'save', this);
+
+                            case 23:
 
                                 // event
                                 this.$emit(RxChangeEvent.create('RxDocument.save', this.collection.database, this.collection, this, emitValue));
 
                                 this.changed = false;
 
-                            case 21:
+                            case 25:
                             case 'end':
                                 return _context.stop();
                         }
@@ -2821,16 +2946,24 @@ var RxDocument = function () {
                                 throw new Error('RxDocument.remove(): Document is already deleted');
 
                             case 2:
+                                _context2.next = 4;
+                                return this.collection._runHooks('pre', 'remove', this);
+
+                            case 4:
 
                                 this.deleted = true;
-                                _context2.next = 5;
+                                _context2.next = 7;
                                 return this.collection.pouch.remove(this.rawData._id, this.rawData._rev);
 
-                            case 5:
+                            case 7:
+                                _context2.next = 9;
+                                return this.collection._runHooks('post', 'remove', this);
+
+                            case 9:
 
                                 this.$emit(RxChangeEvent.create('RxDocument.remove', this.collection.database, this.collection, this, null));
 
-                            case 6:
+                            case 10:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -6582,6 +6715,7 @@ exports.generate_id = generate_id;
 exports.jsonSchemaValidate = jsonSchemaValidate;
 exports.promiseWaitResolveable = promiseWaitResolveable;
 exports.filledArray = filledArray;
+exports.ucfirst = ucfirst;
 
 var _randomToken = require('random-token');
 
@@ -6733,6 +6867,12 @@ function filledArray() {
     while (ret.length < size) {
         ret.push(ret.lenght);
     }return ret;
+}
+
+function ucfirst(str) {
+    str += '';
+    var f = str.charAt(0).toUpperCase();
+    return f + str.substr(1);
 }
 },{"babel-runtime/helpers/asyncToGenerator":22,"babel-runtime/regenerator":26,"crypto-js/aes":114,"crypto-js/enc-utf8":118,"jsonschema":132,"random-token":193,"rxjs/BehaviorSubject":197,"rxjs/Observable":200,"rxjs/Subject":204,"rxjs/add/observable/fromEvent":208,"rxjs/add/observable/interval":209,"rxjs/add/observable/merge":210,"rxjs/add/operator/delay":211,"rxjs/add/operator/distinctUntilChanged":212,"rxjs/add/operator/do":213,"rxjs/add/operator/filter":214,"rxjs/add/operator/first":215,"rxjs/add/operator/map":216,"rxjs/add/operator/startWith":217,"rxjs/add/operator/timeout":218,"rxjs/add/operator/toPromise":219,"spark-md5":265}],17:[function(require,module,exports){
 'use strict';
