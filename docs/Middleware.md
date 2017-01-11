@@ -41,10 +41,12 @@ An insert-hook recieves the data-object of the new document.
 
 #### lifecycle
 - RxCollection.insert is called
-- preInsert
+- preInsert series-hooks
+- preInsert parallel-hooks
 - schema validation runs
 - new document is written to database
-- postInsert
+- postInsert series-hooks
+- postInsert parallel-hooks
 - event is emmited to RxDatabase and RxCollection
 
 #### preInsert
@@ -97,9 +99,11 @@ An save-hook recieves the document which is saved.
 
 #### lifecycle
 - RxDocument.save is called
-- preSave
+- preSave series-hooks
+- preSave parallel-hooks
 - updated document is written to database
-- postSave
+- postSave series-hooks
+- postSave parallel-hooks
 - event is emmited to RxDatabase and RxCollection
 
 #### preSave
@@ -153,9 +157,11 @@ An remove-hook recieves the document which is removed.
 
 #### lifecycle
 - RxDocument.remove is called
-- preRemove
+- preRemove series-hooks
+- preRemove parallel-hooks
 - deleted document is written to database
-- postRemove
+- postRemove series-hooks
+- postRemove parallel-hooks
 - event is emmited to RxDatabase and RxCollection
 
 #### preSave
