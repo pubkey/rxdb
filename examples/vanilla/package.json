@@ -1,6 +1,6 @@
 {
   "name": "rxdb-example-vanilla",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "scripts": {
     "cp": "rimraf ./dist/ && ncp ../../dist/ ./dist/",
@@ -16,10 +16,10 @@
     "concurrently": "3.1.0",
     "local-web-server": "1.2.6",
     "normalize.css": "5.0.0",
-    "pouchdb-adapter-http": "6.0.7",
-    "pouchdb-adapter-localstorage": "6.0.7",
-    "pouchdb-replication": "6.0.7",
-    "pouchdb-server": "1.2.1"
+    "pouchdb-adapter-http": "^6.1.1",
+    "pouchdb-adapter-localstorage": "^6.1.1",
+    "pouchdb-replication": "^6.1.1",
+    "pouchdb-server": "^2.0.1"
   },
   "devDependencies": {
     "ncp": "^2.0.0",

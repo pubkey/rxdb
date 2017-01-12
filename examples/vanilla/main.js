@@ -66,8 +66,8 @@ window.RxDB
                 heroes.forEach(function(hero) {
                     heroesList.innerHTML = heroesList.innerHTML +
                         '<li>' +
-                        '<div class="color-box" style="background:' + hero.get('color') + '"></div>' +
-                        '<div class="name">' + hero.get('name') + '</div>' +
+                        '<div class="color-box" style="background:' + hero.color + '"></div>' +
+                        '<div class="name">' + hero.name + '</div>' +
                         '</li>';
                 });
             });
