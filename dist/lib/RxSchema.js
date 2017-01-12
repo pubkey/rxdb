@@ -36,6 +36,10 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
+var _RxDocument = require('./RxDocument');
+
+var RxDocument = _interopRequireWildcard(_RxDocument);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -207,6 +211,8 @@ function validateFieldsDeep(jsonSchema) {
         if (['properties', 'language'].includes(fieldName)) throw new Error('fieldname is not allowed: ' + fieldName);
         if (fieldName.includes('.')) throw new Error('field-names cannot contain dots: ' + fieldName);
 
+        if (fieldName.includes('$')) throw new Error('field-names cannot contain $-char: ' + fieldName);
+
         var isNested = path.split('.').length >= 2;
         // nested only
         if (isNested) {
@@ -262,6 +268,9 @@ function checkSchema(jsonID) {
             if (value.encrypted) throw new Error('primary cannot be encrypted');
             if (value.type !== 'string') throw new Error('primary must have type: string');
         }
+
+        // check if RxDocument-property
+        if (RxDocument.properties().includes(key)) throw new Error('top-level fieldname is not allowed: ' + key);
     });
 
     if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath)) throw new Error('primary is always required, do not declare it as required');

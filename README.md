@@ -169,7 +169,7 @@ heroCollection
   .$ // <- returns observable of query
   .subscribe( docs => {
     myDomElement.innerHTML = docs
-      .map(doc => '<li>' + doc.get('name') + '</li>')
+      .map(doc => '<li>' + doc.name + '</li>')
       .join();
   });
 ```

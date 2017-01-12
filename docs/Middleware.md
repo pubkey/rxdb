@@ -111,7 +111,7 @@ An save-hook recieves the document which is saved.
 ```js
 // series
 myCollection.preSave(function(doc){
-  doc.set('anyField', 'anyValue');
+  doc.anyField = 'anyValue';
 }, false);
 
 // parallel

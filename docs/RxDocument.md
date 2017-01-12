@@ -28,18 +28,35 @@ This will get a single field of the document. If the field is encrypted, it will
 var name = myDocument.get('name'); // returns the name
 ```
 
+### proxy-get
+As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly access values instead of using the get()-function.
+
+```js
+  var name = myDocument.name;
+
+  var nestedValue = myDocument.whatever.nestedfield;
+```
+
 ### set()
 To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() afterly to submit changes.
 
 ```js
-myDocument.set('name', 'foobar');
-console.log(myDocument.get('name')); // <- is 'foobar'
+myDocument.set('firstName', 'foobar');
+console.log(myDocument.get('firstName')); // <- is 'foobar'
+```
+
+### proxy-set
+As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly set values instead of using the set()-function.
+
+```js
+myDocument.firstName = 'foobar';
+myDocument.whatever.nestedfield = 'foobar2';
 ```
 
 ### save()
 This will store the document in the storage if it has been changed before. Call this everytime after calling the set-method.
 ```js
-myDocument.set('name', 'foobar');
+myDocument.name = 'foobar';
 await myDocument.save(); // submit the changes to the storage
 ```
 
@@ -73,6 +90,32 @@ myDocument.set('name', 'foobar2');
 await myDocument.save();
 
 console.dir(isName); // isName is now 'foobar2'
+```
+
+### proxy-get$
+As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly get value-observabled instead of using the get$()-function.
+To do this, just add the dollar-sign ($) to the getter.
+
+```js
+// top-level
+var currentName;
+myDocument.firstName$
+  .subscribe(newName => {
+    currentName = newName;
+  });
+myDocument.firstName = 'foobar2';
+await myDocument.save();
+console.dir(currentName); // currentName is now 'foobar2'
+
+// nested
+var currentNestedValue;
+myDocument.whatever.nestedfield$
+  .subscribe(newName => {
+    currentNestedValue = newName;
+  });
+myDocument.whatever.nestedfield = 'foobar2';
+await myDocument.save();
+console.dir(currentNestedValue); // currentNestedValue is now 'foobar2'
 ```
 
 ---------

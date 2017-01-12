@@ -39,6 +39,19 @@ export function nestedHuman() {
     };
 };
 
+export function deepNestedHuman() {
+    return {
+        passportId: randomToken(12),
+        mainSkill: {
+            name: randomToken(6),
+            attack: {
+                good: false,
+                count: 5
+            }
+        }
+    };
+};
+
 
 export function encryptedHuman() {
     return {

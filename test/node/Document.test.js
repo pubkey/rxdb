@@ -370,4 +370,109 @@ describe('Document.test.js', () => {
             });
         });
     });
+
+
+    describe('Proxy', () => {
+        describe('get', () => {
+            it('top-value', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                const passportId = doc.get('passportId');
+                assert.equal(doc.passportId, passportId);
+            });
+            it('nested-value', async() => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec();
+                const mainSkillLevel = doc.get('mainSkill.level');
+                assert.equal(doc.mainSkill.level, mainSkillLevel);
+            });
+            it('deep-nested-value', async() => {
+                const c = await humansCollection.createDeepNested(1);
+                const doc = await c.findOne().exec();
+                const value = doc.get('mainSkill.attack.count');
+                assert.equal(doc.mainSkill.attack.count, value);
+
+                const value2 = doc.get('mainSkill.attack.good');
+                assert.equal(doc.mainSkill.attack.good, value2);
+            });
+            it('top-value-observable', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                const obs = doc.firstName$;
+                assert.equal(obs.constructor.name, 'Observable');
+
+                let value = null;
+                doc.firstName$.subscribe(newVal => {
+                    value = newVal;
+                });
+                doc.set('firstName', 'foobar');
+                await doc.save();
+                await util.promiseWait(5);
+                assert.equal(value, 'foobar');
+            });
+            it('nested-value-observable', async() => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec();
+                const obs = doc.mainSkill.level$;
+                assert.equal(obs.constructor.name, 'Observable');
+
+                let value = null;
+                doc.mainSkill.level$.subscribe(newVal => {
+                    value = newVal;
+                });
+                doc.set('mainSkill.level', 10);
+                await doc.save();
+                await util.promiseWait(5);
+                assert.equal(value, 10);
+            });
+            it('deep-nested-value-observable', async() => {
+                const c = await humansCollection.createDeepNested(1);
+                const doc = await c.findOne().exec();
+                const obs = doc.mainSkill.attack.good$;
+                assert.equal(obs.constructor.name, 'Observable');
+
+                let value = null;
+                doc.mainSkill.attack.good$.subscribe(newVal => {
+                    value = newVal;
+                });
+                doc.set('mainSkill.attack.good', true);
+                await doc.save();
+                await util.promiseWait(5);
+                assert.equal(value, true);
+            });
+        });
+
+        describe('set', () => {
+            it('top value', async() => {
+                const c = await humansCollection.createPrimary(1);
+                const doc = await c.findOne().exec();
+                doc.firstName = 'foobar';
+                assert.equal(doc.firstName, 'foobar');
+
+                await doc.save();
+                const doc2 = await c.findOne(doc.passportId).exec();
+                assert.equal(doc2.firstName, 'foobar');
+            });
+            it('nested value', async() => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec();
+                doc.mainSkill.level = 10;
+                assert.equal(doc.mainSkill.level, 10);
+
+                await doc.save();
+                const doc2 = await c.findOne().exec();
+                assert.equal(doc2.mainSkill.level, 10);
+            });
+            it('deep nested value', async() => {
+                const c = await humansCollection.createDeepNested(1);
+                const doc = await c.findOne().exec();
+                doc.mainSkill.attack.good = true;
+                assert.equal(doc.mainSkill.attack.good, true);
+
+                await doc.save();
+                const doc2 = await c.findOne().exec();
+                assert.equal(doc2.mainSkill.attack.good, true);
+            });
+        });
+    });
 });

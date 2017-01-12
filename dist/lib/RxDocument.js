@@ -4,6 +4,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -11,6 +15,10 @@ var _regenerator2 = _interopRequireDefault(_regenerator);
 var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
 
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
@@ -22,6 +30,7 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
 exports.createAr = createAr;
+exports.properties = properties;
 
 var _clone = require('clone');
 
@@ -119,6 +128,41 @@ var RxDocument = function () {
         }
 
         /**
+         * get the proxy-version of an nested object of this documents data
+         * used to get observables like myfield.nestedfield$
+         * @param {string} path
+         * @param {object} obj
+         */
+
+    }, {
+        key: 'proxyfy',
+        value: function proxyfy(path, obj) {
+            var _this2 = this;
+
+            return new Proxy(obj, {
+                get: function get(target, name) {
+                    var value = obj[name];
+
+                    if (!obj.hasOwnProperty(name) && !obj.hasOwnProperty([name.slice(0, -1)])) return undefined;
+
+                    // return observable if field ends with $
+                    if (name.slice(-1) == '$') return _this2.get$(path + '.' + name.slice(0, -1));
+
+                    // return value if no object or is array
+                    if ((typeof value === 'undefined' ? 'undefined' : (0, _typeof3.default)(value)) !== 'object' || Array.isArray(value)) return value;
+
+                    // return proxy if object again
+                    var newPath = path + '.' + name;
+                    return _this2.proxyfy(newPath, _this2.get(newPath));
+                },
+                set: function set(doc, name, value) {
+                    _this2.set(path + '.' + name, value);
+                    return true;
+                }
+            });
+        }
+
+        /**
          * set data by objectPath
          * @param {string} objPath
          * @param {object} value
@@ -155,7 +199,7 @@ var RxDocument = function () {
         key: 'save',
         value: function () {
             var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
-                var _this2 = this;
+                var _this3 = this;
 
                 var rootDoc, emitValue, encPaths, ret;
                 return _regenerator2.default.wrap(function _callee$(_context) {
@@ -203,9 +247,9 @@ var RxDocument = function () {
                                 encPaths = this.collection.schema.getEncryptedPaths();
 
                                 Object.keys(encPaths).map(function (path) {
-                                    var value = _objectPath2.default.get(_this2.rawData, path);
-                                    var encrypted = _this2.collection.database._encrypt(value);
-                                    _objectPath2.default.set(_this2.rawData, path, encrypted);
+                                    var value = _objectPath2.default.get(_this3.rawData, path);
+                                    var encrypted = _this3.collection.database._encrypt(value);
+                                    _objectPath2.default.set(_this3.rawData, path, encrypted);
                                 });
 
                                 _context.next = 17;
@@ -311,7 +355,29 @@ function create(collection, jsonData, query) {
     if (jsonData._id.startsWith('_design')) return null;
 
     var doc = new RxDocument(collection, jsonData, query);
-    return doc;
+    return new Proxy(doc, {
+        get: function get(doc, name) {
+
+            // return document-property if exists
+            if (doc[name]) return doc[name];
+
+            // return observable if field ends with $
+            if (name.slice(-1) == '$') return doc.get$(name.slice(0, -1));
+
+            var value = doc.get(name);
+            if ((typeof value === 'undefined' ? 'undefined' : (0, _typeof3.default)(value)) == 'object' && !Array.isArray(value)) return doc.proxyfy(name, value);else return value;
+        },
+
+        set: function set(doc, name, value) {
+            if (doc.hasOwnProperty(name)) {
+                doc[name] = value;
+                return true;
+            }
+            if (!doc.get(name)) throw new Error('can not set unknown field ' + name);
+            doc.set(name, value);
+            return true;
+        }
+    });
 }
 
 function createAr(collection, jsonDataAr, query) {
@@ -320,4 +386,28 @@ function createAr(collection, jsonDataAr, query) {
     }).map(function (jsonData) {
         return create(collection, jsonData, query);
     });
+}
+
+var pseudoRxDocument = new RxDocument({
+    schema: {
+        getEncryptedPaths: function getEncryptedPaths() {
+            return [];
+        }
+    },
+    $: {
+        filter: function filter() {
+            return false;
+        }
+    }
+}, {}, {});
+
+/**
+ * returns all possible properties of a RxDocument
+ * @return {string[]} property-names
+ */
+function properties() {
+    var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
+    var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+    var properties = [].concat((0, _toConsumableArray3.default)(ownProperties), (0, _toConsumableArray3.default)(prototypeProperties));
+    return properties;
 }

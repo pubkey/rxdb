@@ -80,6 +80,38 @@ class RxDocument {
     }
 
     /**
+     * get the proxy-version of an nested object of this documents data
+     * used to get observables like myfield.nestedfield$
+     * @param {string} path
+     * @param {object} obj
+     */
+    proxyfy(path, obj) {
+        return new Proxy(obj, {
+            get: (target, name) => {
+                const value = obj[name];
+
+                if (!obj.hasOwnProperty(name) && !obj.hasOwnProperty([name.slice(0, -1)]))
+                    return undefined;
+
+                // return observable if field ends with $
+                if (name.slice(-1) == '$')
+                    return this.get$(path + '.' + name.slice(0, -1));
+
+                // return value if no object or is array
+                if (typeof value !== 'object' || Array.isArray(value)) return value;
+
+                // return proxy if object again
+                const newPath = path + '.' + name;
+                return this.proxyfy(newPath, this.get(newPath));
+            },
+            set: (doc, name, value) => {
+                this.set(path + '.' + name, value);
+                return true;
+            }
+        });
+    }
+
+    /**
      * set data by objectPath
      * @param {string} objPath
      * @param {object} value
@@ -191,7 +223,31 @@ export function create(collection, jsonData, query) {
     if (jsonData._id.startsWith('_design')) return null;
 
     const doc = new RxDocument(collection, jsonData, query);
-    return doc;
+    return new Proxy(doc, {
+        get: (doc, name) => {
+
+            // return document-property if exists
+            if (doc[name]) return doc[name];
+
+            // return observable if field ends with $
+            if (name.slice(-1) == '$')
+                return doc.get$(name.slice(0, -1));
+
+            const value = doc.get(name);
+            if (typeof value == 'object' && !Array.isArray(value)) return doc.proxyfy(name, value);
+            else return value;
+        },
+
+        set: (doc, name, value) => {
+            if (doc.hasOwnProperty(name)) {
+                doc[name] = value;
+                return true;
+            }
+            if (!doc.get(name)) throw new Error('can not set unknown field ' + name);
+            doc.set(name, value);
+            return true;
+        }
+    });
 }
 
 
@@ -199,4 +255,24 @@ export function createAr(collection, jsonDataAr, query) {
     return jsonDataAr
         .filter(jsonData => !jsonData._id.startsWith('_design'))
         .map(jsonData => create(collection, jsonData, query));
+}
+
+const pseudoRxDocument = new RxDocument({
+    schema: {
+        getEncryptedPaths: () => []
+    },
+    $: {
+        filter: () => false
+    }
+}, {}, {});
+
+/**
+ * returns all possible properties of a RxDocument
+ * @return {string[]} property-names
+ */
+export function properties() {
+    const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
+    const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+    const properties = [...ownProperties, ...prototypeProperties];
+    return properties;
 }

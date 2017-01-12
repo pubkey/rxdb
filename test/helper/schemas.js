@@ -81,6 +81,39 @@ export const nestedHuman = {
     required: ['firstName']
 };
 
+export const deepNestedHuman = {
+    title: 'deep human nested',
+    description: 'describes a simple human being with a nested field',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        mainSkill: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                attack: {
+                    type: 'object',
+                    properties: {
+                        good: {
+                            type: 'boolean'
+                        },
+                        count: {
+                            type: 'number'
+                        }
+                    }
+                }
+            },
+            required: ['name', 'attack']
+        }
+    },
+    required: ['mainSkill']
+};
+
 export const noindexHuman = {
     title: 'human schema',
     description: 'this schema has no index',
