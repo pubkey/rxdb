@@ -1,3 +1,8 @@
+## 1.7.7 (January 13, 2017)
+
+Features:
+  - add [Proxy-wrapping arround RxDocument](./docs/RxDocument.md)
+
 ## 1.6.7 (January 11, 2017)
 
 Features:

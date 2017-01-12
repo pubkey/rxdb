@@ -215,8 +215,6 @@ describe('RxSchema.test.js', () => {
                 });
             });
         });
-
-
         describe('.hasCrypt()', () => {
             describe('positive', () => {
                 it('true when one field is encrypted', () => {
