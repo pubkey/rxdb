@@ -7,6 +7,7 @@ import {
 } from 'clone';
 
 import * as util from './util';
+import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
@@ -157,6 +158,10 @@ export function validateFieldsDeep(jsonSchema) {
         if (fieldName.includes('.'))
             throw new Error(`field-names cannot contain dots: ${fieldName}`);
 
+        if (fieldName.includes('$'))
+            throw new Error(`field-names cannot contain $-char: ${fieldName}`);
+
+
         const isNested = path.split('.').length >= 2;
         // nested only
         if (isNested) {
@@ -226,6 +231,10 @@ export function checkSchema(jsonID) {
             if (value.type !== 'string')
                 throw new Error('primary must have type: string');
         }
+
+        // check if RxDocument-property
+        if (RxDocument.properties().includes(key))
+            throw new Error(`top-level fieldname is not allowed: ${key}`);
     });
 
     if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath))

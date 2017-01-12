@@ -81,6 +81,82 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error);
                 });
+
+                /**
+                 * things to make sure there a no conflicts with the RxDocument-proxy
+                 */
+                it('should not allow $-char in fieldnames', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: 'dot in fieldname',
+                        properties: {
+                            'firstName$': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: '$ in fieldname',
+                        properties: {
+                            'first$Name': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                });
+                it('should not allow $-char in nested fieldnames', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: '$ in nested fieldname',
+                        properties: {
+                            'things': {
+                                type: 'object',
+                                properties: {
+                                    first$Name: {
+                                        type: string
+                                    }
+                                }
+                            }
+                        }
+                    }), Error);
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: '$ in nested fieldname',
+                        properties: {
+                            'things': {
+                                type: 'object',
+                                properties: {
+                                    firstName$: {
+                                        type: string
+                                    }
+                                }
+                            }
+                        }
+                    }), Error);
+                });
+                it('should not allow RxDocument-properties as top-fieldnames (own)', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: 'changed as fieldname',
+                        properties: {
+                            'changed': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                });
+                it('should not allow RxDocument-properties as top-fieldnames (prototype)', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: 'save as fieldname',
+                        properties: {
+                            'save': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                });
             });
         });
         describe('.create()', () => {

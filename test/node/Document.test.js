@@ -473,9 +473,6 @@ describe('Document.test.js', () => {
                 const doc2 = await c.findOne().exec();
                 assert.equal(doc2.mainSkill.attack.good, true);
             });
-
-            it('x', () => process.exit());
         });
-
     });
 });

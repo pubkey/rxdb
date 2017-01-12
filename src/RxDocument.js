@@ -256,3 +256,23 @@ export function createAr(collection, jsonDataAr, query) {
         .filter(jsonData => !jsonData._id.startsWith('_design'))
         .map(jsonData => create(collection, jsonData, query));
 }
+
+const pseudoRxDocument = new RxDocument({
+    schema: {
+        getEncryptedPaths: () => []
+    },
+    $: {
+        filter: () => false
+    }
+}, {}, {});
+
+/**
+ * returns all possible properties of a RxDocument
+ * @return {string[]} property-names
+ */
+export function properties() {
+    const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
+    const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+    const properties = [...ownProperties, ...prototypeProperties];
+    return properties;
+}
