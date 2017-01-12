@@ -4,7 +4,7 @@
 
 <md-list *ngIf="heroes">
     <md-list-item *ngFor="let hero of heroes" class="listHero">
-        <div class="color-box" [style.background-color]="hero.get('color')"></div>
-        <div class="name">{{hero.get('name')}}</div>
+        <div class="color-box" [style.background-color]="hero.color"></div>
+        <div class="name">{{hero.name}}</div>
     </md-list-item>
 </md-list>
