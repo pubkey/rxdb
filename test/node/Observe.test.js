@@ -115,7 +115,7 @@ describe('Observe.test.js', () => {
                     const setName = randomToken(10);
                     doc.set('firstName', setName);
                     await doc.save();
-                    util.promiseWait(5);
+                    await util.promiseWait(5);
                     assert.equal(valueObj.v, setName);
                     c.database.destroy();
                 });
