@@ -93,7 +93,7 @@ console.dir(isName); // isName is now 'foobar2'
 ```
 
 ### proxy-get$
-As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly get value-observabled instead of using the get$()-function.
+As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly get value-observables instead of using the get$()-function.
 To do this, just add the dollar-sign ($) to the getter.
 
 ```js
