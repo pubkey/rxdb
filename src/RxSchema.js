@@ -6,12 +6,18 @@ import {
     default as clone
 } from 'clone';
 
+import {
+    default as isPlainObject
+} from 'is-plain-object';
+
+
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
         this.jsonID = clone(jsonID);
+        this._normalized;
 
         this.compoundIndexes = this.jsonID.compoundIndexes || [];
         delete this.jsonID.compoundIndexes;
@@ -48,6 +54,12 @@ class RxSchema {
         this.encryptedPaths;
 
         this.jsonID.additionalProperties = false;
+    }
+
+    get normalized() {
+        if (!this._normalized)
+            this._normalized = normalize(this.jsonID);
+        return this._normalized;
     }
 
     getSchemaByObjectPath(path) {
@@ -277,6 +289,42 @@ export function checkSchema(jsonID) {
             );
         });
 }
+
+/**
+ * orders the schemas attributes by alphabetical order
+ * @param {Object} jsonSchema
+ * @return {Object} jsonSchema - ordered
+ */
+export function normalize(jsonSchema) {
+    let defaultSortFn =  function(a, b) {
+        return a.localeCompare(b);
+    };
+    let sort = function(src) {
+        let out;
+
+        if (Array.isArray(src)) {
+            src = src.sort();
+            return src.map(function(item) {
+                return sort(item);
+            });
+        }
+
+        if (isPlainObject(src)) {
+            out = {};
+
+            Object.keys(src).sort(defaultSortFn).forEach(function(key) {
+                out[key] = sort(src[key]);
+            });
+
+            return out;
+        }
+
+        return src;
+    };
+    return sort(jsonSchema);
+}
+
+
 
 export function create(jsonID) {
     checkSchema(jsonID);

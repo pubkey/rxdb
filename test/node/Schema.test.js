@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { default as sinon } from 'sinon';
 import {
     default as randomToken
 } from 'random-token';
@@ -159,6 +160,17 @@ describe('RxSchema.test.js', () => {
                 });
             });
         });
+        describe('.normalize()', () => {
+            it('should be the same object', () => {
+                let schema = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                assert.deepEqual(schema, schemas.humanNormalizeSchema1);
+            });
+            it('should deep sort one schema with different orders to be the same', () => {
+                let schema1 = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                let schema2 = RxSchema.normalize(schemas.humanNormalizeSchema2);
+                assert.equal(JSON.stringify(schema1), JSON.stringify(schema2));
+            });
+        });
         describe('.create()', () => {
             describe('positive', () => {
                 it('create human', () => {
@@ -258,6 +270,15 @@ describe('RxSchema.test.js', () => {
         });
     });
     describe('instance', () => {
+        describe('.normalized', ()=>{
+          it('should normalize if schema has not been normalized yet', ()=>{
+            let spy = sinon.spy()
+            const schema = RxSchema.create(schemas.humanNormalizeSchema1);
+            assert.equal(schema._normalized, null);
+            const normalized = schema.normalized;
+            throw new Error('asdlkasdjasd');
+          })
+        });
         describe('.hash()', () => {
             describe('positive', () => {
                 it('should hash', () => {
