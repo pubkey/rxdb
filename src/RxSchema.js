@@ -50,6 +50,10 @@ class RxSchema {
         this.jsonID.additionalProperties = false;
     }
 
+    get normalized() {
+        return this.jsonID;
+    }
+
     getSchemaByObjectPath(path) {
         path = path.replace(/\./g, '.properties.');
         path = 'properties.' + path;
@@ -160,6 +164,10 @@ export function validateFieldsDeep(jsonSchema) {
 
         if (fieldName.includes('$'))
             throw new Error(`field-names cannot contain $-char: ${fieldName}`);
+
+        // 'item' only allowed it type=='array'
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')
+            throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
 
 
         const isNested = path.split('.').length >= 2;

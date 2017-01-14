@@ -354,6 +354,35 @@ export const empty = {
     required: []
 };
 
+export const heroArray = {
+    'title': 'hero schema',
+    'description': 'describes a simple hero with an array-field',
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'primary': true
+        },
+        'skills': {
+            'type': 'array',
+            'maxItems': 5,
+            'uniqueItems': true,
+            'item': {
+                'type': 'object',
+                'properties': {
+                    'name': {
+                        'type': 'string'
+                    },
+                    'damage': {
+                        'type': 'number'
+                    }
+                }
+            }
+        }
+    },
+    'required': ['color']
+};
+
 
 export const primaryHuman = {
     title: 'human schema with primary',
