@@ -296,29 +296,24 @@ export function checkSchema(jsonID) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    let defaultSortFn =  function(a, b) {
+    let defaultSortFn = (a, b) => {
         return a.localeCompare(b);
     };
-    let sort = function(src) {
-        let out;
-
+    let sort = src => {
         if (Array.isArray(src)) {
-            src = src.sort();
-            return src.map(function(item) {
-                return sort(item);
-            });
+            return src
+                .sort()
+                .map(i => sort(i));
         }
-
         if (isPlainObject(src)) {
-            out = {};
-
-            Object.keys(src).sort(defaultSortFn).forEach(function(key) {
-                out[key] = sort(src[key]);
-            });
-
+            const out = {};
+            Object.keys(src)
+                .sort(defaultSortFn)
+                .forEach(key => {
+                    out[key] = sort(src[key]);
+                });
             return out;
         }
-
         return src;
     };
     return sort(jsonSchema);
