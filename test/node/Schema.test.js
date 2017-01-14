@@ -161,12 +161,12 @@ describe('RxSchema.test.js', () => {
         });
         describe('.normalize()', () => {
             it('should be the same object', () => {
-                let schema = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                const schema = RxSchema.normalize(schemas.humanNormalizeSchema1);
                 assert.deepEqual(schema, schemas.humanNormalizeSchema1);
             });
             it('should deep sort one schema with different orders to be the same', () => {
-                let schema1 = RxSchema.normalize(schemas.humanNormalizeSchema1);
-                let schema2 = RxSchema.normalize(schemas.humanNormalizeSchema2);
+                const schema1 = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                const schema2 = RxSchema.normalize(schemas.humanNormalizeSchema2);
                 assert.equal(JSON.stringify(schema1), JSON.stringify(schema2));
             });
         });
@@ -284,6 +284,13 @@ describe('RxSchema.test.js', () => {
                     const hash = schema.hash();
                     assert.equal(typeof hash, 'string');
                     assert.ok(hash.length > 10);
+                });
+                it('should normalize one schema with two different orders and generate for each the same hash', ()=>{
+                    const schema1 = RxSchema.create(schemas.humanNormalizeSchema1);
+                    const schema2 = RxSchema.create(schemas.humanNormalizeSchema2);
+                    const hash1 = schema1.hash();
+                    const hash2 = schema2.hash();
+                    assert.equal(hash1, hash2);
                 });
             });
         });

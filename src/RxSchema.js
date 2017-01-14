@@ -87,7 +87,10 @@ class RxSchema {
         return true;
     }
 
-    hash = () => util.hash(this.jsonID)
+    hash(){
+        // TODO use getter for hash and cache
+        return util.hash(this.normalized);
+    }
 
     swapIdToPrimary(obj) {
         if (!this.primaryPath) return obj;
