@@ -120,7 +120,6 @@
     "rollup-plugin-node-resolve": "2.0.0",
     "rollup-plugin-sizes": "0.2.3",
     "rollup-plugin-uglify": "1.0.1",
-    "sinon": "^1.17.7",
     "typescript": "^2.1.5",
     "uglify-js": "2.7.5",
     "watch": "1.0.1",
