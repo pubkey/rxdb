@@ -1,5 +1,4 @@
 import assert from 'assert';
-import { default as sinon } from 'sinon';
 import {
     default as randomToken
 } from 'random-token';
@@ -270,14 +269,13 @@ describe('RxSchema.test.js', () => {
         });
     });
     describe('instance', () => {
-        describe('.normalized', ()=>{
-          it('should normalize if schema has not been normalized yet', ()=>{
-            let spy = sinon.spy()
-            const schema = RxSchema.create(schemas.humanNormalizeSchema1);
-            assert.equal(schema._normalized, null);
-            const normalized = schema.normalized;
-            throw new Error('asdlkasdjasd');
-          })
+        describe('.normalized', () => {
+            it('should normalize if schema has not been normalized yet', () => {
+                const schema = RxSchema.create(schemas.humanNormalizeSchema1);
+                assert.equal(schema._normalized, null);
+                const normalized = schema.normalized;
+                assert.notEqual(schema._normalized, null);
+            });
         });
         describe('.hash()', () => {
             describe('positive', () => {
