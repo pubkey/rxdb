@@ -29,7 +29,8 @@ describe('KeyCompressor.test.js', () => {
                 3
             );
             Object.keys(table).forEach(k => {
-                assert.equal(table[k].length, 1);
+                assert.equal(table[k].length, 2);
+                assert.ok(table[k].startsWith('|'));
                 assert.equal(typeof table[k], 'string');
             });
         });
@@ -41,23 +42,23 @@ describe('KeyCompressor.test.js', () => {
         it('table of nested', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.nestedHuman));
             const table = k.table;
-            assert.equal(table['mainSkill.name'].length, 1);
-            assert.equal(table['mainSkill.level'].length, 1);
+            assert.equal(table['mainSkill.name'].length, 2);
+            assert.equal(table['mainSkill.level'].length, 2);
         });
         it('table of deep nested', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.deepNestedHuman));
             const table = k.table;
-            assert.equal(table['mainSkill.name'].length, 1);
-            assert.equal(table['mainSkill.attack'].length, 1);
-            assert.equal(table['mainSkill.attack.good'].length, 1);
-            assert.equal(table['mainSkill.attack.count'].length, 1);
+            assert.equal(table['mainSkill.name'].length, 2);
+            assert.equal(table['mainSkill.attack'].length, 2);
+            assert.equal(table['mainSkill.attack.good'].length, 2);
+            assert.equal(table['mainSkill.attack.count'].length, 2);
         });
         it('table of schema with array', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.heroArray));
             const table = k.table;
-            assert.equal(table['skills.item'].length, 1);
-            assert.equal(table['skills.item.name'].length, 1);
-            assert.equal(table['skills.item.damage'].length, 1);
+            assert.equal(table['skills.item'].length, 2);
+            assert.equal(table['skills.item.name'].length, 2);
+            assert.equal(table['skills.item.damage'].length, 2);
         });
         it('do not compress keys with <=3 chars', () => {
             const k = KeyCompressor.create(RxSchema.create({
@@ -89,6 +90,40 @@ describe('KeyCompressor.test.js', () => {
         });
     });
 
+    describe('reverseTable', () => {
+        it('reverse normal', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.human));
+            const reverse = k.reverseTable;
+            const table = k.table;
+
+            Object.keys(table).forEach(key => {
+                const val = table[key];
+                assert.equal(reverse[val], key);
+            });
+        });
+        it('reverse nested', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.nestedHuman));
+            const reverse = k.reverseTable;
+            const table = k.table;
+
+            Object.keys(table).forEach(key => {
+                const val = table[key];
+                const field = key.split('.').pop();
+                assert.ok(reverse[val].includes(field));
+            });
+        });
+        it('reverse primary', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.primaryHuman));
+            const reverse = k.reverseTable;
+            const table = k.table;
+
+            Object.keys(table).forEach(key => {
+                const val = table[key];
+                assert.equal(reverse[val], key);
+            });
+        });
+    });
+
     describe('.compress()', () => {
         it('normal', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.human));
@@ -102,6 +137,26 @@ describe('KeyCompressor.test.js', () => {
                 const value = human[key];
                 assert.ok(values.includes(value));
             });
+        });
+        it('primary', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.primaryHuman));
+            const human = schemaObjects.human();
+            const compressed = k.compress(human);
+
+            const values = Object.keys(compressed)
+                .map(key => compressed[key]);
+
+            Object.keys(human).forEach(key => {
+                const value = human[key];
+                assert.ok(values.includes(value));
+            });
+        });
+        it('should not compress _rev', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.primaryHuman));
+            const human = schemaObjects.human();
+            human._rev = 'foobar';
+            const compressed = k.compress(human);
+            assert.equal(human._rev, 'foobar');
         });
         it('nested', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.nestedHuman));
@@ -162,10 +217,84 @@ describe('KeyCompressor.test.js', () => {
             assert.deepEqual(compressed.foobar, additionalValue);
         });
 
+        it('schema with array', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.heroArray));
+            const human = schemaObjects.heroArray();
+            const compressed = k.compress(human);
+            const json = JSON.stringify(compressed);
+            Object.keys(human).forEach(key => {
+                const value = human[key];
+                if (typeof value !== 'object')
+                    assert.ok(json.includes(value));
+            });
+
+            // array elements
+            human.skills.forEach(skill => {
+                assert.ok(json.includes(skill.name));
+                assert.ok(json.includes(skill.damage));
+            });
+        });
+
+
+    });
+
+    describe('.decompress()', () => {
+        it('normal', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.human));
+            const human = schemaObjects.human();
+            const compressed = k.compress(human);
+            const decompressed = k.decompress(compressed);
+            assert.deepEqual(human, decompressed);
+        });
+
+        it('nested', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.nestedHuman));
+            const human = schemaObjects.nestedHuman();
+            const compressed = k.compress(human);
+
+            const decompressed = k.decompress(compressed);
+            assert.deepEqual(human, decompressed);
+        });
+
+        it('deep nested', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.deepNestedHuman));
+            const human = schemaObjects.deepNestedHuman();
+            const compressed = k.compress(human);
+
+            const decompressed = k.decompress(compressed);
+            assert.deepEqual(human, decompressed);
+        });
+
+        it('additional value', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.deepNestedHuman));
+            const human = schemaObjects.deepNestedHuman();
+            const additionalValue = {
+                foo: 'bar'
+            };
+            human.foobar = additionalValue;
+            const compressed = k.compress(human);
+            const decompressed = k.decompress(compressed);
+            assert.deepEqual(human, decompressed);
+        });
+
+        it('primary', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.primaryHuman));
+            const human = schemaObjects.heroArray();
+            const compressed = k.compress(human);
+            const decompressed = k.decompress(compressed);
+
+            assert.deepEqual(human, decompressed);
+        });
+        it('schema with array', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.heroArray));
+            const human = schemaObjects.heroArray();
+            const compressed = k.compress(human);
+            const decompressed = k.decompress(compressed);
+            assert.deepEqual(human, decompressed);
+        });
 
         it('e', () => process.exit());
     });
-
 
 
 

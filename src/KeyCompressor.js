@@ -9,6 +9,7 @@ class KeyCompressor {
     constructor(schema) {
         this.schema = schema;
         this._table;
+        this._reverseTable;
         this._lastChar = 'a';
     }
 
@@ -28,7 +29,6 @@ class KeyCompressor {
                 Object.keys(obj).map(key => {
                     const propertyObj = obj[key];
                     const fullPath = (key == 'properties') ? path : util.trimDots(path + '.' + key);
-
                     if (
                         typeof propertyObj === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
@@ -36,7 +36,7 @@ class KeyCompressor {
                         fullPath != '' &&
                         key.length > 3 && // do not compress short keys
                         !fullPath.startsWith('_') // _id etc should never be compressed
-                    ) this._table[fullPath] = nextKey();
+                    ) this._table[fullPath] = '|' + nextKey();
 
                     // primary-key is always compressed to _id
                     if (propertyObj.primary == true)
@@ -48,10 +48,21 @@ class KeyCompressor {
 
             };
             propertiesToTable('', jsonSchema);
-
-
         }
         return this._table;
+    }
+
+    get reverseTable() {
+        if (!this._reverseTable) {
+            const table = this.table;
+            this._reverseTable = {};
+            Object.keys(table).forEach(key => {
+                const value = table[key];
+                const fieldName = key.split('.').pop();
+                this._reverseTable[value] = fieldName;
+            });
+        }
+        return this._reverseTable;
     }
 
     /**
@@ -61,61 +72,50 @@ class KeyCompressor {
      */
     compress(obj) {
         const table = this.table;
-        console.log(',,,,....');
-        console.log('table:');
-        console.dir(table);
-        console.log('input obj:');
-        console.dir(obj);
         const compressObj = (path, obj) => {
-            console.log('____________compressObj()______________');
-            console.log('path: ' + path);
-            console.log('obj:');
-            console.dir(obj);
             const ret = {};
             Object.keys(obj).forEach(key => {
-                console.log('-----keys(obj).forEach()------');
-                console.log('key: ' + key);
-
                 const propertyObj = obj[key];
-                console.log('propObj:');
-                console.dir(propertyObj);
-
                 const fullPath = util.trimDots(path + '.' + key);
-                console.log('fullPath: ' + fullPath);
-
-                const replacedKey = this.table[fullPath] ? '|' + this.table[fullPath] : key;
-                console.log('replacedKey: ' + replacedKey);
-
+                const replacedKey = this.table[fullPath] ? this.table[fullPath] : key;
                 let nextObj = propertyObj;
-                if (typeof nextObj === 'object')
+                if (Array.isArray(nextObj)) {
+                    nextObj = nextObj
+                        .map(o => compressObj(fullPath + '.item', o));
+                } else if (typeof nextObj === 'object')
                     nextObj = compressObj(fullPath, propertyObj);
-                // TODO if Array.isArray(nextObj)
-
-                console.log('nextObj:');
-                console.dir(nextObj);
-
                 ret[replacedKey] = nextObj;
             });
-
-            console.log('ret:');
-            console.dir(ret);
             return ret;
         };
-
-        const compressed = compressObj('', obj);
-        console.log(':::::::::::::::::::');
-        console.log('compressed:');
-        console.dir(compressed);
-
-        return compressed;
+        return compressObj('', obj);
     }
 
     decompress(obj) {
+        const table = this.table;
+        const reverseTable = this.reverseTable;
+        const decompressObj = obj => {
+            // non-object
+            if (typeof obj !== 'object') return obj;
 
+            // array
+            if (Array.isArray(obj))
+                return obj.map(item => decompressObj(item));
+
+            // object
+            else {
+                const ret = {};
+
+                Object.keys(obj).forEach(key => {
+                    const replacedKey = key.startsWith('|') || key.startsWith('_') ? reverseTable[key] : key;
+                    ret[replacedKey] = decompressObj(obj[key]);
+                });
+                return ret;
+            }
+        };
+        return decompressObj(obj);
     }
-
 }
-
 
 export function create(schema) {
     return new KeyCompressor(schema);
