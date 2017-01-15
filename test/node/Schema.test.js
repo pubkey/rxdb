@@ -159,6 +159,17 @@ describe('RxSchema.test.js', () => {
                 });
             });
         });
+        describe('.normalize()', () => {
+            it('should be the same object', () => {
+                const schema = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                assert.deepEqual(schema, schemas.humanNormalizeSchema1);
+            });
+            it('should deep sort one schema with different orders to be the same', () => {
+                const schema1 = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                const schema2 = RxSchema.normalize(schemas.humanNormalizeSchema2);
+                assert.equal(JSON.stringify(schema1), JSON.stringify(schema2));
+            });
+        });
         describe('.create()', () => {
             describe('positive', () => {
                 it('create human', () => {
@@ -258,6 +269,14 @@ describe('RxSchema.test.js', () => {
         });
     });
     describe('instance', () => {
+        describe('.normalized', () => {
+            it('should normalize if schema has not been normalized yet', () => {
+                const schema = RxSchema.create(schemas.humanNormalizeSchema1);
+                assert.equal(schema._normalized, null);
+                const normalized = schema.normalized;
+                assert.notEqual(schema._normalized, null);
+            });
+        });
         describe('.hash()', () => {
             describe('positive', () => {
                 it('should hash', () => {
@@ -265,6 +284,13 @@ describe('RxSchema.test.js', () => {
                     const hash = schema.hash();
                     assert.equal(typeof hash, 'string');
                     assert.ok(hash.length > 10);
+                });
+                it('should normalize one schema with two different orders and generate for each the same hash', ()=>{
+                    const schema1 = RxSchema.create(schemas.humanNormalizeSchema1);
+                    const schema2 = RxSchema.create(schemas.humanNormalizeSchema2);
+                    const hash1 = schema1.hash();
+                    const hash2 = schema2.hash();
+                    assert.equal(hash1, hash2);
                 });
             });
         });

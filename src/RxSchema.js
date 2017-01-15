@@ -6,12 +6,18 @@ import {
     default as clone
 } from 'clone';
 
+import {
+    default as isPlainObject
+} from 'is-plain-object';
+
+
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
         this.jsonID = clone(jsonID);
+        this._normalized;
 
         this.compoundIndexes = this.jsonID.compoundIndexes || [];
         delete this.jsonID.compoundIndexes;
@@ -51,7 +57,9 @@ class RxSchema {
     }
 
     get normalized() {
-        return this.jsonID;
+        if (!this._normalized)
+            this._normalized = normalize(this.jsonID);
+        return this._normalized;
     }
 
     getSchemaByObjectPath(path) {
@@ -79,7 +87,10 @@ class RxSchema {
         return true;
     }
 
-    hash = () => util.hash(this.jsonID)
+    hash(){
+        // TODO use getter for hash and cache
+        return util.hash(this.normalized);
+    }
 
     swapIdToPrimary(obj) {
         if (!this.primaryPath) return obj;
@@ -285,6 +296,37 @@ export function checkSchema(jsonID) {
             );
         });
 }
+
+/**
+ * orders the schemas attributes by alphabetical order
+ * @param {Object} jsonSchema
+ * @return {Object} jsonSchema - ordered
+ */
+export function normalize(jsonSchema) {
+    let defaultSortFn = (a, b) => {
+        return a.localeCompare(b);
+    };
+    let sort = src => {
+        if (Array.isArray(src)) {
+            return src
+                .sort()
+                .map(i => sort(i));
+        }
+        if (isPlainObject(src)) {
+            const out = {};
+            Object.keys(src)
+                .sort(defaultSortFn)
+                .forEach(key => {
+                    out[key] = sort(src[key]);
+                });
+            return out;
+        }
+        return src;
+    };
+    return sort(jsonSchema);
+}
+
+
 
 export function create(jsonID) {
     checkSchema(jsonID);
