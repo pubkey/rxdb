@@ -132,19 +132,6 @@ describe('Document.test.js', () => {
                 );
                 c.database.destroy();
             });
-            it('cannot set a nested key if root-path is not given', async() => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne()
-                    .select({
-                        firstName: 1
-                    })
-                    .exec();
-                await util.assertThrowsAsync(
-                    () => doc.set('mainSkill.name', 'foobar'),
-                    Error
-                );
-                c.database.destroy();
-            });
         });
     });
     describe('.save()', () => {
@@ -271,33 +258,6 @@ describe('Document.test.js', () => {
                 assert.ok((duration / 5) > duration2);
                 c.database.destroy();
             });
-            it('save one field while another field was not selected', async() => {
-                const c = await humansCollection.createNested(5);
-                const checkDoc = await c.findOne().sort({
-                    passportId: 1
-                }).exec();
-                const mainSkill = checkDoc.get('mainSkill');
-                const passportId = checkDoc.get('passportId');
-                assert.ok(mainSkill);
-                assert.ok(passportId);
-
-                const doc = await c.findOne().select('firstName').sort({
-                    passportId: 1
-                }).exec();
-                const newFirstName = randomToken(10);
-                assert.equal(doc.get('mainSkill'), null);
-                doc.set('firstName', newFirstName);
-                await doc.save();
-
-                const sameDoc = await c.findOne().sort({
-                    passportId: 1
-                }).exec();
-                assert.equal(sameDoc.get('passportId'), passportId);
-                assert.deepEqual(sameDoc.get('mainSkill'), mainSkill);
-                assert.equal(sameDoc.get('firstName'), newFirstName);
-                c.database.destroy();
-            });
-
         });
 
         describe('negative', () => {

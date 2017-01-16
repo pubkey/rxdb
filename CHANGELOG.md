@@ -1,3 +1,13 @@
+## 2.0.0 (XXX, 2017)
+
+Features:
+  - key-compression for better space-usage
+  - schema-objects are now normalized (order alphabetic) before hashing
+  - RxQuery.select() is removed since it has no better performance than getting the whole document
+
+Bugfixes:
+  - console.dir on RxDocument now works
+
 ## 1.7.7 (January 13, 2017)
 
 Features:
@@ -16,13 +26,11 @@ Bugfixes:
 ## 1.5.5 (December 20, 2016)
 
 Features:
-
   - refactor socket to save db-io
   - wrap BroadcastChannel-API
   - added [leader-election](./docs/LeaderElection.md)
   - sync() will only start wenn db is leader
 
 Bugfixes:
-
   - cleanup all databases after tests
   - remove broken builds from dist-folder

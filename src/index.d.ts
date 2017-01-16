@@ -84,7 +84,6 @@ declare class RxQuery {
     regex(queryObj): RxQuery;
     exists(queryObj): RxQuery;
     elemMatch(queryObj): RxQuery;
-    select(fields: any): RxQuery;
     slice(queryObj): RxQuery;
     sort(params: any): RxQuery;
     limit(amount: number): RxQuery;
