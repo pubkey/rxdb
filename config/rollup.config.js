@@ -9,7 +9,7 @@ import sizes from 'rollup-plugin-sizes';
 const doUglify = JSON.parse(process.env.UGLIFY);
 
 let destPath = 'dist/rxdb';
-if (doUglify) destPath += '.min'
+if (doUglify) destPath += '.min';
 destPath += '.rollup.js';
 
 export default {
@@ -29,7 +29,7 @@ export default {
             namedExports: {
                 'node_modules/events/events.js': ['EventEmitter'],
                 'node_modules/js-sha3/src/sha3.js': ['sha3_512']
-                    //                'node_modules/crypto-js': ['encrypt', 'decrypt'] // TODO this shows error
+                //                'node_modules/crypto-js': ['encrypt', 'decrypt'] // TODO this shows error
             }
         }),
         babel({
@@ -37,8 +37,8 @@ export default {
             presets: ['es2015-rollup', 'stage-0'],
             runtimeHelpers: true,
             plugins: [
-                "external-helpers",
-"transform-runtime"
+                'external-helpers',
+                'transform-runtime'
             ]
         }),
         nodeResolve({
@@ -53,4 +53,4 @@ export default {
         doUglify && uglify(),
         sizes()
     ]
-}
+};
