@@ -234,8 +234,6 @@ describe('KeyCompressor.test.js', () => {
                 assert.ok(json.includes(skill.damage));
             });
         });
-
-
     });
 
     describe('.decompress()', () => {
@@ -246,7 +244,6 @@ describe('KeyCompressor.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
-
         it('nested', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.nestedHuman));
             const human = schemaObjects.nestedHuman();
@@ -255,7 +252,6 @@ describe('KeyCompressor.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
-
         it('deep nested', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.deepNestedHuman));
             const human = schemaObjects.deepNestedHuman();
@@ -264,7 +260,6 @@ describe('KeyCompressor.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
-
         it('additional value', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.deepNestedHuman));
             const human = schemaObjects.deepNestedHuman();
@@ -276,7 +271,6 @@ describe('KeyCompressor.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
-
         it('primary', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.primaryHuman));
             const human = schemaObjects.heroArray();
@@ -292,10 +286,99 @@ describe('KeyCompressor.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
+    });
+
+    describe('RxQuery().keyCompress()', () => {
+        it('transform basic search keys', async() => {
+            const c = await humansCollection.create(0);
+            const query = c.find()
+                .where('firstName').eq('myFirstName')
+                .keyCompress();
+            const jsonString = JSON.stringify(query);
+            assert.ok(!jsonString.includes('firstName'));
+            assert.ok(jsonString.includes('myFirstName'));
+            assert.equal(query.selector[c.keyCompressor.table['firstName']], 'myFirstName');
+        });
+        it('primary', async() => {
+            const c = await humansCollection.createPrimary(0);
+            const query = c.find()
+                .where('passportId').eq('myPassportId')
+                .keyCompress();
+            const jsonString = JSON.stringify(query);
+            assert.ok(!jsonString.includes('passportId'));
+            assert.ok(jsonString.includes('myPassportId'));
+            assert.equal(query.selector._id, 'myPassportId');
+        });
+        it('nested', async() => {
+            const c = await humansCollection.createNested(0);
+            const query = c.find()
+                .where('mainSkill.level').eq(5)
+                .keyCompress();
+
+            const cString = [
+                c.keyCompressor.table['mainSkill'],
+                c.keyCompressor.table['mainSkill.level']
+            ].join('.');
+            const jsonString = JSON.stringify(query);
+            assert.ok(!jsonString.includes('level'));
+            assert.ok(jsonString.includes(5));
+
+            assert.equal(query.selector[cString], 5);
+        });
+
+        it('additional attribute', async() => {
+            const c = await humansCollection.create(0);
+            const query = c.find()
+                .where('foobar').eq(5)
+                .keyCompress();
+
+            assert.equal(query.selector.foobar, 5);
+        });
+        it('additional nested attribute', async() => {
+            const c = await humansCollection.createNested(0);
+            const query = c.find()
+                .where('mainSkill.foobar').eq(5)
+                .keyCompress();
+
+            const cString = [
+                c.keyCompressor.table['mainSkill'],
+                'foobar'
+            ].join('.');
+            assert.equal(query.selector[cString], 5);
+        });
+        it('additional deep nested attribute', async() => {
+            const c = await humansCollection.createDeepNested(0);
+            const query = c.find()
+                .where('mainSkill.attack.foobar').eq(5)
+                .keyCompress();
+
+            const cString = [
+                c.keyCompressor.table['mainSkill'],
+                c.keyCompressor.table['mainSkill.attack'],
+                'foobar'
+            ].join('.');
+            assert.equal(query.selector[cString], 5);
+        });
+        it('.sort()', async() => {
+            const c = await humansCollection.createDeepNested(0);
+            const query = c.find()
+                .sort('mainSkill')
+                .keyCompress();
+            assert.equal(query.sort[0][c.keyCompressor.table['mainSkill']], 'asc');
+        });
+        it('.sort() nested', async() => {
+            const c = await humansCollection.createNested(0);
+            const query = c.find()
+                .sort('mainSkill.level')
+                .keyCompress();
+
+            const cString = [
+                c.keyCompressor.table['mainSkill'],
+                c.keyCompressor.table['mainSkill.level']
+            ].join('.');
+            assert.equal(query.sort[0][cString], 'asc');
+        });
 
         it('e', () => process.exit());
     });
-
-
-
 });

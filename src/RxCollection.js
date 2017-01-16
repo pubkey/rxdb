@@ -11,6 +11,7 @@ import {
 } from 'clone';
 
 import * as util from './util';
+import * as KeyCompressor from './KeyCompressor';
 import * as RxDocument from './RxDocument';
 import * as RxQuery from './RxQuery';
 import * as RxChangeEvent from './RxChangeEvent';
@@ -25,6 +26,7 @@ class RxCollection {
         this.name = name;
         this.schema = schema;
         this.synced = false;
+        this.keyCompressor = KeyCompressor.create(this.schema);
 
         this.hooks = {};
 
@@ -45,6 +47,7 @@ class RxCollection {
             adapterObj,
             pouchSettings
         );
+
 
         this.observable$ = this.database.$
             .filter(event => event.data.col == this.name);

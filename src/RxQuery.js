@@ -51,8 +51,12 @@ class RxQuery {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         this.sort = params => {
+
             // workarround because sort wont work on unused keys
-            Object.keys(params).map(k => this.mquery.where(k).gt(null));
+            if (typeof params !== 'object')
+                this.mquery.where(params).gt(null)
+            else
+                Object.keys(params).map(k => this.mquery.where(k).gt(null));
 
             this.mquery.sort(params);
             return this;
@@ -159,6 +163,14 @@ class RxQuery {
 
         return json;
     };
+
+
+    keyCompress() {
+        return this
+            .collection
+            .keyCompressor
+            .compressQuery(this.toJSON());
+    }
 
 }
 

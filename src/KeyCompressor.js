@@ -10,7 +10,7 @@ class KeyCompressor {
         this.schema = schema;
         this._table;
         this._reverseTable;
-        this._lastChar = 'a';
+        this._fullTable;
     }
 
     get table() {
@@ -35,7 +35,7 @@ class KeyCompressor {
                         !this._table[fullPath] &&
                         fullPath != '' &&
                         key.length > 3 && // do not compress short keys
-                        !fullPath.startsWith('_') // _id etc should never be compressed
+                        !fullPath.startsWith('_') // _id/_rev etc should never be compressed
                     ) this._table[fullPath] = '|' + nextKey();
 
                     // primary-key is always compressed to _id
@@ -105,7 +105,6 @@ class KeyCompressor {
             // object
             else {
                 const ret = {};
-
                 Object.keys(obj).forEach(key => {
                     const replacedKey = key.startsWith('|') || key.startsWith('_') ? reverseTable[key] : key;
                     ret[replacedKey] = decompressObj(obj[key]);
@@ -114,6 +113,66 @@ class KeyCompressor {
             }
         };
         return decompressObj(obj);
+    }
+
+    /**
+     * get the full compressed-key-path of a object-path
+     * @param {string} prePath | 'mainSkill'
+     * @param {string} prePathCompressed | '|a'
+     * @param {string[]} remainPathAr | ['attack', 'count']
+     * @return {string} compressedPath | '|a.|b.|c'
+     */
+    _transformKey(prePath, prePathCompressed, remainPathAr) {
+        const table = this.table;
+        prePath = util.trimDots(prePath);
+        prePathCompressed = util.trimDots(prePathCompressed);
+        const nextPath = remainPathAr.shift();
+
+        const nextFullPath = util.trimDots(prePath + '.' + nextPath);
+        if (table[nextFullPath])
+            prePathCompressed += '.' + table[nextFullPath];
+        else prePathCompressed += '.' + nextPath;
+
+        if (remainPathAr.length > 0)
+            return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);
+        else
+            return util.trimDots(prePathCompressed);
+    }
+
+
+    /**
+     * replace the keys of a query-obj with the compressed keys
+     * @param {{selector: {}}} queryJSON
+     * @return {{selector: {}}} compressed queryJSON
+     */
+    compressQuery(queryJSON) {
+        console.dir(queryJSON);
+        const table = this.table;
+
+        // selector
+        const selector = {};
+        Object.keys(queryJSON.selector).forEach(key => {
+            const value = queryJSON.selector[key];
+            const transKey = this._transformKey('', '', key.split('.'));
+            selector[transKey] = value;
+        });
+
+        //sort
+        let sort = [];
+        if (queryJSON.sort) {
+            sort = queryJSON.sort.map(sortObj => {
+                const key = Object.keys(sortObj)[0];
+                const value = sortObj[key];
+                const ret = {};
+                ret[this._transformKey('', '', key.split('.'))] = value;
+                return ret;
+            });
+        }
+        
+        return {
+            selector,
+            sort
+        };
     }
 }
 
