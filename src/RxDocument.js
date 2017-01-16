@@ -11,6 +11,10 @@ import * as RxChangeEvent from './RxChangeEvent';
 
 class RxDocument {
 
+    get[Symbol.toStringTag]() {
+        return 'RxDocument';
+    }
+
     constructor(collection, jsonData, query) {
         this.collection = collection;
         this.rawData = jsonData;
@@ -230,7 +234,7 @@ export function create(collection, jsonData, query) {
             if (doc[name]) return doc[name];
 
             // return observable if field ends with $
-            if (name.slice(-1) == '$')
+            if (name.slice && name.slice(-1) == '$')
                 return doc.get$(name.slice(0, -1));
 
             const value = doc.get(name);
