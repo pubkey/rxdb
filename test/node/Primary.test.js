@@ -203,7 +203,6 @@ describe('Primary.test.js', () => {
                     assert.equal(doc, null);
                     c.database.destroy();
                 });
-
                 it('find with more selectors', async() => {
                     const c = await humansCollection.createPrimary(6);
                     const obj = schemaObjects.simpleHuman();
@@ -213,6 +212,15 @@ describe('Primary.test.js', () => {
                     }).exec();
                     assert.equal(doc.rawData._id, obj.passportId);
                     c.database.destroy();
+                });
+                it('BUG: findOne().where(myPrimary)', async() => {
+                    const c = await humansCollection.createPrimary(1);
+                    const doc = await c.findOne().exec();
+                    const passportId = doc.passportId;
+                    assert.ok(passportId.length > 4);
+                    const doc2 = await c.findOne().where('passportId').eq(passportId).exec();
+                    assert.equal(doc2.constructor.name, 'RxDocument');
+                    assert.equal(doc.passportId, doc2.passportId);
                 });
             });
             describe('negative', () => {});
