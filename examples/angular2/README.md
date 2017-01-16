@@ -4,10 +4,12 @@ This is an example usage of RxDB with Angular2. It implements a simple heroes-li
 
 # Try it out
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
-2. go to this folder (examples/angular2)
-3. run "npm install"
-4. run "npm start"
-5. Open [http://127.0.0.1:8888/](http://127.0.0.1:8888/) **IMPORTANT: do not use localhost**
+2. go into project `cd rxdb`
+3. run `npm install`
+4. go to this folder `cd examples/angular2`
+5. run `npm install`
+6. run `npm start`
+7. Open [http://127.0.0.1:8888/](http://127.0.0.1:8888/) **IMPORTANT: do not use localhost**
 
 
 # Screenshot
