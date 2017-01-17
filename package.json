@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "Offline-first database with Reactive, Sync, Schema, Promises, Mongo-Query, Encryption, LevelDown",
-  "version": "1.7.7",
+  "version": "2.0.0",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -90,7 +90,7 @@
     "gulp": "3.9.1",
     "gulp-mocha": "3.0.1",
     "http-server": "0.9.0",
-    "karma": "1.3.0",
+    "karma": "^1.4.0",
     "karma-babel-preprocessor": "6.0.1",
     "karma-browserify": "5.1.0",
     "karma-chrome-launcher": "2.0.0",
@@ -114,7 +114,7 @@
     "request-promise": "4.1.1",
     "request-promise-native": "1.0.3",
     "rimraf": "2.5.4",
-    "rollup": "0.41.1",
+    "rollup": "^0.41.4",
     "rollup-plugin-babel": "2.7.1",
     "rollup-plugin-commonjs": "7.0.0",
     "rollup-plugin-node-resolve": "2.0.0",
