@@ -63,11 +63,9 @@ class Socket {
     async write(changeEvent) {
         const socketDoc = changeEvent.toJSON();
         delete socketDoc.db;
-        if (socketDoc.v) {
-            if (this.database.password)
-                socketDoc.v = this.database._encrypt(socketDoc.v);
-            else socketDoc.v = JSON.stringify(socketDoc.v);
-        }
+
+        // do not write whole doc to socket
+        delete socketDoc.v;
 
         // TODO find a way to getAll on local documents
         //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
