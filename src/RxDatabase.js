@@ -136,17 +136,6 @@ class RxDatabase {
         return this.observable$;
     }
 
-
-    _encrypt(value) {
-        if (!this.password) throw new Error('no passord given');
-        return util.encrypt(JSON.stringify(value), this.password);
-    }
-    _decrypt(encValue) {
-        if (!this.password) throw new Error('no passord given');
-        const decrypted = util.decrypt(encValue, this.password);
-        return JSON.parse(decrypted);
-    }
-
     /**
      * create or fetch a collection
      * @return {Collection}
@@ -159,14 +148,14 @@ class RxDatabase {
             schema = RxSchema.create(schema);
 
         if (!this.collections[name]) {
-
             // check schemaHash
             const schemaHash = schema.hash();
-            const collectionDoc = await this.collectionsCollection.findOne({
-                name
-            }).exec();
+            let collectionDoc = null;
+            try {
+                collectionDoc = await this.collectionsCollection.pouch.get(name);
+            } catch (e) {}
 
-            if (collectionDoc && collectionDoc.get('schemaHash') != schemaHash)
+            if (collectionDoc && collectionDoc.schemaHash != schemaHash)
                 throw new Error(`collection(${name}): another instance created this collection with a different schema`);
 
             const collection = await RxCollection.create(this, name, schema, pouchSettings);
@@ -177,8 +166,8 @@ class RxDatabase {
 
             if (!collectionDoc) {
                 try {
-                    await this.collectionsCollection.insert({
-                        name,
+                    await this.collectionsCollection.pouch.put({
+                        _id: name,
                         schemaHash
                     });
                 } catch (e) {}

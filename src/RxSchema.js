@@ -37,11 +37,13 @@ class RxSchema {
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
 
-        // add _id
-        this.jsonID.properties._id = {
-            type: 'string',
-            minLength: 1
-        };
+        // add primary to schema
+        if (!this.jsonID.properties[this.primaryPath]) {
+            this.jsonID.properties[this.primaryPath] = {
+                type: 'string',
+                minLength: 1
+            };
+        }
 
         // add _rev
         this.jsonID.properties._rev = {
@@ -87,19 +89,19 @@ class RxSchema {
         return true;
     }
 
-    hash(){
+    hash() {
         // TODO use getter for hash and cache
         return util.hash(this.normalized);
     }
 
     swapIdToPrimary(obj) {
-        if (!this.primaryPath) return obj;
+        if (this.primaryPath == '_id' || obj[this.primaryPath]) return obj;
         obj[this.primaryPath] = obj._id;
         delete obj._id;
         return obj;
     }
     swapPrimaryToId(obj) {
-        if (!this.primaryPath) return obj;
+        if (this.primaryPath == '_id') return obj;
         obj._id = obj[this.primaryPath];
         delete obj[this.primaryPath];
         return obj;
@@ -151,11 +153,17 @@ export function getIndexes(jsonID) {
         .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique
 }
 
-
+/**
+ * returns the primary path of a jsonschema
+ * @param {Object} jsonID
+ * @return {string} primaryPath which is _id if none defined
+ */
 export function getPrimary(jsonID) {
-    return Object.keys(jsonID.properties)
+    const ret = Object.keys(jsonID.properties)
         .filter(key => jsonID.properties[key].primary)
         .shift();
+    if (!ret) return '_id';
+    else return ret;
 }
 
 

@@ -48,14 +48,19 @@ export function fromJSON(data) {
 
 export function fromPouchChange(changeDoc, collection) {
 
+    // TODO is this right?
     const op = changeDoc._rev.startsWith('1-') ? 'RxDocument.save' : 'RxDocument.insert';
+
+    // decompress / primarySwap
+    changeDoc = collection._handleFromPouch(changeDoc);
+
     const data = {
         op,
         t: new Date().getTime(),
         db: 'remote',
         col: collection.name,
         it: collection.database.token,
-        doc: changeDoc._id,
+        doc: changeDoc[collection.schema.primaryPath],
         v: changeDoc
     };
     return new RxChangeEvent(data);
@@ -69,7 +74,7 @@ export function create(op, database, collection, doc, value) {
         it: database.token,
     };
     if (collection) data.col = collection.name;
-    if (doc) data.doc = doc.rawData._id;
+    if (doc) data.doc = doc.getPrimary();
     if (value) data.v = value;
     return new RxChangeEvent(data);
 }

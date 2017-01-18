@@ -109,24 +109,30 @@ describe('Replication.test.js', () => {
             });
 
             let e1 = [];
-            const pouch$ = util.Rx.Observable.fromEvent(c.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }), 'change').subscribe(e => e1.push(e));
+            const pouch$ = util.Rx.Observable
+                .fromEvent(c.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }), 'change')
+                .filter(e => !e.id.startsWith('_'))
+                .subscribe(e => e1.push(e));
             let e2 = [];
-            const pouch2$ = util.Rx.Observable.fromEvent(c2.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }), 'change').subscribe(e => e2.push(e));
+            const pouch2$ = util.Rx.Observable
+                .fromEvent(c2.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }), 'change')
+                .filter(e => !e.id.startsWith('_'))
+                .subscribe(e => e2.push(e));
 
             const obj = schemaObjects.human();
             await c.insert(obj);
             await pw8.promise;
             await util.promiseWait(150);
 
-            assert.equal(e1.length, 2);
+            assert.equal(e1.length, 1);
             assert.equal(e1.length, e2.length);
 
             c.database.destroy();
@@ -198,8 +204,9 @@ describe('Replication.test.js', () => {
                 c2.database.destroy();
             });
 
-
             it('document: should change field when doc saves', async() => {
+
+                console.log('_________________________________');
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, 'colSource ' + randomToken(5));
                 const c2 = await humansCollection.create(0, 'colSync ' + randomToken(5));
@@ -227,10 +234,12 @@ describe('Replication.test.js', () => {
                 // update and w8 for sync
                 let lastValue = null;
                 pw8 = util.promiseWaitResolveable(1400);
-                doc2.get$('firstName').subscribe(newValue => {
-                    lastValue = newValue;
-                    if (lastValue == 'foobar') pw8.resolve();
-                });
+                doc2
+                    .get$('firstName')
+                    .subscribe(newValue => {
+                        lastValue = newValue;
+                        if (lastValue == 'foobar') pw8.resolve();
+                    });
                 doc.set('firstName', 'foobar');
                 await doc.save();
 
@@ -243,7 +252,7 @@ describe('Replication.test.js', () => {
 
 
             it('E', () => {
-//                process.exit();
+                //                process.exit();
             });
         });
         describe('negative', () => {});

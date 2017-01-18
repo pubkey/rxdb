@@ -25,12 +25,14 @@ import {
 } from 'rxjs/BehaviorSubject';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/observable/interval';
+import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/operator/timeout';
 import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/startWith';

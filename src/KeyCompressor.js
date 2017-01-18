@@ -1,6 +1,9 @@
 import {
     default as objectPath
 } from 'object-path';
+import {
+    default as clone
+} from 'clone';
 
 import * as util from './util';
 
@@ -106,13 +109,22 @@ class KeyCompressor {
             else {
                 const ret = {};
                 Object.keys(obj).forEach(key => {
-                    const replacedKey = key.startsWith('|') || key.startsWith('_') ? reverseTable[key] : key;
+                    let replacedKey = key;
+                    if (
+                        (
+                            key.startsWith('|') ||
+                            key.startsWith('_')
+                        ) &&
+                        reverseTable[key]
+                    ) replacedKey = reverseTable[key];
+
                     ret[replacedKey] = decompressObj(obj[key]);
                 });
                 return ret;
             }
         };
-        return decompressObj(obj);
+        const returnObj = decompressObj(obj);
+        return returnObj;
     }
 
     /**
@@ -146,7 +158,7 @@ class KeyCompressor {
      * @return {{selector: {}}} compressed queryJSON
      */
     compressQuery(queryJSON) {
-        console.dir(queryJSON);
+        queryJSON = clone(queryJSON);
         const table = this.table;
 
         // selector
@@ -156,11 +168,11 @@ class KeyCompressor {
             const transKey = this._transformKey('', '', key.split('.'));
             selector[transKey] = value;
         });
+        queryJSON.selector = selector;
 
-        //sort
-        let sort = [];
+        // sort
         if (queryJSON.sort) {
-            sort = queryJSON.sort.map(sortObj => {
+            queryJSON.sort = queryJSON.sort.map(sortObj => {
                 const key = Object.keys(sortObj)[0];
                 const value = sortObj[key];
                 const ret = {};
@@ -168,11 +180,8 @@ class KeyCompressor {
                 return ret;
             });
         }
-        
-        return {
-            selector,
-            sort
-        };
+
+        return queryJSON;
     }
 }
 

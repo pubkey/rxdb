@@ -286,6 +286,14 @@ describe('KeyCompressor.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
+        it('BUG: _rev gets undefined', () => {
+            const k = KeyCompressor.create(RxSchema.create(schemas.heroArray));
+            const human = schemaObjects.heroArray();
+            const compressed = k.compress(human);
+            compressed._rev = 'foobar';
+            const decompressed = k.decompress(compressed);
+            assert.equal(decompressed._rev, 'foobar');
+        });
     });
 
     describe('RxQuery().keyCompress()', () => {
@@ -378,7 +386,5 @@ describe('KeyCompressor.test.js', () => {
             ].join('.');
             assert.equal(query.sort[0][cString], 'asc');
         });
-
-        it('e', () => process.exit());
     });
 });

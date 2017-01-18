@@ -61,7 +61,7 @@ describe('Document.test.js', () => {
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
                 doc.set('passportId', val);
-                assert.equal(doc.data.passportId, val);
+                assert.equal(doc._data.passportId, val);
                 assert.equal(doc.get('passportId'), val);
                 c.database.destroy();
             });
@@ -73,7 +73,7 @@ describe('Document.test.js', () => {
                     level: 2
                 };
                 doc.set('mainSkill', val);
-                assert.equal(doc.data.mainSkill, val);
+                assert.equal(doc._data.mainSkill, val);
                 assert.equal(doc.get('mainSkill'), val);
                 c.database.destroy();
             });
@@ -82,7 +82,7 @@ describe('Document.test.js', () => {
                 const doc = await c.findOne().exec();
                 const val = 'newSkill';
                 doc.set('mainSkill.name', val);
-                assert.equal(doc.data.mainSkill.name, val);
+                assert.equal(doc._data.mainSkill.name, val);
                 assert.equal(doc.get('mainSkill.name'), val);
                 c.database.destroy();
             });
@@ -301,7 +301,7 @@ describe('Document.test.js', () => {
                 await first.remove();
                 const docsAfter = await c.find().exec();
                 docsAfter.map(doc => {
-                    if (doc.data.passportId == first.data.passportId)
+                    if (doc._data.passportId == first._data.passportId)
                         throw new Error('still here after remove()');
                 });
                 c.database.destroy();
@@ -408,7 +408,6 @@ describe('Document.test.js', () => {
                 const doc = await c.findOne().exec();
                 doc.firstName = 'foobar';
                 assert.equal(doc.firstName, 'foobar');
-
                 await doc.save();
                 const doc2 = await c.findOne(doc.passportId).exec();
                 assert.equal(doc2.firstName, 'foobar');

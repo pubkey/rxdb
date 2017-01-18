@@ -1,9 +1,12 @@
 ## 2.0.0 (XXX, 2017)
 
 Features:
-  - key-compression for better space-usage
+  - key-compression for better space-usage (awesome!)
+
+Breaking:
   - schema-objects are now normalized (order alphabetic) before hashing
   - RxQuery.select() is removed since it has no better performance than getting the whole document
+  - RxChangeEvent on sockets do no longer contain the documents-data for performance-reason
 
 Bugfixes:
   - console.dir on RxDocument now works

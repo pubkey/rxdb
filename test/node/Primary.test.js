@@ -171,17 +171,9 @@ describe('Primary.test.js', () => {
                     assert.equal(docsASC.length, 5);
                     assert.equal(docsDESC.length, 5);
                     assert.equal(
-                        docsASC[0].rawData.firstName,
-                        docsDESC.pop().rawData.firstName
+                        docsASC[0].firstName,
+                        docsDESC.pop().firstName
                     );
-                    c.database.destroy();
-                });
-                it('select primary field', async() => {
-                    const c = await humansCollection.createPrimary(5);
-                    const docs = await c.find().select({
-                        passportId: 1
-                    }).exec();
-                    assert.equal(docs.length, 5);
                     c.database.destroy();
                 });
             });
@@ -194,7 +186,7 @@ describe('Primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne(obj.passportId).exec();
-                    assert.equal(doc.rawData._id, obj.passportId);
+                    assert.equal(doc.getPrimary(), obj.passportId);
                     c.database.destroy();
                 });
                 it('find nothing', async() => {
@@ -210,7 +202,7 @@ describe('Primary.test.js', () => {
                     const doc = await c.findOne({
                         firstName: obj.firstName
                     }).exec();
-                    assert.equal(doc.rawData._id, obj.passportId);
+                    assert.equal(doc.getPrimary(), obj.passportId);
                     c.database.destroy();
                 });
                 it('BUG: findOne().where(myPrimary)', async() => {
@@ -275,6 +267,7 @@ describe('Primary.test.js', () => {
                     doc.set('firstName', 'foobar');
                     await doc.save();
                     const doc2 = await c.findOne().exec();
+
                     assert.equal(doc2.get('firstName'), 'foobar');
                     assert.equal(doc.get('passportId'), doc2.get('passportId'));
                     c.database.destroy();
@@ -313,10 +306,12 @@ describe('Primary.test.js', () => {
                     assert.equal(value, 'foobar');
                     c.database.destroy();
                 });
-                it('subscribe to collection', async() => {
+                it('subscribe to query', async() => {
                     const c = await humansCollection.createPrimary(0);
                     let docs;
+                    console.log('aa');
                     c.query().$.subscribe(newDocs => docs = newDocs);
+                    console.log('sss');
                     await c.insert(schemaObjects.simpleHuman());
                     await util.promiseWait(10);
                     assert.equal(docs.length, 1);

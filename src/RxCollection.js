@@ -11,10 +11,12 @@ import {
 } from 'clone';
 
 import * as util from './util';
-import * as KeyCompressor from './KeyCompressor';
 import * as RxDocument from './RxDocument';
 import * as RxQuery from './RxQuery';
 import * as RxChangeEvent from './RxChangeEvent';
+import * as KeyCompressor from './KeyCompressor';
+import * as Crypter from './Crypter';
+
 
 class RxCollection {
 
@@ -48,19 +50,29 @@ class RxCollection {
             pouchSettings
         );
 
-
         this.observable$ = this.database.$
             .filter(event => event.data.col == this.name);
     }
     async prepare() {
+
+        this.crypter = Crypter.create(this.database.password, this.schema);
+
         // INDEXES
         await Promise.all(
             this.schema.indexes
-            .map(indexAr => this.pouch.createIndex({
-                index: {
-                    fields: indexAr
-                }
-            })));
+            .map(indexAr => {
+                const compressedIdx = indexAr
+                    .map(key => {
+                        const ret = this.keyCompressor.table[key] ? this.keyCompressor.table[key] : key;
+                        return ret;
+                    });
+
+                this.pouch.createIndex({
+                    index: {
+                        fields: compressedIdx
+                    }
+                });
+            }));
 
         // HOOKS
         RxCollection.HOOKS_KEYS.forEach(key => {
@@ -72,6 +84,53 @@ class RxCollection {
     }
 
     /**
+     * wrappers for Pouch.put/get to handle keycompression etc
+     */
+    _handleToPouch(docData) {
+        const encrypted = this.crypter.encrypt(docData);
+        const swapped = this.schema.swapPrimaryToId(encrypted);
+        const compressed = this.keyCompressor.compress(swapped);
+        return compressed;
+    }
+    _handleFromPouch(docData, noDecrypt = false) {
+        const swapped = this.schema.swapIdToPrimary(docData);
+        const decompressed = this.keyCompressor.decompress(swapped);
+        if (noDecrypt) return decompressed;
+        const decrypted = this.crypter.decrypt(decompressed);
+        return decrypted;
+    }
+    async _pouchPut(obj) {
+        obj = this._handleToPouch(obj);
+        console.log('put:');
+        console.dir(obj);
+        return this.pouch.put(obj);
+    }
+    async _pouchGet(key) {
+        let doc = await this.pouch.get(key);
+        doc = this._handleFromPouch(doc);
+        return doc;
+    }
+    /**
+     * wrapps pouch-find
+     * @param {RxQuery} rxQuery
+     * @param {?number} limit overwrites the limit
+     * @param {?boolean} noDecrypt if true, decryption will not be made
+     * @return {Object[]} array with documents-data
+     */
+    async _pouchFind(rxQuery, limit, noDecrypt = false) {
+        const compressedQueryJSON = rxQuery.keyCompress();
+        if (limit) compressedQueryJSON.limit = limit;
+        const docsCompressed = await this.pouch.find(compressedQueryJSON);
+        const docs = docsCompressed.docs
+            .map(doc => this._handleFromPouch(doc, noDecrypt));
+
+        console.log('find:');
+        console.dir(docs);
+        return docs;
+    }
+
+
+    /**
      * returns observable
      */
     get $() {
@@ -80,38 +139,34 @@ class RxCollection {
     $emit = changeEvent => this.database.$emit(changeEvent);
 
 
+    /**
+     * @param {Object} json data
+     * @param {RxDocument} doc which was created
+     */
     async insert(json) {
+        json = clone(json);
+
         if (json._id)
             throw new Error('do not provide ._id, it will be generated');
 
         //console.log('RxCollection.insert():');
         //console.dir(json);
 
-        json = clone(json);
-        json._id = util.generate_id();
+        // fill _id
+        if (
+            this.schema.primaryPath == '_id' &&
+            !json._id
+        ) json._id = util.generate_id();
 
         await this._runHooks('pre', 'insert', json);
 
         this.schema.validate(json);
 
+        const insertResult = await this._pouchPut(json);
 
-        // handle encrypted fields
-        const encPaths = this.schema.getEncryptedPaths();
-        Object.keys(encPaths).map(path => {
-            let value = objectPath.get(json, path);
-            let encrypted = this.database._encrypt(value);
-            objectPath.set(json, path, encrypted);
-        });
-
-        // primary swap
-        const swappedDoc = this.schema.swapPrimaryToId(json);
-
-        const insertResult = await this.pouch.put(swappedDoc);
-
-        const newDocData = json;
-        newDocData._id = insertResult.id;
-        newDocData._rev = insertResult.rev;
-        const newDoc = RxDocument.create(this, newDocData, {});
+        json[this.schema.primaryPath] = insertResult.id;
+        json._rev = insertResult.rev;
+        const newDoc = RxDocument.create(this, json, {});
 
         await this._runHooks('post', 'insert', newDoc);
 
@@ -121,7 +176,7 @@ class RxCollection {
             this.database,
             this,
             newDoc,
-            newDocData
+            json
         );
         this.$emit(emitEvent);
 
@@ -139,9 +194,8 @@ class RxCollection {
 
         const query = RxQuery.create(queryObj, this);
         query.exec = async() => {
-            const queryJSON = query.toJSON();
-            const docs = await this.pouch.find(queryJSON);
-            const ret = RxDocument.createAr(this, docs.docs, queryJSON);
+            const docs = await this._pouchFind(query);
+            const ret = RxDocument.createAr(this, docs, query.toJSON());
             return ret;
         };
         return query;
@@ -158,13 +212,10 @@ class RxCollection {
 
 
         query.exec = async() => {
-            const queryJSON = query.toJSON();
-            queryJSON.limit = 1;
-            const docs = await this.pouch.find(queryJSON);
-            if (docs.docs.length === 0) return null;
-
-            const doc = docs.docs.shift();
-            const ret = RxDocument.create(this, doc, queryJSON);
+            const docs = await this._pouchFind(query, 1);
+            if (docs.length === 0) return null;
+            const doc = docs.shift();
+            const ret = RxDocument.create(this, doc, query.toJSON());
             return ret;
         };
         query.limit = () => {
@@ -190,6 +241,8 @@ class RxCollection {
      * @param {boolean} decrypted if true, all encrypted values will be decrypted
      */
     async dump(decrypted = false) {
+        const encrypted = !decrypted;
+
         const json = {
             name: this.name,
             schemaHash: this.schema.hash(),
@@ -198,20 +251,16 @@ class RxCollection {
             docs: []
         };
 
-        if (this.database.password) {
+        if (this.database.password && encrypted) {
             json.passwordHash = util.hash(this.database.password);
-            if (decrypted) json.encrypted = false;
-            else json.encrypted = true;
+            json.encrypted = true;
         }
 
-        const docs = await this.find().exec();
-        docs.map(doc => {
-            let useData = doc.rawData;
-            if (this.database.password && decrypted)
-                useData = Object.assign(doc.rawData, doc.data);
-
-            delete useData._rev;
-            json.docs.push(useData);
+        const query = RxQuery.create({}, this);
+        let docs = await this._pouchFind(query, null, encrypted);
+        json.docs = docs.map(docData => {
+            delete docData._rev;
+            return docData;
         });
         return json;
     }
@@ -257,7 +306,7 @@ class RxCollection {
         // import
         let fns = [];
         exportedJSON.docs.map(decDocs => {
-            fns.push(this.pouch.put(decDocs));
+            fns.push(this._pouchPut(decDocs));
         });
         await Promise.all(fns);
     }
