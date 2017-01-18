@@ -22,6 +22,7 @@ class RxDocument {
         this._data = clone(jsonData);
 
         this.deleted = false;
+        this._deleted$;
         this.changed = false;
 
         this._observable$;
@@ -34,6 +35,9 @@ class RxDocument {
 
     getPrimary() {
         return this._data[this.getPrimaryPath()];
+    }
+    getRevision() {
+        return this._data._rev;
     }
 
 
@@ -49,6 +53,10 @@ class RxDocument {
                     event.data.doc == '*'
                 ))
                 .mergeMap(async(ev) => {
+                    if (ev.data.op == 'RxDocument.remove') {
+                        this.deleted = true;
+                        return null;
+                    }
                     if (ev.data.v) return ev.data.v;
                     const newData = await this.collection._pouchGet(this.getPrimary());
                     return newData;
@@ -56,6 +64,14 @@ class RxDocument {
                 .do(docData => this._data = docData);
         }
         return this._observable$;
+    }
+
+    get deleted$() {
+        if (!this._deleted$) {
+            this._deleted$ = this.$
+                .filter(docData => docData == null);
+        }
+        return this._deleted$;
     }
 
     /**
@@ -68,8 +84,6 @@ class RxDocument {
         if (!schemaObj) throw new Error(`cannot observe a non-existed field (${path})`);
 
         return this.$
-            .do(()=> console.log('aaaaaa'))
-            .do(x => console.dir(x))
             .map(data => objectPath.get(data, path))
             .distinctUntilChanged()
             .startWith(this.get(path));
@@ -84,6 +98,7 @@ class RxDocument {
      * @return {object} value
      */
     get(objPath) {
+        if (!this._data) return undefined;
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.get(): objPath must be a string');
 
@@ -197,7 +212,6 @@ class RxDocument {
             this,
             emitValue
         );
-        console.dir(changeEvent);
         this.$emit(changeEvent);
 
         this.changed = false;
@@ -230,9 +244,6 @@ class RxDocument {
 
 
 export function create(collection, jsonData, query) {
-    console.log('create:');
-    console.dir(jsonData);
-    console.dir(collection.schema.primaryPath);
     if (jsonData[collection.schema.primaryPath].startsWith('_design'))
         return null;
 

@@ -44,8 +44,7 @@ describe('ImportExport.test.js', () => {
                 assert.equal(json.encrypted, true);
                 assert.equal(typeof json.passwordHash, 'string');
                 assert.equal(json.docs.length, 10);
-                json.docs.map(doc => {
-                    console.dir(doc);
+                json.docs.forEach(doc => {
                     assert.equal(typeof doc.secret, 'string');
                 });
                 db.destroy();
@@ -122,7 +121,7 @@ describe('ImportExport.test.js', () => {
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
-                    const decrypted = emptyCol.crypter.decrypt(firstDoc.secret);
+                    const decrypted = emptyCol.crypter._decryptValue(firstDoc.secret);
                     assert.equal(typeof decrypted, 'object');
                     assert.equal(typeof decrypted.name, 'string');
                     assert.equal(typeof decrypted.subname, 'string');
@@ -236,17 +235,16 @@ describe('ImportExport.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
                 const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
                 const fns = [];
-                for (let i = 0; i < 10; i++)
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                await Promise.all(fns);
-
+                await Promise.all(
+                    new Array(10).fill(0)
+                    .map(x => col.insert(schemaObjects.encryptedObjectHuman()))
+                );
                 const json = await db.dump(true);
 
                 assert.equal(json.encrypted, false);
                 assert.equal(typeof json.passwordHash, 'string');
                 assert.equal(json.collections[0].encrypted, false);
-                assert.equal(typeof json.collections[0].passwordHash, 'string');
-
+                assert.equal(json.collections[0].passwordHash, null);
                 json.collections[0].docs
                     .forEach(docData => {
                         assert.equal(typeof docData.secret, 'object');

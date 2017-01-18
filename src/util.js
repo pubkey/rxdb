@@ -173,10 +173,7 @@ export function promiseWaitResolveable(ms = 0) {
 
 
 export function filledArray(size = 0) {
-    const ret = [];
-    while (ret.length < size)
-        ret.push(ret.lenght);
-    return ret;
+    return new Array(size).fill(0);
 }
 
 /**

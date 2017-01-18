@@ -203,10 +203,7 @@ describe('Replication.test.js', () => {
                 c.database.destroy();
                 c2.database.destroy();
             });
-
             it('document: should change field when doc saves', async() => {
-
-                console.log('_________________________________');
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, 'colSource ' + randomToken(5));
                 const c2 = await humansCollection.create(0, 'colSync ' + randomToken(5));

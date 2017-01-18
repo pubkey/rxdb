@@ -309,9 +309,7 @@ describe('Primary.test.js', () => {
                 it('subscribe to query', async() => {
                     const c = await humansCollection.createPrimary(0);
                     let docs;
-                    console.log('aa');
                     c.query().$.subscribe(newDocs => docs = newDocs);
-                    console.log('sss');
                     await c.insert(schemaObjects.simpleHuman());
                     await util.promiseWait(10);
                     assert.equal(docs.length, 1);

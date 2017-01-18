@@ -101,8 +101,6 @@ class RxCollection {
     }
     async _pouchPut(obj) {
         obj = this._handleToPouch(obj);
-        console.log('put:');
-        console.dir(obj);
         return this.pouch.put(obj);
     }
     async _pouchGet(key) {
@@ -124,8 +122,6 @@ class RxCollection {
         const docs = docsCompressed.docs
             .map(doc => this._handleFromPouch(doc, noDecrypt));
 
-        console.log('find:');
-        console.dir(docs);
         return docs;
     }
 
@@ -148,9 +144,6 @@ class RxCollection {
 
         if (json._id)
             throw new Error('do not provide ._id, it will be generated');
-
-        //console.log('RxCollection.insert():');
-        //console.dir(json);
 
         // fill _id
         if (
@@ -282,33 +275,14 @@ class RxCollection {
         ) throw new Error('json.passwordHash does not match the own');
 
 
-        // decrypt docs
-        const decDocs = [];
-        exportedJSON.docs.map(docData => {
-            docData = clone(docData);
-            if (exportedJSON.encrypted) {
-                const encPaths = this.schema.getEncryptedPaths();
-                Object.keys(encPaths).map(path => {
-                    let encrypted = objectPath.get(docData, path);
-                    if (!encrypted) return;
-                    let decrypted = this.database._decrypt(encrypted);
-                    objectPath.set(docData, path, decrypted);
-                });
-            }
-            decDocs.push(docData);
-        });
-
-        // check if docs match schema
-        decDocs.map(decDoc => {
-            this.schema.validate(decDoc);
-        });
-
-        // import
-        let fns = [];
-        exportedJSON.docs.map(decDocs => {
-            fns.push(this._pouchPut(decDocs));
-        });
-        await Promise.all(fns);
+        const importFns = exportedJSON.docs
+            // decrypt
+            .map(doc => this.crypter.decrypt(doc))
+            // validate schema
+            .map(doc => this.schema.validate(doc))
+            // import
+            .map(doc => this._pouchPut(doc));
+        return Promise.all(importFns);
     }
 
 
@@ -374,8 +348,6 @@ class RxCollection {
             live: true,
             retry: true
         }).on('error', function(err) {
-            console.log('sync error:');
-            console.log(JSON.stringify(err));
             throw new Error(err);
         });
         this.pouchSyncs.push(sync);

@@ -123,14 +123,6 @@ class Socket {
             })
             // prevent memory leak of this.recievedEvents
             .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash()], EVENT_TTL * 3))
-            // decrypt if data.v is encrypted
-            .map(cE => {
-                if (cE.data.v) {
-                    if (this.database.password) cE.data.v = this.database._decrypt(cE.data.v);
-                    else cE.data.v = JSON.parse(cE.data.v);
-                }
-                return cE;
-            })
             // emit to messages
             .forEach(cE => this.messages$.next(cE));
 

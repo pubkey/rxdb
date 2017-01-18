@@ -100,7 +100,7 @@ describe('Observe.test.js', () => {
                     doc.set('firstName', randomToken(8));
                     doc.save();
                     const changeEvent = await doc.$.first().toPromise();
-                    assert.equal(changeEvent.data.doc, doc.rawData._id);
+                    assert.equal(changeEvent._id, doc.getPrimary());
                     c.database.destroy();
                 });
                 it('should observe a single field', async() => {
@@ -167,7 +167,7 @@ describe('Observe.test.js', () => {
         });
         describe('.remove()', () => {
             describe('positive', () => {
-                it('undefined on delete', async() => {
+                it('value is undefined on delete', async() => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
                     const valueObj = {

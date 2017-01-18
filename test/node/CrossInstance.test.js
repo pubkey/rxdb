@@ -115,7 +115,8 @@ describe('CrossInstance.test.js', () => {
                 live: true,
                 include_docs: true
             }).on('change', function(change) {
-                got = change;
+                if (!change.id.startsWith('_'))
+                    got = change;
             });
             await c1.insert(schemaObjects.human());
             await util.promiseWait(50);
@@ -184,6 +185,7 @@ describe('CrossInstance.test.js', () => {
             doc1.set('secret', 'foobar');
             await doc1.save();
             await c2.database.socket.pull();
+            await util.promiseWait(100);
             assert.equal(secretAfter, 'foobar');
 
             db1.destroy();
@@ -222,6 +224,7 @@ describe('CrossInstance.test.js', () => {
             });
             await doc1.save();
             await c2.database.socket.pull();
+            await util.promiseWait(100);
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'

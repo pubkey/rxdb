@@ -82,11 +82,12 @@ class RxSchema {
      * validate if the obj matches the schema
      * @param {Object} obj
      * @param {Object} schemaObj json-schema
+     * @param {Object} obj equal to input-obj
      */
     validate(obj, schemaObj) {
         schemaObj = schemaObj || this.jsonID;
         util.jsonSchemaValidate(schemaObj, obj);
-        return true;
+        return obj;
     }
 
     hash() {
