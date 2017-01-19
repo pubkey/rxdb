@@ -36,6 +36,8 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
         <li>MultiWindow-Support</li>
         <br/>
         <li>Leader-Election</li>
+        <br/>
+        <li>Key-Compression (Comming soon)</li>
       </ul>
     </td>
     <td>
