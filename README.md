@@ -1,6 +1,6 @@
 <h1><a href="https://github.com/pubkey/rxdb">RxDB</a></h1>
 <p>
-  The __serverless__, __client-side__, <a href="http://offlinefirst.org/" target="_blank">offline-first</a> database for your next javascript-application.
+The <b>serverless</b>, <b>client-side</b>, <a href="http://offlinefirst.org/" target="_blank">offline-first</a> database for your next javascript-application.
 </p>
 
 
