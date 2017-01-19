@@ -38,6 +38,16 @@ describe('RxCollection.test.js', () => {
                     assert.equal(collection.constructor.name, 'RxCollection');
                     db.destroy();
                 });
+                it('index', async() => {
+                    const col = await humansCollection.create(1);
+                    const indexes = await col.pouch.getIndexes();
+                    const compressedKey = col.keyCompressor.table.passportId;
+                    const has = indexes.indexes
+                        .map(i => i.def.fields[0])
+                        .filter(i => !!i[compressedKey]);
+                    assert.equal(has.length, 1);
+                    process.exit();
+                });
             });
             describe('negative', () => {
                 it('crash if no Schema-instance', async() => {
