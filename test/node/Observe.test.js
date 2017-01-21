@@ -1,5 +1,8 @@
 import assert from 'assert';
 import {
+    default as clone
+} from 'clone';
+import {
     default as randomToken
 } from 'random-token';
 import {
@@ -302,6 +305,42 @@ describe('Observe.test.js', () => {
                 await util.promiseWait(50);
                 assert.equal(values.length, 0);
                 c.database.destroy();
+            });
+
+
+            /**
+             * @link https://github.com/pubkey/rxdb/issues/31
+             */
+            it('do not fire on doc-change when result-doc not affected', async() => {
+                const c = await humansCollection.createAgeIndex(10);
+
+                let pw8 = util.promiseWaitResolveable(300);
+
+                // take only 9 of 10
+                let valuesAr = [];
+                const query = c.find()
+                    .limit(9)
+                    .sort('age')
+                    .$
+                    .do(x => pw8.resolve())
+                    .filter(x => x !== null)
+                    .subscribe(newV => valuesAr.push(newV));
+
+                // get the 10th
+                const doc = await c.findOne()
+                    .sort({
+                        age: -1
+                    })
+                    .exec();
+
+                await pw8.promise;
+                assert.equal(valuesAr.length, 1);
+
+                // edit+save doc
+                pw8 = util.promiseWaitResolveable(300);
+                doc.firstName = 'foobar';
+                await doc.save();
+                await pw8.promise;
             });
         });
         describe('negative', () => {

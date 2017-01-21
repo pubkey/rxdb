@@ -99,6 +99,7 @@ class RxDocument {
      */
     get(objPath) {
         if (!this._data) return undefined;
+
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.get(): objPath must be a string');
 
@@ -253,6 +254,8 @@ export function create(collection, jsonData, query) {
 
             // return document-property if exists
             if (doc[name]) return doc[name];
+
+            if (typeof name != 'string') return doc[name];
 
             // return observable if field ends with $
             if (name.slice && name.slice(-1) == '$')

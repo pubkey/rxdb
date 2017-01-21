@@ -19,6 +19,8 @@ class RxQuery {
         this.collection = collection;
         this.subject$;
         this.collectionSub$;
+        this._observable;
+        this._lastResultHash = '';
 
         this.defaultQuery = false;
         if (!queryObj ||
@@ -70,15 +72,16 @@ class RxQuery {
 
     // observe the result of this query
     get $() {
-        if (this.subject$) return this.subject$.asObservable();
-
-        this.subject$ = new util.Rx.BehaviorSubject(null);
-        this.refresh$(); // get init value
-        this.collectionSub$ = this.collection.$
-            .filter(c => this.subject$.observers.length > 0)
-            .filter(cEvent => ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op))
-            .subscribe(cEvent => this.refresh$()); // TODO unsubscribe on destroy
-        return this.$;
+        if (!this._observable) {
+            this.subject$ = new util.Rx.BehaviorSubject(null);
+            this.refresh$(); // get init value
+            this.collectionSub$ = this.collection.$
+                .filter(c => this.subject$.observers.length > 0)
+                .filter(cEvent => ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op))
+                .subscribe(cEvent => this.refresh$()); // TODO unsubscribe on destroy
+            this._observable = this.subject$.asObservable();
+        }
+        return this._observable;
     }
 
 
@@ -92,9 +95,13 @@ class RxQuery {
 
         const queryJSON = this.toJSON();
         const docs = await this.collection._pouchFind(this);
-        const ret = RxDocument.createAr(this.collection, docs, queryJSON);
-        this.subject$.next(ret);
 
+        const newHash = util.fastUnsecureHash(docs);
+        if (newHash != this._lastResultHash) {
+            this._lastResultHash = newHash;
+            const ret = RxDocument.createAr(this.collection, docs, queryJSON);
+            this.subject$.next(ret);
+        }
         this.refresh$_running = false;
     }
 
