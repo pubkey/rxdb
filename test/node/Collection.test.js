@@ -46,7 +46,6 @@ describe('RxCollection.test.js', () => {
                         .map(i => i.def.fields[0])
                         .filter(i => !!i[compressedKey]);
                     assert.equal(has.length, 1);
-                    process.exit();
                 });
             });
             describe('negative', () => {

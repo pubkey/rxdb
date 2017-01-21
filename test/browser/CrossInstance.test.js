@@ -105,6 +105,7 @@ describe('CrossInstance.test.js', () => {
             doc1.set('secret', 'foobar');
             await doc1.save();
             await c2.database.socket.pull();
+            await util.promiseWait(10);
             assert.equal(secretAfter, 'foobar');
             c1.database.destroy();
             c2.database.destroy();
@@ -142,6 +143,7 @@ describe('CrossInstance.test.js', () => {
             });
             await doc1.save();
             await c2.database.socket.pull();
+            await util.promiseWait(10);
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'

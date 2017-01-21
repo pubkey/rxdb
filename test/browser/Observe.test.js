@@ -58,7 +58,7 @@ describe('Observe.test.js', () => {
             doc.set('firstName', randomToken(8));
             doc.save();
             const changeEvent = await doc.$.first().toPromise();
-            assert.equal(changeEvent.data.doc, doc.rawData._id);
+            assert.equal(changeEvent._id, doc.getPrimary());
             c.database.destroy();
         });
         it('should observe a single field', async() => {

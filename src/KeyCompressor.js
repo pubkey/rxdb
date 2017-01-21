@@ -9,6 +9,9 @@ import * as util from './util';
 
 class KeyCompressor {
 
+    /**
+     * @param {RxSchema} schema
+     */
     constructor(schema) {
         this.schema = schema;
         this._table;
