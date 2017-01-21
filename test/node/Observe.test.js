@@ -223,11 +223,16 @@ describe('Observe.test.js', () => {
                 const c = await humansCollection.create(1);
                 const query = c.query();
                 let lastValue = null;
+                const pw8 = util.promiseWaitResolveable();
+
                 query.$.subscribe(newResults => {
                     lastValue = newResults;
+                    if (!newResults) pw8.resolve();
                 });
                 assert.equal(lastValue, null);
-                await util.promiseWait(15);
+                await pw8.promise;
+
+                await util.promiseWait(1000);
                 assert.ok(lastValue);
                 assert.equal(lastValue.length, 1);
                 c.database.destroy();
@@ -236,15 +241,18 @@ describe('Observe.test.js', () => {
                 const c = await humansCollection.create(1);
                 const query = c.query();
                 let lastValue = [];
+                let pw8 = util.promiseWaitResolveable(500);
                 query.$.subscribe(newResults => {
                     lastValue = newResults;
+                    if (!!newResults) pw8.resolve();
                 });
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(lastValue.length, 1);
 
                 const addHuman = schemaObjects.human();
+                pw8 = util.promiseWaitResolveable(500);
                 await c.insert(addHuman);
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(lastValue.length, 2);
 
                 let isHere = false;
@@ -291,18 +299,24 @@ describe('Observe.test.js', () => {
             it('get new values on Document.save', async() => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
+                let pw8 = util.promiseWaitResolveable(500);
 
                 let values;
                 const query = c.find({
                     firstName: doc.get('firstName')
-                }).$.subscribe(newV => values = newV);
+                }).$.subscribe(newV => {
+                    values = newV;
+                    if (!!newV) pw8.resolve();
+                });
 
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(values.length, 1);
 
+                // change doc so query does not match
                 doc.set('firstName', 'foobar');
+                pw8 = util.promiseWaitResolveable(500);
                 await doc.save();
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(values.length, 0);
                 c.database.destroy();
             });
@@ -313,11 +327,9 @@ describe('Observe.test.js', () => {
              */
             it('do not fire on doc-change when result-doc not affected', async() => {
                 const c = await humansCollection.createAgeIndex(10);
-
-                let pw8 = util.promiseWaitResolveable(300);
-
                 // take only 9 of 10
                 let valuesAr = [];
+                let pw8 = util.promiseWaitResolveable(300);
                 const query = c.find()
                     .limit(9)
                     .sort('age')
