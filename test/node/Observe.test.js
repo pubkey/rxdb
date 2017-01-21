@@ -341,6 +341,9 @@ describe('Observe.test.js', () => {
                 doc.firstName = 'foobar';
                 await doc.save();
                 await pw8.promise;
+
+                await util.promiseWait(20);
+                assert.equal(valuesAr.length, 1);
             });
         });
         describe('negative', () => {

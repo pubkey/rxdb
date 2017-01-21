@@ -211,7 +211,7 @@ describe('Document.test.js', () => {
                     await doc2.save();
                 }
                 let duration2 = new Date().getTime() - start2;
-                assert.ok(Math.round(duration / 2) > duration2);
+                assert.ok(Math.round(duration / 1.5) > Math.round(duration2));
                 c.database.destroy();
             });
             it('be faster on nonchanged-save (object)', async() => {
