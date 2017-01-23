@@ -166,9 +166,9 @@ var Socket = function () {
                                 socketDoc = changeEvent.toJSON();
 
                                 delete socketDoc.db;
-                                if (socketDoc.v) {
-                                    if (this.database.password) socketDoc.v = this.database._encrypt(socketDoc.v);else socketDoc.v = JSON.stringify(socketDoc.v);
-                                }
+
+                                // do not write whole doc to socket
+                                delete socketDoc.v;
 
                                 // TODO find a way to getAll on local documents
                                 //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
@@ -338,13 +338,6 @@ var Socket = function () {
                                     return setTimeout(function () {
                                         return delete _this2.recievedEvents[cE.hash()];
                                     }, EVENT_TTL * 3);
-                                })
-                                // decrypt if data.v is encrypted
-                                .map(function (cE) {
-                                    if (cE.data.v) {
-                                        if (_this2.database.password) cE.data.v = _this2.database._decrypt(cE.data.v);else cE.data.v = JSON.parse(cE.data.v);
-                                    }
-                                    return cE;
                                 })
                                 // emit to messages
                                 .forEach(function (cE) {

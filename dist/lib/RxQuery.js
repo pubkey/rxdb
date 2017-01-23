@@ -12,6 +12,10 @@ var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
+
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
@@ -52,8 +56,6 @@ var RxQuery = function () {
         (0, _classCallCheck3.default)(this, RxQuery);
 
         this.collection = collection;
-        this.subject$;
-        this.collectionSub$;
 
         this.defaultQuery = false;
         if (!queryObj || Object.keys(queryObj).length === 0 && !Array.isArray(queryObj)) {
@@ -65,7 +67,10 @@ var RxQuery = function () {
 
         // merge mquery-prototype functions to this
         var mquery_proto = Object.getPrototypeOf(this.mquery);
-        Object.keys(mquery_proto).map(function (attrName) {
+        Object.keys(mquery_proto).forEach(function (attrName) {
+
+            if (['select'].includes(attrName)) return;
+
             // only param1 is tunneled here on purpose so no callback-call can be done
             _this[attrName] = function (param1) {
                 _this.mquery[attrName](param1);
@@ -80,8 +85,9 @@ var RxQuery = function () {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         this.sort = function (params) {
+
             // workarround because sort wont work on unused keys
-            Object.keys(params).map(function (k) {
+            if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3.default)(params)) !== 'object') _this.mquery.where(params).gt(null);else Object.keys(params).map(function (k) {
                 return _this.mquery.where(k).gt(null);
             });
 
@@ -94,57 +100,6 @@ var RxQuery = function () {
 
 
     (0, _createClass3.default)(RxQuery, [{
-        key: 'refresh$',
-
-
-        /**
-         * regrap the result from the database
-         * and save it to this.result
-         */
-        value: function () {
-            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
-                var queryJSON, docs, ret;
-                return _regenerator2.default.wrap(function _callee$(_context) {
-                    while (1) {
-                        switch (_context.prev = _context.next) {
-                            case 0:
-                                if (!this.refresh$_running) {
-                                    _context.next = 2;
-                                    break;
-                                }
-
-                                return _context.abrupt('return');
-
-                            case 2:
-                                this.refresh$_running = true;
-
-                                queryJSON = this.toJSON();
-                                _context.next = 6;
-                                return this.collection.pouch.find(queryJSON);
-
-                            case 6:
-                                docs = _context.sent;
-                                ret = RxDocument.createAr(this.collection, docs.docs, queryJSON);
-
-                                this.subject$.next(ret);
-
-                                this.refresh$_running = false;
-
-                            case 10:
-                            case 'end':
-                                return _context.stop();
-                        }
-                    }
-                }, _callee, this);
-            }));
-
-            function refresh$() {
-                return _ref.apply(this, arguments);
-            }
-
-            return refresh$;
-        }()
-    }, {
         key: 'toJSON',
         value: function toJSON() {
             var _this2 = this;
@@ -155,23 +110,6 @@ var RxQuery = function () {
 
             var options = this.mquery._optionsForExec();
 
-            // select fields
-            if (this.mquery._fields) {
-                (function () {
-                    var fields = _this2.mquery._fieldsForExec();
-                    var useFields = Object.keys(fields).filter(function (fieldName) {
-                        return fields[fieldName] == 1;
-                    });
-
-                    useFields.push('_id');
-                    useFields.push('_rev');
-                    useFields = useFields.filter(function (elem, pos, arr) {
-                        return arr.indexOf(elem) == pos;
-                    }); // unique
-                    json.fields = useFields;
-                })();
-            }
-
             // sort
             if (options.sort) {
                 (function () {
@@ -181,7 +119,7 @@ var RxQuery = function () {
                         var dir = 'asc';
                         if (dirInt == -1) dir = 'desc';
                         var pushMe = {};
-
+                        // TODO run primary-swap somewhere else
                         if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
 
                         pushMe[fieldName] = dir;
@@ -218,23 +156,72 @@ var RxQuery = function () {
             return json;
         }
     }, {
+        key: 'keyCompress',
+
+
+        /**
+         * get the key-compression version of this query
+         * @return {{selector: {}, sort: []}} compressedQuery
+         */
+        value: function keyCompress() {
+            return this.collection.keyCompressor.compressQuery(this.toJSON());
+        }
+    }, {
         key: '$',
         get: function get() {
             var _this3 = this;
 
-            if (this.subject$) return this.subject$.asObservable();
+            if (!this._subject) {
+                this._subject = new util.Rx.BehaviorSubject(null);
+                this._obsRunning = false;
+                var collection$ = this.collection.$.filter(function (cEvent) {
+                    return ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op);
+                }).startWith(1).filter(function (x) {
+                    return !_this3._obsRunning;
+                }).do(function (x) {
+                    return _this3._obsRunning = true;
+                }).mergeMap(function () {
+                    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(cEvent) {
+                        var docs;
+                        return _regenerator2.default.wrap(function _callee$(_context) {
+                            while (1) {
+                                switch (_context.prev = _context.next) {
+                                    case 0:
+                                        _context.next = 2;
+                                        return _this3.collection._pouchFind(_this3);
 
-            this.subject$ = new util.Rx.BehaviorSubject(null);
-            this.refresh$(); // get init value
-            this.collectionSub$ = this.collection.$.filter(function (c) {
-                return _this3.subject$.observers.length > 0;
-            }) // TODO replace with subject$.hasObservers() https://github.com/Reactive-Extensions/RxJS/issues/1364
-            .filter(function (cEvent) {
-                return ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op);
-            }).subscribe(function (cEvent) {
-                return _this3.refresh$();
-            }); // TODO unsubscribe on destroy
-            return this.$;
+                                    case 2:
+                                        docs = _context.sent;
+                                        return _context.abrupt('return', docs);
+
+                                    case 4:
+                                    case 'end':
+                                        return _context.stop();
+                                }
+                            }
+                        }, _callee, _this3);
+                    }));
+
+                    return function (_x) {
+                        return _ref.apply(this, arguments);
+                    };
+                }()).do(function (x) {
+                    return _this3._obsRunning = false;
+                }).distinctUntilChanged(function (prev, now) {
+                    return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
+                }).map(function (docs) {
+                    return RxDocument.createAr(_this3.collection, docs, _this3.toJSON());
+                }).do(function (docs) {
+                    return _this3._subject.next(docs);
+                }).map(function (x) {
+                    return '';
+                });
+
+                this._observable$ = util.Rx.Observable.merge(this._subject, collection$).filter(function (x) {
+                    return typeof x != 'string' || x != '';
+                });
+            }
+            return this._observable$;
         }
     }]);
     return RxQuery;
