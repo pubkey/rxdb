@@ -52,6 +52,18 @@ export function deepNestedHuman() {
     };
 };
 
+export function heroArray() {
+    return {
+        name: randomToken(6),
+        skills: new Array(3).fill(0).map(() => {
+            return {
+                name: randomToken(6),
+                damage: randomInt(10, 50)
+            };
+        })
+    };
+}
+
 
 export function encryptedHuman() {
     return {

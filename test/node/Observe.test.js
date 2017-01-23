@@ -1,5 +1,8 @@
 import assert from 'assert';
 import {
+    default as clone
+} from 'clone';
+import {
     default as randomToken
 } from 'random-token';
 import {
@@ -100,7 +103,7 @@ describe('Observe.test.js', () => {
                     doc.set('firstName', randomToken(8));
                     doc.save();
                     const changeEvent = await doc.$.first().toPromise();
-                    assert.equal(changeEvent.data.doc, doc.rawData._id);
+                    assert.equal(changeEvent._id, doc.getPrimary());
                     c.database.destroy();
                 });
                 it('should observe a single field', async() => {
@@ -167,7 +170,7 @@ describe('Observe.test.js', () => {
         });
         describe('.remove()', () => {
             describe('positive', () => {
-                it('undefined on delete', async() => {
+                it('value is undefined on delete', async() => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
                     const valueObj = {
@@ -220,11 +223,16 @@ describe('Observe.test.js', () => {
                 const c = await humansCollection.create(1);
                 const query = c.query();
                 let lastValue = null;
+                const pw8 = util.promiseWaitResolveable();
+
                 query.$.subscribe(newResults => {
                     lastValue = newResults;
+                    if (!newResults) pw8.resolve();
                 });
                 assert.equal(lastValue, null);
-                await util.promiseWait(15);
+                await pw8.promise;
+
+                await util.promiseWait(1000);
                 assert.ok(lastValue);
                 assert.equal(lastValue.length, 1);
                 c.database.destroy();
@@ -233,15 +241,18 @@ describe('Observe.test.js', () => {
                 const c = await humansCollection.create(1);
                 const query = c.query();
                 let lastValue = [];
+                let pw8 = util.promiseWaitResolveable(500);
                 query.$.subscribe(newResults => {
                     lastValue = newResults;
+                    if (!!newResults) pw8.resolve();
                 });
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(lastValue.length, 1);
 
                 const addHuman = schemaObjects.human();
+                pw8 = util.promiseWaitResolveable(500);
                 await c.insert(addHuman);
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(lastValue.length, 2);
 
                 let isHere = false;
@@ -288,20 +299,63 @@ describe('Observe.test.js', () => {
             it('get new values on Document.save', async() => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
+                let pw8 = util.promiseWaitResolveable(500);
 
                 let values;
                 const query = c.find({
                     firstName: doc.get('firstName')
-                }).$.subscribe(newV => values = newV);
+                }).$.subscribe(newV => {
+                    values = newV;
+                    if (!!newV) pw8.resolve();
+                });
 
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(values.length, 1);
 
+                // change doc so query does not match
                 doc.set('firstName', 'foobar');
+                pw8 = util.promiseWaitResolveable(500);
                 await doc.save();
-                await util.promiseWait(50);
+                await pw8.promise;
                 assert.equal(values.length, 0);
                 c.database.destroy();
+            });
+
+
+            /**
+             * @link https://github.com/pubkey/rxdb/issues/31
+             */
+            it('do not fire on doc-change when result-doc not affected', async() => {
+                const c = await humansCollection.createAgeIndex(10);
+                // take only 9 of 10
+                let valuesAr = [];
+                let pw8 = util.promiseWaitResolveable(300);
+                const query = c.find()
+                    .limit(9)
+                    .sort('age')
+                    .$
+                    .do(x => pw8.resolve())
+                    .filter(x => x !== null)
+                    .subscribe(newV => valuesAr.push(newV));
+
+                // get the 10th
+                const doc = await c.findOne()
+                    .sort({
+                        age: -1
+                    })
+                    .exec();
+
+                await pw8.promise;
+                assert.equal(valuesAr.length, 1);
+
+                // edit+save doc
+                pw8 = util.promiseWaitResolveable(300);
+                doc.firstName = 'foobar';
+                await doc.save();
+                await pw8.promise;
+
+                await util.promiseWait(20);
+                assert.equal(valuesAr.length, 1);
             });
         });
         describe('negative', () => {

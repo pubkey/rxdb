@@ -38,6 +38,15 @@ describe('RxCollection.test.js', () => {
                     assert.equal(collection.constructor.name, 'RxCollection');
                     db.destroy();
                 });
+                it('index', async() => {
+                    const col = await humansCollection.create(1);
+                    const indexes = await col.pouch.getIndexes();
+                    const compressedKey = col.keyCompressor.table.passportId;
+                    const has = indexes.indexes
+                        .map(i => i.def.fields[0])
+                        .filter(i => !!i[compressedKey]);
+                    assert.equal(has.length, 1);
+                });
             });
             describe('negative', () => {
                 it('crash if no Schema-instance', async() => {
@@ -171,7 +180,7 @@ describe('RxCollection.test.js', () => {
                             await collection.insert(human);
                             let docs = await collection.find().exec();
                             let doc = docs[0];
-                            assert.equal(passportId, doc.data.passportId);
+                            assert.equal(passportId, doc._data.passportId);
                             db.destroy();
                         }
                     });
@@ -200,7 +209,7 @@ describe('RxCollection.test.js', () => {
                         let docs = await c.find().exec();
                         docs = _.shuffle(docs);
                         const last = docs.pop();
-                        const passportId = last.data.passportId;
+                        const passportId = last._data.passportId;
                         let doc = await c.find({
                             passportId
                         }).exec();
@@ -220,7 +229,7 @@ describe('RxCollection.test.js', () => {
                         let docs = await c.find().exec();
                         docs = _.shuffle(docs);
                         const last = docs.pop();
-                        const passportId = last.data.passportId;
+                        const passportId = last._data.passportId;
                         let doc = await c.find({
                             passportId: {
                                 $eq: passportId
@@ -229,50 +238,6 @@ describe('RxCollection.test.js', () => {
                         assert.equal(doc.length, 1);
                         doc = doc[0];
                         assert.deepEqual(doc.data, last.data);
-                    });
-                });
-                describe('negative', () => {});
-            });
-            describe('.select()', () => {
-                describe('positive', () => {
-                    it('get firstName only', async() => {
-                        const c = await humansCollection.create();
-                        const docs = await c.find({})
-                            .select({
-                                firstName: 1
-                            })
-                            .exec();
-                        const firstData = docs[0].data;
-                        assert.equal(Object.keys(firstData).length, 1);
-                        assert.equal(typeof firstData.firstName, 'string');
-                    });
-                    it('get no fields', async() => {
-                        const c = await humansCollection.create();
-                        const docs = await c.find({})
-                            .select({})
-                            .exec();
-                        const firstData = docs[0].data;
-                        assert.deepEqual(firstData, {});
-                    });
-                    it('dont crash on undefined field', async() => {
-                        const c = await humansCollection.create();
-                        const docs = await c.find({})
-                            .select({
-                                foobar: 1
-                            })
-                            .exec();
-                        const firstData = docs[0].data;
-                        assert.deepEqual(firstData, {});
-                    });
-                    it('assure it always has an _id', async() => {
-                        const c = await humansCollection.create();
-                        const docs = await c.find({})
-                            .select({
-                                foobar: 1
-                            })
-                            .exec();
-                        const first = docs[0];
-                        assert.equal(typeof first.rawData._id, 'string');
                     });
                 });
                 describe('negative', () => {});
@@ -289,7 +254,7 @@ describe('RxCollection.test.js', () => {
                             age: -1
                         }).exec();
                         assert.equal(docs.length, 20);
-                        assert.ok(docs[0].data.age >= docs[1].data.age);
+                        assert.ok(docs[0]._data.age >= docs[1]._data.age);
                     });
                     it('sort by age desc (with default index-search)', async() => {
                         const c = await humansCollection.createAgeIndex();
@@ -297,7 +262,7 @@ describe('RxCollection.test.js', () => {
                             age: -1
                         }).exec();
                         assert.equal(docs.length, 20);
-                        assert.ok(docs[0].data.age >= docs[1].data.age);
+                        assert.ok(docs[0]._data.age >= docs[1]._data.age);
                     });
                     it('sort by age asc', async() => {
                         const c = await humansCollection.createAgeIndex();
@@ -305,7 +270,7 @@ describe('RxCollection.test.js', () => {
                             age: 1
                         }).exec();
                         assert.equal(docs.length, 20);
-                        assert.ok(docs[0].data.age <= docs[1].data.age);
+                        assert.ok(docs[0]._data.age <= docs[1]._data.age);
                     });
                     it('validate results', async() => {
                         const c = await humansCollection.createAgeIndex();
@@ -316,7 +281,7 @@ describe('RxCollection.test.js', () => {
                             age: 1
                         }).exec();
                         const last_desc = desc[desc.length - 1];
-                        assert.equal(last_desc.data.passportId, asc[0].data.passportId);
+                        assert.equal(last_desc._data.passportId, asc[0]._data.passportId);
                     });
                     it('find the same twice', async() => {
                         const c = await humansCollection.createNested(5);
@@ -326,7 +291,7 @@ describe('RxCollection.test.js', () => {
                         const doc2 = await c.findOne().sort({
                             passportId: 1
                         }).exec();
-                        assert.equal(doc1.data.passportId, doc2.data.passportId);
+                        assert.equal(doc1._data.passportId, doc2._data.passportId);
                     });
                 });
                 describe('negative', () => {
@@ -369,8 +334,8 @@ describe('RxCollection.test.js', () => {
                             passportId: -1
                         }).limit(1).exec();
                         last = last[0];
-                        assert.equal(last.data.passportId, docs[(docs.length - 1)].data.passportId);
-                        assert.notEqual(first.data.passportId, last.data.passportId);
+                        assert.equal(last._data.passportId, docs[(docs.length - 1)]._data.passportId);
+                        assert.notEqual(first._data.passportId, last._data.passportId);
                     });
                     it('reset limit with .limit(null)', async() => {
                         const c = await humansCollection.create();
@@ -395,7 +360,7 @@ describe('RxCollection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).exec();
-                        assert.equal(noFirst[0].data.passportId, docs[1].data.passportId);
+                        assert.equal(noFirst[0]._data.passportId, docs[1]._data.passportId);
                     });
                     it('skip first in order', async() => {
                         const c = await humansCollection.create();
@@ -405,7 +370,7 @@ describe('RxCollection.test.js', () => {
                         const noFirst = await c.find().sort({
                             passportId: 1
                         }).skip(1).exec();
-                        assert.equal(noFirst[0].data.passportId, docs[1].data.passportId);
+                        assert.equal(noFirst[0]._data.passportId, docs[1]._data.passportId);
                     });
                     it('skip first and limit', async() => {
                         const c = await humansCollection.create();
@@ -417,7 +382,7 @@ describe('RxCollection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).skip(null).exec();
-                        assert.notEqual(noFirst[0].data.passportId, docs[1].data.passportId);
+                        assert.notEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                     });
                 });
                 describe('negative', () => {
@@ -453,12 +418,12 @@ describe('RxCollection.test.js', () => {
                     const doc2 = await c.findOne().skip(2).exec();
                     assert.equal(doc.constructor.name, 'RxDocument');
                     assert.equal(doc2.constructor.name, 'RxDocument');
-                    assert.notEqual(doc.data.passportId, doc2.data.passportId);
+                    assert.notEqual(doc._data.passportId, doc2._data.passportId);
                 });
-                it('find by _id', async() => {
+                it('find by primary', async() => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
-                    const _id = doc.rawData._id;
+                    const _id = doc.getPrimary();
                     assert.equal(typeof _id, 'string');
                     const docById = await c.findOne(_id).exec();
                     assert.deepEqual(docById.data, doc.data);
@@ -475,7 +440,7 @@ describe('RxCollection.test.js', () => {
                         if (!docs[0]) console.log('docs[0]: null');
                         let doc = await collection.findOne().exec();
                         if (!doc) console.log('doc: null');
-                        assert.equal(passportId, doc.data.passportId);
+                        assert.equal(passportId, doc._data.passportId);
                     }
                 });
             });

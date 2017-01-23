@@ -354,6 +354,35 @@ export const empty = {
     required: []
 };
 
+export const heroArray = {
+    'title': 'hero schema',
+    'description': 'describes a simple hero with an array-field',
+    'type': 'object',
+    'properties': {
+        'name': {
+            'type': 'string',
+            'primary': true
+        },
+        'skills': {
+            'type': 'array',
+            'maxItems': 5,
+            'uniqueItems': true,
+            'item': {
+                'type': 'object',
+                'properties': {
+                    'name': {
+                        'type': 'string'
+                    },
+                    'damage': {
+                        'type': 'number'
+                    }
+                }
+            }
+        }
+    },
+    'required': ['color']
+};
+
 
 export const primaryHuman = {
     title: 'human schema with primary',
@@ -373,4 +402,32 @@ export const primaryHuman = {
         }
     },
     required: ['firstName', 'lastName']
+};
+
+export const humanNormalizeSchema1 = {
+    title: 'human schema',
+    description: 'describes a simple human being',
+    properties: {
+        age: {
+            description: 'age in years',
+            type: 'integer',
+            minimum: 0,
+            maximum: 150
+        }
+    },
+    required: ['firstName', 'lastName', { name: 2 }]
+};
+
+export const humanNormalizeSchema2 = {
+    title: 'human schema',
+    properties: {
+        age: {
+            minimum: 0,
+            type: 'integer',
+            description: 'age in years',
+            maximum: 150
+        }
+    },
+    description: 'describes a simple human being',
+    required: ['lastName', 'firstName', { name: 2 }]
 };

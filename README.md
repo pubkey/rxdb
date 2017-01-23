@@ -37,7 +37,7 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
         <br/>
         <li>Leader-Election</li>
         <br/>
-        <li>Key-Compression <br />(Comming soon)</li>
+        <li>Key-Compression</li>
       </ul>
     </td>
     <td>
@@ -333,6 +333,35 @@ myRxDatabase.waitForLeadership()
 <p>In this example the leader is marked with the crown &#9819;</p>
 
 ![reactive.gif](docs/files/leader-election.gif)
+
+
+<h3>Key-Compression</h3>
+<p>
+  Depending on which adapter and in which environment you use RxDB, client-side storage is <a href="https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html" target="_blank">limited in some way or the other</a>. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.
+</p>
+
+Example:
+```js
+
+// when you save an object with big keys
+await myCollection.insert({
+  firstName: 'foo'
+  lastName:  'bar'
+  stupidLongKey: 5
+});
+
+// RxDB will internally transform it to
+{
+  '|a': 'foo'
+  '|b':  'bar'
+  '|c': 5
+}
+
+// so instead of 46 chars, the compressed-version has only 28
+// the compression works internally, so you can of course still access values via the original key.names
+console.log(myDoc.firstName);
+// 'foo'
+```
 
 <h2>Getting started</h2>
 

@@ -84,7 +84,6 @@ declare class RxQuery {
     regex(queryObj): RxQuery;
     exists(queryObj): RxQuery;
     elemMatch(queryObj): RxQuery;
-    select(fields: any): RxQuery;
     slice(queryObj): RxQuery;
     sort(params: any): RxQuery;
     limit(amount: number): RxQuery;
@@ -99,11 +98,13 @@ declare class RxDocument {
     deleted: boolean;
 
     $: Observable<any>;
+    getPrimary(): string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
     set(objPath: string, value: any): RxDocument;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
+    toJSON(): Object;
     destroy();
 }
 

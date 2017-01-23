@@ -6,12 +6,18 @@ import {
     default as clone
 } from 'clone';
 
+import {
+    default as isPlainObject
+} from 'is-plain-object';
+
+
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
         this.jsonID = clone(jsonID);
+        this._normalized;
 
         this.compoundIndexes = this.jsonID.compoundIndexes || [];
         delete this.jsonID.compoundIndexes;
@@ -19,6 +25,10 @@ class RxSchema {
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
         this.jsonID.required = this.jsonID.required || [];
+
+        // fill with key-compression-state
+        if (!this.jsonID.hasOwnProperty('disableKeyCompression'))
+            this.jsonID.disableKeyCompression = false;
 
         this.indexes.map(indexAr => {
             indexAr
@@ -31,11 +41,13 @@ class RxSchema {
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
 
-        // add _id
-        this.jsonID.properties._id = {
-            type: 'string',
-            minLength: 1
-        };
+        // add primary to schema
+        if (!this.jsonID.properties[this.primaryPath]) {
+            this.jsonID.properties[this.primaryPath] = {
+                type: 'string',
+                minLength: 1
+            };
+        }
 
         // add _rev
         this.jsonID.properties._rev = {
@@ -47,7 +59,14 @@ class RxSchema {
         this.crypt = hasCrypt(this.jsonID);
         this.encryptedPaths;
 
+        // always false
         this.jsonID.additionalProperties = false;
+    }
+
+    get normalized() {
+        if (!this._normalized)
+            this._normalized = normalize(this.jsonID);
+        return this._normalized;
     }
 
     getSchemaByObjectPath(path) {
@@ -68,26 +87,37 @@ class RxSchema {
      * validate if the obj matches the schema
      * @param {Object} obj
      * @param {Object} schemaObj json-schema
+     * @param {Object} obj equal to input-obj
      */
     validate(obj, schemaObj) {
         schemaObj = schemaObj || this.jsonID;
         util.jsonSchemaValidate(schemaObj, obj);
-        return true;
+        return obj;
     }
 
-    hash = () => util.hash(this.jsonID)
+    hash() {
+        // TODO use getter for hash and cache
+        return util.hash(this.normalized);
+    }
 
     swapIdToPrimary(obj) {
-        if (!this.primaryPath) return obj;
+        if (this.primaryPath == '_id' || obj[this.primaryPath]) return obj;
         obj[this.primaryPath] = obj._id;
         delete obj._id;
         return obj;
     }
     swapPrimaryToId(obj) {
-        if (!this.primaryPath) return obj;
+        if (this.primaryPath == '_id') return obj;
         obj._id = obj[this.primaryPath];
         delete obj[this.primaryPath];
         return obj;
+    }
+
+    /**
+     * returns true if key-compression should be done
+     */
+    doKeyCompression() {
+        return !!!this.jsonID.disableKeyCompression;
     }
 
 }
@@ -136,11 +166,17 @@ export function getIndexes(jsonID) {
         .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique
 }
 
-
+/**
+ * returns the primary path of a jsonschema
+ * @param {Object} jsonID
+ * @return {string} primaryPath which is _id if none defined
+ */
 export function getPrimary(jsonID) {
-    return Object.keys(jsonID.properties)
+    const ret = Object.keys(jsonID.properties)
         .filter(key => jsonID.properties[key].primary)
         .shift();
+    if (!ret) return '_id';
+    else return ret;
 }
 
 
@@ -160,6 +196,10 @@ export function validateFieldsDeep(jsonSchema) {
 
         if (fieldName.includes('$'))
             throw new Error(`field-names cannot contain $-char: ${fieldName}`);
+
+        // 'item' only allowed it type=='array'
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')
+            throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
 
 
         const isNested = path.split('.').length >= 2;
@@ -277,6 +317,37 @@ export function checkSchema(jsonID) {
             );
         });
 }
+
+/**
+ * orders the schemas attributes by alphabetical order
+ * @param {Object} jsonSchema
+ * @return {Object} jsonSchema - ordered
+ */
+export function normalize(jsonSchema) {
+    let defaultSortFn = (a, b) => {
+        return a.localeCompare(b);
+    };
+    let sort = src => {
+        if (Array.isArray(src)) {
+            return src
+                .sort()
+                .map(i => sort(i));
+        }
+        if (isPlainObject(src)) {
+            const out = {};
+            Object.keys(src)
+                .sort(defaultSortFn)
+                .forEach(key => {
+                    out[key] = sort(src[key]);
+                });
+            return out;
+        }
+        return src;
+    };
+    return sort(jsonSchema);
+}
+
+
 
 export function create(jsonID) {
     checkSchema(jsonID);

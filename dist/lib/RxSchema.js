@@ -22,6 +22,7 @@ exports.getIndexes = getIndexes;
 exports.getPrimary = getPrimary;
 exports.validateFieldsDeep = validateFieldsDeep;
 exports.checkSchema = checkSchema;
+exports.normalize = normalize;
 exports.create = create;
 
 var _objectPath = require('object-path');
@@ -31,6 +32,10 @@ var _objectPath2 = _interopRequireDefault(_objectPath);
 var _clone = require('clone');
 
 var _clone2 = _interopRequireDefault(_clone);
+
+var _isPlainObject = require('is-plain-object');
+
+var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
 var _util = require('./util');
 
@@ -50,11 +55,8 @@ var RxSchema = function () {
 
         (0, _classCallCheck3.default)(this, RxSchema);
 
-        this.hash = function () {
-            return util.hash(_this.jsonID);
-        };
-
         this.jsonID = (0, _clone2.default)(jsonID);
+        this._normalized;
 
         this.compoundIndexes = this.jsonID.compoundIndexes || [];
         delete this.jsonID.compoundIndexes;
@@ -62,6 +64,9 @@ var RxSchema = function () {
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
         this.jsonID.required = this.jsonID.required || [];
+
+        // fill with key-compression-state
+        if (!this.jsonID.hasOwnProperty('disableKeyCompression')) this.jsonID.disableKeyCompression = false;
 
         this.indexes.map(function (indexAr) {
             indexAr.filter(function (index) {
@@ -75,11 +80,13 @@ var RxSchema = function () {
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath) this.jsonID.required.push(this.primaryPath);
 
-        // add _id
-        this.jsonID.properties._id = {
-            type: 'string',
-            minLength: 1
-        };
+        // add primary to schema
+        if (!this.jsonID.properties[this.primaryPath]) {
+            this.jsonID.properties[this.primaryPath] = {
+                type: 'string',
+                minLength: 1
+            };
+        }
 
         // add _rev
         this.jsonID.properties._rev = {
@@ -91,6 +98,7 @@ var RxSchema = function () {
         this.crypt = hasCrypt(this.jsonID);
         this.encryptedPaths;
 
+        // always false
         this.jsonID.additionalProperties = false;
     }
 
@@ -117,6 +125,7 @@ var RxSchema = function () {
          * validate if the obj matches the schema
          * @param {Object} obj
          * @param {Object} schemaObj json-schema
+         * @param {Object} obj equal to input-obj
          */
 
     }, {
@@ -124,12 +133,18 @@ var RxSchema = function () {
         value: function validate(obj, schemaObj) {
             schemaObj = schemaObj || this.jsonID;
             util.jsonSchemaValidate(schemaObj, obj);
-            return true;
+            return obj;
+        }
+    }, {
+        key: 'hash',
+        value: function hash() {
+            // TODO use getter for hash and cache
+            return util.hash(this.normalized);
         }
     }, {
         key: 'swapIdToPrimary',
         value: function swapIdToPrimary(obj) {
-            if (!this.primaryPath) return obj;
+            if (this.primaryPath == '_id' || obj[this.primaryPath]) return obj;
             obj[this.primaryPath] = obj._id;
             delete obj._id;
             return obj;
@@ -137,10 +152,26 @@ var RxSchema = function () {
     }, {
         key: 'swapPrimaryToId',
         value: function swapPrimaryToId(obj) {
-            if (!this.primaryPath) return obj;
+            if (this.primaryPath == '_id') return obj;
             obj._id = obj[this.primaryPath];
             delete obj[this.primaryPath];
             return obj;
+        }
+
+        /**
+         * returns true if key-compression should be done
+         */
+
+    }, {
+        key: 'doKeyCompression',
+        value: function doKeyCompression() {
+            return !!!this.jsonID.disableKeyCompression;
+        }
+    }, {
+        key: 'normalized',
+        get: function get() {
+            if (!this._normalized) this._normalized = normalize(this.jsonID);
+            return this._normalized;
         }
     }]);
     return RxSchema;
@@ -193,10 +224,16 @@ function getIndexes(jsonID) {
     }); // unique
 }
 
+/**
+ * returns the primary path of a jsonschema
+ * @param {Object} jsonID
+ * @return {string} primaryPath which is _id if none defined
+ */
 function getPrimary(jsonID) {
-    return Object.keys(jsonID.properties).filter(function (key) {
+    var ret = Object.keys(jsonID.properties).filter(function (key) {
         return jsonID.properties[key].primary;
     }).shift();
+    if (!ret) return '_id';else return ret;
 }
 
 /**
@@ -212,6 +249,9 @@ function validateFieldsDeep(jsonSchema) {
         if (fieldName.includes('.')) throw new Error('field-names cannot contain dots: ' + fieldName);
 
         if (fieldName.includes('$')) throw new Error('field-names cannot contain $-char: ' + fieldName);
+
+        // 'item' only allowed it type=='array'
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array') throw new Error('name \'item\' reserved for array-fields: ' + fieldName);
 
         var isNested = path.split('.').length >= 2;
         // nested only
@@ -307,6 +347,39 @@ function checkSchema(jsonID) {
     }).forEach(function (indexKey) {
         throw new Error('given indexKey (' + indexKey + ') is not type:string but\n                ' + jsonID.properties[indexKey].type);
     });
+}
+
+/**
+ * orders the schemas attributes by alphabetical order
+ * @param {Object} jsonSchema
+ * @return {Object} jsonSchema - ordered
+ */
+function normalize(jsonSchema) {
+    var defaultSortFn = function defaultSortFn(a, b) {
+        return a.localeCompare(b);
+    };
+    var sort = function sort(src) {
+        if (Array.isArray(src)) {
+            return src.sort().map(function (i) {
+                return sort(i);
+            });
+        }
+        if ((0, _isPlainObject2.default)(src)) {
+            var _ret = function () {
+                var out = {};
+                Object.keys(src).sort(defaultSortFn).forEach(function (key) {
+                    out[key] = sort(src[key]);
+                });
+                return {
+                    v: out
+                };
+            }();
+
+            if ((typeof _ret === 'undefined' ? 'undefined' : (0, _typeof3.default)(_ret)) === "object") return _ret.v;
+        }
+        return src;
+    };
+    return sort(jsonSchema);
 }
 
 function create(jsonID) {

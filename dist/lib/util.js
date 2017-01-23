@@ -108,6 +108,8 @@ exports.jsonSchemaValidate = jsonSchemaValidate;
 exports.promiseWaitResolveable = promiseWaitResolveable;
 exports.filledArray = filledArray;
 exports.ucfirst = ucfirst;
+exports.numberToLetter = numberToLetter;
+exports.trimDots = trimDots;
 
 var _randomToken = require('random-token');
 
@@ -125,7 +127,11 @@ require('rxjs/add/observable/merge');
 
 require('rxjs/add/observable/interval');
 
+require('rxjs/add/observable/from');
+
 require('rxjs/add/observable/fromEvent');
+
+require('rxjs/add/operator/publishReplay');
 
 require('rxjs/add/operator/timeout');
 
@@ -134,6 +140,8 @@ require('rxjs/add/operator/delay');
 require('rxjs/add/operator/do');
 
 require('rxjs/add/operator/map');
+
+require('rxjs/add/operator/mergeMap');
 
 require('rxjs/add/operator/filter');
 
@@ -157,12 +165,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// rxjs cherry-pick
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-
 var Rx = exports.Rx = {
     Observable: _Observable.Observable,
     Subject: _Subject.Subject,
@@ -170,6 +172,14 @@ var Rx = exports.Rx = {
 };
 
 // crypto-js
+
+
+// rxjs cherry-pick
+/**
+ * this contains a mapping to basic dependencies
+ * which should be easy to change
+ */
+
 function encrypt(value, password) {
     var encrypted = crypto_AES.encrypt(value, password);
     return encrypted.toString();
@@ -255,14 +265,57 @@ function jsonSchemaValidate(schema, obj) {
 function filledArray() {
     var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
-    var ret = [];
-    while (ret.length < size) {
-        ret.push(ret.lenght);
-    }return ret;
+    return new Array(size).fill(0);
 }
 
+/**
+ * uppercase first char
+ * @param  {string} str
+ * @return {string} Str
+ */
 function ucfirst(str) {
     str += '';
     var f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
+}
+
+/**
+ * @link https://de.wikipedia.org/wiki/Base58
+ * this does not start with the numbers to generate valid variable-names
+ */
+var base58Chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+var base58Length = base58Chars.length;
+
+/**
+ * transform a number to a string by using only base58 chars
+ * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
+ * @param {number} nr                                       | 10000000
+ * @return {string} the string-representation of the number | '2oMX'
+ */
+function numberToLetter(nr) {
+    var digits = [];
+    do {
+        var v = nr % base58Length;
+        digits.push(v);
+        nr = Math.floor(nr / base58Length);
+    } while (nr-- > 0);
+
+    return digits.reverse().map(function (d) {
+        return base58Chars[d];
+    }).join('');
+}
+
+/**
+ * removes trailing and ending dots from the string
+ * @param  {string} str
+ * @return {string} str without wrapping dots
+ */
+function trimDots(str) {
+    // start
+    while (str.charAt(0) == '.') {
+        str = str.substr(1);
+    } // end
+    while (str.slice(-1) == '.') {
+        str = str.slice(0, -1);
+    }return str;
 }

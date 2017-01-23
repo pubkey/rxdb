@@ -399,26 +399,13 @@ var RxDatabase = function () {
          */
 
     }, {
-        key: '_encrypt',
-        value: function _encrypt(value) {
-            if (!this.password) throw new Error('no passord given');
-            return util.encrypt(JSON.stringify(value), this.password);
-        }
-    }, {
-        key: '_decrypt',
-        value: function _decrypt(encValue) {
-            if (!this.password) throw new Error('no passord given');
-            var decrypted = util.decrypt(encValue, this.password);
-            return JSON.parse(decrypted);
-        }
+        key: 'collection',
+
 
         /**
          * create or fetch a collection
          * @return {Collection}
          */
-
-    }, {
-        key: 'collection',
         value: function () {
             var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(name, schema) {
                 var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -441,63 +428,70 @@ var RxDatabase = function () {
                                 if (schema && schema.constructor.name != 'RxSchema') schema = RxSchema.create(schema);
 
                                 if (this.collections[name]) {
-                                    _context5.next = 30;
+                                    _context5.next = 36;
                                     break;
                                 }
 
                                 // check schemaHash
                                 schemaHash = schema.hash();
-                                _context5.next = 7;
-                                return this.collectionsCollection.findOne({
-                                    name: name
-                                }).exec();
+                                collectionDoc = null;
+                                _context5.prev = 6;
+                                _context5.next = 9;
+                                return this.collectionsCollection.pouch.get(name);
 
-                            case 7:
+                            case 9:
                                 collectionDoc = _context5.sent;
+                                _context5.next = 14;
+                                break;
 
-                                if (!(collectionDoc && collectionDoc.get('schemaHash') != schemaHash)) {
-                                    _context5.next = 10;
+                            case 12:
+                                _context5.prev = 12;
+                                _context5.t0 = _context5['catch'](6);
+
+                            case 14:
+                                if (!(collectionDoc && collectionDoc.schemaHash != schemaHash)) {
+                                    _context5.next = 16;
                                     break;
                                 }
 
                                 throw new Error('collection(' + name + '): another instance created this collection with a different schema');
 
-                            case 10:
-                                _context5.next = 12;
+                            case 16:
+                                _context5.next = 18;
                                 return RxCollection.create(this, name, schema, pouchSettings);
 
-                            case 12:
+                            case 18:
                                 _collection = _context5.sent;
 
                                 if (!(Object.keys(_collection.schema.getEncryptedPaths()).length > 0 && !this.password)) {
-                                    _context5.next = 15;
+                                    _context5.next = 21;
                                     break;
                                 }
 
                                 throw new Error('collection(' + name + '): schema encrypted but no password given');
 
-                            case 15:
+                            case 21:
                                 if (collectionDoc) {
-                                    _context5.next = 23;
+                                    _context5.next = 29;
                                     break;
                                 }
 
-                                _context5.prev = 16;
-                                _context5.next = 19;
-                                return this.collectionsCollection.insert({
-                                    name: name,
+                                _context5.prev = 22;
+                                _context5.next = 25;
+                                return this.collectionsCollection.pouch.put({
+                                    _id: name,
                                     schemaHash: schemaHash
                                 });
 
-                            case 19:
-                                _context5.next = 23;
+                            case 25:
+                                _context5.next = 29;
                                 break;
 
-                            case 21:
-                                _context5.prev = 21;
-                                _context5.t0 = _context5['catch'](16);
+                            case 27:
+                                _context5.prev = 27;
+                                _context5.t1 = _context5['catch'](22);
 
-                            case 23:
+                            case 29:
                                 cEvent = RxChangeEvent.create('RxDatabase.collection', this);
 
                                 cEvent.data.v = _collection.name;
@@ -505,26 +499,26 @@ var RxDatabase = function () {
                                 this.$emit(cEvent);
 
                                 this.collections[name] = _collection;
-                                _context5.next = 32;
+                                _context5.next = 38;
                                 break;
 
-                            case 30:
+                            case 36:
                                 if (!(schema && schema.hash() != this.collections[name].schema.hash())) {
-                                    _context5.next = 32;
+                                    _context5.next = 38;
                                     break;
                                 }
 
                                 throw new Error('collection(' + name + '): already has a different schema');
 
-                            case 32:
+                            case 38:
                                 return _context5.abrupt('return', this.collections[name]);
 
-                            case 33:
+                            case 39:
                             case 'end':
                                 return _context5.stop();
                         }
                     }
-                }, _callee5, this, [[16, 21]]);
+                }, _callee5, this, [[6, 12], [22, 27]]);
             }));
 
             function collection(_x4, _x5) {

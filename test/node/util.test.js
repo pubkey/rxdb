@@ -74,4 +74,22 @@ describe('util.test.js', () => {
             assert.equal(value, decrypted);
         });
     });
+
+    describe('.numberToLetter()', () => {
+        it('1 letter', () => {
+            assert.equal(util.numberToLetter(0), 'a');
+            assert.equal(util.numberToLetter(1), 'b');
+            assert.equal(util.numberToLetter(25), 'A');
+        });
+        it('2 letters', () => {
+            assert.equal(util.numberToLetter(100), 'aT');
+            assert.equal(util.numberToLetter(200), 'cB');
+            assert.equal(util.numberToLetter(800), 'nX');
+        });
+        it('many letters', () => {
+            assert.equal(util.numberToLetter(10000), 'b7z');
+            assert.equal(util.numberToLetter(100000), 'DSi');
+            assert.equal(util.numberToLetter(10000000), '2oMX');
+        });
+    });
 });

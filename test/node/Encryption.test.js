@@ -14,6 +14,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
+import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
 
 process.on('unhandledRejection', function(err) {
@@ -22,7 +23,6 @@ process.on('unhandledRejection', function(err) {
 
 
 describe('Encryption.test.js', () => {
-
     describe('Schema.getEncryptedPaths()', () => {
         describe('positive', () => {
             it('get an encrypted path', async() => {
@@ -53,50 +53,95 @@ describe('Encryption.test.js', () => {
         describe('negative', () => {});
     });
 
-
-    describe('Database encrypt/decrypt', () => {
-
-        describe('positive', () => {
-            it('should en/decrypt (string)', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
-                const value = randomToken(10);
-                const crypted = db._encrypt(value);
-                assert.notEqual(value, crypted);
-                const decrypted = db._decrypt(crypted);
-                assert.equal(value, decrypted);
-
-                db.destroy();
+    describe('Crypter.js', () => {
+        it('create', () => {
+            const schema = RxSchema.create(schemas.human);
+            const c = Crypter.create('foobar', schema);
+            assert.equal(c.constructor.name, 'Crypter');
+        });
+        describe('._encryptValue()', () => {
+            it('string', () => {
+                const schema = RxSchema.create(schemas.human);
+                const c = Crypter.create('mypw', schema);
+                const value = 'foobar';
+                const encrypted = c._encryptValue(value);
+                assert.equal(typeof encrypted, 'string');
+                assert.ok(!encrypted.includes(value));
+                assert.ok(encrypted.length > value.length);
             });
-            it('should en/decrypt (object)', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
+            it('object', () => {
+                const schema = RxSchema.create(schemas.human);
+                const c = Crypter.create('mypw', schema);
                 const value = {
-                    k1: randomToken(10),
-                    k2: randomToken(10),
-                    nested: {
-                        k3: randomToken(10),
-                        k4: randomToken(10)
-                    }
+                    foo: 'bar'
                 };
-                const crypted = db._encrypt(value);
-                assert.notEqual(value, crypted);
-                const decrypted = db._decrypt(crypted);
-                assert.deepEqual(value, decrypted);
-                db.destroy();
+                const encrypted = c._encryptValue(value);
+                assert.equal(typeof encrypted, 'string');
+                assert.ok(!encrypted.includes(value));
+                assert.ok(encrypted.length > 5);
             });
         });
-        describe('negative', () => {
-            it('crash if no password given', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
-                const value = randomToken(10);
-                await util.assertThrowsAsync(
-                    () => db._encrypt(value),
-                    Error
-                );
-                db.destroy();
+        describe('._decryptValue()', () => {
+            it('string', () => {
+                const schema = RxSchema.create(schemas.human);
+                const c = Crypter.create('mypw', schema);
+                const value = 'foobar';
+                const encrypted = c._encryptValue(value);
+                const decrypted = c._decryptValue(encrypted);
+                assert.deepEqual(decrypted, value);
+            });
+            it('object', () => {
+                const schema = RxSchema.create(schemas.human);
+                const c = Crypter.create('mypw', schema);
+                const value = {
+                    foo: 'bar'
+                };
+                const encrypted = c._encryptValue(value);
+                const decrypted = c._decryptValue(encrypted);
+                assert.deepEqual(decrypted, value);
+            });
+
+        });
+
+        describe('.encrypt()', () => {
+            it('string', () => {
+                const schema = RxSchema.create(schemas.encryptedHuman);
+                const c = Crypter.create('mypw', schema);
+                const value = schemaObjects.encryptedHuman();
+                const encrypted = c.encrypt(value);
+                assert.notEqual(encrypted.secret, value.secret);
+                assert.equal(typeof encrypted.secret, 'string');
+                assert.equal(value.passportId, encrypted.passportId);
+            });
+            it('object', () => {
+                const schema = RxSchema.create(schemas.encryptedObjectHuman);
+                const c = Crypter.create('mypw', schema);
+                const value = schemaObjects.encryptedObjectHuman();
+                const encrypted = c.encrypt(value);
+                assert.notDeepEqual(encrypted.secret, value.secret);
+                assert.equal(typeof encrypted.secret, 'string');
+                assert.equal(value.passportId, encrypted.passportId);
+            });
+        });
+        describe('.decrypt()', () => {
+            it('string', () => {
+                const schema = RxSchema.create(schemas.encryptedHuman);
+                const c = Crypter.create('mypw', schema);
+                const value = schemaObjects.encryptedHuman();
+                const encrypted = c.encrypt(value);
+                const decrypted = c.decrypt(encrypted);
+                assert.deepEqual(decrypted, value);
+            });
+            it('object', () => {
+                const schema = RxSchema.create(schemas.encryptedObjectHuman);
+                const c = Crypter.create('mypw', schema);
+                const value = schemaObjects.encryptedObjectHuman();
+                const encrypted = c.encrypt(value);
+                const decrypted = c.decrypt(encrypted);
+                assert.deepEqual(decrypted, value);
             });
         });
     });
-
     describe('Collection.insert()', () => {
         describe('positive', () => {
             it('should insert one encrypted value (string)', async() => {
@@ -119,30 +164,10 @@ describe('Encryption.test.js', () => {
                 db.destroy();
             });
         });
-        describe('negative', () => {
-            it('should not insert nested if root not there', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
-                const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
-                const agentData = schemaObjects.encryptedObjectHuman();
-                await c.insert(agentData);
-                const doc = await c.findOne()
-                    .select({
-                        passportId: 1
-                    })
-                    .exec();
-                await util.assertThrowsAsync(
-                    () => doc.set('secret.subname', randomToken(10)),
-                    Error
-                );
-                db.destroy();
-            });
-        });
+        describe('negative', () => {});
     });
-
     describe('Document.save()', () => {
-
         describe('positive', () => {
-
             it('should save one encrypted value (string)', async() => {
                 const c = await humansCollection.createEncrypted(0);
                 const agent = schemaObjects.encryptedHuman();
@@ -157,7 +182,6 @@ describe('Encryption.test.js', () => {
                 assert.equal(newSecret, docNew.get('secret'));
                 c.database.destroy();
             });
-
             it('should save one encrypted value (object)', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
                 const c = await db.collection('enchuman', schemas.encryptedObjectHuman);

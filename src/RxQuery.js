@@ -17,8 +17,6 @@ const defaultQuery = {
 class RxQuery {
     constructor(queryObj, collection) {
         this.collection = collection;
-        this.subject$;
-        this.collectionSub$;
 
         this.defaultQuery = false;
         if (!queryObj ||
@@ -35,7 +33,10 @@ class RxQuery {
 
         // merge mquery-prototype functions to this
         const mquery_proto = Object.getPrototypeOf(this.mquery);
-        Object.keys(mquery_proto).map(attrName => {
+        Object.keys(mquery_proto).forEach(attrName => {
+
+            if (['select'].includes(attrName)) return;
+
             // only param1 is tunneled here on purpose so no callback-call can be done
             this[attrName] = param1 => {
                 this.mquery[attrName](param1);
@@ -51,8 +52,12 @@ class RxQuery {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         this.sort = params => {
+
             // workarround because sort wont work on unused keys
-            Object.keys(params).map(k => this.mquery.where(k).gt(null));
+            if (typeof params !== 'object')
+                this.mquery.where(params).gt(null);
+            else
+                Object.keys(params).map(k => this.mquery.where(k).gt(null));
 
             this.mquery.sort(params);
             return this;
@@ -63,32 +68,33 @@ class RxQuery {
 
     // observe the result of this query
     get $() {
-        if (this.subject$) return this.subject$.asObservable();
+        if (!this._subject) {
+            this._subject = new util.Rx.BehaviorSubject(null);
+            this._obsRunning = false;
+            const collection$ = this.collection.$
+                .filter(cEvent => ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op))
+                .startWith(1)
+                .filter(x => !this._obsRunning)
+                .do(x => this._obsRunning = true)
+                .mergeMap(async(cEvent) => {
+                    const docs = await this.collection._pouchFind(this);
+                    return docs;
+                })
+                .do(x => this._obsRunning = false)
+                .distinctUntilChanged((prev, now) => {
+                    return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
+                })
+                .map(docs => RxDocument.createAr(this.collection, docs, this.toJSON()))
+                .do(docs => this._subject.next(docs))
+                .map(x => '');
 
-        this.subject$ = new util.Rx.BehaviorSubject(null);
-        this.refresh$(); // get init value
-        this.collectionSub$ = this.collection.$
-            .filter(c => this.subject$.observers.length > 0) // TODO replace with subject$.hasObservers() https://github.com/Reactive-Extensions/RxJS/issues/1364
-            .filter(cEvent => ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op))
-            .subscribe(cEvent => this.refresh$()); // TODO unsubscribe on destroy
-        return this.$;
-    }
-
-
-    /**
-     * regrap the result from the database
-     * and save it to this.result
-     */
-    async refresh$() {
-        if (this.refresh$_running) return;
-        this.refresh$_running = true;
-
-        const queryJSON = this.toJSON();
-        const docs = await this.collection.pouch.find(queryJSON);
-        const ret = RxDocument.createAr(this.collection, docs.docs, queryJSON);
-        this.subject$.next(ret);
-
-        this.refresh$_running = false;
+            this._observable$ = util.Rx.Observable.merge(
+                    this._subject,
+                    collection$
+                )
+                .filter(x => (typeof x != 'string' || x != ''));
+        }
+        return this._observable$;
     }
 
 
@@ -99,18 +105,6 @@ class RxQuery {
 
         let options = this.mquery._optionsForExec();
 
-        // select fields
-        if (this.mquery._fields) {
-            const fields = this.mquery._fieldsForExec();
-            let useFields = Object.keys(fields)
-                .filter(fieldName => fields[fieldName] == 1);
-
-            useFields.push('_id');
-            useFields.push('_rev');
-            useFields = useFields.filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique
-            json.fields = useFields;
-        }
-
         // sort
         if (options.sort) {
             const sortArray = [];
@@ -119,7 +113,7 @@ class RxQuery {
                 let dir = 'asc';
                 if (dirInt == -1) dir = 'desc';
                 const pushMe = {};
-
+                // TODO run primary-swap somewhere else
                 if (fieldName == this.collection.schema.primaryPath)
                     fieldName = '_id';
 
@@ -159,6 +153,18 @@ class RxQuery {
 
         return json;
     };
+
+
+    /**
+     * get the key-compression version of this query
+     * @return {{selector: {}, sort: []}} compressedQuery
+     */
+    keyCompress() {
+        return this
+            .collection
+            .keyCompressor
+            .compressQuery(this.toJSON());
+    }
 
 }
 

@@ -1,6 +1,9 @@
 import {
     default as randomToken
 } from 'random-token';
+import {
+    default as clone
+} from 'clone';
 
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
@@ -17,6 +20,24 @@ export async function create(size = 20, name = 'human') {
     const db = await RxDatabase.create(randomToken(10), 'memory');
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection(name, schemas.human);
+
+    // insert data
+    const fns = [];
+    for (let i = 0; i < size; i++)
+        fns.push(collection.insert(schemaObjects.human()));
+    await Promise.all(fns);
+
+    return collection;
+}
+
+
+export async function createNoCompression(size = 20, name = 'human') {
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const schemaJSON = clone(schemas.human);
+    schemaJSON.disableKeyCompression = true;
+    // setTimeout(() => db.destroy(), dbLifetime);
+    const collection = await db.collection(name, schemaJSON);
 
     // insert data
     const fns = [];

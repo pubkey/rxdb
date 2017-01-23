@@ -7,6 +7,7 @@ gulp.task('test', function() {
             '../test_tmp/node/util.test.js',
             '../test_tmp/node/Schema.test.js',
             '../test_tmp/node/PouchDB-integration.test.js',
+            '../test_tmp/node/KeyCompression.test.js',
             '../test_tmp/node/Socket.test.js',
             '../test_tmp/node/Database.test.js',
             '../test_tmp/node/Collection.test.js',

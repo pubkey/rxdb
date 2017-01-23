@@ -11,52 +11,80 @@ import * as RxChangeEvent from './RxChangeEvent';
 
 class RxDocument {
 
+    get[Symbol.toStringTag]() {
+        return 'RxDocument';
+    }
+
     constructor(collection, jsonData, query) {
         this.collection = collection;
-        this.rawData = jsonData;
         this.query = query;
 
-        this.data = clone(this.rawData);
-        delete this.data._rev;
-        delete this.data._id;
-
-        // handle encrypted data
-        const encPaths = this.collection.schema.getEncryptedPaths();
-        let currentPath;
-        Object.keys(encPaths)
-            .map(path => currentPath = path)
-            .map(path => objectPath.get(this.data, currentPath))
-            .filter(enc => !!enc)
-            .map(encrypted => this.collection.database._decrypt(encrypted))
-            .forEach(decrypted => objectPath.set(this.data, currentPath, decrypted));
+        this._data = clone(jsonData);
 
         this.deleted = false;
+        this._deleted$;
         this.changed = false;
 
-        this.observable$ = this.collection.$
-            .filter(event => (
-                event.data.doc == this.rawData._id ||
-                event.data.doc == '*'
-            ));
+        this._observable$;
     }
 
 
+    getPrimaryPath() {
+        return this.collection.schema.primaryPath;
+    }
 
+    getPrimary() {
+        return this._data[this.getPrimaryPath()];
+    }
+    getRevision() {
+        return this._data._rev;
+    }
+
+
+    /**
+     * returns the observable which emits the plain-data of this document
+     * @return {Observable}
+     */
     get $() {
-        return this.observable$;
+        if (!this._observable$) {
+            this._observable$ = this.collection.$
+                .filter(event => (
+                    event.data.doc == this.getPrimary() ||
+                    event.data.doc == '*'
+                ))
+                .mergeMap(async(ev) => {
+                    if (ev.data.op == 'RxDocument.remove') {
+                        this.deleted = true;
+                        return null;
+                    }
+                    if (ev.data.v) return ev.data.v;
+                    const newData = await this.collection._pouchGet(this.getPrimary());
+                    return newData;
+                })
+                .do(docData => this._data = docData);
+        }
+        return this._observable$;
+    }
+
+    get deleted$() {
+        if (!this._deleted$) {
+            this._deleted$ = this.$
+                .filter(docData => docData == null);
+        }
+        return this._deleted$;
     }
 
     /**
      * returns observable of the value of the given path
      * @param {string} path
-     * @return {Observable} obs
+     * @return {Observable}
      */
     get$(path) {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) throw new Error(`cannot observe a non-existed field (${path})`);
 
         return this.$
-            .map(cEvent => objectPath.get(cEvent.data.v, path))
+            .map(data => objectPath.get(data, path))
             .distinctUntilChanged()
             .startWith(this.get(path));
     }
@@ -70,13 +98,16 @@ class RxDocument {
      * @return {object} value
      */
     get(objPath) {
+        if (!this._data) return undefined;
+
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.get(): objPath must be a string');
 
-        if (objPath == this.collection.schema.primaryPath)
-            return this.rawData._id;
+        return objectPath.get(this._data, objPath);
+    }
 
-        return objectPath.get(this.data, objPath);
+    toJSON() {
+        return clone(this._data);
     }
 
     /**
@@ -119,11 +150,11 @@ class RxDocument {
     set(objPath, value) {
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.set(): objPath must be a string');
-        if (objPath == '_id')
-            throw new Error('_id cannot be modified');
-        if (objPath == this.collection.schema.primaryPath)
-            throw new Error('primary-fields cannot be modified');
-
+        if (objPath == this.getPrimaryPath()) {
+            throw new Error(
+                `RxDocument.set(): primary-key (${this.getPrimaryPath()})
+                cannot be modified`);
+        }
         // check if equal
         if (Object.is(this.get(objPath), value)) return;
         else this.changed = true;
@@ -132,7 +163,7 @@ class RxDocument {
         let pathEls = objPath.split('.');
         pathEls.pop();
         const rootPath = pathEls.join('.');
-        if (typeof objectPath.get(this.data, rootPath) === 'undefined') {
+        if (typeof objectPath.get(this._data, rootPath) === 'undefined') {
             throw new Error(
                 `cannot set childpath ${objPath}
                  when rootPath ${rootPath} not selected`);
@@ -142,8 +173,7 @@ class RxDocument {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(objPath);
         this.collection.schema.validate(value, schemaObj);
 
-        objectPath.set(this.data, objPath, value);
-        objectPath.set(this.rawData, objPath, value);
+        objectPath.set(this._data, objPath, value);
 
         return this;
     };
@@ -154,41 +184,36 @@ class RxDocument {
         if (this.deleted)
             throw new Error('RxDocument.save(): cant save deleted document');
 
-        // fill up data-object with non-select() fields
-        if (this.query.fields) {
-            const rootDoc = await this.collection.findOne(this.rawData._id).exec();
-            this.rawData = Object.assign(rootDoc.rawData, this.rawData);
-            this.data = Object.assign(rootDoc.data, this.data);
-        }
-
-        const emitValue = clone(this.rawData);
+        const emitValue = clone(this._data);
 
         await this.collection._runHooks('pre', 'save', this);
 
 
         // handle encrypted data
-        const encPaths = this.collection.schema.getEncryptedPaths();
-        Object.keys(encPaths).map(path => {
-            let value = objectPath.get(this.rawData, path);
-            let encrypted = this.collection.database._encrypt(value);
-            objectPath.set(this.rawData, path, encrypted);
-        });
+        // // TODO handle data
+        /*        const encPaths = this.collection.schema.getEncryptedPaths();
+                Object.keys(encPaths).map(path => {
+                    let value = objectPath.get(this.rawData, path);
+                    let encrypted = this.collection.database._encrypt(value);
+                    objectPath.set(this.rawData, path, encrypted);
+                });*/
 
-        const ret = await this.collection.pouch.put(this.rawData);
+        const ret = await this.collection._pouchPut(clone(this._data));
         if (!ret.ok)
             throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
-        this.rawData._rev = ret.rev;
+        this._data._rev = ret.rev;
 
         await this.collection._runHooks('post', 'save', this);
 
         // event
-        this.$emit(RxChangeEvent.create(
+        const changeEvent = RxChangeEvent.create(
             'RxDocument.save',
             this.collection.database,
             this.collection,
             this,
             emitValue
-        ));
+        );
+        this.$emit(changeEvent);
 
         this.changed = false;
     }
@@ -201,7 +226,7 @@ class RxDocument {
         await this.collection._runHooks('pre', 'remove', this);
 
         this.deleted = true;
-        await this.collection.pouch.remove(this.rawData._id, this.rawData._rev);
+        await this.collection.pouch.remove(this.getPrimary(), this._data._rev);
 
         await this.collection._runHooks('post', 'remove', this);
 
@@ -220,7 +245,8 @@ class RxDocument {
 
 
 export function create(collection, jsonData, query) {
-    if (jsonData._id.startsWith('_design')) return null;
+    if (jsonData[collection.schema.primaryPath].startsWith('_design'))
+        return null;
 
     const doc = new RxDocument(collection, jsonData, query);
     return new Proxy(doc, {
@@ -229,8 +255,10 @@ export function create(collection, jsonData, query) {
             // return document-property if exists
             if (doc[name]) return doc[name];
 
+            if (typeof name != 'string') return doc[name];
+
             // return observable if field ends with $
-            if (name.slice(-1) == '$')
+            if (name.slice && name.slice(-1) == '$')
                 return doc.get$(name.slice(0, -1));
 
             const value = doc.get(name);
@@ -253,8 +281,8 @@ export function create(collection, jsonData, query) {
 
 export function createAr(collection, jsonDataAr, query) {
     return jsonDataAr
-        .filter(jsonData => !jsonData._id.startsWith('_design'))
-        .map(jsonData => create(collection, jsonData, query));
+        .map(jsonData => create(collection, jsonData, query))
+        .filter(doc => doc != null);
 }
 
 const pseudoRxDocument = new RxDocument({
