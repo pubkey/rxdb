@@ -5,6 +5,9 @@ import assert from 'assert';
 import {
     default as randomToken
 } from 'random-token';
+import {
+    default as clone
+} from 'clone';
 import * as _ from 'lodash';
 
 import * as schemas from './../helper/schemas';
@@ -387,4 +390,59 @@ describe('KeyCompressor.test.js', () => {
             assert.equal(query.sort[0][cString], 'asc');
         });
     });
+
+
+    describe('integration into pouchDB', () => {
+        it('should have saved a compressed document', async() => {
+            const c = await humansCollection.createPrimary(0);
+            const docData = schemaObjects.simpleHuman();
+            await c.insert(docData);
+            const doc = await c.pouch.get(docData.passportId);
+
+            Object.keys(doc).forEach(key => {
+                assert.ok(key.length <= 4);
+                assert.equal(typeof doc[key], 'string');
+            });
+            assert.equal(doc._id, docData.passportId);
+            assert.equal(doc['|a'], docData.firstName);
+        });
+
+    });
+
+    describe('disable key-compression', () => {
+        describe('.doKeyCompression()', () => {
+            it('doKeyCompression(): true', async() => {
+                const schemaJSON = clone(schemas.human);
+                schemaJSON.disableKeyCompression = true;
+                const schema = RxSchema.create(schemaJSON);
+                assert.equal(schema.doKeyCompression(), false);
+            });
+            it('doKeyCompression(): false', async() => {
+                const schemaJSON = clone(schemas.human);
+                schemaJSON.disableKeyCompression = false;
+                const schema = RxSchema.create(schemaJSON);
+                assert.equal(schema.doKeyCompression(), true);
+            });
+        });
+        describe('.compress()', async() => {
+            it('do not compress', async() => {
+                const col = await humansCollection.createNoCompression(0);
+                const human = schemaObjects.human();
+                const after = col.keyCompressor.compress(human);
+                assert.deepEqual(human, after);
+                assert.ok(typeof after.lastName, 'string');
+            });
+        });
+        describe('.decompress()', async() => {
+            it('do not compress', async() => {
+                const col = await humansCollection.createNoCompression(0);
+                const human = schemaObjects.human();
+                const after = col.keyCompressor.decompress(human);
+                assert.deepEqual(human, after);
+                assert.ok(typeof after.lastName, 'string');
+            });
+        });
+
+    });
+
 });

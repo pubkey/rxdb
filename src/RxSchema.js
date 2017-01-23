@@ -26,6 +26,10 @@ class RxSchema {
         this.indexes = getIndexes(this.jsonID);
         this.jsonID.required = this.jsonID.required || [];
 
+        // fill with key-compression-state
+        if (!this.jsonID.hasOwnProperty('disableKeyCompression'))
+            this.jsonID.disableKeyCompression = false;
+
         this.indexes.map(indexAr => {
             indexAr
                 .filter(index => !this.jsonID.required.includes(index))
@@ -55,6 +59,7 @@ class RxSchema {
         this.crypt = hasCrypt(this.jsonID);
         this.encryptedPaths;
 
+        // always false
         this.jsonID.additionalProperties = false;
     }
 
@@ -106,6 +111,13 @@ class RxSchema {
         obj._id = obj[this.primaryPath];
         delete obj[this.primaryPath];
         return obj;
+    }
+
+    /**
+     * returns true if key-compression should be done
+     */
+    doKeyCompression() {
+        return !!!this.jsonID.disableKeyCompression;
     }
 
 }
