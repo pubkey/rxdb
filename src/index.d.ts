@@ -129,6 +129,7 @@ export const PouchDB: {
 export {
 RxDatabase as RxDatabase,
 RxCollection as RxCollection,
+RxQuery as RxQuery,
 RxSchema as RxSchema,
 RxDocument as RxDocument,
 RxChangeEvent as RxChangeEvent
