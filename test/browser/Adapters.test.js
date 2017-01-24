@@ -13,6 +13,9 @@ console.dir = (d) => {
     console.log(JSON.stringify(d));
 };
 
+console.log('###### Browser: ######');
+console.log(window.navigator.userAgent);
+
 describe('Adapters.test.js', () => {
     describe('memory', () => {
         describe('negative', () => {
@@ -44,6 +47,9 @@ describe('Adapters.test.js', () => {
         });
         describe('positive', () => {
             it('should work after adding the adapter', async() => {
+
+                if (/Firefox/.test(window.navigator.userAgent)) return;
+
                 RxDB.plugin(require('pouchdb-adapter-websql'));
                 const db = await RxDB.create(randomToken(10), 'websql');
                 assert.equal(db.constructor.name, 'RxDatabase');

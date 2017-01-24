@@ -208,7 +208,10 @@ describe('LeaderElection.test.js', () => {
             c2.database.waitForLeadership();
             await leaderElector1.die();
 
-            await util.promiseWait(1000);
+            let w8Time = 1000;
+            if (/Firefox/.test(window.navigator.userAgent)) w8Time = 3000;
+
+            await util.promiseWait(w8Time);
             assert.ok(leaderElector2.isLeader);
 
             c1.database.destroy();
@@ -238,6 +241,7 @@ describe('LeaderElection.test.js', () => {
             await leader.destroy();
 
             // noone should be leader
+            await util.promiseWait(1000);
             leaderCount = dbs
                 .filter(db => db.leaderElector.isLeader == true)
                 .length;
