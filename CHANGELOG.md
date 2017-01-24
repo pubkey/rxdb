@@ -7,7 +7,8 @@ Breaking:
   - schema-objects are now normalized (order alphabetic) before hashing
   - RxQuery.select() is removed since it has no better performance than getting the whole document
   - RxChangeEvent on sockets do no longer contain the documents-data for performance-reason
-
+  - RxQuery.$ only emits when the result actually changes [#31](https://github.com/pubkey/rxdb/issues/31)
+  
 Bugfixes:
   - console.dir on RxDocument now works
 
