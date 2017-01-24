@@ -13,8 +13,12 @@ console.dir = (d) => {
     console.log(JSON.stringify(d));
 };
 
+var platform = require('platform');
+
 console.log('###### Browser: ######');
 console.log(window.navigator.userAgent);
+console.log(platform.name);
+console.log(platform.version);
 
 describe('Adapters.test.js', () => {
     describe('memory', () => {
@@ -49,6 +53,7 @@ describe('Adapters.test.js', () => {
             it('should work after adding the adapter', async() => {
 
                 if (/Firefox/.test(window.navigator.userAgent)) return;
+                if (platform.name=='IE') return;
 
                 RxDB.plugin(require('pouchdb-adapter-websql'));
                 const db = await RxDB.create(randomToken(10), 'websql');
