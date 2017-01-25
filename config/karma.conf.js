@@ -27,8 +27,6 @@ module.exports = function(config) {
             enabled: true,
             usePhantomJS: false,
             postDetection: function(availableBrowser) {
-                console.log('aaaaaaaa');
-                console.dir(availableBrowser);
 
 //                return ['Firefox']; // comment in to test specific browser
 
