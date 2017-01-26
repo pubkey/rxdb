@@ -1,3 +1,13 @@
+## 2.0.1 (January 26, 2017)
+
+Refactor:
+  - Because IE11 does not support the Proxy-Object, [defineGetter/Setter](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/__defineGetter__) is now used
+  - Tests now run in all installed browsers
+
+Bugfixes:
+  - Fixed tests for IE11
+
+
 ## 2.0.0 (January 23, 2017)
 
 Features:
@@ -8,7 +18,7 @@ Breaking:
   - RxQuery.select() is removed since it has no better performance than getting the whole document
   - RxChangeEvent on sockets do no longer contain the documents-data for performance-reason
   - RxQuery.$ only emits when the result actually changes [#31](https://github.com/pubkey/rxdb/issues/31)
-  
+
 Bugfixes:
   - console.dir on RxDocument now works
 
