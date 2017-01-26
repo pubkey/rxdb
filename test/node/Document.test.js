@@ -16,7 +16,7 @@ describe('Document.test.js', () => {
     describe('.get()', () => {
         describe('positive', () => {
             it('get a value', async() => {
-                const c = await humansCollection.create(5);
+                const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 const value = doc.get('passportId');
                 assert.equal(typeof value, 'string');
@@ -73,8 +73,10 @@ describe('Document.test.js', () => {
                     level: 2
                 };
                 doc.set('mainSkill', val);
-                assert.equal(doc._data.mainSkill, val);
-                assert.equal(doc.get('mainSkill'), val);
+                assert.equal(doc._data.mainSkill.name, val.name);
+                assert.equal(doc.get('mainSkill.name'), val.name);
+                assert.equal(doc._data.mainSkill.level, val.level);
+                assert.equal(doc.get('mainSkill.level'), val.level);
                 c.database.destroy();
             });
             it('set nested', async() => {
@@ -156,7 +158,8 @@ describe('Document.test.js', () => {
                 doc.set('mainSkill', val);
                 await doc.save();
                 const doc2 = await c.findOne().exec();
-                assert.deepEqual(doc2.get('mainSkill'), val);
+                assert.deepEqual(doc2.get('mainSkill.name'), val.name);
+                assert.deepEqual(doc2.get('mainSkill.level'), val.level);
                 c.database.destroy();
             });
             it('save twice', async() => {
@@ -338,7 +341,7 @@ describe('Document.test.js', () => {
     });
 
 
-    describe('Proxy', () => {
+    describe('pseudo-Proxy', () => {
         describe('get', () => {
             it('top-value', async() => {
                 const c = await humansCollection.create(1);

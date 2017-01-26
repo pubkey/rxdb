@@ -2,7 +2,7 @@ import assert from 'assert';
 import {
     default as randomToken
 } from 'random-token';
-var platform = require('platform');
+const platform = require('platform');
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -14,7 +14,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 describe('RxBroadcastChannel.test.js', () => {
 
-    if (platform.name=='IE') return;
+    if (!RxBroadcastChannel.canIUse()) return;
 
     const state = {
         dbs: []

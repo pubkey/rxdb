@@ -72,7 +72,10 @@ class RxSchema {
     getSchemaByObjectPath(path) {
         path = path.replace(/\./g, '.properties.');
         path = 'properties.' + path;
-        return objectPath.get(this.jsonID, path);
+        path = util.trimDots(path);
+
+        const ret = objectPath.get(this.jsonID, path);
+        return ret;
     }
 
     /**

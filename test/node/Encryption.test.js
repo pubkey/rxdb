@@ -160,7 +160,8 @@ describe('Encryption.test.js', () => {
                 await c.insert(agent);
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
-                assert.deepEqual(agent.secret, secret);
+                assert.equal(agent.secret.name, secret.name);
+                assert.equal(agent.secret.subname, secret.subname);
                 db.destroy();
             });
         });
@@ -193,11 +194,16 @@ describe('Encryption.test.js', () => {
                 };
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
-                assert.deepEqual(agent.secret, secret);
+
+                assert.equal(agent.secret.name, secret.name);
+                assert.equal(agent.secret.subname, secret.subname);
+
                 doc.set('secret', newSecret);
                 await doc.save();
                 const docNew = await c.findOne().exec();
-                assert.deepEqual(newSecret, docNew.get('secret'));
+
+                assert.equal(newSecret.name, docNew.get('secret.name'));
+                assert.equal(newSecret.subname, docNew.get('secret.subname'));
                 db.destroy();
             });
 

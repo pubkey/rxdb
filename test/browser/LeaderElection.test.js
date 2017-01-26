@@ -2,10 +2,12 @@ import assert from 'assert';
 import {
     default as randomToken
 } from 'random-token';
+const platform = require('platform');
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import * as LeaderElector from '../../dist/lib/LeaderElector';
+import * as RxBroadcastChannel from '../../dist/lib/RxBroadcastChannel';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -40,6 +42,9 @@ describe('LeaderElection.test.js', () => {
     });
     describe('beLeader()', () => {
         it('leaderSignal()', async() => {
+
+            if (!RxBroadcastChannel.canIUse()) return;
+
             const name = randomToken(10);
             const c = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
@@ -98,6 +103,8 @@ describe('LeaderElection.test.js', () => {
 
     describe('.die()', () => {
         it('leader: send message on death', async() => {
+            if (!RxBroadcastChannel.canIUse()) return;
+
             const name = randomToken(10);
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector;
@@ -208,10 +215,9 @@ describe('LeaderElection.test.js', () => {
             c2.database.waitForLeadership();
             await leaderElector1.die();
 
-            let w8Time = 1000;
-            if (/Firefox/.test(window.navigator.userAgent)) w8Time = 3000;
-
-            await util.promiseWait(w8Time);
+            while (leaderElector2.isLeader != true) {
+                await util.promiseWait(100);
+            }
             assert.ok(leaderElector2.isLeader);
 
             c1.database.destroy();

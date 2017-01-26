@@ -26,6 +26,11 @@ class RxDocument {
         this.changed = false;
 
         this._observable$;
+
+    }
+    prepare() {
+        // set getter/setter/observable
+        this._defineGetterSetter(this, '');
     }
 
 
@@ -95,7 +100,7 @@ class RxDocument {
     /**
      * get data by objectPath
      * @param {string} objPath
-     * @return {object} value
+     * @return {object} valueObj
      */
     get(objPath) {
         if (!this._data) return undefined;
@@ -103,43 +108,46 @@ class RxDocument {
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.get(): objPath must be a string');
 
-        return objectPath.get(this._data, objPath);
+        let valueObj = objectPath.get(this._data, objPath);
+        valueObj = clone(valueObj);
+
+        // direct return if array or non-object
+        if (
+            typeof valueObj != 'object' ||
+            Array.isArray(valueObj)
+        ) return valueObj;
+
+        this._defineGetterSetter(valueObj, objPath);
+        return valueObj;
     }
+
+
+    _defineGetterSetter(valueObj, objPath = '') {
+        let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
+        if(pathProperties.properties) pathProperties=pathProperties.properties;
+
+        Object.keys(pathProperties)
+            .forEach(key => {
+                // getter - value
+                valueObj.__defineGetter__(key, () => {
+                    return this.get(util.trimDots(objPath + '.' + key));
+                });
+                // getter - observable$
+                valueObj.__defineGetter__(key + '$', () => {
+                    return this.get$(util.trimDots(objPath + '.' + key));
+                });
+                // setter - value
+                valueObj.__defineSetter__(key, (val) => {
+                    return this.set(util.trimDots(objPath + '.' + key), val);
+                });
+            });
+    }
+
+
+
 
     toJSON() {
         return clone(this._data);
-    }
-
-    /**
-     * get the proxy-version of an nested object of this documents data
-     * used to get observables like myfield.nestedfield$
-     * @param {string} path
-     * @param {object} obj
-     */
-    proxyfy(path, obj) {
-        return new Proxy(obj, {
-            get: (target, name) => {
-                const value = obj[name];
-
-                if (!obj.hasOwnProperty(name) && !obj.hasOwnProperty([name.slice(0, -1)]))
-                    return undefined;
-
-                // return observable if field ends with $
-                if (name.slice(-1) == '$')
-                    return this.get$(path + '.' + name.slice(0, -1));
-
-                // return value if no object or is array
-                if (typeof value !== 'object' || Array.isArray(value)) return value;
-
-                // return proxy if object again
-                const newPath = path + '.' + name;
-                return this.proxyfy(newPath, this.get(newPath));
-            },
-            set: (doc, name, value) => {
-                this.set(path + '.' + name, value);
-                return true;
-            }
-        });
     }
 
     /**
@@ -249,33 +257,8 @@ export function create(collection, jsonData, query) {
         return null;
 
     const doc = new RxDocument(collection, jsonData, query);
-    return new Proxy(doc, {
-        get: (doc, name) => {
-
-            // return document-property if exists
-            if (doc[name]) return doc[name];
-
-            if (typeof name != 'string') return doc[name];
-
-            // return observable if field ends with $
-            if (name.slice && name.slice(-1) == '$')
-                return doc.get$(name.slice(0, -1));
-
-            const value = doc.get(name);
-            if (typeof value == 'object' && !Array.isArray(value)) return doc.proxyfy(name, value);
-            else return value;
-        },
-
-        set: (doc, name, value) => {
-            if (doc.hasOwnProperty(name)) {
-                doc[name] = value;
-                return true;
-            }
-            if (!doc.get(name)) throw new Error('can not set unknown field ' + name);
-            doc.set(name, value);
-            return true;
-        }
-    });
+    doc.prepare();
+    return doc;
 }
 
 
