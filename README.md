@@ -45,8 +45,11 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
     </td>
     <td colspan="3">
 
-          <img src="docs/files/icons/chrome.png" width="20px" />
-          <img src="docs/files/icons/firefox2.png" width="24px" />
+          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png" title="Chrome" width="24px" />
+          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png" title="Firefox" width="24px" />
+          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" title="Safari" width="24px" />
+          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" title="Edge" width="24px" />
+          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" title="Internet Explorer 11" width="24px" />
           browsers
           <br /><br />
           <img src="docs/files/icons/nodejs.png" width="30px" />
@@ -106,6 +109,9 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
       <li><a href="./docs/README.md">Read the docs</a></li>
       <li><a href="./examples">Example-projects</a></li>
     </ul>
+  </li>
+  <li>
+    <a href="#browser-support">Browser support</a>
   </li>
   <li>
     <a href="./docs/Contribute.md">How to contribute</a>
@@ -366,6 +372,12 @@ console.log(myDoc.firstName);
 <h2>Getting started</h2>
 
 Get started now by [reading the docs](./docs/README.md) or exploring the [example-projects](./examples).
+
+<h2>Browser support</h2>
+
+All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a virtualbox for IE11 and Edge.
+
+As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
 
 <h2>Contribute</h2>
 [Check out how you can contribute to this project](./docs/Contribute.md).
