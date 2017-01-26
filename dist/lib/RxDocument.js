@@ -82,6 +82,12 @@ var RxDocument = function () {
     }
 
     (0, _createClass3.default)(RxDocument, [{
+        key: 'prepare',
+        value: function prepare() {
+            // set getter/setter/observable
+            this._defineGetterSetter(this, '');
+        }
+    }, {
         key: 'getPrimaryPath',
         value: function getPrimaryPath() {
             return this.collection.schema.primaryPath;
@@ -126,54 +132,51 @@ var RxDocument = function () {
         /**
          * get data by objectPath
          * @param {string} objPath
-         * @return {object} value
+         * @return {object} valueObj
          */
         value: function get(objPath) {
             if (!this._data) return undefined;
 
             if (typeof objPath !== 'string') throw new TypeError('RxDocument.get(): objPath must be a string');
 
-            return _objectPath2.default.get(this._data, objPath);
+            var valueObj = _objectPath2.default.get(this._data, objPath);
+            valueObj = (0, _clone2.default)(valueObj);
+
+            // direct return if array or non-object
+            if ((typeof valueObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(valueObj)) != 'object' || Array.isArray(valueObj)) return valueObj;
+
+            this._defineGetterSetter(valueObj, objPath);
+            return valueObj;
+        }
+    }, {
+        key: '_defineGetterSetter',
+        value: function _defineGetterSetter(valueObj) {
+            var _this2 = this;
+
+            var objPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+            var pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
+            if (pathProperties.properties) pathProperties = pathProperties.properties;
+
+            Object.keys(pathProperties).forEach(function (key) {
+                // getter - value
+                valueObj.__defineGetter__(key, function () {
+                    return _this2.get(util.trimDots(objPath + '.' + key));
+                });
+                // getter - observable$
+                valueObj.__defineGetter__(key + '$', function () {
+                    return _this2.get$(util.trimDots(objPath + '.' + key));
+                });
+                // setter - value
+                valueObj.__defineSetter__(key, function (val) {
+                    return _this2.set(util.trimDots(objPath + '.' + key), val);
+                });
+            });
         }
     }, {
         key: 'toJSON',
         value: function toJSON() {
             return (0, _clone2.default)(this._data);
-        }
-
-        /**
-         * get the proxy-version of an nested object of this documents data
-         * used to get observables like myfield.nestedfield$
-         * @param {string} path
-         * @param {object} obj
-         */
-
-    }, {
-        key: 'proxyfy',
-        value: function proxyfy(path, obj) {
-            var _this2 = this;
-
-            return new Proxy(obj, {
-                get: function get(target, name) {
-                    var value = obj[name];
-
-                    if (!obj.hasOwnProperty(name) && !obj.hasOwnProperty([name.slice(0, -1)])) return undefined;
-
-                    // return observable if field ends with $
-                    if (name.slice(-1) == '$') return _this2.get$(path + '.' + name.slice(0, -1));
-
-                    // return value if no object or is array
-                    if ((typeof value === 'undefined' ? 'undefined' : (0, _typeof3.default)(value)) !== 'object' || Array.isArray(value)) return value;
-
-                    // return proxy if object again
-                    var newPath = path + '.' + name;
-                    return _this2.proxyfy(newPath, _this2.get(newPath));
-                },
-                set: function set(doc, name, value) {
-                    _this2.set(path + '.' + name, value);
-                    return true;
-                }
-            });
         }
 
         /**
@@ -377,7 +380,7 @@ var RxDocument = function () {
                         }, _callee3, _this3);
                     }));
 
-                    return function (_x) {
+                    return function (_x2) {
                         return _ref3.apply(this, arguments);
                     };
                 }()).do(function (docData) {
@@ -404,31 +407,8 @@ function create(collection, jsonData, query) {
     if (jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
 
     var doc = new RxDocument(collection, jsonData, query);
-    return new Proxy(doc, {
-        get: function get(doc, name) {
-
-            // return document-property if exists
-            if (doc[name]) return doc[name];
-
-            if (typeof name != 'string') return doc[name];
-
-            // return observable if field ends with $
-            if (name.slice && name.slice(-1) == '$') return doc.get$(name.slice(0, -1));
-
-            var value = doc.get(name);
-            if ((typeof value === 'undefined' ? 'undefined' : (0, _typeof3.default)(value)) == 'object' && !Array.isArray(value)) return doc.proxyfy(name, value);else return value;
-        },
-
-        set: function set(doc, name, value) {
-            if (doc.hasOwnProperty(name)) {
-                doc[name] = value;
-                return true;
-            }
-            if (!doc.get(name)) throw new Error('can not set unknown field ' + name);
-            doc.set(name, value);
-            return true;
-        }
-    });
+    doc.prepare();
+    return doc;
 }
 
 function createAr(collection, jsonDataAr, query) {

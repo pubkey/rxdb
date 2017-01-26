@@ -48,6 +48,8 @@ var create = exports.create = function () {
 
 exports.plugin = plugin;
 
+require('babel-polyfill');
+
 var _RxDatabase = require('./RxDatabase');
 
 var RxDatabase = _interopRequireWildcard(_RxDatabase);
