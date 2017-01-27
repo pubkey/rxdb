@@ -94,6 +94,17 @@ var RxQuery = function () {
             _this.mquery.sort(params);
             return _this;
         };
+
+        /**
+         * regex cannot run on primary _id
+         * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
+         */
+        this.regex = function (params) {
+            if (_this.mquery._path == _this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + _this.mquery._path + '\'');
+
+            _this.mquery.regex(params);
+            return _this;
+        };
     }
 
     // observe the result of this query

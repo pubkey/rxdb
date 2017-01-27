@@ -1,3 +1,8 @@
+## 2.0.2 (January 27, 2017)
+
+Bugfixes:
+  - Throw when .regex() is used on primary
+
 ## 2.0.1 (January 26, 2017)
 
 Refactor:
