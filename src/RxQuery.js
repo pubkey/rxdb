@@ -63,6 +63,18 @@ class RxQuery {
             return this;
         };
 
+        /**
+         * regex cannot run on primary _id
+         * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
+         */
+        this.regex = params => {
+            if (this.mquery._path == this.collection.schema.primaryPath)
+                throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
+
+            this.mquery.regex(params);
+            return this;
+        };
+
 
     }
 

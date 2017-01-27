@@ -13,7 +13,7 @@ console.dir = (d) => {
     console.log(JSON.stringify(d));
 };
 
-var platform = require('platform');
+const platform = require('platform');
 
 console.log('###### Browser: ######');
 console.log(window.navigator.userAgent);

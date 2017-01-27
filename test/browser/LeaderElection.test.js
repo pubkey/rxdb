@@ -215,9 +215,9 @@ describe('LeaderElection.test.js', () => {
             c2.database.waitForLeadership();
             await leaderElector1.die();
 
-            while (leaderElector2.isLeader != true) {
+            while (leaderElector2.isLeader != true)
                 await util.promiseWait(100);
-            }
+
             assert.ok(leaderElector2.isLeader);
 
             c1.database.destroy();

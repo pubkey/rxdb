@@ -395,6 +395,49 @@ describe('RxCollection.test.js', () => {
                     });
                 });
             });
+
+            describe('.regex()', () => {
+                describe('positive', () => {
+                    it('find the one where the regex matches', async() => {
+                        const c = await humansCollection.create(10);
+                        const matchHuman = schemaObjects.human();
+                        matchHuman.firstName = 'FooMatchBar';
+                        await c.insert(matchHuman);
+                        const docs = await c.find()
+                            .where('firstName').regex(/Match/)
+                            .exec();
+
+                        assert.equal(docs.length, 1);
+                        const first = docs[0];
+                        assert.equal(first.get('firstName'), matchHuman.firstName);
+                    });
+                    it('regex on index', async() => {
+                        const c = await humansCollection.create(10);
+                        const matchHuman = schemaObjects.human();
+                        matchHuman.passportId = 'FooMatchBar';
+                        await c.insert(matchHuman);
+                        const docs = await c.find()
+                            .where('passportId').regex(/Match/)
+                            .exec();
+
+                        assert.equal(docs.length, 1);
+                        const first = docs[0];
+                        assert.equal(first.get('passportId'), matchHuman.passportId);
+                    });
+                });
+                describe('negative', () => {
+                    /**
+                     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
+                     */
+                    it('regex on primary should throw', async() => {
+                        const c = await humansCollection.createPrimary(0);
+                        await util.assertThrowsAsync(
+                            () => c.find().where('passportId').regex(/Match/).exec(),
+                            Error
+                        );
+                    });
+                });
+            });
         });
 
 
