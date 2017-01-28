@@ -232,7 +232,7 @@ describe('Observe.test.js', () => {
                 assert.equal(lastValue, null);
                 await pw8.promise;
 
-                await util.promiseWait(1000);
+                await util.promiseWait(100); // w8 a bit to make sure no other fires
                 assert.ok(lastValue);
                 assert.equal(lastValue.length, 1);
                 c.database.destroy();
