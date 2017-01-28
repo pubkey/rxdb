@@ -168,7 +168,8 @@ class RxDatabase {
                 try {
                     await this.collectionsCollection.pouch.put({
                         _id: name,
-                        schemaHash
+                        schemaHash,
+                        schema: collection.schema.normalized
                     });
                 } catch (e) {}
             }

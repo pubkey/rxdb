@@ -13,6 +13,7 @@ import {
 const path = require('path');
 
 import * as RxDatabase from '../../dist/lib/index';
+import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 
@@ -113,6 +114,13 @@ describe('RxDatabase.test.js', () => {
                 const collection = await db.collection('human0', schemas.human);
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
+            });
+            it('the schema-object should be saved in the collectionsCollection', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                const collection = await db.collection('human0', schemas.human);
+                const colDoc = await db.collectionsCollection.pouch.get('human0');
+                const compareSchema = RxSchema.create(schemas.human);
+                assert.deepEqual(compareSchema.normalized, colDoc.schema);
             });
             it('use Schema-Object', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
