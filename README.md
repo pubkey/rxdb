@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://github.com/pubkey/rxdb">
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/ca17df8e/docs/files/logo/logo_union_path.svg" width="60px" />
+  </a>
+</p>
+
 <h1><a href="https://github.com/pubkey/rxdb">RxDB</a></h1>
 <p>
 The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://offlinefirst.org/" target="_blank">offline-first</a></b> database for your next javascript-application.
