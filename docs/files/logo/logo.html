@@ -1,0 +1,102 @@
+<html>
+
+<head>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body></body>
+<script>
+    const blockSize = 14;
+    const squareHeight = 56;
+    const squareWidth = 180;
+    const color = {
+        top: '#b7178c',
+        middle: '#542437',
+        bottom: '#53777A'
+    };
+
+    const svgHeight = squareHeight * 3 + blockSize * 18;
+
+    var svg = d3.select('body').append('svg')
+        .attr("width", squareWidth)
+        .attr("height", svgHeight)
+        .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
+        .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
+        .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+        .attr(':xmlns:svg', 'http://www.w3.org/2000/svg')
+        .attr(':xmlns', 'http://www.w3.org/2000/svg')
+        .attr(':xmlns:sodipodi', 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd')
+        .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
+        .attr('viewBox', '0 0 ' + squareWidth + ' ' + svgHeight);
+
+
+
+
+    const blocks = [
+        [blockSize, 0],
+        [0, blockSize * 2],
+        [blockSize * 3, blockSize * 2],
+        [blockSize, blockSize * 3],
+        [blockSize * 4, blockSize * 4],
+        [blockSize * 2, blockSize * 5],
+        [0, blockSize * 6],
+        [blockSize * 2, blockSize * 6],
+        [blockSize * 3, blockSize * 6],
+        [blockSize * 5, blockSize * 6],
+        [0, blockSize * 7],
+        [blockSize * 1, blockSize * 7],
+        [blockSize * 2, blockSize * 7],
+        [blockSize * 3, blockSize * 7],
+        [blockSize * 5, blockSize * 7],
+        [blockSize * 7, blockSize * 7],
+
+    ];
+
+    function addBlock(x, y, color) {
+        svg.append("rect").attr("x", x)
+            .attr("y", y)
+            .attr("width", blockSize)
+            .attr("height", blockSize)
+            .style("fill", color);
+    }
+
+
+    function addSquare(x, y, color) {
+        svg.append("rect").attr("x", x)
+            .attr("y", y)
+            .attr("width", squareWidth)
+            .attr("height", squareHeight)
+            .style("fill", color);
+    }
+
+
+    // top
+    addSquare(0, blockSize * 8, color.top);
+    blocks.forEach(b => addBlock(b[0], b[1], color.top));
+
+    // middle
+    addSquare(0, blockSize * 8 + blockSize + squareHeight, color.middle);
+
+    // bottom
+    addSquare(0, blockSize * 8 + (blockSize + squareHeight) * 2, color.bottom);
+    const bottomRightX = squareWidth - blockSize;
+    const bottomRightY = blockSize * 8 + (blockSize + squareHeight) * 2 + squareHeight + blockSize * 7;
+
+    // addBlock(bottomRightX, bottomRightY, 'red');
+
+    blocks
+        .map(b => {
+            const blockX = b[0] * -1 + bottomRightX;
+            const blockY = b[1] * -1 + bottomRightY;
+            return [blockX, blockY];
+        })
+        .forEach(b => addBlock(b[0], b[1], color.bottom));
+
+
+
+
+    console.dir(svg);
+</script>
+
+
+</html>
