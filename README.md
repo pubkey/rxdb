@@ -18,7 +18,7 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
     <tr>
       <td>..these features..</td>
       <td></td>
-      <td align="right">..for these plattforms</td>
+      <td align="right">..for these platforms</td>
     </tr>
   </thead>
   <tbody>
