@@ -203,6 +203,10 @@ class RxCollection {
             }, this);
         } else query = RxQuery.create(queryObj, this);
 
+        if (
+            typeof queryObj === 'number' ||
+            Array.isArray(queryObj)
+        ) throw new TypeError('.findOne() needs a queryObject or string');
 
         query.exec = async() => {
             const docs = await this._pouchFind(query, 1);

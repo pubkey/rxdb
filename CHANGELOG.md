@@ -1,3 +1,8 @@
+## 2.0.3 (XXX, 2017)
+
+Bugfixes:
+  - Throw when .findOne() is called with number or array
+
 ## 2.0.2 (January 27, 2017)
 
 Bugfixes:

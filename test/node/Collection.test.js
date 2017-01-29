@@ -495,6 +495,23 @@ describe('RxCollection.test.js', () => {
                         Error
                     );
                 });
+                it('BUG: should throw when no-string given (number)', async() => {
+                    const c = await humansCollection.create();
+                    assert.throws(
+                        () => c.findOne(5),
+                        TypeError
+                    );
+                    c.database.destroy();
+                });
+                it('BUG: should throw when no-string given (array)', async() => {
+                    const c = await humansCollection.create();
+                    assert.throws(
+                        () => c.findOne([]),
+                        TypeError
+                    );
+                    c.database.destroy();
+                });
+
             });
         });
     });
