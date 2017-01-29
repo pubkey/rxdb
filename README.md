@@ -330,8 +330,8 @@ emptyDatabase.importDump(json)
 <h3>Leader-Election</h3>
 <p>
   Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
-  you create a websocket or pull-intervall. If your user now opens the site in 5 tabs parallel, it will run the intervall
-  or create the socket 5 times. This is a waste of ressources which can be solved by RxDB's LeaderElection.
+  you create a websocket or pull-interval. If your user now opens the site in 5 tabs parallel, it will run the interval
+  or create the socket 5 times. This is a waste of resources which can be solved by RxDB's LeaderElection.
 </p>
 
 ```js
@@ -381,7 +381,7 @@ Get started now by [reading the docs](./docs/README.md) or exploring the [exampl
 
 <h2>Browser support</h2>
 
-All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a virtualbox for IE11 and Edge.
+All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a VirtualBox for IE11 and Edge.
 
 As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
 
