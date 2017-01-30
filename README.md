@@ -385,15 +385,15 @@ console.log(myDoc.firstName);
 // 'foo'
 ```
 
-<h2>Getting started</h2>
-
-Get started now by [reading the docs](./docs/README.md) or exploring the [example-projects](./examples).
-
 <h2>Browser support</h2>
 
 All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a VirtualBox for IE11 and Edge.
 
 As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
+
+<h2>Getting started</h2>
+
+Get started now by [reading the docs](./docs/README.md) or exploring the [example-projects](./examples).
 
 <h2>Contribute</h2>
 [Check out how you can contribute to this project](./docs/Contribute.md).
