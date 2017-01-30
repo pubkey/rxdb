@@ -5,9 +5,19 @@
 </p>
 
 <h1><a href="https://github.com/pubkey/rxdb">RxDB</a></h1>
+
 <p>
+
+<a href="https://twitter.com/pubkeypubkey" target="_blank">
+  <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Twitter_bird_logo_2012.svg/600px-Twitter_bird_logo_2012.svg.png" width="50px" align="right" />
+</a>
+
+
 The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://offlinefirst.org/" target="_blank">offline-first</a></b> database for your next javascript-application.
 </p>
+
+<br/>
+<br/>
 
 
 <h2>What is RxDB?</h2>
