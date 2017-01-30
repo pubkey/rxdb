@@ -2,6 +2,7 @@
 
 Bugfixes:
   - Throw when .findOne() is called with number or array
+  - ADD babel-polyfill to dependencies [#40](https://github.com/pubkey/rxdb/issues/40)
 
 ## 2.0.2 (January 27, 2017)
 
