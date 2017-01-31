@@ -17,31 +17,24 @@ import * as RxDocument from './RxDocument';
 class RxSchema {
     constructor(jsonID) {
         this.jsonID = clone(jsonID);
-        this._normalized;
 
-        this.compoundIndexes = this.jsonID.compoundIndexes || [];
+        this.compoundIndexes = this.jsonID.compoundIndexes;
         delete this.jsonID.compoundIndexes;
 
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.jsonID.required = this.jsonID.required || [];
-
-        // fill with key-compression-state
-        if (!this.jsonID.hasOwnProperty('disableKeyCompression'))
-            this.jsonID.disableKeyCompression = false;
-
         this.indexes.map(indexAr => {
             indexAr
                 .filter(index => !this.jsonID.required.includes(index))
                 .forEach(index => this.jsonID.required.push(index));
         });
 
-        // primary
+        // primary is required
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
 
-        // add primary to schema
+        // add primary to schema if not there (if _id)
         if (!this.jsonID.properties[this.primaryPath]) {
             this.jsonID.properties[this.primaryPath] = {
                 type: 'string',
@@ -49,18 +42,9 @@ class RxSchema {
             };
         }
 
-        // add _rev
-        this.jsonID.properties._rev = {
-            type: 'string',
-            minLength: 1
-        };
-
         // true if schema contains a crypt-field
         this.crypt = hasCrypt(this.jsonID);
         this.encryptedPaths;
-
-        // always false
-        this.jsonID.additionalProperties = false;
     }
 
     get normalized() {
@@ -80,6 +64,7 @@ class RxSchema {
 
     /**
      * get all encrypted paths
+     * TODO use getter
      */
     getEncryptedPaths() {
         if (!this.encryptedPaths) this.encryptedPaths = getEncryptedPaths(this.jsonID);
@@ -350,9 +335,37 @@ export function normalize(jsonSchema) {
     return sort(jsonSchema);
 }
 
+/**
+ * fills the schema-json with default-values
+ * @param  {Object} schemaObj
+ * @return {Object} cloned schemaObj
+ */
+const fillWithDefaults = function(schemaObj) {
+    schemaObj = clone(schemaObj);
 
+    // additionalProperties is always false
+    schemaObj.additionalProperties = false;
+
+    // fill with key-compression-state ()
+    if (!schemaObj.hasOwnProperty('disableKeyCompression'))
+        schemaObj.disableKeyCompression = false;
+
+    // compoundIndexes must be array
+    schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];
+
+    // required must be array
+    schemaObj.required = schemaObj.required || [];
+
+    // add _rev
+    schemaObj.properties._rev = {
+        type: 'string',
+        minLength: 1
+    };
+
+    return schemaObj;
+}
 
 export function create(jsonID) {
     checkSchema(jsonID);
-    return new RxSchema(jsonID);
+    return new RxSchema(fillWithDefaults(jsonID));
 }
