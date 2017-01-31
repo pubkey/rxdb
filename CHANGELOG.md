@@ -1,4 +1,7 @@
-## 2.0.3 (XXX, 2017)
+## 2.0.3 (January 31, 2017)
+
+Features:
+  - save full schema in internal database once
 
 Bugfixes:
   - Throw when .findOne() is called with number or array

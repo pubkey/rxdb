@@ -480,7 +480,8 @@ var RxDatabase = function () {
                                 _context5.next = 25;
                                 return this.collectionsCollection.pouch.put({
                                     _id: name,
-                                    schemaHash: schemaHash
+                                    schemaHash: schemaHash,
+                                    schema: _collection.schema.normalized
                                 });
 
                             case 25:

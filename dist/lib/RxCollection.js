@@ -461,6 +461,8 @@ var RxCollection = function () {
                 }, this);
             } else query = RxQuery.create(queryObj, this);
 
+            if (typeof queryObj === 'number' || Array.isArray(queryObj)) throw new TypeError('.findOne() needs a queryObject or string');
+
             query.exec = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
                 var docs, doc, ret;
                 return _regenerator2.default.wrap(function _callee7$(_context7) {
