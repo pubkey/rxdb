@@ -26,23 +26,25 @@ describe('SchemaMigration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {});
         describe('negative', () => {
-            it('should throw when no array', async() => {
+            it('should throw when array', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, {}),
+                    () => RxCollection.create(db, randomToken(10), schema, null, []),
                     Error
                 );
             });
-            it('should throw when no array of functions', async() => {
+            it('should throw when property no number', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, ['foobar']),
+                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                        foo: function() {}
+                    }),
                     Error
                 );
             });
-          //  it('e', () => process.exit());
+            it('e', () => process.exit());
         });
     });
 

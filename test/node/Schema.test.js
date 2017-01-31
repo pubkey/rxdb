@@ -333,6 +333,33 @@ describe('RxSchema.test.js', () => {
                 assert.notEqual(schema._normalized, null);
             });
         });
+        describe('.previousVersions', () => {
+            it('get empty array when current==0', () => {
+                const schema = RxSchema.create({
+                    title: 'schema',
+                    version: 0,
+                    properties: {
+                        'foobar': {
+                            type: 'string'
+                        }
+                    }
+                });
+                assert.deepEqual(schema.previousVersions, []);
+            });
+            it('get valid array when current==5', () => {
+                const schema = RxSchema.create({
+                    title: 'schema',
+                    version: 5,
+                    properties: {
+                        'foobar': {
+                            type: 'string'
+                        }
+                    }
+                });
+                assert.deepEqual(schema.previousVersions, [0, 1, 2, 3, 4]);
+            });
+        });
+
         describe('.hash()', () => {
             describe('positive', () => {
                 it('should hash', () => {

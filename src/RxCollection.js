@@ -416,8 +416,15 @@ class RxCollection {
 
 }
 
-
-
+/**
+ * [create description]
+ * @param  {RxDatabase}  database                 [description]
+ * @param  {string}  name                     [description]
+ * @param  {RxSchema}  schema                   [description]
+ * @param  {?Object}  [pouchSettings={}]       [description]
+ * @param  {?Object}  [migrationStrategies={}] [description]
+ * @return {Promise.<RxCollection>} promise with collection
+ */
 export async function create(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
     if (schema.constructor.name != 'RxSchema')
         throw new TypeError('given schema is no Schema-object');
@@ -430,10 +437,28 @@ export async function create(database, name, schema, pouchSettings = {}, migrati
         name.length == 0
     ) throw new TypeError('given name is no string or empty');
 
-    // TODO check object instead of array property-name is new schema-version
-    if (!Array.isArray(migrationStrategies) ||
-        migrationStrategies.filter(s => typeof s != 'function').length > 0
-    ) throw new TypeError('migrationStrategies must be an array of functions');
+
+    // check migrationStrategies
+    // - format
+    if (
+        typeof migrationStrategies !== 'object' ||
+        Array.isArray(migrationStrategies)
+    ) throw new TypeError('migrationStrategies must be an object');
+    // - check functions and property-names
+    Object.entries(migrationStrategies)
+        .filter(x => typeof x[1] !== 'function')
+        .filter(x => typeof x[0] !== 'number')
+        .filter(x => x[0] <= 0)
+        .forEach(x => {
+            throw new TypeError('migrationStrategy must be a function assinged to a version-number');
+        });
+    // - versions
+    schema.previousVersions
+        .filter(vNr => !migrationStrategies.hasOwnProperty(vNr))
+        .forEach(vNr => {
+            throw new Error(`migrationStrategy from version ${vNr} to ${vNr+1} is missing`);
+        });
+
 
     const collection = new RxCollection(database, name, schema);
     await collection.prepare();

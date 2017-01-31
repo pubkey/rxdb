@@ -44,6 +44,16 @@ class RxSchema {
     }
 
     /**
+     * @return {number[]} array with previous version-numbers
+     */
+    get previousVersions() {
+        let c = 0;
+        return new Array(this.version)
+            .fill(0)
+            .map(() => c++);
+    }
+
+    /**
      * true if schema contains at least one encrypted path
      * @type {boolean}
      */
