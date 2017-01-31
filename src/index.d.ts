@@ -22,7 +22,11 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection(name: string, schema?: any | RxSchema): Promise<RxCollection>;
+    collection(
+        name: string,
+        schema?: any | RxSchema,
+        migrationStrategies?: Function[]
+    ): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;

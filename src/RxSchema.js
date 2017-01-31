@@ -39,6 +39,10 @@ class RxSchema {
         this.encryptedPaths;
     }
 
+    get version() {
+        return this.jsonID.version;
+    }
+
     /**
      * true if schema contains at least one encrypted path
      * @type {boolean}
@@ -240,6 +244,13 @@ export function checkSchema(jsonID) {
     if (jsonID.properties._rev)
         throw new Error('schema defines ._rev, this will be done automatically');
 
+    // check version
+    if (!jsonID.hasOwnProperty('version') ||
+        typeof jsonID.version !== 'number' ||
+        jsonID.version < 0
+    ) throw new Error(`schema need an number>=0 as version; given: ${jsonID.version}`);
+
+
     validateFieldsDeep(jsonID);
 
     let primaryPath;
@@ -315,7 +326,7 @@ export function checkSchema(jsonID) {
  */
 export function normalize(jsonSchema) {
     return util.sortObject(
-      clone(jsonSchema)
+        clone(jsonSchema)
     );
 }
 
@@ -345,6 +356,9 @@ const fillWithDefaults = function(schemaObj) {
         type: 'string',
         minLength: 1
     };
+
+    // version is 0 by default
+    schemaObj.version = schemaObj.version || 0;
 
     return schemaObj;
 };

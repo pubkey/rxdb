@@ -65,6 +65,7 @@ describe('KeyCompressor.test.js', () => {
         });
         it('do not compress keys with <=3 chars', () => {
             const k = KeyCompressor.create(RxSchema.create({
+                version: 0,
                 type: 'object',
                 properties: {
                     z: {

@@ -140,7 +140,7 @@ class RxDatabase {
      * create or fetch a collection
      * @return {Collection}
      */
-    async collection(name, schema, pouchSettings = {}) {
+    async collection(name, schema, pouchSettings = {}, migrationStrategies = {}) {
         if (name.charAt(0) == '_')
             throw new Error(`collection(${name}): collection-names cannot start with underscore _`);
 
@@ -158,7 +158,7 @@ class RxDatabase {
             if (collectionDoc && collectionDoc.schemaHash != schemaHash)
                 throw new Error(`collection(${name}): another instance created this collection with a different schema`);
 
-            const collection = await RxCollection.create(this, name, schema, pouchSettings);
+            const collection = await RxCollection.create(this, name, schema, pouchSettings, migrationStrategies);
             if (
                 Object.keys(collection.schema.getEncryptedPaths()).length > 0 &&
                 !this.password

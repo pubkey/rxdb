@@ -23,10 +23,11 @@ class RxCollection {
     static HOOKS_WHEN = ['pre', 'post'];
     static HOOKS_KEYS = ['insert', 'save', 'remove'];
 
-    constructor(database, name, schema, pouchSettings = {}) {
+    constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
         this.database = database;
         this.name = name;
         this.schema = schema;
+        this.migrationStrategies = migrationStrategies;
         this.synced = false;
         this.keyCompressor = KeyCompressor.create(this.schema);
 
@@ -81,6 +82,9 @@ class RxCollection {
                 this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
             });
         });
+
+        // MIGRATION
+
     }
 
     /**
@@ -414,7 +418,7 @@ class RxCollection {
 
 
 
-export async function create(database, name, schema, pouchSettings = {}) {
+export async function create(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
     if (schema.constructor.name != 'RxSchema')
         throw new TypeError('given schema is no Schema-object');
 
@@ -425,6 +429,11 @@ export async function create(database, name, schema, pouchSettings = {}) {
         typeof name != 'string' ||
         name.length == 0
     ) throw new TypeError('given name is no string or empty');
+
+    // TODO check object instead of array property-name is new schema-version
+    if (!Array.isArray(migrationStrategies) ||
+        migrationStrategies.filter(s => typeof s != 'function').length > 0
+    ) throw new TypeError('migrationStrategies must be an array of functions');
 
     const collection = new RxCollection(database, name, schema);
     await collection.prepare();
