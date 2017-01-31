@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/pubkey/rxdb">
+  <a href="https://github.com/pubkey/rxdb/issues/44">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/ca17df8e/docs/files/logo/logo_union_path.svg" width="60px" />
   </a>
 </p>
@@ -397,3 +397,6 @@ Get started now by [reading the docs](./docs/README.md) or exploring the [exampl
 
 <h2>Contribute</h2>
 [Check out how you can contribute to this project](./docs/Contribute.md).
+
+<h2>Follow up</h2>
+Follow me on [twitter](https://twitter.com/pubkeypubkey) to not miss the latest enhancements.
