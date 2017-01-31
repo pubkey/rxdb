@@ -363,7 +363,7 @@ const fillWithDefaults = function(schemaObj) {
     };
 
     return schemaObj;
-}
+};
 
 export function create(jsonID) {
     checkSchema(jsonID);
