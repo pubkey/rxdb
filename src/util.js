@@ -234,3 +234,39 @@ export function trimDots(str) {
 
     return str;
 }
+
+
+/**
+ * deep-sort an object so its attributes are in lexical order.
+ * Also sorts the arrays inside of the object
+ * @param  {Object} obj unsorted
+ * @return {Object} sorted
+ */
+export function sortObject(obj) {
+    // array
+    if (Array.isArray(obj)) {
+        return obj
+            .sort((a, b) => {
+                if (typeof a === 'string' && typeof b === 'string')
+                    return a.localeCompare(b);
+
+                if (typeof a === 'object') return 1;
+                else return -1;
+            })
+            .map(i => sortObject(i));
+    }
+
+    // object
+    if (typeof obj === 'object') {
+        const out = {};
+        Object.keys(obj)
+            .sort((a, b) => a.localeCompare(b))
+            .forEach(key => {
+                out[key] = sortObject(obj[key]);
+            });
+        return out;
+    }
+
+    // everything else
+    return obj;
+}

@@ -1,22 +1,16 @@
 import {
     default as objectPath
 } from 'object-path';
-
 import {
     default as clone
 } from 'clone';
-
-import {
-    default as isPlainObject
-} from 'is-plain-object';
-
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
-        this.jsonID = clone(jsonID);
+        this.jsonID = jsonID;
 
         this.compoundIndexes = this.jsonID.compoundIndexes;
         delete this.jsonID.compoundIndexes;
@@ -29,7 +23,7 @@ class RxSchema {
                 .forEach(index => this.jsonID.required.push(index));
         });
 
-        // primary is required
+        // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
@@ -42,9 +36,17 @@ class RxSchema {
             };
         }
 
-        // true if schema contains a crypt-field
-        this.crypt = hasCrypt(this.jsonID);
         this.encryptedPaths;
+    }
+
+    /**
+     * true if schema contains at least one encrypted path
+     * @type {boolean}
+     */
+    get crypt() {
+        if (!this._crypt)
+            this._crypt = hasCrypt(this.jsonID);
+        return this._crypt;
     }
 
     get normalized() {
@@ -312,27 +314,9 @@ export function checkSchema(jsonID) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    let defaultSortFn = (a, b) => {
-        return a.localeCompare(b);
-    };
-    let sort = src => {
-        if (Array.isArray(src)) {
-            return src
-                .sort()
-                .map(i => sort(i));
-        }
-        if (isPlainObject(src)) {
-            const out = {};
-            Object.keys(src)
-                .sort(defaultSortFn)
-                .forEach(key => {
-                    out[key] = sort(src[key]);
-                });
-            return out;
-        }
-        return src;
-    };
-    return sort(jsonSchema);
+    return util.sortObject(
+      clone(jsonSchema)
+    );
 }
 
 /**
