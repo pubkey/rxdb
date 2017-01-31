@@ -215,6 +215,7 @@ heroCollection
 ```javascript
 var mySchema = {
     title: "hero schema",
+    version: 0,                 // <- incremental version-number
     description: "describes a simple hero",
     type: "object",
     properties: {
