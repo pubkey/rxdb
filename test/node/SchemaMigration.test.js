@@ -13,6 +13,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as RxCollection from '../../dist/lib/RxCollection';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
@@ -24,7 +25,17 @@ process.on('unhandledRejection', function(err) {
 describe('SchemaMigration.test.js', () => {
 
     describe('.create() with migrationStrategies', () => {
-        describe('positive', () => {});
+        describe('positive', () => {
+            it('ok to create with strategies', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                const schema = RxSchema.create(schemas.simpleHumanV3);
+                await RxCollection.create(db, randomToken(10), schema, null, {
+                    1: () => {},
+                    2: () => {},
+                    3: () => {}
+                });
+            });
+        });
         describe('negative', () => {
             it('should throw when array', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
@@ -40,6 +51,37 @@ describe('SchemaMigration.test.js', () => {
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, randomToken(10), schema, null, {
                         foo: function() {}
+                    }),
+                    Error
+                );
+            });
+            it('should throw when property no non-float-number', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                const schema = RxSchema.create(schemas.human);
+                await util.assertThrowsAsync(
+                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                        '1.1': function() {}
+                    }),
+                    Error
+                );
+            });
+            it('should throw when property-value no function', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                const schema = RxSchema.create(schemas.human);
+                await util.assertThrowsAsync(
+                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                        1: 'foobar'
+                    }),
+                    Error
+                );
+            });
+            it('throw when strategy missing', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                const schema = RxSchema.create(schemas.simpleHumanV3);
+                await util.assertThrowsAsync(
+                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                        1: () => {},
+                        3: () => {}
                     }),
                     Error
                 );

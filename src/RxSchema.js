@@ -254,6 +254,11 @@ export function checkSchema(jsonID) {
     if (jsonID.properties._rev)
         throw new Error('schema defines ._rev, this will be done automatically');
 
+    // check _v
+    if (jsonID.properties._v)
+        throw new Error('schema defines ._v, this will be done automatically');
+
+
     // check version
     if (!jsonID.hasOwnProperty('version') ||
         typeof jsonID.version !== 'number' ||
@@ -365,6 +370,12 @@ const fillWithDefaults = function(schemaObj) {
     schemaObj.properties._rev = {
         type: 'string',
         minLength: 1
+    };
+
+    // add _v ( schema-version )
+    schemaObj.properties._v = {
+        type: 'number',
+        min: 0
     };
 
     // version is 0 by default

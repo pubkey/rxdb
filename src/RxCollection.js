@@ -437,27 +437,30 @@ export async function create(database, name, schema, pouchSettings = {}, migrati
         name.length == 0
     ) throw new TypeError('given name is no string or empty');
 
-
     // check migrationStrategies
-    // - format
     if (
         typeof migrationStrategies !== 'object' ||
         Array.isArray(migrationStrategies)
     ) throw new TypeError('migrationStrategies must be an object');
-    // - check functions and property-names
-    Object.entries(migrationStrategies)
-        .filter(x => typeof x[1] !== 'function')
-        .filter(x => typeof x[0] !== 'number')
-        .filter(x => x[0] <= 0)
-        .forEach(x => {
-            throw new TypeError('migrationStrategy must be a function assinged to a version-number');
-        });
-    // - versions
+    if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
+        throw new Error(`
+        a migrationStrategy is missing
+        - have: ${JSON.stringify(Object.keys(migrationStrategies).map(v => parseInt(v)))}
+        - should: ${JSON.stringify(schema.previousVersions)}
+        `);
+    }
     schema.previousVersions
-        .filter(vNr => !migrationStrategies.hasOwnProperty(vNr))
-        .forEach(vNr => {
-            throw new Error(`migrationStrategy from version ${vNr} to ${vNr+1} is missing`);
+        .map(vNr => {
+            return {
+                v: vNr,
+                s: migrationStrategies[(vNr + 1) + '']
+            };
+        })
+        .filter(strat => typeof strat.s !== 'function')
+        .forEach(strat => {
+            throw new TypeError(`migrationStrategy(v${strat.v}) must be a function; is : ${typeof strat}`);
         });
+
 
 
     const collection = new RxCollection(database, name, schema);

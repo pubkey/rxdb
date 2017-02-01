@@ -1,7 +1,7 @@
 export const human = {
     title: 'human schema',
     version: 0,
-    description: 'describes a simple human being',
+    description: 'describes a human being',
     type: 'object',
     properties: {
         passportId: {
@@ -25,10 +25,46 @@ export const human = {
 };
 
 
-export const humanAgeIndex = {
+export const simpleHuman = {
     title: 'human schema',
     version: 0,
     description: 'describes a simple human being',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        age: {
+            type: 'string'
+        },
+    },
+    required: ['firstName']
+};
+
+export const simpleHumanV3 = {
+    title: 'human schema',
+    version: 3,
+    description: 'describes a simple human being',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        age: {
+            type: 'number'
+        },
+    },
+    required: ['firstName']
+};
+
+
+
+export const humanAgeIndex = {
+    title: 'human schema',
+    version: 0,
+    description: 'describes a human being',
     type: 'object',
     properties: {
         passportId: {
@@ -56,7 +92,7 @@ export const humanAgeIndex = {
 export const nestedHuman = {
     title: 'human nested',
     version: 0,
-    description: 'describes a simple human being with a nested field',
+    description: 'describes a human being with a nested field',
     type: 'object',
     properties: {
         passportId: {
@@ -87,7 +123,7 @@ export const nestedHuman = {
 export const deepNestedHuman = {
     title: 'deep human nested',
     version: 0,
-    description: 'describes a simple human being with a nested field',
+    description: 'describes a human being with a nested field',
     type: 'object',
     properties: {
         passportId: {
@@ -157,7 +193,7 @@ export const nostringIndex = {
 export const bigHuman = {
     title: 'human schema',
     version: 0,
-    description: 'describes a simple human being with 2 indexes',
+    description: 'describes a human being with 2 indexes',
     type: 'object',
     properties: {
         passportId: {
@@ -370,7 +406,7 @@ export const empty = {
 export const heroArray = {
     'title': 'hero schema',
     version: 0,
-    'description': 'describes a simple hero with an array-field',
+    'description': 'describes a hero with an array-field',
     'type': 'object',
     'properties': {
         'name': {
@@ -401,7 +437,7 @@ export const heroArray = {
 export const primaryHuman = {
     title: 'human schema with primary',
     version: 0,
-    description: 'describes a simple human being with passsportID as primary',
+    description: 'describes a human being with passsportID as primary',
     type: 'object',
     properties: {
         passportId: {
@@ -422,7 +458,7 @@ export const primaryHuman = {
 export const humanNormalizeSchema1 = {
     title: 'human schema',
     version: 0,
-    description: 'describes a simple human being',
+    description: 'describes a human being',
     properties: {
         age: {
             description: 'age in years',
@@ -431,7 +467,9 @@ export const humanNormalizeSchema1 = {
             maximum: 150
         }
     },
-    required: ['firstName', 'lastName', { name: 2 }]
+    required: ['firstName', 'lastName', {
+        name: 2
+    }]
 };
 
 export const humanNormalizeSchema2 = {
@@ -445,6 +483,8 @@ export const humanNormalizeSchema2 = {
             maximum: 150
         }
     },
-    description: 'describes a simple human being',
-    required: ['lastName', 'firstName', { name: 2 }]
+    description: 'describes a human being',
+    required: ['lastName', 'firstName', {
+        name: 2
+    }]
 };
