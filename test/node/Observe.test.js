@@ -62,7 +62,7 @@ describe('Observe.test.js', () => {
             describe('positive', () => {
                 it('should get a valid event on insert', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
-                    const colName = randomToken(10);
+                    const colName = 'foobar';
                     const c = await db.collection(colName, schemas.human);
 
                     c.insert(schemaObjects.human());
@@ -77,7 +77,7 @@ describe('Observe.test.js', () => {
             describe('negative', () => {
                 it('should get no event on non-succes-insert', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
-                    const c = await db.collection(randomToken(10), schemas.human);
+                    const c = await db.collection('foobar', schemas.human);
                     let calls = 0;
                     db.$.subscribe(e => {
                         calls++;

@@ -30,7 +30,7 @@ describe('CrossInstance.test.js', () => {
 
     describe('Collection.$', () => {
         it('get event on db2 when db1 fires', async() => {
-            const name = randomToken(10);
+            const name = 'foobar';
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             let recieved = 0;
@@ -48,7 +48,7 @@ describe('CrossInstance.test.js', () => {
 
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async() => {
-            const name = randomToken(10);
+            const name = 'foobar';
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             await c1.insert(schemaObjects.human());

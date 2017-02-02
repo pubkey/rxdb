@@ -76,6 +76,51 @@ describe('RxCollection.test.js', () => {
                 });
             });
         });
+        describe('.checkCollectionName()', () => {
+            describe('positive', () => {
+                it('allow internal starting with lodash', async() => {
+                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const schema = RxSchema.create(schemas.human);
+                    const collection = await RxCollection.create(db, '_foobar', schema);
+                    assert.equal(collection.constructor.name, 'RxCollection');
+                    db.destroy();
+                });
+                it('allow numbers', async() => {
+                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const schema = RxSchema.create(schemas.human);
+                    const collection1 = await RxCollection.create(db, 'fooba4r', schema);
+                    assert.equal(collection1.constructor.name, 'RxCollection');
+                    const collection2 = await RxCollection.create(db, 'foobar4', schema);
+                    assert.equal(collection2.constructor.name, 'RxCollection');
+                    db.destroy();
+                });
+            });
+            describe('negative', () => {
+                it('not allow starting numbers', async() => {
+                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const schema = RxSchema.create(schemas.human);
+                    await util.assertThrowsAsync(
+                        () => RxCollection.create(db, '0foobar', schema),
+                        Error
+                    );
+                    db.destroy();
+                });
+                it('not allow uppercase-letters', async() => {
+                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const schema = RxSchema.create(schemas.human);
+                    await util.assertThrowsAsync(
+                        () => RxCollection.create(db, 'Foobar', schema),
+                        Error
+                    );
+                    await util.assertThrowsAsync(
+                        () => RxCollection.create(db, 'fooBar', schema),
+                        Error
+                    );
+                    db.destroy();
+                });
+
+            });
+        });
     });
     describe('instance', () => {
         describe('.insert()', () => {
@@ -88,13 +133,13 @@ describe('RxCollection.test.js', () => {
                 });
                 it('should insert nested human', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
-                    const collection = await db.collection('nestedHuman', schemas.nestedHuman);
+                    const collection = await db.collection('nestedhuman', schemas.nestedHuman);
                     await collection.insert(schemaObjects.nestedHuman());
                     db.destroy();
                 });
                 it('should insert more than once', async() => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
-                    const collection = await db.collection('nestedHuman', schemas.nestedHuman);
+                    const collection = await db.collection('nestedhuman', schemas.nestedHuman);
                     for (let i = 0; i < 10; i++)
                         await collection.insert(schemaObjects.nestedHuman());
                     db.destroy();

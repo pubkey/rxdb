@@ -29,7 +29,7 @@ describe('SchemaMigration.test.js', () => {
             it('ok to create with strategies', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.simpleHumanV3);
-                await RxCollection.create(db, randomToken(10), schema, null, {
+                await RxCollection.create(db, 'foobar', schema, null, {
                     1: () => {},
                     2: () => {},
                     3: () => {}
@@ -41,7 +41,7 @@ describe('SchemaMigration.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, null, []),
+                    () => RxCollection.create(db, 'foobar', schema, null, []),
                     Error
                 );
             });
@@ -49,7 +49,7 @@ describe('SchemaMigration.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                    () => RxCollection.create(db, 'foobar', schema, null, {
                         foo: function() {}
                     }),
                     Error
@@ -59,7 +59,7 @@ describe('SchemaMigration.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                    () => RxCollection.create(db, 'foobar', schema, null, {
                         '1.1': function() {}
                     }),
                     Error
@@ -69,7 +69,7 @@ describe('SchemaMigration.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                    () => RxCollection.create(db, 'foobar', schema, null, {
                         1: 'foobar'
                     }),
                     Error
@@ -79,14 +79,14 @@ describe('SchemaMigration.test.js', () => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, randomToken(10), schema, null, {
+                    () => RxCollection.create(db, 'foobar', schema, null, {
                         1: () => {},
                         3: () => {}
                     }),
                     Error
                 );
             });
-            it('e', () => process.exit());
+          //  it('e', () => process.exit());
         });
     });
 

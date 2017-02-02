@@ -46,7 +46,7 @@ class RxCollection {
         this.pouchSyncs = [];
 
         this.pouch = new PouchDB(
-            database.prefix + ':RxDB:' + name,
+            database.prefix + '-rxdb-' + name,
             adapterObj,
             pouchSettings
         );
@@ -416,6 +416,35 @@ class RxCollection {
 
 }
 
+/**
+ * checks if the collection-name is allowed, throws if not.
+ * 'allowed' is defined by couchdb:
+ * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @param  {string} name
+ * @throws  {Error}
+ * @return {boolean} true
+ */
+const checkCollectionName = function(name) {
+    if (
+        typeof name != 'string' ||
+        name.length == 0
+    ) throw new TypeError('given name is no string or empty');
+
+    /**
+     * the starting underscore _ is only allowed for internal collections
+     * which never sync with a couchdb
+     */
+    const regStr = '^[a-z_][a-z0-9_]*$';
+    const reg = new RegExp(regStr);
+    if (!name.match(reg)) {
+        throw new Error(`
+              collection-names must match the regex:
+              - regex: ${regStr}
+              - given: ${name}
+      `);
+    }
+    return true;
+};
 
 /**
  * checks if the migrationStrategies are ok, throws if not
@@ -472,11 +501,7 @@ export async function create(database, name, schema, pouchSettings = {}, migrati
     if (database.constructor.name != 'RxDatabase')
         throw new TypeError('given database is no Database-object');
 
-    if (
-        typeof name != 'string' ||
-        name.length == 0
-    ) throw new TypeError('given name is no string or empty');
-
+    checkCollectionName(name);
     checkMigrationStrategies(schema, migrationStrategies);
 
     const collection = new RxCollection(database, name, schema);

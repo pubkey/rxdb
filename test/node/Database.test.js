@@ -131,7 +131,7 @@ describe('RxDatabase.test.js', () => {
             });
             it('use encrypted db', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown, randomToken(12));
-                const collection = await db.collection('humanEnc', schemas.encryptedHuman);
+                const collection = await db.collection('humanenc', schemas.encryptedHuman);
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
@@ -154,7 +154,7 @@ describe('RxDatabase.test.js', () => {
             });
             it('create 2 times on same adapter', async() => {
                 const dbname = randomToken(10);
-                const collectionName = randomToken(10);
+                const collectionName = 'foobar';
                 const db1 = await RxDatabase.create(dbname, memdown);
                 const db2 = await RxDatabase.create(dbname, memdown);
                 await db1.collection(collectionName, schemas.human);
@@ -201,7 +201,7 @@ describe('RxDatabase.test.js', () => {
             });
             it('create 2 times on same adapter with different schema', async() => {
                 const dbname = randomToken(10);
-                const collectionName = randomToken(10);
+                const collectionName = 'foobar';
                 const db1 = await RxDatabase.create(dbname, memdown);
                 const db2 = await RxDatabase.create(dbname, memdown);
                 await db1.collection(collectionName, schemas.human);
@@ -219,14 +219,14 @@ describe('RxDatabase.test.js', () => {
         describe('positive', () => {
             it('should not crash on destroy', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
-                await db.collection(randomToken(10), schemas.human);
+                await db.collection('foobar', schemas.human);
                 db.destroy();
                 assert.equal(db.destroyed, true);
                 db.destroy();
             });
             it('should not crash if destroy is called twice', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
-                await db.collection(randomToken(10), schemas.human);
+                await db.collection('foobar', schemas.human);
                 db.destroy();
                 db.destroy();
                 assert.equal(db.destroyed, true);

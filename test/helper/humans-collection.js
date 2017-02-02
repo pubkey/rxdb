@@ -89,7 +89,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create(randomToken(10), adapter);
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('nestedHuman', schemas.nestedHuman);
+    const collection = await db.collection('nestedhuman', schemas.nestedHuman);
 
     // insert data
     const fns = [];
@@ -105,7 +105,7 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create(randomToken(10), adapter);
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('nestedHuman', schemas.deepNestedHuman);
+    const collection = await db.collection('nestedhuman', schemas.deepNestedHuman);
 
     // insert data
     const fns = [];

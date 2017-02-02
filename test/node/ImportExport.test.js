@@ -32,7 +32,7 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as encrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
 
                 const fns = [];
                 for (let i = 0; i < 10; i++)
@@ -51,7 +51,7 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as decrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -71,7 +71,7 @@ describe('ImportExport.test.js', () => {
             });
             it('decrypt a single value from an encrypted export', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -107,7 +107,7 @@ describe('ImportExport.test.js', () => {
                 it('import encrypted', async() => {
                     const password = randomToken(10);
                     const db = await RxDatabase.create(randomToken(10), 'memory', password);
-                    const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -117,7 +117,7 @@ describe('ImportExport.test.js', () => {
                     const json = await col.dump();
 
                     const db2 = await RxDatabase.create(randomToken(10), 'memory', password);
-                    const emptyCol = await db2.collection('encHuman', schemas.encryptedObjectHuman);
+                    const emptyCol = await db2.collection('enchuman', schemas.encryptedObjectHuman);
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
@@ -151,10 +151,10 @@ describe('ImportExport.test.js', () => {
                 });
                 it('should not import encrypted if password is different', async() => {
                     const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                    const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
 
                     const db2 = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                    const col2 = await db2.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col2 = await db2.collection('enchuman', schemas.encryptedObjectHuman);
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -171,12 +171,12 @@ describe('ImportExport.test.js', () => {
                 });
                 it('should not import when schema not matching', async() => {
                     const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                    const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
                     const fns = [];
                     for (let i = 0; i < 5; i++)
                         fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                     await Promise.all(fns);
-                    const col2 = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col2 = await db.collection('enchuman', schemas.encryptedObjectHuman);
 
                     const json = await col.dump();
                     json.docs.push({
@@ -217,7 +217,7 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as encrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -233,7 +233,7 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as decrypted', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const fns = [];
                 await Promise.all(
                     new Array(10).fill(0)
@@ -255,8 +255,8 @@ describe('ImportExport.test.js', () => {
             });
             it('export with multiple collections', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
-                const col2 = await db.collection('encHuman2', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col2 = await db.collection('enchuman2', schemas.encryptedObjectHuman);
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
@@ -273,8 +273,8 @@ describe('ImportExport.test.js', () => {
             });
             it('export 1 of 2 collections', async() => {
                 const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
-                const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
-                const col2 = await db.collection('encHuman2', schemas.encryptedObjectHuman);
+                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col2 = await db.collection('enchuman2', schemas.encryptedObjectHuman);
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
@@ -283,7 +283,7 @@ describe('ImportExport.test.js', () => {
                 }
                 await Promise.all(fns);
 
-                const json = await col.database.dump(false, ['encHuman']);
+                const json = await col.database.dump(false, ['enchuman']);
                 assert.equal(json.collections.length, 1);
                 json.collections
                     .forEach(col => assert.equal(col.docs.length, 10));
@@ -308,9 +308,9 @@ describe('ImportExport.test.js', () => {
                 it('import encrypted', async() => {
                     const password = randomToken(10);
                     const db = await RxDatabase.create(randomToken(10), 'memory', password);
-                    const col = await db.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
                     const db2 = await RxDatabase.create(randomToken(10), 'memory', password);
-                    const col2 = await db2.collection('encHuman', schemas.encryptedObjectHuman);
+                    const col2 = await db2.collection('enchuman', schemas.encryptedObjectHuman);
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)

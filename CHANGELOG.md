@@ -1,7 +1,20 @@
-## 2.0.3 (XXX, 2017)
+## 3.0.0 (XXX, 2017)
+
+Features:
+
+Bugfixes:
+
+Breaking:
+  - Collection-names must match `^[a-z][a-z0-9]*$` Fixes [#45](https://github.com/pubkey/rxdb/issues/45)
+
+## 2.0.3 (January 31, 2017)
+
+Features:
+  - save full schema in internal database once
 
 Bugfixes:
   - Throw when .findOne() is called with number or array
+  - ADD babel-polyfill to dependencies [#40](https://github.com/pubkey/rxdb/issues/40)
 
 ## 2.0.2 (January 27, 2017)
 
