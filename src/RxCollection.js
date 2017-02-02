@@ -416,13 +416,53 @@ class RxCollection {
 
 }
 
+
 /**
- * [create description]
- * @param  {RxDatabase}  database                 [description]
- * @param  {string}  name                     [description]
- * @param  {RxSchema}  schema                   [description]
- * @param  {?Object}  [pouchSettings={}]       [description]
- * @param  {?Object}  [migrationStrategies={}] [description]
+ * checks if the migrationStrategies are ok, throws if not
+ * @param  {RxSchema} schema
+ * @param  {Object} migrationStrategies
+ * @throws {Error|TypeError} if not ok
+ * @return {boolean}
+ */
+const checkMigrationStrategies = function(schema, migrationStrategies) {
+    // migrationStrategies must be object not array
+    if (
+        typeof migrationStrategies !== 'object' ||
+        Array.isArray(migrationStrategies)
+    ) throw new TypeError('migrationStrategies must be an object');
+
+    // for every previousVersion there must be strategy
+    if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
+        throw new Error(`
+      a migrationStrategy is missing
+      - have: ${JSON.stringify(Object.keys(migrationStrategies).map(v => parseInt(v)))}
+      - should: ${JSON.stringify(schema.previousVersions)}
+      `);
+    }
+
+    // every strategy must have number as property and be a function
+    schema.previousVersions
+        .map(vNr => {
+            return {
+                v: vNr,
+                s: migrationStrategies[(vNr + 1) + '']
+            };
+        })
+        .filter(strat => typeof strat.s !== 'function')
+        .forEach(strat => {
+            throw new TypeError(`migrationStrategy(v${strat.v}) must be a function; is : ${typeof strat}`);
+        });
+
+    return true;
+};
+
+/**
+ * creates and prepares a new collection
+ * @param  {RxDatabase}  database
+ * @param  {string}  name
+ * @param  {RxSchema}  schema
+ * @param  {?Object}  [pouchSettings={}]
+ * @param  {?Object}  [migrationStrategies={}]
  * @return {Promise.<RxCollection>} promise with collection
  */
 export async function create(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
@@ -437,31 +477,7 @@ export async function create(database, name, schema, pouchSettings = {}, migrati
         name.length == 0
     ) throw new TypeError('given name is no string or empty');
 
-    // check migrationStrategies
-    if (
-        typeof migrationStrategies !== 'object' ||
-        Array.isArray(migrationStrategies)
-    ) throw new TypeError('migrationStrategies must be an object');
-    if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
-        throw new Error(`
-        a migrationStrategy is missing
-        - have: ${JSON.stringify(Object.keys(migrationStrategies).map(v => parseInt(v)))}
-        - should: ${JSON.stringify(schema.previousVersions)}
-        `);
-    }
-    schema.previousVersions
-        .map(vNr => {
-            return {
-                v: vNr,
-                s: migrationStrategies[(vNr + 1) + '']
-            };
-        })
-        .filter(strat => typeof strat.s !== 'function')
-        .forEach(strat => {
-            throw new TypeError(`migrationStrategy(v${strat.v}) must be a function; is : ${typeof strat}`);
-        });
-
-
+    checkMigrationStrategies(schema, migrationStrategies);
 
     const collection = new RxCollection(database, name, schema);
     await collection.prepare();
