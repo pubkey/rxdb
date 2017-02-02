@@ -2,9 +2,21 @@
 
 <head>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        #logo {
+            width: 200px;
+            height: 200px;
+            left: -100px;
+            position: fixed;
+            margin-left: 50%;
+            margin-top: 100px;
+        }
+    </style>
 </head>
 
-<body></body>
+<body>
+    <div id="logo"></div>
+</body>
 <script>
     const blockSize = 14;
     const squareHeight = 56;
@@ -17,7 +29,7 @@
 
     const svgHeight = squareHeight * 3 + blockSize * 18;
 
-    var svg = d3.select('body').append('svg')
+    var svg = d3.select('#logo').append('svg')
         .attr("width", squareWidth)
         .attr("height", svgHeight)
         .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
