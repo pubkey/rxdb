@@ -46,7 +46,7 @@ class RxCollection {
         this.pouchSyncs = [];
 
         this.pouch = new PouchDB(
-            database.prefix + '-rxdb-' + name,
+            database.prefix + '-rxdb-' + schema.version + '-' + name,
             adapterObj,
             pouchSettings
         );
@@ -405,6 +405,11 @@ class RxCollection {
             hooks.parallel
             .map(hook => hook(doc))
         );
+    }
+
+
+    async _mustMigrate() {
+
     }
 
 

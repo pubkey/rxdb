@@ -23,7 +23,6 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('SchemaMigration.test.js', () => {
-
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async() => {
@@ -86,8 +85,13 @@ describe('SchemaMigration.test.js', () => {
                     Error
                 );
             });
-          //  it('e', () => process.exit());
         });
+
+
+    });
+    describe('migrate on creation', () => {
+
+//        it('e', () => process.exit());
     });
 
 });

@@ -136,6 +136,17 @@ class RxDatabase {
         return this.observable$;
     }
 
+
+    /**
+     * returns the primary for a given collection-data
+     * used in the internal this.collectionsCollection
+     * @param {string} name
+     * @param {RxSchema} schema
+     */
+    _collectionNamePrimary(name, schema) {
+        return name + '-' + schema.version;
+    }
+
     /**
      * create or fetch a collection
      * @return {Collection}
@@ -147,12 +158,14 @@ class RxDatabase {
         if (schema && schema.constructor.name != 'RxSchema')
             schema = RxSchema.create(schema);
 
+        const internalPrimary = this._collectionNamePrimary(name, schema);
+
         if (!this.collections[name]) {
             // check schemaHash
             const schemaHash = schema.hash();
             let collectionDoc = null;
             try {
-                collectionDoc = await this.collectionsCollection.pouch.get(name);
+                collectionDoc = await this.collectionsCollection.pouch.get(internalPrimary);
             } catch (e) {}
 
             if (collectionDoc && collectionDoc.schemaHash != schemaHash)
@@ -167,9 +180,10 @@ class RxDatabase {
             if (!collectionDoc) {
                 try {
                     await this.collectionsCollection.pouch.put({
-                        _id: name,
+                        _id: internalPrimary,
                         schemaHash,
-                        schema: collection.schema.normalized
+                        schema: collection.schema.normalized,
+                        version: collection.schema.version
                     });
                 } catch (e) {}
             }

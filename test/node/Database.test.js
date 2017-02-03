@@ -118,7 +118,7 @@ describe('RxDatabase.test.js', () => {
             it('the schema-object should be saved in the collectionsCollection', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const collection = await db.collection('human0', schemas.human);
-                const colDoc = await db.collectionsCollection.pouch.get('human0');
+                const colDoc = await db.collectionsCollection.pouch.get('human0-' + schemas.human.version);
                 const compareSchema = RxSchema.create(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
             });
@@ -135,13 +135,21 @@ describe('RxDatabase.test.js', () => {
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
+            it('collectionsCollection should contain schema.version', async() => {
+                const db = await RxDatabase.create(randomToken(10), memdown);
+                const collection = await db.collection('human', schemas.human);
+                const version = collection.schema.version;
+                assert.deepEqual(version, 0);
+                const internalDoc = await db.collectionsCollection.pouch.get('human-' + version);
+                assert.deepEqual(internalDoc.version, version);
+                db.destroy();
+            });
             it('call 2 times with same params', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 await db.collection('human2', schemas.human);
                 await db.collection('human2', schemas.human);
                 db.destroy();
             });
-
             it('call to times when one is encrypted', async() => {
                 const db1 = await RxDatabase.create(randomToken(10), memdown);
                 const db2 = await RxDatabase.create(randomToken(10), memdown, randomToken(10));

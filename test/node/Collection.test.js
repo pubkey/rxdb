@@ -47,6 +47,14 @@ describe('RxCollection.test.js', () => {
                         .filter(i => !!i[compressedKey]);
                     assert.equal(has.length, 1);
                 });
+                it('should have the version-number in the pouchdb-prefix', async() => {
+                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const schema = RxSchema.create(schemas.human);
+                    const collection = await RxCollection.create(db, 'human', schema);
+                    assert.deepEqual(schema.version, 0);
+                    assert.ok(collection.pouch.name.includes('-' + schema.version + '-'));
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('crash if no Schema-instance', async() => {
