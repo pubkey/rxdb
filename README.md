@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/pubkey/rxdb/issues/44">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/ca17df8e/docs/files/logo/logo_text.svg" width="100px" />
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/451f0701/docs/files/logo/logo_text.svg" width="300px" />
   </a>
 </p>
 
