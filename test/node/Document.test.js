@@ -48,7 +48,7 @@ describe('Document.test.js', () => {
                 };
                 await util.assertThrowsAsync(
                     () => doc.get(path),
-                    Error
+                    TypeError
                 );
                 c.database.destroy();
             });
@@ -98,7 +98,7 @@ describe('Document.test.js', () => {
                 };
                 await util.assertThrowsAsync(
                     () => doc.set(path, 'foo'),
-                    Error
+                    TypeError
                 );
                 c.database.destroy();
             });
@@ -279,7 +279,7 @@ describe('Document.test.js', () => {
                 doc_same.set('passportId', 'any');
                 await util.assertThrowsAsync(
                     () => doc_same.save(),
-                    Error
+                    'PouchError'
                 );
                 c.database.destroy();
             });

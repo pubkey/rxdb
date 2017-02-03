@@ -185,7 +185,7 @@ describe('ImportExport.test.js', () => {
                     });
                     await util.assertThrowsAsync(
                         () => col2.importDump(json),
-                        Error
+                        TypeError
                     );
                     db.destroy();
                 });

@@ -92,4 +92,92 @@ describe('util.test.js', () => {
             assert.equal(util.numberToLetter(10000000), '2oMX');
         });
     });
+    describe('.assertThrowsAsync()', () => {
+        it('valid if function throws', async() => {
+            const test = async function() {
+                await util.promiseWait(1);
+                throw new Error('foo');
+            };
+            await util.assertThrowsAsync(
+                test,
+                Error
+            );
+        });
+        it('throw if function does not throw', async() => {
+            const test = async function() {
+                await util.promiseWait(1);
+                return 1;
+            };
+            let thrown = false;
+            try {
+                await util.assertThrowsAsync(
+                    test,
+                    Error
+                );
+            } catch (e) {
+                thrown = true;
+            }
+            assert.ok(thrown);
+        });
+        it('throw if no TypeError', async() => {
+            const test = async function() {
+                await util.promiseWait(1);
+                throw new Error('foo');
+            };
+            let thrown = false;
+            try {
+                await util.assertThrowsAsync(
+                    test,
+                    TypeError
+                );
+            } catch (e) {
+                thrown = true;
+            }
+            assert.ok(thrown);
+        });
+        it('throw if no Error', async() => {
+            const test = async function() {
+                await util.promiseWait(1);
+                throw new TypeError('foo');
+            };
+            let thrown = false;
+            try {
+                await util.assertThrowsAsync(
+                    test,
+                    Error
+                );
+            } catch (e) {
+                thrown = true;
+            }
+            assert.ok(thrown);
+        });
+        it('throw if not contains', async() => {
+            const test = async function() {
+                await util.promiseWait(1);
+                throw new TypeError('foo');
+            };
+            let thrown = false;
+            try {
+                await util.assertThrowsAsync(
+                    test,
+                    TypeError,
+                    'bar'
+                );
+            } catch (e) {
+                thrown = true;
+            }
+            assert.ok(thrown);
+        });
+        it('dont throw if contains', async() => {
+            const test = async function() {
+                await util.promiseWait(1);
+                throw new Error('foobar');
+            };
+            await util.assertThrowsAsync(
+                test,
+                Error,
+                'oba'
+            );
+        });
+    });
 });

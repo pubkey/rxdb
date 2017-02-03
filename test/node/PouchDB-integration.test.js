@@ -84,7 +84,7 @@ describe('PouchDB-integration.test.js', () => {
             const pouch2 = createPouch();
             await util.assertThrowsAsync(
                 () => pouch2.get(_id),
-                Error
+                'PouchError'
             );
             // insert
             await pouch1.put({

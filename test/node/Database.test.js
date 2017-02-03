@@ -62,7 +62,7 @@ describe('RxDatabase.test.js', () => {
             it('should crash with invalid token', async() => {
                 await util.assertThrowsAsync(
                     () => RxDatabase.create(null, memdown),
-                    Error
+                    TypeError
                 );
             });
             it('should crash with invalid adapter', async() => {
@@ -74,7 +74,7 @@ describe('RxDatabase.test.js', () => {
             it('should crash with invalid password (no string)', async() => {
                 await util.assertThrowsAsync(
                     () => RxDatabase.create(randomToken(10), memdown, {}),
-                    Error
+                    TypeError
                 );
             });
             it('should crash with invalid password (too short)', async() => {

@@ -124,7 +124,7 @@ describe('Primary.test.js', () => {
                     obj2.passportId = obj.passportId;
                     await util.assertThrowsAsync(
                         () => c.insert(obj2),
-                        Error
+                        'PouchError'
                     );
                     c.database.destroy();
                 });
@@ -285,7 +285,7 @@ describe('Primary.test.js', () => {
                     await doc.save();
                     await util.assertThrowsAsync(
                         () => sameDoc.save(),
-                        Error
+                        'PouchError'
                     );
                     c.database.destroy();
                 });

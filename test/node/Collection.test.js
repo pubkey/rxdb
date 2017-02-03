@@ -53,7 +53,7 @@ describe('RxCollection.test.js', () => {
                     const db = await RxDatabase.create(randomToken(10), memdown);
                     await util.assertThrowsAsync(
                         () => Collection.create(db, 'human', schemas.human),
-                        Error
+                        ReferenceError
                     );
                     db.destroy();
                 });
@@ -62,7 +62,7 @@ describe('RxCollection.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
                         () => RxCollection.create(db, 'human', schema),
-                        Error
+                        TypeError
                     );
                 });
                 it('crash if no name-object', async() => {
@@ -70,7 +70,7 @@ describe('RxCollection.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
                         () => RxCollection.create(db, null, schema),
-                        Error
+                        TypeError
                     );
                     db.destroy();
                 });
@@ -173,7 +173,7 @@ describe('RxCollection.test.js', () => {
                     const collection = await db.collection('human', schemas.human);
                     await util.assertThrowsAsync(
                         () => collection.insert(Collection),
-                        Error
+                        ReferenceError
                     );
                     db.destroy();
                 });
@@ -242,7 +242,7 @@ describe('RxCollection.test.js', () => {
                         const c = await humansCollection.create();
                         await util.assertThrowsAsync(
                             () => c.find([]).exec(),
-                            Error
+                            TypeError
                         );
                     });
                 });
@@ -394,7 +394,7 @@ describe('RxCollection.test.js', () => {
                         const c = await humansCollection.create(20);
                         await util.assertThrowsAsync(
                             () => c.find().limit('foobar').exec(),
-                            Error
+                            TypeError
                         );
                     });
                 });
@@ -435,7 +435,7 @@ describe('RxCollection.test.js', () => {
                         const c = await humansCollection.create(20);
                         await util.assertThrowsAsync(
                             () => c.find().skip('foobar').exec(),
-                            Error
+                            TypeError
                         );
                     });
                 });

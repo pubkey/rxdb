@@ -42,7 +42,7 @@ describe('SchemaMigration.test.js', () => {
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, []),
-                    Error
+                    TypeError
                 );
             });
             it('should throw when property no number', async() => {

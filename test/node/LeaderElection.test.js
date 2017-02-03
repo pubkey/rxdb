@@ -29,7 +29,7 @@ describe('LeaderElection.test.js', () => {
             const db = c.database;
             await util.assertThrowsAsync(
                 () => db.administrationCollection.pouch.get(LeaderElector.documentID),
-                Error
+                'PouchError'
             );
             db.destroy();
         });
