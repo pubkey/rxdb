@@ -17,20 +17,22 @@
             margin-top: 100px;
             overflow: hidden;
         }
+
         #text {
-            position: absolute;
-            width: 200px;
+            position: relative;
+            width: 275px;
             height: 200px;
             margin-left: 50%;
-            left: 57px;
-            margin-top: 77px;
+            left: -136px;
+            margin-top: 100px;
             overflow: hidden;
+            border-style: solid;
         }
     </style>
 </head>
 
 <body>
-  <div id="text"></div>
+    <div id="text"></div>
     <div id="logo"></div>
 </body>
 <script>
@@ -42,21 +44,6 @@
         middle: '#8d2089',
         bottom: '#5f2688'
     };
-
-    const svgHeight = squareHeight * 3 + blockSize * 18;
-    const padding = 50;
-    const svg = d3.select('#logo').append('svg')
-        .attr("width", 200)
-        .attr("height", 200)
-        .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
-        .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
-        .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-        .attr(':xmlns:svg', 'http://www.w3.org/2000/svg')
-        .attr(':xmlns', 'http://www.w3.org/2000/svg')
-        .attr(':xmlns:sodipodi', 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd')
-        .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
-        .attr('viewBox', '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2)
-        .attr('shape-rendering', 'crispEdges');
 
     const blocks = [
         //      [blockSize, 0],
@@ -77,72 +64,89 @@
         [blockSize * 7, blockSize * 7],
 
     ];
+    const padding = 50;
+    const svgHeight = squareHeight * 3 + blockSize * 18;
 
-    function addBlock(x, y, color) {
-        svg.append("rect").attr("x", x)
-            .attr("y", y)
-            .attr("width", blockSize)
-            .attr("height", blockSize)
-            .style("fill", color);
+
+    function renderLogo(selector, showText = true) {
+
+        let viewBox = '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2;
+        let width = 200;
+        if (showText) {
+            width = 275;
+            viewBox = padding / 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2;
+        }
+
+        const svg = d3.select(selector).append('svg')
+            .attr("width", width)
+            .attr("height", 200)
+            .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
+            .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
+            .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+            .attr(':xmlns:svg', 'http://www.w3.org/2000/svg')
+            .attr(':xmlns', 'http://www.w3.org/2000/svg')
+            .attr(':xmlns:sodipodi', 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd')
+            .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
+            .attr('viewBox', viewBox)
+            .attr('shape-rendering', 'crispEdges');
+
+
+
+        function addBlock(x, y, color) {
+            svg.append("rect").attr("x", x)
+                .attr("y", y)
+                .attr("width", blockSize)
+                .attr("height", blockSize)
+                .style("fill", color);
+        }
+
+        function addSquare(x, y, color) {
+            svg.append("rect").attr("x", x)
+                .attr("y", y)
+                .attr("width", squareWidth)
+                .attr("height", squareHeight)
+                .style("fill", color);
+        }
+
+        // top
+        addSquare(0, blockSize * 8, color.top);
+        blocks.forEach(b => addBlock(b[0], b[1], color.top));
+
+        // middle
+        addSquare(0, blockSize * 8 + blockSize + squareHeight, color.middle);
+
+        // bottom
+        addSquare(0, blockSize * 8 + (blockSize + squareHeight) * 2, color.bottom);
+        const bottomRightX = squareWidth - blockSize;
+        const bottomRightY = blockSize * 8 + (blockSize + squareHeight) * 2 + squareHeight + blockSize * 7;
+
+        // addBlock(bottomRightX, bottomRightY, 'red');
+        blocks
+            .map(b => {
+                const blockX = b[0] * -1 + bottomRightX;
+                const blockY = b[1] * -1 + bottomRightY;
+                return [blockX, blockY];
+            })
+            .forEach(b => addBlock(b[0], b[1], color.bottom));
+
+
+        // TEXT
+        if (showText) {
+            svg.append("text")
+                .text('RxDB')
+                .attr('font-size', 87)
+                .attr('x', 199)
+                .attr('y', 246)
+                .attr('fill', color.middle)
+                .attr('font-family', 'Impact,sans-serif')
+                .attr('font-weight', 'bold')
+                .attr('stroke', 'none');
+        }
+
     }
 
-    function addSquare(x, y, color) {
-        svg.append("rect").attr("x", x)
-            .attr("y", y)
-            .attr("width", squareWidth)
-            .attr("height", squareHeight)
-            .style("fill", color);
-    }
-
-
-    // top
-    addSquare(0, blockSize * 8, color.top);
-    blocks.forEach(b => addBlock(b[0], b[1], color.top));
-
-    // middle
-    addSquare(0, blockSize * 8 + blockSize + squareHeight, color.middle);
-
-    // bottom
-    addSquare(0, blockSize * 8 + (blockSize + squareHeight) * 2, color.bottom);
-    const bottomRightX = squareWidth - blockSize;
-    const bottomRightY = blockSize * 8 + (blockSize + squareHeight) * 2 + squareHeight + blockSize * 7;
-
-    // addBlock(bottomRightX, bottomRightY, 'red');
-
-    blocks
-        .map(b => {
-            const blockX = b[0] * -1 + bottomRightX;
-            const blockY = b[1] * -1 + bottomRightY;
-            return [blockX, blockY];
-        })
-        .forEach(b => addBlock(b[0], b[1], color.bottom));
-
-
-
-    // TEXT
-    const svgText = d3.select('#text').append('svg')
-        .attr("width", 200)
-        .attr("height", 100)
-        .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
-        .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
-        .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-        .attr(':xmlns:svg', 'http://www.w3.org/2000/svg')
-        .attr(':xmlns', 'http://www.w3.org/2000/svg')
-        .attr(':xmlns:sodipodi', 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd')
-        .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
-  //      .attr('viewBox', '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2)
-        .attr('shape-rendering', 'crispEdges');
-
-
-    svgText.append("text")
-        .text('RxDB')
-        .attr('font-size', 46)
-        .attr('x', 0)
-        .attr('y', 39.3)
-        .attr('fill', color.middle)
-        .attr('font-family', 'Impact,sans-serif')
-        .attr('font-weight', 'bold')
-        .attr('stroke', 'none')
+    renderLogo('#logo', false);
+    renderLogo('#text', true);
 </script>
 
 
