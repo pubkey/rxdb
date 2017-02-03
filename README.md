@@ -57,7 +57,7 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
       </ul>
     </td>
     <td>
-      <img src="docs/files/arrow.png" width="350px"/>
+      <img src="docs/files/arrow.png" width="200px" />
     </td>
     <td colspan="3">
 
