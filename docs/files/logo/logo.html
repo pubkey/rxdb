@@ -17,10 +17,20 @@
             margin-top: 100px;
             overflow: hidden;
         }
+        #text {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            margin-left: 50%;
+            left: 57px;
+            margin-top: 77px;
+            overflow: hidden;
+        }
     </style>
 </head>
 
 <body>
+  <div id="text"></div>
     <div id="logo"></div>
 </body>
 <script>
@@ -35,8 +45,7 @@
 
     const svgHeight = squareHeight * 3 + blockSize * 18;
     const padding = 50;
-
-    var svg = d3.select('#logo').append('svg')
+    const svg = d3.select('#logo').append('svg')
         .attr("width", 200)
         .attr("height", 200)
         .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
@@ -48,9 +57,6 @@
         .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
         .attr('viewBox', '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2)
         .attr('shape-rendering', 'crispEdges');
-
-
-
 
     const blocks = [
         //      [blockSize, 0],
@@ -113,8 +119,30 @@
 
 
 
+    // TEXT
+    const svgText = d3.select('#text').append('svg')
+        .attr("width", 200)
+        .attr("height", 100)
+        .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
+        .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
+        .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+        .attr(':xmlns:svg', 'http://www.w3.org/2000/svg')
+        .attr(':xmlns', 'http://www.w3.org/2000/svg')
+        .attr(':xmlns:sodipodi', 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd')
+        .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
+  //      .attr('viewBox', '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2)
+        .attr('shape-rendering', 'crispEdges');
 
-    console.dir(svg);
+
+    svgText.append("text")
+        .text('RxDB')
+        .attr('font-size', 46)
+        .attr('x', 0)
+        .attr('y', 39.3)
+        .attr('fill', color.middle)
+        .attr('font-family', 'Impact,sans-serif')
+        .attr('font-weight', 'bold')
+        .attr('stroke', 'none')
 </script>
 
 
