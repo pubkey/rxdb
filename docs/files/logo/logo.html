@@ -1,7 +1,9 @@
 <html>
 
 <head>
+    <script src="node_modules/d3/build/d3.min.js"></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="js.build.js"></script>
     <style>
         body {
             margin: 0;
@@ -36,115 +38,6 @@
     <div id="logo"></div>
 </body>
 <script>
-    const blockSize = 14;
-    const squareHeight = 60;
-    const squareWidth = 190;
-    const color = {
-        top: '#e6008d',
-        middle: '#8d2089',
-        bottom: '#5f2688'
-    };
-
-    const blocks = [
-        //      [blockSize, 0],
-        //      [0, blockSize * 2],
-        //      [blockSize * 3, blockSize * 2],
-        //      [blockSize, blockSize * 3],
-        //      [blockSize * 4, blockSize * 4],
-        [blockSize * 2, blockSize * 5],
-        [0, blockSize * 6],
-        [blockSize * 2, blockSize * 6],
-        [blockSize * 3, blockSize * 6],
-        [blockSize * 5, blockSize * 6],
-        [0, blockSize * 7],
-        [blockSize * 1, blockSize * 7],
-        [blockSize * 2, blockSize * 7],
-        [blockSize * 3, blockSize * 7],
-        [blockSize * 5, blockSize * 7],
-        [blockSize * 7, blockSize * 7],
-
-    ];
-    const padding = 50;
-    const svgHeight = squareHeight * 3 + blockSize * 18;
-
-
-    function renderLogo(selector, showText = true) {
-
-        let viewBox = '-' + padding * 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2;
-        let width = 200;
-        if (showText) {
-            width = 275;
-            viewBox = padding / 2 + ' ' + padding / 2 + ' ' + squareWidth * 2 + ' ' + squareWidth * 2;
-        }
-
-        const svg = d3.select(selector).append('svg')
-            .attr("width", width)
-            .attr("height", 200)
-            .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
-            .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
-            .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-            .attr(':xmlns:svg', 'http://www.w3.org/2000/svg')
-            .attr(':xmlns', 'http://www.w3.org/2000/svg')
-            .attr(':xmlns:sodipodi', 'http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd')
-            .attr(':xmlns:inkscape', 'http://www.inkscape.org/namespaces/inkscape')
-            .attr('viewBox', viewBox)
-            .attr('shape-rendering', 'crispEdges');
-
-
-
-        function addBlock(x, y, color) {
-            svg.append("rect").attr("x", x)
-                .attr("y", y)
-                .attr("width", blockSize)
-                .attr("height", blockSize)
-                .style("fill", color);
-        }
-
-        function addSquare(x, y, color) {
-            svg.append("rect").attr("x", x)
-                .attr("y", y)
-                .attr("width", squareWidth)
-                .attr("height", squareHeight)
-                .style("fill", color);
-        }
-
-        // top
-        addSquare(0, blockSize * 8, color.top);
-        blocks.forEach(b => addBlock(b[0], b[1], color.top));
-
-        // middle
-        addSquare(0, blockSize * 8 + blockSize + squareHeight, color.middle);
-
-        // bottom
-        addSquare(0, blockSize * 8 + (blockSize + squareHeight) * 2, color.bottom);
-        const bottomRightX = squareWidth - blockSize;
-        const bottomRightY = blockSize * 8 + (blockSize + squareHeight) * 2 + squareHeight + blockSize * 7;
-
-        // addBlock(bottomRightX, bottomRightY, 'red');
-        blocks
-            .map(b => {
-                const blockX = b[0] * -1 + bottomRightX;
-                const blockY = b[1] * -1 + bottomRightY;
-                return [blockX, blockY];
-            })
-            .forEach(b => addBlock(b[0], b[1], color.bottom));
-
-
-        // TEXT
-        if (showText) {
-            svg.append("text")
-                .text('RxDB')
-                .attr('font-size', 87)
-                .attr('x', 198)
-                .attr('y', 246)
-                .attr('fill', color.middle)
-                .attr('font-family', 'Impact,sans-serif')
-                .attr('font-weight', 'bold')
-                .attr('stroke', 'none');
-        }
-
-    }
-
     renderLogo('#logo', false);
     renderLogo('#text', true);
 </script>
