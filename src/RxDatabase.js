@@ -268,6 +268,7 @@ export async function create(prefix, adapter, password, multiInstance = false) {
     if (typeof prefix !== 'string')
         throw new TypeError('given prefix is no string ');
 
+    // TODO check here if name allowed by pouchdb
 
     // check if pouchdb-adapter
     if (typeof adapter == 'string') {

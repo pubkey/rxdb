@@ -33,6 +33,8 @@ class RxCollection {
 
         this.hooks = {};
 
+
+        // TODO do this at database
         let adapterObj = {
             db: this.database.adapter
         };
@@ -41,12 +43,14 @@ class RxCollection {
                 adapter: this.database.adapter
             };
         }
+        this.adapterObj = adapterObj;
+        this.pouchSettings = pouchSettings;
 
         this.subs = [];
         this.pouchSyncs = [];
 
         this.pouch = new PouchDB(
-            database.prefix + '-rxdb-' + schema.version + '-' + name,
+            util.getPouchLocation(database.prefix, schema.version, name),
             adapterObj,
             pouchSettings
         );
@@ -86,6 +90,46 @@ class RxCollection {
         // MIGRATION
 
     }
+
+
+
+    /**
+     * returns pouchdb-instances from all existing equal collections with previous version
+     * @return {Object} with version: Pouchdb | {0: {}, 1: {}}
+     */
+    async _getOldCollections() {
+        const ret = {};
+
+        // get colDocs
+        const oldColDocs = await Promise.all(
+            this.schema.previousVersions
+            .map(v => {
+                console.log(this.name + '-' + v);
+                return v;
+            })
+            .map(v => this.database.collectionsCollection.pouch.get(this.name + '-' + v))
+            .map(fun => fun.catch(e => null)) // auto-catch so Promise.all continues
+        );
+
+        // spawn pouchdb-instances
+        oldColDocs
+            .filter(colDoc => colDoc != null)
+            .forEach(colDoc => {
+                const pouch = new PouchDB(
+                    util.getPouchLocation(
+                        this.database.prefix,
+                        colDoc.schema.version,
+                        this.name
+                    ),
+                    this.adapterObj,
+                    this.pouchSettings
+                );
+                ret[colDoc.schema.version] = pouch;
+            });
+
+        return ret;
+    }
+
 
     /**
      * wrappers for Pouch.put/get to handle keycompression etc

@@ -34,6 +34,21 @@ describe('SchemaMigration.test.js', () => {
                     3: () => {}
                 });
             });
+            it('create same collection with different schema-versions', async() => {
+                const colName = 'human';
+                const dbName = randomToken(10);
+                const db = await RxDatabase.create(dbName, memdown);
+                const schema = RxSchema.create(schemas.human);
+                const col = await db.collection(colName, schema);
+
+                const db2 = await RxDatabase.create(dbName, memdown);
+                const schema2 = RxSchema.create(schemas.simpleHumanV3);
+                const col2 = await db2.collection(colName, schema2, null, {
+                    1: () => {},
+                    2: () => {},
+                    3: () => {}
+                });
+            });
         });
         describe('negative', () => {
             it('should throw when array', async() => {
@@ -89,9 +104,44 @@ describe('SchemaMigration.test.js', () => {
 
 
     });
-    describe('migrate on creation', () => {
+    describe('RxCollection._getOldCollections()', () => {
+        it('should NOT get an older version', async() => {
+            const colName = 'human';
+            const db = await RxDatabase.create(randomToken(10), memdown);
+            const col = await db.collection(colName, schemas.simpleHumanV3, null, {
+                1: () => {},
+                2: () => {},
+                3: () => {}
+            });
+            const old = await col._getOldCollections();
+            assert.deepEqual(old, {});
+        });
 
-//        it('e', () => process.exit());
+        it('should get an older version', async() => {
+            const dbName = randomToken(10);
+            const colName = 'human';
+            const db = await RxDatabase.create(dbName, memdown);
+            const schema = RxSchema.create(schemas.human);
+            const col = await db.collection(colName, schema);
+
+            const db2 = await RxDatabase.create(dbName, memdown);
+            const schema2 = RxSchema.create(schemas.simpleHumanV3);
+            const col2 = await db2.collection(colName, schema2, null, {
+                1: () => {},
+                2: () => {},
+                3: () => {}
+            });
+            const old = await col2._getOldCollections();
+            assert.notDeepEqual(old, {});
+            assert.ok(old[0]);
+            assert.ok(old[0].constructor.name.includes('PouchDB'));
+            assert.equal(Object.keys(old).length, 1);
+        });
+
+
+
+
+        it('e', () => process.exit());
     });
 
 });

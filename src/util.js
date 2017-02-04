@@ -265,6 +265,19 @@ export function trimDots(str) {
 
 
 /**
+ *
+ * @param  {string} dbPrefix       [description]
+ * @param  {number} schemaVersion  [description]
+ * @param  {string} collectionName [description]
+ * @return {string}                [description]
+ */
+export function getPouchLocation(dbPrefix, schemaVersion, collectionName) {
+    const location = dbPrefix + '-rxdb-' + schemaVersion + '-' + collectionName;
+    return location;
+}
+
+
+/**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object
  * @param  {Object} obj unsorted
