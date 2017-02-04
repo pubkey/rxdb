@@ -87,10 +87,10 @@ describe('RxDatabase.test.js', () => {
                 const dbname = randomToken(10);
                 const pw = randomToken(10);
                 const db = await RxDatabase.create(dbname, memdown, pw);
-                const doc = await db.administrationCollection.pouch.get('_local/pwHash');
+                const doc = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
                 const db2 = await RxDatabase.create(dbname, memdown, pw);
-                const doc2 = await db.administrationCollection.pouch.get('_local/pwHash');
+                const doc2 = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
 
                 db.destroy();
@@ -118,7 +118,7 @@ describe('RxDatabase.test.js', () => {
             it('the schema-object should be saved in the collectionsCollection', async() => {
                 const db = await RxDatabase.create(randomToken(10), memdown);
                 const collection = await db.collection('human0', schemas.human);
-                const colDoc = await db.collectionsCollection.pouch.get('human0-' + schemas.human.version);
+                const colDoc = await db._collectionsPouch.get('human0-' + schemas.human.version);
                 const compareSchema = RxSchema.create(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
             });
@@ -140,7 +140,7 @@ describe('RxDatabase.test.js', () => {
                 const collection = await db.collection('human', schemas.human);
                 const version = collection.schema.version;
                 assert.deepEqual(version, 0);
-                const internalDoc = await db.collectionsCollection.pouch.get('human-' + version);
+                const internalDoc = await db._collectionsPouch.get('human-' + version);
                 assert.deepEqual(internalDoc.version, version);
                 db.destroy();
             });

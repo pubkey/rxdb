@@ -141,7 +141,7 @@ describe('SchemaMigration.test.js', () => {
 
 
 
-        it('e', () => process.exit());
+        // it('e', () => process.exit());
     });
 
 });

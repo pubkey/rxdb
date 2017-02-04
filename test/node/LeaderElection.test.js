@@ -28,7 +28,7 @@ describe('LeaderElection.test.js', () => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const db = c.database;
             await util.assertThrowsAsync(
-                () => db.administrationCollection.pouch.get(LeaderElector.documentID),
+                () => db._adminPouch.get(LeaderElector.documentID),
                 'PouchError'
             );
             db.destroy();
@@ -42,7 +42,7 @@ describe('LeaderElection.test.js', () => {
             assert.equal(obj._id, LeaderElector.documentID);
 
             // make sure its also in db
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             delete dbObj._rev;
             assert.deepEqual(obj, dbObj);
             c.database.destroy();
@@ -53,7 +53,7 @@ describe('LeaderElection.test.js', () => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.leaderSignal();
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.is, leaderElector.token);
             assert.equal(dbObj.apply, leaderElector.token);
             assert.ok(dbObj.t > new Date().getTime() - 1000);
@@ -65,7 +65,7 @@ describe('LeaderElection.test.js', () => {
             const is = await leaderElector.beLeader();
             assert.ok(is);
 
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.is, leaderElector.token);
             c.database.destroy();
         });
@@ -73,10 +73,10 @@ describe('LeaderElection.test.js', () => {
             const c = await humansCollection.createMultiInstance(randomToken(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             const t = dbObj.t;
             await util.promiseWait(LeaderElector.SIGNAL_TIME * 2);
-            const dbObj2 = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj2 = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.ok(dbObj2.t > t);
             c.database.destroy();
         });
@@ -119,7 +119,7 @@ describe('LeaderElection.test.js', () => {
             const is = await leaderElector.die();
             assert.ok(is);
 
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.t, 0);
             c.database.destroy();
         });

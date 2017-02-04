@@ -47,18 +47,17 @@ class LeaderElector {
     async getLeaderObject() {
         let obj;
         try {
-            obj = await this.database.administrationCollection
-                .pouch.get(documentID);
+            obj = await this.database._adminPouch.get(documentID);
         } catch (e) {
             obj = this.createLeaderObject();
-            const ret = await this.database.administrationCollection.pouch.put(obj);
+            const ret = await this.database._adminPouch.put(obj);
             obj._rev = ret.rev;
         }
         return obj;
     }
 
     async setLeaderObject(newObj) {
-        await this.database.administrationCollection.pouch.put(newObj);
+        await this.database._adminPouch.put(newObj);
         return;
     }
 

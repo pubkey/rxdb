@@ -46,32 +46,26 @@ class RxDatabase {
     async prepare() {
 
         // create internal collections
-        await Promise.all([
-            // create admin-collection
-            RxCollection.create(
-                this,
-                '_admin',
-                DatabaseSchemas.administration, {
-                    auto_compaction: false, // no compaction because this only stores local documents
-                    revs_limit: 1
-                })
-            .then(col => this.administrationCollection = col),
-            // create collections-collection
-            RxCollection
-            .create(this, '_collections', DatabaseSchemas.collections)
-            .then(col => this.collectionsCollection = col)
-        ]);
+        // - admin-collection
+        this._adminPouch = this._spawnPouchDB('_admin', 0, {
+            auto_compaction: false, // no compaction because this only stores local documents
+            revs_limit: 1
+        });
+        // - collections-collection
+        this._collectionsPouch = this._spawnPouchDB('_collections', 0, {
+            auto_compaction: false, // no compaction because this only stores local documents
+            revs_limit: 1
+        });
 
         // validate/insert password-hash
         if (this.password) {
             let pwHashDoc = null;
             try {
-                pwHashDoc = await this.administrationCollection
-                    .pouch.get('_local/pwHash');
+                pwHashDoc = await this._adminPouch.get('_local/pwHash');
             } catch (e) {}
             if (!pwHashDoc) {
                 try {
-                    await this.administrationCollection.pouch.put({
+                    await this._adminPouch.put({
                         _id: '_local/pwHash',
                         value: util.hash(this.password)
                     });
@@ -91,6 +85,39 @@ class RxDatabase {
 
         // leader elector
         this.leaderElector = await LeaderElector.create(this);
+    }
+
+
+    /**
+     * transforms the given adapter into a pouch-compatible object
+     * @return {Object} adapterObject
+     */
+    get _adapterObj() {
+        let adapterObj = {
+            db: this.adapter
+        };
+        if (typeof this.adapter === 'string') {
+            adapterObj = {
+                adapter: this.adapter
+            };
+        }
+        return adapterObj;
+    }
+
+    /**
+     * spawns a new pouch-instance
+     * @param {string} collectionName
+     * @param {string} schemaVersion
+     * @param {Object} [pouchSettings={}] pouchSettings
+     * @type {Object}
+     */
+    _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
+        const pouchLocation = this.prefix + '-rxdb-' + schemaVersion + '-' + collectionName;
+        return new PouchDB(
+            pouchLocation,
+            this._adapterObj,
+            pouchSettings
+        );
     }
 
     get isLeader() {
@@ -165,7 +192,7 @@ class RxDatabase {
             const schemaHash = schema.hash();
             let collectionDoc = null;
             try {
-                collectionDoc = await this.collectionsCollection.pouch.get(internalPrimary);
+                collectionDoc = await this._collectionsPouch.get(internalPrimary);
             } catch (e) {}
 
             if (collectionDoc && collectionDoc.schemaHash != schemaHash)
@@ -179,7 +206,7 @@ class RxDatabase {
 
             if (!collectionDoc) {
                 try {
-                    await this.collectionsCollection.pouch.put({
+                    await this._collectionsPouch.put({
                         _id: internalPrimary,
                         schemaHash,
                         schema: collection.schema.normalized,

@@ -33,27 +33,12 @@ class RxCollection {
 
         this.hooks = {};
 
-
-        // TODO do this at database
-        let adapterObj = {
-            db: this.database.adapter
-        };
-        if (typeof this.database.adapter === 'string') {
-            adapterObj = {
-                adapter: this.database.adapter
-            };
-        }
-        this.adapterObj = adapterObj;
         this.pouchSettings = pouchSettings;
 
         this.subs = [];
         this.pouchSyncs = [];
 
-        this.pouch = new PouchDB(
-            util.getPouchLocation(database.prefix, schema.version, name),
-            adapterObj,
-            pouchSettings
-        );
+        this.pouch = this.database._spawnPouchDB(this.name, schema.version, pouchSettings);
 
         this.observable$ = this.database.$
             .filter(event => event.data.col == this.name);
@@ -107,23 +92,17 @@ class RxCollection {
                 console.log(this.name + '-' + v);
                 return v;
             })
-            .map(v => this.database.collectionsCollection.pouch.get(this.name + '-' + v))
+            .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
             .map(fun => fun.catch(e => null)) // auto-catch so Promise.all continues
         );
+
+        console.dir(oldColDocs);
 
         // spawn pouchdb-instances
         oldColDocs
             .filter(colDoc => colDoc != null)
             .forEach(colDoc => {
-                const pouch = new PouchDB(
-                    util.getPouchLocation(
-                        this.database.prefix,
-                        colDoc.schema.version,
-                        this.name
-                    ),
-                    this.adapterObj,
-                    this.pouchSettings
-                );
+                const pouch = this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings);
                 ret[colDoc.schema.version] = pouch;
             });
 
