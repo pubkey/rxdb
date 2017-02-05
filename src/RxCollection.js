@@ -27,6 +27,7 @@ class RxCollection {
         this.database = database;
         this.name = name;
         this.schema = schema;
+
         this.migrationStrategies = migrationStrategies;
         this.synced = false;
         this.keyCompressor = KeyCompressor.create(this.schema);
@@ -77,37 +78,63 @@ class RxCollection {
     }
 
 
-
     /**
      * returns pouchdb-instances from all existing equal collections with previous version
-     * @return {Object} with version: Pouchdb | {0: {}, 1: {}}
+     * @return {{version: number, schema: Object, pouch: PouchDB}[]} array with all needed data
      */
     async _getOldCollections() {
-        const ret = {};
-
         // get colDocs
         const oldColDocs = await Promise.all(
             this.schema.previousVersions
-            .map(v => {
-                console.log(this.name + '-' + v);
-                return v;
-            })
             .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
             .map(fun => fun.catch(e => null)) // auto-catch so Promise.all continues
         );
 
-        console.dir(oldColDocs);
-
         // spawn pouchdb-instances
-        oldColDocs
+        return oldColDocs
             .filter(colDoc => colDoc != null)
-            .forEach(colDoc => {
-                const pouch = this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings);
-                ret[colDoc.schema.version] = pouch;
+            .map(colDoc => {
+                return {
+                    version: colDoc.schema.version,
+                    schema: colDoc.schema,
+                    pouch: this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings)
+                };
             });
-
-        return ret;
     }
+
+
+    /**
+     * runs the doc through all following migrationStrategies
+     * so it will match the newest schema.
+     * @throws Error if final doc does not match final schema
+     * @return {Object|null} final object or null if migrationStrategy deleted it
+     */
+    async _migrateDocumentData(doc, currentVersion) {
+        doc = clone(doc);
+        let nextVersion = currentVersion + 1;
+
+        // run throught migrationStrategies
+        while (nextVersion <= this.schema.version) {
+            doc = await this.migrationStrategies[nextVersion + ''](doc);
+            nextVersion++;
+            if (doc == null)
+                return null;
+        }
+
+        // check final schema
+        try {
+            this.schema.validate(doc);
+        } catch (e) {
+            throw new Error(`
+              migration of document from v${currentVersion} to v${this.schema.version} failed
+              - final document does not match final schema
+              - final doc: ${JSON.stringify(doc)}
+              `);
+        }
+
+        return doc;
+    }
+
 
 
     /**
@@ -502,7 +529,7 @@ export async function create(database, name, schema, pouchSettings = {}, migrati
     util.validateCouchDBString(name);
     checkMigrationStrategies(schema, migrationStrategies);
 
-    const collection = new RxCollection(database, name, schema);
+    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
     await collection.prepare();
 
     return collection;

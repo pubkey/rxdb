@@ -111,14 +111,13 @@ describe('SchemaMigration.test.js', () => {
                 3: () => {}
             });
             const old = await col._getOldCollections();
-            assert.deepEqual(old, {});
+            assert.deepEqual(old, []);
         });
-
         it('should get an older version', async() => {
             const dbName = util.randomCouchString(10);
             const colName = 'human';
             const db = await RxDatabase.create(dbName, memdown);
-            const schema = RxSchema.create(schemas.human);
+            const schema = RxSchema.create(schemas.simpleHuman);
             const col = await db.collection(colName, schema);
 
             const db2 = await RxDatabase.create(dbName, memdown);
@@ -129,16 +128,102 @@ describe('SchemaMigration.test.js', () => {
                 3: () => {}
             });
             const old = await col2._getOldCollections();
-            assert.notDeepEqual(old, {});
-            assert.ok(old[0]);
-            assert.ok(old[0].constructor.name.includes('PouchDB'));
-            assert.equal(Object.keys(old).length, 1);
+            assert.ok(Array.isArray(old));
+            assert.equal(old.length, 1);
+            assert.ok(old[0].pouch.constructor.name.includes('PouchDB'));
+            assert.equal(typeof old[0].schema, 'object');
+            assert.equal(old[0].version, 0);
+        });
+    });
+
+    describe('._migrateDocumentData()', () => {
+        describe('positive', () => {
+            it('should not do anything when doc is newest schema', async() => {
+                const dbName = util.randomCouchString(10);
+                const colName = 'human';
+                const db = await RxDatabase.create(dbName, memdown);
+                const col = await db.collection(colName, schemas.simpleHuman);
+                await col.insert(schemaObjects.simpleHumanAge());
+                const doc = await col.findOne().exec();
+                assert.equal(doc.constructor.name, 'RxDocument');
+                const docBefore = doc.toJSON();
+                const docAfter = await col._migrateDocumentData(docBefore, 0);
+                assert.deepEqual(docBefore, docAfter);
+            });
+            it('should migrate the doc', async() => {
+                const dbName = util.randomCouchString(10);
+                const colName = 'human';
+                const db = await RxDatabase.create(dbName, memdown);
+                const col = await db.collection(colName, schemas.simpleHuman);
+                const docData = schemaObjects.simpleHumanAge();
+                await col.insert(docData);
+                const doc = await col.findOne().exec();
+                const docBefore = doc.toJSON();
+
+
+                const db2 = await RxDatabase.create(dbName, memdown);
+                const schema2 = RxSchema.create(schemas.simpleHumanV3);
+                const col2 = await db2.collection(colName, schema2, null, {
+                    1: async function(doc) {
+                        return doc;
+                    },
+                    2: async function(doc) {
+                        return doc;
+                    },
+                    3: async function(doc) {
+                        doc.age = parseInt(doc.age);
+                        return doc;
+                    }
+                });
+
+                const docAfter = await col2._migrateDocumentData(docBefore, 0);
+                assert.equal(typeof docAfter.age, 'number');
+            });
+        });
+        describe('negative', () => {
+            it('throw if migrationStrategy destroy schema-validation', async() => {
+                const dbName = util.randomCouchString(10);
+                const colName = 'human';
+                const db = await RxDatabase.create(dbName, memdown);
+                const col = await db.collection(colName, schemas.simpleHuman);
+                const docData = schemaObjects.simpleHumanAge();
+                await col.insert(docData);
+                const doc = await col.findOne().exec();
+                const docBefore = doc.toJSON();
+
+
+                const db2 = await RxDatabase.create(dbName, memdown);
+                const schema2 = RxSchema.create(schemas.simpleHumanV3);
+                const col2 = await db2.collection(colName, schema2, null, {
+                    1: async function(doc) {
+                        return doc;
+                    },
+                    2: async function(doc) {
+                        return doc;
+                    },
+                    3: async function(doc) {
+                        doc.age = 'foobar';
+                        return doc;
+                    }
+                });
+                await util.assertThrowsAsync(
+                    () => col2._migrateDocumentData(docBefore, 0),
+                    Error,
+                    'final document does not match final schema'
+                );
+            });
+            it('e', () => process.exit());
+
         });
 
 
 
 
-        // it('e', () => process.exit());
+
+    });
+
+    describe('migrate on .prepare()', () => {
+
     });
 
 });

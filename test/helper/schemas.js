@@ -39,7 +39,7 @@ export const simpleHuman = {
             type: 'string'
         },
     },
-    required: ['firstName']
+    required: ['passportId', 'age']
 };
 
 export const simpleHumanV3 = {
@@ -56,7 +56,7 @@ export const simpleHumanV3 = {
             type: 'number'
         },
     },
-    required: ['firstName']
+    required: ['passportId', 'age']
 };
 
 
