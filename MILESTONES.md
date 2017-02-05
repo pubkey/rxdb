@@ -1,5 +1,6 @@
 # 3.0.0
-Things that will be implemented into version 3.0.0
+Things that will be implemented into version 3.0.0.
+
 When v3.0.0 is done, all features which require breaking changes, will be implemented.
 This means you can then use RxDB in production without the fear breaking your clients database-state.
 
