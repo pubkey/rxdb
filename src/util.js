@@ -263,6 +263,54 @@ export function trimDots(str) {
     return str;
 }
 
+/**
+ * validates that a given string is ok to be used with couchdb-collection-names
+ * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @param  {string} name
+ * @throws  {Error}
+ * @return {boolean} true
+ */
+export function validateCouchDBString(name) {
+    if (
+        typeof name != 'string' ||
+        name.length == 0
+    ) throw new TypeError('given name is no string or empty');
+
+
+    // do not check, if foldername is given
+    if (name.includes('/'))
+        return true;
+
+
+    const regStr = '^[a-z][a-z0-9]*$';
+    const reg = new RegExp(regStr);
+    if (!name.match(reg)) {
+        throw new Error(`
+            collection- and database-names must match the regex:
+            - regex: ${regStr}
+            - given: ${name}
+    `);
+    }
+
+    return true;
+}
+
+/**
+ * get a random string which can be used with couchdb
+ * @link http://stackoverflow.com/a/1349426/3443137
+ * @param {number} [length=10] length
+ * @return {string}
+ */
+export function randomCouchString(length = 10) {
+    let text = '';
+    const possible = 'abcdefghijklmnopqrstuvwxyz';
+
+    for (let i = 0; i < length; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
 
 /**
  * deep-sort an object so its attributes are in lexical order.

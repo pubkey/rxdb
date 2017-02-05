@@ -1,8 +1,5 @@
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
@@ -26,7 +23,7 @@ describe('SchemaMigration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await RxCollection.create(db, 'foobar', schema, null, {
                     1: () => {},
@@ -36,7 +33,7 @@ describe('SchemaMigration.test.js', () => {
             });
             it('create same collection with different schema-versions', async() => {
                 const colName = 'human';
-                const dbName = randomToken(10);
+                const dbName = util.randomCouchString(10);
                 const db = await RxDatabase.create(dbName, memdown);
                 const schema = RxSchema.create(schemas.human);
                 const col = await db.collection(colName, schema);
@@ -52,7 +49,7 @@ describe('SchemaMigration.test.js', () => {
         });
         describe('negative', () => {
             it('should throw when array', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, []),
@@ -60,7 +57,7 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('should throw when property no number', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -70,7 +67,7 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('should throw when property no non-float-number', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -80,7 +77,7 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('should throw when property-value no function', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -90,7 +87,7 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('throw when strategy missing', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown);
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -107,7 +104,7 @@ describe('SchemaMigration.test.js', () => {
     describe('RxCollection._getOldCollections()', () => {
         it('should NOT get an older version', async() => {
             const colName = 'human';
-            const db = await RxDatabase.create(randomToken(10), memdown);
+            const db = await RxDatabase.create(util.randomCouchString(10), memdown);
             const col = await db.collection(colName, schemas.simpleHumanV3, null, {
                 1: () => {},
                 2: () => {},
@@ -118,7 +115,7 @@ describe('SchemaMigration.test.js', () => {
         });
 
         it('should get an older version', async() => {
-            const dbName = randomToken(10);
+            const dbName = util.randomCouchString(10);
             const colName = 'human';
             const db = await RxDatabase.create(dbName, memdown);
             const schema = RxSchema.create(schemas.human);

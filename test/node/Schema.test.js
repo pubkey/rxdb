@@ -1,7 +1,4 @@
 import assert from 'assert';
-import {
-    default as randomToken
-} from 'random-token';
 import * as _ from 'lodash';
 
 import * as RxSchema from '../../dist/lib/RxSchema';
@@ -425,7 +422,7 @@ describe('RxSchema.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generate_id();
-                    obj.token = randomToken(5);
+                    obj.token = util.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {

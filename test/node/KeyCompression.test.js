@@ -3,9 +3,6 @@
  */
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as clone
 } from 'clone';
 import * as _ from 'lodash';

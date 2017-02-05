@@ -1,8 +1,5 @@
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
@@ -154,7 +151,7 @@ describe('Encryption.test.js', () => {
                 c.database.destroy();
             });
             it('should insert one encrypted value (object)', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(10));
                 const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
@@ -176,7 +173,7 @@ describe('Encryption.test.js', () => {
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
                 assert.equal(agent.secret, secret);
-                const newSecret = randomToken(10);
+                const newSecret = util.randomCouchString(10);
                 doc.set('secret', newSecret);
                 await doc.save();
                 const docNew = await c.findOne().exec();
@@ -184,13 +181,13 @@ describe('Encryption.test.js', () => {
                 c.database.destroy();
             });
             it('should save one encrypted value (object)', async() => {
-                const db = await RxDatabase.create(randomToken(10), memdown, randomToken(10));
+                const db = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(10));
                 const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
                 const newSecret = {
-                    name: randomToken(10),
-                    subname: randomToken(10)
+                    name: util.randomCouchString(10),
+                    subname: util.randomCouchString(10)
                 };
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');

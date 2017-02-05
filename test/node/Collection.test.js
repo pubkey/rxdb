@@ -1,8 +1,5 @@
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
@@ -25,14 +22,14 @@ describe('RxCollection.test.js', () => {
         describe('.create()', () => {
             describe('positive', () => {
                 it('human', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     const collection = await RxCollection.create(db, 'humanx', schema);
                     assert.equal(collection.constructor.name, 'RxCollection');
                     db.destroy();
                 });
                 it('use Schema-Object', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     const collection = await RxCollection.create(db, 'human', schema);
                     assert.equal(collection.constructor.name, 'RxCollection');
@@ -48,7 +45,7 @@ describe('RxCollection.test.js', () => {
                     assert.equal(has.length, 1);
                 });
                 it('should have the version-number in the pouchdb-prefix', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     const collection = await RxCollection.create(db, 'human', schema);
                     assert.deepEqual(schema.version, 0);
@@ -58,7 +55,7 @@ describe('RxCollection.test.js', () => {
             });
             describe('negative', () => {
                 it('crash if no Schema-instance', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     await util.assertThrowsAsync(
                         () => Collection.create(db, 'human', schemas.human),
                         ReferenceError
@@ -74,7 +71,7 @@ describe('RxCollection.test.js', () => {
                     );
                 });
                 it('crash if no name-object', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
                         () => RxCollection.create(db, null, schema),
@@ -86,15 +83,18 @@ describe('RxCollection.test.js', () => {
         });
         describe('.checkCollectionName()', () => {
             describe('positive', () => {
-                it('allow internal starting with lodash', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                it('allow not allow lodash', async() => {
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
-                    const collection = await RxCollection.create(db, '_foobar', schema);
-                    assert.equal(collection.constructor.name, 'RxCollection');
+
+                    await util.assertThrowsAsync(
+                        () => RxCollection.create(db, '_foobar', schema),
+                        Error
+                    );
                     db.destroy();
                 });
                 it('allow numbers', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     const collection1 = await RxCollection.create(db, 'fooba4r', schema);
                     assert.equal(collection1.constructor.name, 'RxCollection');
@@ -105,7 +105,7 @@ describe('RxCollection.test.js', () => {
             });
             describe('negative', () => {
                 it('not allow starting numbers', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
                         () => RxCollection.create(db, '0foobar', schema),
@@ -114,7 +114,7 @@ describe('RxCollection.test.js', () => {
                     db.destroy();
                 });
                 it('not allow uppercase-letters', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
                         () => RxCollection.create(db, 'Foobar', schema),
@@ -134,19 +134,19 @@ describe('RxCollection.test.js', () => {
         describe('.insert()', () => {
             describe('positive', () => {
                 it('should insert a human', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('human', schemas.human);
                     await collection.insert(schemaObjects.human());
                     db.destroy();
                 });
                 it('should insert nested human', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('nestedhuman', schemas.nestedHuman);
                     await collection.insert(schemaObjects.nestedHuman());
                     db.destroy();
                 });
                 it('should insert more than once', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('nestedhuman', schemas.nestedHuman);
                     for (let i = 0; i < 10; i++)
                         await collection.insert(schemaObjects.nestedHuman());
@@ -155,7 +155,7 @@ describe('RxCollection.test.js', () => {
             });
             describe('negative', () => {
                 it('should not insert broken human (required missing)', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('human', schemas.human);
                     const human = schemaObjects.human();
                     delete human.firstName;
@@ -166,10 +166,10 @@ describe('RxCollection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert broken human (_id given)', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('human', schemas.human);
                     const human = schemaObjects.human();
-                    human._id = randomToken(20);
+                    human._id = util.randomCouchString(20);
                     await util.assertThrowsAsync(
                         () => collection.insert(human),
                         Error
@@ -177,7 +177,7 @@ describe('RxCollection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert a non-json object', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('human', schemas.human);
                     await util.assertThrowsAsync(
                         () => collection.insert(Collection),
@@ -186,10 +186,10 @@ describe('RxCollection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert human with additional prop', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                     const collection = await db.collection('human', schemas.human);
                     const human = schemaObjects.human();
-                    human.any = randomToken(20);
+                    human.any = util.randomCouchString(20);
                     await util.assertThrowsAsync(
                         () => collection.insert(human),
                         Error
@@ -216,7 +216,7 @@ describe('RxCollection.test.js', () => {
                             assert.equal(doc.constructor.name, 'RxDocument');
                     });
                     it('find nothing with empty collection', async() => {
-                        const db = await RxDatabase.create(randomToken(10), memdown);
+                        const db = await RxDatabase.create(util.randomCouchString(10), memdown);
                         const schema = RxSchema.create(schemas.human);
                         const collection = await RxCollection.create(db, 'humanx', schema);
                         const docs = await collection.find({}).exec();
@@ -226,7 +226,7 @@ describe('RxCollection.test.js', () => {
                     it('BUG: insert and find very often', async() => {
                         const amount = 10;
                         for (let i = 0; i < amount; i++) {
-                            let db = await RxDatabase.create(randomToken(10), memdown);
+                            let db = await RxDatabase.create(util.randomCouchString(10), memdown);
                             let collection = await db.collection('human', schemas.human);
                             let human = schemaObjects.human();
                             let passportId = human.passportId;
@@ -273,7 +273,7 @@ describe('RxCollection.test.js', () => {
                     it('find none with random passportId', async() => {
                         const c = await humansCollection.create();
                         const docs = await c.find({
-                            passportId: randomToken(10)
+                            passportId: util.randomCouchString(10)
                         }).exec();
                         assert.equal(docs.length, 0);
                     });
@@ -527,7 +527,7 @@ describe('RxCollection.test.js', () => {
                 it('BUG: insert and find very often', async() => {
                     const amount = 10;
                     for (let i = 0; i < amount; i++) {
-                        let db = await RxDatabase.create(randomToken(10), memdown);
+                        let db = await RxDatabase.create(util.randomCouchString(10), memdown);
                         let collection = await db.collection('human', schemas.human);
                         let human = schemaObjects.human();
                         let passportId = human.passportId;

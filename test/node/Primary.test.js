@@ -9,9 +9,6 @@
  */
 
 import assert from 'assert';
-import {
-    default as randomToken
-} from 'random-token';
 import * as _ from 'lodash';
 
 import * as RxSchema from '../../dist/lib/RxSchema';
@@ -83,8 +80,8 @@ describe('Primary.test.js', () => {
                 it('should not validate the human without primary', () => {
                     const schema = RxSchema.create(schemas.primaryHuman);
                     const obj = {
-                        firstName: randomToken(10),
-                        lastName: randomToken(10)
+                        firstName: util.randomCouchString(10),
+                        lastName: util.randomCouchString(10)
                     };
                     assert.throws(() => schema.validate(obj), Error);
                 });
@@ -92,8 +89,8 @@ describe('Primary.test.js', () => {
                     const schema = RxSchema.create(schemas.primaryHuman);
                     const obj = {
                         passportId: {},
-                        firstName: randomToken(10),
-                        lastName: randomToken(10)
+                        firstName: util.randomCouchString(10),
+                        lastName: util.randomCouchString(10)
                     };
                     assert.throws(() => schema.validate(obj), Error);
                 });
@@ -316,7 +313,7 @@ describe('Primary.test.js', () => {
                     c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async() => {
-                    const name = randomToken(10);
+                    const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     let docs;
@@ -328,7 +325,7 @@ describe('Primary.test.js', () => {
                     c2.database.destroy();
                 });
                 it('get new field-value when other db changes', async() => {
-                    const name = randomToken(10);
+                    const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     const obj = schemaObjects.simpleHuman();

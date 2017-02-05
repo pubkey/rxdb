@@ -166,7 +166,7 @@ class RxDatabase {
 
     /**
      * returns the primary for a given collection-data
-     * used in the internal this.collectionsCollection
+     * used in the internal pouchdb-instances
      * @param {string} name
      * @param {RxSchema} schema
      */
@@ -292,8 +292,8 @@ class RxDatabase {
 
 
 export async function create(prefix, adapter, password, multiInstance = false) {
-    if (typeof prefix !== 'string')
-        throw new TypeError('given prefix is no string ');
+
+    util.validateCouchDBString(prefix);
 
     // TODO check here if name allowed by pouchdb
 

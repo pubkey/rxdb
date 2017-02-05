@@ -1,7 +1,4 @@
 import assert from 'assert';
-import {
-    default as randomToken
-} from 'random-token';
 import * as _ from 'lodash';
 
 import * as RxDatabase from '../../dist/lib/index';
@@ -19,7 +16,7 @@ process.on('unhandledRejection', function(err) {
 describe('Socket.test.js', () => {
 
     it('socket should be able to fetch self-inserted event', async() => {
-        const db = await RxDatabase.create(randomToken(10), 'memory', null, true);
+        const db = await RxDatabase.create(util.randomCouchString(10), 'memory', null, true);
         const socket = db.socket;
 
         const ok = await socket.write(RxChangeEvent.create('test', db));
@@ -32,7 +29,7 @@ describe('Socket.test.js', () => {
     });
 
     it('socket2 should be able to get docs inserted from socket1', async() => {
-        const name = randomToken(10);
+        const name = util.randomCouchString(10);
         const db = await RxDatabase.create(name, 'memory', null, true);
         const socket1 = await Socket.create(db);
         const socket2 = await Socket.create(db);
@@ -49,7 +46,7 @@ describe('Socket.test.js', () => {
     });
 
     it('socket-observable should emit changeEvent on pull', async() => {
-        const name = randomToken(10);
+        const name = util.randomCouchString(10);
         const db = await RxDatabase.create(name, 'memory', null, true);
         const db2 = await RxDatabase.create(name, 'memory', null, true);
 
@@ -74,14 +71,14 @@ describe('Socket.test.js', () => {
 
     it('cleanup should delete old events (takes 5 seconds)', async function() {
         this.timeout(10 * 1000);
-        const db = await RxDatabase.create(randomToken(10), 'memory', null, true);
+        const db = await RxDatabase.create(util.randomCouchString(10), 'memory', null, true);
         const socket = db.socket;
 
         // add many events
         await Promise.all(
             util.filledArray(10)
             .map(() => RxChangeEvent
-                .create('test' + randomToken(10), db))
+                .create('test' + util.randomCouchString(10), db))
             .map(cE => socket.write(cE))
         );
 

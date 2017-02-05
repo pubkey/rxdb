@@ -1,7 +1,4 @@
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as clone
 } from 'clone';
 
@@ -17,7 +14,7 @@ const dbLifetime = 1000 * 2; // db.destroy() will be called after this time
 
 export async function create(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create(util.randomCouchString(10), 'memory');
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection(name, schemas.human);
 
@@ -33,7 +30,7 @@ export async function create(size = 20, name = 'human') {
 
 export async function createNoCompression(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create(util.randomCouchString(10), 'memory');
     const schemaJSON = clone(schemas.human);
     schemaJSON.disableKeyCompression = true;
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -51,7 +48,7 @@ export async function createNoCompression(size = 20, name = 'human') {
 
 export async function createAgeIndex() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create(util.randomCouchString(10), 'memory');
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('humana', schemas.humanAgeIndex);
 
@@ -67,7 +64,7 @@ export async function createAgeIndex() {
 
 export async function multipleOnSameDB() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create(util.randomCouchString(10), 'memory');
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('human', schemas.human);
     const collection2 = await db.collection('human2', schemas.human);
@@ -87,7 +84,7 @@ export async function multipleOnSameDB() {
 
 export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), adapter);
+    const db = await RxDatabase.create(util.randomCouchString(10), adapter);
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('nestedhuman', schemas.nestedHuman);
 
@@ -103,7 +100,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
 
 export async function createDeepNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), adapter);
+    const db = await RxDatabase.create(util.randomCouchString(10), adapter);
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('nestedhuman', schemas.deepNestedHuman);
 
@@ -119,7 +116,7 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
 
 
 export async function createEncrypted(amount = 10) {
-    const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
+    const db = await RxDatabase.create(util.randomCouchString(10), 'memory', util.randomCouchString(10));
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('encryptedhuman', schemas.encryptedHuman);
 
@@ -147,7 +144,7 @@ export async function createMultiInstance(prefix, amount = 0, password = null) {
 }
 
 
-export async function createPrimary(amount = 10, name = randomToken(10)) {
+export async function createPrimary(amount = 10, name = util.randomCouchString(10)) {
     const db = await RxDatabase.create(name, 'memory', null, true);
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection('encryptedhuman', schemas.primaryHuman);

@@ -1,9 +1,5 @@
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-
-import {
     default as memdown
 } from 'memdown';
 import {
@@ -28,13 +24,13 @@ describe('PouchDB-integration.test.js', () => {
     describe('memdown', () => {
         it('should not allow leveldown-adapters without the plugin', async() => {
             await util.assertThrowsAsync(
-                () => RxDB.create(randomToken(10), memdown),
+                () => RxDB.create(util.randomCouchString(10), memdown),
                 Error
             );
         });
         it('should work after adding the leveldb-plugin', async() => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-leveldb'));
-            const db = await RxDB.create(randomToken(10), memdown);
+            const db = await RxDB.create(util.randomCouchString(10), memdown);
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
@@ -43,13 +39,13 @@ describe('PouchDB-integration.test.js', () => {
     describe('pouchdb-adapter-memory', () => {
         it('should not create a db without adding the adapter', async() => {
             await util.assertThrowsAsync(
-                () => RxDB.create(randomToken(10), 'memory'),
+                () => RxDB.create(util.randomCouchString(10), 'memory'),
                 Error
             );
         });
         it('should work when adapter was added', async() => {
             RxDB.plugin(require('pouchdb-adapter-memory'));
-            const db = await RxDB.create(randomToken(10), 'memory');
+            const db = await RxDB.create(util.randomCouchString(10), 'memory');
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
@@ -59,7 +55,7 @@ describe('PouchDB-integration.test.js', () => {
         it('should crash because nodejs has no localstorage', async() => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await util.assertThrowsAsync(
-                () => RxDB.create(randomToken(10), 'localstorage'),
+                () => RxDB.create(util.randomCouchString(10), 'localstorage'),
                 Error
             );
         });
@@ -68,7 +64,7 @@ describe('PouchDB-integration.test.js', () => {
 
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const _id = '_local/foobar';
             const createPouch = () => {
                 return new RxDB.PouchDB(
