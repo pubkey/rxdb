@@ -28,14 +28,26 @@ process.on('unhandledRejection', function(err) {
 describe('CrossInstance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async() => {
-            const db = await RxDatabase.create(util.randomCouchString(10), memdown, null, true);
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: memdown,
+                multiInstance: true
+            });
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
         it('create a 2 multiInstance databases', async() => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create(name, memdown, null, true);
-            const db2 = await RxDatabase.create(name, memdown, null, true);
+            const db = await RxDatabase.create({
+                name,
+                adapter: memdown,
+                multiInstance: true
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: memdown,
+                multiInstance: true
+            });
             assert.equal(db.constructor.name, 'RxDatabase');
             assert.equal(db2.constructor.name, 'RxDatabase');
             db.destroy();
@@ -155,8 +167,18 @@ describe('CrossInstance.test.js', () => {
         it('should work with encrypted fields', async() => {
             const name = util.randomCouchString(10);
             const password = util.randomCouchString(10);
-            const db1 = await RxDatabase.create(name, memdown, password, true);
-            const db2 = await RxDatabase.create(name, memdown, password, true);
+            const db1 = await RxDatabase.create({
+                name,
+                adapter: memdown,
+                password,
+                multiInstance: true
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: memdown,
+                password,
+                multiInstance: true
+            });
             const c1 = await db1.collection('human', schemas.encryptedHuman);
             const c2 = await db2.collection('human', schemas.encryptedHuman);
             await c1.insert(schemaObjects.encryptedHuman());
@@ -191,8 +213,18 @@ describe('CrossInstance.test.js', () => {
         it('should work with nested encrypted fields', async() => {
             const name = util.randomCouchString(10);
             const password = util.randomCouchString(10);
-            const db1 = await RxDatabase.create(name, memdown, password, true);
-            const db2 = await RxDatabase.create(name, memdown, password, true);
+            const db1 = await RxDatabase.create({
+                name,
+                adapter: memdown,
+                password,
+                multiInstance: true
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: memdown,
+                password,
+                multiInstance: true
+            });
             const c1 = await db1.collection('human', schemas.encryptedObjectHuman);
             const c2 = await db2.collection('human', schemas.encryptedObjectHuman);
             await c1.insert(schemaObjects.encryptedObjectHuman());

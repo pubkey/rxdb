@@ -117,12 +117,12 @@ declare class RxChangeEvent {
     toJSON(): any;
 }
 
-export function create(
+export function create({
     prefix: string,
     storageEngine: any,
     password?: string,
     multiInstance?: boolean
-): Promise<RxDatabase>;
+}): Promise<RxDatabase>;
 
 export function plugin(mod: any)
 

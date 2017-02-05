@@ -24,13 +24,19 @@ describe('PouchDB-integration.test.js', () => {
     describe('memdown', () => {
         it('should not allow leveldown-adapters without the plugin', async() => {
             await util.assertThrowsAsync(
-                () => RxDB.create(util.randomCouchString(10), memdown),
+                () => RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                }),
                 Error
             );
         });
         it('should work after adding the leveldb-plugin', async() => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-leveldb'));
-            const db = await RxDB.create(util.randomCouchString(10), memdown);
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: memdown
+            });
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
@@ -39,13 +45,19 @@ describe('PouchDB-integration.test.js', () => {
     describe('pouchdb-adapter-memory', () => {
         it('should not create a db without adding the adapter', async() => {
             await util.assertThrowsAsync(
-                () => RxDB.create(util.randomCouchString(10), 'memory'),
+                () => RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                }),
                 Error
             );
         });
         it('should work when adapter was added', async() => {
             RxDB.plugin(require('pouchdb-adapter-memory'));
-            const db = await RxDB.create(util.randomCouchString(10), 'memory');
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
@@ -55,7 +67,10 @@ describe('PouchDB-integration.test.js', () => {
         it('should crash because nodejs has no localstorage', async() => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await util.assertThrowsAsync(
-                () => RxDB.create(util.randomCouchString(10), 'localstorage'),
+                () => RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'localstorage'
+                }),
                 Error
             );
         });

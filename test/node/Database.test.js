@@ -22,34 +22,58 @@ describe('RxDatabase.test.js', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('memdown', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 assert.equal(db.constructor.name, 'RxDatabase');
                 db.destroy();
             });
             it('leveldown', async() => {
                 if (path.join('..', 'x') != '..\\x') { // leveldown does not work on windows
-                    const db = await RxDatabase.create('../test_tmp/' + util.randomCouchString(10), leveldown);
+                    const db = await RxDatabase.create({
+                        name: '../test_tmp/' + util.randomCouchString(10),
+                        adapter: leveldown
+                    });
                     assert.equal(db.constructor.name, 'RxDatabase');
                     db.destroy();
                 }
             });
             it('with password', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(12));
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown,
+                    password: util.randomCouchString(12)
+                });
                 assert.equal(db.constructor.name, 'RxDatabase');
                 db.destroy();
             });
             it('2 instances on same adapter', async() => {
-                const dbname = util.randomCouchString(10);
-                const db = await RxDatabase.create(dbname, memdown);
-                const db2 = await RxDatabase.create(dbname, memdown);
+                const name = util.randomCouchString(10);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 db.destroy();
                 db2.destroy();
             });
             it('2 password-instances on same adapter', async() => {
-                const dbname = util.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const password = util.randomCouchString(12);
-                const db = await RxDatabase.create(dbname, memdown, password);
-                const db2 = await RxDatabase.create(dbname, memdown, password);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown,
+                    password
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown,
+                    password
+                });
                 db.destroy();
                 db2.destroy();
             });
@@ -57,35 +81,57 @@ describe('RxDatabase.test.js', () => {
         describe('negative', () => {
             it('should crash with invalid token', async() => {
                 await util.assertThrowsAsync(
-                    () => RxDatabase.create(null, memdown),
+                    () => RxDatabase.create({
+                        name: null,
+                        adapter: memdown
+                    }),
                     TypeError
                 );
             });
             it('should crash with invalid adapter', async() => {
                 await util.assertThrowsAsync(
-                    () => RxDatabase.create(util.randomCouchString(10), {}),
+                    () => RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: {}
+                    }),
                     Error
                 );
             });
             it('should crash with invalid password (no string)', async() => {
                 await util.assertThrowsAsync(
-                    () => RxDatabase.create(util.randomCouchString(10), memdown, {}),
+                    () => RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown,
+                        password: {}
+                    }),
                     TypeError
                 );
             });
             it('should crash with invalid password (too short)', async() => {
                 await util.assertThrowsAsync(
-                    () => RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(4)),
+                    () => RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown,
+                        password: util.randomCouchString(4)
+                    }),
                     Error
                 );
             });
             it('BUG: should have a pwHash-doc after creating the database', async() => {
-                const dbname = util.randomCouchString(10);
-                const pw = util.randomCouchString(10);
-                const db = await RxDatabase.create(dbname, memdown, pw);
+                const name = util.randomCouchString(10);
+                const password = util.randomCouchString(10);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown,
+                    password
+                });
                 const doc = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
-                const db2 = await RxDatabase.create(dbname, memdown, pw);
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown,
+                    password
+                });
                 const doc2 = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
 
@@ -93,10 +139,18 @@ describe('RxDatabase.test.js', () => {
                 db2.destroy();
             });
             it('prevent 2 instances with different passwords on same adapter', async() => {
-                const dbname = util.randomCouchString(10);
-                const db = await RxDatabase.create(dbname, memdown, util.randomCouchString(10));
+                const name = util.randomCouchString(10);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown,
+                    password: util.randomCouchString(10)
+                });
                 await util.assertThrowsAsync(
-                    () => RxDatabase.create(dbname, memdown, util.randomCouchString(10)),
+                    () => RxDatabase.create({
+                        name,
+                        adapter: memdown,
+                        password: util.randomCouchString(10)
+                    }),
                     Error
                 );
                 db.destroy();
@@ -106,33 +160,49 @@ describe('RxDatabase.test.js', () => {
     describe('.collection()', () => {
         describe('positive', () => {
             it('human', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const collection = await db.collection('human0', schemas.human);
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
             it('the schema-object should be saved in the collectionsCollection', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const collection = await db.collection('human0', schemas.human);
                 const colDoc = await db._collectionsPouch.get('human0-' + schemas.human.version);
                 const compareSchema = RxSchema.create(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
             });
             it('use Schema-Object', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxDatabase.RxSchema.create(schemas.human);
                 const collection = await db.collection('human1', schema);
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
             it('use encrypted db', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(12));
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown,
+                    password: util.randomCouchString(12)
+                });
                 const collection = await db.collection('humanenc', schemas.encryptedHuman);
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
             it('collectionsCollection should contain schema.version', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const collection = await db.collection('human', schemas.human);
                 const version = collection.schema.version;
                 assert.deepEqual(version, 0);
@@ -141,14 +211,24 @@ describe('RxDatabase.test.js', () => {
                 db.destroy();
             });
             it('call 2 times with same params', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await db.collection('human2', schemas.human);
                 await db.collection('human2', schemas.human);
                 db.destroy();
             });
             it('call to times when one is encrypted', async() => {
-                const db1 = await RxDatabase.create(util.randomCouchString(10), memdown);
-                const db2 = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(10));
+                const db1 = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
+                const db2 = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown,
+                    password: util.randomCouchString(10)
+                });
                 await db1.collection('human3', schemas.human);
                 await db2.collection('human4', schemas.encryptedHuman);
                 await db1.collection('human3', schemas.human);
@@ -157,10 +237,16 @@ describe('RxDatabase.test.js', () => {
                 db2.destroy();
             });
             it('create 2 times on same adapter', async() => {
-                const dbname = util.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const collectionName = 'foobar';
-                const db1 = await RxDatabase.create(dbname, memdown);
-                const db2 = await RxDatabase.create(dbname, memdown);
+                const db1 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 await db1.collection(collectionName, schemas.human);
                 await db2.collection(collectionName, schemas.human);
                 db1.destroy();
@@ -169,7 +255,10 @@ describe('RxDatabase.test.js', () => {
         });
         describe('negative', () => {
             it('broken schema (nostringIndex)', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await util.assertThrowsAsync(
                     () => db.collection('human6', schemas.nostringIndex),
                     Error
@@ -178,7 +267,10 @@ describe('RxDatabase.test.js', () => {
             });
 
             it('crypt-schema without db-password', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await util.assertThrowsAsync(
                     () => db.collection('human7', schemas.encryptedHuman),
                     Error
@@ -187,7 +279,10 @@ describe('RxDatabase.test.js', () => {
             });
 
             it('2 different schemas on same collection', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await db.collection('human8', schemas.human);
                 await util.assertThrowsAsync(
                     () => db.collection('human8', schemas.bigHuman),
@@ -196,7 +291,10 @@ describe('RxDatabase.test.js', () => {
                 db.destroy();
             });
             it('not allow collectionNames starting with lodash', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await util.assertThrowsAsync(
                     () => db.collection('_test', schemas.human),
                     Error
@@ -204,10 +302,16 @@ describe('RxDatabase.test.js', () => {
                 db.destroy();
             });
             it('create 2 times on same adapter with different schema', async() => {
-                const dbname = util.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const collectionName = 'foobar';
-                const db1 = await RxDatabase.create(dbname, memdown);
-                const db2 = await RxDatabase.create(dbname, memdown);
+                const db1 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 await db1.collection(collectionName, schemas.human);
                 await util.assertThrowsAsync(
                     () => db2.collection(collectionName, schemas.bigHuman),
@@ -222,14 +326,20 @@ describe('RxDatabase.test.js', () => {
     describe('.destroy()', () => {
         describe('positive', () => {
             it('should not crash on destroy', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await db.collection('foobar', schemas.human);
                 db.destroy();
                 assert.equal(db.destroyed, true);
                 db.destroy();
             });
             it('should not crash if destroy is called twice', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 await db.collection('foobar', schemas.human);
                 db.destroy();
                 db.destroy();

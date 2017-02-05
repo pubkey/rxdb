@@ -151,7 +151,11 @@ describe('Encryption.test.js', () => {
                 c.database.destroy();
             });
             it('should insert one encrypted value (object)', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(10));
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown,
+                    password: util.randomCouchString(10)
+                });
                 const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
@@ -181,7 +185,11 @@ describe('Encryption.test.js', () => {
                 c.database.destroy();
             });
             it('should save one encrypted value (object)', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown, util.randomCouchString(10));
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown,
+                    password: util.randomCouchString(10)
+                });
                 const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);

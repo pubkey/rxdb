@@ -19,8 +19,8 @@ class RxDatabase {
         minPassLength: 8
     };
 
-    constructor(prefix, adapter, password, multiInstance = false) {
-        this.prefix = prefix;
+    constructor(name, adapter, password, multiInstance = false) {
+        this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
@@ -112,7 +112,7 @@ class RxDatabase {
      * @type {Object}
      */
     _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        const pouchLocation = this.prefix + '-rxdb-' + schemaVersion + '-' + collectionName;
+        const pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
         return new PouchDB(
             pouchLocation,
             this._adapterObj,
@@ -238,7 +238,7 @@ class RxDatabase {
      */
     async dump(decrypted = false, collections = null) {
         const json = {
-            name: this.prefix,
+            name: this.name,
             instanceToken: this.token,
             encrypted: false,
             passwordHash: null,
@@ -291,9 +291,14 @@ class RxDatabase {
 }
 
 
-export async function create(prefix, adapter, password, multiInstance = false) {
+export async function create({
+    name,
+    adapter,
+    password,
+    multiInstance = false
+}) {
 
-    util.validateCouchDBString(prefix);
+    util.validateCouchDBString(name);
 
     // TODO check here if name allowed by pouchdb
 
@@ -320,7 +325,7 @@ export async function create(prefix, adapter, password, multiInstance = false) {
     if (password && password.length < RxDatabase.settings.minPassLength)
         throw new Error(`password must have at least ${RxDatabase.settings.minPassLength} chars`);
 
-    const db = new RxDatabase(prefix, adapter, password, multiInstance);
+    const db = new RxDatabase(name, adapter, password, multiInstance);
     await db.prepare();
 
     return db;

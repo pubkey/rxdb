@@ -74,6 +74,7 @@ class RxCollection {
         });
 
         // MIGRATION
+//        const oldCols = await this._getOldCollections();
 
     }
 

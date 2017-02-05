@@ -23,7 +23,10 @@ describe('SchemaMigration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await RxCollection.create(db, 'foobar', schema, null, {
                     1: () => {},
@@ -33,12 +36,18 @@ describe('SchemaMigration.test.js', () => {
             });
             it('create same collection with different schema-versions', async() => {
                 const colName = 'human';
-                const dbName = util.randomCouchString(10);
-                const db = await RxDatabase.create(dbName, memdown);
+                const name = util.randomCouchString(10);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.human);
                 const col = await db.collection(colName, schema);
 
-                const db2 = await RxDatabase.create(dbName, memdown);
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection(colName, schema2, null, {
                     1: () => {},
@@ -49,7 +58,10 @@ describe('SchemaMigration.test.js', () => {
         });
         describe('negative', () => {
             it('should throw when array', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, []),
@@ -57,7 +69,10 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('should throw when property no number', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -67,7 +82,10 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('should throw when property no non-float-number', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -77,7 +95,10 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('should throw when property-value no function', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -87,7 +108,10 @@ describe('SchemaMigration.test.js', () => {
                 );
             });
             it('throw when strategy missing', async() => {
-                const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await util.assertThrowsAsync(
                     () => RxCollection.create(db, 'foobar', schema, null, {
@@ -104,7 +128,10 @@ describe('SchemaMigration.test.js', () => {
     describe('RxCollection._getOldCollections()', () => {
         it('should NOT get an older version', async() => {
             const colName = 'human';
-            const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: memdown
+            });
             const col = await db.collection(colName, schemas.simpleHumanV3, null, {
                 1: () => {},
                 2: () => {},
@@ -114,13 +141,19 @@ describe('SchemaMigration.test.js', () => {
             assert.deepEqual(old, []);
         });
         it('should get an older version', async() => {
-            const dbName = util.randomCouchString(10);
+            const name = util.randomCouchString(10);
             const colName = 'human';
-            const db = await RxDatabase.create(dbName, memdown);
+            const db = await RxDatabase.create({
+                name,
+                adapter: memdown
+            });
             const schema = RxSchema.create(schemas.simpleHuman);
             const col = await db.collection(colName, schema);
 
-            const db2 = await RxDatabase.create(dbName, memdown);
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: memdown
+            });
             const schema2 = RxSchema.create(schemas.simpleHumanV3);
             const col2 = await db2.collection(colName, schema2, null, {
                 1: () => {},
@@ -139,9 +172,11 @@ describe('SchemaMigration.test.js', () => {
     describe('._migrateDocumentData()', () => {
         describe('positive', () => {
             it('should not do anything when doc is newest schema', async() => {
-                const dbName = util.randomCouchString(10);
                 const colName = 'human';
-                const db = await RxDatabase.create(dbName, memdown);
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
                 const col = await db.collection(colName, schemas.simpleHuman);
                 await col.insert(schemaObjects.simpleHumanAge());
                 const doc = await col.findOne().exec();
@@ -151,17 +186,22 @@ describe('SchemaMigration.test.js', () => {
                 assert.deepEqual(docBefore, docAfter);
             });
             it('should migrate the doc', async() => {
-                const dbName = util.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const colName = 'human';
-                const db = await RxDatabase.create(dbName, memdown);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 const col = await db.collection(colName, schemas.simpleHuman);
                 const docData = schemaObjects.simpleHumanAge();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();
                 const docBefore = doc.toJSON();
 
-
-                const db2 = await RxDatabase.create(dbName, memdown);
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection(colName, schema2, null, {
                     1: async function(doc) {
@@ -182,17 +222,22 @@ describe('SchemaMigration.test.js', () => {
         });
         describe('negative', () => {
             it('throw if migrationStrategy destroy schema-validation', async() => {
-                const dbName = util.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const colName = 'human';
-                const db = await RxDatabase.create(dbName, memdown);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 const col = await db.collection(colName, schemas.simpleHuman);
                 const docData = schemaObjects.simpleHumanAge();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();
                 const docBefore = doc.toJSON();
 
-
-                const db2 = await RxDatabase.create(dbName, memdown);
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection(colName, schema2, null, {
                     1: async function(doc) {
@@ -212,18 +257,19 @@ describe('SchemaMigration.test.js', () => {
                     'final document does not match final schema'
                 );
             });
-            it('e', () => process.exit());
-
         });
-
-
-
-
-
     });
 
     describe('migrate on .prepare()', () => {
+        describe('positive', () => {
+            it('should not crash when nothing to migrate', () => {
 
+            });
+
+        });
+        describe('negative', () => {
+            //    it('e', () => process.exit());
+        });
     });
 
 });

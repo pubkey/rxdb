@@ -25,7 +25,10 @@ describe('Observe.test.js', () => {
         describe('.collection()', () => {
             describe('positive', () => {
                 it('emit when collection is created', async() => {
-                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
                     db.collection('myname', schemas.human);
                     const changeEvent = await db.$
                         .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
@@ -37,7 +40,10 @@ describe('Observe.test.js', () => {
             });
             describe('negative', () => {
                 it('emit once when called twice', async() => {
-                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
                     let calls = 0;
                     db.$
                         .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
@@ -58,7 +64,10 @@ describe('Observe.test.js', () => {
         describe('.insert()', () => {
             describe('positive', () => {
                 it('should get a valid event on insert', async() => {
-                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
                     const colName = 'foobar';
                     const c = await db.collection(colName, schemas.human);
 
@@ -73,7 +82,10 @@ describe('Observe.test.js', () => {
             });
             describe('negative', () => {
                 it('should get no event on non-succes-insert', async() => {
-                    const db = await RxDatabase.create(util.randomCouchString(10), memdown);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
                     const c = await db.collection('foobar', schemas.human);
                     let calls = 0;
                     db.$.subscribe(e => {
