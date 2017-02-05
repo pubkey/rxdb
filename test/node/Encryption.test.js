@@ -156,7 +156,10 @@ describe('Encryption.test.js', () => {
                     adapter: memdown,
                     password: util.randomCouchString(10)
                 });
-                const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const c = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
                 const doc = await c.findOne().exec();
@@ -190,7 +193,10 @@ describe('Encryption.test.js', () => {
                     adapter: memdown,
                     password: util.randomCouchString(10)
                 });
-                const c = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const c = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
                 const newSecret = {

@@ -33,7 +33,10 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
 
                 const fns = [];
                 for (let i = 0; i < 10; i++)
@@ -56,7 +59,10 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -80,7 +86,10 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -120,7 +129,10 @@ describe('ImportExport.test.js', () => {
                         adapter: 'memory',
                         password
                     });
-                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -134,7 +146,10 @@ describe('ImportExport.test.js', () => {
                         adapter: 'memory',
                         password
                     });
-                    const emptyCol = await db2.collection('enchuman', schemas.encryptedObjectHuman);
+                    const emptyCol = await db2.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
@@ -172,14 +187,20 @@ describe('ImportExport.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
 
                     const db2 = await RxDatabase.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col2 = await db2.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col2 = await db2.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)
@@ -200,12 +221,18 @@ describe('ImportExport.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     });
-                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
                     const fns = [];
                     for (let i = 0; i < 5; i++)
                         fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                     await Promise.all(fns);
-                    const col2 = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col2 = await db.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
 
                     const json = await col.dump();
                     json.docs.push({
@@ -250,7 +277,10 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
                 const fns = [];
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
@@ -270,7 +300,10 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
                 const fns = [];
                 await Promise.all(
                     new Array(10).fill(0)
@@ -296,8 +329,14 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
-                const col2 = await db.collection('enchuman2', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
+                const col2 = await db.collection({
+                    name: 'enchuman2',
+                    schema: schemas.encryptedObjectHuman
+                });
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
@@ -318,8 +357,14 @@ describe('ImportExport.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
-                const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
-                const col2 = await db.collection('enchuman2', schemas.encryptedObjectHuman);
+                const col = await db.collection({
+                    name: 'enchuman',
+                    schema: schemas.encryptedObjectHuman
+                });
+                const col2 = await db.collection({
+                    name: 'enchuman2',
+                    schema: schemas.encryptedObjectHuman
+                });
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
@@ -357,13 +402,19 @@ describe('ImportExport.test.js', () => {
                         adapter: 'memory',
                         password
                     });
-                    const col = await db.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col = await db.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
                     const db2 = await RxDatabase.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
-                    const col2 = await db2.collection('enchuman', schemas.encryptedObjectHuman);
+                    const col2 = await db2.collection({
+                        name: 'enchuman',
+                        schema: schemas.encryptedObjectHuman
+                    });
 
                     const fns = [];
                     for (let i = 0; i < 10; i++)

@@ -28,10 +28,15 @@ describe('SchemaMigration.test.js', () => {
                     adapter: memdown
                 });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
-                await RxCollection.create(db, 'foobar', schema, null, {
-                    1: () => {},
-                    2: () => {},
-                    3: () => {}
+                await RxCollection.create({
+                    database: db,
+                    name: 'foobar',
+                    schema,
+                    migrationStrategies: {
+                        1: () => {},
+                        2: () => {},
+                        3: () => {}
+                    }
                 });
             });
             it('create same collection with different schema-versions', async() => {
@@ -42,17 +47,24 @@ describe('SchemaMigration.test.js', () => {
                     adapter: memdown
                 });
                 const schema = RxSchema.create(schemas.human);
-                const col = await db.collection(colName, schema);
+                const col = await db.collection({
+                    name: colName,
+                    schema
+                });
 
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: memdown
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
-                const col2 = await db2.collection(colName, schema2, null, {
-                    1: () => {},
-                    2: () => {},
-                    3: () => {}
+                const col2 = await db2.collection({
+                    name: colName,
+                    schema: schema2,
+                    migrationStrategies: {
+                        1: () => {},
+                        2: () => {},
+                        3: () => {}
+                    }
                 });
             });
         });
@@ -64,7 +76,12 @@ describe('SchemaMigration.test.js', () => {
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, 'foobar', schema, null, []),
+                    () => RxCollection.create({
+                        database: db,
+                        name: 'foobar',
+                        schema,
+                        migrationStrategies: []
+                    }),
                     TypeError
                 );
             });
@@ -75,8 +92,13 @@ describe('SchemaMigration.test.js', () => {
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, 'foobar', schema, null, {
-                        foo: function() {}
+                    () => RxCollection.create({
+                        database: db,
+                        name: 'foobar',
+                        schema,
+                        migrationStrategies: {
+                            foo: function() {}
+                        }
                     }),
                     Error
                 );
@@ -88,8 +110,13 @@ describe('SchemaMigration.test.js', () => {
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, 'foobar', schema, null, {
-                        '1.1': function() {}
+                    () => RxCollection.create({
+                        database: db,
+                        name: 'foobar',
+                        schema,
+                        migrationStrategies: {
+                            '1.1': function() {}
+                        }
                     }),
                     Error
                 );
@@ -101,8 +128,13 @@ describe('SchemaMigration.test.js', () => {
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, 'foobar', schema, null, {
-                        1: 'foobar'
+                    () => RxCollection.create({
+                        database: db,
+                        name: 'foobar',
+                        schema,
+                        migrationStrategies: {
+                            1: 'foobar'
+                        }
                     }),
                     Error
                 );
@@ -114,9 +146,14 @@ describe('SchemaMigration.test.js', () => {
                 });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await util.assertThrowsAsync(
-                    () => RxCollection.create(db, 'foobar', schema, null, {
-                        1: () => {},
-                        3: () => {}
+                    () => RxCollection.create({
+                        database: db,
+                        name: 'foobar',
+                        schema,
+                        migrationStrategies: {
+                            1: () => {},
+                            3: () => {}
+                        }
                     }),
                     Error
                 );
@@ -132,10 +169,14 @@ describe('SchemaMigration.test.js', () => {
                 name: util.randomCouchString(10),
                 adapter: memdown
             });
-            const col = await db.collection(colName, schemas.simpleHumanV3, null, {
-                1: () => {},
-                2: () => {},
-                3: () => {}
+            const col = await db.collection({
+                name: colName,
+                schema: schemas.simpleHumanV3,
+                migrationStrategies: {
+                    1: () => {},
+                    2: () => {},
+                    3: () => {}
+                }
             });
             const old = await col._getOldCollections();
             assert.deepEqual(old, []);
@@ -148,17 +189,24 @@ describe('SchemaMigration.test.js', () => {
                 adapter: memdown
             });
             const schema = RxSchema.create(schemas.simpleHuman);
-            const col = await db.collection(colName, schema);
+            const col = await db.collection({
+                name: colName,
+                schema
+            });
 
             const db2 = await RxDatabase.create({
                 name,
                 adapter: memdown
             });
             const schema2 = RxSchema.create(schemas.simpleHumanV3);
-            const col2 = await db2.collection(colName, schema2, null, {
-                1: () => {},
-                2: () => {},
-                3: () => {}
+            const col2 = await db2.collection({
+                name: colName,
+                schema: schema2,
+                migrationStrategies: {
+                    1: () => {},
+                    2: () => {},
+                    3: () => {}
+                }
             });
             const old = await col2._getOldCollections();
             assert.ok(Array.isArray(old));
@@ -177,7 +225,10 @@ describe('SchemaMigration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                const col = await db.collection(colName, schemas.simpleHuman);
+                const col = await db.collection({
+                    name: colName,
+                    schema: schemas.simpleHuman
+                });
                 await col.insert(schemaObjects.simpleHumanAge());
                 const doc = await col.findOne().exec();
                 assert.equal(doc.constructor.name, 'RxDocument');
@@ -192,7 +243,10 @@ describe('SchemaMigration.test.js', () => {
                     name,
                     adapter: memdown
                 });
-                const col = await db.collection(colName, schemas.simpleHuman);
+                const col = await db.collection({
+                    name: colName,
+                    schema: schemas.simpleHuman
+                });
                 const docData = schemaObjects.simpleHumanAge();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();
@@ -203,16 +257,20 @@ describe('SchemaMigration.test.js', () => {
                     adapter: memdown
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
-                const col2 = await db2.collection(colName, schema2, null, {
-                    1: async function(doc) {
-                        return doc;
-                    },
-                    2: async function(doc) {
-                        return doc;
-                    },
-                    3: async function(doc) {
-                        doc.age = parseInt(doc.age);
-                        return doc;
+                const col2 = await db2.collection({
+                    name: colName,
+                    schema: schema2,
+                    migrationStrategies: {
+                        1: async function(doc) {
+                            return doc;
+                        },
+                        2: async function(doc) {
+                            return doc;
+                        },
+                        3: async function(doc) {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
                     }
                 });
 
@@ -228,7 +286,10 @@ describe('SchemaMigration.test.js', () => {
                     name,
                     adapter: memdown
                 });
-                const col = await db.collection(colName, schemas.simpleHuman);
+                const col = await db.collection({
+                    name: colName,
+                    schema: schemas.simpleHuman
+                });
                 const docData = schemaObjects.simpleHumanAge();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();
@@ -239,16 +300,20 @@ describe('SchemaMigration.test.js', () => {
                     adapter: memdown
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
-                const col2 = await db2.collection(colName, schema2, null, {
-                    1: async function(doc) {
-                        return doc;
-                    },
-                    2: async function(doc) {
-                        return doc;
-                    },
-                    3: async function(doc) {
-                        doc.age = 'foobar';
-                        return doc;
+                const col2 = await db2.collection({
+                    name: colName,
+                    schema: schema2,
+                    migrationStrategies: {
+                        1: async function(doc) {
+                            return doc;
+                        },
+                        2: async function(doc) {
+                            return doc;
+                        },
+                        3: async function(doc) {
+                            doc.age = 'foobar';
+                            return doc;
+                        }
                     }
                 });
                 await util.assertThrowsAsync(

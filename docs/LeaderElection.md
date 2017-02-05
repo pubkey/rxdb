@@ -23,7 +23,10 @@ const db = await RxDB.create({
   password: 'myPassword',
   multiInstance: true
 });
-const collection = await db.collection('temperature', mySchema);
+const collection = await db.collection({
+  name: 'temperature',
+  schema: mySchema
+});
 
 db.waitForLeadership()
   .then(() => {

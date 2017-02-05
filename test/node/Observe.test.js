@@ -29,7 +29,10 @@ describe('Observe.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    db.collection('myname', schemas.human);
+                    db.collection({
+                        name: 'myname',
+                        schema: schemas.human
+                    });
                     const changeEvent = await db.$
                         .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
                         .first().toPromise();
@@ -50,8 +53,14 @@ describe('Observe.test.js', () => {
                         .subscribe(e => {
                             calls++;
                         });
-                    await db.collection('myname1', schemas.human);
-                    await db.collection('myname1', schemas.human);
+                    await db.collection({
+                        name: 'myname1',
+                        schema: schemas.human
+                    });
+                    await db.collection({
+                        name: 'myname1',
+                        schema: schemas.human
+                    });
 
                     await util.promiseWait(10);
                     assert.equal(calls, 1);
@@ -69,7 +78,10 @@ describe('Observe.test.js', () => {
                         adapter: memdown
                     });
                     const colName = 'foobar';
-                    const c = await db.collection(colName, schemas.human);
+                    const c = await db.collection({
+                        name: colName,
+                        schema: schemas.human
+                    });
 
                     c.insert(schemaObjects.human());
                     const changeEvent = await c.$.first().toPromise();
@@ -86,7 +98,10 @@ describe('Observe.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const c = await db.collection('foobar', schemas.human);
+                    const c = await db.collection({
+                        name: 'foobar',
+                        schema: schemas.human
+                    });
                     let calls = 0;
                     db.$.subscribe(e => {
                         calls++;

@@ -143,7 +143,7 @@ RxDB.create({
     password: 'myLongAndStupidPassword', // optional
     multiInstance: true                  // default: true
   })  // create database
-  .then(db => db.collection('mycollection', mySchema))              // create collection
+  .then(db => db.collection({name: 'mycollection', scehma: mySchema}))              // create collection
   .then(collection => collection.insert({name: 'Bob'}))             // insert document
 ```
 
@@ -157,7 +157,7 @@ RxDB.create({
     password: 'myLongAndStupidPassword', // optional
     multiInstance: true                  // default: true
   })      // create database
-  .then(function(db) {return db.collection('mycollection', mySchema);}) // create collection
+  .then(function(db) {return db.collection({name: 'mycollection', schema: mySchema});}) // create collection
   .then(function(collection) {collection.insert({name: 'Bob'});})       // insert document
 ```
 

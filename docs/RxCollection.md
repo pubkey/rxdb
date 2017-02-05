@@ -6,7 +6,10 @@ A collection stores documents of the same type.
 To create a collection you need a RxDatabase-Object which has the .collection()-method. Every colletion needs a collection-name and a RxSchema.
 
 ```js
-myDatabase.collection(name, mySchema)
+myDatabase.collection({
+  name: name,
+  schema: mySchema
+})
   .then(collection => console.dir(collection));
 ```
 
@@ -151,7 +154,11 @@ const migrationStrategies = {
     }
 };
 
-myDatabase.collection(name, mySchemaV1, null, migrationStrategies)
+myDatabase.collection({
+  name: 'myCol',
+  schema: mySchemaV1,
+  migrationStrategies
+})
   .then(collection => console.dir(collection));
 ```
 

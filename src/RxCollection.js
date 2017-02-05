@@ -74,7 +74,7 @@ class RxCollection {
         });
 
         // MIGRATION
-//        const oldCols = await this._getOldCollections();
+        //        const oldCols = await this._getOldCollections();
 
     }
 
@@ -520,7 +520,13 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
  * @param  {?Object}  [migrationStrategies={}]
  * @return {Promise.<RxCollection>} promise with collection
  */
-export async function create(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
+export async function create({
+    database,
+    name,
+    schema,
+    pouchSettings = {},
+    migrationStrategies = {}
+}) {
     if (schema.constructor.name != 'RxSchema')
         throw new TypeError('given schema is no Schema-object');
 

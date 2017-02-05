@@ -19,7 +19,10 @@ export async function create(size = 20, name = 'human') {
         adapter: 'memory'
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection(name, schemas.human);
+    const collection = await db.collection({
+        name,
+        schema: schemas.human
+    });
 
     // insert data
     const fns = [];
@@ -40,7 +43,10 @@ export async function createNoCompression(size = 20, name = 'human') {
     const schemaJSON = clone(schemas.human);
     schemaJSON.disableKeyCompression = true;
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection(name, schemaJSON);
+    const collection = await db.collection({
+        name,
+        schema: schemaJSON
+    });
 
     // insert data
     const fns = [];
@@ -59,7 +65,10 @@ export async function createAgeIndex() {
         adapter: 'memory'
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('humana', schemas.humanAgeIndex);
+    const collection = await db.collection({
+        name: 'humana',
+        schema: schemas.humanAgeIndex
+    });
 
     // insert data
     const fns = [];
@@ -78,8 +87,14 @@ export async function multipleOnSameDB() {
         adapter: 'memory'
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('human', schemas.human);
-    const collection2 = await db.collection('human2', schemas.human);
+    const collection = await db.collection({
+        name: 'human',
+        schema: schemas.human
+    });
+    const collection2 = await db.collection({
+        name: 'human2',
+        schema: schemas.human
+    });
 
     // insert data
     for (let i = 0; i < size; i++) {
@@ -101,7 +116,10 @@ export async function createNested(amount = 5, adapter = 'memory') {
         adapter
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('nestedhuman', schemas.nestedHuman);
+    const collection = await db.collection({
+        name: 'nestedhuman',
+        schema: schemas.nestedHuman
+    });
 
     // insert data
     const fns = [];
@@ -120,7 +138,10 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
         adapter
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('nestedhuman', schemas.deepNestedHuman);
+    const collection = await db.collection({
+        name: 'nestedhuman',
+        schema: schemas.deepNestedHuman
+    });
 
     // insert data
     const fns = [];
@@ -140,7 +161,10 @@ export async function createEncrypted(amount = 10) {
         password: util.randomCouchString(10)
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('encryptedhuman', schemas.encryptedHuman);
+    const collection = await db.collection({
+        name: 'encryptedhuman',
+        schema: schemas.encryptedHuman
+    });
 
     // insert data
     const fns = [];
@@ -160,7 +184,10 @@ export async function createMultiInstance(name, amount = 0, password = null) {
         multiInstance: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('human', schemas.human);
+    const collection = await db.collection({
+        name: 'human',
+        schema: schemas.human
+    });
     // insert data
     const fns = [];
     for (let i = 0; i < amount; i++)
@@ -178,7 +205,10 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
         multiInstance: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('encryptedhuman', schemas.primaryHuman);
+    const collection = await db.collection({
+        name: 'encryptedhuman',
+        schema: schemas.primaryHuman
+    });
 
     // insert data
     const fns = [];

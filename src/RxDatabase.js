@@ -176,33 +176,40 @@ class RxDatabase {
 
     /**
      * create or fetch a collection
+     * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
      * @return {Collection}
      */
-    async collection(name, schema, pouchSettings = {}, migrationStrategies = {}) {
-        if (name.charAt(0) == '_')
-            throw new Error(`collection(${name}): collection-names cannot start with underscore _`);
+    async collection(args) {
 
-        if (schema && schema.constructor.name != 'RxSchema')
-            schema = RxSchema.create(schema);
+        args.database = this;
 
-        const internalPrimary = this._collectionNamePrimary(name, schema);
+        if (args.name.charAt(0) == '_')
+            throw new Error(`collection(${args.name}): collection-names cannot start with underscore _`);
 
-        if (!this.collections[name]) {
+        if (!args.schema)
+            throw new Error(`collection(${args.name}): schema is missing`);
+
+        if (args.schema.constructor.name != 'RxSchema')
+            args.schema = RxSchema.create(args.schema);
+
+        const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
+
+        if (!this.collections[args.name]) {
             // check schemaHash
-            const schemaHash = schema.hash();
+            const schemaHash = args.schema.hash();
             let collectionDoc = null;
             try {
                 collectionDoc = await this._collectionsPouch.get(internalPrimary);
             } catch (e) {}
 
             if (collectionDoc && collectionDoc.schemaHash != schemaHash)
-                throw new Error(`collection(${name}): another instance created this collection with a different schema`);
+                throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
 
-            const collection = await RxCollection.create(this, name, schema, pouchSettings, migrationStrategies);
+            const collection = await RxCollection.create(args);
             if (
                 Object.keys(collection.schema.getEncryptedPaths()).length > 0 &&
                 !this.password
-            ) throw new Error(`collection(${name}): schema encrypted but no password given`);
+            ) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
 
             if (!collectionDoc) {
                 try {
@@ -223,12 +230,12 @@ class RxDatabase {
             cEvent.data.col = '_collections';
             this.$emit(cEvent);
 
-            this.collections[name] = collection;
+            this.collections[args.name] = collection;
         } else {
-            if (schema && schema.hash() != this.collections[name].schema.hash())
-                throw new Error(`collection(${name}): already has a different schema`);
+            if (args.schema && args.schema.hash() != this.collections[args.name].schema.hash())
+                throw new Error(`collection(${args.name}): already has a different schema`);
         }
-        return this.collections[name];
+        return this.collections[args.name];
     }
 
     /**

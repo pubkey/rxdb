@@ -164,7 +164,10 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                const collection = await db.collection('human0', schemas.human);
+                const collection = await db.collection({
+                    name: 'human0',
+                    schema: schemas.human
+                });
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
@@ -173,7 +176,10 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                const collection = await db.collection('human0', schemas.human);
+                const collection = await db.collection({
+                    name: 'human0',
+                    schema: schemas.human
+                });
                 const colDoc = await db._collectionsPouch.get('human0-' + schemas.human.version);
                 const compareSchema = RxSchema.create(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
@@ -184,7 +190,10 @@ describe('RxDatabase.test.js', () => {
                     adapter: memdown
                 });
                 const schema = RxDatabase.RxSchema.create(schemas.human);
-                const collection = await db.collection('human1', schema);
+                const collection = await db.collection({
+                    name: 'human1',
+                    schema
+                });
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
@@ -194,7 +203,10 @@ describe('RxDatabase.test.js', () => {
                     adapter: memdown,
                     password: util.randomCouchString(12)
                 });
-                const collection = await db.collection('humanenc', schemas.encryptedHuman);
+                const collection = await db.collection({
+                    name: 'humanenc',
+                    schema: schemas.encryptedHuman
+                });
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
@@ -203,7 +215,10 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                const collection = await db.collection('human', schemas.human);
+                const collection = await db.collection({
+                    name: 'human',
+                    schema: schemas.human
+                });
                 const version = collection.schema.version;
                 assert.deepEqual(version, 0);
                 const internalDoc = await db._collectionsPouch.get('human-' + version);
@@ -215,8 +230,14 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                await db.collection('human2', schemas.human);
-                await db.collection('human2', schemas.human);
+                await db.collection({
+                    name: 'human2',
+                    schema: schemas.human
+                });
+                await db.collection({
+                    name: 'human2',
+                    schema: schemas.human
+                });
                 db.destroy();
             });
             it('call to times when one is encrypted', async() => {
@@ -229,9 +250,18 @@ describe('RxDatabase.test.js', () => {
                     adapter: memdown,
                     password: util.randomCouchString(10)
                 });
-                await db1.collection('human3', schemas.human);
-                await db2.collection('human4', schemas.encryptedHuman);
-                await db1.collection('human3', schemas.human);
+                await db1.collection({
+                    name: 'human3',
+                    schema: schemas.human
+                });
+                await db2.collection({
+                    name: 'human4',
+                    schema: schemas.encryptedHuman
+                });
+                await db1.collection({
+                    name: 'human3',
+                    schema: schemas.human
+                });
 
                 db1.destroy();
                 db2.destroy();
@@ -247,8 +277,14 @@ describe('RxDatabase.test.js', () => {
                     name,
                     adapter: memdown
                 });
-                await db1.collection(collectionName, schemas.human);
-                await db2.collection(collectionName, schemas.human);
+                await db1.collection({
+                    name: collectionName,
+                    schema: schemas.human
+                });
+                await db2.collection({
+                    name: collectionName,
+                    schema: schemas.human
+                });
                 db1.destroy();
                 db2.destroy();
             });
@@ -260,7 +296,10 @@ describe('RxDatabase.test.js', () => {
                     adapter: memdown
                 });
                 await util.assertThrowsAsync(
-                    () => db.collection('human6', schemas.nostringIndex),
+                    () => db.collection({
+                        name: 'human6',
+                        schema: schemas.nostringIndex
+                    }),
                     Error
                 );
                 db.destroy();
@@ -272,7 +311,10 @@ describe('RxDatabase.test.js', () => {
                     adapter: memdown
                 });
                 await util.assertThrowsAsync(
-                    () => db.collection('human7', schemas.encryptedHuman),
+                    () => db.collection({
+                        name: 'human7',
+                        schema: schemas.encryptedHuman
+                    }),
                     Error
                 );
                 db.destroy();
@@ -283,9 +325,15 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                await db.collection('human8', schemas.human);
+                await db.collection({
+                    name: 'human8',
+                    schema: schemas.human
+                });
                 await util.assertThrowsAsync(
-                    () => db.collection('human8', schemas.bigHuman),
+                    () => db.collection({
+                        name: 'human8',
+                        schema: schemas.bigHuman
+                    }),
                     Error
                 );
                 db.destroy();
@@ -296,7 +344,10 @@ describe('RxDatabase.test.js', () => {
                     adapter: memdown
                 });
                 await util.assertThrowsAsync(
-                    () => db.collection('_test', schemas.human),
+                    () => db.collection({
+                        name: '_test',
+                        schema: schemas.human
+                    }),
                     Error
                 );
                 db.destroy();
@@ -312,9 +363,15 @@ describe('RxDatabase.test.js', () => {
                     name,
                     adapter: memdown
                 });
-                await db1.collection(collectionName, schemas.human);
+                await db1.collection({
+                    name: collectionName,
+                    schema: schemas.human
+                });
                 await util.assertThrowsAsync(
-                    () => db2.collection(collectionName, schemas.bigHuman),
+                    () => db2.collection({
+                        name: collectionName,
+                        schema: schemas.bigHuman
+                    }),
                     Error
                 );
                 db1.destroy();
@@ -330,7 +387,10 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                await db.collection('foobar', schemas.human);
+                await db.collection({
+                    name: 'foobar',
+                    schema: schemas.human
+                });
                 db.destroy();
                 assert.equal(db.destroyed, true);
                 db.destroy();
@@ -340,7 +400,10 @@ describe('RxDatabase.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                await db.collection('foobar', schemas.human);
+                await db.collection({
+                    name: 'foobar',
+                    schema: schemas.human
+                });
                 db.destroy();
                 db.destroy();
                 assert.equal(db.destroyed, true);

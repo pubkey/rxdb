@@ -7,6 +7,7 @@ Bugfixes:
 Breaking:
   - Collection-names must match `^[a-z][a-z0-9]*$` Fixes [#45](https://github.com/pubkey/rxdb/issues/45)
   - RxDB.create has new api with destructuring [see](docs/RxDatabase.md)
+  - RxDatabase.collection() has new api with destructuring [see](docs/RxDatabase.md)
 
 ## 2.0.3 (January 31, 2017)
 

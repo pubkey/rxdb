@@ -27,7 +27,11 @@ describe('RxCollection.test.js', () => {
                         adapter: memdown
                     });
                     const schema = RxSchema.create(schemas.human);
-                    const collection = await RxCollection.create(db, 'humanx', schema);
+                    const collection = await RxCollection.create({
+                        database: db,
+                        name: 'humanx',
+                        schema
+                    });
                     assert.equal(collection.constructor.name, 'RxCollection');
                     db.destroy();
                 });
@@ -37,7 +41,11 @@ describe('RxCollection.test.js', () => {
                         adapter: memdown
                     });
                     const schema = RxSchema.create(schemas.human);
-                    const collection = await RxCollection.create(db, 'human', schema);
+                    const collection = await RxCollection.create({
+                        database: db,
+                        name: 'human',
+                        schema
+                    });
                     assert.equal(collection.constructor.name, 'RxCollection');
                     db.destroy();
                 });
@@ -56,7 +64,11 @@ describe('RxCollection.test.js', () => {
                         adapter: memdown
                     });
                     const schema = RxSchema.create(schemas.human);
-                    const collection = await RxCollection.create(db, 'human', schema);
+                    const collection = await RxCollection.create({
+                        database: db,
+                        name: 'human',
+                        schema
+                    });
                     assert.deepEqual(schema.version, 0);
                     assert.ok(collection.pouch.name.includes('-' + schema.version + '-'));
                     db.destroy();
@@ -78,7 +90,11 @@ describe('RxCollection.test.js', () => {
                     const db = {};
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
-                        () => RxCollection.create(db, 'human', schema),
+                        () => RxCollection.create({
+                            database: db,
+                            name: 'human',
+                            schema
+                        }),
                         TypeError
                     );
                 });
@@ -89,7 +105,11 @@ describe('RxCollection.test.js', () => {
                     });
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
-                        () => RxCollection.create(db, null, schema),
+                        () => RxCollection.create({
+                            database: db,
+                            name: null,
+                            schema
+                        }),
                         TypeError
                     );
                     db.destroy();
@@ -106,7 +126,11 @@ describe('RxCollection.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
 
                     await util.assertThrowsAsync(
-                        () => RxCollection.create(db, '_foobar', schema),
+                        () => RxCollection.create({
+                            database: db,
+                            name: '_foobar',
+                            schema
+                        }),
                         Error
                     );
                     db.destroy();
@@ -117,9 +141,17 @@ describe('RxCollection.test.js', () => {
                         adapter: memdown
                     });
                     const schema = RxSchema.create(schemas.human);
-                    const collection1 = await RxCollection.create(db, 'fooba4r', schema);
+                    const collection1 = await RxCollection.create({
+                        database: db,
+                        name: 'fooba4r',
+                        schema
+                    });
                     assert.equal(collection1.constructor.name, 'RxCollection');
-                    const collection2 = await RxCollection.create(db, 'foobar4', schema);
+                    const collection2 = await RxCollection.create({
+                        database: db,
+                        name: 'foobar4',
+                        schema
+                    });
                     assert.equal(collection2.constructor.name, 'RxCollection');
                     db.destroy();
                 });
@@ -132,7 +164,11 @@ describe('RxCollection.test.js', () => {
                     });
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
-                        () => RxCollection.create(db, '0foobar', schema),
+                        () => RxCollection.create({
+                            database: db,
+                            name: '0foobar',
+                            schema
+                        }),
                         Error
                     );
                     db.destroy();
@@ -144,11 +180,19 @@ describe('RxCollection.test.js', () => {
                     });
                     const schema = RxSchema.create(schemas.human);
                     await util.assertThrowsAsync(
-                        () => RxCollection.create(db, 'Foobar', schema),
+                        () => RxCollection.create({
+                            database: db,
+                            name: 'Foobar',
+                            schema
+                        }),
                         Error
                     );
                     await util.assertThrowsAsync(
-                        () => RxCollection.create(db, 'fooBar', schema),
+                        () => RxCollection.create({
+                            database: db,
+                            name: 'fooBar',
+                            schema
+                        }),
                         Error
                     );
                     db.destroy();
@@ -165,7 +209,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('human', schemas.human);
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
                     await collection.insert(schemaObjects.human());
                     db.destroy();
                 });
@@ -174,7 +221,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('nestedhuman', schemas.nestedHuman);
+                    const collection = await db.collection({
+                        name: 'nestedhuman',
+                        schema: schemas.nestedHuman
+                    });
                     await collection.insert(schemaObjects.nestedHuman());
                     db.destroy();
                 });
@@ -183,7 +233,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('nestedhuman', schemas.nestedHuman);
+                    const collection = await db.collection({
+                        name: 'nestedhuman',
+                        schema: schemas.nestedHuman
+                    });
                     for (let i = 0; i < 10; i++)
                         await collection.insert(schemaObjects.nestedHuman());
                     db.destroy();
@@ -195,7 +248,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('human', schemas.human);
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
                     const human = schemaObjects.human();
                     delete human.firstName;
                     await util.assertThrowsAsync(
@@ -209,7 +265,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('human', schemas.human);
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
                     const human = schemaObjects.human();
                     human._id = util.randomCouchString(20);
                     await util.assertThrowsAsync(
@@ -223,7 +282,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('human', schemas.human);
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
                     await util.assertThrowsAsync(
                         () => collection.insert(Collection),
                         ReferenceError
@@ -235,7 +297,10 @@ describe('RxCollection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: memdown
                     });
-                    const collection = await db.collection('human', schemas.human);
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
                     const human = schemaObjects.human();
                     human.any = util.randomCouchString(20);
                     await util.assertThrowsAsync(
@@ -269,7 +334,11 @@ describe('RxCollection.test.js', () => {
                             adapter: memdown
                         });
                         const schema = RxSchema.create(schemas.human);
-                        const collection = await RxCollection.create(db, 'humanx', schema);
+                        const collection = await RxCollection.create({
+                            database: db,
+                            name: 'humanx',
+                            schema
+                        });
                         const docs = await collection.find({}).exec();
                         assert.deepEqual(docs, []);
                         db.destroy();
@@ -281,7 +350,10 @@ describe('RxCollection.test.js', () => {
                                 name: util.randomCouchString(10),
                                 adapter: memdown
                             });
-                            let collection = await db.collection('human', schemas.human);
+                            let collection = await db.collection({
+                                name: 'human',
+                                schema: schemas.human
+                            });
                             let human = schemaObjects.human();
                             let passportId = human.passportId;
                             await collection.insert(human);
@@ -585,7 +657,10 @@ describe('RxCollection.test.js', () => {
                             name: util.randomCouchString(10),
                             adapter: memdown
                         });
-                        let collection = await db.collection('human', schemas.human);
+                        let collection = await db.collection({
+                            name: 'human',
+                            schema: schemas.human
+                        });
                         let human = schemaObjects.human();
                         let passportId = human.passportId;
                         await collection.insert(human);

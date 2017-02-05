@@ -179,8 +179,14 @@ describe('CrossInstance.test.js', () => {
                 password,
                 multiInstance: true
             });
-            const c1 = await db1.collection('human', schemas.encryptedHuman);
-            const c2 = await db2.collection('human', schemas.encryptedHuman);
+            const c1 = await db1.collection({
+                name: 'human',
+                schema: schemas.encryptedHuman
+            });
+            const c2 = await db2.collection({
+                name: 'human',
+                schema: schemas.encryptedHuman
+            });
             await c1.insert(schemaObjects.encryptedHuman());
 
             const doc1 = await c1.findOne().exec();
@@ -225,8 +231,14 @@ describe('CrossInstance.test.js', () => {
                 password,
                 multiInstance: true
             });
-            const c1 = await db1.collection('human', schemas.encryptedObjectHuman);
-            const c2 = await db2.collection('human', schemas.encryptedObjectHuman);
+            const c1 = await db1.collection({
+                name: 'human',
+                schema: schemas.encryptedObjectHuman
+            });
+            const c2 = await db2.collection({
+                name: 'human',
+                schema: schemas.encryptedObjectHuman
+            });
             await c1.insert(schemaObjects.encryptedObjectHuman());
 
             const doc1 = await c1.findOne().exec();
