@@ -38,3 +38,6 @@ ORM-like function assignment.
 ```
 
 ## relations-populate [BREAKING]
+
+
+## RxCollection.upsert(), RxCollection.removeifexists()
