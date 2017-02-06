@@ -26,5 +26,22 @@ PouchDB.countAllUndeleted = async function(pouchdb) {
     return docs.total_rows;
 };
 
+/**
+ * get a batch of documents from the pouch-instance
+ * @param  {PouchDB}  pouchdb instance
+ * @param  {number}  limit
+ * @return {{}[]} array with documents
+ */
+PouchDB.getBatch = async function(pouchdb, limit) {
+    const docs = await pouchdb.allDocs({
+        include_docs: true,
+        attachments: false,
+        limit
+    });
+    return docs
+        .rows
+        .map(row => row.doc);
+};
+
 
 export default PouchDB;

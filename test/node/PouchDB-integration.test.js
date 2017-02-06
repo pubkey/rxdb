@@ -78,7 +78,6 @@ describe('PouchDB-integration.test.js', () => {
 
 
     describe('own pouchdb functions', () => {
-
         describe('.countAllUndeleted()', () => {
             it('should return 0', async() => {
                 const name = util.randomCouchString(10);
@@ -119,13 +118,11 @@ describe('PouchDB-integration.test.js', () => {
                 const countBefore = await RxDB.PouchDB.countAllUndeleted(pouchdb);
                 assert.deepEqual(countBefore, 1);
 
-
                 const doc = await pouchdb.get(_id);
                 await pouchdb.remove(doc);
                 const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
                 assert.deepEqual(count, 0);
             });
-
             it('should count a big amount with one deleted doc', async() => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
@@ -152,14 +149,87 @@ describe('PouchDB-integration.test.js', () => {
                     });
                     t--;
                 }
-
                 const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
                 assert.deepEqual(count, 42);
             });
-
-
         });
+        describe('.getBatch()', () => {
+            it('should return empty array', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
+                assert.deepEqual(docs, []);
+            });
+            it('should not return deleted', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
 
+                const _id = util.randomCouchString(10);
+                await pouchdb.put({
+                    _id,
+                    x: 1
+                });
+
+                const countBefore = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(countBefore, 1);
+
+                const doc = await pouchdb.get(_id);
+                await pouchdb.remove(doc);
+
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
+                assert.deepEqual(docs, []);
+            });
+            it('should return one document in array', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                const _id = util.randomCouchString(10);
+                await pouchdb.put({
+                    _id,
+                    x: 1
+                });
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0].x, 1);
+                assert.equal(docs[0]._id, _id);
+            });
+
+            it('should max return batchSize', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+
+                let t = 42;
+                while (t > 0) {
+                    await pouchdb.put({
+                        _id: util.randomCouchString(10),
+                        x: 1
+                    });
+                    t--;
+                }
+                const batchSize = 13;
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, batchSize);
+                assert.equal(docs.length, batchSize);
+                console.dir(docs);
+                docs.forEach(doc => {
+                    assert.equal(doc.x, 1);
+                });
+            });
+        });
     });
 
     describe('BUGS: pouchdb', () => {
