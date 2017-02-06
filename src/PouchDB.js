@@ -12,4 +12,19 @@ import {
 import * as PouchDBFind from 'pouchdb-find';
 PouchDB.plugin(PouchDBFind);
 
+
+/**
+ * get the number of all undeleted documents
+ * @param  {PouchDB}  pouchdb instance
+ * @return {Promise(number)} number of documents
+ */
+PouchDB.countAllUndeleted = async function(pouchdb) {
+    const docs = await pouchdb.allDocs({
+        include_docs: false,
+        attachments: false
+    });
+    return docs.total_rows;
+};
+
+
 export default PouchDB;
