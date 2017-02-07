@@ -144,7 +144,7 @@ class RxDatabase {
     /**
      * throw a new event into the event-cicle
      */
-    async $emit(changeEvent) {
+    $emit(changeEvent) {
         if (!changeEvent) return;
 
         // throw in own cycle
