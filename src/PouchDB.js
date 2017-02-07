@@ -40,7 +40,8 @@ PouchDB.getBatch = async function(pouchdb, limit) {
     });
     return docs
         .rows
-        .map(row => row.doc);
+        .map(row => row.doc)
+        .filter(doc => !doc._id.startsWith('_design'));
 };
 
 

@@ -32,6 +32,7 @@ describe('SchemaMigration.test.js', () => {
                     database: db,
                     name: 'foobar',
                     schema,
+                    autoMigrate: false,
                     migrationStrategies: {
                         1: () => {},
                         2: () => {},
@@ -60,6 +61,7 @@ describe('SchemaMigration.test.js', () => {
                 const col2 = await db2.collection({
                     name: colName,
                     schema: schema2,
+                    autoMigrate: false,
                     migrationStrategies: {
                         1: () => {},
                         2: () => {},
@@ -80,6 +82,7 @@ describe('SchemaMigration.test.js', () => {
                         database: db,
                         name: 'foobar',
                         schema,
+                        autoMigrate: false,
                         migrationStrategies: []
                     }),
                     TypeError
@@ -96,6 +99,7 @@ describe('SchemaMigration.test.js', () => {
                         database: db,
                         name: 'foobar',
                         schema,
+                        autoMigrate: false,
                         migrationStrategies: {
                             foo: function() {}
                         }
@@ -114,6 +118,7 @@ describe('SchemaMigration.test.js', () => {
                         database: db,
                         name: 'foobar',
                         schema,
+                        autoMigrate: false,
                         migrationStrategies: {
                             '1.1': function() {}
                         }
@@ -132,6 +137,7 @@ describe('SchemaMigration.test.js', () => {
                         database: db,
                         name: 'foobar',
                         schema,
+                        autoMigrate: false,
                         migrationStrategies: {
                             1: 'foobar'
                         }
@@ -150,6 +156,7 @@ describe('SchemaMigration.test.js', () => {
                         database: db,
                         name: 'foobar',
                         schema,
+                        autoMigrate: false,
                         migrationStrategies: {
                             1: () => {},
                             3: () => {}
@@ -172,6 +179,7 @@ describe('SchemaMigration.test.js', () => {
             const col = await db.collection({
                 name: colName,
                 schema: schemas.simpleHumanV3,
+                autoMigrate: false,
                 migrationStrategies: {
                     1: () => {},
                     2: () => {},
@@ -202,6 +210,7 @@ describe('SchemaMigration.test.js', () => {
             const col2 = await db2.collection({
                 name: colName,
                 schema: schema2,
+                autoMigrate: false,
                 migrationStrategies: {
                     1: () => {},
                     2: () => {},
@@ -260,6 +269,7 @@ describe('SchemaMigration.test.js', () => {
                 const col2 = await db2.collection({
                     name: colName,
                     schema: schema2,
+                    autoMigrate: false,
                     migrationStrategies: {
                         1: async function(doc) {
                             return doc;
@@ -303,6 +313,7 @@ describe('SchemaMigration.test.js', () => {
                 const col2 = await db2.collection({
                     name: colName,
                     schema: schema2,
+                    autoMigrate: false,
                     migrationStrategies: {
                         1: async function(doc) {
                             return doc;
@@ -327,13 +338,43 @@ describe('SchemaMigration.test.js', () => {
 
     describe('migrate on .prepare()', () => {
         describe('positive', () => {
-            it('should not crash when nothing to migrate', () => {
-
+            it('should not crash when nothing to migrate', async() => {
+                const name = util.randomCouchString(10);
+                const colName = 'human';
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
+                const col = await db.collection({
+                    name: colName,
+                    schema: schemas.simpleHuman
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: memdown
+                });
+                const schema2 = RxSchema.create(schemas.simpleHumanV3);
+                const col2 = await db2.collection({
+                    name: colName,
+                    schema: schema2,
+                    autoMigrate: true,
+                    migrationStrategies: {
+                        1: async function(doc) {
+                            return doc;
+                        },
+                        2: async function(doc) {
+                            return doc;
+                        },
+                        3: async function(doc) {
+                            return doc;
+                        }
+                    }
+                });
             });
 
         });
         describe('negative', () => {
-            //    it('e', () => process.exit());
+            it('e', () => process.exit());
         });
     });
 

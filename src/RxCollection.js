@@ -15,6 +15,7 @@ import * as RxDocument from './RxDocument';
 import * as RxQuery from './RxQuery';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as KeyCompressor from './KeyCompressor';
+import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 
 
@@ -28,9 +29,11 @@ class RxCollection {
         this.name = name;
         this.schema = schema;
 
-        this.migrationStrategies = migrationStrategies;
-        this.synced = false;
+        this._dataMigrator = DataMigrator.create(this, migrationStrategies);
+        this.crypter = Crypter.create(this.database.password, this.schema);
         this.keyCompressor = KeyCompressor.create(this.schema);
+
+        this.synced = false;
 
         this.hooks = {};
 
@@ -46,7 +49,6 @@ class RxCollection {
     }
     async prepare() {
 
-        this.crypter = Crypter.create(this.database.password, this.schema);
 
         // INDEXES
         await Promise.all(
@@ -65,77 +67,23 @@ class RxCollection {
                 });
             }));
 
-        // HOOKS
+        // set HOOKS-functions dynamically
         RxCollection.HOOKS_KEYS.forEach(key => {
             RxCollection.HOOKS_WHEN.map(when => {
                 const fnName = when + util.ucfirst(key);
                 this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
             });
         });
-
-        // MIGRATION
-        //        const oldCols = await this._getOldCollections();
-
     }
 
 
     /**
-     * returns pouchdb-instances from all existing equal collections with previous version
-     * @return {{version: number, schema: Object, pouch: PouchDB}[]} array with all needed data
+     * @param {number} [batchSize=10] amount of documents handled in parallel
+     * @return {Observable} emits the migration-status
      */
-    async _getOldCollections() {
-        // get colDocs
-        const oldColDocs = await Promise.all(
-            this.schema.previousVersions
-            .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
-            .map(fun => fun.catch(e => null)) // auto-catch so Promise.all continues
-        );
-
-        // spawn pouchdb-instances
-        return oldColDocs
-            .filter(colDoc => colDoc != null)
-            .map(colDoc => {
-                return {
-                    version: colDoc.schema.version,
-                    schema: colDoc.schema,
-                    pouch: this.database._spawnPouchDB(this.name, this.schema.version, this.pouchSettings)
-                };
-            });
+    migrate(batchSize = 10) {
+        return this._schemaMigrator.migrate(batchSize);
     }
-
-
-    /**
-     * runs the doc through all following migrationStrategies
-     * so it will match the newest schema.
-     * @throws Error if final doc does not match final schema
-     * @return {Object|null} final object or null if migrationStrategy deleted it
-     */
-    async _migrateDocumentData(doc, currentVersion) {
-        doc = clone(doc);
-        let nextVersion = currentVersion + 1;
-
-        // run throught migrationStrategies
-        while (nextVersion <= this.schema.version) {
-            doc = await this.migrationStrategies[nextVersion + ''](doc);
-            nextVersion++;
-            if (doc == null)
-                return null;
-        }
-
-        // check final schema
-        try {
-            this.schema.validate(doc);
-        } catch (e) {
-            throw new Error(`
-              migration of document from v${currentVersion} to v${this.schema.version} failed
-              - final document does not match final schema
-              - final doc: ${JSON.stringify(doc)}
-              `);
-        }
-
-        return doc;
-    }
-
 
 
     /**
@@ -179,7 +127,6 @@ class RxCollection {
 
         return docs;
     }
-
 
     /**
      * returns observable
@@ -525,19 +472,31 @@ export async function create({
     name,
     schema,
     pouchSettings = {},
-    migrationStrategies = {}
+    migrationStrategies = {},
+    autoMigrate = true
 }) {
-    if (schema.constructor.name != 'RxSchema')
+    if (schema.constructor.name !== 'RxSchema')
         throw new TypeError('given schema is no Schema-object');
 
-    if (database.constructor.name != 'RxDatabase')
+    if (database.constructor.name !== 'RxDatabase')
         throw new TypeError('given database is no Database-object');
+
+    if (typeof autoMigrate !== 'boolean')
+        throw new TypeError('autoMigrate must be boolean');
 
     util.validateCouchDBString(name);
     checkMigrationStrategies(schema, migrationStrategies);
 
     const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
     await collection.prepare();
+
+    if (autoMigrate) {
+        const migrationStatus$ = collection.migrate();
+        await migrationStatus$
+            .filter(s => s.done == true)
+            .first()
+            .toPromise();
+    }
 
     return collection;
 }

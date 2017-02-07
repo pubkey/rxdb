@@ -384,7 +384,7 @@ const fillWithDefaults = function(schemaObj) {
     return schemaObj;
 };
 
-export function create(jsonID) {
-    checkSchema(jsonID);
+export function create(jsonID, doCheck = true) {
+    if (doCheck) checkSchema(jsonID);
     return new RxSchema(fillWithDefaults(jsonID));
 }
