@@ -49,7 +49,6 @@ class RxCollection {
     }
     async prepare() {
 
-
         // INDEXES
         await Promise.all(
             this.schema.indexes
@@ -82,7 +81,7 @@ class RxCollection {
      * @return {Observable} emits the migration-status
      */
     migrate(batchSize = 10) {
-        return this._schemaMigrator.migrate(batchSize);
+        return this._dataMigrator.migrate(batchSize);
     }
 
 
@@ -436,7 +435,7 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
     // for every previousVersion there must be strategy
     if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
         throw new Error(`
-      a migrationStrategy is missing
+      a migrationStrategy is missing or too much
       - have: ${JSON.stringify(Object.keys(migrationStrategies).map(v => parseInt(v)))}
       - should: ${JSON.stringify(schema.previousVersions)}
       `);
@@ -489,7 +488,6 @@ export async function create({
 
     const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
     await collection.prepare();
-
     if (autoMigrate) {
         const migrationStatus$ = collection.migrate();
         await migrationStatus$

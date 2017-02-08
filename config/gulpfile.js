@@ -5,10 +5,10 @@ gulp.task('test', function() {
     return gulp
         .src([
             '../test_tmp/node/util.test.js',
-            '../test_tmp/node/Schema.test.js',
             '../test_tmp/node/PouchDB-integration.test.js',
-            '../test_tmp/node/KeyCompression.test.js',
             '../test_tmp/node/DataMigration.test.js', // TODO move this down
+            '../test_tmp/node/Schema.test.js', // TODO move this under util
+            '../test_tmp/node/KeyCompression.test.js',
             '../test_tmp/node/Socket.test.js',
             '../test_tmp/node/Database.test.js',
             '../test_tmp/node/Collection.test.js',

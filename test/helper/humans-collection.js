@@ -5,8 +5,9 @@ import {
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
-import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as util from '../../dist/lib/util';
+import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as RxSchema from '../../dist/lib/RxSchema';
 
 import * as RxDB from '../../dist/lib/index';
 
@@ -217,4 +218,57 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
     await Promise.all(fns);
 
     return collection;
+}
+
+
+export async function create2MigrationCollections(amount = 0, addMigrationStrategies = {}) {
+
+    const migrationStrategies = {
+        1: doc => doc,
+        2: doc => doc,
+        3: doc => doc
+    };
+
+    Object.entries(addMigrationStrategies)
+        .forEach(enAr => {
+            const fun = enAr.pop();
+            const prop = enAr.pop();
+            migrationStrategies[prop] = fun;
+        });
+
+    const colName = 'human';
+    const name = util.randomCouchString(10);
+    const db = await RxDatabase.create({
+        name,
+        adapter: 'memory'
+    });
+    const schema = RxSchema.create(schemas.simpleHuman);
+    const col = await db.collection({
+        name: colName,
+        schema,
+        autoMigrate: false
+    });
+
+    await Promise.all(
+        new Array(amount)
+        .fill(0)
+        .map(() => col.insert(schemaObjects.simpleHumanAge()))
+    );
+
+    const db2 = await RxDatabase.create({
+        name,
+        adapter: 'memory'
+    });
+    const schema2 = RxSchema.create(schemas.simpleHumanV3);
+    const col2 = await db2.collection({
+        name: colName,
+        schema: schema2,
+        autoMigrate: false,
+        migrationStrategies
+    });
+
+    return {
+        old: col,
+        new: col2
+    };
 }

@@ -53,18 +53,15 @@ class DataMigrator {
         this._migrated = true;
 
         const status = {
-            done: false, // if finished
             total: null, // will be the doc-count
             handled: 0, // amount of handled docs
-            sucess: 0, // handled docs which sucessed
+            success: 0, // handled docs which successed
             deleted: 0, // handled docs which got deleted
             failed: 0, // handled docs which failed
             percent: 0 // percentage
         };
 
-        const migrationSubject = new util.Rx.BehaviorSubject(status);
-
-        setTimeout(async() => {
+        const migrationState$ = new util.Rx.Observable(async(observer) => {
             const oldCols = await this._getOldCollections();
 
             const countAll = await Promise.all(
@@ -73,47 +70,25 @@ class DataMigrator {
             const total_count = countAll.reduce((cur, prev) => prev = cur + prev, 0);
 
             status.total = total_count;
-            migrationSubject.next(status);
+            observer.next(status);
 
             let currentCol = null;
             while (currentCol = oldCols.shift()) {
-
-
-                let batch = [];
-                do {
-                    batch = await currentCol.getBatch(batchSize);
-                    batch = batch.map(doc => currentCol.handleFromPouch(doc));
-
-                    console.log('....');
-                    console.dir(batch);
-
-                    // transform to newest version
-                    const transformed = await Promise.all(
-                        batch.map(doc => currentCol.migrateDocumentData(doc).catch(e => 'ERROR'))
-                    );
-
-                    // save to newest collection
-                    await Promise.all(
-                        transformed.map(doc => {
-                            if (doc != 'ERROR')
-                                this.newestCollection.insert(doc);
-                            return 'ERROR';
-                        })
-                    );
-
-                    // update state
-                    // TODO
-                }
-                while (batch.length > 0);
+                const migrationState$ = currentCol.migrate(batchSize);
+                await new Promise(res => {
+                    const sub = migrationState$.subscribe(addType => {
+                        status.handled++;
+                        status[addType] = status[addType] + 1;
+                        status.percent = Math.round(status.total / status.handled);
+                        observer.next(status);
+                    }, null, () => {
+                        sub.unsubscribe();
+                        res();
+                    });
+                });
             }
-
-            status.done = true;
-            status.percent = 100;
-            migrationSubject.next(status);
-        }, 0);
-
-
-        return migrationSubject.asObservable();
+        });
+        return migrationState$;
     }
 
 }
@@ -160,13 +135,15 @@ class OldCollection {
         return PouchDB.countAllUndeleted(this.pouchdb);
     }
     async getBatch(batchSize) {
-        return PouchDB.getBatch(currentCol.pouchdb, batchSize);
+        const docs = await PouchDB.getBatch(this.pouchdb, batchSize);
+        return docs
+            .map(doc => this._handleFromPouch(doc));
     }
 
     /**
      * handles a document from the pouchdb-instance
      */
-    handleFromPouch(docData) {
+    _handleFromPouch(docData) {
         const swapped = this.schema.swapIdToPrimary(docData);
         const decompressed = this.keyCompressor.decompress(swapped);
         const decrypted = this.crypter.decrypt(decompressed);
@@ -181,7 +158,7 @@ class OldCollection {
      */
     async migrateDocumentData(doc) {
         doc = clone(doc);
-        let nextVersion = currentVersion + 1;
+        let nextVersion = this.version + 1;
 
         // run throught migrationStrategies
         while (nextVersion <= this.newestCollection.schema.version) {
@@ -193,16 +170,68 @@ class OldCollection {
 
         // check final schema
         try {
-            this.schema.validate(doc);
+            this.newestCollection.schema.validate(doc);
         } catch (e) {
             throw new Error(`
-              migration of document from v${currentVersion} to v${this.newestCollection.schema.version} failed
+              migration of document from v${this.version} to v${this.newestCollection.schema.version} failed
               - final document does not match final schema
               - final doc: ${JSON.stringify(doc)}
             `);
         }
-
         return doc;
+    }
+
+    migrate(batchSize) {
+        const stateStream$ = new util.Rx.Observable(async(observer) => {
+            let batch = [];
+            do {
+                batch = await currentCol.getBatch(batchSize);
+                const batchT = batch.map(doc => currentCol.handleFromPouch(doc));
+
+                // transform to newest version
+                let transformed = await Promise.all(
+                    batchT
+                    .map(doc => currentCol
+                        .migrateDocumentData(doc)
+                        .then(doc => {
+                            if (doc) return doc;
+                            observer.next('deleted');
+                            return null;
+                        })
+                        .catch(e => {
+                            observer.next('failed');
+                            return null;
+                        })
+                    )
+                );
+
+                // save to newest collection
+                await Promise.all(
+                    transformed
+                    .filter(doc => doc != null)
+                    .map(doc => this.newestCollection.insert(doc)
+                        .then(success => observer.next('success')))
+                );
+
+                // remove from old collection
+                await Promise.all(
+                    batch.map(doc => this.pouchdb.remove(doc))
+                );
+            }
+            while (batch.length > 0);
+
+            // remove this oldCollection
+            await this.delete();
+        });
+        return stateStream$;
+    }
+
+    /**
+     * deletes this.pouchdb and removes it from the database.collectionsCollection
+     */
+    async delete() {
+        await this.pouchdb.destroy();
+        const colDocId = this.database._collectionNamePrimary(this.dataMigrator.name, this.schema);
     }
 }
 

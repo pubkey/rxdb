@@ -175,6 +175,17 @@ class RxDatabase {
     }
 
     /**
+     * removes the collection-doc from this._collectionsPouch
+     * @return {Promise}
+     */
+    async removeCollectionDoc(name, schema) {
+        const docId = this._collectionNamePrimary(name, schema);
+        const doc = await this._collectionsPouch.get(docId);
+        return this._collectionsPouch.remove(doc);
+    }
+
+
+    /**
      * create or fetch a collection
      * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
      * @return {Collection}
