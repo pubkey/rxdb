@@ -23,7 +23,9 @@ PouchDB.countAllUndeleted = async function(pouchdb) {
         include_docs: false,
         attachments: false
     });
-    return docs.total_rows;
+    return docs.rows
+        .filter(row => !row.id.startsWith('_design/'))
+        .length;
 };
 
 /**

@@ -1,6 +1,9 @@
 import {
     default as clone
 } from 'clone';
+import {
+    default as memdown
+} from 'memdown';
 
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
@@ -221,8 +224,11 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
 }
 
 
-export async function create2MigrationCollections(amount = 0, addMigrationStrategies = {}) {
-
+export async function createMigrationCollection(
+    amount = 0,
+    addMigrationStrategies = {},
+    name = util.randomCouchString(10)
+) {
     const migrationStrategies = {
         1: doc => doc,
         2: doc => doc,
@@ -237,10 +243,9 @@ export async function create2MigrationCollections(amount = 0, addMigrationStrate
         });
 
     const colName = 'human';
-    const name = util.randomCouchString(10);
     const db = await RxDatabase.create({
         name,
-        adapter: 'memory'
+        adapter: memdown
     });
     const schema = RxSchema.create(schemas.simpleHuman);
     const col = await db.collection({
@@ -255,9 +260,12 @@ export async function create2MigrationCollections(amount = 0, addMigrationStrate
         .map(() => col.insert(schemaObjects.simpleHumanAge()))
     );
 
+    //col.destroy();
+    //db.destroy();
+
     const db2 = await RxDatabase.create({
         name,
-        adapter: 'memory'
+        adapter: memdown
     });
     const schema2 = RxSchema.create(schemas.simpleHumanV3);
     const col2 = await db2.collection({
@@ -267,8 +275,5 @@ export async function create2MigrationCollections(amount = 0, addMigrationStrate
         migrationStrategies
     });
 
-    return {
-        old: col,
-        new: col2
-    };
+    return col2;
 }

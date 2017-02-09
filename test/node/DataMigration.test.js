@@ -5,6 +5,9 @@ import {
 import * as _ from 'lodash';
 
 
+import {
+    default as PouchDB
+} from '../../dist/lib/PouchDB';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -226,36 +229,135 @@ describe('SchemaMigration.test.js', () => {
             });
         });
         describe('OldCollection', () => {
-            it('create', async() => {
+            describe('create', () => {
+                it('create', async() => {
 
-                const cols = await humansCollection.create2MigrationCollections();
+                    const col = await humansCollection.createMigrationCollection();
 
-                const migrator = await cols.new._dataMigrator;
-                const old = await cols.new._dataMigrator._getOldCollections();
-                const oldCol = old.pop();
+                    const migrator = await col._dataMigrator;
+                    const old = await col._dataMigrator._getOldCollections();
+                    const oldCol = old.pop();
 
-                assert.equal(oldCol.schema.constructor.name, 'RxSchema');
-                assert.equal(oldCol.version, 0);
-                assert.equal(oldCol.crypter.constructor.name, 'Crypter');
-                assert.equal(oldCol.keyCompressor.constructor.name, 'KeyCompressor');
-                assert.ok(oldCol.pouchdb.constructor.name.includes('PouchDB'));
+                    assert.equal(oldCol.schema.constructor.name, 'RxSchema');
+                    assert.equal(oldCol.version, 0);
+                    assert.equal(oldCol.crypter.constructor.name, 'Crypter');
+                    assert.equal(oldCol.keyCompressor.constructor.name, 'KeyCompressor');
+                    assert.ok(oldCol.pouchdb.constructor.name.includes('PouchDB'));
+                });
             });
+            describe('.migrateDocumentData()', () => {
+                it('get a valid migrated document', async() => {
+                    const col = await humansCollection.createMigrationCollection(1, {
+                        3: doc => {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
 
-            it('.migrateDocumentData()', async() => {
-                const cols = await humansCollection.create2MigrationCollections(1, {
-                    3: doc => {
-                        doc.age = parseInt(doc.age);
-                        return doc;
-                    }
+                    const migrator = col._dataMigrator;
+                    const old = await col._dataMigrator._getOldCollections();
+                    const oldCol = old.pop();
+
+                    const oldDocs = await oldCol.getBatch(10);
+                    const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
+                    assert.deepEqual(newDoc.age, parseInt(oldDocs[0].age));
+                });
+                it('get a valid migrated document from async strategy', async() => {
+                    const col = await humansCollection.createMigrationCollection(1, {
+                        3: async(doc) => {
+                            await util.promiseWait(10);
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
+
+                    const migrator = col._dataMigrator;
+                    const old = await col._dataMigrator._getOldCollections();
+                    const oldCol = old.pop();
+
+                    const oldDocs = await oldCol.getBatch(10);
+                    const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
+                    assert.deepEqual(newDoc.age, parseInt(oldDocs[0].age));
+                });
+            });
+            describe('.delete()', () => {
+                /*      it('should delete the pouchdb with all its content', async() => {
+                          const dbName = util.randomCouchString(10);
+                          const col = await humansCollection.createMigrationCollection(10, {}, dbName);
+                          const migrator = col._dataMigrator;
+                          const olds = await col._dataMigrator._getOldCollections();
+                          const old = olds.pop();
+
+                          const amount = await old.countAllUndeleted();
+                          assert.equal(amount, 10);
+
+                          const pouchLocation = old.pouchdb.name;
+                          const checkPouch = new PouchDB(pouchLocation, {
+                              adapter: 'memory'
+                          });
+                          const amountPlain = await PouchDB.countAllUndeleted(checkPouch);
+                          assert.equal(amountPlain, 10);
+
+                          // check that internal doc exists
+                          let docId = old.database._collectionNamePrimary(col.name, old.schema);
+                          let iDoc = await old.database._collectionsPouch.get(docId);
+                          assert.equal(typeof iDoc.schemaHash, 'string');
+
+
+                          await old.delete();
+
+                          // check that all docs deleted
+                          const checkPouch2 = new PouchDB(pouchLocation, {
+                              adapter: 'memory'
+                          });
+                          const amountPlain2 = await PouchDB.countAllUndeleted(checkPouch2);
+                          assert.equal(amountPlain2, 0);
+
+                          // check that internal doc deleted
+                          let has = true;
+                          docId = old.database._collectionNamePrimary(col.name, old.schema);
+                          try {
+                              iDoc = await old.database._collectionsPouch.get(docId);
+                          } catch (e) {
+                              has = false;
+                          }
+                          assert.equal(has, false);
+                      });*/
+            });
+            describe('.migrate()', () => {
+                it('should resolve finished when no docs', async() => {
+                    const col = await humansCollection.createMigrationCollection(0);
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
+
+                    await oldCol.migratePromise();
+                });
+                it('should resolve finished when some docs', async() => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: doc => {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
+
+                    await oldCol.migratePromise();
+
+                    // check if in new collection
+                    //const docs = await col.find().exec();
+                    //console.dir(docs);
+
                 });
 
-                const migrator = await cols.new._dataMigrator;
-                const old = await cols.new._dataMigrator._getOldCollections();
-                const oldCol = old.pop();
 
-                const oldDocs = await oldCol.getBatch(10);
-                const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
-                assert.deepEqual(newDoc.age, parseInt(oldDocs[0].age));
+
+
+                it('w8', async() => {
+                    // TODO remove this
+                    await util.promiseWait(500);
+                    process.exit();
+                });
             });
         });
     });

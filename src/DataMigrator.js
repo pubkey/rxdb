@@ -106,8 +106,10 @@ class OldCollection {
         this.database = dataMigrator.newestCollection.database;
     }
     get schema() {
-        if (!this._schema)
+        if (!this._schema) {
+            //            delete this.schemaObj._id;
             this._schema = RxSchema.create(this.schemaObj, false);
+        }
         return this._schema;
     }
     get keyCompressor() {
@@ -181,25 +183,38 @@ class OldCollection {
         return doc;
     }
 
-    migrate(batchSize) {
-        const stateStream$ = new util.Rx.Observable(async(observer) => {
-            let batch = [];
-            do {
-                batch = await currentCol.getBatch(batchSize);
-                const batchT = batch.map(doc => currentCol.handleFromPouch(doc));
 
+    /**
+     * deletes this.pouchdb and removes it from the database.collectionsCollection
+     */
+    async delete() {
+        await this.pouchdb.destroy();
+        await this.database.removeCollectionDoc(this.dataMigrator.name, this.schema);
+    }
+
+
+    /**
+     * runs the migration on all documents and deletes the pouchdb afterwards
+     */
+    migrate(batchSize = 10) {
+        if (this._migrate)
+            throw new Error('migration already running');
+        this._migrate = true;
+
+        const stateStream$ = new util.Rx.Observable(async(observer) => {
+            let batch = await this.getBatch(batchSize);
+            do {
                 // transform to newest version
                 let transformed = await Promise.all(
-                    batchT
-                    .map(doc => currentCol
+                    batch
+                    .map(doc => this
                         .migrateDocumentData(doc)
                         .then(doc => {
                             if (doc) return doc;
-                            observer.next('deleted');
-                            return null;
-                        })
-                        .catch(e => {
-                            observer.next('failed');
+                            observer.next({
+                                type: 'deleted',
+                                doc
+                            });
                             return null;
                         })
                     )
@@ -209,29 +224,43 @@ class OldCollection {
                 await Promise.all(
                     transformed
                     .filter(doc => doc != null)
-                    .map(doc => this.newestCollection.insert(doc)
-                        .then(success => observer.next('success')))
+                    .map(doc => {
+                        console.log('.insert():');
+                        console.dir(doc);
+                        return doc;
+                    })
+                    .map(doc => this.newestCollection.insert(doc, false)
+                        .then(doc => observer.next({
+                            type: 'success',
+                            doc
+                        }))
+                    )
                 );
 
                 // remove from old collection
                 await Promise.all(
                     batch.map(doc => this.pouchdb.remove(doc))
                 );
-            }
-            while (batch.length > 0);
+
+                // reset batch so loop can run again
+                batch = await this.getBatch(batchSize);
+            } while (batch.length > 0);
 
             // remove this oldCollection
             await this.delete();
+
+            observer.complete();
         });
         return stateStream$;
     }
-
-    /**
-     * deletes this.pouchdb and removes it from the database.collectionsCollection
-     */
-    async delete() {
-        await this.pouchdb.destroy();
-        const colDocId = this.database._collectionNamePrimary(this.dataMigrator.name, this.schema);
+    migratePromise() {
+        if (!this._migratePromise) {
+            this._migratePromise = new Promise((res, rej) => {
+                const state$ = this.migrate();
+                state$.subscribe(null, rej, res);
+            });
+        }
+        return this._migratePromise;
     }
 }
 

@@ -224,7 +224,6 @@ describe('PouchDB-integration.test.js', () => {
                 const batchSize = 13;
                 const docs = await RxDB.PouchDB.getBatch(pouchdb, batchSize);
                 assert.equal(docs.length, batchSize);
-                console.dir(docs);
                 docs.forEach(doc => {
                     assert.equal(doc.x, 1);
                 });
