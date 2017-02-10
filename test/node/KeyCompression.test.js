@@ -445,4 +445,32 @@ describe('KeyCompressor.test.js', () => {
 
     });
 
+    describe('bugs', () => {
+
+        it('BUG: #50 compress string array properly', async() => {
+            const mySchema = {
+                title: 'hero schema',
+                description: 'describes a simple hero',
+                type: 'object',
+                properties: {
+                    likes: {
+                        type: 'array',
+                        items: {
+                            type: 'string'
+                        }
+                    }
+                }
+            };
+
+            const db = await RxDatabase.create('heroesDB', 'memory');
+            const collection = await db.collection('mycollection', mySchema);
+            const docData = {
+                likes: ['abc', '8']
+            };
+            await collection.insert(docData);
+            const doc = await collection.findOne().exec();
+            assert.equal(doc.constructor.name, 'RxDocument');
+            assert.deepEqual(doc.likes, docData.likes);
+        });
+    });
 });
