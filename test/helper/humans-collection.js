@@ -260,8 +260,8 @@ export async function createMigrationCollection(
         .map(() => col.insert(schemaObjects.simpleHumanAge()))
     );
 
-    //col.destroy();
-    //db.destroy();
+    col.destroy();
+    db.destroy();
 
     const db2 = await RxDatabase.create({
         name,

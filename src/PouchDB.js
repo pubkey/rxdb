@@ -35,6 +35,9 @@ PouchDB.countAllUndeleted = async function(pouchdb) {
  * @return {{}[]} array with documents
  */
 PouchDB.getBatch = async function(pouchdb, limit) {
+    if (limit <= 1)
+        throw new Error('PouchDB.getBatch: limit must be > 2');
+
     const docs = await pouchdb.allDocs({
         include_docs: true,
         attachments: false,

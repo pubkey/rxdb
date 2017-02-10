@@ -281,48 +281,48 @@ describe('SchemaMigration.test.js', () => {
                 });
             });
             describe('.delete()', () => {
-                /*      it('should delete the pouchdb with all its content', async() => {
-                          const dbName = util.randomCouchString(10);
-                          const col = await humansCollection.createMigrationCollection(10, {}, dbName);
-                          const migrator = col._dataMigrator;
-                          const olds = await col._dataMigrator._getOldCollections();
-                          const old = olds.pop();
+                it('should delete the pouchdb with all its content', async() => {
+                    const dbName = util.randomCouchString(10);
+                    const col = await humansCollection.createMigrationCollection(10, {}, dbName);
+                    const migrator = col._dataMigrator;
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const old = olds.pop();
 
-                          const amount = await old.countAllUndeleted();
-                          assert.equal(amount, 10);
+                    const amount = await old.countAllUndeleted();
+                    assert.equal(amount, 10);
 
-                          const pouchLocation = old.pouchdb.name;
-                          const checkPouch = new PouchDB(pouchLocation, {
-                              adapter: 'memory'
-                          });
-                          const amountPlain = await PouchDB.countAllUndeleted(checkPouch);
-                          assert.equal(amountPlain, 10);
+                    const pouchLocation = old.pouchdb.name;
+                    const checkPouch = new PouchDB(pouchLocation, {
+                        adapter: 'memory'
+                    });
+                    const amountPlain = await PouchDB.countAllUndeleted(checkPouch);
+                    assert.equal(amountPlain, 10);
 
-                          // check that internal doc exists
-                          let docId = old.database._collectionNamePrimary(col.name, old.schema);
-                          let iDoc = await old.database._collectionsPouch.get(docId);
-                          assert.equal(typeof iDoc.schemaHash, 'string');
+                    // check that internal doc exists
+                    let docId = old.database._collectionNamePrimary(col.name, old.schema);
+                    let iDoc = await old.database._collectionsPouch.get(docId);
+                    assert.equal(typeof iDoc.schemaHash, 'string');
 
 
-                          await old.delete();
+                    await old.delete();
 
-                          // check that all docs deleted
-                          const checkPouch2 = new PouchDB(pouchLocation, {
-                              adapter: 'memory'
-                          });
-                          const amountPlain2 = await PouchDB.countAllUndeleted(checkPouch2);
-                          assert.equal(amountPlain2, 0);
+                    // check that all docs deleted
+                    const checkPouch2 = new PouchDB(pouchLocation, {
+                        adapter: 'memory'
+                    });
+                    const amountPlain2 = await PouchDB.countAllUndeleted(checkPouch2);
+                    assert.equal(amountPlain2, 0);
 
-                          // check that internal doc deleted
-                          let has = true;
-                          docId = old.database._collectionNamePrimary(col.name, old.schema);
-                          try {
-                              iDoc = await old.database._collectionsPouch.get(docId);
-                          } catch (e) {
-                              has = false;
-                          }
-                          assert.equal(has, false);
-                      });*/
+                    // check that internal doc deleted
+                    let has = true;
+                    docId = old.database._collectionNamePrimary(col.name, old.schema);
+                    try {
+                        iDoc = await old.database._collectionsPouch.get(docId);
+                    } catch (e) {
+                        has = false;
+                    }
+                    assert.equal(has, false);
+                });
             });
             describe('.migrate()', () => {
                 it('should resolve finished when no docs', async() => {
@@ -342,12 +342,78 @@ describe('SchemaMigration.test.js', () => {
                     const olds = await col._dataMigrator._getOldCollections();
                     const oldCol = olds.pop();
 
+                    const docsPrev = await col.pouch.allDocs({
+                        include_docs: false,
+                        attachments: false
+                    });
+                    assert.equal(docsPrev.total_rows, 0);
+
                     await oldCol.migratePromise();
 
                     // check if in new collection
-                    //const docs = await col.find().exec();
-                    //console.dir(docs);
+                    const docs = await col.find().exec();
+                    assert.equal(docs.length, 10);
+                });
+                it('should emit status for every handled document', async() => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: async(doc) => {
+                            await util.promiseWait(50);
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
 
+                    const pw8 = util.promiseWaitResolveable(1000);
+
+                    // batchSize is doc.length / 2 to make sure it takes a bit
+                    const state$ = oldCol.migrate(5);
+                    const states = [];
+                    state$.subscribe(state => {
+                        assert.equal(state.type, 'success');
+                        assert.ok(state.doc.id);
+                        states.push(state);
+                    }, () => {}, pw8.resolve);
+
+                    await pw8.promise;
+                    assert.equal(states.length, 10);
+                });
+
+                it('should emit "deleted" when migration-strategy returns null', async() => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: async(doc) => {
+                            return null;
+                        }
+                    });
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
+
+                    const pw8 = util.promiseWaitResolveable(1000);
+
+                    // batchSize is doc.length / 2 to make sure it takes a bit
+                    const state$ = oldCol.migrate(5);
+                    const states = [];
+                    state$.subscribe(state => {
+                        assert.equal(state.type, 'deleted');
+                        states.push(state);
+                    }, () => {}, pw8.resolve);
+
+                    await pw8.promise;
+                    assert.equal(states.length, 10);
+                });
+                it('should throw when document cannot be migrated', async() => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: async(doc) => {
+                            throw new Error('foobar');
+                        }
+                    });
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
+                    await util.assertThrowsAsync(
+                        () => oldCol.migratePromise(),
+                        Error
+                    );
                 });
 
 

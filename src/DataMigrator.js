@@ -155,20 +155,25 @@ class OldCollection {
     /**
      * runs the doc-data through all following migrationStrategies
      * so it will match the newest schema.
-     * @throws Error if final doc does not match final schema
+     * @throws Error if final doc does not match final schema or migrationStrategy crashes
      * @return {Object|null} final object or null if migrationStrategy deleted it
      */
     async migrateDocumentData(doc) {
         doc = clone(doc);
         let nextVersion = this.version + 1;
 
+
         // run throught migrationStrategies
-        while (nextVersion <= this.newestCollection.schema.version) {
+        let error = null;
+        while (nextVersion <= this.newestCollection.schema.version && !error) {
+
             doc = await this.dataMigrator.migrationStrategies[nextVersion + ''](doc);
+
             nextVersion++;
-            if (doc == null)
+            if (doc == null && !error)
                 return null;
         }
+
 
         // check final schema
         try {
@@ -203,22 +208,29 @@ class OldCollection {
 
         const stateStream$ = new util.Rx.Observable(async(observer) => {
             let batch = await this.getBatch(batchSize);
+            let error;
             do {
                 // transform to newest version
                 let transformed = await Promise.all(
-                    batch
-                    .map(doc => this
-                        .migrateDocumentData(doc)
-                        .then(doc => {
-                            if (doc) return doc;
-                            observer.next({
-                                type: 'deleted',
-                                doc
-                            });
-                            return null;
-                        })
+                        batch
+                        .map(doc => this
+                            .migrateDocumentData(doc)
+                            .then(doc => {
+                                if (doc) return doc;
+                                observer.next({
+                                    type: 'deleted',
+                                    doc
+                                });
+                                return null;
+                            })
+                        )
                     )
-                );
+                    .catch(e => error = e);
+
+                if (error) {
+                    observer.error(error);
+                    return;
+                }
 
                 // save to newest collection
                 await Promise.all(
@@ -227,9 +239,10 @@ class OldCollection {
                     .map(doc => {
                         console.log('.insert():');
                         console.dir(doc);
+                        delete doc._rev;
                         return doc;
                     })
-                    .map(doc => this.newestCollection.insert(doc, false)
+                    .map(doc => this.newestCollection._pouchPut(doc)
                         .then(doc => observer.next({
                             type: 'success',
                             doc
@@ -244,7 +257,7 @@ class OldCollection {
 
                 // reset batch so loop can run again
                 batch = await this.getBatch(batchSize);
-            } while (batch.length > 0);
+            } while (!error && batch.length > 0);
 
             // remove this oldCollection
             await this.delete();
@@ -253,10 +266,10 @@ class OldCollection {
         });
         return stateStream$;
     }
-    migratePromise() {
+    migratePromise(batchSize) {
         if (!this._migratePromise) {
             this._migratePromise = new Promise((res, rej) => {
-                const state$ = this.migrate();
+                const state$ = this.migrate(batchSize);
                 state$.subscribe(null, rej, res);
             });
         }

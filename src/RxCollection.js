@@ -140,10 +140,10 @@ class RxCollection {
      * @param {Object} json data
      * @param {RxDocument} doc which was created
      */
-    async insert(json, checkID = true) {
+    async insert(json) {
         json = clone(json);
 
-        if (json._id && checkID)
+        if (json._id)
             throw new Error('do not provide ._id, it will be generated');
 
         // fill _id
