@@ -45,19 +45,19 @@ class DataMigrator {
 
     /**
      * @param {number} [batchSize=10] amount of documents handled in parallel
-     * @return {Observable} emits the migration-status
+     * @return {Observable} emits the migration-state
      */
     migrate(batchSize = 10) {
         if (this._migrated)
             throw new Error('Migration has already run');
         this._migrated = true;
 
-        const status = {
+        const state = {
+            done: false, // true if finished
             total: null, // will be the doc-count
             handled: 0, // amount of handled docs
             success: 0, // handled docs which successed
             deleted: 0, // handled docs which got deleted
-            failed: 0, // handled docs which failed
             percent: 0 // percentage
         };
 
@@ -69,26 +69,50 @@ class DataMigrator {
             );
             const total_count = countAll.reduce((cur, prev) => prev = cur + prev, 0);
 
-            status.total = total_count;
-            observer.next(status);
+            state.total = total_count;
+            observer.next(clone(state));
 
             let currentCol = null;
+            let error = null;
             while (currentCol = oldCols.shift()) {
                 const migrationState$ = currentCol.migrate(batchSize);
                 await new Promise(res => {
-                    const sub = migrationState$.subscribe(addType => {
-                        status.handled++;
-                        status[addType] = status[addType] + 1;
-                        status.percent = Math.round(status.total / status.handled);
-                        observer.next(status);
-                    }, null, () => {
-                        sub.unsubscribe();
-                        res();
-                    });
+                    const sub = migrationState$.subscribe(
+                        subState => {
+                            state.handled++;
+                            state[subState.type] = state[subState.type] + 1;
+                            state.percent = Math.round(state.handled / state.total * 100);
+                            observer.next(clone(state));
+                        },
+                        e => {
+                            error = e;
+                            sub.unsubscribe();
+                            observer.error(e);
+                        }, () => {
+                            sub.unsubscribe();
+                            res();
+                        });
                 });
+
             }
+
+            state.done = true;
+            state.percent = 100;
+            observer.next(clone(state));
+
+            observer.complete();
         });
         return migrationState$;
+    }
+
+    migratePromise(batchSize) {
+        if (!this._migratePromise) {
+            this._migratePromise = new Promise((res, rej) => {
+                const state$ = this.migrate(batchSize);
+                state$.subscribe(null, rej, res);
+            });
+        }
+        return this._migratePromise;
     }
 
 }

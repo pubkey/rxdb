@@ -7,7 +7,7 @@ To create a collection you need a RxDatabase-Object which has the .collection()-
 
 ```js
 myDatabase.collection({
-  name: name,
+  name: 'humans',
   schema: mySchema
 })
   .then(collection => console.dir(collection));
@@ -111,55 +111,6 @@ myCollection.importDump(json)
 To replicate the colletion with another server, use this function. It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also add event-handles to make sure that change-events will be recognized.
 ```js
 mycollection.sync('http://localhost:10102/db/');
-```
-
-
-## migrationStrategies
-When you make changes to the schema and ship the new code to your clients, their database-state will not match the schema anymore.
-To handle this you need to provide a higher version-number than the previous one.
-
-You also have to specify how the document on the clients database can be changed to match the new schema.
-This is where migrationStrategies come to use.
-
-A migrationStrategy is a function which takes the old documents-data and returns a promise which resolves to new documents-data.
-The new data must match the new schema.
-
-### Example:
-
-```js
-
-const migrationStrategies = {
-    // the '1' means that this strategy transforms documents from version 0 to version 1
-    1: function(oldDocumentData){
-      // in the new schema we defined 'age' as number instead of string,
-      // so we must transform the string to a number
-      oldDocumentData.age = parseInt(oldDocumentData.age);
-      return new Promise().resolve(oldDocumentData);
-    },
-    /**
-     * In version 2 we need to make a server-request to get the new state.
-     * This is to demonstrate an async migrationStrategy
-     */
-    2: function(oldDocumentData){
-      // in the new schema (version: 2) we defined 'publicKey' as required field (string)
-      // so we must get the humans publicKey from the server
-      const userID = oldDocumentData.userID;
-      return fetch('http://myserver.com/api/'+userID+'/publicKey/')
-        .then(function(response) {
-          const response = response.json();
-          const publicKey = response.key;
-          oldDocumentData.publicKey=publicKey;
-          return oldDocumentData;
-        });
-    }
-};
-
-myDatabase.collection({
-  name: 'myCol',
-  schema: mySchemaV1,
-  migrationStrategies
-})
-  .then(collection => console.dir(collection));
 ```
 
 ---------

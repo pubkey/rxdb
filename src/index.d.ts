@@ -63,6 +63,17 @@ declare class RxCollection {
     postSave(fun: Function, parallel: boolean);
     postRemove(fun: Function, parallel: boolean);
 
+    // migration
+    migrate(batchSize: number): Observable<{
+      done: boolean, // true if finished
+      total: number, // will be the doc-count
+      handled: number, // amount of handled docs
+      success: number, // handled docs which successed
+      deleted: number, // handled docs which got deleted
+      percent: number // percentage
+    }>;
+    migratePromise(batchSize:number): Promise<any>;
+
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
     destroy(): Promise<boolean>;

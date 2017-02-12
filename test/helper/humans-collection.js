@@ -227,7 +227,8 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
 export async function createMigrationCollection(
     amount = 0,
     addMigrationStrategies = {},
-    name = util.randomCouchString(10)
+    name = util.randomCouchString(10),
+    autoMigrate = false
 ) {
     const migrationStrategies = {
         1: doc => doc,
@@ -271,7 +272,7 @@ export async function createMigrationCollection(
     const col2 = await db2.collection({
         name: colName,
         schema: schema2,
-        autoMigrate: false,
+        autoMigrate,
         migrationStrategies
     });
 

@@ -1,6 +1,7 @@
 ## 3.0.0 (XXX, 2017)
 
 Features:
+  - added [DataMigration](docs/DataMigration.md)
 
 Bugfixes:
 

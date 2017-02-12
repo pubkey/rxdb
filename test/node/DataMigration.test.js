@@ -324,6 +324,35 @@ describe('SchemaMigration.test.js', () => {
                     assert.equal(has, false);
                 });
             });
+            describe('._migrateDocument()', () => {
+                /**
+                 * this test is to handle the following case:
+                 * 1. user starts migration
+                 * 2. user quits process while migration is running
+                 * 3. user starts migration again
+                 * 4. it will throw since a document is inserted in to new collection, but not deleted from old
+                 * 5. it should not do this
+                 */
+                it('should not crash when doc already at new collection', async() => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: doc => {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
+
+                    // simluate prerun of migrate()
+                    const oldDocs = await oldCol.getBatch(10);
+                    const tryDoc = oldDocs.shift();
+                    const action = await oldCol._migrateDocument(tryDoc);
+                    assert.equal(action.type, 'success');
+
+                    // this should no crash because existing doc will be overwritten
+                    await oldCol._migrateDocument(tryDoc);
+                });
+            });
             describe('.migrate()', () => {
                 it('should resolve finished when no docs', async() => {
                     const col = await humansCollection.createMigrationCollection(0);
@@ -417,43 +446,144 @@ describe('SchemaMigration.test.js', () => {
                         Error
                     );
                 });
-                /**
-                 * this test is to handle the following case:
-                 * 1. user starts migration
-                 * 2. user quits process while migration is running
-                 * 3. user starts migration again
-                 * 4. it will throw since a document is inserted in to new collection, but not deleted from old
-                 * 5. it should not do this
-                 */
-                it('should not crash when doc already at new collection', async() => {
-                    const col = await humansCollection.createMigrationCollection(10, {
+            });
+        });
+
+        describe('.migrate()', () => {
+            describe('positive', () => {
+                it('should not crash when nothing to migrate', async() => {
+                    const col = await humansCollection.createMigrationCollection(0, {});
+                    const pw8 = util.promiseWaitResolveable(5000); // higher than test-timeout
+                    const states = [];
+                    const state$ = col.migrate();
+                    state$.subscribe(s => {
+                        states.push(s);
+                    }, null, pw8.resolve);
+
+                    await pw8.promise;
+                    assert.equal(states[0].done, false);
+                    assert.equal(states[0].percent, 0);
+                    assert.equal(states[0].total, 0);
+
+                    assert.equal(states[1].done, true);
+                    assert.equal(states[1].percent, 100);
+                    assert.equal(states[1].total, 0);
+                });
+
+                it('should not crash when migrating data', async() => {
+                    const col = await humansCollection.createMigrationCollection(5, {
                         3: doc => {
                             doc.age = parseInt(doc.age);
                             return doc;
                         }
                     });
-                    const olds = await col._dataMigrator._getOldCollections();
-                    const oldCol = olds.pop();
+                    const pw8 = util.promiseWaitResolveable(5000); // higher than test-timeout
+                    const states = [];
+                    const state$ = col.migrate();
+                    state$.subscribe(s => {
+                        states.push(s);
+                    }, null, pw8.resolve);
 
-                    // simluate prerun of migrate()
-                    const oldDocs = await oldCol.getBatch(10);
-                    const tryDoc = oldDocs.shift();
-                    const action = await oldCol._migrateDocument(tryDoc);
-                    assert.equal(action.type, 'success');
+                    await pw8.promise;
 
-                    // this should no crash because existing doc will be overwritten
-                    await oldCol._migrateDocument(tryDoc);
-                });
+                    assert.equal(states.length, 7);
 
+                    assert.equal(states[0].done, false);
+                    assert.equal(states[0].percent, 0);
+                    assert.equal(states[0].total, 5);
 
+                    const midState = states[4];
+                    assert.equal(midState.done, false);
+                    assert.equal(midState.percent, 80);
+                    assert.equal(midState.handled, 4);
+                    assert.equal(midState.success, 4);
 
-
-                it('w8', async() => {
-                    // TODO remove this
-                    await util.promiseWait(500);
-                    process.exit();
+                    const lastState = states.pop();
+                    assert.equal(lastState.done, true);
+                    assert.equal(lastState.percent, 100);
+                    assert.equal(lastState.total, 5);
+                    assert.equal(lastState.success, 5);
                 });
             });
+            describe('negative', () => {
+                it('should .error when strategy fails', async() => {
+                    const col = await humansCollection.createMigrationCollection(5, {
+                        3: doc => {
+                            throw new Error('foobar');
+                        }
+                    });
+                    const pw8 = util.promiseWaitResolveable(5000); // higher than test-timeout
+                    let error = null;
+                    const state$ = col.migrate();
+                    state$.subscribe(null, pw8.resolve, null);
+
+                    await pw8.promise;
+                });
+            });
+        });
+        describe('.migratePromise()', () => {
+            describe('positive', () => {
+                it('should resolve when nothing to migrate', async() => {
+                    const col = await humansCollection.createMigrationCollection(0, {});
+                    await col.migratePromise();
+                });
+
+                it('should resolve when migrating data', async() => {
+                    const col = await humansCollection.createMigrationCollection(5, {
+                        3: doc => {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
+                    await col.migratePromise();
+                });
+            });
+            describe('negative', () => {
+                it('should reject when migration fails', async() => {
+                    const col = await humansCollection.createMigrationCollection(5, {
+                        3: doc => {
+                            throw new Error('foobar');
+                        }
+                    });
+                    let failed = false;
+                    await col.migratePromise().catch(e => failed = true);
+                    assert.ok(failed);
+                });
+            });
+        });
+    });
+
+    describe('integration into collection', () => {
+        it('should auto-run on creation', async() => {
+            const col = await humansCollection.createMigrationCollection(
+                10, {
+                    3: doc => {
+                        doc.age = parseInt(doc.age);
+                        return doc;
+                    }
+                },
+                util.randomCouchString(10),
+                true
+            );
+            const docs = await col.find().exec();
+            assert.equal(docs.length, 10);
+            assert.equal(typeof docs.pop().age, 'number');
+        });
+        it('should auto-run on creation (async)', async() => {
+            const col = await humansCollection.createMigrationCollection(
+                10, {
+                    3: async(doc) => {
+                        util.promiseWait(10);
+                        doc.age = parseInt(doc.age);
+                        return doc;
+                    }
+                },
+                util.randomCouchString(10),
+                true
+            );
+            const docs = await col.find().exec();
+            assert.equal(docs.length, 10);
+            assert.equal(typeof docs.pop().age, 'number');
         });
     });
 });

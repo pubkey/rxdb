@@ -84,6 +84,15 @@ class RxCollection {
         return this._dataMigrator.migrate(batchSize);
     }
 
+    /**
+     * does the same thing as .migrate() but returns promise
+     * @param {number} [batchSize=10] amount of documents handled in parallel
+     * @return {Promise} resolves when finished
+     */
+    migratePromise(batchSize = 10) {
+        return this._dataMigrator.migratePromise(batchSize);
+    }
+
 
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
@@ -101,13 +110,20 @@ class RxCollection {
         const decrypted = this.crypter.decrypt(decompressed);
         return decrypted;
     }
+
+
+    /**
+     * [overwrite description]
+     * @param {object} obj
+     * @param {boolean} [overwrite=false] if true, it will overwrite existing document
+     */
     async _pouchPut(obj, overwrite = false) {
         obj = this._handleToPouch(obj);
         let ret = null;
         try {
             ret = await this.pouch.put(obj);
         } catch (e) {
-            if (overwrite) {
+            if (overwrite && e.status == 409) {
                 const exist = await this.pouch.get(obj._id);
                 obj._rev = exist._rev;
                 ret = await this.pouch.put(obj);
@@ -498,13 +514,9 @@ export async function create({
 
     const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
     await collection.prepare();
-    if (autoMigrate) {
-        const migrationStatus$ = collection.migrate();
-        await migrationStatus$
-            .filter(s => s.done == true)
-            .first()
-            .toPromise();
-    }
+
+    if (autoMigrate)
+        await collection.migratePromise();
 
     return collection;
 }
