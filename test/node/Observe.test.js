@@ -93,6 +93,31 @@ describe('Observe.test.js', () => {
                 });
             });
         });
+        describe('.remove()', () => {
+            describe('positive', () => {
+                it('should fire on remove', async() => {
+                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const colName = randomToken(10);
+                    const c = await db.collection(colName, schemas.human);
+                    let ar = [];
+                    const sub = c
+                			.find()
+                			.$
+                			.subscribe(docs => ar.push(docs));
+
+                    await util.promiseWait(10);
+                    await c.insert(schemaObjects.human());
+                    await util.promiseWait(10);
+                    assert.equal(ar.length, 3);
+                    const doc = await c.findOne().exec();
+                    await doc.remove();
+                    await util.promiseWait(10);
+                    assert.equal(ar.length, 4);
+                    sub.unsubscribe();
+                    db.destroy();
+                });
+            });
+        });
     });
     describe('Document', () => {
         describe('.save()', () => {
