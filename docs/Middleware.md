@@ -1,5 +1,5 @@
 # Middleware
-RxDB supports middleware-hooks Like [moongoose](http://mongoosejs.com/docs/middleware.html).
+RxDB supports middleware-hooks like [mongoose](http://mongoosejs.com/docs/middleware.html).
 Middleware (also called pre and post hooks) are functions which are passed control during execution of asynchronous functions.
 The hooks are specified on RxCollection-level and help to create a clear what-happens-when-structure of your code.
 
