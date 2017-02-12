@@ -372,9 +372,11 @@ describe('SchemaMigration.test.js', () => {
                     const states = [];
                     state$.subscribe(state => {
                         assert.equal(state.type, 'success');
-                        assert.ok(state.doc.id);
+                        assert.ok(state.doc._id);
                         states.push(state);
-                    }, () => {}, pw8.resolve);
+                    }, e => {
+                        throw new Error('this test should not call error');
+                    }, pw8.resolve);
 
                     await pw8.promise;
                     assert.equal(states.length, 10);
@@ -414,6 +416,33 @@ describe('SchemaMigration.test.js', () => {
                         () => oldCol.migratePromise(),
                         Error
                     );
+                });
+                /**
+                 * this test is to handle the following case:
+                 * 1. user starts migration
+                 * 2. user quits process while migration is running
+                 * 3. user starts migration again
+                 * 4. it will throw since a document is inserted in to new collection, but not deleted from old
+                 * 5. it should not do this
+                 */
+                it('should not crash when doc already at new collection', async() => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: doc => {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    });
+                    const olds = await col._dataMigrator._getOldCollections();
+                    const oldCol = olds.pop();
+
+                    // simluate prerun of migrate()
+                    const oldDocs = await oldCol.getBatch(10);
+                    const tryDoc = oldDocs.shift();
+                    const action = await oldCol._migrateDocument(tryDoc);
+                    assert.equal(action.type, 'success');
+
+                    // this should no crash because existing doc will be overwritten
+                    await oldCol._migrateDocument(tryDoc);
                 });
 
 

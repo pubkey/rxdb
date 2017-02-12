@@ -189,6 +189,35 @@ class OldCollection {
     }
 
 
+
+    /**
+     * transform docdata and save to new collection
+     * @return {{type: string, doc: {}}} status-action with status and migrated document
+     */
+    async _migrateDocument(doc) {
+        const migrated = await this.migrateDocumentData(doc);
+        const action = {
+            doc,
+            migrated
+        };
+
+        if (migrated) {
+            // save to newest collection
+            delete migrated._rev;
+            await this.newestCollection._pouchPut(migrated, true);
+            action.type = 'success';
+        } else action.type = 'deleted';
+
+
+        // remove from old collection
+        try {
+            await this.pouchdb.remove(doc);
+        } catch (e) {}
+
+        return action;
+    }
+
+
     /**
      * deletes this.pouchdb and removes it from the database.collectionsCollection
      */
@@ -210,50 +239,16 @@ class OldCollection {
             let batch = await this.getBatch(batchSize);
             let error;
             do {
-                // transform to newest version
-                let transformed = await Promise.all(
-                        batch
-                        .map(doc => this
-                            .migrateDocumentData(doc)
-                            .then(doc => {
-                                if (doc) return doc;
-                                observer.next({
-                                    type: 'deleted',
-                                    doc
-                                });
-                                return null;
-                            })
-                        )
+                await Promise.all(
+                    batch.map(doc => this._migrateDocument(doc)
+                        .then(action => observer.next(action))
                     )
-                    .catch(e => error = e);
+                ).catch(e => error = e);
 
                 if (error) {
                     observer.error(error);
                     return;
                 }
-
-                // save to newest collection
-                await Promise.all(
-                    transformed
-                    .filter(doc => doc != null)
-                    .map(doc => {
-                        console.log('.insert():');
-                        console.dir(doc);
-                        delete doc._rev;
-                        return doc;
-                    })
-                    .map(doc => this.newestCollection._pouchPut(doc)
-                        .then(doc => observer.next({
-                            type: 'success',
-                            doc
-                        }))
-                    )
-                );
-
-                // remove from old collection
-                await Promise.all(
-                    batch.map(doc => this.pouchdb.remove(doc))
-                );
 
                 // reset batch so loop can run again
                 batch = await this.getBatch(batchSize);

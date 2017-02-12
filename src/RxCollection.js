@@ -101,9 +101,19 @@ class RxCollection {
         const decrypted = this.crypter.decrypt(decompressed);
         return decrypted;
     }
-    async _pouchPut(obj) {
+    async _pouchPut(obj, overwrite = false) {
         obj = this._handleToPouch(obj);
-        return this.pouch.put(obj);
+        let ret = null;
+        try {
+            ret = await this.pouch.put(obj);
+        } catch (e) {
+            if (overwrite) {
+                const exist = await this.pouch.get(obj._id);
+                obj._rev = exist._rev;
+                ret = await this.pouch.put(obj);
+            } else throw e;
+        }
+        return ret;
     }
     async _pouchGet(key) {
         let doc = await this.pouch.get(key);
