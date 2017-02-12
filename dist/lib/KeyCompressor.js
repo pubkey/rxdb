@@ -56,16 +56,18 @@ var KeyCompressor = function () {
             var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
             var ret = {};
+            if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3.default)(obj)) !== 'object') return obj;
+            if (Array.isArray(obj)) {
+                return obj.map(function (o) {
+                    return _this._compressObj(o, util.trimDots(path + '.item'));
+                });
+            }
             Object.keys(obj).forEach(function (key) {
                 var propertyObj = obj[key];
                 var fullPath = util.trimDots(path + '.' + key);
                 var replacedKey = _this.table[fullPath] ? _this.table[fullPath] : key;
                 var nextObj = propertyObj;
-                if (Array.isArray(nextObj)) {
-                    nextObj = nextObj.map(function (o) {
-                        return _this._compressObj(o, fullPath + '.item');
-                    });
-                } else if ((typeof nextObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(nextObj)) === 'object') nextObj = _this._compressObj(propertyObj, fullPath);
+                nextObj = _this._compressObj(propertyObj, fullPath);
                 ret[replacedKey] = nextObj;
             });
             return ret;

@@ -186,7 +186,7 @@ var RxQuery = function () {
                 this._subject = new util.Rx.BehaviorSubject(null);
                 this._obsRunning = false;
                 var collection$ = this.collection.$.filter(function (cEvent) {
-                    return ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op);
+                    return ['RxCollection.insert', 'RxDocument.save', 'RxDocument.remove'].includes(cEvent.data.op);
                 }).startWith(1).filter(function (x) {
                     return !_this3._obsRunning;
                 }).do(function (x) {
