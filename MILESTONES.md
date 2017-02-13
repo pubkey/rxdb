@@ -6,6 +6,8 @@ This means you can then use RxDB in production without the fear breaking your cl
 
 ## migration-strategies **BREAKING**
 
+[DONE](https://github.com/pubkey/rxdb/commit/3694436e96de666c457b558704c7588acc705a2e)
+
 ## conflict-resolution **BREAKING**
 
 Pouchdb requires the developer to solve conflicts manually.
