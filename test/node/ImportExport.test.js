@@ -98,7 +98,7 @@ describe('ImportExport.test.js', () => {
                 const json = await col.dump(false);
 
                 const firstDoc = json.docs.pop();
-                const decrypted = col.crypter._decryptValue(firstDoc.secret);
+                const decrypted = col._crypter._decryptValue(firstDoc.secret);
                 assert.equal(typeof decrypted, 'object');
                 assert.equal(typeof decrypted.name, 'string');
                 assert.equal(typeof decrypted.subname, 'string');
@@ -153,7 +153,7 @@ describe('ImportExport.test.js', () => {
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
-                    const decrypted = emptyCol.crypter._decryptValue(firstDoc.secret);
+                    const decrypted = emptyCol._crypter._decryptValue(firstDoc.secret);
                     assert.equal(typeof decrypted, 'object');
                     assert.equal(typeof decrypted.name, 'string');
                     assert.equal(typeof decrypted.subname, 'string');

@@ -28,26 +28,25 @@ class RxCollection {
         this.database = database;
         this.name = name;
         this.schema = schema;
+        this._migrationStrategies = migrationStrategies;
+        this._pouchSettings = pouchSettings;
 
-        this._dataMigrator = DataMigrator.create(this, migrationStrategies);
-        this.crypter = Crypter.create(this.database.password, this.schema);
-        this.keyCompressor = KeyCompressor.create(this.schema);
-
+        // defaults
         this.synced = false;
-
         this.hooks = {};
-
-        this.pouchSettings = pouchSettings;
-
         this.subs = [];
         this.pouchSyncs = [];
-
-        this.pouch = this.database._spawnPouchDB(this.name, schema.version, pouchSettings);
-
-        this.observable$ = this.database.$
-            .filter(event => event.data.col == this.name);
+        this.pouch = null; // this is needed to preserve this name
     }
     async prepare() {
+        this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
+        this._crypter = Crypter.create(this.database.password, this.schema);
+        this._keyCompressor = KeyCompressor.create(this.schema);
+
+        this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
+
+        this._observable$ = this.database.$
+            .filter(event => event.data.col == this.name);
 
         // INDEXES
         await Promise.all(
@@ -55,7 +54,7 @@ class RxCollection {
             .map(indexAr => {
                 const compressedIdx = indexAr
                     .map(key => {
-                        const ret = this.keyCompressor.table[key] ? this.keyCompressor.table[key] : key;
+                        const ret = this._keyCompressor.table[key] ? this._keyCompressor.table[key] : key;
                         return ret;
                     });
 
@@ -98,16 +97,16 @@ class RxCollection {
      * wrappers for Pouch.put/get to handle keycompression etc
      */
     _handleToPouch(docData) {
-        const encrypted = this.crypter.encrypt(docData);
+        const encrypted = this._crypter.encrypt(docData);
         const swapped = this.schema.swapPrimaryToId(encrypted);
-        const compressed = this.keyCompressor.compress(swapped);
+        const compressed = this._keyCompressor.compress(swapped);
         return compressed;
     }
     _handleFromPouch(docData, noDecrypt = false) {
         const swapped = this.schema.swapIdToPrimary(docData);
-        const decompressed = this.keyCompressor.decompress(swapped);
+        const decompressed = this._keyCompressor.decompress(swapped);
         if (noDecrypt) return decompressed;
-        const decrypted = this.crypter.decrypt(decompressed);
+        const decrypted = this._crypter.decrypt(decompressed);
         return decrypted;
     }
 
@@ -157,7 +156,7 @@ class RxCollection {
      * returns observable
      */
     get $() {
-        return this.observable$;
+        return this._observable$;
     }
     $emit = changeEvent => this.database.$emit(changeEvent);
 
@@ -308,7 +307,7 @@ class RxCollection {
 
         const importFns = exportedJSON.docs
             // decrypt
-            .map(doc => this.crypter.decrypt(doc))
+            .map(doc => this._crypter.decrypt(doc))
             // validate schema
             .map(doc => this.schema.validate(doc))
             // import
@@ -484,6 +483,33 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
 };
 
 /**
+ * checks if the given static methods are allowed
+ * @param  {{}} statics [description]
+ * @throws if not allowed
+ */
+let _preservedStatics = null;
+const checkStatics = function(statics) {
+
+    if (!_preservedStatics) {
+        const pseudoCollection = new RxCollection();
+        console.dir(pseudoCollection);
+    }
+
+    Object.entries(statics).forEach(entry => {
+        if (typeof entry[0] != 'string')
+            throw new TypeError(`given static method-name (${entry[0]}) is not a string`);
+
+        if (entry[0].startsWith('_'))
+            throw new TypeError(`static method-names cannot start with underscore _ (${entry[0]})`);
+
+
+        if (typeof entry[1] != 'function')
+            throw new TypeError(`given static method (${entry[0]}) is not a function`);
+
+    });
+};
+
+/**
  * creates and prepares a new collection
  * @param  {RxDatabase}  database
  * @param  {string}  name
@@ -498,7 +524,9 @@ export async function create({
     schema,
     pouchSettings = {},
     migrationStrategies = {},
-    autoMigrate = true
+    autoMigrate = true,
+    statics = {},
+    methods = {}
 }) {
     if (schema.constructor.name !== 'RxSchema')
         throw new TypeError('given schema is no Schema-object');
@@ -512,8 +540,17 @@ export async function create({
     util.validateCouchDBString(name);
     checkMigrationStrategies(schema, migrationStrategies);
 
+    checkStatics(statics);
+
     const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
     await collection.prepare();
+
+    // ORM add statics
+    Object.entries(statics).forEach(entry => {
+        const fun = entry.pop();
+        const funName = entry.pop();
+        collection.__defineGetter__(funName, fun.bind(collection));
+    });
 
     if (autoMigrate)
         await collection.migratePromise();

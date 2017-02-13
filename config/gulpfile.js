@@ -6,7 +6,7 @@ gulp.task('test', function() {
         .src([
             '../test_tmp/node/util.test.js',
             '../test_tmp/node/PouchDB-integration.test.js',
-            '../test_tmp/node/DataMigration.test.js', // TODO move this down
+            '../test_tmp/node/ORM.test.js', // TODO move this down
             '../test_tmp/node/Schema.test.js', // TODO move this under util
             '../test_tmp/node/KeyCompression.test.js',
             '../test_tmp/node/Socket.test.js',
@@ -15,6 +15,7 @@ gulp.task('test', function() {
             '../test_tmp/node/Document.test.js',
             '../test_tmp/node/Primary.test.js',
             '../test_tmp/node/Hooks.test.js',
+            '../test_tmp/node/DataMigration.test.js',
             '../test_tmp/node/LeaderElection.test.js',
             '../test_tmp/node/Replication.test.js',
             '../test_tmp/node/Encryption.test.js',

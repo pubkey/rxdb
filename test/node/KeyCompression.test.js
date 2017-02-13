@@ -306,7 +306,7 @@ describe('KeyCompressor.test.js', () => {
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));
-            assert.equal(query.selector[c.keyCompressor.table['firstName']], 'myFirstName');
+            assert.equal(query.selector[c._keyCompressor.table['firstName']], 'myFirstName');
         });
         it('primary', async() => {
             const c = await humansCollection.createPrimary(0);
@@ -325,8 +325,8 @@ describe('KeyCompressor.test.js', () => {
                 .keyCompress();
 
             const cString = [
-                c.keyCompressor.table['mainSkill'],
-                c.keyCompressor.table['mainSkill.level']
+                c._keyCompressor.table['mainSkill'],
+                c._keyCompressor.table['mainSkill.level']
             ].join('.');
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('level'));
@@ -350,7 +350,7 @@ describe('KeyCompressor.test.js', () => {
                 .keyCompress();
 
             const cString = [
-                c.keyCompressor.table['mainSkill'],
+                c._keyCompressor.table['mainSkill'],
                 'foobar'
             ].join('.');
             assert.equal(query.selector[cString], 5);
@@ -362,8 +362,8 @@ describe('KeyCompressor.test.js', () => {
                 .keyCompress();
 
             const cString = [
-                c.keyCompressor.table['mainSkill'],
-                c.keyCompressor.table['mainSkill.attack'],
+                c._keyCompressor.table['mainSkill'],
+                c._keyCompressor.table['mainSkill.attack'],
                 'foobar'
             ].join('.');
             assert.equal(query.selector[cString], 5);
@@ -373,7 +373,7 @@ describe('KeyCompressor.test.js', () => {
             const query = c.find()
                 .sort('mainSkill')
                 .keyCompress();
-            assert.equal(query.sort[0][c.keyCompressor.table['mainSkill']], 'asc');
+            assert.equal(query.sort[0][c._keyCompressor.table['mainSkill']], 'asc');
         });
         it('.sort() nested', async() => {
             const c = await humansCollection.createNested(0);
@@ -382,8 +382,8 @@ describe('KeyCompressor.test.js', () => {
                 .keyCompress();
 
             const cString = [
-                c.keyCompressor.table['mainSkill'],
-                c.keyCompressor.table['mainSkill.level']
+                c._keyCompressor.table['mainSkill'],
+                c._keyCompressor.table['mainSkill.level']
             ].join('.');
             assert.equal(query.sort[0][cString], 'asc');
         });
@@ -426,7 +426,7 @@ describe('KeyCompressor.test.js', () => {
             it('do not compress', async() => {
                 const col = await humansCollection.createNoCompression(0);
                 const human = schemaObjects.human();
-                const after = col.keyCompressor.compress(human);
+                const after = col._keyCompressor.compress(human);
                 assert.deepEqual(human, after);
                 assert.ok(typeof after.lastName, 'string');
             });
@@ -435,7 +435,7 @@ describe('KeyCompressor.test.js', () => {
             it('do not compress', async() => {
                 const col = await humansCollection.createNoCompression(0);
                 const human = schemaObjects.human();
-                const after = col.keyCompressor.decompress(human);
+                const after = col._keyCompressor.decompress(human);
                 assert.deepEqual(human, after);
                 assert.ok(typeof after.lastName, 'string');
             });

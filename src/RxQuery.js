@@ -174,7 +174,7 @@ class RxQuery {
     keyCompress() {
         return this
             .collection
-            .keyCompressor
+            ._keyCompressor
             .compressQuery(this.toJSON());
     }
 
