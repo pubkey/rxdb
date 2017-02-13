@@ -2,6 +2,7 @@ import * as RxSchema from './RxSchema';
 
 
 export const administration = RxSchema.create({
+    version: 0,
     properties: {
         key: {
             type: 'string',
@@ -16,6 +17,7 @@ export const administration = RxSchema.create({
 
 
 export const collections = RxSchema.create({
+    version: 0,
     properties: {
         name: {
             type: 'string',
@@ -30,6 +32,7 @@ export const collections = RxSchema.create({
 
 
 export const socket = RxSchema.create({
+    version: 0,
     properties: {
         h: {
             description: 'hash of the whole event',

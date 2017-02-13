@@ -3,9 +3,6 @@
  */
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as clone
 } from 'clone';
 import * as _ from 'lodash';
@@ -65,6 +62,7 @@ describe('KeyCompressor.test.js', () => {
         });
         it('do not compress keys with <=3 chars', () => {
             const k = KeyCompressor.create(RxSchema.create({
+                version: 0,
                 type: 'object',
                 properties: {
                     z: {
@@ -450,6 +448,7 @@ describe('KeyCompressor.test.js', () => {
         it('BUG: #50 compress string array properly', async() => {
             const mySchema = {
                 title: 'hero schema',
+                version: 0,
                 description: 'describes a simple hero',
                 type: 'object',
                 properties: {
@@ -462,8 +461,14 @@ describe('KeyCompressor.test.js', () => {
                 }
             };
 
-            const db = await RxDatabase.create('heroesDB', 'memory');
-            const collection = await db.collection('mycollection', mySchema);
+            const db = await RxDatabase.create({
+                name: 'heroesdb',
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'mycollection',
+                schema: mySchema
+            });
             const docData = {
                 likes: ['abc', '8']
             };

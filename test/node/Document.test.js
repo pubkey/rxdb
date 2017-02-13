@@ -1,7 +1,4 @@
 import assert from 'assert';
-import {
-    default as randomToken
-} from 'random-token';
 import * as _ from 'lodash';
 
 
@@ -48,7 +45,7 @@ describe('Document.test.js', () => {
                 };
                 await util.assertThrowsAsync(
                     () => doc.get(path),
-                    Error
+                    TypeError
                 );
                 c.database.destroy();
             });
@@ -98,7 +95,7 @@ describe('Document.test.js', () => {
                 };
                 await util.assertThrowsAsync(
                     () => doc.set(path, 'foo'),
-                    Error
+                    TypeError
                 );
                 c.database.destroy();
             });
@@ -152,7 +149,7 @@ describe('Document.test.js', () => {
                 const c = await humansCollection.createNested(10);
                 const doc = await c.findOne().exec();
                 const val = {
-                    name: randomToken(20),
+                    name: util.randomCouchString(20),
                     level: 5
                 };
                 doc.set('mainSkill', val);
@@ -199,7 +196,7 @@ describe('Document.test.js', () => {
 
                 let start = new Date().getTime();
                 for (let i = 0; i < amount; i++) {
-                    doc.set('passportId', randomToken(charAmount));
+                    doc.set('passportId', util.randomCouchString(charAmount));
                     await doc.save();
                 }
                 let duration = new Date().getTime() - start;
@@ -208,7 +205,7 @@ describe('Document.test.js', () => {
                     passportId: 1
                 }).exec();
                 let start2 = new Date().getTime();
-                const val_same = randomToken(charAmount);
+                const val_same = util.randomCouchString(charAmount);
                 for (let i = 0; i < amount; i++) {
                     doc2.set('passportId', val_same);
                     await doc2.save();
@@ -231,7 +228,7 @@ describe('Document.test.js', () => {
                 let start = new Date().getTime();
                 for (let i = 0; i < amount; i++) {
                     let newVal = {
-                        name: randomToken(charAmount),
+                        name: util.randomCouchString(charAmount),
                         level: 5
                     };
                     doc.set('mainSkill', newVal);
@@ -244,7 +241,7 @@ describe('Document.test.js', () => {
                 }).exec();
                 let start2 = new Date().getTime();
                 const val_same = {
-                    name: randomToken(charAmount),
+                    name: util.randomCouchString(charAmount),
                     level: 5
                 };
                 for (let i = 0; i < amount; i++) {
@@ -279,7 +276,7 @@ describe('Document.test.js', () => {
                 doc_same.set('passportId', 'any');
                 await util.assertThrowsAsync(
                     () => doc_same.save(),
-                    Error
+                    'PouchError'
                 );
                 c.database.destroy();
             });

@@ -1,8 +1,5 @@
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
@@ -25,16 +22,16 @@ describe('LeaderElection.test.js', () => {
 
     describe('leaderObject', () => {
         it('should not have a leaderObject', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const db = c.database;
             await util.assertThrowsAsync(
-                () => db.administrationCollection.pouch.get(LeaderElector.documentID),
-                Error
+                () => db._adminPouch.get(LeaderElector.documentID),
+                'PouchError'
             );
             db.destroy();
         });
         it('should get an empty leaderObject', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             const obj = await leaderElector.getLeaderObject();
             delete obj._rev;
@@ -42,7 +39,7 @@ describe('LeaderElection.test.js', () => {
             assert.equal(obj._id, LeaderElector.documentID);
 
             // make sure its also in db
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             delete dbObj._rev;
             assert.deepEqual(obj, dbObj);
             c.database.destroy();
@@ -50,54 +47,54 @@ describe('LeaderElection.test.js', () => {
     });
     describe('.beLeader()', () => {
         it('leaderSignal()', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.leaderSignal();
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.is, leaderElector.token);
             assert.equal(dbObj.apply, leaderElector.token);
             assert.ok(dbObj.t > new Date().getTime() - 1000);
             c.database.destroy();
         });
         it('assing self to leader', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             const is = await leaderElector.beLeader();
             assert.ok(is);
 
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.is, leaderElector.token);
             c.database.destroy();
         });
         it('should signal after time', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             const t = dbObj.t;
             await util.promiseWait(LeaderElector.SIGNAL_TIME * 2);
-            const dbObj2 = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj2 = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.ok(dbObj2.t > t);
             c.database.destroy();
         });
     });
     describe('.applyOnce()', () => {
         it('should apply', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             const is = await leaderElector.applyOnce();
             assert.ok(is);
             c.database.destroy();
         });
         it('should assing self to leader', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.applyOnce();
             assert.ok(leaderElector.isLeader);
             c.database.destroy();
         });
         it('should not apply when other is leader', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
@@ -113,18 +110,18 @@ describe('LeaderElection.test.js', () => {
 
     describe('.die()', () => {
         it('leader: write status on death', async() => {
-            const c = await humansCollection.createMultiInstance(randomToken(10));
+            const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
             const is = await leaderElector.die();
             assert.ok(is);
 
-            const dbObj = await c.database.administrationCollection.pouch.get(LeaderElector.documentID);
+            const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.t, 0);
             c.database.destroy();
         });
         it('other instance applies on death of leader', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
@@ -141,7 +138,7 @@ describe('LeaderElection.test.js', () => {
 
     describe('election', () => {
         it('a single instance should always elect itself as leader', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const db1 = c1.database;
             await db1.leaderElector.applyOnce();
@@ -149,7 +146,7 @@ describe('LeaderElection.test.js', () => {
             c1.database.destroy();
         });
         it('should not elect as leader if other instance is leader', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             const db1 = c1.database;
@@ -167,7 +164,7 @@ describe('LeaderElection.test.js', () => {
             let tries = 0;
             while (tries < 3) {
                 tries++;
-                const name = randomToken(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
@@ -180,7 +177,7 @@ describe('LeaderElection.test.js', () => {
             }
         });
         it('when many instances apply, one should win', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const dbs = [];
             while (dbs.length < 10) {
                 const c = await humansCollection.createMultiInstance(name);
@@ -198,7 +195,7 @@ describe('LeaderElection.test.js', () => {
             await Promise.all(dbs.map(db => db.destroy()));
         });
         it('when the leader dies, a new one should be elected', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const dbs = [];
             while (dbs.length < 6) {
                 const c = await humansCollection.createMultiInstance(name);
@@ -259,7 +256,7 @@ describe('LeaderElection.test.js', () => {
         });
 
         it('waitForLeadership: run once when instance becomes leader', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const cols = await Promise.all(
                 util.filledArray(5)
                 .map(i => humansCollection.createMultiInstance(name))

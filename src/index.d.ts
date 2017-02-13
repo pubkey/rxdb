@@ -22,7 +22,11 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection(name: string, schema?: any | RxSchema): Promise<RxCollection>;
+    collection({
+        name: string,
+        schema?: any | RxSchema,
+        migrationStrategies?: Function[]
+    }): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -58,6 +62,17 @@ declare class RxCollection {
     postInsert(fun: Function, parallel: boolean);
     postSave(fun: Function, parallel: boolean);
     postRemove(fun: Function, parallel: boolean);
+
+    // migration
+    migrate(batchSize: number): Observable<{
+      done: boolean, // true if finished
+      total: number, // will be the doc-count
+      handled: number, // amount of handled docs
+      success: number, // handled docs which successed
+      deleted: number, // handled docs which got deleted
+      percent: number // percentage
+    }>;
+    migratePromise(batchSize:number): Promise<any>;
 
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
@@ -113,12 +128,12 @@ declare class RxChangeEvent {
     toJSON(): any;
 }
 
-export function create(
+export function create({
     prefix: string,
     storageEngine: any,
     password?: string,
     multiInstance?: boolean
-): Promise<RxDatabase>;
+}): Promise<RxDatabase>;
 
 export function plugin(mod: any)
 

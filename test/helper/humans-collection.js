@@ -1,15 +1,16 @@
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as clone
 } from 'clone';
+import {
+    default as memdown
+} from 'memdown';
 
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
-import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as util from '../../dist/lib/util';
+import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as RxSchema from '../../dist/lib/RxSchema';
 
 import * as RxDB from '../../dist/lib/index';
 
@@ -17,9 +18,15 @@ const dbLifetime = 1000 * 2; // db.destroy() will be called after this time
 
 export async function create(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory'
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection(name, schemas.human);
+    const collection = await db.collection({
+        name,
+        schema: schemas.human
+    });
 
     // insert data
     const fns = [];
@@ -33,11 +40,17 @@ export async function create(size = 20, name = 'human') {
 
 export async function createNoCompression(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory'
+    });
     const schemaJSON = clone(schemas.human);
     schemaJSON.disableKeyCompression = true;
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection(name, schemaJSON);
+    const collection = await db.collection({
+        name,
+        schema: schemaJSON
+    });
 
     // insert data
     const fns = [];
@@ -51,9 +64,15 @@ export async function createNoCompression(size = 20, name = 'human') {
 
 export async function createAgeIndex() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory'
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('humana', schemas.humanAgeIndex);
+    const collection = await db.collection({
+        name: 'humana',
+        schema: schemas.humanAgeIndex
+    });
 
     // insert data
     const fns = [];
@@ -67,10 +86,19 @@ export async function createAgeIndex() {
 
 export async function multipleOnSameDB() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), 'memory');
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory'
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('human', schemas.human);
-    const collection2 = await db.collection('human2', schemas.human);
+    const collection = await db.collection({
+        name: 'human',
+        schema: schemas.human
+    });
+    const collection2 = await db.collection({
+        name: 'human2',
+        schema: schemas.human
+    });
 
     // insert data
     for (let i = 0; i < size; i++) {
@@ -87,9 +115,15 @@ export async function multipleOnSameDB() {
 
 export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), adapter);
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('nestedHuman', schemas.nestedHuman);
+    const collection = await db.collection({
+        name: 'nestedhuman',
+        schema: schemas.nestedHuman
+    });
 
     // insert data
     const fns = [];
@@ -103,9 +137,15 @@ export async function createNested(amount = 5, adapter = 'memory') {
 
 export async function createDeepNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create(randomToken(10), adapter);
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('nestedHuman', schemas.deepNestedHuman);
+    const collection = await db.collection({
+        name: 'nestedhuman',
+        schema: schemas.deepNestedHuman
+    });
 
     // insert data
     const fns = [];
@@ -119,9 +159,16 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
 
 
 export async function createEncrypted(amount = 10) {
-    const db = await RxDatabase.create(randomToken(10), 'memory', randomToken(10));
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory',
+        password: util.randomCouchString(10)
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('encryptedhuman', schemas.encryptedHuman);
+    const collection = await db.collection({
+        name: 'encryptedhuman',
+        schema: schemas.encryptedHuman
+    });
 
     // insert data
     const fns = [];
@@ -133,10 +180,18 @@ export async function createEncrypted(amount = 10) {
 }
 
 
-export async function createMultiInstance(prefix, amount = 0, password = null) {
-    const db = await RxDatabase.create(prefix, 'memory', password, true);
+export async function createMultiInstance(name, amount = 0, password = null) {
+    const db = await RxDatabase.create({
+        name,
+        adapter: 'memory',
+        password,
+        multiInstance: true
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('human', schemas.human);
+    const collection = await db.collection({
+        name: 'human',
+        schema: schemas.human
+    });
     // insert data
     const fns = [];
     for (let i = 0; i < amount; i++)
@@ -147,10 +202,17 @@ export async function createMultiInstance(prefix, amount = 0, password = null) {
 }
 
 
-export async function createPrimary(amount = 10, name = randomToken(10)) {
-    const db = await RxDatabase.create(name, 'memory', null, true);
+export async function createPrimary(amount = 10, name = util.randomCouchString(10)) {
+    const db = await RxDatabase.create({
+        name,
+        adapter: 'memory',
+        multiInstance: true
+    });
     // setTimeout(() => db.destroy(), dbLifetime);
-    const collection = await db.collection('encryptedhuman', schemas.primaryHuman);
+    const collection = await db.collection({
+        name: 'encryptedhuman',
+        schema: schemas.primaryHuman
+    });
 
     // insert data
     const fns = [];
@@ -159,4 +221,60 @@ export async function createPrimary(amount = 10, name = randomToken(10)) {
     await Promise.all(fns);
 
     return collection;
+}
+
+
+export async function createMigrationCollection(
+    amount = 0,
+    addMigrationStrategies = {},
+    name = util.randomCouchString(10),
+    autoMigrate = false
+) {
+    const migrationStrategies = {
+        1: doc => doc,
+        2: doc => doc,
+        3: doc => doc
+    };
+
+    Object.entries(addMigrationStrategies)
+        .forEach(enAr => {
+            const fun = enAr.pop();
+            const prop = enAr.pop();
+            migrationStrategies[prop] = fun;
+        });
+
+    const colName = 'human';
+    const db = await RxDatabase.create({
+        name,
+        adapter: memdown
+    });
+    const schema = RxSchema.create(schemas.simpleHuman);
+    const col = await db.collection({
+        name: colName,
+        schema,
+        autoMigrate: false
+    });
+
+    await Promise.all(
+        new Array(amount)
+        .fill(0)
+        .map(() => col.insert(schemaObjects.simpleHumanAge()))
+    );
+
+    col.destroy();
+    db.destroy();
+
+    const db2 = await RxDatabase.create({
+        name,
+        adapter: memdown
+    });
+    const schema2 = RxSchema.create(schemas.simpleHumanV3);
+    const col2 = await db2.collection({
+        name: colName,
+        schema: schema2,
+        autoMigrate,
+        migrationStrategies
+    });
+
+    return col2;
 }

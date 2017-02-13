@@ -1,47 +1,34 @@
 import {
     default as objectPath
 } from 'object-path';
-
 import {
     default as clone
 } from 'clone';
-
-import {
-    default as isPlainObject
-} from 'is-plain-object';
-
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
-        this.jsonID = clone(jsonID);
-        this._normalized;
+        this.jsonID = jsonID;
 
-        this.compoundIndexes = this.jsonID.compoundIndexes || [];
+        this.compoundIndexes = this.jsonID.compoundIndexes;
         delete this.jsonID.compoundIndexes;
 
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.jsonID.required = this.jsonID.required || [];
-
-        // fill with key-compression-state
-        if (!this.jsonID.hasOwnProperty('disableKeyCompression'))
-            this.jsonID.disableKeyCompression = false;
-
         this.indexes.map(indexAr => {
             indexAr
                 .filter(index => !this.jsonID.required.includes(index))
                 .forEach(index => this.jsonID.required.push(index));
         });
 
-        // primary
+        // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
 
-        // add primary to schema
+        // add primary to schema if not there (if _id)
         if (!this.jsonID.properties[this.primaryPath]) {
             this.jsonID.properties[this.primaryPath] = {
                 type: 'string',
@@ -49,18 +36,31 @@ class RxSchema {
             };
         }
 
-        // add _rev
-        this.jsonID.properties._rev = {
-            type: 'string',
-            minLength: 1
-        };
-
-        // true if schema contains a crypt-field
-        this.crypt = hasCrypt(this.jsonID);
         this.encryptedPaths;
+    }
 
-        // always false
-        this.jsonID.additionalProperties = false;
+    get version() {
+        return this.jsonID.version;
+    }
+
+    /**
+     * @return {number[]} array with previous version-numbers
+     */
+    get previousVersions() {
+        let c = 0;
+        return new Array(this.version)
+            .fill(0)
+            .map(() => c++);
+    }
+
+    /**
+     * true if schema contains at least one encrypted path
+     * @type {boolean}
+     */
+    get crypt() {
+        if (!this._crypt)
+            this._crypt = hasCrypt(this.jsonID);
+        return this._crypt;
     }
 
     get normalized() {
@@ -80,6 +80,7 @@ class RxSchema {
 
     /**
      * get all encrypted paths
+     * TODO use getter
      */
     getEncryptedPaths() {
         if (!this.encryptedPaths) this.encryptedPaths = getEncryptedPaths(this.jsonID);
@@ -253,6 +254,18 @@ export function checkSchema(jsonID) {
     if (jsonID.properties._rev)
         throw new Error('schema defines ._rev, this will be done automatically');
 
+    // check _v
+    if (jsonID.properties._v)
+        throw new Error('schema defines ._v, this will be done automatically');
+
+
+    // check version
+    if (!jsonID.hasOwnProperty('version') ||
+        typeof jsonID.version !== 'number' ||
+        jsonID.version < 0
+    ) throw new Error(`schema need an number>=0 as version; given: ${jsonID.version}`);
+
+
     validateFieldsDeep(jsonID);
 
     let primaryPath;
@@ -327,32 +340,51 @@ export function checkSchema(jsonID) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    let defaultSortFn = (a, b) => {
-        return a.localeCompare(b);
-    };
-    let sort = src => {
-        if (Array.isArray(src)) {
-            return src
-                .sort()
-                .map(i => sort(i));
-        }
-        if (isPlainObject(src)) {
-            const out = {};
-            Object.keys(src)
-                .sort(defaultSortFn)
-                .forEach(key => {
-                    out[key] = sort(src[key]);
-                });
-            return out;
-        }
-        return src;
-    };
-    return sort(jsonSchema);
+    return util.sortObject(
+        clone(jsonSchema)
+    );
 }
 
+/**
+ * fills the schema-json with default-values
+ * @param  {Object} schemaObj
+ * @return {Object} cloned schemaObj
+ */
+const fillWithDefaults = function(schemaObj) {
+    schemaObj = clone(schemaObj);
 
+    // additionalProperties is always false
+    schemaObj.additionalProperties = false;
 
-export function create(jsonID) {
-    checkSchema(jsonID);
-    return new RxSchema(jsonID);
+    // fill with key-compression-state ()
+    if (!schemaObj.hasOwnProperty('disableKeyCompression'))
+        schemaObj.disableKeyCompression = false;
+
+    // compoundIndexes must be array
+    schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];
+
+    // required must be array
+    schemaObj.required = schemaObj.required || [];
+
+    // add _rev
+    schemaObj.properties._rev = {
+        type: 'string',
+        minLength: 1
+    };
+
+    // add _v ( schema-version )
+    schemaObj.properties._v = {
+        type: 'number',
+        min: 0
+    };
+
+    // version is 0 by default
+    schemaObj.version = schemaObj.version || 0;
+
+    return schemaObj;
+};
+
+export function create(jsonID, doCheck = true) {
+    if (doCheck) checkSchema(jsonID);
+    return new RxSchema(fillWithDefaults(jsonID));
 }

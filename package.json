@@ -40,7 +40,7 @@
     "build:browserify": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
     "disc": "npm run transpile && browserify dist/lib/index.js --full-paths | uglifyjs --compress --mangle | discify --open --full-paths",
     "preversion": "npm run lint && npm run test",
-    "dev": "watch 'npm test' src/ test/"
+    "dev": "watch 'npm run test:node' src/ test/"
   },
   "pre-commit": [
     "lint"
@@ -52,7 +52,6 @@
     "clone": "2.1.0",
     "crypto-js": "3.1.8",
     "es6-promise": "4.0.5",
-    "is-plain-object": "2.0.1",
     "jsonschema": "1.1.1",
     "object-path": "0.11.3",
     "pouchdb-core": "6.1.1",

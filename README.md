@@ -147,8 +147,13 @@ ES6:
 
 ```javascript
 import * as RxDB from 'rxdb';
-RxDB.create('heroesDB', 'websql', 'myLongAndStupidPassword', true)  // create database
-  .then(db => db.collection('mycollection', mySchema))              // create collection
+RxDB.create({
+    name: 'heroesDB',
+    adapter: 'websql',
+    password: 'myLongAndStupidPassword', // optional
+    multiInstance: true                  // default: true
+  })  // create database
+  .then(db => db.collection({name: 'mycollection', scehma: mySchema}))              // create collection
   .then(collection => collection.insert({name: 'Bob'}))             // insert document
 ```
 
@@ -156,8 +161,13 @@ ES5:
 
 ```javascript
 var RxDB = require('rxdb');
-RxDB.create('heroesDB', 'websql', 'myLongAndStupidPassword', true)      // create database
-  .then(function(db) {return db.collection('mycollection', mySchema);}) // create collection
+RxDB.create({
+    name: 'heroesDB',
+    adapter: 'websql',
+    password: 'myLongAndStupidPassword', // optional
+    multiInstance: true                  // default: true
+  })      // create database
+  .then(function(db) {return db.collection({name: 'mycollection', schema: mySchema});}) // create collection
   .then(function(collection) {collection.insert({name: 'Bob'});})       // insert document
 ```
 
@@ -225,6 +235,7 @@ heroCollection
 ```javascript
 var mySchema = {
     title: "hero schema",
+    version: 0,                 // <- incremental version-number
     description: "describes a simple hero",
     type: "object",
     properties: {

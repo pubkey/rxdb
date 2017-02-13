@@ -1,9 +1,5 @@
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-
-import {
     default as memdown
 } from 'memdown';
 import {
@@ -28,13 +24,19 @@ describe('PouchDB-integration.test.js', () => {
     describe('memdown', () => {
         it('should not allow leveldown-adapters without the plugin', async() => {
             await util.assertThrowsAsync(
-                () => RxDB.create(randomToken(10), memdown),
+                () => RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                }),
                 Error
             );
         });
         it('should work after adding the leveldb-plugin', async() => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-leveldb'));
-            const db = await RxDB.create(randomToken(10), memdown);
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: memdown
+            });
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
@@ -43,13 +45,19 @@ describe('PouchDB-integration.test.js', () => {
     describe('pouchdb-adapter-memory', () => {
         it('should not create a db without adding the adapter', async() => {
             await util.assertThrowsAsync(
-                () => RxDB.create(randomToken(10), 'memory'),
+                () => RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                }),
                 Error
             );
         });
         it('should work when adapter was added', async() => {
             RxDB.plugin(require('pouchdb-adapter-memory'));
-            const db = await RxDB.create(randomToken(10), 'memory');
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
@@ -59,16 +67,173 @@ describe('PouchDB-integration.test.js', () => {
         it('should crash because nodejs has no localstorage', async() => {
             RxDB.PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await util.assertThrowsAsync(
-                () => RxDB.create(randomToken(10), 'localstorage'),
+                () => RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'localstorage'
+                }),
                 Error
             );
         });
     });
 
 
+    describe('own pouchdb functions', () => {
+        describe('.countAllUndeleted()', () => {
+            it('should return 0', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(count, 0);
+            });
+            it('should return 1', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                await pouchdb.put({
+                    _id: util.randomCouchString(10)
+                });
+                const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(count, 1);
+            });
+            it('should not count deleted docs', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                const _id = util.randomCouchString(10);
+                await pouchdb.put({
+                    _id,
+                    x: 1
+                });
+
+                const countBefore = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(countBefore, 1);
+
+                const doc = await pouchdb.get(_id);
+                await pouchdb.remove(doc);
+                const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(count, 0);
+            });
+            it('should count a big amount with one deleted doc', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+
+                const _id = util.randomCouchString(10);
+                await pouchdb.put({
+                    _id,
+                    x: 1
+                });
+                const countBefore = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(countBefore, 1);
+                const doc = await pouchdb.get(_id);
+                await pouchdb.remove(doc);
+
+                let t = 42;
+                while (t > 0) {
+                    await pouchdb.put({
+                        _id: util.randomCouchString(10),
+                        x: 1
+                    });
+                    t--;
+                }
+                const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(count, 42);
+            });
+        });
+        describe('.getBatch()', () => {
+            it('should return empty array', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
+                assert.deepEqual(docs, []);
+            });
+            it('should not return deleted', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+
+                const _id = util.randomCouchString(10);
+                await pouchdb.put({
+                    _id,
+                    x: 1
+                });
+
+                const countBefore = await RxDB.PouchDB.countAllUndeleted(pouchdb);
+                assert.deepEqual(countBefore, 1);
+
+                const doc = await pouchdb.get(_id);
+                await pouchdb.remove(doc);
+
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
+                assert.deepEqual(docs, []);
+            });
+            it('should return one document in array', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+                const _id = util.randomCouchString(10);
+                await pouchdb.put({
+                    _id,
+                    x: 1
+                });
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0].x, 1);
+                assert.equal(docs[0]._id, _id);
+            });
+
+            it('should max return batchSize', async() => {
+                const name = util.randomCouchString(10);
+                const pouchdb = new RxDB.PouchDB(
+                    name, {
+                        adapter: 'memory'
+                    }
+                );
+
+                let t = 42;
+                while (t > 0) {
+                    await pouchdb.put({
+                        _id: util.randomCouchString(10),
+                        x: 1
+                    });
+                    t--;
+                }
+                const batchSize = 13;
+                const docs = await RxDB.PouchDB.getBatch(pouchdb, batchSize);
+                assert.equal(docs.length, batchSize);
+                docs.forEach(doc => {
+                    assert.equal(doc.x, 1);
+                });
+            });
+        });
+    });
+
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async() => {
-            const name = randomToken(10);
+            const name = util.randomCouchString(10);
             const _id = '_local/foobar';
             const createPouch = () => {
                 return new RxDB.PouchDB(
@@ -84,7 +249,7 @@ describe('PouchDB-integration.test.js', () => {
             const pouch2 = createPouch();
             await util.assertThrowsAsync(
                 () => pouch2.get(_id),
-                Error
+                'PouchError'
             );
             // insert
             await pouch1.put({

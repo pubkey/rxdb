@@ -12,7 +12,6 @@ class Socket {
     constructor(database) {
         this.database = database;
         this.token = database.token;
-        this.collection;
         this.subs = [];
 
         this.pullCount = 0;
@@ -29,13 +28,10 @@ class Socket {
 
     async prepare() {
         // create socket-collection
-        this.collection = await RxCollection.create(
-            this.database,
-            '_socket',
-            DatabaseSchemas.socket, {
-                auto_compaction: false, // this is false because its done manually at .pull()
-                revs_limit: 1
-            });
+        this.pouch = this.database._spawnPouchDB('_socket', 0, {
+            auto_compaction: false, // this is false because its done manually at .pull()
+            revs_limit: 1
+        });
 
         // pull on BroadcastChannel-message
         if (this.bc) {
@@ -70,7 +66,7 @@ class Socket {
         // TODO find a way to getAll on local documents
         //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
         socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;
-        await this.collection.pouch.put(socketDoc);
+        await this.pouch.put(socketDoc);
         this.bc && await this.bc.write('pull');
         return true;
     }
@@ -80,7 +76,7 @@ class Socket {
      * get all docs from the socket-collection
      */
     async fetchDocs() {
-        const result = await this.collection.pouch.allDocs({
+        const result = await this.pouch.allDocs({
             include_docs: true
         });
         return result.rows
@@ -88,7 +84,7 @@ class Socket {
     }
     async deleteDoc(doc) {
         try {
-            await this.collection.pouch.remove(doc);
+            await this.pouch.remove(doc);
         } catch (e) {}
     }
 
@@ -133,7 +129,7 @@ class Socket {
             .filter(doc => doc.t < maxAge)
             .map(doc => this.deleteDoc(doc));
         if (delDocs.length > 0)
-            await this.collection.pouch.compact();
+            await this.pouch.compact();
 
 
         this.lastPull = new Date().getTime();
@@ -150,7 +146,6 @@ class Socket {
     destroy() {
         this.subs.map(sub => sub.unsubscribe());
         if (this.bc) this.bc.destroy();
-        this.collection.destroy();
     }
 
 }

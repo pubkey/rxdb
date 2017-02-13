@@ -1,7 +1,4 @@
 import assert from 'assert';
-import {
-    default as randomToken
-} from 'random-token';
 import * as _ from 'lodash';
 
 import * as RxSchema from '../../dist/lib/RxSchema';
@@ -73,6 +70,7 @@ describe('RxSchema.test.js', () => {
                 it('break when dots in fieldname', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: 'dot in fieldname',
                         properties: {
                             'my.field': {
@@ -88,6 +86,7 @@ describe('RxSchema.test.js', () => {
                 it('should not allow $-char in fieldnames', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: 'dot in fieldname',
                         properties: {
                             'firstName$': {
@@ -97,6 +96,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: '$ in fieldname',
                         properties: {
                             'first$Name': {
@@ -108,6 +108,7 @@ describe('RxSchema.test.js', () => {
                 it('should not allow $-char in nested fieldnames', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: '$ in nested fieldname',
                         properties: {
                             'things': {
@@ -122,6 +123,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: '$ in nested fieldname',
                         properties: {
                             'things': {
@@ -138,6 +140,7 @@ describe('RxSchema.test.js', () => {
                 it('should not allow RxDocument-properties as top-fieldnames (own)', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: 'changed as fieldname',
                         properties: {
                             'changed': {
@@ -149,6 +152,7 @@ describe('RxSchema.test.js', () => {
                 it('should not allow RxDocument-properties as top-fieldnames (prototype)', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
+                        version: 0,
                         description: 'save as fieldname',
                         properties: {
                             'save': {
@@ -157,9 +161,53 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error);
                 });
+                it('throw when no version', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        description: 'save as fieldname',
+                        properties: {
+                            'foobar': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                });
+                it('throw when version < 0', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        version: -10,
+                        description: 'save as fieldname',
+                        properties: {
+                            'foobar': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                });
+                it('throw when version no number', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        version: 'foobar',
+                        description: 'save as fieldname',
+                        properties: {
+                            'foobar': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error);
+                });
+
             });
         });
         describe('.normalize()', () => {
+            // TODO this test belongs to util.test.js
+            it('should sort array with objects and strings', () => {
+                const val = ['firstName', 'lastName', {
+                    name: 2
+                }];
+                const normalized = RxSchema.normalize(val);
+                assert.deepEqual(val, normalized);
+            });
             it('should be the same object', () => {
                 const schema = RxSchema.normalize(schemas.humanNormalizeSchema1);
                 assert.deepEqual(schema, schemas.humanNormalizeSchema1);
@@ -167,7 +215,7 @@ describe('RxSchema.test.js', () => {
             it('should deep sort one schema with different orders to be the same', () => {
                 const schema1 = RxSchema.normalize(schemas.humanNormalizeSchema1);
                 const schema2 = RxSchema.normalize(schemas.humanNormalizeSchema2);
-                assert.equal(JSON.stringify(schema1), JSON.stringify(schema2));
+                assert.deepEqual(schema1, schema2);
             });
         });
         describe('.create()', () => {
@@ -193,6 +241,7 @@ describe('RxSchema.test.js', () => {
                 it('throw when nested index', () => {
                     assert.throws(() => RxSchema.create({
                         title: 'schema',
+                        version: 0,
                         description: 'dot in fieldname',
                         properties: {
                             nested: {
@@ -213,6 +262,7 @@ describe('RxSchema.test.js', () => {
                 it('first-level field is "language" is forbitten', () => {
                     assert.throws(() => RxSchema.create({
                         title: 'schema',
+                        version: 0,
                         description: 'dot in fieldname',
                         properties: {
                             foo: {
@@ -230,6 +280,7 @@ describe('RxSchema.test.js', () => {
             describe('positive', () => {
                 it('true when one field is encrypted', () => {
                     const ret = RxSchema.hasCrypt({
+                        version: 0,
                         properties: {
                             secret: {
                                 type: 'string',
@@ -241,6 +292,7 @@ describe('RxSchema.test.js', () => {
                 });
                 it('false when no field is encrypted', () => {
                     const ret = RxSchema.hasCrypt({
+                        version: 0,
                         properties: {
                             secret: {
                                 type: 'string'
@@ -251,6 +303,7 @@ describe('RxSchema.test.js', () => {
                 });
                 it('true when nested field is encrypted', () => {
                     const ret = RxSchema.hasCrypt({
+                        version: 0,
                         properties: {
                             any: {
                                 type: 'object',
@@ -277,6 +330,33 @@ describe('RxSchema.test.js', () => {
                 assert.notEqual(schema._normalized, null);
             });
         });
+        describe('.previousVersions', () => {
+            it('get empty array when current==0', () => {
+                const schema = RxSchema.create({
+                    title: 'schema',
+                    version: 0,
+                    properties: {
+                        'foobar': {
+                            type: 'string'
+                        }
+                    }
+                });
+                assert.deepEqual(schema.previousVersions, []);
+            });
+            it('get valid array when current==5', () => {
+                const schema = RxSchema.create({
+                    title: 'schema',
+                    version: 5,
+                    properties: {
+                        'foobar': {
+                            type: 'string'
+                        }
+                    }
+                });
+                assert.deepEqual(schema.previousVersions, [0, 1, 2, 3, 4]);
+            });
+        });
+
         describe('.hash()', () => {
             describe('positive', () => {
                 it('should hash', () => {
@@ -285,7 +365,7 @@ describe('RxSchema.test.js', () => {
                     assert.equal(typeof hash, 'string');
                     assert.ok(hash.length > 10);
                 });
-                it('should normalize one schema with two different orders and generate for each the same hash', ()=>{
+                it('should normalize one schema with two different orders and generate for each the same hash', () => {
                     const schema1 = RxSchema.create(schemas.humanNormalizeSchema1);
                     const schema2 = RxSchema.create(schemas.humanNormalizeSchema2);
                     const hash1 = schema1.hash();
@@ -342,7 +422,7 @@ describe('RxSchema.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generate_id();
-                    obj.token = randomToken(5);
+                    obj.token = util.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {

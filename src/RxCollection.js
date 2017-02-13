@@ -15,6 +15,7 @@ import * as RxDocument from './RxDocument';
 import * as RxQuery from './RxQuery';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as KeyCompressor from './KeyCompressor';
+import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 
 
@@ -23,39 +24,30 @@ class RxCollection {
     static HOOKS_WHEN = ['pre', 'post'];
     static HOOKS_KEYS = ['insert', 'save', 'remove'];
 
-    constructor(database, name, schema, pouchSettings = {}) {
+    constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
         this.database = database;
         this.name = name;
         this.schema = schema;
-        this.synced = false;
+
+        this._dataMigrator = DataMigrator.create(this, migrationStrategies);
+        this.crypter = Crypter.create(this.database.password, this.schema);
         this.keyCompressor = KeyCompressor.create(this.schema);
+
+        this.synced = false;
 
         this.hooks = {};
 
-        let adapterObj = {
-            db: this.database.adapter
-        };
-        if (typeof this.database.adapter === 'string') {
-            adapterObj = {
-                adapter: this.database.adapter
-            };
-        }
+        this.pouchSettings = pouchSettings;
 
         this.subs = [];
         this.pouchSyncs = [];
 
-        this.pouch = new PouchDB(
-            database.prefix + ':RxDB:' + name,
-            adapterObj,
-            pouchSettings
-        );
+        this.pouch = this.database._spawnPouchDB(this.name, schema.version, pouchSettings);
 
         this.observable$ = this.database.$
             .filter(event => event.data.col == this.name);
     }
     async prepare() {
-
-        this.crypter = Crypter.create(this.database.password, this.schema);
 
         // INDEXES
         await Promise.all(
@@ -74,7 +66,7 @@ class RxCollection {
                 });
             }));
 
-        // HOOKS
+        // set HOOKS-functions dynamically
         RxCollection.HOOKS_KEYS.forEach(key => {
             RxCollection.HOOKS_WHEN.map(when => {
                 const fnName = when + util.ucfirst(key);
@@ -82,6 +74,25 @@ class RxCollection {
             });
         });
     }
+
+
+    /**
+     * @param {number} [batchSize=10] amount of documents handled in parallel
+     * @return {Observable} emits the migration-status
+     */
+    migrate(batchSize = 10) {
+        return this._dataMigrator.migrate(batchSize);
+    }
+
+    /**
+     * does the same thing as .migrate() but returns promise
+     * @param {number} [batchSize=10] amount of documents handled in parallel
+     * @return {Promise} resolves when finished
+     */
+    migratePromise(batchSize = 10) {
+        return this._dataMigrator.migratePromise(batchSize);
+    }
+
 
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
@@ -99,9 +110,26 @@ class RxCollection {
         const decrypted = this.crypter.decrypt(decompressed);
         return decrypted;
     }
-    async _pouchPut(obj) {
+
+
+    /**
+     * [overwrite description]
+     * @param {object} obj
+     * @param {boolean} [overwrite=false] if true, it will overwrite existing document
+     */
+    async _pouchPut(obj, overwrite = false) {
         obj = this._handleToPouch(obj);
-        return this.pouch.put(obj);
+        let ret = null;
+        try {
+            ret = await this.pouch.put(obj);
+        } catch (e) {
+            if (overwrite && e.status == 409) {
+                const exist = await this.pouch.get(obj._id);
+                obj._rev = exist._rev;
+                ret = await this.pouch.put(obj);
+            } else throw e;
+        }
+        return ret;
     }
     async _pouchGet(key) {
         let doc = await this.pouch.get(key);
@@ -124,7 +152,6 @@ class RxCollection {
 
         return docs;
     }
-
 
     /**
      * returns observable
@@ -404,6 +431,11 @@ class RxCollection {
     }
 
 
+    async _mustMigrate() {
+
+    }
+
+
     async destroy() {
         this.subs.map(sub => sub.unsubscribe());
         this.pouchSyncs.map(sync => sync.cancel());
@@ -412,22 +444,79 @@ class RxCollection {
 
 }
 
+/**
+ * checks if the migrationStrategies are ok, throws if not
+ * @param  {RxSchema} schema
+ * @param  {Object} migrationStrategies
+ * @throws {Error|TypeError} if not ok
+ * @return {boolean}
+ */
+const checkMigrationStrategies = function(schema, migrationStrategies) {
+    // migrationStrategies must be object not array
+    if (
+        typeof migrationStrategies !== 'object' ||
+        Array.isArray(migrationStrategies)
+    ) throw new TypeError('migrationStrategies must be an object');
 
+    // for every previousVersion there must be strategy
+    if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
+        throw new Error(`
+      a migrationStrategy is missing or too much
+      - have: ${JSON.stringify(Object.keys(migrationStrategies).map(v => parseInt(v)))}
+      - should: ${JSON.stringify(schema.previousVersions)}
+      `);
+    }
 
-export async function create(database, name, schema, pouchSettings = {}) {
-    if (schema.constructor.name != 'RxSchema')
+    // every strategy must have number as property and be a function
+    schema.previousVersions
+        .map(vNr => {
+            return {
+                v: vNr,
+                s: migrationStrategies[(vNr + 1) + '']
+            };
+        })
+        .filter(strat => typeof strat.s !== 'function')
+        .forEach(strat => {
+            throw new TypeError(`migrationStrategy(v${strat.v}) must be a function; is : ${typeof strat}`);
+        });
+
+    return true;
+};
+
+/**
+ * creates and prepares a new collection
+ * @param  {RxDatabase}  database
+ * @param  {string}  name
+ * @param  {RxSchema}  schema
+ * @param  {?Object}  [pouchSettings={}]
+ * @param  {?Object}  [migrationStrategies={}]
+ * @return {Promise.<RxCollection>} promise with collection
+ */
+export async function create({
+    database,
+    name,
+    schema,
+    pouchSettings = {},
+    migrationStrategies = {},
+    autoMigrate = true
+}) {
+    if (schema.constructor.name !== 'RxSchema')
         throw new TypeError('given schema is no Schema-object');
 
-    if (database.constructor.name != 'RxDatabase')
+    if (database.constructor.name !== 'RxDatabase')
         throw new TypeError('given database is no Database-object');
 
-    if (
-        typeof name != 'string' ||
-        name.length == 0
-    ) throw new TypeError('given name is no string or empty');
+    if (typeof autoMigrate !== 'boolean')
+        throw new TypeError('autoMigrate must be boolean');
 
-    const collection = new RxCollection(database, name, schema);
+    util.validateCouchDBString(name);
+    checkMigrationStrategies(schema, migrationStrategies);
+
+    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
     await collection.prepare();
+
+    if (autoMigrate)
+        await collection.migratePromise();
 
     return collection;
 }

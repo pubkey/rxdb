@@ -6,9 +6,6 @@
 
 import assert from 'assert';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
@@ -144,10 +141,10 @@ describe('Replication.test.js', () => {
 
     describe('events', () => {
         describe('positive', () => {
-            it('collection: should get an event when a docs syncs', async() => {
+            it('collection: should get an event when a doc syncs', async() => {
                 const serverURL = await SpawnServer.spawn();
-                const c = await humansCollection.create(0, 'colSource ' + randomToken(5));
-                const c2 = await humansCollection.create(0, 'colSync ' + randomToken(5));
+                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
                 c.sync(serverURL, {
                     live: true
                 });
@@ -175,8 +172,8 @@ describe('Replication.test.js', () => {
 
             it('query: should re-find when a docs syncs', async() => {
                 const serverURL = await SpawnServer.spawn();
-                const c = await humansCollection.create(0, 'colSource ' + randomToken(5));
-                const c2 = await humansCollection.create(0, 'colSync ' + randomToken(5));
+                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
                 c.sync(serverURL, {
                     live: true
                 });
@@ -205,8 +202,8 @@ describe('Replication.test.js', () => {
             });
             it('document: should change field when doc saves', async() => {
                 const serverURL = await SpawnServer.spawn();
-                const c = await humansCollection.create(0, 'colSource ' + randomToken(5));
-                const c2 = await humansCollection.create(0, 'colSync ' + randomToken(5));
+                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
                 c.sync(serverURL, {
                     live: true
                 });

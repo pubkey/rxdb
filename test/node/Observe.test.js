@@ -3,9 +3,6 @@ import {
     default as clone
 } from 'clone';
 import {
-    default as randomToken
-} from 'random-token';
-import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
@@ -28,8 +25,14 @@ describe('Observe.test.js', () => {
         describe('.collection()', () => {
             describe('positive', () => {
                 it('emit when collection is created', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
-                    db.collection('myname', schemas.human);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
+                    db.collection({
+                        name: 'myname',
+                        schema: schemas.human
+                    });
                     const changeEvent = await db.$
                         .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
                         .first().toPromise();
@@ -40,15 +43,24 @@ describe('Observe.test.js', () => {
             });
             describe('negative', () => {
                 it('emit once when called twice', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
                     let calls = 0;
                     db.$
                         .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
                         .subscribe(e => {
                             calls++;
                         });
-                    await db.collection('myname1', schemas.human);
-                    await db.collection('myname1', schemas.human);
+                    await db.collection({
+                        name: 'myname1',
+                        schema: schemas.human
+                    });
+                    await db.collection({
+                        name: 'myname1',
+                        schema: schemas.human
+                    });
 
                     await util.promiseWait(10);
                     assert.equal(calls, 1);
@@ -61,9 +73,15 @@ describe('Observe.test.js', () => {
         describe('.insert()', () => {
             describe('positive', () => {
                 it('should get a valid event on insert', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
-                    const colName = randomToken(10);
-                    const c = await db.collection(colName, schemas.human);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
+                    const colName = 'foobar';
+                    const c = await db.collection({
+                        name: colName,
+                        schema: schemas.human
+                    });
 
                     c.insert(schemaObjects.human());
                     const changeEvent = await c.$.first().toPromise();
@@ -76,8 +94,14 @@ describe('Observe.test.js', () => {
             });
             describe('negative', () => {
                 it('should get no event on non-succes-insert', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
-                    const c = await db.collection(randomToken(10), schemas.human);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
+                    const c = await db.collection({
+                        name: 'foobar',
+                        schema: schemas.human
+                    });
                     let calls = 0;
                     db.$.subscribe(e => {
                         calls++;
@@ -96,14 +120,20 @@ describe('Observe.test.js', () => {
         describe('.remove()', () => {
             describe('positive', () => {
                 it('should fire on remove', async() => {
-                    const db = await RxDatabase.create(randomToken(10), memdown);
-                    const colName = randomToken(10);
-                    const c = await db.collection(colName, schemas.human);
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: memdown
+                    });
+                    const colName = util.randomCouchString(10);
+                    const c = await db.collection({
+                        name: colName,
+                        schema: schemas.human
+                    });
                     let ar = [];
                     const sub = c
-                			.find()
-                			.$
-                			.subscribe(docs => ar.push(docs));
+                        .find()
+                        .$
+                        .subscribe(docs => ar.push(docs));
 
                     await util.promiseWait(10);
                     await c.insert(schemaObjects.human());
@@ -125,7 +155,7 @@ describe('Observe.test.js', () => {
                 it('should fire on save', async() => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
-                    doc.set('firstName', randomToken(8));
+                    doc.set('firstName', util.randomCouchString(8));
                     doc.save();
                     const changeEvent = await doc.$.first().toPromise();
                     assert.equal(changeEvent._id, doc.getPrimary());
@@ -140,7 +170,7 @@ describe('Observe.test.js', () => {
                     doc.get$('firstName').subscribe(newVal => {
                         valueObj.v = newVal;
                     });
-                    const setName = randomToken(10);
+                    const setName = util.randomCouchString(10);
                     doc.set('firstName', setName);
                     await doc.save();
                     await util.promiseWait(5);
@@ -156,7 +186,7 @@ describe('Observe.test.js', () => {
                     doc.get$('mainSkill.name').subscribe(newVal => {
                         valueObj.v = newVal;
                     });
-                    const setName = randomToken(10);
+                    const setName = util.randomCouchString(10);
                     doc.set('mainSkill.name', setName);
                     await doc.save();
                     util.promiseWait(5);
@@ -231,7 +261,7 @@ describe('Observe.test.js', () => {
                     doc.get$('firstName').subscribe(newVal => {
                         valueObj.v = newVal;
                     });
-                    doc.set('firstName', randomToken(10));
+                    doc.set('firstName', util.randomCouchString(10));
                     doc.destroy();
                     util.promiseWait(50);
                     assert.equal(valueObj.v, firstValue);

@@ -13,8 +13,8 @@ import {
  * @param  {boolean} multiInstance if true, multiInstance-handling will be done
  * @return {Promise<Database>}
  */
-export async function create(prefix, storageEngine, password, multiInstance) {
-    return RxDatabase.create(prefix, storageEngine, password, multiInstance);
+export async function create(args) {
+    return RxDatabase.create(args);
 }
 
 export function plugin(mod) {

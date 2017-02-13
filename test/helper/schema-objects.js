@@ -27,6 +27,13 @@ export function simpleHuman() {
     };
 };
 
+export function simpleHumanAge() {
+    return {
+        passportId: randomToken(12),
+        age: randomInt(10, 50) + ''
+    };
+};
+
 
 export function nestedHuman() {
     return {
