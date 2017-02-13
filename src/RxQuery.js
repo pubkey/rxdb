@@ -84,7 +84,7 @@ class RxQuery {
             this._subject = new util.Rx.BehaviorSubject(null);
             this._obsRunning = false;
             const collection$ = this.collection.$
-                .filter(cEvent => ['RxCollection.insert', 'RxDocument.save'].includes(cEvent.data.op))
+                .filter(cEvent => ['RxCollection.insert', 'RxDocument.save', 'RxDocument.remove'].includes(cEvent.data.op))
                 .startWith(1)
                 .filter(x => !this._obsRunning)
                 .do(x => this._obsRunning = true)

@@ -73,16 +73,17 @@ class KeyCompressor {
 
     _compressObj(obj, path = '') {
         const ret = {};
+        if (typeof obj !== 'object') return obj;
+        if (Array.isArray(obj)) {
+            return obj
+                .map(o => this._compressObj(o, util.trimDots(path + '.item')));
+        }
         Object.keys(obj).forEach(key => {
             const propertyObj = obj[key];
             const fullPath = util.trimDots(path + '.' + key);
             const replacedKey = this.table[fullPath] ? this.table[fullPath] : key;
             let nextObj = propertyObj;
-            if (Array.isArray(nextObj)) {
-                nextObj = nextObj
-                    .map(o => this._compressObj(o, fullPath + '.item'));
-            } else if (typeof nextObj === 'object')
-                nextObj = this._compressObj(propertyObj, fullPath);
+            nextObj = this._compressObj(propertyObj, fullPath);
             ret[replacedKey] = nextObj;
         });
         return ret;

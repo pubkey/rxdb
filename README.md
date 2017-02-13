@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/pubkey/rxdb/issues/44">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/ca17df8e/docs/files/logo/logo_union_path.svg" width="60px" />
+  <a href="https://github.com/pubkey/rxdb">
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="300px" />
   </a>
 </p>
 
@@ -57,7 +57,7 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
       </ul>
     </td>
     <td>
-      <img src="docs/files/arrow.png" width="200px"/>
+      <img src="docs/files/arrow.png" width="200px" />
     </td>
     <td colspan="3">
 

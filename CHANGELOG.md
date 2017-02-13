@@ -1,3 +1,9 @@
+## 2.0.4 (February 12, 2017)
+
+Bugfixes:
+  - top-level array of document not working [#50](https://github.com/pubkey/rxdb/issues/50)
+  - event on document.remove() not fired at query-obserable [#52](https://github.com/pubkey/rxdb/issues/52)
+
 ## 2.0.3 (January 31, 2017)
 
 Features:

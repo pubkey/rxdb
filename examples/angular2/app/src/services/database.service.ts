@@ -61,16 +61,17 @@ export class DatabaseService {
         })
         // hooks
         .then(db => {
-          db.collections.hero.preInsert(async function(docObj){
+          db.collections.hero.preInsert(function(docObj){
             const color = docObj.color;
-            const has = await db.collections.hero.findOne({color}).exec();
-
-            if(has!=null){
-              alert('another hero already has the color ' + color);
-              throw new Error('color already there');
-            }
+            return db.collections.hero.findOne({color}).exec()
+              .then(has => {
+                if(has!=null){
+                  alert('another hero already has the color ' + color);
+                  throw new Error('color already there');
+                }
+                return db;
+              });
           });
-          return db;
         })
         // sync
         .then(db => {
