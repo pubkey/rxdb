@@ -184,9 +184,14 @@ class RxQuery {
      */
     async remove() {
         const docs = await this.exec();
-        await Promise.all(
-            docs.map(doc => doc.remove())
-        );
+        if (Array.isArray(docs)) {
+            await Promise.all(
+                docs.map(doc => doc.remove())
+            );
+        } else {
+            // via findOne()
+            await docs.remove();
+        }
         return docs;
     }
 

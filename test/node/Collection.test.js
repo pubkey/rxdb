@@ -643,6 +643,15 @@ describe('RxCollection.test.js', () => {
                     const docsAfter = await c.find().exec();
                     assert.equal(docsAfter.length, 5);
                 });
+                it('remove on findOne', async() => {
+                    const c = await humansCollection.create(10);
+                    const query = c.findOne();
+                    const removed = await query.remove();
+                    assert.equal(removed.constructor.name, 'RxDocument');
+                    assert.equal(removed.deleted, true);
+                    const docsAfter = await c.find().exec();
+                    assert.equal(docsAfter.length, 9);
+                });
             });
         });
 
