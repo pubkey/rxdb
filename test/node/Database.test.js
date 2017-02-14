@@ -169,6 +169,10 @@ describe('RxDatabase.test.js', () => {
                     schema: schemas.human
                 });
                 assert.equal(collection.constructor.name, 'RxCollection');
+
+                // make sure defineGetter works
+                assert.equal(db.human0, collection);
+
                 db.destroy();
             });
             it('the schema-object should be saved in the collectionsCollection', async() => {
@@ -304,7 +308,6 @@ describe('RxDatabase.test.js', () => {
                 );
                 db.destroy();
             });
-
             it('crypt-schema without db-password', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
@@ -319,7 +322,6 @@ describe('RxDatabase.test.js', () => {
                 );
                 db.destroy();
             });
-
             it('2 different schemas on same collection', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
@@ -350,6 +352,33 @@ describe('RxDatabase.test.js', () => {
                     }),
                     Error
                 );
+                db.destroy();
+            });
+            it('not allow collectionNames which are properties of RxDatabase', async() => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
+                const forbidden = [
+                    'name',
+                    'token',
+                    'prepare',
+                    'isLeader',
+                    '$emit',
+                    'destroy'
+                ];
+                let t = 0;
+                while (t < forbidden.length) {
+                    const colName = forbidden[t];
+                    await util.assertThrowsAsync(
+                        () => db.collection({
+                            name: colName,
+                            schema: schemas.human
+                        }),
+                        Error
+                    );
+                    t++;
+                }
                 db.destroy();
             });
             it('create 2 times on same adapter with different schema', async() => {

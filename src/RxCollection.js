@@ -528,15 +528,15 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
 
 
 /**
- * returns all possible properties of a RxCollection
+ * returns all possible properties of a RxCollection-instance
  * @return {string[]} property-names
  */
 let _properties = null;
 export function properties() {
     if (!_properties) {
-        const pseudoCollection = new RxCollection();
-        const ownProperties = Object.getOwnPropertyNames(pseudoCollection);
-        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoCollection));
+        const pseudoInstance = new RxCollection();
+        const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
+        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
         _properties = [...ownProperties, ...prototypeProperties];
     }
     return _properties;

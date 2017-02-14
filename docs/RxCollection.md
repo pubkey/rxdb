@@ -19,6 +19,19 @@ The name identifies the collection and should be used to refind the collection i
 ### schema
 The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.
 
+
+## get a collection from the database
+To get an existing collection from the database, you can either use the `collection()`-method again, or call the collection-name directly on the database:
+
+```javascript
+const collection = await db.collection('heroes');
+const collection2 = db.heroes;
+
+console.log(collection == collection2);
+// true
+
+```
+
 ## Functions
 
 ### Observe $

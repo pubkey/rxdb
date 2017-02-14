@@ -145,6 +145,21 @@ Installation:
 npm install rxdb --save
 ```
 
+
+ES7:
+```javascript
+import * as RxDB from 'rxdb';
+const db = await RxDB.create({
+    name: 'heroesDB',
+    adapter: 'websql',
+    password: 'myLongAndStupidPassword', // optional
+    multiInstance: true                  // default: true
+  });                                                       // create database
+
+await db.collection({name: 'heroes', schema: mySchema});    // create collection
+db.heroes.insert({ name: 'Bob' });                          // insert document
+```
+
 ES6:
 
 ```javascript
@@ -155,7 +170,7 @@ RxDB.create({
     password: 'myLongAndStupidPassword', // optional
     multiInstance: true                  // default: true
   })  // create database
-  .then(db => db.collection({name: 'mycollection', scehma: mySchema}))              // create collection
+  .then(db => db.collection({name: 'heroes', schema: mySchema}))              // create collection
   .then(collection => collection.insert({name: 'Bob'}))             // insert document
 ```
 
@@ -168,9 +183,9 @@ RxDB.create({
     adapter: 'websql',
     password: 'myLongAndStupidPassword', // optional
     multiInstance: true                  // default: true
-  })      // create database
-  .then(function(db) {return db.collection({name: 'mycollection', schema: mySchema});}) // create collection
-  .then(function(collection) {collection.insert({name: 'Bob'});})       // insert document
+  })                                                                              // create database
+  .then(function(db) {return db.collection({name: 'heroes', schema: mySchema});}) // create collection
+  .then(function(collection) {collection.insert({name: 'Bob'});})                 // insert document
 ```
 
 <h2>Features</h2>
@@ -199,7 +214,7 @@ myCollection
 </p>
 
 ```javascript
-heroCollection
+db.heroes
   .find()
   .sort('name')
   .$ // <- returns observable of query
@@ -235,7 +250,7 @@ heroCollection
 </p>
 
 ```javascript
-var mySchema = {
+const mySchema = {
     title: "hero schema",
     version: 0,                 // <- incremental version-number
     description: "describes a simple hero",
@@ -292,7 +307,7 @@ By setting a schema-field to <code>encrypted: true</code>, the value of this fie
 // this requires the localstorage-adapter
 RxDB.plugin(require('rxdb-adapter-localstorage'));
 // this creates a database with the localstorage-adapter
-RxDB.create('heroesDB', 'localstorage');
+const db = await RxDB.create('heroesDB', 'localstorage');
 ```
 
 <ul>
@@ -326,28 +341,17 @@ RxDB.create('heroesDB', 'localstorage');
 ```js
 
 // export a single collection
-myCollection.dump()
-  .then(json => {
-    console.dir(json);
-  });
+const jsonCol = await myCollection.dump();
 
 // export the whole database
-myDatabase.dump()
-  .then(json => {
-    console.dir(json);
-  });
+const jsonDB = await myDatabase.dump();
 
 // import the dump to the collection
-emptyCollection.importDump(json)
-  .then(() => {
-    console.log('done');
-  });
+await emptyCollection.importDump(json);
+
 
 // import the dump to the database
-emptyDatabase.importDump(json)
-  .then(() => {
-    console.log('done');
-  });
+await emptyDatabase.importDump(json);
 ```
 
 <h3>Leader-Election</h3>

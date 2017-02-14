@@ -23,7 +23,7 @@ const db = await RxDB.create({
   password: 'myPassword',
   multiInstance: true
 });
-const collection = await db.collection({
+await db.collection({
   name: 'temperature',
   schema: mySchema
 });
@@ -33,7 +33,7 @@ db.waitForLeadership()
     console.log('Long lives the king!'); // <- runs when db becomes leader
     setInterval(async () => {
       const temp = await fetch('https://example.com/api/temp/');
-      collection.insert({
+      db.temperature.insert({
           degrees: value,
           time: new Date().getTime()
       });

@@ -7,15 +7,13 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 The database is created by the asynchronos .create()-function of the main RxDB-module. It has the following 4 parameters.
 
 ```javascript
-RxDB.create({
-  name: 'heroesDB',   // <- name
-  adapter: 'websql',     // <- storage-adapter
-  password: 'myPassword', // <- password (optional)
-  multiInstance: true          // <- multiInstance (default: true)
-})
-.then(db => {
-  console.dir(db);
+const db = await RxDB.create({
+  name: 'heroesDB',           // <- name
+  adapter: 'websql',          // <- storage-adapter
+  password: 'myPassword',     // <- password (optional)
+  multiInstance: true         // <- multiInstance (default: true)
 });
+console.dir(db);
 ```
 
 ### name

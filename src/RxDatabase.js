@@ -206,6 +206,11 @@ class RxDatabase {
         const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
         if (!this.collections[args.name]) {
+
+            // check unallowd collection-names
+            if (properties().includes(args.name))
+                throw new Error(`Collection-name ${args.name} not allowed`);
+
             // check schemaHash
             const schemaHash = args.schema.hash();
             let collectionDoc = null;
@@ -242,6 +247,7 @@ class RxDatabase {
             this.$emit(cEvent);
 
             this.collections[args.name] = collection;
+            this.__defineGetter__(args.name, () => this.collections[args.name]);
         } else {
             if (args.schema && args.schema.hash() != this.collections[args.name].schema.hash())
                 throw new Error(`collection(${args.name}): already has a different schema`);
@@ -308,6 +314,21 @@ class RxDatabase {
 
 }
 
+
+/**
+ * returns all possible properties of a RxDatabase-instance
+ * @return {string[]} property-names
+ */
+let _properties = null;
+export function properties() {
+    if (!_properties) {
+        const pseudoInstance = new RxDatabase();
+        const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
+        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
+        _properties = [...ownProperties, ...prototypeProperties];
+    }
+    return _properties;
+}
 
 export async function create({
     name,
