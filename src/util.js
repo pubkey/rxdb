@@ -94,6 +94,7 @@ export async function assertThrowsAsync(test, error = Error, contains = '') {
             util.assertThrowsAsync(): Wrong Error-type
             - is    : ${e.constructor.name}
             - should: ${shouldErrorName}
+            - error: ${e.toString()}
             `);
         }
 

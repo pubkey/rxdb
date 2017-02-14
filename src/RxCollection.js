@@ -24,19 +24,29 @@ class RxCollection {
     static HOOKS_WHEN = ['pre', 'post'];
     static HOOKS_KEYS = ['insert', 'save', 'remove'];
 
-    constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}) {
+    constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
         this.database = database;
         this.name = name;
         this.schema = schema;
         this._migrationStrategies = migrationStrategies;
         this._pouchSettings = pouchSettings;
+        this._methods = methods;
 
         // defaults
         this.synced = false;
         this.hooks = {};
-        this.subs = [];
+        this._subs = [];
         this.pouchSyncs = [];
         this.pouch = null; // this is needed to preserve this name
+
+        // set HOOKS-functions dynamically
+        RxCollection.HOOKS_KEYS.forEach(key => {
+            RxCollection.HOOKS_WHEN.map(when => {
+                const fnName = when + util.ucfirst(key);
+                this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
+            });
+        });
+
     }
     async prepare() {
         this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
@@ -64,14 +74,6 @@ class RxCollection {
                     }
                 });
             }));
-
-        // set HOOKS-functions dynamically
-        RxCollection.HOOKS_KEYS.forEach(key => {
-            RxCollection.HOOKS_WHEN.map(when => {
-                const fnName = when + util.ucfirst(key);
-                this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
-            });
-        });
     }
 
 
@@ -152,6 +154,38 @@ class RxCollection {
         return docs;
     }
 
+
+    /**
+     * assigns the ORM-methods to the RxDocument
+     * @param {RxDocument} doc
+     */
+    _assignMethodsToDocument(doc) {
+        Object.entries(this._methods).forEach(entry => {
+            const funName = entry[0];
+            const fun = entry[1];
+            doc.__defineGetter__(funName, () => fun.bind(doc));
+        });
+    }
+    /**
+     * @return {RxDocument}
+     */
+    _createDocument(json, query = {}) {
+        const doc = RxDocument.create(this, json, query);
+        this._assignMethodsToDocument(doc);
+        return doc;
+    }
+    /**
+     * create RxDocument from the docs-array
+     * @return {RxDocument[]} documents
+     */
+    _createDocuments(docsJSON, query) {
+        if (query) query = query.toJSON();
+        const docs = RxDocument.createAr(this, docsJSON, query);
+        docs.forEach(doc => this._assignMethodsToDocument(doc));
+        return docs;
+    }
+
+
     /**
      * returns observable
      */
@@ -185,7 +219,7 @@ class RxCollection {
 
         json[this.schema.primaryPath] = insertResult.id;
         json._rev = insertResult.rev;
-        const newDoc = RxDocument.create(this, json, {});
+        const newDoc = this._createDocument(json);
 
         await this._runHooks('post', 'insert', newDoc);
 
@@ -214,7 +248,7 @@ class RxCollection {
         const query = RxQuery.create(queryObj, this);
         query.exec = async() => {
             const docs = await this._pouchFind(query);
-            const ret = RxDocument.createAr(this, docs, query.toJSON());
+            const ret = this._createDocuments(docs, query);
             return ret;
         };
         return query;
@@ -238,7 +272,7 @@ class RxCollection {
             const docs = await this._pouchFind(query, 1);
             if (docs.length === 0) return null;
             const doc = docs.shift();
-            const ret = RxDocument.create(this, doc, query.toJSON());
+            const ret = this._createDocument(doc, query.toJSON());
             return ret;
         };
         query.limit = () => {
@@ -363,7 +397,7 @@ class RxCollection {
                 .subscribe(doc => {
                     this.$emit(RxChangeEvent.fromPouchChange(doc, this));
                 });
-            this.subs.push(pouch$);
+            this._subs.push(pouch$);
 
             const ob2 = this.$
                 .map(cE => cE.data.v)
@@ -371,7 +405,7 @@ class RxCollection {
                     if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
                 })
                 .subscribe();
-            this.subs.push(ob2);
+            this._subs.push(ob2);
         }
         this.synced = true;
         const sync = this.pouch.sync(serverURL, {
@@ -436,8 +470,8 @@ class RxCollection {
 
 
     async destroy() {
-        this.subs.map(sub => sub.unsubscribe());
-        this.pouchSyncs.map(sync => sync.cancel());
+        this._subs.forEach(sub => sub.unsubscribe());
+        this.pouchSyncs.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
     }
 
@@ -482,19 +516,28 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
     return true;
 };
 
+
+/**
+ * returns all possible properties of a RxCollection
+ * @return {string[]} property-names
+ */
+let _properties = null;
+export function properties() {
+    if (!_properties) {
+        const pseudoCollection = new RxCollection();
+        const ownProperties = Object.getOwnPropertyNames(pseudoCollection);
+        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoCollection));
+        _properties = [...ownProperties, ...prototypeProperties];
+    }
+    return _properties;
+}
+
 /**
  * checks if the given static methods are allowed
  * @param  {{}} statics [description]
  * @throws if not allowed
  */
-let _preservedStatics = null;
-const checkStatics = function(statics) {
-
-    if (!_preservedStatics) {
-        const pseudoCollection = new RxCollection();
-        console.dir(pseudoCollection);
-    }
-
+const checkORMmethdods = function(statics) {
     Object.entries(statics).forEach(entry => {
         if (typeof entry[0] != 'string')
             throw new TypeError(`given static method-name (${entry[0]}) is not a string`);
@@ -502,10 +545,11 @@ const checkStatics = function(statics) {
         if (entry[0].startsWith('_'))
             throw new TypeError(`static method-names cannot start with underscore _ (${entry[0]})`);
 
-
         if (typeof entry[1] != 'function')
             throw new TypeError(`given static method (${entry[0]}) is not a function`);
 
+        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0]))
+            throw new Error(`statics-name not allowed: ${entry[0]}`);
     });
 };
 
@@ -540,16 +584,23 @@ export async function create({
     util.validateCouchDBString(name);
     checkMigrationStrategies(schema, migrationStrategies);
 
-    checkStatics(statics);
+    // check ORM-methods
+    checkORMmethdods(statics);
+    checkORMmethdods(methods);
+    Object.keys(methods)
+        .filter(funName => schema.topLevelFields.includes(funName))
+        .forEach(funName => {
+            throw new Error(`collection-method not allowed because its in the schema ${funName}`);
+        });
 
-    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies);
+    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
     await collection.prepare();
 
     // ORM add statics
     Object.entries(statics).forEach(entry => {
         const fun = entry.pop();
         const funName = entry.pop();
-        collection.__defineGetter__(funName, fun.bind(collection));
+        collection.__defineGetter__(funName, () => fun.bind(collection));
     });
 
     if (autoMigrate)

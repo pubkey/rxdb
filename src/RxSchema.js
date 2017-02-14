@@ -78,6 +78,10 @@ class RxSchema {
         return ret;
     }
 
+    get topLevelFields() {
+        return Object.keys(this.normalized.properties);
+    }
+
     /**
      * get all encrypted paths
      * TODO use getter
