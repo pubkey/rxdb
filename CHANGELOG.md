@@ -3,6 +3,7 @@
 Features:
   - added [DataMigration](docs/DataMigration.md)
   - added [ORM/DRM](docs/ORM.md)-capabilities
+  - added [RxQuery.remove()](docs/RxQuery.md)
 
 Bugfixes:
 

@@ -34,8 +34,7 @@ class RxQuery {
         // merge mquery-prototype functions to this
         const mquery_proto = Object.getPrototypeOf(this.mquery);
         Object.keys(mquery_proto).forEach(attrName => {
-
-            if (['select'].includes(attrName)) return;
+            if (['select', 'remove', 'update'].includes(attrName)) return;
 
             // only param1 is tunneled here on purpose so no callback-call can be done
             this[attrName] = param1 => {
@@ -176,6 +175,19 @@ class RxQuery {
             .collection
             ._keyCompressor
             .compressQuery(this.toJSON());
+    }
+
+
+    /**
+     * deletes all found documents
+     * @return {Promise(RxDocument)} promise with deleted documents
+     */
+    async remove() {
+        const docs = await this.exec();
+        await Promise.all(
+            docs.map(doc => doc.remove())
+        );
+        return docs;
     }
 
 }

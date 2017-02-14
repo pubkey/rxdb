@@ -617,6 +617,33 @@ describe('RxCollection.test.js', () => {
                     });
                 });
             });
+
+            describe('.remove()', () => {
+                it('should remove all documents', async() => {
+                    const c = await humansCollection.create(10);
+                    const query = c.find();
+                    const removed = await query.remove();
+                    assert.equal(removed.length, 10);
+                    removed.forEach(doc => {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        assert.equal(doc.deleted, true);
+                    });
+                    const docsAfter = await c.find().exec();
+                    assert.equal(docsAfter.length, 0);
+                });
+                it('should remove only found documents', async() => {
+                    const c = await humansCollection.create(10);
+                    const query = c.find().limit(5);
+                    const removed = await query.remove();
+                    assert.equal(removed.length, 5);
+                    removed.forEach(doc => {
+                        assert.equal(doc.constructor.name, 'RxDocument');
+                        assert.equal(doc.deleted, true);
+                    });
+                    const docsAfter = await c.find().exec();
+                    assert.equal(docsAfter.length, 5);
+                });
+            });
         });
 
 
