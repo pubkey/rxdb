@@ -54,6 +54,8 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
         <li>Leader-Election</li>
         <br/>
         <li>Key-Compression</li>
+        <br/>
+        <li>ORM / DRM (optional)</li>
       </ul>
     </td>
     <td>
