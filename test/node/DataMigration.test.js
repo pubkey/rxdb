@@ -554,36 +554,70 @@ describe('SchemaMigration.test.js', () => {
     });
 
     describe('integration into collection', () => {
-        it('should auto-run on creation', async() => {
-            const col = await humansCollection.createMigrationCollection(
-                10, {
+        describe('run', () => {
+            it('should auto-run on creation', async() => {
+                const col = await humansCollection.createMigrationCollection(
+                    10, {
+                        3: doc => {
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    },
+                    util.randomCouchString(10),
+                    true
+                );
+                const docs = await col.find().exec();
+                assert.equal(docs.length, 10);
+                assert.equal(typeof docs.pop().age, 'number');
+            });
+            it('should auto-run on creation (async)', async() => {
+                const col = await humansCollection.createMigrationCollection(
+                    10, {
+                        3: async(doc) => {
+                            util.promiseWait(10);
+                            doc.age = parseInt(doc.age);
+                            return doc;
+                        }
+                    },
+                    util.randomCouchString(10),
+                    true
+                );
+                const docs = await col.find().exec();
+                assert.equal(docs.length, 10);
+                assert.equal(typeof docs.pop().age, 'number');
+            });
+        });
+
+        describe('.migrationNeeded()', () => {
+            it('return true if schema-version is 0', async() => {
+                const col = await humansCollection.create();
+                const needed = await col.migrationNeeded();
+                assert.equal(needed, false);
+                col.database.destroy();
+            });
+            it('return false if nothing to migrate', async() => {
+                const col = await humansCollection.createMigrationCollection(5, {
                     3: doc => {
                         doc.age = parseInt(doc.age);
                         return doc;
                     }
-                },
-                util.randomCouchString(10),
-                true
-            );
-            const docs = await col.find().exec();
-            assert.equal(docs.length, 10);
-            assert.equal(typeof docs.pop().age, 'number');
-        });
-        it('should auto-run on creation (async)', async() => {
-            const col = await humansCollection.createMigrationCollection(
-                10, {
-                    3: async(doc) => {
-                        util.promiseWait(10);
+                });
+                await col.migratePromise();
+                const needed = await col.migrationNeeded();
+                assert.equal(needed, false);
+                col.database.destroy();
+            });
+            it('return true if something to migrate', async() => {
+                const col = await humansCollection.createMigrationCollection(5, {
+                    3: doc => {
                         doc.age = parseInt(doc.age);
                         return doc;
                     }
-                },
-                util.randomCouchString(10),
-                true
-            );
-            const docs = await col.find().exec();
-            assert.equal(docs.length, 10);
-            assert.equal(typeof docs.pop().age, 'number');
+                });
+                const needed = await col.migrationNeeded();
+                assert.equal(needed, true);
+                col.database.destroy();
+            });
         });
     });
 });

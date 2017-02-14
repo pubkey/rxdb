@@ -78,6 +78,16 @@ class RxCollection {
 
 
     /**
+     * checks if a migration is needed
+     * @return {boolean}
+     */
+    async migrationNeeded() {
+        if (this.schema.version == 0) return false;
+        const oldCols = await this._dataMigrator._getOldCollections();
+        return oldCols.length > 0;
+    }
+
+    /**
      * @param {number} [batchSize=10] amount of documents handled in parallel
      * @return {Observable} emits the migration-status
      */

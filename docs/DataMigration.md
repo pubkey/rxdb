@@ -96,6 +96,10 @@ const messageCol = await myDatabase.collection({
   }
 });
 
+// check if migration is needed
+const needed = await messageCol.migrationNeeded();
+if(needed == false) return;
+
 // starting the migration
 
 const migrationState$ = messageCol.migrate(10); // 10 is the batch-size, how many docs will run at parrallel
