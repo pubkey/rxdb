@@ -21,6 +21,9 @@ It should also be possible to define custom resolution-strategies.
 
 
 ## ORM
+
+[DONE](https://github.com/pubkey/rxdb/commit/995a56e0a7500b5717a139f4edf27578e34c3399)
+
 ORM-like function assignment.
 
 ```js
