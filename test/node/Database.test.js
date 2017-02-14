@@ -365,7 +365,8 @@ describe('RxDatabase.test.js', () => {
                     'prepare',
                     'isLeader',
                     '$emit',
-                    'destroy'
+                    'destroy',
+                    'subject'
                 ];
                 let t = 0;
                 while (t < forbidden.length) {

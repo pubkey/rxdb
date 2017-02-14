@@ -34,16 +34,20 @@ class RxDatabase {
         // cache for collection-objects
         this.collections = {};
 
-        // rx
-        this.subject = new util.Rx.Subject();
-        this.observable$ = this.subject.asObservable()
-            .filter(cEvent => cEvent.constructor.name == 'RxChangeEvent');
+        // this is needed to preserver attribute-name
+        this.subject = null;
+        this.observable$ = null;
     }
 
     /**
      * make the async things for this database
      */
     async prepare() {
+
+        // rx
+        this.subject = new util.Rx.Subject();
+        this.observable$ = this.subject.asObservable()
+            .filter(cEvent => cEvent.constructor.name == 'RxChangeEvent');
 
         // create internal collections
         // - admin-collection
