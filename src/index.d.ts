@@ -12,8 +12,15 @@ declare class RxSchema {
     static create(jsonSchema: any);
 }
 
+
+interface CollectionCreator {
+    name: string;
+    schema?: any;
+    migrationStrategies?: Function[];
+}
+
 declare class RxDatabase {
-    prefix: string;
+    name: string;
     token: string;
     multiInstance: boolean;
     password: string;
@@ -22,11 +29,7 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection({
-        name: string,
-        schema?: any | RxSchema,
-        migrationStrategies?: Function[]
-    }): Promise<RxCollection>;
+    collection(CollectionCreator): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -64,15 +67,16 @@ declare class RxCollection {
     postRemove(fun: Function, parallel: boolean);
 
     // migration
+    migrationNeeded(): Promise<boolean>;
     migrate(batchSize: number): Observable<{
-      done: boolean, // true if finished
-      total: number, // will be the doc-count
-      handled: number, // amount of handled docs
-      success: number, // handled docs which successed
-      deleted: number, // handled docs which got deleted
-      percent: number // percentage
+        done: boolean, // true if finished
+        total: number, // will be the doc-count
+        handled: number, // amount of handled docs
+        success: number, // handled docs which successed
+        deleted: number, // handled docs which got deleted
+        percent: number // percentage
     }>;
-    migratePromise(batchSize:number): Promise<any>;
+    migratePromise(batchSize: number): Promise<any>;
 
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
@@ -128,14 +132,17 @@ declare class RxChangeEvent {
     toJSON(): any;
 }
 
-export function create({
-    prefix: string,
-    storageEngine: any,
-    password?: string,
-    multiInstance?: boolean
-}): Promise<RxDatabase>;
 
-export function plugin(mod: any)
+interface DatabaseCreator {
+    name: string;
+    storageEngine: any;
+    password?: string;
+    multiInstance?: boolean;
+}
+
+export function create(DatabaseCreator): Promise<RxDatabase>;
+
+export function plugin(mod: any);
 
 export const PouchDB: {
     plugin(plugin: any)
