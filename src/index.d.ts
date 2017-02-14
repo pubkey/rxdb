@@ -3,20 +3,81 @@ import {Observable} from "rxjs";
 
 
 declare class RxSchema {
-    jsonID: any;
+    jsonID: SchemaJSON;
     getSchemaByObjectPath(path: string): any;
     getEncryptedPaths(): any;
     validate(obj: any, schemaObj: any);
     hash(): string;
 
-    static create(jsonSchema: any);
+    static create(jsonSchema: SchemaJSON);
 }
 
+/**
+ * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
+ */
+type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
+interface JsonSchema {
+    type?: JsonSchemaTypes | JsonSchemaTypes[];
+    description?: string;
+    multipleOf?: number;
+    maximum?: number;
+    exclusiveMaximum?: boolean;
+    minimum?: number;
+    exclusiveMinimum?: boolean;
+    maxLength?: number;
+    minLength?: number;
+    pattern?: string;
+    additionalItems?: boolean | JsonSchema;
+    items?: JsonSchema | JsonSchema[];
+    maxItems?: number;
+    minItems?: number;
+    uniqueItems?: boolean;
+    maxProperties?: number;
+    minProperties?: number;
+    required?: string[];
+    properties?: {
+        [key: string]: JsonSchema;
+    };
+    patternProperties?: {
+        [key: string]: JsonSchema;
+    };
+    dependencies?: {
+        [key: string]: JsonSchema | string[];
+    };
+    enum?: any[];
+    allOf?: JsonSchema[];
+    anyOf?: JsonSchema[];
+    oneOf?: JsonSchema[];
+    not?: JsonSchema;
+    definitions?: {
+        [key: string]: JsonSchema;
+    };
+    format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
+}
+
+interface SchemaJSON {
+    title?: string;
+    description?: string;
+    version: number;
+    type: string;
+    properties: JsonSchema;
+    required?: Array<string>;
+    compoundIndexes?: Array<string | Array<string>>;
+    disableKeyCompression?: boolean;
+}
 
 interface CollectionCreator {
     name: string;
-    schema?: any;
+    schema?: SchemaJSON | RxSchema;
+    pouchSettings?: Object;
     migrationStrategies?: Function[];
+    autoMigrate?: boolean;
+    statics?: {
+        [key: number]: Function
+    };
+    methods?: {
+        [key: number]: Function
+    };
 }
 
 declare class RxDatabase {
