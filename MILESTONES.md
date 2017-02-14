@@ -37,7 +37,7 @@ ORM-like function assignment.
   });
 
   // laster
-  const doc = col.findOne().exec();
+  const doc = await col.findOne().exec();
   doc.doSomething();
   // > 'AAAH!'
 ```
