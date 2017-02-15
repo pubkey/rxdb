@@ -201,16 +201,21 @@ export function validateFieldsDeep(jsonSchema) {
             throw new Error(`fieldname is not allowed: ${fieldName}`);
         if (fieldName.includes('.'))
             throw new Error(`field-names cannot contain dots: ${fieldName}`);
-
         if (fieldName.includes('$'))
             throw new Error(`field-names cannot contain $-char: ${fieldName}`);
-
         if (fieldName.endsWith('_'))
             throw new Error(`field-names cannot end with underscore _: ${fieldName}`);
 
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')
             throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
+
+        // if ref given, must be type=='string'
+        if (schemaObj.hasOwnProperty('ref') && schemaObj.type != 'string')
+            throw new Error(`fieldname ${fieldName} has a ref but is not type:string`);
+        // if primary is ref, throw
+        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary)
+            throw new Error(`fieldname ${fieldName} cannot be primary and ref at same time`);
 
 
         const isNested = path.split('.').length >= 2;

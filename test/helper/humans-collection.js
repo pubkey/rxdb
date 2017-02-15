@@ -278,3 +278,27 @@ export async function createMigrationCollection(
 
     return col2;
 }
+
+
+
+export async function createRelated(name = util.randomCouchString(10)) {
+    const db = await RxDatabase.create({
+        name,
+        adapter: 'memory',
+        multiInstance: true
+    });
+    // setTimeout(() => db.destroy(), dbLifetime);
+    const collection = await db.collection({
+        name: 'human',
+        schema: schemas.refHuman
+    });
+
+    const doc1 = schemaObjects.refHuman();
+    const doc2 = schemaObjects.refHuman(doc1.name);
+    doc1.bestFriend = doc2.name; // cross-relation
+
+    await collection.insert(doc1);
+    await collection.insert(doc2);
+
+    return collection;
+}

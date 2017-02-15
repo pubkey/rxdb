@@ -488,3 +488,19 @@ export const humanNormalizeSchema2 = {
         name: 2
     }]
 };
+
+
+export const refHuman = {
+    title: 'human related to other human',
+    version: 0,
+    properties: {
+        name: {
+            primary: true,
+            type: 'string'
+        },
+        bestFriend: {
+            ref: 'human',
+            type: 'string'
+        }
+    }
+};

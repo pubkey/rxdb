@@ -80,11 +80,21 @@ class RxDocument {
     }
 
     /**
+     * emits the changeEvent to the upper instance (RxCollection)
+     * @param  {RxChangeEvent} changeEvent
+     */
+    $emit = changeEvent => this.collection.$emit(changeEvent);
+
+    /**
      * returns observable of the value of the given path
      * @param {string} path
      * @return {Observable}
      */
     get$(path) {
+
+        if (path.includes('.item.'))
+            throw new Error(`cannot get observable of in-array fields because order cannot be guessed: ${path}`);
+
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) throw new Error(`cannot observe a non-existed field (${path})`);
 
@@ -95,7 +105,22 @@ class RxDocument {
     }
 
 
-    $emit = changeEvent => this.collection.$emit(changeEvent);
+    async populate(path, object) {
+        const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+        const value = this.get(path);
+        if (!schemaObj)
+            throw new Error(`cannot populate a non-existed field (${path})`);
+        if (!schemaObj.ref)
+            throw new Error(`cannot populate because path has no ref (${path})`);
+
+        const refCollection = this.collection.database.collections[schemaObj.ref];
+        if (!refCollection)
+            throw new Error(`ref-collection (${schemaObj.ref}) not in database`);
+
+        const doc = await refCollection.findOne(value).exec();
+        return doc;
+    }
+
 
     /**
      * get data by objectPath
@@ -124,7 +149,7 @@ class RxDocument {
 
     _defineGetterSetter(valueObj, objPath = '') {
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
-        if(pathProperties.properties) pathProperties=pathProperties.properties;
+        if (pathProperties.properties) pathProperties = pathProperties.properties;
 
         Object.keys(pathProperties)
             .forEach(key => {

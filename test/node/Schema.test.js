@@ -6,11 +6,9 @@ import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
-
 process.on('unhandledRejection', function(err) {
     throw err;
 });
-
 
 const g = {};
 
@@ -149,9 +147,6 @@ describe('RxSchema.test.js', () => {
                             }
                         }
                     }), Error, 'underscore');
-
-                    console.log('sssss');
-
                     // nested
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
@@ -168,7 +163,6 @@ describe('RxSchema.test.js', () => {
                             }
                         }
                     }), Error, 'underscore');
-
                 });
 
                 it('should not allow RxDocument-properties as top-fieldnames (own)', () => {

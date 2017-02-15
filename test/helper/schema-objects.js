@@ -91,3 +91,11 @@ export function encryptedObjectHuman() {
         }
     };
 }
+
+
+export function refHuman(bestFriend) {
+    return {
+        name: randomToken(12),
+        bestFriend
+    };
+}
