@@ -44,5 +44,6 @@ ORM-like function assignment.
 
 ## relations-populate [BREAKING]
 
+[DONE](https://github.com/pubkey/rxdb/commit/c6a7352e465431ec74117b76f210869ba1f8f7a8)
 
 ## RxCollection.upsert(), RxCollection.removeifexists()
