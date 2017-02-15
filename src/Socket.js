@@ -1,4 +1,3 @@
-import * as DatabaseSchemas from './Database.schemas';
 import * as RxCollection from './RxCollection';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as RxBroadcastChannel from './RxBroadcastChannel';

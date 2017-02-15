@@ -189,6 +189,30 @@ export function getPrimary(jsonID) {
 
 
 /**
+ * checks if the fieldname is allowed
+ * this makes sure that the fieldnames can be transformed into javascript-vars
+ * and does not conquer the observe$ and populate_ fields
+ * @param  {string} fieldName
+ * @throws {Error}
+ */
+export function checkFieldNameRegex(fieldName) {
+    if (fieldName == '') return;
+
+    if (['properties', 'language'].includes(fieldName))
+        throw new Error(`fieldname is not allowed: ${fieldName}`);
+
+    const regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
+    const regex = new RegExp(regexStr);
+    if (!fieldName.match(regex)) {
+        throw new Error(`
+        fieldnames must match the regex:
+        - regex: ${regexStr}
+        - fieldName: ${fieldName}
+        `);
+    }
+}
+
+/**
  * validate that all schema-related things are ok
  * @param  {object} jsonSchema
  * @return {boolean} true always
@@ -196,15 +220,11 @@ export function getPrimary(jsonID) {
 export function validateFieldsDeep(jsonSchema) {
 
     function checkField(fieldName, schemaObj, path) {
-        // all
-        if (['properties', 'language'].includes(fieldName))
-            throw new Error(`fieldname is not allowed: ${fieldName}`);
-        if (fieldName.includes('.'))
-            throw new Error(`field-names cannot contain dots: ${fieldName}`);
-        if (fieldName.includes('$'))
-            throw new Error(`field-names cannot contain $-char: ${fieldName}`);
-        if (fieldName.endsWith('_'))
-            throw new Error(`field-names cannot end with underscore _: ${fieldName}`);
+        if (
+            typeof fieldName == 'string' &&
+            typeof schemaObj == 'object' &&
+            !Array.isArray(schemaObj)
+        ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')

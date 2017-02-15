@@ -467,9 +467,7 @@ export const humanNormalizeSchema1 = {
             maximum: 150
         }
     },
-    required: ['firstName', 'lastName', {
-        name: 2
-    }]
+    required: ['firstName', 'lastName']
 };
 
 export const humanNormalizeSchema2 = {
@@ -484,9 +482,7 @@ export const humanNormalizeSchema2 = {
         }
     },
     description: 'describes a human being',
-    required: ['lastName', 'firstName', {
-        name: 2
-    }]
+    required: ['lastName', 'firstName']
 };
 
 

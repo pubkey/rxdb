@@ -15,17 +15,15 @@ class RxDocument {
         return 'RxDocument';
     }
 
-    constructor(collection, jsonData, query) {
+    constructor(collection, jsonData) {
         this.collection = collection;
-        this.query = query;
 
         this._data = clone(jsonData);
+        this._$;
 
+        this.changed = false;
         this.deleted = false;
         this._deleted$;
-        this.changed = false;
-
-        this._observable$;
 
     }
     prepare() {
@@ -51,8 +49,8 @@ class RxDocument {
      * @return {Observable}
      */
     get $() {
-        if (!this._observable$) {
-            this._observable$ = this.collection.$
+        if (!this._$) {
+            this._$ = this.collection.$
                 .filter(event => (
                     event.data.doc == this.getPrimary() ||
                     event.data.doc == '*'
@@ -68,7 +66,7 @@ class RxDocument {
                 })
                 .do(docData => this._data = docData);
         }
-        return this._observable$;
+        return this._$;
     }
 
     get deleted$() {
@@ -277,38 +275,34 @@ class RxDocument {
 }
 
 
-export function create(collection, jsonData, query) {
+export function create(collection, jsonData) {
     if (jsonData[collection.schema.primaryPath].startsWith('_design'))
         return null;
 
-    const doc = new RxDocument(collection, jsonData, query);
+    const doc = new RxDocument(collection, jsonData);
     doc.prepare();
     return doc;
 }
 
 
-export function createAr(collection, jsonDataAr, query) {
+export function createAr(collection, jsonDataAr) {
     return jsonDataAr
-        .map(jsonData => create(collection, jsonData, query))
+        .map(jsonData => create(collection, jsonData))
         .filter(doc => doc != null);
 }
 
-const pseudoRxDocument = new RxDocument({
-    schema: {
-        getEncryptedPaths: () => []
-    },
-    $: {
-        filter: () => false
-    }
-}, {}, {});
 
 /**
  * returns all possible properties of a RxDocument
  * @return {string[]} property-names
  */
+let _properties;
 export function properties() {
-    const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-    const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
-    const properties = [...ownProperties, ...prototypeProperties];
-    return properties;
+    if (!_properties) {
+        const pseudoRxDocument = new RxDocument();
+        const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
+        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+        _properties = [...ownProperties, ...prototypeProperties];
+    }
+    return _properties;
 }

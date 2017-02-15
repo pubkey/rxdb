@@ -179,8 +179,8 @@ class RxCollection {
     /**
      * @return {RxDocument}
      */
-    _createDocument(json, query = {}) {
-        const doc = RxDocument.create(this, json, query);
+    _createDocument(json) {
+        const doc = RxDocument.create(this, json);
         this._assignMethodsToDocument(doc);
         return doc;
     }
@@ -188,9 +188,8 @@ class RxCollection {
      * create RxDocument from the docs-array
      * @return {RxDocument[]} documents
      */
-    _createDocuments(docsJSON, query) {
-        if (query) query = query.toJSON();
-        const docs = RxDocument.createAr(this, docsJSON, query);
+    _createDocuments(docsJSON) {
+        const docs = RxDocument.createAr(this, docsJSON);
         docs.forEach(doc => this._assignMethodsToDocument(doc));
         return docs;
     }
@@ -258,7 +257,7 @@ class RxCollection {
         const query = RxQuery.create(queryObj, this);
         query.exec = async() => {
             const docs = await this._pouchFind(query);
-            const ret = this._createDocuments(docs, query);
+            const ret = this._createDocuments(docs);
             return ret;
         };
         return query;
@@ -282,7 +281,7 @@ class RxCollection {
             const docs = await this._pouchFind(query, 1);
             if (docs.length === 0) return null;
             const doc = docs.shift();
-            const ret = this._createDocument(doc, query.toJSON());
+            const ret = this._createDocument(doc);
             return ret;
         };
         query.limit = () => {

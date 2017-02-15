@@ -5,7 +5,6 @@ import {
 import * as util from './util';
 import * as RxCollection from './RxCollection';
 import * as RxSchema from './RxSchema';
-import * as DatabaseSchemas from './Database.schemas';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as Socket from './Socket';
 import * as LeaderElector from './LeaderElector';

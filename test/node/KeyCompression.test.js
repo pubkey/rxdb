@@ -65,7 +65,7 @@ describe('KeyCompressor.test.js', () => {
                 version: 0,
                 type: 'object',
                 properties: {
-                    z: {
+                    z0: {
                         type: 'string',
                         index: true
                     },
@@ -75,7 +75,7 @@ describe('KeyCompressor.test.js', () => {
                     nest: {
                         type: 'object',
                         properties: {
-                            z: {
+                            z0: {
                                 type: 'string'
                             },
                             zz: {
