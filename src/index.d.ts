@@ -185,6 +185,7 @@ declare class RxDocument {
     set(objPath: string, value: any): RxDocument;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
+    populate(objPath: string): Promise<RxDocument|null>;
     toJSON(): Object;
     destroy();
 }
