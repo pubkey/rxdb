@@ -99,3 +99,12 @@ export function refHuman(bestFriend) {
         bestFriend
     };
 }
+
+export function refHumanNested(bestFriend) {
+    return {
+        name: randomToken(12),
+        foo: {
+            bestFriend
+        }
+    };
+}

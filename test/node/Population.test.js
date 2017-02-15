@@ -13,7 +13,7 @@ process.on('unhandledRejection', function(err) {
     throw err;
 });
 
-describe('Relation.test.js', () => {
+describe('Population.test.js', () => {
     describe('RxSchema.create', () => {
         describe('positive', () => {
             it('should allow to create a schema with a relation', async() => {
@@ -110,27 +110,45 @@ describe('Relation.test.js', () => {
                 );
             });
         });
-
     });
-
-
-
-    describe('RxDocument() populate via pseudo-proxy', () => {
+    describe('RxDocument().populate()', () => {
         describe('positive', () => {
-            /*it('populate top-level-field', async() => {
+            it('populate top-level-field', async() => {
+                const col = await humansCollection.createRelated();
+                const doc = await col.findOne().exec();
+                const friend = await doc.populate('bestFriend');
+                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.equal(friend.name, doc.bestFriend);
+                col.database.destroy();
+            });
+            it('populate nested field', async() => {
+                const col = await humansCollection.createRelatedNested();
+                const doc = await col.findOne().exec();
+                const friend = await doc.populate('foo.bestFriend');
+                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.equal(friend.name, doc.foo.bestFriend);
+                col.database.destroy();
+            });
+        });
+    });
+    describe('RxDocument populate via pseudo-proxy', () => {
+        describe('positive', () => {
+            it('populate top-level-field', async() => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.bestFriend_;
                 assert.equal(friend.constructor.name, 'RxDocument');
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
-            });*/
-        });
-        describe('negative', () => {
-
-//            it('e', () => process.exit());
+            });
+            it('populate nested field', async() => {
+                const col = await humansCollection.createRelatedNested();
+                const doc = await col.findOne().exec();
+                const friend = await doc.foo.bestFriend_;
+                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.equal(friend.name, doc.foo.bestFriend);
+                col.database.destroy();
+            });
         });
     });
-
-
 });

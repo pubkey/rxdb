@@ -8,7 +8,6 @@ gulp.task('test', function() {
             '../test_tmp/node/PouchDB-integration.test.js',
             '../test_tmp/node/Schema.test.js',
             '../test_tmp/node/KeyCompression.test.js',
-            '../test_tmp/node/Relation.test.js', // TODO move this down
             '../test_tmp/node/Socket.test.js',
             '../test_tmp/node/Database.test.js',
             '../test_tmp/node/Collection.test.js',
@@ -16,6 +15,7 @@ gulp.task('test', function() {
             '../test_tmp/node/Primary.test.js',
             '../test_tmp/node/Hooks.test.js',
             '../test_tmp/node/ORM.test.js',
+            '../test_tmp/node/Population.test.js',
             '../test_tmp/node/DataMigration.test.js',
             '../test_tmp/node/LeaderElection.test.js',
             '../test_tmp/node/Replication.test.js',

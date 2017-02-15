@@ -40,5 +40,6 @@ If you are new to RxDB, you should start [here](./RxDatabase.md).
     - [$()](./RxDocument.md#observe-path)
 - [Middleware-hooks](./Middleware.md)
 - [ORM/DRM](./ORM.md)
+- [Population](./Population.md)
 - [DataMigration](./DataMigration.md)
 - [LeaderElection](./LeaderElection.md)

@@ -302,3 +302,26 @@ export async function createRelated(name = util.randomCouchString(10)) {
 
     return collection;
 }
+
+
+export async function createRelatedNested(name = util.randomCouchString(10)) {
+    const db = await RxDatabase.create({
+        name,
+        adapter: 'memory',
+        multiInstance: true
+    });
+    // setTimeout(() => db.destroy(), dbLifetime);
+    const collection = await db.collection({
+        name: 'human',
+        schema: schemas.refHumanNested
+    });
+
+    const doc1 = schemaObjects.refHumanNested();
+    const doc2 = schemaObjects.refHumanNested(doc1.name);
+    doc1.foo.bestFriend = doc2.name; // cross-relation
+
+    await collection.insert(doc1);
+    await collection.insert(doc2);
+
+    return collection;
+}

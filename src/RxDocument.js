@@ -159,6 +159,11 @@ class RxDocument {
                 valueObj.__defineGetter__(key + '$', () => {
                     return this.get$(util.trimDots(objPath + '.' + key));
                 });
+                // getter - populate_
+                valueObj.__defineGetter__(key + '_', () => {
+                    return this.populate(util.trimDots(objPath + '.' + key));
+                });
+
                 // setter - value
                 valueObj.__defineSetter__(key, (val) => {
                     return this.set(util.trimDots(objPath + '.' + key), val);
@@ -211,12 +216,10 @@ class RxDocument {
 
     async save() {
         if (!this.changed) return;
-
         if (this.deleted)
             throw new Error('RxDocument.save(): cant save deleted document');
 
         const emitValue = clone(this._data);
-
         await this.collection._runHooks('pre', 'save', this);
 
 

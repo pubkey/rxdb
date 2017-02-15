@@ -500,3 +500,23 @@ export const refHuman = {
         }
     }
 };
+
+export const refHumanNested = {
+    title: 'human related to other human',
+    version: 0,
+    properties: {
+        name: {
+            primary: true,
+            type: 'string'
+        },
+        foo: {
+            type: 'object',
+            properties: {
+                bestFriend: {
+                    ref: 'human',
+                    type: 'string'
+                }
+            }
+        }
+    }
+};

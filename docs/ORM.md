@@ -84,4 +84,4 @@ console.log(doc.whoAmI());
 
 
 ---------
-If you are new to RxDB, you should continue [here](./DataMigration.md)
+If you are new to RxDB, you should continue [here](./Population.md)

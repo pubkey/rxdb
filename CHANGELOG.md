@@ -4,6 +4,7 @@ Features:
   - added [DataMigration](docs/DataMigration.md)
   - added [ORM/DRM](docs/ORM.md)-capabilities
   - added [RxQuery.remove()](docs/RxQuery.md)
+  - added [Population](docs/Population.md)
   - added collections-getter to RxDatabase-instance `myDatabase.heroes.insert()` etc. is now possible
   - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
 
