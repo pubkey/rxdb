@@ -205,6 +205,9 @@ export function validateFieldsDeep(jsonSchema) {
         if (fieldName.includes('$'))
             throw new Error(`field-names cannot contain $-char: ${fieldName}`);
 
+        if (fieldName.endsWith('_'))
+            throw new Error(`field-names cannot end with underscore _: ${fieldName}`);
+
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')
             throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);

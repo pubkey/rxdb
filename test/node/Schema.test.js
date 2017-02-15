@@ -137,6 +137,40 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error);
                 });
+
+                it('should not allow ending lodash _ in fieldnames (reserved for populate)', () => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        description: '_ in fieldname',
+                        properties: {
+                            'firstName_': {
+                                type: 'string'
+                            }
+                        }
+                    }), Error, 'underscore');
+
+                    console.log('sssss');
+
+                    // nested
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        description: 'dot in fieldname',
+                        properties: {
+                            'foo': {
+                                type: 'object',
+                                properties: {
+                                    'name_': {
+                                        type: 'string'
+                                    }
+                                }
+                            }
+                        }
+                    }), Error, 'underscore');
+
+                });
+
                 it('should not allow RxDocument-properties as top-fieldnames (own)', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
