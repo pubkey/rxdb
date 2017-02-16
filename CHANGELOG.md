@@ -6,7 +6,6 @@ Features:
   - added [RxQuery.remove()](docs/RxQuery.md)
   - added [Population](docs/Population.md)
   - added collections-getter to RxDatabase-instance `myDatabase.heroes.insert()` etc. is now possible
-  - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
 
 Bugfixes:
 
@@ -14,6 +13,7 @@ Breaking:
   - Collection-names must match `^[a-z][a-z0-9]*$` Fixes [#45](https://github.com/pubkey/rxdb/issues/45)
   - RxDB.create has new api with destructuring [see](docs/RxDatabase.md)
   - RxDatabase.collection() has new api with destructuring [see](docs/RxDatabase.md)
+  - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
 
 ## 2.0.4 (February 12, 2017)
 
