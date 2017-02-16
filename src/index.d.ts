@@ -9,7 +9,7 @@ declare class RxSchema {
     validate(obj: any, schemaObj: any): any;
     hash(): string;
 
-    static create(jsonSchema: any): RxDatabase;
+    static create(jsonSchema: any): any;
 }
 
 declare class RxDatabase {
