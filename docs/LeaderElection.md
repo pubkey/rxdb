@@ -3,7 +3,7 @@
 Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..
 
 So if you would now inspect the traffic that theses open tabs produce, you can see that
-many of them send exact the same data over wire for every tab. No mather if the data is send with an open websocket or by polling.
+many of them send exact the same data over wire for every tab. No matter if the data is send with an open websocket or by polling.
 
 # Use-case-example
 Imagine we have a website which displays the current temperature of the visitors location in various charts, numbers or heatmaps.
@@ -11,7 +11,7 @@ To always display the live-data, the website opens a websocket to our API-Server
 Using the way most sites are currently build, we can now open it in 5 browser-tabs and it will open 5 websockets which send data 6*5=30 times per minute. This will not only waste the power of your clients device, but also wastes your api-servers ressources by opening redundant connections.
 
 # Solution
-The solution to this redundancy is the usage of a [leader-election](https://en.wikipedia.org/wiki/Leader_election)-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is so the elected leader and stays leader until it is closed. Not mather how many tabs are opened or closed, there must be always exactly **one** leader.
+The solution to this redundancy is the usage of a [leader-election](https://en.wikipedia.org/wiki/Leader_election)-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is so the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly **one** leader.
 You could now start implementing a messaging-system between your browser-tabs, handle out which one is leader, solve conflicts and reasign a new leader when the old one 'dies'.
 Or just use RxDB which does all that things for you.
 
