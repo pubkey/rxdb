@@ -6,10 +6,10 @@ declare class RxSchema {
     jsonID: any;
     getSchemaByObjectPath(path: string): any;
     getEncryptedPaths(): any;
-    validate(obj: any, schemaObj: any);
+    validate(obj: any, schemaObj: any): any;
     hash(): string;
 
-    static create(jsonSchema: any);
+    static create(jsonSchema: any): RxDatabase;
 }
 
 declare class RxDatabase {
@@ -51,13 +51,13 @@ declare class RxCollection {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: Function, parallel: boolean);
-    preSave(fun: Function, parallel: boolean);
-    preRemove(fun: Function, parallel: boolean);
+    preInsert(fun: Function, parallel: boolean): void;
+    preSave(fun: Function, parallel: boolean): void;
+    preRemove(fun: Function, parallel: boolean): void;
 
-    postInsert(fun: Function, parallel: boolean);
-    postSave(fun: Function, parallel: boolean);
-    postRemove(fun: Function, parallel: boolean);
+    postInsert(fun: Function, parallel: boolean): void;
+    postSave(fun: Function, parallel: boolean): void;
+    postRemove(fun: Function, parallel: boolean): void;
 
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
@@ -68,23 +68,23 @@ declare class RxQuery {
     collection: RxCollection;
 
     where(queryObj: any): RxQuery;
-    equals(queryObj): RxQuery;
-    eq(queryObj): RxQuery;
-    or(queryObj): RxQuery;
-    nor(queryObj): RxQuery;
-    and(queryObj): RxQuery;
-    gt(queryObj): RxQuery;
-    gte(queryObj): RxQuery;
-    lt(queryObj): RxQuery;
-    lte(queryObj): RxQuery;
-    ne(queryObj): RxQuery;
-    in(queryObj): RxQuery;
-    nin(queryObj): RxQuery;
-    all(queryObj): RxQuery;
-    regex(queryObj): RxQuery;
-    exists(queryObj): RxQuery;
-    elemMatch(queryObj): RxQuery;
-    slice(queryObj): RxQuery;
+    equals(queryObj: any): RxQuery;
+    eq(queryObj: any): RxQuery;
+    or(queryObj: any): RxQuery;
+    nor(queryObj: any): RxQuery;
+    and(queryObj: any): RxQuery;
+    gt(queryObj: any): RxQuery;
+    gte(queryObj: any): RxQuery;
+    lt(queryObj: any): RxQuery;
+    lte(queryObj: any): RxQuery;
+    ne(queryObj: any): RxQuery;
+    in(queryObj: any): RxQuery;
+    nin(queryObj: any): RxQuery;
+    all(queryObj: any): RxQuery;
+    regex(queryObj: any): RxQuery;
+    exists(queryObj: any): RxQuery;
+    elemMatch(queryObj: any): RxQuery;
+    slice(queryObj: any): RxQuery;
     sort(params: any): RxQuery;
     limit(amount: number): RxQuery;
     skip(amount: number): RxQuery;
@@ -105,7 +105,7 @@ declare class RxDocument {
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
     toJSON(): Object;
-    destroy();
+    destroy(): any;
 }
 
 declare class RxChangeEvent {
@@ -120,10 +120,10 @@ export function create(
     multiInstance?: boolean
 ): Promise<RxDatabase>;
 
-export function plugin(mod: any)
+export function plugin(mod: any): any;
 
 export const PouchDB: {
-    plugin(plugin: any)
+    plugin(plugin: any): any;
 };
 
 export {
