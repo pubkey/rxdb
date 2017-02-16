@@ -1,0 +1,21 @@
+{
+  "name": "hashvsdeepequal",
+  "version": "1.0.0",
+  "description": "This tests if it is faster to hash objects to compare them or to make a deepEqual on them.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "clone": "^2.1.0",
+    "deep-equal": "^1.0.1",
+    "object-hash": "^1.1.5",
+    "random-object-generator": "^1.0.2",
+    "random-token": "0.0.8",
+    "spark-md5": "^3.0.0"
+  }
+}
