@@ -171,7 +171,7 @@ declare class RxQuery {
 
     exec(): Promise<RxDocument[]>;
     $: Observable<RxDocument[]>;
-    remove(): Promise<RxDocument>;
+    remove(): Promise<RxDocument|RxDocument[]>;
 }
 
 declare class RxDocument {
