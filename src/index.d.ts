@@ -6,10 +6,10 @@ declare class RxSchema {
     jsonID: SchemaJSON;
     getSchemaByObjectPath(path: string): any;
     getEncryptedPaths(): any;
-    validate(obj: any, schemaObj: any);
+    validate(obj: any, schemaObj: any): void;
     hash(): string;
 
-    static create(jsonSchema: SchemaJSON);
+    static create(jsonSchema: SchemaJSON): RxSchema;
 }
 
 /**
@@ -69,7 +69,7 @@ interface SchemaJSON {
 interface CollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
-    pouchSettings?: Object;
+    pouchSettings?: any;
     migrationStrategies?: Function[];
     autoMigrate?: boolean;
     statics?: {
@@ -90,7 +90,7 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection(CollectionCreator): Promise<RxCollection>;
+    collection(args: CollectionCreator): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -119,13 +119,13 @@ declare class RxCollection {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: Function, parallel: boolean);
-    preSave(fun: Function, parallel: boolean);
-    preRemove(fun: Function, parallel: boolean);
+    preInsert(fun: Function, parallel: boolean): void;
+    preSave(fun: Function, parallel: boolean): void;
+    preRemove(fun: Function, parallel: boolean): void;
 
-    postInsert(fun: Function, parallel: boolean);
-    postSave(fun: Function, parallel: boolean);
-    postRemove(fun: Function, parallel: boolean);
+    postInsert(fun: Function, parallel: boolean): void;
+    postSave(fun: Function, parallel: boolean): void;
+    postRemove(fun: Function, parallel: boolean): void;
 
     // migration
     migrationNeeded(): Promise<boolean>;
@@ -148,23 +148,23 @@ declare class RxQuery {
     collection: RxCollection;
 
     where(queryObj: any): RxQuery;
-    equals(queryObj): RxQuery;
-    eq(queryObj): RxQuery;
-    or(queryObj): RxQuery;
-    nor(queryObj): RxQuery;
-    and(queryObj): RxQuery;
-    gt(queryObj): RxQuery;
-    gte(queryObj): RxQuery;
-    lt(queryObj): RxQuery;
-    lte(queryObj): RxQuery;
-    ne(queryObj): RxQuery;
-    in(queryObj): RxQuery;
-    nin(queryObj): RxQuery;
-    all(queryObj): RxQuery;
-    regex(queryObj): RxQuery;
-    exists(queryObj): RxQuery;
-    elemMatch(queryObj): RxQuery;
-    slice(queryObj): RxQuery;
+    equals(queryObj: any): RxQuery;
+    eq(queryObj: any): RxQuery;
+    or(queryObj: any): RxQuery;
+    nor(queryObj: any): RxQuery;
+    and(queryObj: any): RxQuery;
+    gt(queryObj: any): RxQuery;
+    gte(queryObj: any): RxQuery;
+    lt(queryObj: any): RxQuery;
+    lte(queryObj: any): RxQuery;
+    ne(queryObj: any): RxQuery;
+    in(queryObj: any): RxQuery;
+    nin(queryObj: any): RxQuery;
+    all(queryObj: any): RxQuery;
+    regex(queryObj: any): RxQuery;
+    exists(queryObj: any): RxQuery;
+    elemMatch(queryObj: any): RxQuery;
+    slice(queryObj: any): RxQuery;
     sort(params: any): RxQuery;
     limit(amount: number): RxQuery;
     skip(amount: number): RxQuery;
@@ -187,7 +187,7 @@ declare class RxDocument {
     remove(): Promise<boolean>;
     populate(objPath: string): Promise<RxDocument|null>;
     toJSON(): Object;
-    destroy();
+    destroy(): void;
 }
 
 declare class RxChangeEvent {
@@ -205,11 +205,7 @@ interface DatabaseCreator {
 
 export function create(DatabaseCreator): Promise<RxDatabase>;
 
-export function plugin(mod: any);
-
-export const PouchDB: {
-    plugin(plugin: any)
-};
+export function plugin(mod: any): void;
 
 export {
 RxDatabase as RxDatabase,
