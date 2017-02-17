@@ -180,7 +180,7 @@ class RxQuery {
 
     /**
      * deletes all found documents
-     * @return {Promise(RxDocument)} promise with deleted documents
+     * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
      */
     async remove() {
         const docs = await this.exec();
