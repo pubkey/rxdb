@@ -60,11 +60,12 @@ In this example-schema we define a hero-collection with the following settings:
 ## Create a collection with the schema
 
 ```javascript
-myDatabase.collection({
-  name: 'hero',
+await myDatabase.collection({
+  name: 'heroes',
   schema: myHeroSchema
-})
-  .then(collection => console.dir(collection));
+});
+console.dir(myDatabase.heroes.name);
+// heroes
 ```
 
 

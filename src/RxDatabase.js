@@ -194,11 +194,13 @@ class RxDatabase {
      * @return {Collection}
      */
     async collection(args) {
-
         args.database = this;
 
         if (args.name.charAt(0) == '_')
             throw new Error(`collection(${args.name}): collection-names cannot start with underscore _`);
+
+        if (this.collections[args.name])
+            throw new Error(`collection(${args.name}) already exists. use myDatabase.${args.name} to get it`);
 
         if (!args.schema)
             throw new Error(`collection(${args.name}): schema is missing`);
@@ -208,54 +210,49 @@ class RxDatabase {
 
         const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
-        if (!this.collections[args.name]) {
+        // check unallowd collection-names
+        if (properties().includes(args.name))
+            throw new Error(`Collection-name ${args.name} not allowed`);
 
-            // check unallowd collection-names
-            if (properties().includes(args.name))
-                throw new Error(`Collection-name ${args.name} not allowed`);
+        // check schemaHash
+        const schemaHash = args.schema.hash();
+        let collectionDoc = null;
+        try {
+            collectionDoc = await this._collectionsPouch.get(internalPrimary);
+        } catch (e) {}
 
-            // check schemaHash
-            const schemaHash = args.schema.hash();
-            let collectionDoc = null;
+        if (collectionDoc && collectionDoc.schemaHash != schemaHash)
+            throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
+
+        const collection = await RxCollection.create(args);
+        if (
+            Object.keys(collection.schema.getEncryptedPaths()).length > 0 &&
+            !this.password
+        ) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
+
+        if (!collectionDoc) {
             try {
-                collectionDoc = await this._collectionsPouch.get(internalPrimary);
+                await this._collectionsPouch.put({
+                    _id: internalPrimary,
+                    schemaHash,
+                    schema: collection.schema.normalized,
+                    version: collection.schema.version
+                });
             } catch (e) {}
-
-            if (collectionDoc && collectionDoc.schemaHash != schemaHash)
-                throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
-
-            const collection = await RxCollection.create(args);
-            if (
-                Object.keys(collection.schema.getEncryptedPaths()).length > 0 &&
-                !this.password
-            ) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
-
-            if (!collectionDoc) {
-                try {
-                    await this._collectionsPouch.put({
-                        _id: internalPrimary,
-                        schemaHash,
-                        schema: collection.schema.normalized,
-                        version: collection.schema.version
-                    });
-                } catch (e) {}
-            }
-
-            const cEvent = RxChangeEvent.create(
-                'RxDatabase.collection',
-                this
-            );
-            cEvent.data.v = collection.name;
-            cEvent.data.col = '_collections';
-            this.$emit(cEvent);
-
-            this.collections[args.name] = collection;
-            this.__defineGetter__(args.name, () => this.collections[args.name]);
-        } else {
-            if (args.schema && args.schema.hash() != this.collections[args.name].schema.hash())
-                throw new Error(`collection(${args.name}): already has a different schema`);
         }
-        return this.collections[args.name];
+
+        const cEvent = RxChangeEvent.create(
+            'RxDatabase.collection',
+            this
+        );
+        cEvent.data.v = collection.name;
+        cEvent.data.col = '_collections';
+        this.$emit(cEvent);
+
+        this.collections[args.name] = collection;
+        this.__defineGetter__(args.name, () => this.collections[args.name]);
+
+        return collection;
     }
 
     /**

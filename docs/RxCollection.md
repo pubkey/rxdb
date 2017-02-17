@@ -21,7 +21,7 @@ The schema defines how your data looks and how it should be handled. You can pas
 
 
 ## get a collection from the database
-To get an existing collection from the database, you can either use the `collection()`-method again, or call the collection-name directly on the database:
+To get an existing collection from the database, call the collection-name directly on the database:
 
 ```javascript
 const collection = await db.collection('heroes');

@@ -229,47 +229,6 @@ describe('RxDatabase.test.js', () => {
                 assert.deepEqual(internalDoc.version, version);
                 db.destroy();
             });
-            it('call 2 times with same params', async() => {
-                const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
-                    adapter: memdown
-                });
-                await db.collection({
-                    name: 'human2',
-                    schema: schemas.human
-                });
-                await db.collection({
-                    name: 'human2',
-                    schema: schemas.human
-                });
-                db.destroy();
-            });
-            it('call to times when one is encrypted', async() => {
-                const db1 = await RxDatabase.create({
-                    name: util.randomCouchString(10),
-                    adapter: memdown
-                });
-                const db2 = await RxDatabase.create({
-                    name: util.randomCouchString(10),
-                    adapter: memdown,
-                    password: util.randomCouchString(10)
-                });
-                await db1.collection({
-                    name: 'human3',
-                    schema: schemas.human
-                });
-                await db2.collection({
-                    name: 'human4',
-                    schema: schemas.encryptedHuman
-                });
-                await db1.collection({
-                    name: 'human3',
-                    schema: schemas.human
-                });
-
-                db1.destroy();
-                db2.destroy();
-            });
             it('create 2 times on same adapter', async() => {
                 const name = util.randomCouchString(10);
                 const collectionName = 'foobar';
@@ -303,6 +262,24 @@ describe('RxDatabase.test.js', () => {
                     () => db.collection({
                         name: 'human6',
                         schema: schemas.nostringIndex
+                    }),
+                    Error
+                );
+                db.destroy();
+            });
+            it('call 2 times on same name', async() => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: memdown
+                });
+                await db.collection({
+                    name: 'human2',
+                    schema: schemas.human
+                });
+                await util.assertThrowsAsync(
+                    () => db.collection({
+                        name: 'human2',
+                        schema: schemas.human
                     }),
                     Error
                 );

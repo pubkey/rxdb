@@ -5,7 +5,6 @@ Features:
   - added [ORM/DRM](docs/ORM.md)-capabilities
   - added [RxQuery.remove()](docs/RxQuery.md)
   - added [Population](docs/Population.md)
-  - added collections-getter to RxDatabase-instance `myDatabase.heroes.insert()` etc. is now possible
 
 Bugfixes:
 
@@ -14,6 +13,7 @@ Breaking:
   - RxDB.create has new api with destructuring [see](docs/RxDatabase.md)
   - RxDatabase.collection() has new api with destructuring [see](docs/RxDatabase.md)
   - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
+  - `RxDatabase.collection()` only to create collection, use `myDatabase.heroes` to get existing one
 
 ## 2.0.4 (February 12, 2017)
 

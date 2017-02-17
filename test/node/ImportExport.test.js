@@ -229,12 +229,15 @@ describe('ImportExport.test.js', () => {
                     for (let i = 0; i < 5; i++)
                         fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                     await Promise.all(fns);
+
+                    // empty collection with same schema
                     const col2 = await db.collection({
-                        name: 'enchuman',
+                        name: 'enchuman2',
                         schema: schemas.encryptedObjectHuman
                     });
 
                     const json = await col.dump();
+                    // add one with broken schema
                     json.docs.push({
                         foo: 'bar',
                         _id: '0fg89sm5ui:1478730736884'

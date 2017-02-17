@@ -68,7 +68,7 @@ interface SchemaJSON {
 
 interface CollectionCreator {
     name: string;
-    schema?: SchemaJSON | RxSchema;
+    schema: SchemaJSON | RxSchema;
     pouchSettings?: Object;
     migrationStrategies?: Function[];
     autoMigrate?: boolean;

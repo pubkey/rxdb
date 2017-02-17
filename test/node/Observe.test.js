@@ -41,32 +41,7 @@ describe('Observe.test.js', () => {
                     db.destroy();
                 });
             });
-            describe('negative', () => {
-                it('emit once when called twice', async() => {
-                    const db = await RxDatabase.create({
-                        name: util.randomCouchString(10),
-                        adapter: memdown
-                    });
-                    let calls = 0;
-                    db.$
-                        .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
-                        .subscribe(e => {
-                            calls++;
-                        });
-                    await db.collection({
-                        name: 'myname1',
-                        schema: schemas.human
-                    });
-                    await db.collection({
-                        name: 'myname1',
-                        schema: schemas.human
-                    });
-
-                    await util.promiseWait(10);
-                    assert.equal(calls, 1);
-                    db.destroy();
-                });
-            });
+            describe('negative', () => {});
         });
     });
     describe('Collection', () => {

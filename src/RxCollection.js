@@ -246,6 +246,21 @@ class RxCollection {
     }
 
     /**
+     * same as insert but overwrites existing document with same primary
+     */
+    async upsert(json) {
+        const primary = json[this.schema.primaryPath];
+        if (!primary) throw new Error('RxCollection.upsert() does not work without primary');
+
+
+        const existing = this.findOne(primary);
+        if (existing) await existing.remove();
+
+        const newDoc = await this.insert(json);
+        return newDoc;
+    }
+
+    /**
      * takes a mongoDB-query-object and returns the documents
      * @param  {object} queryObj
      * @return {RxDocument[]} found documents
