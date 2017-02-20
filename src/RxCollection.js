@@ -19,6 +19,32 @@ import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 
 
+class DocCache {
+    constructor() {
+        this._map = new WeakMap();
+        this._keys = {};
+    }
+    _getKeyById(id) {
+        if (!this._keys[id])
+            this._keys[id] = {};
+        return this._keys[id];
+    }
+    _removeKey(id) {
+        delete this._keys[id];
+    }
+    get(id) {
+        return this._map.get(this._getKeyById(id));
+    }
+    set(id, obj) {
+        return this._map.set(this._getKeyById(id), obj);
+    }
+    delete(id) {
+        this._map.delete(this._getKeyById(id));
+        this._removeKey(id);
+    }
+};
+
+
 class RxCollection {
 
     static HOOKS_WHEN = ['pre', 'post'];
@@ -31,6 +57,10 @@ class RxCollection {
         this._migrationStrategies = migrationStrategies;
         this._pouchSettings = pouchSettings;
         this._methods = methods;
+
+        // contains a weak link to all used RxDocuments of this collection
+        this._docCache = new DocCache();
+
 
         // defaults
         this.synced = false;
@@ -74,6 +104,16 @@ class RxCollection {
                     }
                 });
             }));
+
+
+        // when data changes, send it to RxDocument in docCache
+        this._subs.push(
+            this._observable$.subscribe(cE => {
+                const doc = this._docCache.get(cE.data.doc);
+                if (!doc) return;
+                else doc._handleChangeEvent(cE);
+            })
+        );
     }
 
 
@@ -180,8 +220,17 @@ class RxCollection {
      * @return {RxDocument}
      */
     _createDocument(json) {
+
+        // return from cache if exsists
+        const id = json[this.schema.primaryPath];
+        const cacheDoc = this._docCache.get(id);
+        if (cacheDoc) return cacheDoc;
+
         const doc = RxDocument.create(this, json);
         this._assignMethodsToDocument(doc);
+
+        this._docCache.set(id, doc);
+
         return doc;
     }
     /**
@@ -189,9 +238,7 @@ class RxCollection {
      * @return {RxDocument[]} documents
      */
     _createDocuments(docsJSON) {
-        const docs = RxDocument.createAr(this, docsJSON);
-        docs.forEach(doc => this._assignMethodsToDocument(doc));
-        return docs;
+        return docsJSON.map(json => this._createDocument(json));
     }
 
 
@@ -234,7 +281,7 @@ class RxCollection {
 
         // event
         const emitEvent = RxChangeEvent.create(
-            'RxCollection.insert',
+            'INSERT',
             this.database,
             this,
             newDoc,

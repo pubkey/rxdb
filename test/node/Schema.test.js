@@ -169,9 +169,9 @@ describe('RxSchema.test.js', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
                         version: 0,
-                        description: 'changed as fieldname',
+                        description: 'collection as fieldname',
                         properties: {
-                            'changed': {
+                            'collection': {
                                 type: 'string'
                             }
                         }

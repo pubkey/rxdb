@@ -48,8 +48,8 @@ export function fromJSON(data) {
 
 export function fromPouchChange(changeDoc, collection) {
 
-    // TODO is this right?
-    const op = changeDoc._rev.startsWith('1-') ? 'RxDocument.save' : 'RxDocument.insert';
+    let op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
+    if (changeDoc._deleted) op = 'REMOVE';
 
     // decompress / primarySwap
     changeDoc = collection._handleFromPouch(changeDoc);

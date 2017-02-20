@@ -4,12 +4,74 @@ import * as _ from 'lodash';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as util from '../../dist/lib/util';
+import * as RxDocument from '../../dist/lib/RxDocument';
 
 process.on('unhandledRejection', function(err) {
     throw err;
 });
 
 describe('Document.test.js', () => {
+
+
+    describe('statics', () => {
+        describe('.isDeepEqual()', () => {
+            it('should true on standard object', () => {
+                const is = RxDocument.isDeepEqual({
+                    foo: 'baar'
+                }, {
+                    foo: 'baar'
+                });
+                assert.ok(is);
+            });
+            it('should false on standard object', () => {
+                const is = RxDocument.isDeepEqual({
+                    foo: 'baar'
+                }, {
+                    foo: 'baar1'
+                });
+                assert.equal(is, false);
+            });
+            it('should true on array', () => {
+                const is = RxDocument.isDeepEqual([{
+                    foo: 'baar'
+                }], [{
+                    foo: 'baar'
+                }]);
+                assert.ok(is);
+            });
+            it('should false on array', () => {
+                const is = RxDocument.isDeepEqual([{
+                    foo: 'baar'
+                }], [{
+                    foo: 'baar2'
+                }]);
+                assert.equal(is, false);
+            });
+            it('should true on getter', () => {
+                const obj1 = {};
+                obj1.__defineGetter__('foo', () => 'bar');
+                const obj2 = {};
+                obj2.__defineGetter__('foo', () => 'bar');
+                assert.ok(RxDocument.isDeepEqual(obj1, obj2));
+            });
+            it('should false on different getter', () => {
+                const obj1 = {};
+                obj1.__defineGetter__('foo', () => 'bar');
+                const obj2 = {};
+                obj2.__defineGetter__('foo', () => 'bar1');
+                assert.equal(RxDocument.isDeepEqual(obj1, obj2), false);
+            });
+            it('should ignore getter which endsWith $', () => {
+                const obj1 = {};
+                obj1.__defineGetter__('foo', () => 'bar');
+                obj1.__defineGetter__('foo$', () => 'bar');
+                const obj2 = {};
+                obj2.__defineGetter__('foo', () => 'bar');
+                assert.ok(RxDocument.isDeepEqual(obj1, obj2));
+            });
+
+        });
+    });
     describe('.get()', () => {
         describe('positive', () => {
             it('get a value', async() => {
@@ -174,113 +236,22 @@ describe('Document.test.js', () => {
                 assert.equal(docNew2.get('passportId'), val2);
                 c.database.destroy();
             });
-            it('save same Doc twice', async() => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val1 = 'bliebla1';
-                const val2 = 'bliebla2';
-                doc.set('passportId', val1);
-                await doc.save();
-                doc.set('passportId', val2);
-                await doc.save();
-                assert.equal(doc.get('passportId'), val2);
-                c.database.destroy();
-            });
-            it('be faster on nonchanged-save (string)', async() => {
-                const amount = 50;
-                const charAmount = 100;
+            it('.save() returns false when data not changed', async() => {
                 const c = await humansCollection.create(10);
-                const doc = await c.findOne().sort({
-                    passportId: 1
-                }).exec();
-
-                let start = new Date().getTime();
-                for (let i = 0; i < amount; i++) {
-                    doc.set('passportId', util.randomCouchString(charAmount));
-                    await doc.save();
-                }
-                let duration = new Date().getTime() - start;
-
-                const doc2 = await c.findOne().sort({
-                    passportId: 1
-                }).exec();
-                let start2 = new Date().getTime();
-                const val_same = util.randomCouchString(charAmount);
-                for (let i = 0; i < amount; i++) {
-                    doc2.set('passportId', val_same);
-                    await doc2.save();
-                }
-                let duration2 = new Date().getTime() - start2;
-                assert.ok(Math.round(duration / 1.5) > Math.round(duration2));
-                c.database.destroy();
+                const doc = await c.findOne().exec();
+                const r = await doc.save();
+                assert.equal(r, false);
             });
-            it('be faster on nonchanged-save (object)', async() => {
-
-                return; // TODO this test is useless on the memory-adapter
-
-                const amount = 50;
-                const charAmount = 1000;
-                const c = await humansCollection.createNested(100);
-                const doc = await c.findOne().sort({
-                    passportId: 1
-                }).exec();
-
-                let start = new Date().getTime();
-                for (let i = 0; i < amount; i++) {
-                    let newVal = {
-                        name: util.randomCouchString(charAmount),
-                        level: 5
-                    };
-                    doc.set('mainSkill', newVal);
-                    await doc.save();
-                }
-                let duration = new Date().getTime() - start;
-
-                const doc2 = await c.findOne().sort({
-                    passportId: 1
-                }).exec();
-                let start2 = new Date().getTime();
-                const val_same = {
-                    name: util.randomCouchString(charAmount),
-                    level: 5
-                };
-                for (let i = 0; i < amount; i++) {
-                    doc2.set('mainSkill', val_same);
-                    await doc2.save();
-                }
-                let duration2 = new Date().getTime() - start2;
-
-                let o1 = {
-                    name: 'asdf',
-                    level: 5
-                };
-                let o2 = {
-                    name: 'asdf',
-                    level: 5
-                };
-                console.log(Math.round(duration / 5));
-                console.log(Math.round(duration2));
-
-                assert.ok((Math.round(duration / 5)) > Math.round(duration2));
-                c.database.destroy();
+            it('.save() returns true data changed', async() => {
+                const c = await humansCollection.create(10);
+                const doc = await c.findOne().exec();
+                doc.passportId = util.randomCouchString(20);
+                const r = await doc.save();
+                assert.equal(r, true);
             });
         });
 
         describe('negative', () => {
-            it('save referenced to same doc twice', async() => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const doc_same = await c.findOne().exec();
-                doc.set('passportId', 'any');
-                await doc.save();
-                doc_same.set('passportId', 'any');
-                await util.assertThrowsAsync(
-                    () => doc_same.save(),
-                    'PouchError'
-                );
-                c.database.destroy();
-            });
-
             it('save deleted', async() => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
@@ -368,13 +339,22 @@ describe('Document.test.js', () => {
                 assert.equal(obs.constructor.name, 'Observable');
 
                 let value = null;
-                doc.firstName$.subscribe(newVal => {
+                obs.subscribe(newVal => {
                     value = newVal;
                 });
                 doc.set('firstName', 'foobar');
                 await doc.save();
                 await util.promiseWait(5);
                 assert.equal(value, 'foobar');
+
+                // resubscribe should emit again
+                let value2=null;
+                obs.subscribe(newVal => {
+                    value2 = newVal;
+                });
+                await util.promiseWait(5);
+                assert.equal(value2, 'foobar');
+
             });
             it('nested-value-observable', async() => {
                 const c = await humansCollection.createNested(1);

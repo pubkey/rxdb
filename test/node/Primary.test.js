@@ -270,23 +270,7 @@ describe('Primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {
-                it('should not save the same doc twice', async() => {
-                    const c = await humansCollection.createPrimary(0);
-                    const obj = schemaObjects.simpleHuman();
-                    await c.insert(obj);
-                    const doc = await c.findOne().exec();
-                    const sameDoc = await c.findOne().exec();
-                    doc.set('firstName', 'foobar');
-                    sameDoc.set('firstName', 'foobar2');
-                    await doc.save();
-                    await util.assertThrowsAsync(
-                        () => sameDoc.save(),
-                        'PouchError'
-                    );
-                    c.database.destroy();
-                });
-            });
+            describe('negative', () => {});
         });
         describe('.subscribe()', () => {
             describe('positive', () => {
@@ -334,7 +318,7 @@ describe('Primary.test.js', () => {
                     let value;
                     let count = 0;
                     const pW8 = util.promiseWaitResolveable(1000);
-                    doc.get$('firstName').subscribe(newVal => {
+                    doc.firstName$.subscribe(newVal => {
                         value = newVal;
                         count++;
                         if (count >= 2) pW8.resolve();
@@ -344,6 +328,7 @@ describe('Primary.test.js', () => {
                     await doc2.save();
                     await pW8.promise;
                     assert.equal(value, 'foobar');
+                    assert.equal(count, 2);
                     c1.database.destroy();
                     c2.database.destroy();
                 });

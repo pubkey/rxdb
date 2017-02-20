@@ -95,22 +95,22 @@ describe('Observe.test.js', () => {
         describe('.remove()', () => {
             describe('positive', () => {
                 it('should fire on remove', async() => {
-                    const db = await RxDatabase.create({
-                        name: util.randomCouchString(10),
-                        adapter: memdown
-                    });
-                    const colName = util.randomCouchString(10);
-                    const c = await db.collection({
-                        name: colName,
-                        schema: schemas.human
-                    });
+                    const c = await humansCollection.create(0);
                     let ar = [];
                     const sub = c
                         .find()
                         .$
                         .subscribe(docs => ar.push(docs));
 
+                    // null is fired until no results
+                    assert.equal(ar.length, 1);
+                    assert.deepEqual(ar[0], null);
+
+                    // empty array since no documents
                     await util.promiseWait(10);
+                    assert.equal(ar.length, 2);
+                    assert.deepEqual(ar[1], []);
+
                     await c.insert(schemaObjects.human());
                     await util.promiseWait(10);
                     assert.equal(ar.length, 3);
@@ -119,7 +119,7 @@ describe('Observe.test.js', () => {
                     await util.promiseWait(10);
                     assert.equal(ar.length, 4);
                     sub.unsubscribe();
-                    db.destroy();
+                    c.database.destroy();
                 });
             });
         });
@@ -172,8 +172,8 @@ describe('Observe.test.js', () => {
                     const c = await humansCollection.create(1);
                     const doc = await c.findOne().exec();
                     let v1;
-                    doc.get$('firstName').subscribe(newVal => v1 = newVal);
-                    await util.promiseWait(50);
+                    const sub = doc.get$('firstName').subscribe(newVal => v1 = newVal);
+                    await util.promiseWait(5);
 
                     doc.set('firstName', 'foobar');
                     await doc.save();
@@ -183,6 +183,7 @@ describe('Observe.test.js', () => {
 
                     assert.equal(v1, v2);
                     assert.equal(v1, 'foobar');
+                    sub.unsubscribe();
                     c.database.destroy();
                 });
             });
@@ -200,18 +201,20 @@ describe('Observe.test.js', () => {
         });
         describe('.remove()', () => {
             describe('positive', () => {
-                it('value is undefined on delete', async() => {
+                it('deleted$ is true, on delete', async() => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
-                    const valueObj = {
-                        v: doc.get('firstName')
-                    };
-                    doc.get$('firstName').subscribe(newVal => {
-                        valueObj.v = newVal;
-                    });
-                    await doc.remove();
+                    let deleted = null;
+                    doc.deleted$.subscribe(v => deleted = v);
+
                     util.promiseWait(5);
-                    assert.equal(valueObj.v, undefined);
+                    assert.deepEqual(deleted, false);
+
+                    await doc.remove();
+
+                    util.promiseWait(5);
+                    assert.deepEqual(deleted, true);
+
                     c.database.destroy();
                 });
             });

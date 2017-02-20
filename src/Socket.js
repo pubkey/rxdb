@@ -59,9 +59,6 @@ class Socket {
         const socketDoc = changeEvent.toJSON();
         delete socketDoc.db;
 
-        // do not write whole doc to socket
-        delete socketDoc.v;
-
         // TODO find a way to getAll on local documents
         //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
         socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;

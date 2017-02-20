@@ -12,6 +12,7 @@ gulp.task('test', function() {
             '../test_tmp/node/Database.test.js',
             '../test_tmp/node/Collection.test.js',
             '../test_tmp/node/Document.test.js',
+            '../test_tmp/node/Observe.test.js',
             '../test_tmp/node/Primary.test.js',
             '../test_tmp/node/Hooks.test.js',
             '../test_tmp/node/ORM.test.js',
@@ -21,7 +22,6 @@ gulp.task('test', function() {
             '../test_tmp/node/Replication.test.js',
             '../test_tmp/node/Encryption.test.js',
             '../test_tmp/node/ImportExport.test.js',
-            '../test_tmp/node/Observe.test.js',
             '../test_tmp/node/CrossInstance.test.js'
         ])
         .pipe(mocha({

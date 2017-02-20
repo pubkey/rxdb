@@ -40,6 +40,7 @@ import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/distinct';
 
 export const Rx = {
     Observable,

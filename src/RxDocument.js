@@ -10,27 +10,26 @@ import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
 
 class RxDocument {
-
-    get[Symbol.toStringTag]() {
-        return 'RxDocument';
-    }
-
     constructor(collection, jsonData) {
         this.collection = collection;
 
+        // assume that this is always equal to the doc-data in the database
+        this._dataSync$ = new util.Rx.BehaviorSubject(clone(jsonData));
+
+        // current doc-data, changes when setting values etc
         this._data = clone(jsonData);
+
+        // false when _data !== _dataSync
+        this._synced$ = new util.Rx.BehaviorSubject(true);
+
         this._$;
 
-        this.changed = false;
-        this.deleted = false;
-        this._deleted$;
-
+        this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
     prepare() {
         // set getter/setter/observable
         this._defineGetterSetter(this, '');
     }
-
 
     getPrimaryPath() {
         return this.collection.schema.primaryPath;
@@ -43,38 +42,47 @@ class RxDocument {
         return this._data._rev;
     }
 
+    get deleted$() {
+        return this._deleted$.asObservable();
+    }
+    get synced$() {
+        return this._synced$.asObservable().distinctUntilChanged();
+    }
+
 
     /**
      * returns the observable which emits the plain-data of this document
      * @return {Observable}
      */
     get $() {
-        if (!this._$) {
-            this._$ = this.collection.$
-                .filter(event => (
-                    event.data.doc == this.getPrimary() ||
-                    event.data.doc == '*'
-                ))
-                .mergeMap(async(ev) => {
-                    if (ev.data.op == 'RxDocument.remove') {
-                        this.deleted = true;
-                        return null;
-                    }
-                    if (ev.data.v) return ev.data.v;
-                    const newData = await this.collection._pouchGet(this.getPrimary());
-                    return newData;
-                })
-                .do(docData => this._data = docData);
-        }
-        return this._$;
+        return this._dataSync$.asObservable();
     }
 
-    get deleted$() {
-        if (!this._deleted$) {
-            this._deleted$ = this.$
-                .filter(docData => docData == null);
+
+
+    /**
+     * @param {ChangeEvent}
+     */
+    _handleChangeEvent(changeEvent) {
+        if (changeEvent.data.doc != this.getPrimary())
+            return;
+
+        //TODO check if new _rev is higher then current
+
+        switch (changeEvent.data.op) {
+            case 'INSERT':
+                break;
+            case 'UPDATE':
+                const newData = changeEvent.data.v;
+                // TODO check if _synced should be called
+                this._dataSync$.next(newData);
+                break;
+            case 'REMOVE':
+                this._deleted$.next(true);
+                break;
+
         }
-        return this._deleted$;
+
     }
 
     /**
@@ -89,17 +97,16 @@ class RxDocument {
      * @return {Observable}
      */
     get$(path) {
-
         if (path.includes('.item.'))
             throw new Error(`cannot get observable of in-array fields because order cannot be guessed: ${path}`);
 
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) throw new Error(`cannot observe a non-existed field (${path})`);
 
-        return this.$
+        return this._dataSync$
             .map(data => objectPath.get(data, path))
             .distinctUntilChanged()
-            .startWith(this.get(path));
+            .asObservable();
     }
 
 
@@ -193,7 +200,6 @@ class RxDocument {
         }
         // check if equal
         if (Object.is(this.get(objPath), value)) return;
-        else this.changed = true;
 
         // check if nested without root-object
         let pathEls = objPath.split('.');
@@ -214,23 +220,27 @@ class RxDocument {
         return this;
     };
 
+
+    /**
+     * save document if its data has changed
+     * @return {boolean} false if nothing to save
+     */
     async save() {
-        if (!this.changed) return;
-        if (this.deleted)
+
+        if (this._deleted$.getValue())
             throw new Error('RxDocument.save(): cant save deleted document');
 
+        // check if different
+        if (isDeepEqual(this._data, this._dataSync$.getValue())) {
+            this._synced$.next(true);
+            return false; // nothing changed, dont save
+        }
+
         const emitValue = clone(this._data);
+
+        this.collection.schema.validate(this._data);
+
         await this.collection._runHooks('pre', 'save', this);
-
-
-        // handle encrypted data
-        // // TODO handle data
-        /*        const encPaths = this.collection.schema.getEncryptedPaths();
-                Object.keys(encPaths).map(path => {
-                    let value = objectPath.get(this.rawData, path);
-                    let encrypted = this.collection.database._encrypt(value);
-                    objectPath.set(this.rawData, path, encrypted);
-                });*/
 
         const ret = await this.collection._pouchPut(clone(this._data));
         if (!ret.ok)
@@ -240,16 +250,18 @@ class RxDocument {
         await this.collection._runHooks('post', 'save', this);
 
         // event
+        this._synced$.next(true);
+        this._dataSync$.next(clone(this._data));
+
         const changeEvent = RxChangeEvent.create(
-            'RxDocument.save',
+            'UPDATE',
             this.collection.database,
             this.collection,
             this,
             emitValue
         );
         this.$emit(changeEvent);
-
-        this.changed = false;
+        return true;
     }
 
 
@@ -265,7 +277,7 @@ class RxDocument {
         await this.collection._runHooks('post', 'remove', this);
 
         this.$emit(RxChangeEvent.create(
-            'RxDocument.remove',
+            'REMOVE',
             this.collection.database,
             this.collection,
             this,
@@ -274,7 +286,50 @@ class RxDocument {
     }
 
     destroy() {}
+}
 
+/**
+ * performs a deep-equal without comparing internal getters and setter (observe$ and populate_ etc.)
+ * @param  {object}  data1
+ * @param  {object}  data2
+ * @throws {Error} if given data not a plain js object
+ * @return {Boolean} true if equal
+ */
+export function isDeepEqual(data1, data2) {
+    if (typeof data1 !== typeof data2) return false;
+
+    let ret = true;
+
+    // array
+    if (Array.isArray(data1)) {
+        let k = 0;
+        while (k < data1.length && ret == true) {
+            if (!data2[k] || !isDeepEqual(data1[k], data2[k]))
+                ret = false;
+            k++;
+        }
+        return ret;
+    }
+
+    // object
+    if (typeof data1 === 'object') {
+        const entries = Object.entries(data1)
+            .filter(entry => !entry[0].endsWith('$')) // observe
+            .filter(entry => !entry[0].endsWith('_')); // populate;
+        let k = 0;
+        while (k < entries.length && ret) {
+            const entry = entries[k];
+            const name = entry[0];
+            const value = entry[1];
+            if (!isDeepEqual(data2[name], value))
+                ret = false;
+            k++;
+        }
+        return ret;
+    }
+
+    // other
+    return data1 == data2;
 }
 
 

@@ -232,8 +232,8 @@ describe('Hooks.test.js', () => {
                         failC++;
                     }
                     assert.equal(failC, 1);
-                    const doc2 = await c.findOne(human.passportId).exec();
-                    assert.equal(doc2.get('firstName'), 'test');
+                    const syncValue = await doc.firstName$.first().toPromise();
+                    assert.equal(syncValue, 'test');
                 });
             });
             describe('negative', () => {

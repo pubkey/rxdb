@@ -51,6 +51,7 @@
     "babel-runtime": "^6.23.0",
     "clone": "2.1.0",
     "crypto-js": "3.1.8",
+    "deep-equal": "^1.0.1",
     "es6-promise": "4.0.5",
     "jsonschema": "1.1.1",
     "object-path": "0.11.3",

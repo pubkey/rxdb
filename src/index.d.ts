@@ -113,7 +113,6 @@ declare class RxCollection {
     insert(json: any): Promise<RxDocument>;
     find(queryObj?: any): RxQuery;
     findOne(queryObj?: any): RxQuery;
-    query(queryObj?: any): RxQuery;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
@@ -171,7 +170,7 @@ declare class RxQuery {
 
     exec(): Promise<RxDocument[]>;
     $: Observable<RxDocument[]>;
-    remove(): Promise<RxDocument|RxDocument[]>;
+    remove(): Promise<RxDocument | RxDocument[]>;
 }
 
 declare class RxDocument {
@@ -185,13 +184,20 @@ declare class RxDocument {
     set(objPath: string, value: any): RxDocument;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument|null>;
-    toJSON(): Object;
-    destroy(): void;
+    populate(objPath: string): Promise<RxDocument |null>;
+toJSON(): Object;
+destroy(): void;
+}
+
+
+
+
+interface RxChangeEventData {
+    type: 'INSERT', 'UPDATE', 'REMOVE';
 }
 
 declare class RxChangeEvent {
-    data: any;
+    data: RxChangeEventData;
     toJSON(): any;
 }
 

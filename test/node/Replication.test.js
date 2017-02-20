@@ -181,21 +181,21 @@ describe('Replication.test.js', () => {
                     live: true
                 });
 
-                const pw8 = util.promiseWaitResolveable(1400);
-                let results = null;
-                c2.query().$.subscribe(res => {
-                    results = res;
-                    if (results && results.length > 0) pw8.resolve();
+                const pw8 = util.promiseWaitResolveable(10000);
+                const results = [];
+                c2.find().$.subscribe(res => {
+                    results.push(res);
+                    if (results.length == 3) pw8.resolve();
                 });
-                await util.promiseWait(50);
-                assert.equal(results.length, 0);
+                assert.equal(results.length, 1);
+                await util.promiseWait(5);
+
 
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
-                await util.promiseWait(50);
 
-                assert.equal(results.length, 1);
+                assert.equal(results.length, 3);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -214,7 +214,7 @@ describe('Replication.test.js', () => {
                 // insert and w8 for sync
                 let pw8 = util.promiseWaitResolveable(1400);
                 let results = null;
-                c2.query().$.subscribe(res => {
+                c2.find().$.subscribe(res => {
                     results = res;
                     if (results && results.length > 0) pw8.resolve();
                 });
