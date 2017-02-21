@@ -10,7 +10,7 @@ process.on('unhandledRejection', function(err) {
     throw err;
 });
 
-describe('Document.test.js', () => {
+describe('RxDocument.test.js', () => {
 
 
     describe('statics', () => {
