@@ -18,7 +18,7 @@ class RxDatabase {
         minPassLength: 8
     };
 
-    constructor(name, adapter, password, multiInstance = false) {
+    constructor(name, adapter, password, multiInstance) {
         this.name = name;
         this.adapter = adapter;
         this.password = password;
@@ -334,7 +334,7 @@ export async function create({
     name,
     adapter,
     password,
-    multiInstance = false
+    multiInstance = true
 }) {
 
     util.validateCouchDBString(name);
