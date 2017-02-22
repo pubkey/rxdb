@@ -9,6 +9,7 @@ Features:
   - added [RxDocument.synced$](docs/RxDocument.md#synced)
 
 Bugfixes:
+  - running `RxDocument().save()` twice did not work
 
 Breaking:
   - Collection-names must match `^[a-z][a-z0-9]*$` Fixes [#45](https://github.com/pubkey/rxdb/issues/45)

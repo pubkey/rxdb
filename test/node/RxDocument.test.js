@@ -11,8 +11,6 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('RxDocument.test.js', () => {
-
-
     describe('statics', () => {
         describe('.isDeepEqual()', () => {
             it('should true on standard object', () => {
@@ -231,8 +229,10 @@ describe('RxDocument.test.js', () => {
                 const docNew = await c.findOne().exec();
                 assert.equal(docNew.get('passportId'), val1);
                 docNew.set('passportId', val1);
+
                 const docNew2 = await c.findOne().exec();
                 docNew2.set('passportId', val2);
+                await docNew2.save();
                 assert.equal(docNew2.get('passportId'), val2);
                 c.database.destroy();
             });
@@ -250,7 +250,6 @@ describe('RxDocument.test.js', () => {
                 assert.equal(r, true);
             });
         });
-
         describe('negative', () => {
             it('save deleted', async() => {
                 const c = await humansCollection.createNested(5);
@@ -263,10 +262,7 @@ describe('RxDocument.test.js', () => {
                 );
                 c.database.destroy();
             });
-
         });
-
-
     });
     describe('.remove()', () => {
         describe('positive', () => {
@@ -293,6 +289,23 @@ describe('RxDocument.test.js', () => {
                 assert.equal(docsAfter.length, 0);
                 c.database.destroy();
             });
+            it('save and then remove', async() => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                assert.ok(docs.length > 1);
+                const first = docs[0];
+
+                first.firstName = 'foobar';
+                await first.save();
+
+                await first.remove();
+                const docsAfter = await c.find().exec();
+                docsAfter.map(doc => {
+                    if (doc._data.passportId == first._data.passportId)
+                        throw new Error('still here after remove()');
+                });
+                c.database.destroy();
+            });
         });
         describe('negative', () => {
             it('delete doc twice', async() => {
@@ -307,8 +320,6 @@ describe('RxDocument.test.js', () => {
             });
         });
     });
-
-
     describe('pseudo-Proxy', () => {
         describe('get', () => {
             it('top-value', async() => {
@@ -348,7 +359,7 @@ describe('RxDocument.test.js', () => {
                 assert.equal(value, 'foobar');
 
                 // resubscribe should emit again
-                let value2=null;
+                let value2 = null;
                 obs.subscribe(newVal => {
                     value2 = newVal;
                 });
@@ -387,7 +398,6 @@ describe('RxDocument.test.js', () => {
                 assert.equal(value, true);
             });
         });
-
         describe('set', () => {
             it('top value', async() => {
                 const c = await humansCollection.createPrimary(1);

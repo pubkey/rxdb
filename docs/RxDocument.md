@@ -75,26 +75,10 @@ myDocument.$()
   .subscribe(changeEvent => console.dir(changeEvent));
 ```
 
-### get$()
-This function returns an observable of the given paths-value.
-The current value of this path will be emitted, even and every time when the document changes.
-```js
-// get the life-updating value of 'name'
-var isName;
-myDocument.get$('name')
-  .subscribe(newName => {
-    isName = newName;
-  });
 
-myDocument.set('name', 'foobar2');
-await myDocument.save();
 
-console.dir(isName); // isName is now 'foobar2'
-```
-
-### proxy-get$
-As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly get value-observables instead of using the get$()-function.
-To do this, just add the dollar-sign ($) to the getter.
+### fieldName$
+You can directly get value-observables for a fieldName by adding the dollarSign ($) to its name.
 
 ```js
 // top-level
@@ -117,6 +101,63 @@ myDocument.whatever.nestedfield = 'foobar2';
 await myDocument.save();
 console.dir(currentNestedValue); // currentNestedValue is now 'foobar2'
 ```
+
+### get$()
+This function returns an observable of the given paths-value.
+The current value of this path will be emitted, even and every time when the document changes.
+```js
+// get the life-updating value of 'name'
+var isName;
+myDocument.get$('name')
+  .subscribe(newName => {
+    isName = newName;
+  });
+
+myDocument.set('name', 'foobar2');
+await myDocument.save();
+
+console.dir(isName); // isName is now 'foobar2'
+```
+
+### deleted$
+Emits a boolean value, depending if the RxDocument is deleted or not.
+
+```js
+let lastState = null;
+myDocument.deleted$.subscribe(state => lastState = state);
+
+console.log(lastState);
+// false
+
+await myDocument.remove();
+
+console.log(lastState);
+// true
+```
+
+
+### synced$
+Emits a boolean value, depending if the RxDocument is in the same state then its value stored in the database.
+// TODO add better example
+
+```js
+let lastState = null;
+myDocument.synced$.subscribe(state => lastState = state);
+console.log(lastState);
+// true
+
+myDocument.firstName = 'foobar';
+console.log(lastState);
+// true
+
+// myDocument2 is the same document but in another instance (other browser-tab etc.)
+myDocument2.firstName = 'barfoo';
+await myDocument2.save();
+
+console.log(lastState);
+// false
+```
+
 
 ---------
 If you are new to RxDB, you should continue [here](./Middleware.md)

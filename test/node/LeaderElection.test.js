@@ -240,11 +240,18 @@ describe('LeaderElection.test.js', () => {
             await Promise.all(dbs.map(db => db.destroy()));
         });
     });
-
     describe('integration', () => {
         it('non-multiInstance should always be leader', async() => {
-            const c = await humansCollection.create(0);
-            const db = c.database;
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: false
+            });
+            // setTimeout(() => db.destroy(), dbLifetime);
+            const collection = await db.collection({
+                name: 'human',
+                schema: schemas.human
+            });
             assert.equal(db.isLeader, true);
             db.destroy();
         });

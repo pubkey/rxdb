@@ -178,6 +178,9 @@ declare class RxDocument {
     deleted: boolean;
 
     $: Observable<any>;
+    deleted$: Observable<boolean>;
+    synced$: Observable<boolean>;
+
     getPrimary(): string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
@@ -185,15 +188,15 @@ declare class RxDocument {
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
     populate(objPath: string): Promise<RxDocument |null>;
-toJSON(): Object;
-destroy(): void;
+    toJSON(): Object;
+    destroy(): void;
 }
 
 
 
 
 interface RxChangeEventData {
-    type: 'INSERT', 'UPDATE', 'REMOVE';
+    type: "INSERT" | "UPDATE" | "REMOVE";
 }
 
 declare class RxChangeEvent {

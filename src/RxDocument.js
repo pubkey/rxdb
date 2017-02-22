@@ -1,7 +1,6 @@
 import {
     default as clone
 } from 'clone';
-
 import {
     default as objectPath
 } from 'object-path';
@@ -21,8 +20,6 @@ class RxDocument {
 
         // false when _data !== _dataSync
         this._synced$ = new util.Rx.BehaviorSubject(true);
-
-        this._$;
 
         this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
@@ -49,7 +46,6 @@ class RxDocument {
         return this._synced$.asObservable().distinctUntilChanged();
     }
 
-
     /**
      * returns the observable which emits the plain-data of this document
      * @return {Observable}
@@ -57,8 +53,6 @@ class RxDocument {
     get $() {
         return this._dataSync$.asObservable();
     }
-
-
 
     /**
      * @param {ChangeEvent}
@@ -75,14 +69,29 @@ class RxDocument {
             case 'UPDATE':
                 const newData = changeEvent.data.v;
                 // TODO check if _synced should be called
-                this._dataSync$.next(newData);
+
+                const prevSyncData = this._dataSync$.getValue();
+                const prevData = this._data;
+
+                if (isDeepEqual(prevSyncData, prevData)) {
+                    // document is in sync, overwrite _data
+                    this._data = clone(newData);
+                    if (this._synced$.getValue() != true)
+                        this._synced$.next(true);
+                } else {
+                    // not in sync, emit to synced$
+                    if (this._synced$.getValue() != false)
+                        this._synced$.next(false);
+
+                    // overwrite _rev of data
+                    this._data._rev = newData._rev;
+                }
+                this._dataSync$.next(clone(newData));
                 break;
             case 'REMOVE':
                 this._deleted$.next(true);
                 break;
-
         }
-
     }
 
     /**
@@ -109,7 +118,6 @@ class RxDocument {
             .asObservable();
     }
 
-
     async populate(path, object) {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
@@ -125,7 +133,6 @@ class RxDocument {
         const doc = await refCollection.findOne(value).exec();
         return doc;
     }
-
 
     /**
      * get data by objectPath
@@ -150,7 +157,6 @@ class RxDocument {
         this._defineGetterSetter(valueObj, objPath);
         return valueObj;
     }
-
 
     _defineGetterSetter(valueObj, objPath = '') {
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
@@ -177,9 +183,6 @@ class RxDocument {
                 });
             });
     }
-
-
-
 
     toJSON() {
         return clone(this._data);
@@ -220,13 +223,11 @@ class RxDocument {
         return this;
     };
 
-
     /**
      * save document if its data has changed
      * @return {boolean} false if nothing to save
      */
     async save() {
-
         if (this._deleted$.getValue())
             throw new Error('RxDocument.save(): cant save deleted document');
 
@@ -236,22 +237,24 @@ class RxDocument {
             return false; // nothing changed, dont save
         }
 
-        const emitValue = clone(this._data);
-
-        this.collection.schema.validate(this._data);
-
         await this.collection._runHooks('pre', 'save', this);
+        this.collection.schema.validate(this._data);
 
         const ret = await this.collection._pouchPut(clone(this._data));
         if (!ret.ok)
             throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
-        this._data._rev = ret.rev;
+
+        const emitValue = clone(this._data);
+        emitValue._rev = ret.rev;
+
+        this._data = emitValue;
 
         await this.collection._runHooks('post', 'save', this);
 
         // event
         this._synced$.next(true);
-        this._dataSync$.next(clone(this._data));
+        this._dataSync$.next(clone(emitValue));
+
 
         const changeEvent = RxChangeEvent.create(
             'UPDATE',
@@ -263,7 +266,6 @@ class RxDocument {
         this.$emit(changeEvent);
         return true;
     }
-
 
     async remove() {
         if (this.deleted)
@@ -332,7 +334,6 @@ export function isDeepEqual(data1, data2) {
     return data1 == data2;
 }
 
-
 export function create(collection, jsonData) {
     if (jsonData[collection.schema.primaryPath].startsWith('_design'))
         return null;
@@ -342,13 +343,11 @@ export function create(collection, jsonData) {
     return doc;
 }
 
-
 export function createAr(collection, jsonDataAr) {
     return jsonDataAr
         .map(jsonData => create(collection, jsonData))
         .filter(doc => doc != null);
 }
-
 
 /**
  * returns all possible properties of a RxDocument
@@ -357,10 +356,11 @@ export function createAr(collection, jsonDataAr) {
 let _properties;
 export function properties() {
     if (!_properties) {
+        const reserved = ['deleted', 'synced'];
         const pseudoRxDocument = new RxDocument();
         const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
         const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
-        _properties = [...ownProperties, ...prototypeProperties];
+        _properties = [...ownProperties, ...prototypeProperties, ...reserved];
     }
     return _properties;
 }
