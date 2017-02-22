@@ -365,7 +365,7 @@ describe('DataMigration.test.js', () => {
                         include_docs: false,
                         attachments: false
                     });
-                    const preFiltered = docsPrev.rows.filter(doc => !doc.id.startsWith('_design'))
+                    const preFiltered = docsPrev.rows.filter(doc => !doc.id.startsWith('_design'));
                     assert.equal(preFiltered.length, 0);
 
                     await oldCol.migratePromise();

@@ -3,7 +3,7 @@ console.log('######## init.test.js ########');
 const platform = require('platform');
 platform.isNode = function() {
     return platform.name == 'Node.js';
-}
+};
 
 console.log('###### PLATFORM: ######');
 if (typeof window !== 'undefined')
