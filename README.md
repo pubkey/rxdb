@@ -152,6 +152,7 @@ npm install rxjs babel-polyfill --save
 ES7:
 ```javascript
 import * as RxDB from 'rxdb';
+import 'babel-polyfill'; //only needed when you dont have polyfills
 const db = await RxDB.create({
     name: 'heroesDB',
     adapter: 'websql',
@@ -167,6 +168,7 @@ ES6:
 
 ```javascript
 import * as RxDB from 'rxdb';
+require('babel-polyfill'); //only needed when you dont have polyfills
 RxDB.create({
     name: 'heroesDB',
     adapter: 'websql',
