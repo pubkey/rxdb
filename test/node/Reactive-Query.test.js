@@ -19,7 +19,7 @@ process.on('unhandledRejection', function(err) {
     throw err;
 });
 
-describe('Query', () => {
+describe('Reactive-Query.test.js', () => {
     describe('positive', () => {
         it('get an init value of null on .subscribe() and [] later', async() => {
             const c = await humansCollection.create(1);
@@ -76,8 +76,7 @@ describe('Query', () => {
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
-            await util.promiseWait(50);
-            assert.equal(lastValue2.length, 1);
+            await util.waitUntil(() => lastValue2 && lastValue2.length == 1);
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();
         });
@@ -168,8 +167,7 @@ describe('Query', () => {
             query.$.subscribe(newResults => {
                 recieved++;
             });
-            await util.promiseWait(50);
-            assert.equal(recieved, 2);
+            await util.waitUntil(() => recieved == 2);
             c.database.destroy();
         });
     });

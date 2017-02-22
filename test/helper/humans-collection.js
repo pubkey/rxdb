@@ -246,7 +246,7 @@ export async function createMigrationCollection(
     const colName = 'human';
     const db = await RxDatabase.create({
         name,
-        adapter: memdown
+        adapter: 'memory'
     });
     const schema = RxSchema.create(schemas.simpleHuman);
     const col = await db.collection({
@@ -266,7 +266,7 @@ export async function createMigrationCollection(
 
     const db2 = await RxDatabase.create({
         name,
-        adapter: memdown
+        adapter: 'memory'
     });
     const schema2 = RxSchema.create(schemas.simpleHumanV3);
     const col2 = await db2.collection({

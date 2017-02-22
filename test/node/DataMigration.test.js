@@ -1,11 +1,5 @@
 import assert from 'assert';
 import {
-    default as memdown
-} from 'memdown';
-import * as _ from 'lodash';
-
-
-import {
     default as PouchDB
 } from '../../dist/lib/PouchDB';
 import * as schemas from '../helper/schemas';
@@ -18,17 +12,13 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
-describe('SchemaMigration.test.js', () => {
+describe('DataMigration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await RxCollection.create({
@@ -48,7 +38,7 @@ describe('SchemaMigration.test.js', () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
                 const col = await db.collection({
@@ -59,7 +49,7 @@ describe('SchemaMigration.test.js', () => {
 
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection({
@@ -78,7 +68,7 @@ describe('SchemaMigration.test.js', () => {
             it('should throw when array', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
@@ -95,7 +85,7 @@ describe('SchemaMigration.test.js', () => {
             it('should throw when property no number', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
@@ -114,7 +104,7 @@ describe('SchemaMigration.test.js', () => {
             it('should throw when property no non-float-number', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
@@ -133,7 +123,7 @@ describe('SchemaMigration.test.js', () => {
             it('should throw when property-value no function', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
                 await util.assertThrowsAsync(
@@ -152,7 +142,7 @@ describe('SchemaMigration.test.js', () => {
             it('throw when strategy missing', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
                 await util.assertThrowsAsync(
@@ -178,7 +168,7 @@ describe('SchemaMigration.test.js', () => {
                 const colName = 'human';
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const col = await db.collection({
                     name: colName,
@@ -198,7 +188,7 @@ describe('SchemaMigration.test.js', () => {
                 const colName = 'human';
                 const db = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.simpleHuman);
                 const col = await db.collection({
@@ -209,7 +199,7 @@ describe('SchemaMigration.test.js', () => {
 
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection({
@@ -375,7 +365,8 @@ describe('SchemaMigration.test.js', () => {
                         include_docs: false,
                         attachments: false
                     });
-                    assert.equal(docsPrev.total_rows, 0);
+                    const preFiltered = docsPrev.rows.filter(doc => !doc.id.startsWith('_design'))
+                    assert.equal(preFiltered.length, 0);
 
                     await oldCol.migratePromise();
 

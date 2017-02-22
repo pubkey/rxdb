@@ -1,26 +1,24 @@
+const platform = require('platform');
 import assert from 'assert';
 import {
     default as memdown
 } from 'memdown';
-import {
-    default as leveldown
-} from 'leveldown';
 
+let leveldown;
+let leveldb;
+if (platform.isNode()) {
+    leveldown = require('leveldown');
+    leveldb = require('pouchdb-adapter-leveldb');
+}
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('PouchDB-integration.test.js', () => {
-
     describe('init', () => {
         it('should export the pouchDB-module', async() => {
             assert.equal(typeof RxDB.PouchDB, 'function');
         });
     });
-
     describe('memdown', () => {
         it('should not allow leveldown-adapters without the plugin', async() => {
             await util.assertThrowsAsync(
@@ -32,7 +30,8 @@ describe('PouchDB-integration.test.js', () => {
             );
         });
         it('should work after adding the leveldb-plugin', async() => {
-            RxDB.PouchDB.plugin(require('pouchdb-adapter-leveldb'));
+            if (!platform.isNode()) return;
+            RxDB.PouchDB.plugin(leveldb);
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
                 adapter: memdown
@@ -62,9 +61,9 @@ describe('PouchDB-integration.test.js', () => {
             db.destroy();
         });
     });
-
     describe('localstorage', () => {
         it('should crash because nodejs has no localstorage', async() => {
+            if (!platform.isNode()) return;
             RxDB.PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await util.assertThrowsAsync(
                 () => RxDB.create({
@@ -73,6 +72,37 @@ describe('PouchDB-integration.test.js', () => {
                 }),
                 Error
             );
+        });
+    });
+    describe('websql', () => {
+        describe('negative', () => {
+            it('should fail when no adapter was added', async() => {
+                await util.assertThrowsAsync(
+                    () => RxDB.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'websql'
+                    }),
+                    Error
+                );
+            });
+        });
+        describe('positive', () => {
+            it('should work after adding the adapter', async() => {
+                if (platform.isNode()) return;
+                if (/Firefox/.test(window.navigator.userAgent)) return;
+
+                // no websql in internet explorer
+                if (platform.name == 'IE') return;
+
+                RxDB.plugin(require('pouchdb-adapter-websql'));
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'websql'
+                });
+                assert.equal(db.constructor.name, 'RxDatabase');
+                await util.promiseWait(1000);
+                db.destroy();
+            });
         });
     });
 

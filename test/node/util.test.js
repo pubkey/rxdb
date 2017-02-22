@@ -2,9 +2,7 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-
 import * as util from '../../dist/lib/util';
-
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {

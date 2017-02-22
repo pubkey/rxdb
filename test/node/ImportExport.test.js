@@ -2,7 +2,6 @@
  * this test is to the import/export behaviour
  */
 import assert from 'assert';
-import * as _ from 'lodash';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';

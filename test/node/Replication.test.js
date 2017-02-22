@@ -5,30 +5,28 @@
  */
 
 import assert from 'assert';
-import {
-    default as memdown
-} from 'memdown';
-import * as _ from 'lodash';
+const platform = require('platform');
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
-import * as SpawnServer from '../helper/spawnServer';
 
 import * as util from '../../dist/lib/util';
 import * as RxDB from '../../dist/lib/index';
 
-const request = require('request-promise');
-
-RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
-RxDB.PouchDB.plugin(require('pouchdb-replication'));
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
+let request;
+let SpawnServer;
+if (platform.isNode()) {
+    SpawnServer = require('../helper/spawnServer');
+    request = require('request-promise');
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
+    RxDB.PouchDB.plugin(require('pouchdb-replication'));
+}
 
 describe('Replication.test.js', () => {
+
+    if (!platform.isNode()) return;
+
     describe('spawnServer.js', () => {
         it('spawn and reach a server', async() => {
             let path = await SpawnServer.spawn();

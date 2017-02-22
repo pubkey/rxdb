@@ -180,7 +180,6 @@ class LeaderElector {
     async leaderSignal() {
         if (this.leaderSignal_run) return;
         this.leaderSignal_run = true;
-
         switch (this.electionChannel) {
             case 'broadcast':
                 await this.bc.write('tell');
@@ -201,7 +200,6 @@ class LeaderElector {
                 }
                 break;
         }
-
         this.leaderSignal_run = false;
         return;
     }

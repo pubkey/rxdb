@@ -25,7 +25,7 @@ describe('Reactive-Collection.test.js', () => {
             it('should get a valid event on insert', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const colName = 'foobar';
                 const c = await db.collection({
@@ -46,7 +46,7 @@ describe('Reactive-Collection.test.js', () => {
             it('should get no event on non-succes-insert', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const c = await db.collection({
                     name: 'foobar',
@@ -82,17 +82,17 @@ describe('Reactive-Collection.test.js', () => {
                 assert.deepEqual(ar[0], null);
 
                 // empty array since no documents
-                await util.promiseWait(10);
-                assert.equal(ar.length, 2);
+                await util.waitUntil(() => ar.length == 2);
+
                 assert.deepEqual(ar[1], []);
 
                 await c.insert(schemaObjects.human());
-                await util.promiseWait(10);
-                assert.equal(ar.length, 3);
+                await util.waitUntil(() => ar.length == 3);
+
                 const doc = await c.findOne().exec();
                 await doc.remove();
-                await util.promiseWait(10);
-                assert.equal(ar.length, 4);
+                await util.waitUntil(() => ar.length == 4);
+
                 sub.unsubscribe();
                 c.database.destroy();
             });

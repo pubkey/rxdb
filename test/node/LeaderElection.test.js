@@ -1,8 +1,5 @@
 import assert from 'assert';
-import {
-    default as memdown
-} from 'memdown';
-import * as _ from 'lodash';
+const platform = require('platform');
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -13,13 +10,9 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 import * as LeaderElector from '../../dist/lib/LeaderElector';
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
+import * as RxBroadcastChannel from '../../dist/lib/RxBroadcastChannel';
 
 describe('LeaderElection.test.js', () => {
-
     describe('leaderObject', () => {
         it('should not have a leaderObject', async() => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
@@ -46,7 +39,11 @@ describe('LeaderElection.test.js', () => {
         });
     });
     describe('.beLeader()', () => {
-        it('leaderSignal()', async() => {
+        it('.leaderSignal()', async() => {
+
+            // not run on BroadcastChannel
+            if (RxBroadcastChannel.canIUse()) return;
+
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.leaderSignal();
@@ -57,6 +54,10 @@ describe('LeaderElection.test.js', () => {
             c.database.destroy();
         });
         it('assing self to leader', async() => {
+
+            // not run on BroadcastChannel
+            if (RxBroadcastChannel.canIUse()) return;
+
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             const is = await leaderElector.beLeader();
@@ -67,6 +68,10 @@ describe('LeaderElection.test.js', () => {
             c.database.destroy();
         });
         it('should signal after time', async() => {
+
+            // not run on BroadcastChannel
+            if (RxBroadcastChannel.canIUse()) return;
+
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
@@ -110,6 +115,10 @@ describe('LeaderElection.test.js', () => {
 
     describe('.die()', () => {
         it('leader: write status on death', async() => {
+
+            // not run on BroadcastChannel
+            if (RxBroadcastChannel.canIUse()) return;
+
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.beLeader();
@@ -119,6 +128,29 @@ describe('LeaderElection.test.js', () => {
             const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             assert.equal(dbObj.t, 0);
             c.database.destroy();
+        });
+        it('leader: send message on death', async() => {
+            if (!RxBroadcastChannel.canIUse()) return;
+
+            const name = util.randomCouchString(10);
+            const c = await humansCollection.createMultiInstance(name);
+            const leaderElector = c.database.leaderElector;
+            const c2 = await humansCollection.createMultiInstance(name);
+            const leaderElector2 = c2.database.leaderElector;
+            await leaderElector.beLeader();
+
+            const msgs = [];
+            const sub = leaderElector2.bc.$
+                .filter(msg => msg.type == 'death')
+                .subscribe(msg => msgs.push(msg));
+            const is = await leaderElector.die();
+            assert.ok(is);
+            await util.promiseWait(500);
+            assert.equal(msgs.length, 1);
+
+            sub.unsubscribe();
+            c.database.destroy();
+            c2.database.destroy();
         });
         it('other instance applies on death of leader', async() => {
             const name = util.randomCouchString(10);
@@ -160,6 +192,9 @@ describe('LeaderElection.test.js', () => {
             c2.database.destroy();
         });
         it('when 2 instances apply at the same time, one should win', async() => {
+
+            if (!platform.isNode()) return;
+
             // run often
             let tries = 0;
             while (tries < 3) {
@@ -272,17 +307,14 @@ describe('LeaderElection.test.js', () => {
 
             let count = 0;
             dbs.forEach(db => db.waitForLeadership().then(is => count++));
-
-            await util.promiseWait(800);
-            assert.equal(count, 1);
+            await util.waitUntil(() => count == 1);
 
             // let leader die
             await dbs
                 .filter(db => db.isLeader)[0]
                 .leaderElector.die();
 
-            await util.promiseWait(800);
-            assert.equal(count, 2);
+            await util.waitUntil(() => count == 2);
             await Promise.all(dbs.map(db => db.destroy()));
         });
     });

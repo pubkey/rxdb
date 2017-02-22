@@ -1,10 +1,15 @@
+const platform = require('platform');
 import assert from 'assert';
 import {
     default as memdown
 } from 'memdown';
-import {
-    default as leveldown
-} from 'leveldown';
+
+let leveldown;
+let leveldb;
+if (platform.isNode()) {
+    leveldown = require('leveldown');
+    leveldb = require('pouchdb-adapter-leveldb');
+}
 
 const path = require('path');
 
@@ -13,15 +18,11 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('RxDatabase.test.js', () => {
-
     describe('.create()', () => {
         describe('positive', () => {
             it('memdown', async() => {
+                if (!platform.isNode()) return;
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: memdown
@@ -30,6 +31,7 @@ describe('RxDatabase.test.js', () => {
                 db.destroy();
             });
             it('leveldown', async() => {
+                if (!platform.isNode()) return;
                 if (path.join('..', 'x') != '..\\x') { // leveldown does not work on windows
                     const db = await RxDatabase.create({
                         name: '../test_tmp/' + util.randomCouchString(10),
@@ -42,7 +44,7 @@ describe('RxDatabase.test.js', () => {
             it('with password', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown,
+                    adapter: 'memory',
                     password: util.randomCouchString(12)
                 });
                 assert.equal(db.constructor.name, 'RxDatabase');
@@ -52,11 +54,11 @@ describe('RxDatabase.test.js', () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 db.destroy();
                 db2.destroy();
@@ -66,12 +68,12 @@ describe('RxDatabase.test.js', () => {
                 const password = util.randomCouchString(12);
                 const db = await RxDatabase.create({
                     name,
-                    adapter: memdown,
+                    adapter: 'memory',
                     password
                 });
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown,
+                    adapter: 'memory',
                     password
                 });
                 db.destroy();
@@ -83,7 +85,7 @@ describe('RxDatabase.test.js', () => {
                 await util.assertThrowsAsync(
                     () => RxDatabase.create({
                         name: null,
-                        adapter: memdown
+                        adapter: 'memory'
                     }),
                     TypeError
                 );
@@ -101,7 +103,7 @@ describe('RxDatabase.test.js', () => {
                 await util.assertThrowsAsync(
                     () => RxDatabase.create({
                         name: util.randomCouchString(10),
-                        adapter: memdown,
+                        adapter: 'memory',
                         password: {}
                     }),
                     TypeError
@@ -111,7 +113,7 @@ describe('RxDatabase.test.js', () => {
                 await util.assertThrowsAsync(
                     () => RxDatabase.create({
                         name: util.randomCouchString(10),
-                        adapter: memdown,
+                        adapter: 'memory',
                         password: util.randomCouchString(4)
                     }),
                     Error
@@ -122,14 +124,14 @@ describe('RxDatabase.test.js', () => {
                 const password = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
-                    adapter: memdown,
+                    adapter: 'memory',
                     password
                 });
                 const doc = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown,
+                    adapter: 'memory',
                     password
                 });
                 const doc2 = await db._adminPouch.get('_local/pwHash');
@@ -142,13 +144,13 @@ describe('RxDatabase.test.js', () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
-                    adapter: memdown,
+                    adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
                 await util.assertThrowsAsync(
                     () => RxDatabase.create({
                         name,
-                        adapter: memdown,
+                        adapter: 'memory',
                         password: util.randomCouchString(10)
                     }),
                     Error
@@ -162,7 +164,7 @@ describe('RxDatabase.test.js', () => {
             it('human', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const collection = await db.collection({
                     name: 'human0',
@@ -178,7 +180,7 @@ describe('RxDatabase.test.js', () => {
             it('the schema-object should be saved in the collectionsCollection', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const collection = await db.collection({
                     name: 'human0',
@@ -191,7 +193,7 @@ describe('RxDatabase.test.js', () => {
             it('use Schema-Object', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const schema = RxDatabase.RxSchema.create(schemas.human);
                 const collection = await db.collection({
@@ -204,7 +206,7 @@ describe('RxDatabase.test.js', () => {
             it('use encrypted db', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown,
+                    adapter: 'memory',
                     password: util.randomCouchString(12)
                 });
                 const collection = await db.collection({
@@ -217,7 +219,7 @@ describe('RxDatabase.test.js', () => {
             it('collectionsCollection should contain schema.version', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const collection = await db.collection({
                     name: 'human',
@@ -234,11 +236,11 @@ describe('RxDatabase.test.js', () => {
                 const collectionName = 'foobar';
                 const db1 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await db1.collection({
                     name: collectionName,
@@ -256,7 +258,7 @@ describe('RxDatabase.test.js', () => {
             it('broken schema (nostringIndex)', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await util.assertThrowsAsync(
                     () => db.collection({
@@ -270,7 +272,7 @@ describe('RxDatabase.test.js', () => {
             it('call 2 times on same name', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await db.collection({
                     name: 'human2',
@@ -288,7 +290,7 @@ describe('RxDatabase.test.js', () => {
             it('crypt-schema without db-password', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await util.assertThrowsAsync(
                     () => db.collection({
@@ -302,7 +304,7 @@ describe('RxDatabase.test.js', () => {
             it('2 different schemas on same collection', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await db.collection({
                     name: 'human8',
@@ -320,7 +322,7 @@ describe('RxDatabase.test.js', () => {
             it('not allow collectionNames starting with lodash', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await util.assertThrowsAsync(
                     () => db.collection({
@@ -334,7 +336,7 @@ describe('RxDatabase.test.js', () => {
             it('not allow collectionNames which are properties of RxDatabase', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const forbidden = [
                     'name',
@@ -364,11 +366,11 @@ describe('RxDatabase.test.js', () => {
                 const collectionName = 'foobar';
                 const db1 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await db1.collection({
                     name: collectionName,
@@ -392,7 +394,7 @@ describe('RxDatabase.test.js', () => {
             it('should not crash on destroy', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await db.collection({
                     name: 'foobar',
@@ -405,7 +407,7 @@ describe('RxDatabase.test.js', () => {
             it('should not crash if destroy is called twice', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 await db.collection({
                     name: 'foobar',

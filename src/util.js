@@ -107,7 +107,6 @@ export async function assertThrowsAsync(test, error = Error, contains = '') {
               - is string: ${e.toString()}
             `);
         }
-
         // all is ok
         return 'util.assertThrowsAsync(): everything is fine';
     }
@@ -200,6 +199,19 @@ export function promiseWaitResolveable(ms = 0) {
         setTimeout(res, ms);
     });
     return ret;
+}
+
+/**
+ * waits until the given function returns true
+ * @param  {function}  fun
+ * @return {Promise}
+ */
+export async function waitUntil(fun) {
+    let ok = false;
+    while (!ok) {
+        await promiseWait(10);
+        ok = fun();
+    }
 }
 
 

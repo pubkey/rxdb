@@ -12,7 +12,7 @@ class RxBroadcastChannel {
 
         this.bc = new BroadcastChannel(
             'RxDB:' +
-            this.database.prefix + ':' +
+            this.database.name + ':' +
             this.name
         );
 
@@ -21,7 +21,6 @@ class RxBroadcastChannel {
             .map(msg => msg.data)
             .map(strMsg => JSON.parse(strMsg))
             .filter(msg => msg.it != this.token);
-
     }
 
     /**
@@ -57,7 +56,6 @@ export function canIUse() {
     ) return true;
     return false;
 }
-
 
 /**
  * returns null if no bc available

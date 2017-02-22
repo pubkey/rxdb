@@ -1,7 +1,4 @@
 import assert from 'assert';
-import {
-    default as randomToken
-} from 'random-token';
 const platform = require('platform');
 
 import * as RxDB from '../../dist/lib/index';
@@ -21,13 +18,22 @@ describe('RxBroadcastChannel.test.js', () => {
     };
 
     it('init', async() => {
-        const name = randomToken(10);
+        const name = util.randomCouchString(10);
 
         state.dbs = await Promise.all([
-            RxDB.create(name, 'memory'),
-            RxDB.create(name, 'memory')
+            RxDB.create({
+                name,
+                adapter: 'memory'
+            }),
+            RxDB.create({
+                name,
+                adapter: 'memory'
+            })
         ]);
-        state.otherDB = await RxDB.create(randomToken(10), 'memory');
+        state.otherDB = await RxDB.create({
+            name: util.randomCouchString(10),
+            adapter: 'memory'
+        });
         util.promiseWait(10);
         assert.equal(state.dbs.length, 2);
     });
@@ -44,8 +50,7 @@ describe('RxBroadcastChannel.test.js', () => {
         const msgs = [];
         const sub = bc2.$.subscribe(msg => msgs.push(msg));
         await bc1.write('test');
-        await util.promiseWait(10);
-        assert.equal(msgs.length, 1);
+        await util.waitUntil(() => msgs.length == 1);
         assert.equal(msgs[0].type, 'test');
         sub.unsubscribe();
         bc1.destroy();
@@ -75,10 +80,9 @@ describe('RxBroadcastChannel.test.js', () => {
         const sub3 = bc3.$.subscribe(msg => msgs3.push(msg));
 
         await bc1.write('test');
-        await util.promiseWait(10);
-        assert.equal(msgs2.length, 1);
+        await util.waitUntil(() => msgs2.length == 1);
         assert.equal(msgs2[0].type, 'test');
-        assert.equal(msgs3.length, 1);
+        await util.waitUntil(() => msgs3.length == 1);
         assert.equal(msgs3[0].type, 'test');
 
         sub2.unsubscribe();

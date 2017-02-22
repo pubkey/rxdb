@@ -25,7 +25,7 @@ describe('Reactive-Database.test.js', () => {
             it('emit when collection is created', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown
+                    adapter: 'memory'
                 });
                 db.collection({
                     name: 'myname',

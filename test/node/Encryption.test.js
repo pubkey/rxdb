@@ -1,9 +1,4 @@
 import assert from 'assert';
-import {
-    default as memdown
-} from 'memdown';
-import * as _ from 'lodash';
-
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -13,11 +8,6 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 
 describe('Encryption.test.js', () => {
     describe('Schema.getEncryptedPaths()', () => {
@@ -153,7 +143,7 @@ describe('Encryption.test.js', () => {
             it('should insert one encrypted value (object)', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown,
+                    adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
                 const c = await db.collection({
@@ -190,7 +180,7 @@ describe('Encryption.test.js', () => {
             it('should save one encrypted value (object)', async() => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
-                    adapter: memdown,
+                    adapter: 'memory',
                     password: util.randomCouchString(10)
                 });
                 const c = await db.collection({

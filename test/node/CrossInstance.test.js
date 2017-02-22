@@ -6,13 +6,7 @@
  */
 
 import assert from 'assert';
-
-import {
-    default as memdown
-} from 'memdown';
-import {
-    default as leveldown
-} from 'leveldown';
+const platform = require('platform');
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -20,17 +14,12 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
-
 describe('CrossInstance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async() => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
-                adapter: memdown,
+                adapter: 'memory',
                 multiInstance: true
             });
             assert.equal(db.constructor.name, 'RxDatabase');
@@ -40,12 +29,12 @@ describe('CrossInstance.test.js', () => {
             const name = util.randomCouchString(10);
             const db = await RxDatabase.create({
                 name,
-                adapter: memdown,
+                adapter: 'memory',
                 multiInstance: true
             });
             const db2 = await RxDatabase.create({
                 name,
-                adapter: memdown,
+                adapter: 'memory',
                 multiInstance: true
             });
             assert.equal(db.constructor.name, 'RxDatabase');
@@ -169,13 +158,13 @@ describe('CrossInstance.test.js', () => {
             const password = util.randomCouchString(10);
             const db1 = await RxDatabase.create({
                 name,
-                adapter: memdown,
+                adapter: 'memory',
                 password,
                 multiInstance: true
             });
             const db2 = await RxDatabase.create({
                 name,
-                adapter: memdown,
+                adapter: 'memory',
                 password,
                 multiInstance: true
             });
@@ -221,13 +210,13 @@ describe('CrossInstance.test.js', () => {
             const password = util.randomCouchString(10);
             const db1 = await RxDatabase.create({
                 name,
-                adapter: memdown,
+                adapter: 'memory',
                 password,
                 multiInstance: true
             });
             const db2 = await RxDatabase.create({
                 name,
-                adapter: memdown,
+                adapter: 'memory',
                 password,
                 multiInstance: true
             });
