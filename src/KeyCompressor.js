@@ -168,6 +168,8 @@ class KeyCompressor {
      */
     compressQuery(queryJSON) {
         queryJSON = clone(queryJSON);
+        if (!this.schema.doKeyCompression()) return queryJSON;
+
         const table = this.table;
 
         // selector
