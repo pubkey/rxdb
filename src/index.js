@@ -1,4 +1,3 @@
-import 'babel-polyfill';
 import * as RxDatabase from './RxDatabase';
 import * as RxSchema from './RxSchema';
 import {

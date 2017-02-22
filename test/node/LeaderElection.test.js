@@ -305,6 +305,7 @@ describe('LeaderElection.test.js', () => {
             );
             const dbs = cols.map(col => col.database);
 
+
             let count = 0;
             dbs.forEach(db => db.waitForLeadership().then(is => count++));
             await util.waitUntil(() => count == 1);

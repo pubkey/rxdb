@@ -18,6 +18,7 @@ Breaking:
   - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
   - `RxDatabase.collection()` only to create collection, use `myDatabase.heroes` to get existing one
   - `RxDB.create()` multiInstance is now true by default
+  - `rxjs` and `babel-polyfill` are now peerDependencies
 
 ## 2.0.4 (February 12, 2017)
 

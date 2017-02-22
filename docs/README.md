@@ -1,7 +1,8 @@
 # API - Documentation
 
-If you are new to RxDB, you should start [here](./RxDatabase.md).
+If you are new to RxDB, you should start [here](./Install.md).
 
+- [Install](./Install.md)
 - [RxDatabase](./RxDatabase.md)
   - [Creation](./RxDatabase.md#creation)
     - [name](./RxDatabase.md#name)

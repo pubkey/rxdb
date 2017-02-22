@@ -44,21 +44,22 @@
   "pre-commit": [
     "lint"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "babel-polyfill": "^6.23.0",
+    "rxjs": "^5.2.0"
+  },
+  "dependencies": {
+    "@types/core-js": "^0.9.35",
     "babel-preset-es2015-native-modules": "6.9.4",
     "babel-runtime": "^6.23.0",
     "clone": "2.1.0",
     "crypto-js": "3.1.8",
-    "deep-equal": "^1.0.1",
-    "es6-promise": "4.0.5",
     "jsonschema": "1.1.1",
     "object-path": "0.11.3",
-    "pouchdb-core": "^6.1.2",
+    "pouchdb-core": "6.1.2",
     "pouchdb-find": "^0.10.5",
     "random-token": "0.0.8",
     "regexp-clone": "0.0.1",
-    "rxjs": "^5.1.1",
     "sliced": "1.0.1",
     "spark-md5": "3.0.0",
     "unload": "^1.3.5",
@@ -73,6 +74,7 @@
     "babel-plugin-lodash": "3.2.11",
     "babel-plugin-transform-class-properties": "^6.23.0",
     "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.23.0",
     "babel-preset-es2015": "6.22.0",
     "babel-preset-es2015-rollup": "3.0.0",
     "babel-preset-stage-0": "6.22.0",
@@ -126,7 +128,8 @@
     "rollup-plugin-node-resolve": "2.0.0",
     "rollup-plugin-sizes": "0.2.3",
     "rollup-plugin-uglify": "1.0.1",
-    "typescript": "^2.1.6",
+    "rxjs": "5.2.0",
+    "typescript": "^2.2.1",
     "uglify-js": "2.7.5",
     "watch": "1.0.1",
     "watchify": "3.9.0",

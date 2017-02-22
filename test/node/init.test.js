@@ -1,5 +1,6 @@
 console.log('######## init.test.js ########');
 
+import 'babel-polyfill';
 const platform = require('platform');
 platform.isNode = function() {
     return platform.name == 'Node.js';

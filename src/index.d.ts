@@ -1,6 +1,4 @@
-import {Promise} from "es6-promise";
 import {Observable} from "rxjs";
-
 
 declare class RxSchema {
     jsonID: SchemaJSON;
