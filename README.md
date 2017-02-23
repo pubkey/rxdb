@@ -58,7 +58,7 @@ Installation:
 ```sh
 npm install rxdb --save
 
-// peerDependencies
+# peerDependencies
 npm install rxjs babel-polyfill --save
 ```
 
