@@ -53,7 +53,7 @@ module.exports = function(config) {
         // Source files that you wanna generate coverage for.
         // Do not include tests or libraries (these files will be instrumented by Istanbul)
         preprocessors: {
-            '../test_tmp/node/*.test.js': ['browserify']
+            '../test_tmp/unit/*.test.js': ['browserify']
         },
 
         client: {
