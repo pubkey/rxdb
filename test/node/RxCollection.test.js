@@ -745,8 +745,6 @@ describe('RxCollection.test.js', () => {
                 });
             });
         });
-
-
         describe('.findOne()', () => {
             describe('positive', () => {
                 it('find a single document', async() => {
@@ -823,7 +821,107 @@ describe('RxCollection.test.js', () => {
                     );
                     c.database.destroy();
                 });
+            });
+        });
+        describe('.upsert()', () => {
+            describe('positive', () => {
+                it('insert when not exists', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const obj = schemaObjects.simpleHuman();
+                    obj.firstName = 'foobar';
+                    await collection.upsert(obj);
+                    const doc = await collection.findOne().exec();
+                    assert.equal(doc.firstName, 'foobar');
+                    db.destroy();
+                });
+                it('overwrite exisiting document', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const obj = schemaObjects.simpleHuman();
+                    await collection.insert(obj);
+                    obj.firstName = 'foobar';
+                    await collection.upsert(obj);
+                    const doc = await collection.findOne().exec();
+                    assert.equal(doc.firstName, 'foobar');
+                    db.destroy();
+                });
+                it('overwrite twice', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const obj = schemaObjects.simpleHuman();
+                    await collection.insert(obj);
+                    obj.firstName = 'foobar';
+                    await collection.upsert(obj);
 
+                    obj.firstName = 'foobar2';
+                    await collection.upsert(obj);
+
+                    const doc = await collection.findOne().exec();
+                    assert.equal(doc.firstName, 'foobar2');
+                    db.destroy();
+                });
+            });
+            describe('negative', () => {
+                it('throw when primary missing', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const obj = schemaObjects.simpleHuman();
+                    await collection.insert(obj);
+                    obj.firstName = 'foobar';
+
+                    delete obj.passportId;
+                    await util.assertThrowsAsync(
+                        () => collection.upsert(obj),
+                        Error,
+                        'without primary'
+                    );
+                    db.destroy();
+                });
+                it('throw when schema not matching', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const obj = schemaObjects.simpleHuman();
+                    await collection.insert(obj);
+                    obj.firstName = 'foobar';
+
+                    obj.foo = 'bar';
+                    await util.assertThrowsAsync(
+                        () => collection.upsert(obj),
+                        Error
+                    );
+                    db.destroy();
+                });
             });
         });
     });

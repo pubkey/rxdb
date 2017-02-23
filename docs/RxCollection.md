@@ -42,12 +42,21 @@ myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### insert()
-Use this to insert new documents to the database. The collection will validate the schema and encrypt the encrypted fields by itself.
+Use this to insert new documents to the database. The collection will validate the schema and encrypt the encrypted fields by itself. Returns the new RxDocument.
 
 ```js
-myCollection.insert({
+const doc = await myCollection.insert({
   name: 'foo',
   lastname: 'bar'
+});
+```
+
+### upsert()
+Inserts if documents does not exsits. Overwrites if document exists. Returns the new or overwritten RxDocument.
+```js
+const doc = await myCollection.upsert({
+  name: 'foo',
+  lastname: 'bar2'
 });
 ```
 

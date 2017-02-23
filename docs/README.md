@@ -24,6 +24,7 @@ If you are new to RxDB, you should start [here](./Install.md).
   - [Functions](./RxCollection.md#functions)
     - [$()](./RxCollection.md#observe-)
     - [insert()](./RxCollection.md#insert)
+    - [upsert()](./RxCollection.md#upsert)
     - [find()](./RxCollection.md#find)
     - [findOne()](./RxCollection.md#findone)
     - [query()](./RxCollection.md#query)

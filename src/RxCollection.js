@@ -296,15 +296,20 @@ class RxCollection {
      * same as insert but overwrites existing document with same primary
      */
     async upsert(json) {
+        json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) throw new Error('RxCollection.upsert() does not work without primary');
 
-
-        const existing = this.findOne(primary);
-        if (existing) await existing.remove();
-
-        const newDoc = await this.insert(json);
-        return newDoc;
+        const existing = await this.findOne(primary).exec();
+        if (existing) {
+            json._rev = existing._rev;
+            existing._data = json;
+            await existing.save();
+            return existing;
+        } else {
+            const newDoc = await this.insert(json);
+            return newDoc;
+        }
     }
 
     /**
