@@ -40,8 +40,6 @@ import { DatabaseService } from './services/database.service';
  * @link https://github.com/jelbourn/material2-app/blob/master/src/app/material2-app.component.html
  */
 import {MdCardModule} from '@angular2-material/card/card';
-import {MdCheckboxModule} from '@angular2-material/checkbox/checkbox';
-import {MdTabsModule} from '@angular2-material/tabs';
 /** @link https://github.com/angular/material2/blob/master/src/lib/input/README.md */
 import {MdInputModule} from '@angular2-material/input/input';
 import {MdButtonModule} from '@angular2-material/button/button';

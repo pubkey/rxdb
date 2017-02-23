@@ -1,6 +1,7 @@
 {
     "title": "hero schema",
     "description": "describes a simple hero",
+    "version": 0,
     "type": "object",
     "properties": {
         "name": {

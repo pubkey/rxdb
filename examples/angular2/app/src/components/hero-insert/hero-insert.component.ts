@@ -11,8 +11,8 @@ export class HeroInsertComponent {
 
     @ViewChildren('input') inputfield;
 
-    name: string = '';
-    color: string = '';
+    name = '';
+    color = '';
 
     constructor(
         private databaseService: DatabaseService
@@ -22,9 +22,9 @@ export class HeroInsertComponent {
 
 
 
-    submit() {
+    async submit() {
         console.log('HeroInsertComponent.submit():');
-        if(this.name=='' || this.color=='') return;
+        if (this.name == '' || this.color == '') return;
 
         const addDoc = {
             name: this.name,
@@ -34,13 +34,10 @@ export class HeroInsertComponent {
         this.name = '';
         this.color = '';
 
-        this.inputfield.first._inputElement.nativeElement.focus();
+        const db = await this.databaseService.get();
+        db['hero'].insert(addDoc);
 
-        this.databaseService.get()
-            .catch(e => console.log('cant get database'))
-            .then(db => db.collection('hero'))
-            .then(col => col.insert(addDoc))
-            .then(d => console.log('done!'));
+        this.inputfield.first._inputElement.nativeElement.focus();
     }
 
 
