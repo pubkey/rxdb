@@ -1,20 +1,34 @@
+<a href="https://twitter.com/pubkeypubkey" target="_blank">
+  <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Twitter_bird_logo_2012.svg/600px-Twitter_bird_logo_2012.svg.png" width="30px" align="right" />
+</a>
+
 <p align="center">
   <a href="https://github.com/pubkey/rxdb">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="300px" />
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="450px" />
   </a>
 </p>
 
-<h1><a href="https://github.com/pubkey/rxdb">RxDB</a></h1>
-
-<p>
-
-<a href="https://twitter.com/pubkeypubkey" target="_blank">
-  <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Twitter_bird_logo_2012.svg/600px-Twitter_bird_logo_2012.svg.png" width="50px" align="right" />
-</a>
-
-
-The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://offlinefirst.org/" target="_blank">offline-first</a></b> database for your next javascript-application.
+<p align="center">
+  Reactive, serverless, client-side, offline-first database in javascript.
 </p>
+
+<br/>
+
+---
+
+
+
+## Features
+
+* **Omniusable** on browsers, nodejs, election, cordova, react-native and every other javascript-runtime
+* **Reactive** data-handling based on [rxjs](https://github.com/ReactiveX/rxjs)
+* **Replication** between client and server-data, compatible with pouchdb, nodejs, couchdb and IBM Cloudant
+* **Schema-based** with the easy-to-learn standard of [jsonschema](http://json-schema.org/)
+* **Mango-Query** exactly like you know from mongoDB and mongoose
+* **Encryption** of single data-fields to protect your users data
+* **Import/Export** of the database-state (json), awesome for coding with [TDD](https://en.wikipedia.org/wiki/Test-driven_development)
+* **Multi-Window** to synchronise data between different browser-windows or nodejs-processes
+* **ORM-capabilities** to easily handle data-code-relations
 
 <br/>
 <br/>
