@@ -30,125 +30,25 @@
 * **Multi-Window** to synchronise data between different browser-windows or nodejs-processes
 * **ORM-capabilities** to easily handle data-code-relations
 
-<br/>
-<br/>
+## Platform-support
+RxDB is made so that you can use **exactly the same code** at 
+- ![Chrome](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png)
+![Firefox](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png)
+![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
+![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
+![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) browsers
+- ![NodeJS](docs/files/icons/nodejs.png) NodeJS
+- ![electron](docs/files/icons/electron.png) Electron
+- ![react-native](docs/files/icons/react-native.png) React-Native
+- ![cordova](docs/files/icons/cordova.png) Cordova/Phonegap
+- ![nativescript](docs/files/icons/nativescript.png) Nativescript
 
+We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like 
 
-<h2>What is RxDB?</h2>
-<p>RxDB is a Javascript-based database with..</p>
-
-<table width="100%">
-  <thead>
-    <tr>
-      <td>..these features..</td>
-      <td></td>
-      <td align="right">..for these platforms</td>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>
-      <ul>
-        <li>Reactive (rxjs)</li>
-        <br/>
-        <li>Replication / Sync</li>
-        <br/>
-        <li>Schemas (jsonschema)</li>
-        <br/>
-        <li>Mango-Query (MongoDB)</li>
-        <br/>
-        <li>Encryption</li>
-        <br/>
-        <li>Level-Adapters</li>
-        <br/>
-        <li>Import/Export (.json)</li>
-        <br/>
-        <li>MultiWindow-Support</li>
-        <br/>
-        <li>Leader-Election</li>
-        <br/>
-        <li>Key-Compression</li>
-        <br/>
-        <li>ORM / DRM (optional)</li>
-      </ul>
-    </td>
-    <td>
-      <img src="docs/files/arrow.png" width="200px" />
-    </td>
-    <td colspan="3">
-
-          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png" title="Chrome" width="24px" />
-          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png" title="Firefox" width="24px" />
-          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" title="Safari" width="24px" />
-          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" title="Edge" width="24px" />
-          <img src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" title="Internet Explorer 11" width="24px" />
-          browsers
-          <br /><br />
-          <img src="docs/files/icons/nodejs.png" width="30px" />
-          nodeJS
-          <br /><br />
-          <img src="docs/files/icons/angular.png" width="24px" />
-          angular/ng2
-          <br /><br />
-          <img src="docs/files/icons/react.png" width="24px" />
-          react
-          <br /><br />
-          <img src="docs/files/icons/react-native.png" width="24px" />
-          react-native
-          <br /><br />
-          <img src="docs/files/icons/ionic.ico" width="24px" />
-          ionic <br /><br />
-
-          <img src="docs/files/icons/cordova.png" width="24px" />
-          cordova / phonegap
-         <br /><br />
-          <img src="docs/files/icons/nativescript.png" width="24px" />
-          nativescript
-     <br /><br />
-          <img src="docs/files/icons/electron.png" width="24px" />
-          electron
-           <br />
-    </td>
-  </tr>
-  </tbody>
-</table>
-
-<br><br>
-
-
-## Menu
-<ul>
-  <li>
-    <a href="#quickstart">Quickstart</a>
-  </li>
-  <li>
-    <a href="#features">Features</a>
-    <ul>
-      <li><a href="#schema">Schema</a></li>
-      <li><a href="#mango-query">Mango-Query</a></li>
-      <li><a href="#reactive">Reactive</a></li>
-      <li><a href="#multiwindowtab---support">MultiWindow/Tab</a></li>
-      <li><a href="#replication">Replication</a></li>
-      <li><a href="#encryption">Encryption</a></li>
-      <li><a href="#level-adapters">Level-adapters</a></li>
-      <li><a href="#import--export">Import / Export</a></li>
-      <li><a href="#leader-election">Leader-Election</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="#getting-started">Getting started</a>
-    <ul>
-      <li><a href="./docs/README.md">Read the docs</a></li>
-      <li><a href="./examples">Example-projects</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="#browser-support">Browser support</a>
-  </li>
-  <li>
-    <a href="./docs/Contribute.md">How to contribute</a>
-  </li>
-</ul>
+- ![react](docs/files/icons/react.png) react
+- ![angular](docs/files/icons/angular.png) angular/ng2
+- ![ionic](docs/files/icons/ionic.png) ionic2
+- ![vuejs](docs/files/icons/vuejs.png) vuejs
 
 
 ## Quickstart
@@ -161,7 +61,6 @@ npm install rxdb --save
 // peerDependencies
 npm install rxjs babel-polyfill --save
 ```
-
 
 ES7:
 ```javascript
@@ -178,23 +77,7 @@ await db.collection({name: 'heroes', schema: mySchema});    // create collection
 db.heroes.insert({ name: 'Bob' });                          // insert document
 ```
 
-ES6:
-
-```javascript
-import * as RxDB from 'rxdb';
-require('babel-polyfill'); //only needed when you dont have polyfills
-RxDB.create({
-    name: 'heroesDB',
-    adapter: 'websql',
-    password: 'myLongAndStupidPassword', // optional
-    multiInstance: true                  // default: true
-  })  // create database
-  .then(db => db.collection({name: 'heroes', schema: mySchema}))              // create collection
-  .then(collection => collection.insert({name: 'Bob'}))             // insert document
-```
-
 ES5:
-
 ```javascript
 var RxDB = require('rxdb');
 RxDB.create({
@@ -207,11 +90,11 @@ RxDB.create({
   .then(function(collection) {collection.insert({name: 'Bob'});})                 // insert document
 ```
 
-<h2>Features</h2>
+## Feature-Showroom
 
 
-<h3>Mango-Query</h3>
-<p>To find data in your collection, you can use chained mango-queries, which you maybe know from <b>mongoDB</b> or <b>mongoose</b>. Example:</p>
+### Mango-Query
+To find data in your collection, you can use chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
 
 ```javascript
 myCollection
@@ -226,11 +109,9 @@ myCollection
 ```
 
 
-<h3>Reactive</h3>
-<p>
-  RxDB implements <a href="https://github.com/ReactiveX/rxjs">rxjs</a> to make your data reactive.
-  This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.
-</p>
+### Reactive
+RxDB implements [rxjs](https://github.com/ReactiveX/rxjs) to make your data reactive.
+This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.
 
 ```javascript
 db.heroes
@@ -245,28 +126,22 @@ db.heroes
 ```
 ![reactive.gif](docs/files/reactive.gif)
 
-<h3>MultiWindow/Tab - Support</h3>
-<p>
-  When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
-  This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely serverless.
-</p>
+### MultiWindow/Tab
+When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
+This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely serverless.
 
 ![multiwindow.gif](docs/files/multiwindow.gif)
 
-<h3>Replication</h3>
-<p>
-  Because RxDB relies on glorious <a href="https://github.com/pouchdb/pouchdb">PouchDB</a>, it is easy to replicate
-  the data between devices and servers. And yes, the changeEvents are also synced.
-</p>
+### Replication
+Because RxDB relies on glorious [PouchDB](https://github.com/pouchdb/pouchdb), it is easy to replicate
+the data between devices and servers. And yes, the changeEvents are also synced.
 
 ![sync.gif](docs/files/sync.gif)
 
 
 
-<h3>Schema</h3>
-<p>
-  Schemas are defined via <a href="http://json-schema.org/">jsonschema</a> and are used to describe your data. Beside the jsonschema-keywords, you can also use <b>primary</b> and <b>encrypted</b>. Example:
-</p>
+### Schema
+Schemas are defined via [jsonschema](http://json-schema.org/) and are used to describe your data.
 
 ```javascript
 const mySchema = {
@@ -304,10 +179,8 @@ const mySchema = {
 };
 ```
 
-<h3>Encryption</h3>
-<p>
-By setting a schema-field to <code>encrypted: true</code>, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:
-</p>
+### Encryption
+By setting a schema-field to `encrypted: true`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:
 
 ```json
 "secret": {
@@ -316,11 +189,9 @@ By setting a schema-field to <code>encrypted: true</code>, the value of this fie
 }
 ```
 
-<h3>Level-adapters</h3>
-<p>
-  The underlaying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. You can so use RxDB in different environments by just switching the adapter.
-  For example you can use websql in the browser, localstorage in mobile-browsers and a leveldown-adapter in nodejs.
-</p>
+### Level-adapters
+The underlaying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. You can so use RxDB in different environments by just switching the adapter.
+For example you can use websql in the browser, localstorage in mobile-browsers and a leveldown-adapter in nodejs.
 
 ```js
 // this requires the localstorage-adapter
@@ -329,34 +200,17 @@ RxDB.plugin(require('rxdb-adapter-localstorage'));
 const db = await RxDB.create('heroesDB', 'localstorage');
 ```
 
-<ul>
-  <li>
-    <a href="https://www.npmjs.com/package/pouchdb-adapter-idb">indexedDB</a>
-  </li>
-  <li>
-    <a href="./plugins/adapter-localstorage/">localstorage</a>
-  </li>
-  <li>
-    <a href="https://www.npmjs.com/package/pouchdb-adapter-fruitdown">fruitdown</a>
-  </li>
-  <li>
-    <a href="https://www.npmjs.com/package/pouchdb-adapter-memory">memory</a>
-  </li>
-  <li>
-    <a href="https://www.npmjs.com/package/pouchdb-adapter-websql">websql</a>
-  </li>
-  <li>
-    <a href="https://www.npmjs.com/package/pouchdb-adapter-http">http</a>
-  </li>
-  <li>
-    <a href="https://github.com/Level/levelup/wiki/Modules#storage-back-ends">Or use any leveldown-adapter</a>
-  </li>
-</ul>
+Some adapters you can use:
+- [indexedDB](https://www.npmjs.com/package/pouchdb-adapter-idb)
+- [localstorage](./plugins/adapter-localstorage/)
+- [fruitdown](https://www.npmjs.com/package/pouchdb-adapter-fruitdown)
+- [memory](https://www.npmjs.com/package/pouchdb-adapter-memory)
+- [websql](https://www.npmjs.com/package/pouchdb-adapter-websql)
+- [Or any leveldown-adapter](https://github.com/Level/levelup/wiki/Modules#storage-back-ends)
 
-<h3>Import / Export</h3>
-<p>
-  RxDB lets you import and export the whole database or single collections into json-objects. This is helpful to trace bugs in your application or to move to a given state in your tests.
-</p>
+### Import / Export
+RxDB lets you import and export the whole database or single collections into json-objects. This is helpful to trace bugs in your application or to move to a given state in your tests.
+
 ```js
 
 // export a single collection
@@ -373,12 +227,10 @@ await emptyCollection.importDump(json);
 await emptyDatabase.importDump(json);
 ```
 
-<h3>Leader-Election</h3>
-<p>
-  Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
-  you create a websocket or pull-interval. If your user now opens the site in 5 tabs parallel, it will run the interval
-  or create the socket 5 times. This is a waste of resources which can be solved by RxDB's LeaderElection.
-</p>
+### Leader-Election
+Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
+you create a websocket or pull-interval. If your user now opens the site in 5 tabs parallel, it will run the interval
+or create the socket 5 times. This is a waste of resources which can be solved by RxDB's LeaderElection.
 
 ```js
 myRxDatabase.waitForLeadership()
@@ -388,15 +240,13 @@ myRxDatabase.waitForLeadership()
   });
 ```
 
-<p>In this example the leader is marked with the crown &#9819;</p>
+In this example the leader is marked with the crown &#9819;
 
 ![reactive.gif](docs/files/leader-election.gif)
 
 
-<h3>Key-Compression</h3>
-<p>
-  Depending on which adapter and in which environment you use RxDB, client-side storage is <a href="https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html" target="_blank">limited in some way or the other</a>. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.
-</p>
+### Key-Compression
+Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.
 
 Example:
 ```js
@@ -421,18 +271,18 @@ console.log(myDoc.firstName);
 // 'foo'
 ```
 
-<h2>Browser support</h2>
+### Browser support
 
 All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a VirtualBox for IE11 and Edge.
 
 As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
 
-<h2>Getting started</h2>
+## Getting started
 
 Get started now by [reading the docs](./docs/README.md) or exploring the [example-projects](./examples).
 
-<h2>Contribute</h2>
+## Contribute
 [Check out how you can contribute to this project](./docs/Contribute.md).
 
-<h2>Follow up</h2>
+## Follow up
 Follow me on [twitter](https://twitter.com/pubkeypubkey) to not miss the latest enhancements.
