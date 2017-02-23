@@ -22,7 +22,8 @@
         "./config.json"
     ],
     "include": [
-        "./app/**/*.ts"
+        "./app/**/*.ts",
+        "./app/**/*.less"
     ],
     "filesGlob": [
         "**/*.ts",

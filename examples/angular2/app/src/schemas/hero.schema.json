@@ -11,6 +11,11 @@
         "color": {
             "type": "string"
         },
+        "maxHP": {
+          "type": "number",
+          "min": 0,
+          "max": 1000
+        },
         "hp": {
             "type": "number",
             "min": 0,
@@ -37,5 +42,5 @@
             }
         }
     },
-    "required": ["color"]
+    "required": ["color", "maxHP"]
 }

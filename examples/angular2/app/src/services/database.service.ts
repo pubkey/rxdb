@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 
 import * as RxDB from '../../../../../';
 import { RxDatabase } from '../../../../../';
@@ -23,6 +22,11 @@ let collections = [
     {
         name: 'hero',
         schema: require('../schemas/hero.schema.json'),
+        methods: {
+            hpPercent() {
+                return this.hp / this.maxHP * 100;
+            }
+        },
         sync: true
     }
 ];

@@ -1,5 +1,6 @@
-import { Component, ViewChildren, Input } from '@angular/core';
+import { Component, ViewChildren } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
+import * as randomInt from 'random-int';
 
 @Component({
     selector: 'hero-insert',
@@ -28,7 +29,9 @@ export class HeroInsertComponent {
 
         const addDoc = {
             name: this.name,
-            color: this.color
+            color: this.color,
+            maxHP: randomInt(100, 1000),
+            hp: 100
         };
 
         this.name = '';
