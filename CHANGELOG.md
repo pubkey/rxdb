@@ -7,6 +7,8 @@ Features:
   - added [Population](docs/Population.md)
   - added [RxDocument.deleted$](docs/RxDocument.md#deleted)
   - added [RxDocument.synced$](docs/RxDocument.md#synced)
+  - non-top-level-indexes are now allowed
+  - `RxQuery.sort()` now works on non-top-level-indexes
 
 Bugfixes:
   - running `RxDocument().save()` twice did not work

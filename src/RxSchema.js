@@ -20,6 +20,7 @@ class RxSchema {
         this.indexes.map(indexAr => {
             indexAr
                 .filter(index => !this.jsonID.required.includes(index))
+                .filter(index => !index.includes('.')) // TODO make them sub-required
                 .forEach(index => this.jsonID.required.push(index));
         });
 
@@ -166,12 +167,28 @@ export function hasCrypt(jsonSchema) {
 }
 
 
-export function getIndexes(jsonID) {
-    return Object.keys(jsonID.properties)
-        .filter(key => jsonID.properties[key].index)
-        .map(key => [key])
-        .concat(jsonID.compoundIndexes || [])
-        .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique
+export function getIndexes(jsonID, prePath = '') {
+
+    let indexes = [];
+    Object.entries(jsonID).forEach(entry => {
+        const key = entry[0];
+        const obj = entry[1];
+        const path = key == 'properties' ? prePath : util.trimDots(prePath + '.' + key);
+
+        if (obj.index)
+            indexes.push([path]);
+
+        if (typeof obj === 'object' && !Array.isArray(obj)) {
+            const add = getIndexes(obj, path);
+            indexes = indexes.concat(add);
+        }
+    });
+
+    if (prePath == '')
+        indexes = indexes.concat(jsonID.compoundIndexes || []);
+
+    return indexes
+        .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique;
 }
 
 /**
@@ -239,13 +256,13 @@ export function validateFieldsDeep(jsonSchema) {
 
 
         const isNested = path.split('.').length >= 2;
+
         // nested only
         if (isNested) {
             if (schemaObj.primary)
                 throw new Error('primary can only be defined at top-level');
-            if (schemaObj.index)
-                throw new Error('index can only be defined at top-level');
         }
+
         // first level
         if (!isNested) {
             // check underscore fields
@@ -350,14 +367,23 @@ export function checkSchema(jsonID) {
     getIndexes(jsonID)
         .reduce((a, b) => a.concat(b), [])
         .filter((elem, pos, arr) => arr.indexOf(elem) == pos) // unique
-        .filter(indexKey =>
-            jsonID.properties[indexKey].type != 'string' &&
-            jsonID.properties[indexKey].type != 'integer'
+        .map(key => {
+            const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
+            if (!schemaObj || typeof schemaObj !== 'object')
+                throw new Error(`given index(${key}) is not defined in schema`);
+            return {
+                key,
+                schemaObj
+            };
+        })
+        .filter(index =>
+            index.schemaObj.type != 'string' &&
+            index.schemaObj.type != 'integer'
         )
-        .forEach(indexKey => {
+        .forEach(index => {
             throw new Error(
-                `given indexKey (${indexKey}) is not type:string but
-                ${jsonID.properties[indexKey].type}`
+                `given indexKey (${index.key}) is not type:string but
+                ${index.schemaObj.type}`
             );
         });
 }

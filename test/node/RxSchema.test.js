@@ -18,12 +18,17 @@ describe('RxSchema.test.js', () => {
             it('get single indexes', () => {
                 const indexes = RxSchema.getIndexes(schemas.human);
                 assert.equal(indexes.length, 1);
-                assert.equal(indexes[0], 'passportId');
+                assert.deepEqual(indexes[0], ['passportId']);
             });
             it('get multiple indexes', () => {
                 const indexes = RxSchema.getIndexes(schemas.bigHuman);
                 assert.ok(indexes.length > 1);
-                assert.equal(indexes[0], 'passportId');
+                assert.deepEqual(indexes[0], ['passportId']);
+            });
+            it('get sub-index', () => {
+                const indexes = RxSchema.getIndexes(schemas.humanSubIndex);
+                assert.equal(indexes.length, 1);
+                assert.deepEqual(indexes[0], ['other.age']);
             });
             it('get no index', () => {
                 const indexes = RxSchema.getIndexes(schemas.noindexHuman);
@@ -265,27 +270,6 @@ describe('RxSchema.test.js', () => {
             describe('negative', () => {
                 it('broken schema (nostringIndex)', () => {
                     assert.throws(() => RxSchema.create(schemas.nostringIndex), Error);
-                });
-                it('throw when nested index', () => {
-                    assert.throws(() => RxSchema.create({
-                        title: 'schema',
-                        version: 0,
-                        description: 'dot in fieldname',
-                        properties: {
-                            nested: {
-                                type: 'object',
-                                properties: {
-                                    'otherfield': {
-                                        type: 'string'
-                                    },
-                                    'myfield': {
-                                        type: 'string',
-                                        index: true
-                                    }
-                                }
-                            }
-                        }
-                    }), Error);
                 });
                 it('first-level field is "language" is forbitten', () => {
                     assert.throws(() => RxSchema.create({

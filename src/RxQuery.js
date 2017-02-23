@@ -51,13 +51,19 @@ class RxQuery {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         this.sort = params => {
-
             // workarround because sort wont work on unused keys
             if (typeof params !== 'object')
                 this.mquery.where(params).gt(null);
-            else
-                Object.keys(params).map(k => this.mquery.where(k).gt(null));
-
+            else {
+                Object.keys(params).forEach(k => {
+                    if (!this.mquery._conditions[k] || !this.mquery._conditions[k].$gt) {
+                        const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
+                        if (schemaObj.type == 'integer')
+                            this.mquery.where(k).gt(-Infinity);
+                        else this.mquery.where(k).gt(null);
+                    }
+                });
+            }
             this.mquery.sort(params);
             return this;
         };

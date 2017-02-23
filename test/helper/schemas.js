@@ -88,6 +88,30 @@ export const humanAgeIndex = {
     required: ['firstName', 'lastName', 'age']
 };
 
+export const humanSubIndex = {
+    title: 'human schema',
+    version: 0,
+    description: 'describes a human being where other.age is index',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            primary: true
+        },
+        other: {
+            type: 'object',
+            properties: {
+                age: {
+                    description: 'Age in years',
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                    index: true
+                }
+            }
+        }
+    }
+};
 
 export const nestedHuman = {
     title: 'human nested',

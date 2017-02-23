@@ -3,6 +3,12 @@ import {
     default as memdown
 } from 'memdown';
 import * as _ from 'lodash';
+import {
+    default as randomInt
+} from 'random-int';
+import {
+    default as clone
+} from 'clone';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -450,6 +456,91 @@ describe('RxCollection.test.js', () => {
                         }).exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age <= docs[1]._data.age);
+                    });
+
+                    it('sort by non-top-level-key as index (no keycompression)', async() => {
+                        const db = await RxDatabase.create({
+                            name: util.randomCouchString(10),
+                            adapter: 'memory'
+                        });
+                        const schemaObj = clone(schemas.humanSubIndex);
+                        schemaObj.disableKeyCompression = true;
+                        const schema = RxSchema.create(schemaObj);
+                        const collection = await RxCollection.create({
+                            database: db,
+                            name: 'human',
+                            schema
+                        });
+                        const objects = new Array(10).fill(0).map(() => {
+                            return {
+                                passportId: util.randomCouchString(10),
+                                other: {
+                                    age: randomInt(10, 50)
+                                }
+                            };
+                        });
+                        await Promise.all(objects.map(o => collection.insert(o)));
+
+                        // do it manually
+                        const all = await collection.pouch.find({
+                            selector: {
+                                _id: {},
+                                'other.age': {
+                                    '$gt': 0
+                                }
+                            },
+                            sort: [{
+                                'other.age': 'asc'
+                            }]
+                        });
+                        assert.equal(all.docs.length, 10);
+
+                        // with RxQuery
+                        const query = collection.find({}).sort({
+                            'other.age': 1
+                        });
+                        const docs = await query.exec();
+
+                        let lastAge = 0;
+                        docs.forEach(doc => {
+                            assert.ok(doc.other.age >= lastAge);
+                            lastAge = doc.other.age;
+                        });
+                        db.destroy();
+                    });
+                    it('sort by non-top-level-key as index', async() => {
+                        const db = await RxDatabase.create({
+                            name: util.randomCouchString(10),
+                            adapter: 'memory'
+                        });
+                        const schema = RxSchema.create(schemas.humanSubIndex);
+                        const collection = await RxCollection.create({
+                            database: db,
+                            name: 'human',
+                            schema
+                        });
+                        const objects = new Array(10).fill(0).map(() => {
+                            return {
+                                passportId: util.randomCouchString(10),
+                                other: {
+                                    age: randomInt(10, 50)
+                                }
+                            };
+                        });
+                        await Promise.all(objects.map(o => collection.insert(o)));
+
+                        // with RxQuery
+                        const query = collection.find({}).sort({
+                            'other.age': 1
+                        });
+                        const docs = await query.exec();
+
+                        let lastAge = 0;
+                        docs.forEach(doc => {
+                            assert.ok(doc.other.age >= lastAge);
+                            lastAge = doc.other.age;
+                        });
+                        db.destroy();
                     });
                     it('validate results', async() => {
                         const c = await humansCollection.createAgeIndex();

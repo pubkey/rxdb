@@ -94,10 +94,10 @@ class RxCollection {
             .map(indexAr => {
                 const compressedIdx = indexAr
                     .map(key => {
-                        const ret = this._keyCompressor.table[key] ? this._keyCompressor.table[key] : key;
+                        if (!this.schema.doKeyCompression()) return key;
+                        const ret = this._keyCompressor._transformKey('', '', key.split('.'));
                         return ret;
                     });
-
                 this.pouch.createIndex({
                     index: {
                         fields: compressedIdx
