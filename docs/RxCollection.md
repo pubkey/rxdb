@@ -6,7 +6,7 @@ A collection stores documents of the same type.
 To create a collection you need a RxDatabase-Object which has the .collection()-method. Every colletion needs a collection-name and a RxSchema.
 
 ```js
-myDatabase.collection(name, mySchema, pouchDbSettings)
+myDatabase.collection(name, mySchema, optionalPouchDbSettings)
   .then(collection => console.dir(collection));
 ```
 
