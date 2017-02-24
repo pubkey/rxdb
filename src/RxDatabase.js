@@ -215,7 +215,7 @@ class RxDatabase {
             throw new Error(`Collection-name ${args.name} not allowed`);
 
         // check schemaHash
-        const schemaHash = args.schema.hash();
+        const schemaHash = args.schema.hash;
         let collectionDoc = null;
         try {
             collectionDoc = await this._collectionsPouch.get(internalPrimary);
@@ -226,7 +226,7 @@ class RxDatabase {
 
         const collection = await RxCollection.create(args);
         if (
-            Object.keys(collection.schema.getEncryptedPaths()).length > 0 &&
+            Object.keys(collection.schema.encryptedPaths).length > 0 &&
             !this.password
         ) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
 
@@ -336,10 +336,7 @@ export async function create({
     password,
     multiInstance = true
 }) {
-
     util.validateCouchDBString(name);
-
-    // TODO check here if name allowed by pouchdb
 
     // check if pouchdb-adapter
     if (typeof adapter == 'string') {
@@ -358,8 +355,7 @@ export async function create({
         }
     }
 
-
-    if (password && typeof password !== 'string') // TODO typecheck here ?
+    if (password && typeof password !== 'string')
         throw new TypeError('password is no string');
     if (password && password.length < RxDatabase.settings.minPassLength)
         throw new Error(`password must have at least ${RxDatabase.settings.minPassLength} chars`);

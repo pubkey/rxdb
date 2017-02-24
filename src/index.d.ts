@@ -3,9 +3,9 @@ import {Observable} from "rxjs";
 declare class RxSchema {
     jsonID: SchemaJSON;
     getSchemaByObjectPath(path: string): any;
-    getEncryptedPaths(): any;
+    encryptedPaths: any;
     validate(obj: any, schemaObj: any): void;
-    hash(): string;
+    hash: string;
 
     static create(jsonSchema: SchemaJSON): RxSchema;
 }

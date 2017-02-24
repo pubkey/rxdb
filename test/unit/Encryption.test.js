@@ -10,11 +10,11 @@ import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
 
 describe('Encryption.test.js', () => {
-    describe('Schema.getEncryptedPaths()', () => {
+    describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
             it('get an encrypted path', async() => {
                 const schema = RxSchema.create(schemas.encryptedHuman);
-                const encPaths = schema.getEncryptedPaths();
+                const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 1);
                 assert.equal(Object.keys(encPaths)[0], 'secret');
                 assert.deepEqual(encPaths.secret, {
@@ -24,7 +24,7 @@ describe('Encryption.test.js', () => {
             });
             it('get all encrypted paths', async() => {
                 const schema = RxSchema.create(schemas.encryptedDeepHuman);
-                const encPaths = schema.getEncryptedPaths();
+                const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 4);
                 assert.equal(Object.keys(encPaths)[0], 'firstLevelPassword');
                 assert.equal(Object.keys(encPaths)[1], 'secretData');
@@ -33,7 +33,7 @@ describe('Encryption.test.js', () => {
             });
             it('get no encrypted path', async() => {
                 const schema = RxSchema.create(schemas.human);
-                const encPaths = schema.getEncryptedPaths();
+                const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 0);
             });
         });

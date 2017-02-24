@@ -225,7 +225,7 @@ class LeaderElector {
                 this.signalLeadership = this.bc.$
                     .filter(m => !!this.isLeader)
                     // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                    .filter(msg => msg.type!='tell')
+                    .filter(msg => msg.type != 'tell')
                     .subscribe(msg => this.leaderSignal());
                 this.subs.push(this.signalLeadership);
                 break;
@@ -254,7 +254,9 @@ class LeaderElector {
         if (this.isDead) return false;
         this.isDead = true;
         this.isLeader = false;
-        this.signalLeadership.unsubscribe();
+
+        if (this.signalLeadership)
+            this.signalLeadership.unsubscribe();
 
         // force.write to db
         switch (this.electionChannel) {

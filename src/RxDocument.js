@@ -68,8 +68,6 @@ class RxDocument {
                 break;
             case 'UPDATE':
                 const newData = changeEvent.data.v;
-                // TODO check if _synced should be called
-
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 

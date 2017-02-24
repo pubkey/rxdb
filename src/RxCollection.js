@@ -378,7 +378,7 @@ class RxCollection {
 
         const json = {
             name: this.name,
-            schemaHash: this.schema.hash(),
+            schemaHash: this.schema.hash,
             encrypted: false,
             passwordHash: null,
             docs: []
@@ -405,7 +405,7 @@ class RxCollection {
     async importDump(exportedJSON) {
 
         // check schemaHash
-        if (exportedJSON.schemaHash != this.schema.hash())
+        if (exportedJSON.schemaHash != this.schema.hash)
             throw new Error('the imported json relies on a different schema');
 
         // check if passwordHash matches own
@@ -427,7 +427,6 @@ class RxCollection {
 
 
     /**
-     * TODO make sure that on multiInstances only one can sync
      * because it will have document-conflicts when 2 syncs write to the same storage
      */
     async sync(serverURL, alsoIfNotLeader = false) {

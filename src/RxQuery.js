@@ -204,7 +204,9 @@ class RxQuery {
 }
 
 export function create(queryObj = defaultQuery, collection) {
-    if (Array.isArray(queryObj)) // TODO should typecheck be done here ?
+    if (typeof queryObj !== 'object')
+        throw new TypeError('query must be an object');
+    if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
     return new RxQuery(queryObj, collection);

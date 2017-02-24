@@ -36,8 +36,6 @@ class RxSchema {
                 minLength: 1
             };
         }
-
-        this.encryptedPaths;
     }
 
     get version() {
@@ -85,11 +83,11 @@ class RxSchema {
 
     /**
      * get all encrypted paths
-     * TODO use getter
      */
-    getEncryptedPaths() {
-        if (!this.encryptedPaths) this.encryptedPaths = getEncryptedPaths(this.jsonID);
-        return this.encryptedPaths;
+    get encryptedPaths() {
+        if (!this._encryptedPaths)
+            this._encryptedPaths = getEncryptedPaths(this.jsonID);
+        return this._encryptedPaths;
     }
 
     /**
@@ -104,9 +102,11 @@ class RxSchema {
         return obj;
     }
 
-    hash() {
-        // TODO use getter for hash and cache
-        return util.hash(this.normalized);
+
+    get hash() {
+        if (!this._hash)
+            this._hash = util.hash(this.normalized);
+        return this._hash;
     }
 
     swapIdToPrimary(obj) {
@@ -344,23 +344,18 @@ export function checkSchema(jsonID) {
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        try {
-            /**
-             * TODO do not validate via jsonschema here so that the validation
-             * can be a seperate, optional module to decrease build-size
-             */
-            util.jsonSchemaValidate({
-                type: 'array',
-                items: {
-                    type: 'array',
-                    items: {
-                        type: 'string'
-                    }
-                }
-            }, jsonID.compoundIndexes);
-        } catch (e) {
-            throw new Error('schema.compoundIndexes must be array<array><string>');
-        }
+        let error = null;
+        if (!Array.isArray(jsonID.compoundIndexes))
+            throw new Error('compoundIndexes must be an array');
+        jsonID.compoundIndexes.forEach(ar => {
+            if (!Array.isArray(ar))
+                throw new Error('compoundIndexes must contain arrays');
+
+            ar.forEach(str => {
+                if (typeof str !== 'string')
+                    throw new Error('compoundIndexes.array must contains strings');
+            });
+        });
     }
 
     // check that indexes are string

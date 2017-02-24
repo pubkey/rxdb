@@ -44,7 +44,7 @@ class Socket {
         // pull on intervall
         const autoPull = util.Rx.Observable
             .interval(PULL_TIME)
-            .filter(c => this.messages$.observers.length > 0) // TODO replace with subject$.hasObservers() https://github.com/Reactive-Extensions/RxJS/issues/1364
+            .filter(c => this.messages$.observers.length > 0)
             .subscribe(x => this.pull());
         this.subs.push(autoPull);
 
@@ -110,11 +110,11 @@ class Socket {
             .map(doc => RxChangeEvent.fromJSON(doc))
             // make sure the same event is not emitted twice
             .filter(cE => {
-                if (this.recievedEvents[cE.hash()]) return false;
-                return this.recievedEvents[cE.hash()] = new Date().getTime();
+                if (this.recievedEvents[cE.hash]) return false;
+                return this.recievedEvents[cE.hash] = new Date().getTime();
             })
             // prevent memory leak of this.recievedEvents
-            .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash()], EVENT_TTL * 3))
+            .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash], EVENT_TTL * 3))
             // emit to messages
             .forEach(cE => this.messages$.next(cE));
 

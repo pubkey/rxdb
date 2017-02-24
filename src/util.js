@@ -141,8 +141,6 @@ export function fastUnsecureHash(obj) {
  *  spark-md5 is used here
  *  because pouchdb uses the same
  *  and build-size could be reduced by 9kb
- *  TODO update spark-md5 to 2.0.2 after pouchdb-find does
- *  @link https://github.com/nolanlawson/pouchdb-find/pull/233
  */
 const Md5 = require('spark-md5');
 export function hash(obj) {

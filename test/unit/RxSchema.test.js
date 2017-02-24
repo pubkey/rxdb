@@ -233,7 +233,6 @@ describe('RxSchema.test.js', () => {
             });
         });
         describe('.normalize()', () => {
-            // TODO this test belongs to util.test.js
             it('should sort array with objects and strings', () => {
                 const val = ['firstName', 'lastName', {
                     name: 2
@@ -369,19 +368,19 @@ describe('RxSchema.test.js', () => {
             });
         });
 
-        describe('.hash()', () => {
+        describe('.hash', () => {
             describe('positive', () => {
                 it('should hash', () => {
                     const schema = RxSchema.create(schemas.human);
-                    const hash = schema.hash();
+                    const hash = schema.hash;
                     assert.equal(typeof hash, 'string');
                     assert.ok(hash.length > 10);
                 });
                 it('should normalize one schema with two different orders and generate for each the same hash', () => {
                     const schema1 = RxSchema.create(schemas.humanNormalizeSchema1);
                     const schema2 = RxSchema.create(schemas.humanNormalizeSchema2);
-                    const hash1 = schema1.hash();
-                    const hash2 = schema2.hash();
+                    const hash1 = schema1.hash;
+                    const hash2 = schema2.hash;
                     assert.equal(hash1, hash2);
                 });
             });

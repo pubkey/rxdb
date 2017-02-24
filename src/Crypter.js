@@ -29,7 +29,7 @@ class Crypter {
     encrypt(obj) {
         obj = clone(obj);
         if (!this._password) return obj;
-        Object.keys(this._schema.getEncryptedPaths())
+        Object.keys(this._schema.encryptedPaths)
             .map(path => {
                 const value = objectPath.get(obj, path);
                 const encrypted = this._encryptValue(value);
@@ -42,7 +42,7 @@ class Crypter {
         obj = clone(obj);
         if (!this._password) return obj;
 
-        Object.keys(this._schema.getEncryptedPaths())
+        Object.keys(this._schema.encryptedPaths)
             .map(path => {
                 const value = objectPath.get(obj, path);
                 const decrypted = this._decryptValue(value);

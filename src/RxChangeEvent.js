@@ -34,7 +34,7 @@ class RxChangeEvent {
         return false;
     }
 
-    hash() {
+    get hash() {
         if (!this._hash)
             this._hash = util.hash(this.data);
         return this._hash;
