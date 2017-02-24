@@ -148,7 +148,7 @@ ES6:
 ```javascript
 import * as RxDB from 'rxdb';
 RxDB.create('heroesDB', 'websql', 'myLongAndStupidPassword', true)  // create database
-  .then(db => db.collection('mycollection', mySchema))              // create collection
+  .then(db => db.collection('mycollection', mySchema, optionalPouchDbSettings))              // create collection
   .then(collection => collection.insert({name: 'Bob'}))             // insert document
 ```
 
@@ -157,7 +157,7 @@ ES5:
 ```javascript
 var RxDB = require('rxdb');
 RxDB.create('heroesDB', 'websql', 'myLongAndStupidPassword', true)      // create database
-  .then(function(db) {return db.collection('mycollection', mySchema);}) // create collection
+  .then(function(db) {return db.collection('mycollection', mySchema, optionalPouchDbSettings);}) // create collection
   .then(function(collection) {collection.insert({name: 'Bob'});})       // insert document
 ```
 
