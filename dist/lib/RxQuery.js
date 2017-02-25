@@ -123,21 +123,19 @@ var RxQuery = function () {
 
             // sort
             if (options.sort) {
-                (function () {
-                    var sortArray = [];
-                    Object.keys(options.sort).map(function (fieldName) {
-                        var dirInt = options.sort[fieldName];
-                        var dir = 'asc';
-                        if (dirInt == -1) dir = 'desc';
-                        var pushMe = {};
-                        // TODO run primary-swap somewhere else
-                        if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
+                var sortArray = [];
+                Object.keys(options.sort).map(function (fieldName) {
+                    var dirInt = options.sort[fieldName];
+                    var dir = 'asc';
+                    if (dirInt == -1) dir = 'desc';
+                    var pushMe = {};
+                    // TODO run primary-swap somewhere else
+                    if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
 
-                        pushMe[fieldName] = dir;
-                        sortArray.push(pushMe);
-                    });
-                    json.sort = sortArray;
-                })();
+                    pushMe[fieldName] = dir;
+                    sortArray.push(pushMe);
+                });
+                json.sort = sortArray;
             }
 
             if (options.limit) {

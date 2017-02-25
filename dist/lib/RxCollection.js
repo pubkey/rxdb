@@ -53,7 +53,7 @@ var create = exports.create = function () {
                         throw new TypeError('given name is no string or empty');
 
                     case 6:
-                        collection = new RxCollection(database, name, schema);
+                        collection = new RxCollection(database, name, schema, pouchSettings);
                         _context13.next = 9;
                         return collection.prepare();
 
@@ -646,7 +646,7 @@ var RxCollection = function () {
                 var _this7 = this;
 
                 var alsoIfNotLeader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-                var sync;
+                var sendChanges, pouch$, ob2, sync;
                 return _regenerator2.default.wrap(function _callee10$(_context10) {
                     while (1) {
                         switch (_context10.prev = _context10.next) {
@@ -670,44 +670,44 @@ var RxCollection = function () {
                             case 5:
 
                                 if (!this.synced) {
-                                    (function () {
-                                        /**
-                                         * this will grap the changes and publish them to the rx-stream
-                                         * this is to ensure that changes from 'synced' dbs will be published
-                                         */
-                                        var sendChanges = {};
-                                        var pouch$ = util.Rx.Observable.fromEvent(_this7.pouch.changes({
-                                            since: 'now',
-                                            live: true,
-                                            include_docs: true
-                                        }), 'change').filter(function (c) {
-                                            return c.id.charAt(0) != '_';
-                                        }).map(function (c) {
-                                            return c.doc;
-                                        }).map(function (doc) {
-                                            doc._ext = true;
-                                            return doc;
-                                        }).filter(function (doc) {
-                                            return sendChanges[doc._rev] = 'YES';
-                                        }).delay(10).map(function (doc) {
-                                            var ret = null;
-                                            if (sendChanges[doc._rev] == 'YES') ret = doc;
-                                            delete sendChanges[doc._rev];
-                                            return ret;
-                                        }).filter(function (doc) {
-                                            return doc != null;
-                                        }).subscribe(function (doc) {
-                                            _this7.$emit(RxChangeEvent.fromPouchChange(doc, _this7));
-                                        });
-                                        _this7.subs.push(pouch$);
+                                    /**
+                                     * this will grap the changes and publish them to the rx-stream
+                                     * this is to ensure that changes from 'synced' dbs will be published
+                                     */
+                                    sendChanges = {};
+                                    pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
+                                        since: 'now',
+                                        live: true,
+                                        include_docs: true
+                                    }), 'change').filter(function (c) {
+                                        return c.id.charAt(0) != '_';
+                                    }).map(function (c) {
+                                        return c.doc;
+                                    }).map(function (doc) {
+                                        doc._ext = true;
+                                        return doc;
+                                    }).filter(function (doc) {
+                                        return sendChanges[doc._rev] = 'YES';
+                                    }).delay(10).map(function (doc) {
+                                        var ret = null;
+                                        if (sendChanges[doc._rev] == 'YES') ret = doc;
+                                        delete sendChanges[doc._rev];
+                                        return ret;
+                                    }).filter(function (doc) {
+                                        return doc != null;
+                                    }).subscribe(function (doc) {
+                                        _this7.$emit(RxChangeEvent.fromPouchChange(doc, _this7));
+                                    });
 
-                                        var ob2 = _this7.$.map(function (cE) {
-                                            return cE.data.v;
-                                        }).map(function (doc) {
-                                            if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                                        }).subscribe();
-                                        _this7.subs.push(ob2);
-                                    })();
+                                    this.subs.push(pouch$);
+
+                                    ob2 = this.$.map(function (cE) {
+                                        return cE.data.v;
+                                    }).map(function (doc) {
+                                        if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                                    }).subscribe();
+
+                                    this.subs.push(ob2);
                                 }
                                 this.synced = true;
                                 sync = this.pouch.sync(serverURL, {

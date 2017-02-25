@@ -268,20 +268,14 @@ var KeyCompressor = function () {
 
             // object
             else {
-                    var _ret = function () {
-                        var ret = {};
-                        Object.keys(obj).forEach(function (key) {
-                            var replacedKey = key;
-                            if ((key.startsWith('|') || key.startsWith('_')) && reverseTable[key]) replacedKey = reverseTable[key];
+                    var ret = {};
+                    Object.keys(obj).forEach(function (key) {
+                        var replacedKey = key;
+                        if ((key.startsWith('|') || key.startsWith('_')) && reverseTable[key]) replacedKey = reverseTable[key];
 
-                            ret[replacedKey] = _this2._decompressObj(obj[key]);
-                        });
-                        return {
-                            v: ret
-                        };
-                    }();
-
-                    if ((typeof _ret === 'undefined' ? 'undefined' : (0, _typeof3.default)(_ret)) === "object") return _ret.v;
+                        ret[replacedKey] = _this2._decompressObj(obj[key]);
+                    });
+                    return ret;
                 }
         }
     }, {
@@ -356,35 +350,33 @@ var KeyCompressor = function () {
             var _this4 = this;
 
             if (!this._table) {
-                (function () {
-                    // create new table
+                // create new table
 
-                    var lastKeyNumber = 0;
-                    var nextKey = function nextKey() {
-                        lastKeyNumber++;
-                        return util.numberToLetter(lastKeyNumber - 1);
-                    };
-                    _this4._table = {};
-                    var jsonSchema = _this4.schema.normalized;
+                var lastKeyNumber = 0;
+                var nextKey = function nextKey() {
+                    lastKeyNumber++;
+                    return util.numberToLetter(lastKeyNumber - 1);
+                };
+                this._table = {};
+                var jsonSchema = this.schema.normalized;
 
-                    var propertiesToTable = function propertiesToTable(path, obj) {
-                        Object.keys(obj).map(function (key) {
-                            var propertyObj = obj[key];
-                            var fullPath = key == 'properties' ? path : util.trimDots(path + '.' + key);
-                            if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) === 'object' && // do not add schema-attributes
-                            !Array.isArray(propertyObj) && // do not use arrays
-                            !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
-                            !fullPath.startsWith('_') // _id/_rev etc should never be compressed
-                            ) _this4._table[fullPath] = '|' + nextKey();
+                var propertiesToTable = function propertiesToTable(path, obj) {
+                    Object.keys(obj).map(function (key) {
+                        var propertyObj = obj[key];
+                        var fullPath = key == 'properties' ? path : util.trimDots(path + '.' + key);
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) === 'object' && // do not add schema-attributes
+                        !Array.isArray(propertyObj) && // do not use arrays
+                        !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
+                        !fullPath.startsWith('_') // _id/_rev etc should never be compressed
+                        ) _this4._table[fullPath] = '|' + nextKey();
 
-                            // primary-key is always compressed to _id
-                            if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
+                        // primary-key is always compressed to _id
+                        if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
 
-                            if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
-                        });
-                    };
-                    propertiesToTable('', jsonSchema);
-                })();
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
+                    });
+                };
+                propertiesToTable('', jsonSchema);
             }
             return this._table;
         }
@@ -394,15 +386,13 @@ var KeyCompressor = function () {
             var _this5 = this;
 
             if (!this._reverseTable) {
-                (function () {
-                    var table = _this5.table;
-                    _this5._reverseTable = {};
-                    Object.keys(table).forEach(function (key) {
-                        var value = table[key];
-                        var fieldName = key.split('.').pop();
-                        _this5._reverseTable[value] = fieldName;
-                    });
-                })();
+                var table = this.table;
+                this._reverseTable = {};
+                Object.keys(table).forEach(function (key) {
+                    var value = table[key];
+                    var fieldName = key.split('.').pop();
+                    _this5._reverseTable[value] = fieldName;
+                });
             }
             return this._reverseTable;
         }
@@ -1299,7 +1289,7 @@ var LeaderElector = function () {
 
 exports.documentID = documentID;
 exports.SIGNAL_TIME = SIGNAL_TIME;
-},{"./RxBroadcastChannel":6,"./RxChangeEvent":7,"./util":18,"babel-runtime/helpers/asyncToGenerator":26,"babel-runtime/helpers/classCallCheck":27,"babel-runtime/helpers/createClass":28,"babel-runtime/regenerator":31,"unload":587}],5:[function(require,module,exports){
+},{"./RxBroadcastChannel":6,"./RxChangeEvent":7,"./util":18,"babel-runtime/helpers/asyncToGenerator":26,"babel-runtime/helpers/classCallCheck":27,"babel-runtime/helpers/createClass":28,"babel-runtime/regenerator":31,"unload":593}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1328,7 +1318,7 @@ _pouchdbCore2.default.plugin(PouchDBFind);
 
 // pouchdb-find
 exports.default = _pouchdbCore2.default;
-},{"pouchdb-core":452,"pouchdb-find":472}],6:[function(require,module,exports){
+},{"pouchdb-core":452,"pouchdb-find":477}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1622,7 +1612,7 @@ var create = exports.create = function () {
                         throw new TypeError('given name is no string or empty');
 
                     case 6:
-                        collection = new RxCollection(database, name, schema);
+                        collection = new RxCollection(database, name, schema, pouchSettings);
                         _context13.next = 9;
                         return collection.prepare();
 
@@ -2215,7 +2205,7 @@ var RxCollection = function () {
                 var _this7 = this;
 
                 var alsoIfNotLeader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-                var sync;
+                var sendChanges, pouch$, ob2, sync;
                 return _regenerator2.default.wrap(function _callee10$(_context10) {
                     while (1) {
                         switch (_context10.prev = _context10.next) {
@@ -2239,44 +2229,44 @@ var RxCollection = function () {
                             case 5:
 
                                 if (!this.synced) {
-                                    (function () {
-                                        /**
-                                         * this will grap the changes and publish them to the rx-stream
-                                         * this is to ensure that changes from 'synced' dbs will be published
-                                         */
-                                        var sendChanges = {};
-                                        var pouch$ = util.Rx.Observable.fromEvent(_this7.pouch.changes({
-                                            since: 'now',
-                                            live: true,
-                                            include_docs: true
-                                        }), 'change').filter(function (c) {
-                                            return c.id.charAt(0) != '_';
-                                        }).map(function (c) {
-                                            return c.doc;
-                                        }).map(function (doc) {
-                                            doc._ext = true;
-                                            return doc;
-                                        }).filter(function (doc) {
-                                            return sendChanges[doc._rev] = 'YES';
-                                        }).delay(10).map(function (doc) {
-                                            var ret = null;
-                                            if (sendChanges[doc._rev] == 'YES') ret = doc;
-                                            delete sendChanges[doc._rev];
-                                            return ret;
-                                        }).filter(function (doc) {
-                                            return doc != null;
-                                        }).subscribe(function (doc) {
-                                            _this7.$emit(RxChangeEvent.fromPouchChange(doc, _this7));
-                                        });
-                                        _this7.subs.push(pouch$);
+                                    /**
+                                     * this will grap the changes and publish them to the rx-stream
+                                     * this is to ensure that changes from 'synced' dbs will be published
+                                     */
+                                    sendChanges = {};
+                                    pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
+                                        since: 'now',
+                                        live: true,
+                                        include_docs: true
+                                    }), 'change').filter(function (c) {
+                                        return c.id.charAt(0) != '_';
+                                    }).map(function (c) {
+                                        return c.doc;
+                                    }).map(function (doc) {
+                                        doc._ext = true;
+                                        return doc;
+                                    }).filter(function (doc) {
+                                        return sendChanges[doc._rev] = 'YES';
+                                    }).delay(10).map(function (doc) {
+                                        var ret = null;
+                                        if (sendChanges[doc._rev] == 'YES') ret = doc;
+                                        delete sendChanges[doc._rev];
+                                        return ret;
+                                    }).filter(function (doc) {
+                                        return doc != null;
+                                    }).subscribe(function (doc) {
+                                        _this7.$emit(RxChangeEvent.fromPouchChange(doc, _this7));
+                                    });
 
-                                        var ob2 = _this7.$.map(function (cE) {
-                                            return cE.data.v;
-                                        }).map(function (doc) {
-                                            if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                                        }).subscribe();
-                                        _this7.subs.push(ob2);
-                                    })();
+                                    this.subs.push(pouch$);
+
+                                    ob2 = this.$.map(function (cE) {
+                                        return cE.data.v;
+                                    }).map(function (doc) {
+                                        if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                                    }).subscribe();
+
+                                    this.subs.push(ob2);
                                 }
                                 this.synced = true;
                                 sync = this.pouch.sync(serverURL, {
@@ -3133,7 +3123,7 @@ RxDatabase.settings = {
     minPassLength: 8
 };
 exports.RxSchema = RxSchema;
-},{"./Database.schemas":2,"./LeaderElector":4,"./PouchDB":5,"./RxChangeEvent":7,"./RxCollection":8,"./RxSchema":12,"./Socket":13,"./util":18,"babel-runtime/helpers/asyncToGenerator":26,"babel-runtime/helpers/classCallCheck":27,"babel-runtime/helpers/createClass":28,"babel-runtime/regenerator":31,"random-token":496}],10:[function(require,module,exports){
+},{"./Database.schemas":2,"./LeaderElector":4,"./PouchDB":5,"./RxChangeEvent":7,"./RxCollection":8,"./RxSchema":12,"./Socket":13,"./util":18,"babel-runtime/helpers/asyncToGenerator":26,"babel-runtime/helpers/classCallCheck":27,"babel-runtime/helpers/createClass":28,"babel-runtime/regenerator":31,"random-token":501}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3704,21 +3694,19 @@ var RxQuery = function () {
 
             // sort
             if (options.sort) {
-                (function () {
-                    var sortArray = [];
-                    Object.keys(options.sort).map(function (fieldName) {
-                        var dirInt = options.sort[fieldName];
-                        var dir = 'asc';
-                        if (dirInt == -1) dir = 'desc';
-                        var pushMe = {};
-                        // TODO run primary-swap somewhere else
-                        if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
+                var sortArray = [];
+                Object.keys(options.sort).map(function (fieldName) {
+                    var dirInt = options.sort[fieldName];
+                    var dir = 'asc';
+                    if (dirInt == -1) dir = 'desc';
+                    var pushMe = {};
+                    // TODO run primary-swap somewhere else
+                    if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
 
-                        pushMe[fieldName] = dir;
-                        sortArray.push(pushMe);
-                    });
-                    json.sort = sortArray;
-                })();
+                    pushMe[fieldName] = dir;
+                    sortArray.push(pushMe);
+                });
+                json.sort = sortArray;
             }
 
             if (options.limit) {
@@ -4199,17 +4187,11 @@ function normalize(jsonSchema) {
             });
         }
         if ((0, _isPlainObject2.default)(src)) {
-            var _ret = function () {
-                var out = {};
-                Object.keys(src).sort(defaultSortFn).forEach(function (key) {
-                    out[key] = sort(src[key]);
-                });
-                return {
-                    v: out
-                };
-            }();
-
-            if ((typeof _ret === 'undefined' ? 'undefined' : (0, _typeof3.default)(_ret)) === "object") return _ret.v;
+            var out = {};
+            Object.keys(src).sort(defaultSortFn).forEach(function (key) {
+                out[key] = sort(src[key]);
+            });
+            return out;
         }
         return src;
     };
@@ -4641,7 +4623,7 @@ RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
 
 window['RxDB'] = RxDB;
-},{"./index.js":15,"pouchdb-adapter-http":440,"pouchdb-adapter-idb":443,"pouchdb-replication":484}],15:[function(require,module,exports){
+},{"./index.js":15,"pouchdb-adapter-http":440,"pouchdb-adapter-idb":443,"pouchdb-replication":489}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6935,7 +6917,7 @@ Query.setGlobalTraceFunction = function (traceFunction) {
 Query.utils = utils;
 
 exports.default = Query;
-},{"./mquery_utils":17,"babel-runtime/helpers/typeof":30,"sliced":584}],17:[function(require,module,exports){
+},{"./mquery_utils":17,"babel-runtime/helpers/typeof":30,"sliced":590}],17:[function(require,module,exports){
 (function (process,Buffer){
 /**
  * this is copied from
@@ -7258,7 +7240,7 @@ exports.isArgumentsObject = function (v) {
     return Object.prototype.toString.call(v) === '[object Arguments]';
 };
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"_process":491,"babel-runtime/helpers/typeof":30,"buffer":34,"regexp-clone":499}],18:[function(require,module,exports){
+},{"_process":496,"babel-runtime/helpers/typeof":30,"buffer":34,"regexp-clone":504}],18:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -7580,7 +7562,7 @@ function trimDots(str) {
         str = str.slice(0, -1);
     }return str;
 }
-},{"babel-runtime/helpers/asyncToGenerator":26,"babel-runtime/regenerator":31,"crypto-js/aes":415,"crypto-js/enc-utf8":419,"jsonschema":435,"random-token":496,"rxjs/BehaviorSubject":500,"rxjs/Observable":503,"rxjs/Subject":508,"rxjs/add/observable/from":512,"rxjs/add/observable/fromEvent":513,"rxjs/add/observable/interval":514,"rxjs/add/observable/merge":515,"rxjs/add/operator/delay":516,"rxjs/add/operator/distinctUntilChanged":517,"rxjs/add/operator/do":518,"rxjs/add/operator/filter":519,"rxjs/add/operator/first":520,"rxjs/add/operator/map":521,"rxjs/add/operator/mergeMap":522,"rxjs/add/operator/publishReplay":523,"rxjs/add/operator/startWith":524,"rxjs/add/operator/timeout":525,"rxjs/add/operator/toPromise":526,"spark-md5":585}],19:[function(require,module,exports){
+},{"babel-runtime/helpers/asyncToGenerator":26,"babel-runtime/regenerator":31,"crypto-js/aes":415,"crypto-js/enc-utf8":419,"jsonschema":435,"random-token":501,"rxjs/BehaviorSubject":505,"rxjs/Observable":508,"rxjs/Subject":513,"rxjs/add/observable/from":517,"rxjs/add/observable/fromEvent":518,"rxjs/add/observable/interval":519,"rxjs/add/observable/merge":520,"rxjs/add/operator/delay":521,"rxjs/add/operator/distinctUntilChanged":522,"rxjs/add/operator/do":523,"rxjs/add/operator/filter":524,"rxjs/add/operator/first":525,"rxjs/add/operator/map":526,"rxjs/add/operator/mergeMap":527,"rxjs/add/operator/publishReplay":528,"rxjs/add/operator/startWith":529,"rxjs/add/operator/timeout":530,"rxjs/add/operator/toPromise":531,"spark-md5":591}],19:[function(require,module,exports){
 'use strict';
 
 module.exports = argsArray;
@@ -7631,7 +7613,7 @@ define(String.prototype, "padRight", "".padEnd);
   [][key] && define(Array, key, Function.call.bind([][key]));
 });
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"core-js/fn/regexp/escape":36,"core-js/shim":414,"regenerator-runtime/runtime":498}],21:[function(require,module,exports){
+},{"core-js/fn/regexp/escape":36,"core-js/shim":414,"regenerator-runtime/runtime":503}],21:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/array/from"), __esModule: true };
 },{"core-js/library/fn/array/from":37}],22:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/object/define-property"), __esModule: true };
@@ -7765,7 +7747,7 @@ exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.d
 },{"../core-js/symbol":24,"../core-js/symbol/iterator":25}],31:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":497}],32:[function(require,module,exports){
+},{"regenerator-runtime":502}],32:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -19091,7 +19073,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":425,"_process":491}],425:[function(require,module,exports){
+},{"./debug":425,"_process":496}],425:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -20969,7 +20951,7 @@ exports.encodePath = function encodePointer(a){
 	return a.map(pathEncoder).join('');
 };
 
-},{"url":589}],435:[function(require,module,exports){
+},{"url":595}],435:[function(require,module,exports){
 'use strict';
 
 var Validator = module.exports.Validator = require('./validator');
@@ -21319,7 +21301,7 @@ types.object = function testObject (instance) {
 
 module.exports = Validator;
 
-},{"./attribute":433,"./helpers":434,"url":589}],437:[function(require,module,exports){
+},{"./attribute":433,"./helpers":434,"url":595}],437:[function(require,module,exports){
 'use strict';
 var immediate = require('immediate');
 
@@ -22023,8 +22005,8 @@ function plural(ms, n, name) {
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var pouchdbUtils = require('pouchdb-utils');
 var Promise = _interopDefault(require('pouchdb-promise'));
+var pouchdbUtils = require('pouchdb-utils');
 var ajaxCore = _interopDefault(require('pouchdb-ajax'));
 var getArguments = _interopDefault(require('argsarray'));
 var pouchdbBinaryUtils = require('pouchdb-binary-utils');
@@ -22033,6 +22015,7 @@ var debug = _interopDefault(require('debug'));
 
 // dead simple promise pool, inspired by https://github.com/timdp/es6-promise-pool
 // but much smaller in code size. limits the number of concurrent promises that are executed
+
 
 function pool(promiseFactories, limit) {
   return new Promise(function (resolve, reject) {
@@ -22225,6 +22208,9 @@ function HttpPouch(opts, callback) {
   function ajax(userOpts, options, callback) {
     var reqAjax = userOpts.ajax || {};
     var reqOpts = pouchdbUtils.assign(pouchdbUtils.clone(ajaxOpts), reqAjax, options);
+    var defaultHeaders = pouchdbUtils.clone(ajaxOpts.headers || {});
+    reqOpts.headers = pouchdbUtils.assign(defaultHeaders, reqAjax.headers,
+      options.headers || {});
     log(reqOpts.method + ' ' + reqOpts.url);
     return api._ajax(reqOpts, callback);
   }
@@ -23056,9 +23042,9 @@ var index = function (PouchDB) {
 
 module.exports = index;
 
-},{"argsarray":19,"debug":441,"pouchdb-ajax":445,"pouchdb-binary-utils":446,"pouchdb-errors":455,"pouchdb-promise":483,"pouchdb-utils":488}],441:[function(require,module,exports){
+},{"argsarray":19,"debug":441,"pouchdb-ajax":445,"pouchdb-binary-utils":446,"pouchdb-errors":460,"pouchdb-promise":488,"pouchdb-utils":493}],441:[function(require,module,exports){
 arguments[4][424][0].apply(exports,arguments)
-},{"./debug":442,"_process":491,"dup":424}],442:[function(require,module,exports){
+},{"./debug":442,"_process":496,"dup":424}],442:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -23264,9 +23250,9 @@ function coerce(val) {
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var pouchdbCollections = require('pouchdb-collections');
 var pouchdbUtils = require('pouchdb-utils');
 var pouchdbMerge = require('pouchdb-merge');
-var pouchdbCollections = require('pouchdb-collections');
 var pouchdbErrors = require('pouchdb-errors');
 var pouchdbAdapterUtils = require('pouchdb-adapter-utils');
 var Promise = _interopDefault(require('pouchdb-promise'));
@@ -25211,7 +25197,7 @@ var index = function (PouchDB) {
 
 module.exports = index;
 
-},{"pouchdb-adapter-utils":444,"pouchdb-binary-utils":446,"pouchdb-collections":451,"pouchdb-errors":455,"pouchdb-json":480,"pouchdb-merge":482,"pouchdb-promise":483,"pouchdb-utils":488}],444:[function(require,module,exports){
+},{"pouchdb-adapter-utils":444,"pouchdb-binary-utils":446,"pouchdb-collections":451,"pouchdb-errors":460,"pouchdb-json":485,"pouchdb-merge":487,"pouchdb-promise":488,"pouchdb-utils":493}],444:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -25501,7 +25487,8 @@ function updateDoc(revLimit, prev, docInfo, results,
 
   var merged = pouchdbMerge.merge(prev.rev_tree, docInfo.metadata.rev_tree[0], revLimit);
 
-  var inConflict = newEdits && (((previouslyDeleted && deleted) ||
+  var inConflict = newEdits && ((
+    (previouslyDeleted && deleted && merged.conflicts !== 'new_leaf') ||
     (!previouslyDeleted && merged.conflicts !== 'new_leaf') ||
     (previouslyDeleted && !deleted && merged.conflicts === 'new_branch')));
 
@@ -25649,14 +25636,14 @@ exports.preprocessAttachments = preprocessAttachments;
 exports.processDocs = processDocs;
 exports.updateDoc = updateDoc;
 
-},{"pouchdb-binary-utils":446,"pouchdb-collections":451,"pouchdb-errors":455,"pouchdb-md5":481,"pouchdb-merge":482,"pouchdb-utils":488}],445:[function(require,module,exports){
+},{"pouchdb-binary-utils":446,"pouchdb-collections":451,"pouchdb-errors":460,"pouchdb-md5":486,"pouchdb-merge":487,"pouchdb-utils":493}],445:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var pouchdbBinaryUtils = require('pouchdb-binary-utils');
-var Promise = _interopDefault(require('pouchdb-promise'));
 var pouchdbUtils = require('pouchdb-utils');
+var Promise = _interopDefault(require('pouchdb-promise'));
+var pouchdbBinaryUtils = require('pouchdb-binary-utils');
 var pouchdbErrors = require('pouchdb-errors');
 
 /* global fetch */
@@ -26039,7 +26026,7 @@ function ajax(opts, callback) {
 
 module.exports = ajax;
 
-},{"pouchdb-binary-utils":446,"pouchdb-errors":455,"pouchdb-promise":483,"pouchdb-utils":488}],446:[function(require,module,exports){
+},{"pouchdb-binary-utils":446,"pouchdb-errors":460,"pouchdb-promise":488,"pouchdb-utils":493}],446:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -26432,7 +26419,7 @@ function isForbiddenError(err) {
 
 module.exports = Checkpointer;
 
-},{"pouchdb-collate":448,"pouchdb-promise":483,"pouchdb-utils":488}],448:[function(require,module,exports){
+},{"pouchdb-collate":448,"pouchdb-promise":488,"pouchdb-utils":493}],448:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -27347,10 +27334,10 @@ function supportsMapAndSet() {
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var pouchdbUtils = require('pouchdb-utils');
+var pouchdbCollections = require('pouchdb-collections');
 var debug = _interopDefault(require('debug'));
 var inherits = _interopDefault(require('inherits'));
 var Promise = _interopDefault(require('pouchdb-promise'));
-var pouchdbCollections = require('pouchdb-collections');
 var events = require('events');
 var getArguments = _interopDefault(require('argsarray'));
 var pouchdbMerge = require('pouchdb-merge');
@@ -27753,7 +27740,7 @@ function doNextCompaction(self) {
 
 function attachmentNameError(name) {
   if (name.charAt(0) === '_') {
-    return name + 'is not a valid attachment name, attachment ' +
+    return name + ' is not a valid attachment name, attachment ' +
       'names cannot start with \'_\'';
   }
   return false;
@@ -28736,6 +28723,9 @@ PouchDB$2.plugin = function (obj) {
       PouchDB$2.prototype[id] = obj[id];
     });
   }
+  if (this.__defaults) {
+    PouchDB$2.__defaults = pouchdbUtils.assign({}, this.__defaults);
+  }
   return PouchDB$2;
 };
 
@@ -28774,17 +28764,19 @@ PouchDB$2.defaults = function (defaultOpts) {
 };
 
 // managed automatically by set-version.js
-var version = "6.1.1";
+var version = "6.1.2";
 
 PouchDB$2.version = version;
 
 module.exports = PouchDB$2;
 
-},{"argsarray":19,"debug":453,"events":426,"inherits":429,"pouchdb-collections":451,"pouchdb-errors":455,"pouchdb-merge":482,"pouchdb-promise":483,"pouchdb-utils":488,"scope-eval":583}],453:[function(require,module,exports){
+},{"argsarray":19,"debug":453,"events":426,"inherits":429,"pouchdb-collections":455,"pouchdb-errors":456,"pouchdb-merge":457,"pouchdb-promise":458,"pouchdb-utils":459,"scope-eval":589}],453:[function(require,module,exports){
 arguments[4][424][0].apply(exports,arguments)
-},{"./debug":454,"_process":491,"dup":424}],454:[function(require,module,exports){
+},{"./debug":454,"_process":496,"dup":424}],454:[function(require,module,exports){
 arguments[4][442][0].apply(exports,arguments)
 },{"dup":442,"ms":438}],455:[function(require,module,exports){
+arguments[4][451][0].apply(exports,arguments)
+},{"dup":451}],456:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -28911,7 +28903,1370 @@ exports.INVALID_URL = INVALID_URL;
 exports.createError = createError;
 exports.generateErrorFromResponse = generateErrorFromResponse;
 
-},{"inherits":429}],456:[function(require,module,exports){
+},{"inherits":429}],457:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+// We fetch all leafs of the revision tree, and sort them based on tree length
+// and whether they were deleted, undeleted documents with the longest revision
+// tree (most edits) win
+// The final sort algorithm is slightly documented in a sidebar here:
+// http://guide.couchdb.org/draft/conflicts.html
+function winningRev(metadata) {
+  var winningId;
+  var winningPos;
+  var winningDeleted;
+  var toVisit = metadata.rev_tree.slice();
+  var node;
+  while ((node = toVisit.pop())) {
+    var tree = node.ids;
+    var branches = tree[2];
+    var pos = node.pos;
+    if (branches.length) { // non-leaf
+      for (var i = 0, len = branches.length; i < len; i++) {
+        toVisit.push({pos: pos + 1, ids: branches[i]});
+      }
+      continue;
+    }
+    var deleted = !!tree[1].deleted;
+    var id = tree[0];
+    // sort by deleted, then pos, then id
+    if (!winningId || (winningDeleted !== deleted ? winningDeleted :
+        winningPos !== pos ? winningPos < pos : winningId < id)) {
+      winningId = id;
+      winningPos = pos;
+      winningDeleted = deleted;
+    }
+  }
+
+  return winningPos + '-' + winningId;
+}
+
+// Pretty much all below can be combined into a higher order function to
+// traverse revisions
+// The return value from the callback will be passed as context to all
+// children of that node
+function traverseRevTree(revs, callback) {
+  var toVisit = revs.slice();
+
+  var node;
+  while ((node = toVisit.pop())) {
+    var pos = node.pos;
+    var tree = node.ids;
+    var branches = tree[2];
+    var newCtx =
+      callback(branches.length === 0, pos, tree[0], node.ctx, tree[1]);
+    for (var i = 0, len = branches.length; i < len; i++) {
+      toVisit.push({pos: pos + 1, ids: branches[i], ctx: newCtx});
+    }
+  }
+}
+
+function sortByPos(a, b) {
+  return a.pos - b.pos;
+}
+
+function collectLeaves(revs) {
+  var leaves = [];
+  traverseRevTree(revs, function (isLeaf, pos, id, acc, opts) {
+    if (isLeaf) {
+      leaves.push({rev: pos + "-" + id, pos: pos, opts: opts});
+    }
+  });
+  leaves.sort(sortByPos).reverse();
+  for (var i = 0, len = leaves.length; i < len; i++) {
+    delete leaves[i].pos;
+  }
+  return leaves;
+}
+
+// returns revs of all conflicts that is leaves such that
+// 1. are not deleted and
+// 2. are different than winning revision
+function collectConflicts(metadata) {
+  var win = winningRev(metadata);
+  var leaves = collectLeaves(metadata.rev_tree);
+  var conflicts = [];
+  for (var i = 0, len = leaves.length; i < len; i++) {
+    var leaf = leaves[i];
+    if (leaf.rev !== win && !leaf.opts.deleted) {
+      conflicts.push(leaf.rev);
+    }
+  }
+  return conflicts;
+}
+
+// compact a tree by marking its non-leafs as missing,
+// and return a list of revs to delete
+function compactTree(metadata) {
+  var revs = [];
+  traverseRevTree(metadata.rev_tree, function (isLeaf, pos,
+                                               revHash, ctx, opts) {
+    if (opts.status === 'available' && !isLeaf) {
+      revs.push(pos + '-' + revHash);
+      opts.status = 'missing';
+    }
+  });
+  return revs;
+}
+
+// build up a list of all the paths to the leafs in this revision tree
+function rootToLeaf(revs) {
+  var paths = [];
+  var toVisit = revs.slice();
+  var node;
+  while ((node = toVisit.pop())) {
+    var pos = node.pos;
+    var tree = node.ids;
+    var id = tree[0];
+    var opts = tree[1];
+    var branches = tree[2];
+    var isLeaf = branches.length === 0;
+
+    var history = node.history ? node.history.slice() : [];
+    history.push({id: id, opts: opts});
+    if (isLeaf) {
+      paths.push({pos: (pos + 1 - history.length), ids: history});
+    }
+    for (var i = 0, len = branches.length; i < len; i++) {
+      toVisit.push({pos: pos + 1, ids: branches[i], history: history});
+    }
+  }
+  return paths.reverse();
+}
+
+// for a better overview of what this is doing, read:
+// https://github.com/apache/couchdb-couch/blob/master/src/couch_key_tree.erl
+//
+// But for a quick intro, CouchDB uses a revision tree to store a documents
+// history, A -> B -> C, when a document has conflicts, that is a branch in the
+// tree, A -> (B1 | B2 -> C), We store these as a nested array in the format
+//
+// KeyTree = [Path ... ]
+// Path = {pos: position_from_root, ids: Tree}
+// Tree = [Key, Opts, [Tree, ...]], in particular single node: [Key, []]
+
+function sortByPos$1(a, b) {
+  return a.pos - b.pos;
+}
+
+// classic binary search
+function binarySearch(arr, item, comparator) {
+  var low = 0;
+  var high = arr.length;
+  var mid;
+  while (low < high) {
+    mid = (low + high) >>> 1;
+    if (comparator(arr[mid], item) < 0) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  return low;
+}
+
+// assuming the arr is sorted, insert the item in the proper place
+function insertSorted(arr, item, comparator) {
+  var idx = binarySearch(arr, item, comparator);
+  arr.splice(idx, 0, item);
+}
+
+// Turn a path as a flat array into a tree with a single branch.
+// If any should be stemmed from the beginning of the array, that's passed
+// in as the second argument
+function pathToTree(path, numStemmed) {
+  var root;
+  var leaf;
+  for (var i = numStemmed, len = path.length; i < len; i++) {
+    var node = path[i];
+    var currentLeaf = [node.id, node.opts, []];
+    if (leaf) {
+      leaf[2].push(currentLeaf);
+      leaf = currentLeaf;
+    } else {
+      root = leaf = currentLeaf;
+    }
+  }
+  return root;
+}
+
+// compare the IDs of two trees
+function compareTree(a, b) {
+  return a[0] < b[0] ? -1 : 1;
+}
+
+// Merge two trees together
+// The roots of tree1 and tree2 must be the same revision
+function mergeTree(in_tree1, in_tree2) {
+  var queue = [{tree1: in_tree1, tree2: in_tree2}];
+  var conflicts = false;
+  while (queue.length > 0) {
+    var item = queue.pop();
+    var tree1 = item.tree1;
+    var tree2 = item.tree2;
+
+    if (tree1[1].status || tree2[1].status) {
+      tree1[1].status =
+        (tree1[1].status ===  'available' ||
+        tree2[1].status === 'available') ? 'available' : 'missing';
+    }
+
+    for (var i = 0; i < tree2[2].length; i++) {
+      if (!tree1[2][0]) {
+        conflicts = 'new_leaf';
+        tree1[2][0] = tree2[2][i];
+        continue;
+      }
+
+      var merged = false;
+      for (var j = 0; j < tree1[2].length; j++) {
+        if (tree1[2][j][0] === tree2[2][i][0]) {
+          queue.push({tree1: tree1[2][j], tree2: tree2[2][i]});
+          merged = true;
+        }
+      }
+      if (!merged) {
+        conflicts = 'new_branch';
+        insertSorted(tree1[2], tree2[2][i], compareTree);
+      }
+    }
+  }
+  return {conflicts: conflicts, tree: in_tree1};
+}
+
+function doMerge(tree, path, dontExpand) {
+  var restree = [];
+  var conflicts = false;
+  var merged = false;
+  var res;
+
+  if (!tree.length) {
+    return {tree: [path], conflicts: 'new_leaf'};
+  }
+
+  for (var i = 0, len = tree.length; i < len; i++) {
+    var branch = tree[i];
+    if (branch.pos === path.pos && branch.ids[0] === path.ids[0]) {
+      // Paths start at the same position and have the same root, so they need
+      // merged
+      res = mergeTree(branch.ids, path.ids);
+      restree.push({pos: branch.pos, ids: res.tree});
+      conflicts = conflicts || res.conflicts;
+      merged = true;
+    } else if (dontExpand !== true) {
+      // The paths start at a different position, take the earliest path and
+      // traverse up until it as at the same point from root as the path we
+      // want to merge.  If the keys match we return the longer path with the
+      // other merged After stemming we dont want to expand the trees
+
+      var t1 = branch.pos < path.pos ? branch : path;
+      var t2 = branch.pos < path.pos ? path : branch;
+      var diff = t2.pos - t1.pos;
+
+      var candidateParents = [];
+
+      var trees = [];
+      trees.push({ids: t1.ids, diff: diff, parent: null, parentIdx: null});
+      while (trees.length > 0) {
+        var item = trees.pop();
+        if (item.diff === 0) {
+          if (item.ids[0] === t2.ids[0]) {
+            candidateParents.push(item);
+          }
+          continue;
+        }
+        var elements = item.ids[2];
+        for (var j = 0, elementsLen = elements.length; j < elementsLen; j++) {
+          trees.push({
+            ids: elements[j],
+            diff: item.diff - 1,
+            parent: item.ids,
+            parentIdx: j
+          });
+        }
+      }
+
+      var el = candidateParents[0];
+
+      if (!el) {
+        restree.push(branch);
+      } else {
+        res = mergeTree(el.ids, t2.ids);
+        el.parent[2][el.parentIdx] = res.tree;
+        restree.push({pos: t1.pos, ids: t1.ids});
+        conflicts = conflicts || res.conflicts;
+        merged = true;
+      }
+    } else {
+      restree.push(branch);
+    }
+  }
+
+  // We didnt find
+  if (!merged) {
+    restree.push(path);
+  }
+
+  restree.sort(sortByPos$1);
+
+  return {
+    tree: restree,
+    conflicts: conflicts || 'internal_node'
+  };
+}
+
+// To ensure we dont grow the revision tree infinitely, we stem old revisions
+function stem(tree, depth) {
+  // First we break out the tree into a complete list of root to leaf paths
+  var paths = rootToLeaf(tree);
+  var stemmedRevs;
+
+  var result;
+  for (var i = 0, len = paths.length; i < len; i++) {
+    // Then for each path, we cut off the start of the path based on the
+    // `depth` to stem to, and generate a new set of flat trees
+    var path = paths[i];
+    var stemmed = path.ids;
+    var node;
+    if (stemmed.length > depth) {
+      // only do the stemming work if we actually need to stem
+      if (!stemmedRevs) {
+        stemmedRevs = {}; // avoid allocating this object unnecessarily
+      }
+      var numStemmed = stemmed.length - depth;
+      node = {
+        pos: path.pos + numStemmed,
+        ids: pathToTree(stemmed, numStemmed)
+      };
+
+      for (var s = 0; s < numStemmed; s++) {
+        var rev = (path.pos + s) + '-' + stemmed[s].id;
+        stemmedRevs[rev] = true;
+      }
+    } else { // no need to actually stem
+      node = {
+        pos: path.pos,
+        ids: pathToTree(stemmed, 0)
+      };
+    }
+
+    // Then we remerge all those flat trees together, ensuring that we dont
+    // connect trees that would go beyond the depth limit
+    if (result) {
+      result = doMerge(result, node, true).tree;
+    } else {
+      result = [node];
+    }
+  }
+
+  // this is memory-heavy per Chrome profiler, avoid unless we actually stemmed
+  if (stemmedRevs) {
+    traverseRevTree(result, function (isLeaf, pos, revHash) {
+      // some revisions may have been removed in a branch but not in another
+      delete stemmedRevs[pos + '-' + revHash];
+    });
+  }
+
+  return {
+    tree: result,
+    revs: stemmedRevs ? Object.keys(stemmedRevs) : []
+  };
+}
+
+function merge(tree, path, depth) {
+  var newTree = doMerge(tree, path);
+  var stemmed = stem(newTree.tree, depth);
+  return {
+    tree: stemmed.tree,
+    stemmedRevs: stemmed.revs,
+    conflicts: newTree.conflicts
+  };
+}
+
+// return true if a rev exists in the rev tree, false otherwise
+function revExists(revs, rev) {
+  var toVisit = revs.slice();
+  var splitRev = rev.split('-');
+  var targetPos = parseInt(splitRev[0], 10);
+  var targetId = splitRev[1];
+
+  var node;
+  while ((node = toVisit.pop())) {
+    if (node.pos === targetPos && node.ids[0] === targetId) {
+      return true;
+    }
+    var branches = node.ids[2];
+    for (var i = 0, len = branches.length; i < len; i++) {
+      toVisit.push({pos: node.pos + 1, ids: branches[i]});
+    }
+  }
+  return false;
+}
+
+function getTrees(node) {
+  return node.ids;
+}
+
+// check if a specific revision of a doc has been deleted
+//  - metadata: the metadata object from the doc store
+//  - rev: (optional) the revision to check. defaults to winning revision
+function isDeleted(metadata, rev) {
+  if (!rev) {
+    rev = winningRev(metadata);
+  }
+  var id = rev.substring(rev.indexOf('-') + 1);
+  var toVisit = metadata.rev_tree.map(getTrees);
+
+  var tree;
+  while ((tree = toVisit.pop())) {
+    if (tree[0] === id) {
+      return !!tree[1].deleted;
+    }
+    toVisit = toVisit.concat(tree[2]);
+  }
+}
+
+function isLocalId(id) {
+  return (/^_local/).test(id);
+}
+
+// returns the current leaf node for a given revision
+function latest(rev, metadata) {
+  var toVisit = metadata.rev_tree.slice();
+  var node;
+  while ((node = toVisit.pop())) {
+    var pos = node.pos;
+    var tree = node.ids;
+    var id = tree[0];
+    var opts = tree[1];
+    var branches = tree[2];
+    var isLeaf = branches.length === 0;
+
+    var history = node.history ? node.history.slice() : [];
+    history.push({id: id, pos: pos, opts: opts});
+
+    if (isLeaf) {
+      for (var i = 0, len = history.length; i < len; i++) {
+        var historyNode = history[i];
+        var historyRev = historyNode.pos + '-' + historyNode.id;
+
+        if (historyRev === rev) {
+          // return the rev of this leaf
+          return pos + '-' + id;
+        }
+      }
+    }
+
+    for (var j = 0, l = branches.length; j < l; j++) {
+      toVisit.push({pos: pos + 1, ids: branches[j], history: history});
+    }
+  }
+
+  /* istanbul ignore next */
+  throw new Error('Unable to resolve latest revision for id ' + metadata.id + ', rev ' + rev);
+}
+
+exports.collectConflicts = collectConflicts;
+exports.collectLeaves = collectLeaves;
+exports.compactTree = compactTree;
+exports.isDeleted = isDeleted;
+exports.isLocalId = isLocalId;
+exports.merge = merge;
+exports.revExists = revExists;
+exports.rootToLeaf = rootToLeaf;
+exports.traverseRevTree = traverseRevTree;
+exports.winningRev = winningRev;
+exports.latest = latest;
+
+},{}],458:[function(require,module,exports){
+'use strict';
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var lie = _interopDefault(require('lie'));
+
+/* istanbul ignore next */
+var PouchPromise = typeof Promise === 'function' ? Promise : lie;
+
+module.exports = PouchPromise;
+
+},{"lie":437}],459:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var Promise = _interopDefault(require('pouchdb-promise'));
+var getArguments = _interopDefault(require('argsarray'));
+var debug = _interopDefault(require('debug'));
+var pouchdbCollections = require('pouchdb-collections');
+var events = require('events');
+var inherits = _interopDefault(require('inherits'));
+var pouchdbUtils = require('pouchdb-utils');
+var pouchdbErrors = require('pouchdb-errors');
+var immediate = _interopDefault(require('immediate'));
+
+function isBinaryObject(object) {
+  return (typeof ArrayBuffer !== 'undefined' && object instanceof ArrayBuffer) ||
+    (typeof Blob !== 'undefined' && object instanceof Blob);
+}
+
+function cloneArrayBuffer(buff) {
+  if (typeof buff.slice === 'function') {
+    return buff.slice(0);
+  }
+  // IE10-11 slice() polyfill
+  var target = new ArrayBuffer(buff.byteLength);
+  var targetArray = new Uint8Array(target);
+  var sourceArray = new Uint8Array(buff);
+  targetArray.set(sourceArray);
+  return target;
+}
+
+function cloneBinaryObject(object) {
+  if (object instanceof ArrayBuffer) {
+    return cloneArrayBuffer(object);
+  }
+  var size = object.size;
+  var type = object.type;
+  // Blob
+  if (typeof object.slice === 'function') {
+    return object.slice(0, size, type);
+  }
+  // PhantomJS slice() replacement
+  return object.webkitSlice(0, size, type);
+}
+
+// most of this is borrowed from lodash.isPlainObject:
+// https://github.com/fis-components/lodash.isplainobject/
+// blob/29c358140a74f252aeb08c9eb28bef86f2217d4a/index.js
+
+var funcToString = Function.prototype.toString;
+var objectCtorString = funcToString.call(Object);
+
+function isPlainObject(value) {
+  var proto = Object.getPrototypeOf(value);
+  /* istanbul ignore if */
+  if (proto === null) { // not sure when this happens, but I guess it can
+    return true;
+  }
+  var Ctor = proto.constructor;
+  return (typeof Ctor == 'function' &&
+    Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
+}
+
+function clone(object) {
+  var newObject;
+  var i;
+  var len;
+
+  if (!object || typeof object !== 'object') {
+    return object;
+  }
+
+  if (Array.isArray(object)) {
+    newObject = [];
+    for (i = 0, len = object.length; i < len; i++) {
+      newObject[i] = clone(object[i]);
+    }
+    return newObject;
+  }
+
+  // special case: to avoid inconsistencies between IndexedDB
+  // and other backends, we automatically stringify Dates
+  if (object instanceof Date) {
+    return object.toISOString();
+  }
+
+  if (isBinaryObject(object)) {
+    return cloneBinaryObject(object);
+  }
+
+  if (!isPlainObject(object)) {
+    return object; // don't clone objects like Workers
+  }
+
+  newObject = {};
+  for (i in object) {
+    /* istanbul ignore else */
+    if (Object.prototype.hasOwnProperty.call(object, i)) {
+      var value = clone(object[i]);
+      if (typeof value !== 'undefined') {
+        newObject[i] = value;
+      }
+    }
+  }
+  return newObject;
+}
+
+function once(fun) {
+  var called = false;
+  return getArguments(function (args) {
+    /* istanbul ignore if */
+    if (called) {
+      // this is a smoke test and should never actually happen
+      throw new Error('once called more than once');
+    } else {
+      called = true;
+      fun.apply(this, args);
+    }
+  });
+}
+
+function toPromise(func) {
+  //create the function we will be returning
+  return getArguments(function (args) {
+    // Clone arguments
+    args = clone(args);
+    var self = this;
+    // if the last argument is a function, assume its a callback
+    var usedCB = (typeof args[args.length - 1] === 'function') ? args.pop() : false;
+    var promise = new Promise(function (fulfill, reject) {
+      var resp;
+      try {
+        var callback = once(function (err, mesg) {
+          if (err) {
+            reject(err);
+          } else {
+            fulfill(mesg);
+          }
+        });
+        // create a callback for this invocation
+        // apply the function in the orig context
+        args.push(callback);
+        resp = func.apply(self, args);
+        if (resp && typeof resp.then === 'function') {
+          fulfill(resp);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+    // if there is a callback, call it back
+    if (usedCB) {
+      promise.then(function (result) {
+        usedCB(null, result);
+      }, usedCB);
+    }
+    return promise;
+  });
+}
+
+var log = debug('pouchdb:api');
+
+function adapterFun(name, callback) {
+  function logApiCall(self, name, args) {
+    /* istanbul ignore if */
+    if (log.enabled) {
+      var logArgs = [self.name, name];
+      for (var i = 0; i < args.length - 1; i++) {
+        logArgs.push(args[i]);
+      }
+      log.apply(null, logArgs);
+
+      // override the callback itself to log the response
+      var origCallback = args[args.length - 1];
+      args[args.length - 1] = function (err, res) {
+        var responseArgs = [self.name, name];
+        responseArgs = responseArgs.concat(
+          err ? ['error', err] : ['success', res]
+        );
+        log.apply(null, responseArgs);
+        origCallback(err, res);
+      };
+    }
+  }
+
+  return toPromise(getArguments(function (args) {
+    if (this._closed) {
+      return Promise.reject(new Error('database is closed'));
+    }
+    if (this._destroyed) {
+      return Promise.reject(new Error('database is destroyed'));
+    }
+    var self = this;
+    logApiCall(self, name, args);
+    if (!this.taskqueue.isReady) {
+      return new Promise(function (fulfill, reject) {
+        self.taskqueue.addTask(function (failed) {
+          if (failed) {
+            reject(failed);
+          } else {
+            fulfill(self[name].apply(self, args));
+          }
+        });
+      });
+    }
+    return callback.apply(this, args);
+  }));
+}
+
+// like underscore/lodash _.pick()
+function pick(obj, arr) {
+  var res = {};
+  for (var i = 0, len = arr.length; i < len; i++) {
+    var prop = arr[i];
+    if (prop in obj) {
+      res[prop] = obj[prop];
+    }
+  }
+  return res;
+}
+
+// Most browsers throttle concurrent requests at 6, so it's silly
+// to shim _bulk_get by trying to launch potentially hundreds of requests
+// and then letting the majority time out. We can handle this ourselves.
+var MAX_NUM_CONCURRENT_REQUESTS = 6;
+
+function identityFunction(x) {
+  return x;
+}
+
+function formatResultForOpenRevsGet(result) {
+  return [{
+    ok: result
+  }];
+}
+
+// shim for P/CouchDB adapters that don't directly implement _bulk_get
+function bulkGet(db, opts, callback) {
+  var requests = opts.docs;
+
+  // consolidate into one request per doc if possible
+  var requestsById = new pouchdbCollections.Map();
+  requests.forEach(function (request) {
+    if (requestsById.has(request.id)) {
+      requestsById.get(request.id).push(request);
+    } else {
+      requestsById.set(request.id, [request]);
+    }
+  });
+
+  var numDocs = requestsById.size;
+  var numDone = 0;
+  var perDocResults = new Array(numDocs);
+
+  function collapseResultsAndFinish() {
+    var results = [];
+    perDocResults.forEach(function (res) {
+      res.docs.forEach(function (info) {
+        results.push({
+          id: res.id,
+          docs: [info]
+        });
+      });
+    });
+    callback(null, {results: results});
+  }
+
+  function checkDone() {
+    if (++numDone === numDocs) {
+      collapseResultsAndFinish();
+    }
+  }
+
+  function gotResult(docIndex, id, docs) {
+    perDocResults[docIndex] = {id: id, docs: docs};
+    checkDone();
+  }
+
+  var allRequests = [];
+  requestsById.forEach(function (value, key) {
+    allRequests.push(key);
+  });
+
+  var i = 0;
+
+  function nextBatch() {
+
+    if (i >= allRequests.length) {
+      return;
+    }
+
+    var upTo = Math.min(i + MAX_NUM_CONCURRENT_REQUESTS, allRequests.length);
+    var batch = allRequests.slice(i, upTo);
+    processBatch(batch, i);
+    i += batch.length;
+  }
+
+  function processBatch(batch, offset) {
+    batch.forEach(function (docId, j) {
+      var docIdx = offset + j;
+      var docRequests = requestsById.get(docId);
+
+      // just use the first request as the "template"
+      // TODO: The _bulk_get API allows for more subtle use cases than this,
+      // but for now it is unlikely that there will be a mix of different
+      // "atts_since" or "attachments" in the same request, since it's just
+      // replicate.js that is using this for the moment.
+      // Also, atts_since is aspirational, since we don't support it yet.
+      var docOpts = pick(docRequests[0], ['atts_since', 'attachments']);
+      docOpts.open_revs = docRequests.map(function (request) {
+        // rev is optional, open_revs disallowed
+        return request.rev;
+      });
+
+      // remove falsey / undefined revisions
+      docOpts.open_revs = docOpts.open_revs.filter(identityFunction);
+
+      var formatResult = identityFunction;
+
+      if (docOpts.open_revs.length === 0) {
+        delete docOpts.open_revs;
+
+        // when fetching only the "winning" leaf,
+        // transform the result so it looks like an open_revs
+        // request
+        formatResult = formatResultForOpenRevsGet;
+      }
+
+      // globally-supplied options
+      ['revs', 'attachments', 'binary', 'ajax', 'latest'].forEach(function (param) {
+        if (param in opts) {
+          docOpts[param] = opts[param];
+        }
+      });
+      db.get(docId, docOpts, function (err, res) {
+        var result;
+        /* istanbul ignore if */
+        if (err) {
+          result = [{error: err}];
+        } else {
+          result = formatResult(res);
+        }
+        gotResult(docIdx, docId, result);
+        nextBatch();
+      });
+    });
+  }
+
+  nextBatch();
+
+}
+
+function isChromeApp() {
+  return (typeof chrome !== "undefined" &&
+    typeof chrome.storage !== "undefined" &&
+    typeof chrome.storage.local !== "undefined");
+}
+
+var hasLocal;
+
+if (isChromeApp()) {
+  hasLocal = false;
+} else {
+  try {
+    localStorage.setItem('_pouch_check_localstorage', 1);
+    hasLocal = !!localStorage.getItem('_pouch_check_localstorage');
+  } catch (e) {
+    hasLocal = false;
+  }
+}
+
+function hasLocalStorage() {
+  return hasLocal;
+}
+
+inherits(Changes, events.EventEmitter);
+
+/* istanbul ignore next */
+function attachBrowserEvents(self) {
+  if (isChromeApp()) {
+    chrome.storage.onChanged.addListener(function (e) {
+      // make sure it's event addressed to us
+      if (e.db_name != null) {
+        //object only has oldValue, newValue members
+        self.emit(e.dbName.newValue);
+      }
+    });
+  } else if (hasLocalStorage()) {
+    if (typeof addEventListener !== 'undefined') {
+      addEventListener("storage", function (e) {
+        self.emit(e.key);
+      });
+    } else { // old IE
+      window.attachEvent("storage", function (e) {
+        self.emit(e.key);
+      });
+    }
+  }
+}
+
+function Changes() {
+  events.EventEmitter.call(this);
+  this._listeners = {};
+
+  attachBrowserEvents(this);
+}
+Changes.prototype.addListener = function (dbName, id, db, opts) {
+  /* istanbul ignore if */
+  if (this._listeners[id]) {
+    return;
+  }
+  var self = this;
+  var inprogress = false;
+  function eventFunction() {
+    /* istanbul ignore if */
+    if (!self._listeners[id]) {
+      return;
+    }
+    if (inprogress) {
+      inprogress = 'waiting';
+      return;
+    }
+    inprogress = true;
+    var changesOpts = pick(opts, [
+      'style', 'include_docs', 'attachments', 'conflicts', 'filter',
+      'doc_ids', 'view', 'since', 'query_params', 'binary'
+    ]);
+
+    /* istanbul ignore next */
+    function onError() {
+      inprogress = false;
+    }
+
+    db.changes(changesOpts).on('change', function (c) {
+      if (c.seq > opts.since && !opts.cancelled) {
+        opts.since = c.seq;
+        opts.onChange(c);
+      }
+    }).on('complete', function () {
+      if (inprogress === 'waiting') {
+        pouchdbUtils.nextTick(eventFunction);
+      }
+      inprogress = false;
+    }).on('error', onError);
+  }
+  this._listeners[id] = eventFunction;
+  this.on(dbName, eventFunction);
+};
+
+Changes.prototype.removeListener = function (dbName, id) {
+  /* istanbul ignore if */
+  if (!(id in this._listeners)) {
+    return;
+  }
+  events.EventEmitter.prototype.removeListener.call(this, dbName,
+    this._listeners[id]);
+  delete this._listeners[id];
+};
+
+
+/* istanbul ignore next */
+Changes.prototype.notifyLocalWindows = function (dbName) {
+  //do a useless change on a storage thing
+  //in order to get other windows's listeners to activate
+  if (isChromeApp()) {
+    chrome.storage.local.set({dbName: dbName});
+  } else if (hasLocalStorage()) {
+    localStorage[dbName] = (localStorage[dbName] === "a") ? "b" : "a";
+  }
+};
+
+Changes.prototype.notify = function (dbName) {
+  this.emit(dbName);
+  this.notifyLocalWindows(dbName);
+};
+
+function guardedConsole(method) {
+  /* istanbul ignore else */
+  if (console !== 'undefined' && method in console) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    console[method].apply(console, args);
+  }
+}
+
+function randomNumber(min, max) {
+  var maxTimeout = 600000; // Hard-coded default of 10 minutes
+  min = parseInt(min, 10) || 0;
+  max = parseInt(max, 10);
+  if (max !== max || max <= min) {
+    max = (min || 1) << 1; //doubling
+  } else {
+    max = max + 1;
+  }
+  // In order to not exceed maxTimeout, pick a random value between half of maxTimeout and maxTimeout
+  if(max > maxTimeout) {
+    min = maxTimeout >> 1; // divide by two
+    max = maxTimeout;
+  }
+  var ratio = Math.random();
+  var range = max - min;
+
+  return ~~(range * ratio + min); // ~~ coerces to an int, but fast.
+}
+
+function defaultBackOff(min) {
+  var max = 0;
+  if (!min) {
+    max = 2000;
+  }
+  return randomNumber(min, max);
+}
+
+// designed to give info to browser users, who are disturbed
+// when they see http errors in the console
+function explainError(status, str) {
+  guardedConsole('info', 'The above ' + status + ' is totally normal. ' + str);
+}
+
+var assign;
+{
+  if (typeof Object.assign === 'function') {
+    assign = Object.assign;
+  } else {
+    // lite Object.assign polyfill based on
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+    assign = function (target) {
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource != null) { // Skip over if undefined or null
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    };
+  }
+}
+
+var assign$1 = assign;
+
+function tryFilter(filter, doc, req) {
+  try {
+    return !filter(doc, req);
+  } catch (err) {
+    var msg = 'Filter function threw: ' + err.toString();
+    return pouchdbErrors.createError(pouchdbErrors.BAD_REQUEST, msg);
+  }
+}
+
+function filterChange(opts) {
+  var req = {};
+  var hasFilter = opts.filter && typeof opts.filter === 'function';
+  req.query = opts.query_params;
+
+  return function filter(change) {
+    if (!change.doc) {
+      // CSG sends events on the changes feed that don't have documents,
+      // this hack makes a whole lot of existing code robust.
+      change.doc = {};
+    }
+
+    var filterReturn = hasFilter && tryFilter(opts.filter, change.doc, req);
+
+    if (typeof filterReturn === 'object') {
+      return filterReturn;
+    }
+
+    if (filterReturn) {
+      return false;
+    }
+
+    if (!opts.include_docs) {
+      delete change.doc;
+    } else if (!opts.attachments) {
+      for (var att in change.doc._attachments) {
+        /* istanbul ignore else */
+        if (change.doc._attachments.hasOwnProperty(att)) {
+          change.doc._attachments[att].stub = true;
+        }
+      }
+    }
+    return true;
+  };
+}
+
+function flatten(arrs) {
+  var res = [];
+  for (var i = 0, len = arrs.length; i < len; i++) {
+    res = res.concat(arrs[i]);
+  }
+  return res;
+}
+
+// shim for Function.prototype.name,
+// for browsers that don't support it like IE
+
+/* istanbul ignore next */
+function f() {}
+
+var hasName = f.name;
+var res;
+
+// We dont run coverage in IE
+/* istanbul ignore else */
+if (hasName) {
+  res = function (fun) {
+    return fun.name;
+  };
+} else {
+  res = function (fun) {
+    return fun.toString().match(/^\s*function\s*(\S*)\s*\(/)[1];
+  };
+}
+
+var res$1 = res;
+
+// Determine id an ID is valid
+//   - invalid IDs begin with an underescore that does not begin '_design' or
+//     '_local'
+//   - any other string value is a valid id
+// Returns the specific error object for each case
+function invalidIdError(id) {
+  var err;
+  if (!id) {
+    err = pouchdbErrors.createError(pouchdbErrors.MISSING_ID);
+  } else if (typeof id !== 'string') {
+    err = pouchdbErrors.createError(pouchdbErrors.INVALID_ID);
+  } else if (/^_/.test(id) && !(/^_(design|local)/).test(id)) {
+    err = pouchdbErrors.createError(pouchdbErrors.RESERVED_ID);
+  }
+  if (err) {
+    throw err;
+  }
+}
+
+function isCordova() {
+  return (typeof cordova !== "undefined" ||
+  typeof PhoneGap !== "undefined" ||
+  typeof phonegap !== "undefined");
+}
+
+function listenerCount(ee, type) {
+  return 'listenerCount' in ee ? ee.listenerCount(type) :
+                                 events.EventEmitter.listenerCount(ee, type);
+}
+
+// Custom nextTick() shim for browsers. In node, this will just be process.nextTick(). We
+// avoid using process.nextTick() directly because the polyfill is very large and we don't
+// need all of it (see: https://github.com/defunctzombie/node-process).
+// "immediate" 3.0.8 is used by lie, and it's a smaller version of the latest "immediate"
+// package, so it's the one we use.
+// When we use nextTick() in our codebase, we only care about not releasing Zalgo
+// (see: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony).
+// Microtask vs macrotask doesn't matter to us. So we're free to use the fastest
+// (least latency) option, which is "immediate" due to use of microtasks.
+// All of our nextTicks are isolated to this one function so we can easily swap out one
+// implementation for another.
+
+function parseDesignDocFunctionName(s) {
+  if (!s) {
+    return null;
+  }
+  var parts = s.split('/');
+  if (parts.length === 2) {
+    return parts;
+  }
+  if (parts.length === 1) {
+    return [s, s];
+  }
+  return null;
+}
+
+function normalizeDesignDocFunctionName(s) {
+  var normalized = parseDesignDocFunctionName(s);
+  return normalized ? normalized.join('/') : null;
+}
+
+// originally parseUri 1.2.2, now patched by us
+// (c) Steven Levithan <stevenlevithan.com>
+// MIT License
+var keys = ["source", "protocol", "authority", "userInfo", "user", "password",
+    "host", "port", "relative", "path", "directory", "file", "query", "anchor"];
+var qName ="queryKey";
+var qParser = /(?:^|&)([^&=]*)=?([^&]*)/g;
+
+// use the "loose" parser
+/* jshint maxlen: false */
+var parser = /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
+
+function parseUri(str) {
+  var m = parser.exec(str);
+  var uri = {};
+  var i = 14;
+
+  while (i--) {
+    var key = keys[i];
+    var value = m[i] || "";
+    var encoded = ['user', 'password'].indexOf(key) !== -1;
+    uri[key] = encoded ? decodeURIComponent(value) : value;
+  }
+
+  uri[qName] = {};
+  uri[keys[12]].replace(qParser, function ($0, $1, $2) {
+    if ($1) {
+      uri[qName][$1] = $2;
+    }
+  });
+
+  return uri;
+}
+
+// this is essentially the "update sugar" function from daleharvey/pouchdb#1388
+// the diffFun tells us what delta to apply to the doc.  it either returns
+// the doc, or false if it doesn't need to do an update after all
+function upsert(db, docId, diffFun) {
+  return new Promise(function (fulfill, reject) {
+    db.get(docId, function (err, doc) {
+      if (err) {
+        /* istanbul ignore next */
+        if (err.status !== 404) {
+          return reject(err);
+        }
+        doc = {};
+      }
+
+      // the user might change the _rev, so save it for posterity
+      var docRev = doc._rev;
+      var newDoc = diffFun(doc);
+
+      if (!newDoc) {
+        // if the diffFun returns falsy, we short-circuit as
+        // an optimization
+        return fulfill({updated: false, rev: docRev});
+      }
+
+      // users aren't allowed to modify these values,
+      // so reset them here
+      newDoc._id = docId;
+      newDoc._rev = docRev;
+      fulfill(tryAndPut(db, newDoc, diffFun));
+    });
+  });
+}
+
+function tryAndPut(db, doc, diffFun) {
+  return db.put(doc).then(function (res) {
+    return {
+      updated: true,
+      rev: res.rev
+    };
+  }, function (err) {
+    /* istanbul ignore next */
+    if (err.status !== 409) {
+      throw err;
+    }
+    return upsert(db, doc._id, diffFun);
+  });
+}
+
+// BEGIN Math.uuid.js
+
+/*!
+Math.uuid.js (v1.4)
+http://www.broofa.com
+mailto:robert@broofa.com
+
+Copyright (c) 2010 Robert Kieffer
+Dual licensed under the MIT and GPL licenses.
+*/
+
+/*
+ * Generate a random uuid.
+ *
+ * USAGE: Math.uuid(length, radix)
+ *   length - the desired number of characters
+ *   radix  - the number of allowable values for each character.
+ *
+ * EXAMPLES:
+ *   // No arguments  - returns RFC4122, version 4 ID
+ *   >>> Math.uuid()
+ *   "92329D39-6F5C-4520-ABFC-AAB64544E172"
+ *
+ *   // One argument - returns ID of the specified length
+ *   >>> Math.uuid(15)     // 15 character ID (default base=62)
+ *   "VcydxgltxrVZSTV"
+ *
+ *   // Two arguments - returns ID of the specified length, and radix. 
+ *   // (Radix must be <= 62)
+ *   >>> Math.uuid(8, 2)  // 8 character ID (base=2)
+ *   "01001010"
+ *   >>> Math.uuid(8, 10) // 8 character ID (base=10)
+ *   "47473046"
+ *   >>> Math.uuid(8, 16) // 8 character ID (base=16)
+ *   "098F4D35"
+ */
+var chars = (
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+  'abcdefghijklmnopqrstuvwxyz'
+).split('');
+function getValue(radix) {
+  return 0 | Math.random() * radix;
+}
+function uuid(len, radix) {
+  radix = radix || chars.length;
+  var out = '';
+  var i = -1;
+
+  if (len) {
+    // Compact form
+    while (++i < len) {
+      out += chars[getValue(radix)];
+    }
+    return out;
+  }
+    // rfc4122, version 4 form
+    // Fill in random data.  At i==19 set the high bits of clock sequence as
+    // per rfc4122, sec. 4.1.5
+  while (++i < 36) {
+    switch (i) {
+      case 8:
+      case 13:
+      case 18:
+      case 23:
+        out += '-';
+        break;
+      case 19:
+        out += chars[(getValue(16) & 0x3) | 0x8];
+        break;
+      default:
+        out += chars[getValue(16)];
+    }
+  }
+
+  return out;
+}
+
+exports.adapterFun = adapterFun;
+exports.bulkGetShim = bulkGet;
+exports.changesHandler = Changes;
+exports.clone = clone;
+exports.defaultBackOff = defaultBackOff;
+exports.explainError = explainError;
+exports.assign = assign$1;
+exports.filterChange = filterChange;
+exports.flatten = flatten;
+exports.functionName = res$1;
+exports.guardedConsole = guardedConsole;
+exports.hasLocalStorage = hasLocalStorage;
+exports.invalidIdError = invalidIdError;
+exports.isChromeApp = isChromeApp;
+exports.isCordova = isCordova;
+exports.listenerCount = listenerCount;
+exports.nextTick = immediate;
+exports.normalizeDdocFunctionName = normalizeDesignDocFunctionName;
+exports.once = once;
+exports.parseDdocFunctionName = parseDesignDocFunctionName;
+exports.parseUri = parseUri;
+exports.pick = pick;
+exports.toPromise = toPromise;
+exports.upsert = upsert;
+exports.uuid = uuid;
+
+},{"argsarray":19,"debug":453,"events":426,"immediate":428,"inherits":429,"pouchdb-collections":455,"pouchdb-errors":456,"pouchdb-promise":458,"pouchdb-utils":459}],460:[function(require,module,exports){
+arguments[4][456][0].apply(exports,arguments)
+},{"dup":456,"inherits":429}],461:[function(require,module,exports){
 "use strict";
 
 // Extends method
@@ -29092,7 +30447,7 @@ module.exports = extend;
 
 
 
-},{}],457:[function(require,module,exports){
+},{}],462:[function(require,module,exports){
 'use strict';
 
 var upsert = require('./upsert');
@@ -29191,7 +30546,7 @@ module.exports = function (opts) {
   });
 };
 
-},{"./upsert":460,"./utils":461}],458:[function(require,module,exports){
+},{"./upsert":465,"./utils":466}],463:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -29891,7 +31246,7 @@ function createIndexer(def) {
 module.exports = createIndexer;
 
 }).call(this,require('_process'))
-},{"./create-view":457,"./taskqueue":459,"./utils":461,"_process":491,"pouchdb-collate":449}],459:[function(require,module,exports){
+},{"./create-view":462,"./taskqueue":464,"./utils":466,"_process":496,"pouchdb-collate":449}],464:[function(require,module,exports){
 'use strict';
 /*
  * Simple task queue to sequentialize actions. Assumes callbacks will eventually fire (once).
@@ -29916,7 +31271,7 @@ TaskQueue.prototype.finish = function () {
 
 module.exports = TaskQueue;
 
-},{"./utils":461}],460:[function(require,module,exports){
+},{"./utils":466}],465:[function(require,module,exports){
 'use strict';
 
 var upsert = require('pouchdb-upsert').upsert;
@@ -29924,7 +31279,7 @@ var upsert = require('pouchdb-upsert').upsert;
 module.exports = function (db, doc, diffFun) {
   return upsert.apply(db, [doc, diffFun]);
 };
-},{"pouchdb-upsert":485}],461:[function(require,module,exports){
+},{"pouchdb-upsert":490}],466:[function(require,module,exports){
 (function (process){
 'use strict';
 /* istanbul ignore if */
@@ -30032,7 +31387,7 @@ exports.MD5 = function (string) {
   }
 };
 }).call(this,require('_process'))
-},{"_process":491,"argsarray":19,"crypto":33,"inherits":429,"pouchdb-extend":456,"pouchdb-promise":476,"spark-md5":477}],462:[function(require,module,exports){
+},{"_process":496,"argsarray":19,"crypto":33,"inherits":429,"pouchdb-extend":461,"pouchdb-promise":481,"spark-md5":482}],467:[function(require,module,exports){
 'use strict';
 
 var massageCreateIndexRequest = require('../../massageCreateIndexRequest');
@@ -30089,7 +31444,7 @@ exports.createIndex = createIndex;
 exports.find = find;
 exports.getIndexes = getIndexes;
 exports.deleteIndex = deleteIndex;
-},{"../../massageCreateIndexRequest":473}],463:[function(require,module,exports){
+},{"../../massageCreateIndexRequest":478}],468:[function(require,module,exports){
 'use strict';
 
 var localUtils = require('./utils');
@@ -30222,7 +31577,7 @@ var abstractMapper = abstractMapReduce({
 });
 
 module.exports = abstractMapper;
-},{"../../abstract-mapreduce":458,"./utils":471}],464:[function(require,module,exports){
+},{"../../abstract-mapreduce":463,"./utils":476}],469:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../../utils');
@@ -30310,7 +31665,7 @@ function createIndex(db, requestDef) {
 
 module.exports = createIndex;
 
-},{"../../../massageCreateIndexRequest":473,"../../../utils":474,"../abstract-mapper":463,"../utils":471,"pouchdb-upsert":485}],465:[function(require,module,exports){
+},{"../../../massageCreateIndexRequest":478,"../../../utils":479,"../abstract-mapper":468,"../utils":476,"pouchdb-upsert":490}],470:[function(require,module,exports){
 'use strict';
 
 var abstractMapper = require('../abstract-mapper');
@@ -30347,7 +31702,7 @@ function deleteIndex(db, index) {
 }
 
 module.exports = deleteIndex;
-},{"../../../abstract-mapreduce/upsert":460,"../abstract-mapper":463}],466:[function(require,module,exports){
+},{"../../../abstract-mapreduce/upsert":465,"../abstract-mapper":468}],471:[function(require,module,exports){
 'use strict';
 
 //
@@ -30417,6 +31772,10 @@ function filterInMemoryFields (rows, requestDef, inMemoryFields) {
 
 function rowFilter (doc, selector, inMemoryFields) {
   return inMemoryFields.every(function (field) {
+    if (isDesignDoc(doc)) {
+      return false;
+    }
+
     var matcher = selector[field];
     var parsedField = parseField(field);
     var docFieldValue = getFieldFromDoc(doc, parsedField);
@@ -30426,6 +31785,10 @@ function rowFilter (doc, selector, inMemoryFields) {
 
     return matchSelector(matcher, doc, parsedField, docFieldValue);
   });
+}
+
+function isDesignDoc (doc) {
+  return /^_design\//.test(doc._id);
 }
 
 function matchSelector (matcher, doc, parsedField, docFieldValue) {
@@ -30633,7 +31996,7 @@ var matchers = {
 
 module.exports = filterInMemoryFields;
 
-},{"../../../utils":474,"../utils":471,"is-array":430,"pouchdb-collate":449}],467:[function(require,module,exports){
+},{"../../../utils":479,"../utils":476,"is-array":430,"pouchdb-collate":449}],472:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../../utils');
@@ -30687,7 +32050,6 @@ function doAllDocs(db, originalOpts) {
 }
 
 function find(db, requestDef) {
-
   if (requestDef.selector) {
     requestDef.selector = massageSelector(requestDef.selector);
   }
@@ -30736,7 +32098,7 @@ function find(db, requestDef) {
         opts.skip = requestDef.skip;
       }
     }
-
+    
     return Promise.resolve().then(function () {
       if (indexToUse.name === '_all_docs') {
         return doAllDocs(db, opts);
@@ -30745,7 +32107,6 @@ function find(db, requestDef) {
         return abstractMapper.query.call(db, signature, opts);
       }
     }).then(function (res) {
-
       if (opts.inclusive_start === false) {
         // may have to manually filter the first one,
         // since couchdb has no true inclusive_start option
@@ -30778,7 +32139,7 @@ function find(db, requestDef) {
 
 module.exports = find;
 
-},{"../../../utils":474,"../abstract-mapper":463,"../get-indexes":469,"../utils":471,"./in-memory-filter":466,"./query-planner":468,"pouchdb-collate":449}],468:[function(require,module,exports){
+},{"../../../utils":479,"../abstract-mapper":468,"../get-indexes":474,"../utils":476,"./in-memory-filter":471,"./query-planner":473,"pouchdb-collate":449}],473:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../../utils');
@@ -30912,6 +32273,10 @@ function checkFieldsLogicallySound(indexFields, selector) {
   var firstField = indexFields[0];
   var matcher = selector[firstField];
 
+  if (typeof matcher === 'undefined') {
+    return true;
+  }
+
   var hasLogicalOperator = Object.keys(matcher).some(function (matcherKey) {
     return !(isNonLogicalMatcher(matcherKey));
   });
@@ -31014,7 +32379,9 @@ function getSingleFieldQueryOptsFor(userOperator, userValue) {
 
 function getSingleFieldCoreQueryPlan(selector, index) {
   var field = getKey(index.def.fields[0]);
-  var matcher = selector[field];
+  //ignoring this because the test to exercise the branch is skipped at the moment
+  /* istanbul ignore next */
+  var matcher = selector[field] || {};
   var inMemoryFields = [];
 
   var userOperators = Object.keys(matcher);
@@ -31106,7 +32473,7 @@ function getMultiFieldQueryOpts(selector, index) {
       finish(i);
       break;
     } else if (i > 0) {
-      if ('$ne' in matcher) { // unusable $ne index
+      if (Object.keys(matcher).some(isNonLogicalMatcher)) { // non-logical are ignored 
         finish(i);
         break;
       }
@@ -31168,11 +32535,11 @@ function getMultiFieldQueryOpts(selector, index) {
   };
 }
 
-function getDefaultQueryPlan () {
+function getDefaultQueryPlan (selector) {
+  //using default index, so all fields need to be done in memory
   return {
     queryOpts: {startkey: null},
-    //getInMemoryFields will do the work here later
-    inMemoryFields: []
+    inMemoryFields: [Object.keys(selector)]
   };
 }
 
@@ -31219,7 +32586,7 @@ function planQuery(request, indexes) {
 
 module.exports = planQuery;
 
-},{"../../../utils":474,"../utils":471}],469:[function(require,module,exports){
+},{"../../../utils":479,"../utils":476}],474:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../../utils');
@@ -31273,7 +32640,7 @@ function getIndexes(db) {
 
 module.exports = getIndexes;
 
-},{"../../../utils":474,"../utils":471}],470:[function(require,module,exports){
+},{"../../../utils":479,"../utils":476}],475:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../utils');
@@ -31283,7 +32650,7 @@ exports.createIndex = callbackify(require('./create-index'));
 exports.find = callbackify(require('./find'));
 exports.getIndexes = callbackify(require('./get-indexes'));
 exports.deleteIndex = callbackify(require('./delete-index'));
-},{"../../utils":474,"./create-index":464,"./delete-index":465,"./find":467,"./get-indexes":469}],471:[function(require,module,exports){
+},{"../../utils":479,"./create-index":469,"./delete-index":470,"./find":472,"./get-indexes":474}],476:[function(require,module,exports){
 'use strict';
 
 var utils = require('../../utils');
@@ -31662,7 +33029,7 @@ module.exports = {
   isCombinationalField: isCombinationalField
 };
 
-},{"../../utils":474,"pouchdb-collate":449}],472:[function(require,module,exports){
+},{"../../utils":479,"pouchdb-collate":449}],477:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -31723,7 +33090,7 @@ if (typeof window !== 'undefined' && window.PouchDB) {
   window.PouchDB.plugin(plugin);
 }
 
-},{"./adapters/http":462,"./adapters/local":470,"./utils":474}],473:[function(require,module,exports){
+},{"./adapters/http":467,"./adapters/local":475,"./utils":479}],478:[function(require,module,exports){
 'use strict';
 
 var utils = require('./utils');
@@ -31757,7 +33124,7 @@ module.exports = function (requestDef) {
   }
   return requestDef;
 };
-},{"./utils":474}],474:[function(require,module,exports){
+},{"./utils":479}],479:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -32048,9 +33415,9 @@ exports.uniq = function(arr) {
 exports.log = require('debug')('pouchdb:find');
 
 }).call(this,require('_process'))
-},{"_process":491,"crypto":33,"debug":424,"inherits":429,"pouchdb-extend":456,"pouchdb-promise":476,"spark-md5":477}],475:[function(require,module,exports){
+},{"_process":496,"crypto":33,"debug":424,"inherits":429,"pouchdb-extend":461,"pouchdb-promise":481,"spark-md5":482}],480:[function(require,module,exports){
 arguments[4][437][0].apply(exports,arguments)
-},{"dup":437,"immediate":428}],476:[function(require,module,exports){
+},{"dup":437,"immediate":428}],481:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -32061,10 +33428,7 @@ var lie = _interopDefault(require('lie'));
 var PouchPromise = typeof Promise === 'function' ? Promise : lie;
 
 module.exports = PouchPromise;
-},{"lie":475}],477:[function(require,module,exports){
-/*jshint bitwise:false*/
-/*global unescape*/
-
+},{"lie":480}],482:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -32075,6 +33439,7 @@ module.exports = PouchPromise;
     } else {
         // Browser globals (with support for web workers)
         var glob;
+
         try {
             glob = window;
         } catch (e) {
@@ -32087,10 +33452,8 @@ module.exports = PouchPromise;
 
     'use strict';
 
-    ////////////////////////////////////////////////////////////////////////////
-
     /*
-     * Fastest md5 implementation around (JKM md5)
+     * Fastest md5 implementation around (JKM md5).
      * Credits: Joseph Myers
      *
      * @see http://www.myersdaily.org/joseph/javascript/md5-text.html
@@ -32105,29 +33468,31 @@ module.exports = PouchPromise;
     var add32 = function (a, b) {
         return (a + b) & 0xFFFFFFFF;
     },
+        hex_chr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
 
-    cmn = function (q, a, b, x, s, t) {
+
+    function cmn(q, a, b, x, s, t) {
         a = add32(add32(a, q), add32(x, t));
         return add32((a << s) | (a >>> (32 - s)), b);
-    },
+    }
 
-    ff = function (a, b, c, d, x, s, t) {
+    function ff(a, b, c, d, x, s, t) {
         return cmn((b & c) | ((~b) & d), a, b, x, s, t);
-    },
+    }
 
-    gg = function (a, b, c, d, x, s, t) {
+    function gg(a, b, c, d, x, s, t) {
         return cmn((b & d) | (c & (~d)), a, b, x, s, t);
-    },
+    }
 
-    hh = function (a, b, c, d, x, s, t) {
+    function hh(a, b, c, d, x, s, t) {
         return cmn(b ^ c ^ d, a, b, x, s, t);
-    },
+    }
 
-    ii = function (a, b, c, d, x, s, t) {
+    function ii(a, b, c, d, x, s, t) {
         return cmn(c ^ (b | (~d)), a, b, x, s, t);
-    },
+    }
 
-    md5cycle = function (x, k) {
+    function md5cycle(x, k) {
         var a = x[0],
             b = x[1],
             c = x[2],
@@ -32205,24 +33570,9 @@ module.exports = PouchPromise;
         x[1] = add32(b, x[1]);
         x[2] = add32(c, x[2]);
         x[3] = add32(d, x[3]);
-    },
+    }
 
-    /* there needs to be support for Unicode here,
-       * unless we pretend that we can redefine the MD-5
-       * algorithm for multi-byte characters (perhaps
-       * by adding every four 16-bit characters and
-       * shortening the sum to 32 bits). Otherwise
-       * I suggest performing MD-5 as if every character
-       * was two bytes--e.g., 0040 0025 = @%--but then
-       * how will an ordinary MD-5 sum be matched?
-       * There is no way to standardize text to something
-       * like UTF-8 before transformation; speed cost is
-       * utterly prohibitive. The JavaScript standard
-       * itself needs to look at this: it should start
-       * providing access to strings as preformed UTF-8
-       * 8-bit unsigned value arrays.
-       */
-    md5blk = function (s) {
+    function md5blk(s) {
         var md5blks = [],
             i; /* Andy King said do it this way. */
 
@@ -32230,9 +33580,9 @@ module.exports = PouchPromise;
             md5blks[i >> 2] = s.charCodeAt(i) + (s.charCodeAt(i + 1) << 8) + (s.charCodeAt(i + 2) << 16) + (s.charCodeAt(i + 3) << 24);
         }
         return md5blks;
-    },
+    }
 
-    md5blk_array = function (a) {
+    function md5blk_array(a) {
         var md5blks = [],
             i; /* Andy King said do it this way. */
 
@@ -32240,9 +33590,9 @@ module.exports = PouchPromise;
             md5blks[i >> 2] = a[i] + (a[i + 1] << 8) + (a[i + 2] << 16) + (a[i + 3] << 24);
         }
         return md5blks;
-    },
+    }
 
-    md51 = function (s) {
+    function md51(s) {
         var n = s.length,
             state = [1732584193, -271733879, -1732584194, 271733878],
             i,
@@ -32280,9 +33630,9 @@ module.exports = PouchPromise;
 
         md5cycle(state, tail);
         return state;
-    },
+    }
 
-    md51_array = function (a) {
+    function md51_array(a) {
         var n = a.length,
             state = [1732584193, -271733879, -1732584194, 271733878],
             i,
@@ -32328,49 +33678,27 @@ module.exports = PouchPromise;
         md5cycle(state, tail);
 
         return state;
-    },
+    }
 
-    hex_chr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'],
-
-    rhex = function (n) {
+    function rhex(n) {
         var s = '',
             j;
         for (j = 0; j < 4; j += 1) {
             s += hex_chr[(n >> (j * 8 + 4)) & 0x0F] + hex_chr[(n >> (j * 8)) & 0x0F];
         }
         return s;
-    },
+    }
 
-    hex = function (x) {
+    function hex(x) {
         var i;
         for (i = 0; i < x.length; i += 1) {
             x[i] = rhex(x[i]);
         }
         return x.join('');
-    },
-
-    md5 = function (s) {
-        return hex(md51(s));
-    },
-
-
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * SparkMD5 OOP implementation.
-     *
-     * Use this class to perform an incremental md5, otherwise use the
-     * static methods instead.
-     */
-    SparkMD5 = function () {
-        // call reset to init the instance
-        this.reset();
-    };
-
+    }
 
     // In some cases the fast add32 function cannot be used..
-    if (md5('hello') !== '5d41402abc4b2a76b9719d911017c592') {
+    if (hex(md51('hello')) !== '5d41402abc4b2a76b9719d911017c592') {
         add32 = function (x, y) {
             var lsw = (x & 0xFFFF) + (y & 0xFFFF),
                 msw = (x >> 16) + (y >> 16) + (lsw >> 16);
@@ -32378,6 +33706,120 @@ module.exports = PouchPromise;
         };
     }
 
+    // ---------------------------------------------------
+
+    /**
+     * ArrayBuffer slice polyfill.
+     *
+     * @see https://github.com/ttaubert/node-arraybuffer-slice
+     */
+
+    if (typeof ArrayBuffer !== 'undefined' && !ArrayBuffer.prototype.slice) {
+        (function () {
+            function clamp(val, length) {
+                val = (val | 0) || 0;
+
+                if (val < 0) {
+                    return Math.max(val + length, 0);
+                }
+
+                return Math.min(val, length);
+            }
+
+            ArrayBuffer.prototype.slice = function (from, to) {
+                var length = this.byteLength,
+                    begin = clamp(from, length),
+                    end = length,
+                    num,
+                    target,
+                    targetArray,
+                    sourceArray;
+
+                if (to !== undefined) {
+                    end = clamp(to, length);
+                }
+
+                if (begin > end) {
+                    return new ArrayBuffer(0);
+                }
+
+                num = end - begin;
+                target = new ArrayBuffer(num);
+                targetArray = new Uint8Array(target);
+
+                sourceArray = new Uint8Array(this, begin, num);
+                targetArray.set(sourceArray);
+
+                return target;
+            };
+        })();
+    }
+
+    // ---------------------------------------------------
+
+    /**
+     * Helpers.
+     */
+
+    function toUtf8(str) {
+        if (/[\u0080-\uFFFF]/.test(str)) {
+            str = unescape(encodeURIComponent(str));
+        }
+
+        return str;
+    }
+
+    function utf8Str2ArrayBuffer(str, returnUInt8Array) {
+        var length = str.length,
+           buff = new ArrayBuffer(length),
+           arr = new Uint8Array(buff),
+           i;
+
+        for (i = 0; i < length; i += 1) {
+            arr[i] = str.charCodeAt(i);
+        }
+
+        return returnUInt8Array ? arr : buff;
+    }
+
+    function arrayBuffer2Utf8Str(buff) {
+        return String.fromCharCode.apply(null, new Uint8Array(buff));
+    }
+
+    function concatenateArrayBuffers(first, second, returnUInt8Array) {
+        var result = new Uint8Array(first.byteLength + second.byteLength);
+
+        result.set(new Uint8Array(first));
+        result.set(new Uint8Array(second), first.byteLength);
+
+        return returnUInt8Array ? result : result.buffer;
+    }
+
+    function hexToBinaryString(hex) {
+        var bytes = [],
+            length = hex.length,
+            x;
+
+        for (x = 0; x < length - 1; x += 2) {
+            bytes.push(parseInt(hex.substr(x, 2), 16));
+        }
+
+        return String.fromCharCode.apply(String, bytes);
+    }
+
+    // ---------------------------------------------------
+
+    /**
+     * SparkMD5 OOP implementation.
+     *
+     * Use this class to perform an incremental md5, otherwise use the
+     * static methods instead.
+     */
+
+    function SparkMD5() {
+        // call reset to init the instance
+        this.reset();
+    }
 
     /**
      * Appends a string.
@@ -32388,13 +33830,9 @@ module.exports = PouchPromise;
      * @return {SparkMD5} The instance itself
      */
     SparkMD5.prototype.append = function (str) {
-        // converts the string to utf8 bytes if necessary
-        if (/[\u0080-\uFFFF]/.test(str)) {
-            str = unescape(encodeURIComponent(str));
-        }
-
-        // then append as binary
-        this.appendBinary(str);
+        // Converts the string to utf8 bytes if necessary
+        // Then append as binary
+        this.appendBinary(toUtf8(str));
 
         return this;
     };
@@ -32414,10 +33852,10 @@ module.exports = PouchPromise;
             i;
 
         for (i = 64; i <= length; i += 64) {
-            md5cycle(this._state, md5blk(this._buff.substring(i - 64, i)));
+            md5cycle(this._hash, md5blk(this._buff.substring(i - 64, i)));
         }
 
-        this._buff = this._buff.substr(i - 64);
+        this._buff = this._buff.substring(i - 64);
 
         return this;
     };
@@ -32425,11 +33863,10 @@ module.exports = PouchPromise;
     /**
      * Finishes the incremental computation, reseting the internal state and
      * returning the result.
-     * Use the raw parameter to obtain the raw result instead of the hex one.
      *
-     * @param {Boolean} raw True to get the raw result, false to get the hex result
+     * @param {Boolean} raw True to get the raw string, false to get the hex string
      *
-     * @return {String|Array} The result
+     * @return {String} The result
      */
     SparkMD5.prototype.end = function (raw) {
         var buff = this._buff,
@@ -32443,11 +33880,66 @@ module.exports = PouchPromise;
         }
 
         this._finish(tail, length);
-        ret = !!raw ? this._state : hex(this._state);
+        ret = hex(this._hash);
+
+        if (raw) {
+            ret = hexToBinaryString(ret);
+        }
 
         this.reset();
 
         return ret;
+    };
+
+    /**
+     * Resets the internal state of the computation.
+     *
+     * @return {SparkMD5} The instance itself
+     */
+    SparkMD5.prototype.reset = function () {
+        this._buff = '';
+        this._length = 0;
+        this._hash = [1732584193, -271733879, -1732584194, 271733878];
+
+        return this;
+    };
+
+    /**
+     * Gets the internal state of the computation.
+     *
+     * @return {Object} The state
+     */
+    SparkMD5.prototype.getState = function () {
+        return {
+            buff: this._buff,
+            length: this._length,
+            hash: this._hash
+        };
+    };
+
+    /**
+     * Gets the internal state of the computation.
+     *
+     * @param {Object} state The state
+     *
+     * @return {SparkMD5} The instance itself
+     */
+    SparkMD5.prototype.setState = function (state) {
+        this._buff = state.buff;
+        this._length = state.length;
+        this._hash = state.hash;
+
+        return this;
+    };
+
+    /**
+     * Releases memory used by the incremental buffer and other additional
+     * resources. If you plan to use the instance again, use reset instead.
+     */
+    SparkMD5.prototype.destroy = function () {
+        delete this._hash;
+        delete this._buff;
+        delete this._length;
     };
 
     /**
@@ -32464,7 +33956,7 @@ module.exports = PouchPromise;
 
         tail[i >> 2] |= 0x80 << ((i % 4) << 3);
         if (i > 55) {
-            md5cycle(this._state, tail);
+            md5cycle(this._hash, tail);
             for (i = 0; i < 16; i += 1) {
                 tail[i] = 0;
             }
@@ -32479,66 +33971,40 @@ module.exports = PouchPromise;
 
         tail[14] = lo;
         tail[15] = hi;
-        md5cycle(this._state, tail);
+        md5cycle(this._hash, tail);
     };
-
-    /**
-     * Resets the internal state of the computation.
-     *
-     * @return {SparkMD5} The instance itself
-     */
-    SparkMD5.prototype.reset = function () {
-        this._buff = "";
-        this._length = 0;
-        this._state = [1732584193, -271733879, -1732584194, 271733878];
-
-        return this;
-    };
-
-    /**
-     * Releases memory used by the incremental buffer and other aditional
-     * resources. If you plan to use the instance again, use reset instead.
-     */
-    SparkMD5.prototype.destroy = function () {
-        delete this._state;
-        delete this._buff;
-        delete this._length;
-    };
-
 
     /**
      * Performs the md5 hash on a string.
      * A conversion will be applied if utf8 string is detected.
      *
      * @param {String}  str The string
-     * @param {Boolean} raw True to get the raw result, false to get the hex result
+     * @param {Boolean} raw True to get the raw string, false to get the hex string
      *
-     * @return {String|Array} The result
+     * @return {String} The result
      */
     SparkMD5.hash = function (str, raw) {
-        // converts the string to utf8 bytes if necessary
-        if (/[\u0080-\uFFFF]/.test(str)) {
-            str = unescape(encodeURIComponent(str));
-        }
-
-        var hash = md51(str);
-
-        return !!raw ? hash : hex(hash);
+        // Converts the string to utf8 bytes if necessary
+        // Then compute it using the binary function
+        return SparkMD5.hashBinary(toUtf8(str), raw);
     };
 
     /**
      * Performs the md5 hash on a binary string.
      *
      * @param {String}  content The binary string
-     * @param {Boolean} raw     True to get the raw result, false to get the hex result
+     * @param {Boolean} raw     True to get the raw string, false to get the hex string
      *
-     * @return {String|Array} The result
+     * @return {String} The result
      */
     SparkMD5.hashBinary = function (content, raw) {
-        var hash = md51(content);
+        var hash = md51(content),
+            ret = hex(hash);
 
-        return !!raw ? hash : hex(hash);
+        return raw ? hexToBinaryString(ret) : ret;
     };
+
+    // ---------------------------------------------------
 
     /**
      * SparkMD5 OOP implementation for array buffers.
@@ -32550,8 +34016,6 @@ module.exports = PouchPromise;
         this.reset();
     };
 
-    ////////////////////////////////////////////////////////////////////////////
-
     /**
      * Appends an array buffer.
      *
@@ -32560,20 +34024,17 @@ module.exports = PouchPromise;
      * @return {SparkMD5.ArrayBuffer} The instance itself
      */
     SparkMD5.ArrayBuffer.prototype.append = function (arr) {
-        // TODO: we could avoid the concatenation here but the algorithm would be more complex
-        //       if you find yourself needing extra performance, please make a PR.
-        var buff = this._concatArrayBuffer(this._buff, arr),
+        var buff = concatenateArrayBuffers(this._buff.buffer, arr, true),
             length = buff.length,
             i;
 
         this._length += arr.byteLength;
 
         for (i = 64; i <= length; i += 64) {
-            md5cycle(this._state, md5blk_array(buff.subarray(i - 64, i)));
+            md5cycle(this._hash, md5blk_array(buff.subarray(i - 64, i)));
         }
 
-        // Avoids IE10 weirdness (documented above)
-        this._buff = (i - 64) < length ? buff.subarray(i - 64) : new Uint8Array(0);
+        this._buff = (i - 64) < length ? new Uint8Array(buff.buffer.slice(i - 64)) : new Uint8Array(0);
 
         return this;
     };
@@ -32581,11 +34042,10 @@ module.exports = PouchPromise;
     /**
      * Finishes the incremental computation, reseting the internal state and
      * returning the result.
-     * Use the raw parameter to obtain the raw result instead of the hex one.
      *
-     * @param {Boolean} raw True to get the raw result, false to get the hex result
+     * @param {Boolean} raw True to get the raw string, false to get the hex string
      *
-     * @return {String|Array} The result
+     * @return {String} The result
      */
     SparkMD5.ArrayBuffer.prototype.end = function (raw) {
         var buff = this._buff,
@@ -32599,14 +34059,16 @@ module.exports = PouchPromise;
         }
 
         this._finish(tail, length);
-        ret = !!raw ? this._state : hex(this._state);
+        ret = hex(this._hash);
+
+        if (raw) {
+            ret = hexToBinaryString(ret);
+        }
 
         this.reset();
 
         return ret;
     };
-
-    SparkMD5.ArrayBuffer.prototype._finish = SparkMD5.prototype._finish;
 
     /**
      * Resets the internal state of the computation.
@@ -32616,53 +34078,62 @@ module.exports = PouchPromise;
     SparkMD5.ArrayBuffer.prototype.reset = function () {
         this._buff = new Uint8Array(0);
         this._length = 0;
-        this._state = [1732584193, -271733879, -1732584194, 271733878];
+        this._hash = [1732584193, -271733879, -1732584194, 271733878];
 
         return this;
     };
 
     /**
-     * Releases memory used by the incremental buffer and other aditional
-     * resources. If you plan to use the instance again, use reset instead.
+     * Gets the internal state of the computation.
+     *
+     * @return {Object} The state
      */
-    SparkMD5.ArrayBuffer.prototype.destroy = SparkMD5.prototype.destroy;
+    SparkMD5.ArrayBuffer.prototype.getState = function () {
+        var state = SparkMD5.prototype.getState.call(this);
+
+        // Convert buffer to a string
+        state.buff = arrayBuffer2Utf8Str(state.buff);
+
+        return state;
+    };
 
     /**
-     * Concats two array buffers, returning a new one.
+     * Gets the internal state of the computation.
      *
-     * @param  {ArrayBuffer} first  The first array buffer
-     * @param  {ArrayBuffer} second The second array buffer
+     * @param {Object} state The state
      *
-     * @return {ArrayBuffer} The new array buffer
+     * @return {SparkMD5.ArrayBuffer} The instance itself
      */
-    SparkMD5.ArrayBuffer.prototype._concatArrayBuffer = function (first, second) {
-        var firstLength = first.length,
-            result = new Uint8Array(firstLength + second.byteLength);
+    SparkMD5.ArrayBuffer.prototype.setState = function (state) {
+        // Convert string to buffer
+        state.buff = utf8Str2ArrayBuffer(state.buff, true);
 
-        result.set(first);
-        result.set(new Uint8Array(second), firstLength);
-
-        return result;
+        return SparkMD5.prototype.setState.call(this, state);
     };
+
+    SparkMD5.ArrayBuffer.prototype.destroy = SparkMD5.prototype.destroy;
+
+    SparkMD5.ArrayBuffer.prototype._finish = SparkMD5.prototype._finish;
 
     /**
      * Performs the md5 hash on an array buffer.
      *
      * @param {ArrayBuffer} arr The array buffer
-     * @param {Boolean}     raw True to get the raw result, false to get the hex result
+     * @param {Boolean}     raw True to get the raw string, false to get the hex one
      *
-     * @return {String|Array} The result
+     * @return {String} The result
      */
     SparkMD5.ArrayBuffer.hash = function (arr, raw) {
-        var hash = md51_array(new Uint8Array(arr));
+        var hash = md51_array(new Uint8Array(arr)),
+            ret = hex(hash);
 
-        return !!raw ? hash : hex(hash);
+        return raw ? hexToBinaryString(ret) : ret;
     };
 
     return SparkMD5;
 }));
 
-},{}],478:[function(require,module,exports){
+},{}],483:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -32711,9 +34182,9 @@ function generateReplicationId(src, target, opts) {
 
 module.exports = generateReplicationId;
 
-},{"pouchdb-collate":479,"pouchdb-md5":481,"pouchdb-promise":483}],479:[function(require,module,exports){
+},{"pouchdb-collate":484,"pouchdb-md5":486,"pouchdb-promise":488}],484:[function(require,module,exports){
 arguments[4][448][0].apply(exports,arguments)
-},{"dup":448}],480:[function(require,module,exports){
+},{"dup":448}],485:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -32746,7 +34217,7 @@ function safeJsonStringify(json) {
 exports.safeJsonParse = safeJsonParse;
 exports.safeJsonStringify = safeJsonStringify;
 
-},{"vuvuzela":591}],481:[function(require,module,exports){
+},{"vuvuzela":597}],486:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -32833,487 +34304,17 @@ exports.binaryMd5 = binaryMd5;
 exports.stringMd5 = stringMd5;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"pouchdb-binary-utils":446,"spark-md5":585}],482:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-// We fetch all leafs of the revision tree, and sort them based on tree length
-// and whether they were deleted, undeleted documents with the longest revision
-// tree (most edits) win
-// The final sort algorithm is slightly documented in a sidebar here:
-// http://guide.couchdb.org/draft/conflicts.html
-function winningRev(metadata) {
-  var winningId;
-  var winningPos;
-  var winningDeleted;
-  var toVisit = metadata.rev_tree.slice();
-  var node;
-  while ((node = toVisit.pop())) {
-    var tree = node.ids;
-    var branches = tree[2];
-    var pos = node.pos;
-    if (branches.length) { // non-leaf
-      for (var i = 0, len = branches.length; i < len; i++) {
-        toVisit.push({pos: pos + 1, ids: branches[i]});
-      }
-      continue;
-    }
-    var deleted = !!tree[1].deleted;
-    var id = tree[0];
-    // sort by deleted, then pos, then id
-    if (!winningId || (winningDeleted !== deleted ? winningDeleted :
-        winningPos !== pos ? winningPos < pos : winningId < id)) {
-      winningId = id;
-      winningPos = pos;
-      winningDeleted = deleted;
-    }
-  }
-
-  return winningPos + '-' + winningId;
-}
-
-// Pretty much all below can be combined into a higher order function to
-// traverse revisions
-// The return value from the callback will be passed as context to all
-// children of that node
-function traverseRevTree(revs, callback) {
-  var toVisit = revs.slice();
-
-  var node;
-  while ((node = toVisit.pop())) {
-    var pos = node.pos;
-    var tree = node.ids;
-    var branches = tree[2];
-    var newCtx =
-      callback(branches.length === 0, pos, tree[0], node.ctx, tree[1]);
-    for (var i = 0, len = branches.length; i < len; i++) {
-      toVisit.push({pos: pos + 1, ids: branches[i], ctx: newCtx});
-    }
-  }
-}
-
-function sortByPos(a, b) {
-  return a.pos - b.pos;
-}
-
-function collectLeaves(revs) {
-  var leaves = [];
-  traverseRevTree(revs, function (isLeaf, pos, id, acc, opts) {
-    if (isLeaf) {
-      leaves.push({rev: pos + "-" + id, pos: pos, opts: opts});
-    }
-  });
-  leaves.sort(sortByPos).reverse();
-  for (var i = 0, len = leaves.length; i < len; i++) {
-    delete leaves[i].pos;
-  }
-  return leaves;
-}
-
-// returns revs of all conflicts that is leaves such that
-// 1. are not deleted and
-// 2. are different than winning revision
-function collectConflicts(metadata) {
-  var win = winningRev(metadata);
-  var leaves = collectLeaves(metadata.rev_tree);
-  var conflicts = [];
-  for (var i = 0, len = leaves.length; i < len; i++) {
-    var leaf = leaves[i];
-    if (leaf.rev !== win && !leaf.opts.deleted) {
-      conflicts.push(leaf.rev);
-    }
-  }
-  return conflicts;
-}
-
-// compact a tree by marking its non-leafs as missing,
-// and return a list of revs to delete
-function compactTree(metadata) {
-  var revs = [];
-  traverseRevTree(metadata.rev_tree, function (isLeaf, pos,
-                                               revHash, ctx, opts) {
-    if (opts.status === 'available' && !isLeaf) {
-      revs.push(pos + '-' + revHash);
-      opts.status = 'missing';
-    }
-  });
-  return revs;
-}
-
-// build up a list of all the paths to the leafs in this revision tree
-function rootToLeaf(revs) {
-  var paths = [];
-  var toVisit = revs.slice();
-  var node;
-  while ((node = toVisit.pop())) {
-    var pos = node.pos;
-    var tree = node.ids;
-    var id = tree[0];
-    var opts = tree[1];
-    var branches = tree[2];
-    var isLeaf = branches.length === 0;
-
-    var history = node.history ? node.history.slice() : [];
-    history.push({id: id, opts: opts});
-    if (isLeaf) {
-      paths.push({pos: (pos + 1 - history.length), ids: history});
-    }
-    for (var i = 0, len = branches.length; i < len; i++) {
-      toVisit.push({pos: pos + 1, ids: branches[i], history: history});
-    }
-  }
-  return paths.reverse();
-}
-
-// for a better overview of what this is doing, read:
-// https://github.com/apache/couchdb-couch/blob/master/src/couch_key_tree.erl
-//
-// But for a quick intro, CouchDB uses a revision tree to store a documents
-// history, A -> B -> C, when a document has conflicts, that is a branch in the
-// tree, A -> (B1 | B2 -> C), We store these as a nested array in the format
-//
-// KeyTree = [Path ... ]
-// Path = {pos: position_from_root, ids: Tree}
-// Tree = [Key, Opts, [Tree, ...]], in particular single node: [Key, []]
-
-function sortByPos$1(a, b) {
-  return a.pos - b.pos;
-}
-
-// classic binary search
-function binarySearch(arr, item, comparator) {
-  var low = 0;
-  var high = arr.length;
-  var mid;
-  while (low < high) {
-    mid = (low + high) >>> 1;
-    if (comparator(arr[mid], item) < 0) {
-      low = mid + 1;
-    } else {
-      high = mid;
-    }
-  }
-  return low;
-}
-
-// assuming the arr is sorted, insert the item in the proper place
-function insertSorted(arr, item, comparator) {
-  var idx = binarySearch(arr, item, comparator);
-  arr.splice(idx, 0, item);
-}
-
-// Turn a path as a flat array into a tree with a single branch.
-// If any should be stemmed from the beginning of the array, that's passed
-// in as the second argument
-function pathToTree(path, numStemmed) {
-  var root;
-  var leaf;
-  for (var i = numStemmed, len = path.length; i < len; i++) {
-    var node = path[i];
-    var currentLeaf = [node.id, node.opts, []];
-    if (leaf) {
-      leaf[2].push(currentLeaf);
-      leaf = currentLeaf;
-    } else {
-      root = leaf = currentLeaf;
-    }
-  }
-  return root;
-}
-
-// compare the IDs of two trees
-function compareTree(a, b) {
-  return a[0] < b[0] ? -1 : 1;
-}
-
-// Merge two trees together
-// The roots of tree1 and tree2 must be the same revision
-function mergeTree(in_tree1, in_tree2) {
-  var queue = [{tree1: in_tree1, tree2: in_tree2}];
-  var conflicts = false;
-  while (queue.length > 0) {
-    var item = queue.pop();
-    var tree1 = item.tree1;
-    var tree2 = item.tree2;
-
-    if (tree1[1].status || tree2[1].status) {
-      tree1[1].status =
-        (tree1[1].status ===  'available' ||
-        tree2[1].status === 'available') ? 'available' : 'missing';
-    }
-
-    for (var i = 0; i < tree2[2].length; i++) {
-      if (!tree1[2][0]) {
-        conflicts = 'new_leaf';
-        tree1[2][0] = tree2[2][i];
-        continue;
-      }
-
-      var merged = false;
-      for (var j = 0; j < tree1[2].length; j++) {
-        if (tree1[2][j][0] === tree2[2][i][0]) {
-          queue.push({tree1: tree1[2][j], tree2: tree2[2][i]});
-          merged = true;
-        }
-      }
-      if (!merged) {
-        conflicts = 'new_branch';
-        insertSorted(tree1[2], tree2[2][i], compareTree);
-      }
-    }
-  }
-  return {conflicts: conflicts, tree: in_tree1};
-}
-
-function doMerge(tree, path, dontExpand) {
-  var restree = [];
-  var conflicts = false;
-  var merged = false;
-  var res;
-
-  if (!tree.length) {
-    return {tree: [path], conflicts: 'new_leaf'};
-  }
-
-  for (var i = 0, len = tree.length; i < len; i++) {
-    var branch = tree[i];
-    if (branch.pos === path.pos && branch.ids[0] === path.ids[0]) {
-      // Paths start at the same position and have the same root, so they need
-      // merged
-      res = mergeTree(branch.ids, path.ids);
-      restree.push({pos: branch.pos, ids: res.tree});
-      conflicts = conflicts || res.conflicts;
-      merged = true;
-    } else if (dontExpand !== true) {
-      // The paths start at a different position, take the earliest path and
-      // traverse up until it as at the same point from root as the path we
-      // want to merge.  If the keys match we return the longer path with the
-      // other merged After stemming we dont want to expand the trees
-
-      var t1 = branch.pos < path.pos ? branch : path;
-      var t2 = branch.pos < path.pos ? path : branch;
-      var diff = t2.pos - t1.pos;
-
-      var candidateParents = [];
-
-      var trees = [];
-      trees.push({ids: t1.ids, diff: diff, parent: null, parentIdx: null});
-      while (trees.length > 0) {
-        var item = trees.pop();
-        if (item.diff === 0) {
-          if (item.ids[0] === t2.ids[0]) {
-            candidateParents.push(item);
-          }
-          continue;
-        }
-        var elements = item.ids[2];
-        for (var j = 0, elementsLen = elements.length; j < elementsLen; j++) {
-          trees.push({
-            ids: elements[j],
-            diff: item.diff - 1,
-            parent: item.ids,
-            parentIdx: j
-          });
-        }
-      }
-
-      var el = candidateParents[0];
-
-      if (!el) {
-        restree.push(branch);
-      } else {
-        res = mergeTree(el.ids, t2.ids);
-        el.parent[2][el.parentIdx] = res.tree;
-        restree.push({pos: t1.pos, ids: t1.ids});
-        conflicts = conflicts || res.conflicts;
-        merged = true;
-      }
-    } else {
-      restree.push(branch);
-    }
-  }
-
-  // We didnt find
-  if (!merged) {
-    restree.push(path);
-  }
-
-  restree.sort(sortByPos$1);
-
-  return {
-    tree: restree,
-    conflicts: conflicts || 'internal_node'
-  };
-}
-
-// To ensure we dont grow the revision tree infinitely, we stem old revisions
-function stem(tree, depth) {
-  // First we break out the tree into a complete list of root to leaf paths
-  var paths = rootToLeaf(tree);
-  var maybeStem = {};
-
-  var result;
-  for (var i = 0, len = paths.length; i < len; i++) {
-    // Then for each path, we cut off the start of the path based on the
-    // `depth` to stem to, and generate a new set of flat trees
-    var path = paths[i];
-    var stemmed = path.ids;
-    var numStemmed = Math.max(0, stemmed.length - depth);
-    var stemmedNode = {
-      pos: path.pos + numStemmed,
-      ids: pathToTree(stemmed, numStemmed)
-    };
-
-    for (var s = 0; s < numStemmed; s++) {
-      var rev = (path.pos + s) + '-' + stemmed[s].id;
-      maybeStem[rev] = true;
-    }
-
-    // Then we remerge all those flat trees together, ensuring that we dont
-    // connect trees that would go beyond the depth limit
-    if (result) {
-      result = doMerge(result, stemmedNode, true).tree;
-    } else {
-      result = [stemmedNode];
-    }
-  }
-
-  traverseRevTree(result, function (isLeaf, pos, revHash) {
-    // some revisions may have been removed in a branch but not in another
-    delete maybeStem[pos + '-' + revHash];
-  });
-
-  return {
-    tree: result,
-    revs: Object.keys(maybeStem)
-  };
-}
-
-function merge(tree, path, depth) {
-  var newTree = doMerge(tree, path);
-  var stemmed = stem(newTree.tree, depth);
-  return {
-    tree: stemmed.tree,
-    stemmedRevs: stemmed.revs,
-    conflicts: newTree.conflicts
-  };
-}
-
-// return true if a rev exists in the rev tree, false otherwise
-function revExists(revs, rev) {
-  var toVisit = revs.slice();
-  var splitRev = rev.split('-');
-  var targetPos = parseInt(splitRev[0], 10);
-  var targetId = splitRev[1];
-
-  var node;
-  while ((node = toVisit.pop())) {
-    if (node.pos === targetPos && node.ids[0] === targetId) {
-      return true;
-    }
-    var branches = node.ids[2];
-    for (var i = 0, len = branches.length; i < len; i++) {
-      toVisit.push({pos: node.pos + 1, ids: branches[i]});
-    }
-  }
-  return false;
-}
-
-function getTrees(node) {
-  return node.ids;
-}
-
-// check if a specific revision of a doc has been deleted
-//  - metadata: the metadata object from the doc store
-//  - rev: (optional) the revision to check. defaults to winning revision
-function isDeleted(metadata, rev) {
-  if (!rev) {
-    rev = winningRev(metadata);
-  }
-  var id = rev.substring(rev.indexOf('-') + 1);
-  var toVisit = metadata.rev_tree.map(getTrees);
-
-  var tree;
-  while ((tree = toVisit.pop())) {
-    if (tree[0] === id) {
-      return !!tree[1].deleted;
-    }
-    toVisit = toVisit.concat(tree[2]);
-  }
-}
-
-function isLocalId(id) {
-  return (/^_local/).test(id);
-}
-
-// returns the current leaf node for a given revision
-function latest(rev, metadata) {
-  var toVisit = metadata.rev_tree.slice();
-  var node;
-  while ((node = toVisit.pop())) {
-    var pos = node.pos;
-    var tree = node.ids;
-    var id = tree[0];
-    var opts = tree[1];
-    var branches = tree[2];
-    var isLeaf = branches.length === 0;
-
-    var history = node.history ? node.history.slice() : [];
-    history.push({id: id, pos: pos, opts: opts});
-
-    if (isLeaf) {
-      for (var i = 0, len = history.length; i < len; i++) {
-        var historyNode = history[i];
-        var historyRev = historyNode.pos + '-' + historyNode.id;
-
-        if (historyRev === rev) {
-          // return the rev of this leaf
-          return pos + '-' + id;
-        }
-      }
-    }
-
-    for (var j = 0, l = branches.length; j < l; j++) {
-      toVisit.push({pos: pos + 1, ids: branches[j], history: history});
-    }
-  }
-
-  /* istanbul ignore next */
-  throw new Error('Unable to resolve latest revision for id ' + metadata.id + ', rev ' + rev);
-}
-
-exports.collectConflicts = collectConflicts;
-exports.collectLeaves = collectLeaves;
-exports.compactTree = compactTree;
-exports.isDeleted = isDeleted;
-exports.isLocalId = isLocalId;
-exports.merge = merge;
-exports.revExists = revExists;
-exports.rootToLeaf = rootToLeaf;
-exports.traverseRevTree = traverseRevTree;
-exports.winningRev = winningRev;
-exports.latest = latest;
-
-},{}],483:[function(require,module,exports){
+},{"pouchdb-binary-utils":446,"spark-md5":591}],487:[function(require,module,exports){
+arguments[4][457][0].apply(exports,arguments)
+},{"dup":457}],488:[function(require,module,exports){
+arguments[4][458][0].apply(exports,arguments)
+},{"dup":458,"lie":437}],489:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var lie = _interopDefault(require('lie'));
-
-/* istanbul ignore next */
-var PouchPromise = typeof Promise === 'function' ? Promise : lie;
-
-module.exports = PouchPromise;
-
-},{"lie":437}],484:[function(require,module,exports){
-'use strict';
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var pouchdbUtils = require('pouchdb-utils');
 var Promise = _interopDefault(require('pouchdb-promise'));
+var pouchdbUtils = require('pouchdb-utils');
 var Checkpointer = _interopDefault(require('pouchdb-checkpointer'));
 var generateReplicationId = _interopDefault(require('pouchdb-generate-replication-id'));
 var events = require('events');
@@ -34301,7 +35302,7 @@ function replication(PouchDB) {
 
 module.exports = replication;
 
-},{"events":426,"inherits":429,"pouchdb-checkpointer":447,"pouchdb-errors":455,"pouchdb-generate-replication-id":478,"pouchdb-promise":483,"pouchdb-utils":488}],485:[function(require,module,exports){
+},{"events":426,"inherits":429,"pouchdb-checkpointer":447,"pouchdb-errors":460,"pouchdb-generate-replication-id":483,"pouchdb-promise":488,"pouchdb-utils":493}],490:[function(require,module,exports){
 'use strict';
 
 var PouchPromise = require('pouchdb-promise');
@@ -34396,887 +35397,17 @@ if (typeof window !== 'undefined' && window.PouchDB) {
   window.PouchDB.plugin(exports);
 }
 
-},{"pouchdb-promise":487}],486:[function(require,module,exports){
+},{"pouchdb-promise":492}],491:[function(require,module,exports){
 arguments[4][437][0].apply(exports,arguments)
-},{"dup":437,"immediate":428}],487:[function(require,module,exports){
-arguments[4][476][0].apply(exports,arguments)
-},{"dup":476,"lie":486}],488:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var Promise = _interopDefault(require('pouchdb-promise'));
-var getArguments = _interopDefault(require('argsarray'));
-var debug = _interopDefault(require('debug'));
-var pouchdbCollections = require('pouchdb-collections');
-var events = require('events');
-var inherits = _interopDefault(require('inherits'));
-var pouchdbUtils = require('pouchdb-utils');
-var pouchdbErrors = require('pouchdb-errors');
-var immediate = _interopDefault(require('immediate'));
-
-function isBinaryObject(object) {
-  return (typeof ArrayBuffer !== 'undefined' && object instanceof ArrayBuffer) ||
-    (typeof Blob !== 'undefined' && object instanceof Blob);
-}
-
-function cloneArrayBuffer(buff) {
-  if (typeof buff.slice === 'function') {
-    return buff.slice(0);
-  }
-  // IE10-11 slice() polyfill
-  var target = new ArrayBuffer(buff.byteLength);
-  var targetArray = new Uint8Array(target);
-  var sourceArray = new Uint8Array(buff);
-  targetArray.set(sourceArray);
-  return target;
-}
-
-function cloneBinaryObject(object) {
-  if (object instanceof ArrayBuffer) {
-    return cloneArrayBuffer(object);
-  }
-  var size = object.size;
-  var type = object.type;
-  // Blob
-  if (typeof object.slice === 'function') {
-    return object.slice(0, size, type);
-  }
-  // PhantomJS slice() replacement
-  return object.webkitSlice(0, size, type);
-}
-
-// most of this is borrowed from lodash.isPlainObject:
-// https://github.com/fis-components/lodash.isplainobject/
-// blob/29c358140a74f252aeb08c9eb28bef86f2217d4a/index.js
-
-var funcToString = Function.prototype.toString;
-var objectCtorString = funcToString.call(Object);
-
-function isPlainObject(value) {
-  var proto = Object.getPrototypeOf(value);
-  /* istanbul ignore if */
-  if (proto === null) { // not sure when this happens, but I guess it can
-    return true;
-  }
-  var Ctor = proto.constructor;
-  return (typeof Ctor == 'function' &&
-    Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
-}
-
-function clone(object) {
-  var newObject;
-  var i;
-  var len;
-
-  if (!object || typeof object !== 'object') {
-    return object;
-  }
-
-  if (Array.isArray(object)) {
-    newObject = [];
-    for (i = 0, len = object.length; i < len; i++) {
-      newObject[i] = clone(object[i]);
-    }
-    return newObject;
-  }
-
-  // special case: to avoid inconsistencies between IndexedDB
-  // and other backends, we automatically stringify Dates
-  if (object instanceof Date) {
-    return object.toISOString();
-  }
-
-  if (isBinaryObject(object)) {
-    return cloneBinaryObject(object);
-  }
-
-  if (!isPlainObject(object)) {
-    return object; // don't clone objects like Workers
-  }
-
-  newObject = {};
-  for (i in object) {
-    /* istanbul ignore else */
-    if (Object.prototype.hasOwnProperty.call(object, i)) {
-      var value = clone(object[i]);
-      if (typeof value !== 'undefined') {
-        newObject[i] = value;
-      }
-    }
-  }
-  return newObject;
-}
-
-function once(fun) {
-  var called = false;
-  return getArguments(function (args) {
-    /* istanbul ignore if */
-    if (called) {
-      // this is a smoke test and should never actually happen
-      throw new Error('once called more than once');
-    } else {
-      called = true;
-      fun.apply(this, args);
-    }
-  });
-}
-
-function toPromise(func) {
-  //create the function we will be returning
-  return getArguments(function (args) {
-    // Clone arguments
-    args = clone(args);
-    var self = this;
-    // if the last argument is a function, assume its a callback
-    var usedCB = (typeof args[args.length - 1] === 'function') ? args.pop() : false;
-    var promise = new Promise(function (fulfill, reject) {
-      var resp;
-      try {
-        var callback = once(function (err, mesg) {
-          if (err) {
-            reject(err);
-          } else {
-            fulfill(mesg);
-          }
-        });
-        // create a callback for this invocation
-        // apply the function in the orig context
-        args.push(callback);
-        resp = func.apply(self, args);
-        if (resp && typeof resp.then === 'function') {
-          fulfill(resp);
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-    // if there is a callback, call it back
-    if (usedCB) {
-      promise.then(function (result) {
-        usedCB(null, result);
-      }, usedCB);
-    }
-    return promise;
-  });
-}
-
-var log = debug('pouchdb:api');
-
-function adapterFun(name, callback) {
-  function logApiCall(self, name, args) {
-    /* istanbul ignore if */
-    if (log.enabled) {
-      var logArgs = [self.name, name];
-      for (var i = 0; i < args.length - 1; i++) {
-        logArgs.push(args[i]);
-      }
-      log.apply(null, logArgs);
-
-      // override the callback itself to log the response
-      var origCallback = args[args.length - 1];
-      args[args.length - 1] = function (err, res) {
-        var responseArgs = [self.name, name];
-        responseArgs = responseArgs.concat(
-          err ? ['error', err] : ['success', res]
-        );
-        log.apply(null, responseArgs);
-        origCallback(err, res);
-      };
-    }
-  }
-
-  return toPromise(getArguments(function (args) {
-    if (this._closed) {
-      return Promise.reject(new Error('database is closed'));
-    }
-    if (this._destroyed) {
-      return Promise.reject(new Error('database is destroyed'));
-    }
-    var self = this;
-    logApiCall(self, name, args);
-    if (!this.taskqueue.isReady) {
-      return new Promise(function (fulfill, reject) {
-        self.taskqueue.addTask(function (failed) {
-          if (failed) {
-            reject(failed);
-          } else {
-            fulfill(self[name].apply(self, args));
-          }
-        });
-      });
-    }
-    return callback.apply(this, args);
-  }));
-}
-
-// like underscore/lodash _.pick()
-function pick(obj, arr) {
-  var res = {};
-  for (var i = 0, len = arr.length; i < len; i++) {
-    var prop = arr[i];
-    if (prop in obj) {
-      res[prop] = obj[prop];
-    }
-  }
-  return res;
-}
-
-// Most browsers throttle concurrent requests at 6, so it's silly
-// to shim _bulk_get by trying to launch potentially hundreds of requests
-// and then letting the majority time out. We can handle this ourselves.
-var MAX_NUM_CONCURRENT_REQUESTS = 6;
-
-function identityFunction(x) {
-  return x;
-}
-
-function formatResultForOpenRevsGet(result) {
-  return [{
-    ok: result
-  }];
-}
-
-// shim for P/CouchDB adapters that don't directly implement _bulk_get
-function bulkGet(db, opts, callback) {
-  var requests = opts.docs;
-
-  // consolidate into one request per doc if possible
-  var requestsById = new pouchdbCollections.Map();
-  requests.forEach(function (request) {
-    if (requestsById.has(request.id)) {
-      requestsById.get(request.id).push(request);
-    } else {
-      requestsById.set(request.id, [request]);
-    }
-  });
-
-  var numDocs = requestsById.size;
-  var numDone = 0;
-  var perDocResults = new Array(numDocs);
-
-  function collapseResultsAndFinish() {
-    var results = [];
-    perDocResults.forEach(function (res) {
-      res.docs.forEach(function (info) {
-        results.push({
-          id: res.id,
-          docs: [info]
-        });
-      });
-    });
-    callback(null, {results: results});
-  }
-
-  function checkDone() {
-    if (++numDone === numDocs) {
-      collapseResultsAndFinish();
-    }
-  }
-
-  function gotResult(docIndex, id, docs) {
-    perDocResults[docIndex] = {id: id, docs: docs};
-    checkDone();
-  }
-
-  var allRequests = [];
-  requestsById.forEach(function (value, key) {
-    allRequests.push(key);
-  });
-
-  var i = 0;
-
-  function nextBatch() {
-
-    if (i >= allRequests.length) {
-      return;
-    }
-
-    var upTo = Math.min(i + MAX_NUM_CONCURRENT_REQUESTS, allRequests.length);
-    var batch = allRequests.slice(i, upTo);
-    processBatch(batch, i);
-    i += batch.length;
-  }
-
-  function processBatch(batch, offset) {
-    batch.forEach(function (docId, j) {
-      var docIdx = offset + j;
-      var docRequests = requestsById.get(docId);
-
-      // just use the first request as the "template"
-      // TODO: The _bulk_get API allows for more subtle use cases than this,
-      // but for now it is unlikely that there will be a mix of different
-      // "atts_since" or "attachments" in the same request, since it's just
-      // replicate.js that is using this for the moment.
-      // Also, atts_since is aspirational, since we don't support it yet.
-      var docOpts = pick(docRequests[0], ['atts_since', 'attachments']);
-      docOpts.open_revs = docRequests.map(function (request) {
-        // rev is optional, open_revs disallowed
-        return request.rev;
-      });
-
-      // remove falsey / undefined revisions
-      docOpts.open_revs = docOpts.open_revs.filter(identityFunction);
-
-      var formatResult = identityFunction;
-
-      if (docOpts.open_revs.length === 0) {
-        delete docOpts.open_revs;
-
-        // when fetching only the "winning" leaf,
-        // transform the result so it looks like an open_revs
-        // request
-        formatResult = formatResultForOpenRevsGet;
-      }
-
-      // globally-supplied options
-      ['revs', 'attachments', 'binary', 'ajax', 'latest'].forEach(function (param) {
-        if (param in opts) {
-          docOpts[param] = opts[param];
-        }
-      });
-      db.get(docId, docOpts, function (err, res) {
-        var result;
-        /* istanbul ignore if */
-        if (err) {
-          result = [{error: err}];
-        } else {
-          result = formatResult(res);
-        }
-        gotResult(docIdx, docId, result);
-        nextBatch();
-      });
-    });
-  }
-
-  nextBatch();
-
-}
-
-function isChromeApp() {
-  return (typeof chrome !== "undefined" &&
-    typeof chrome.storage !== "undefined" &&
-    typeof chrome.storage.local !== "undefined");
-}
-
-var hasLocal;
-
-if (isChromeApp()) {
-  hasLocal = false;
-} else {
-  try {
-    localStorage.setItem('_pouch_check_localstorage', 1);
-    hasLocal = !!localStorage.getItem('_pouch_check_localstorage');
-  } catch (e) {
-    hasLocal = false;
-  }
-}
-
-function hasLocalStorage() {
-  return hasLocal;
-}
-
-inherits(Changes, events.EventEmitter);
-
-/* istanbul ignore next */
-function attachBrowserEvents(self) {
-  if (isChromeApp()) {
-    chrome.storage.onChanged.addListener(function (e) {
-      // make sure it's event addressed to us
-      if (e.db_name != null) {
-        //object only has oldValue, newValue members
-        self.emit(e.dbName.newValue);
-      }
-    });
-  } else if (hasLocalStorage()) {
-    if (typeof addEventListener !== 'undefined') {
-      addEventListener("storage", function (e) {
-        self.emit(e.key);
-      });
-    } else { // old IE
-      window.attachEvent("storage", function (e) {
-        self.emit(e.key);
-      });
-    }
-  }
-}
-
-function Changes() {
-  events.EventEmitter.call(this);
-  this._listeners = {};
-
-  attachBrowserEvents(this);
-}
-Changes.prototype.addListener = function (dbName, id, db, opts) {
-  /* istanbul ignore if */
-  if (this._listeners[id]) {
-    return;
-  }
-  var self = this;
-  var inprogress = false;
-  function eventFunction() {
-    /* istanbul ignore if */
-    if (!self._listeners[id]) {
-      return;
-    }
-    if (inprogress) {
-      inprogress = 'waiting';
-      return;
-    }
-    inprogress = true;
-    var changesOpts = pick(opts, [
-      'style', 'include_docs', 'attachments', 'conflicts', 'filter',
-      'doc_ids', 'view', 'since', 'query_params', 'binary'
-    ]);
-
-    /* istanbul ignore next */
-    function onError() {
-      inprogress = false;
-    }
-
-    db.changes(changesOpts).on('change', function (c) {
-      if (c.seq > opts.since && !opts.cancelled) {
-        opts.since = c.seq;
-        opts.onChange(c);
-      }
-    }).on('complete', function () {
-      if (inprogress === 'waiting') {
-        pouchdbUtils.nextTick(eventFunction);
-      }
-      inprogress = false;
-    }).on('error', onError);
-  }
-  this._listeners[id] = eventFunction;
-  this.on(dbName, eventFunction);
-};
-
-Changes.prototype.removeListener = function (dbName, id) {
-  /* istanbul ignore if */
-  if (!(id in this._listeners)) {
-    return;
-  }
-  events.EventEmitter.prototype.removeListener.call(this, dbName,
-    this._listeners[id]);
-  delete this._listeners[id];
-};
-
-
-/* istanbul ignore next */
-Changes.prototype.notifyLocalWindows = function (dbName) {
-  //do a useless change on a storage thing
-  //in order to get other windows's listeners to activate
-  if (isChromeApp()) {
-    chrome.storage.local.set({dbName: dbName});
-  } else if (hasLocalStorage()) {
-    localStorage[dbName] = (localStorage[dbName] === "a") ? "b" : "a";
-  }
-};
-
-Changes.prototype.notify = function (dbName) {
-  this.emit(dbName);
-  this.notifyLocalWindows(dbName);
-};
-
-function guardedConsole(method) {
-  /* istanbul ignore else */
-  if (console !== 'undefined' && method in console) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    console[method].apply(console, args);
-  }
-}
-
-function randomNumber(min, max) {
-  var maxTimeout = 600000; // Hard-coded default of 10 minutes
-  min = parseInt(min, 10) || 0;
-  max = parseInt(max, 10);
-  if (max !== max || max <= min) {
-    max = (min || 1) << 1; //doubling
-  } else {
-    max = max + 1;
-  }
-  // In order to not exceed maxTimeout, pick a random value between half of maxTimeout and maxTimeout
-  if(max > maxTimeout) {
-    min = maxTimeout >> 1; // divide by two
-    max = maxTimeout;
-  }
-  var ratio = Math.random();
-  var range = max - min;
-
-  return ~~(range * ratio + min); // ~~ coerces to an int, but fast.
-}
-
-function defaultBackOff(min) {
-  var max = 0;
-  if (!min) {
-    max = 2000;
-  }
-  return randomNumber(min, max);
-}
-
-// designed to give info to browser users, who are disturbed
-// when they see http errors in the console
-function explainError(status, str) {
-  guardedConsole('info', 'The above ' + status + ' is totally normal. ' + str);
-}
-
-var assign;
-{
-  if (typeof Object.assign === 'function') {
-    assign = Object.assign;
-  } else {
-    // lite Object.assign polyfill based on
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-    assign = function (target) {
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource != null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    };
-  }
-}
-
-var assign$1 = assign;
-
-function tryFilter(filter, doc, req) {
-  try {
-    return !filter(doc, req);
-  } catch (err) {
-    var msg = 'Filter function threw: ' + err.toString();
-    return pouchdbErrors.createError(pouchdbErrors.BAD_REQUEST, msg);
-  }
-}
-
-function filterChange(opts) {
-  var req = {};
-  var hasFilter = opts.filter && typeof opts.filter === 'function';
-  req.query = opts.query_params;
-
-  return function filter(change) {
-    if (!change.doc) {
-      // CSG sends events on the changes feed that don't have documents,
-      // this hack makes a whole lot of existing code robust.
-      change.doc = {};
-    }
-
-    var filterReturn = hasFilter && tryFilter(opts.filter, change.doc, req);
-
-    if (typeof filterReturn === 'object') {
-      return filterReturn;
-    }
-
-    if (filterReturn) {
-      return false;
-    }
-
-    if (!opts.include_docs) {
-      delete change.doc;
-    } else if (!opts.attachments) {
-      for (var att in change.doc._attachments) {
-        /* istanbul ignore else */
-        if (change.doc._attachments.hasOwnProperty(att)) {
-          change.doc._attachments[att].stub = true;
-        }
-      }
-    }
-    return true;
-  };
-}
-
-function flatten(arrs) {
-  var res = [];
-  for (var i = 0, len = arrs.length; i < len; i++) {
-    res = res.concat(arrs[i]);
-  }
-  return res;
-}
-
-// shim for Function.prototype.name,
-// for browsers that don't support it like IE
-
-/* istanbul ignore next */
-function f() {}
-
-var hasName = f.name;
-var res;
-
-// We dont run coverage in IE
-/* istanbul ignore else */
-if (hasName) {
-  res = function (fun) {
-    return fun.name;
-  };
-} else {
-  res = function (fun) {
-    return fun.toString().match(/^\s*function\s*(\S*)\s*\(/)[1];
-  };
-}
-
-var res$1 = res;
-
-// Determine id an ID is valid
-//   - invalid IDs begin with an underescore that does not begin '_design' or
-//     '_local'
-//   - any other string value is a valid id
-// Returns the specific error object for each case
-function invalidIdError(id) {
-  var err;
-  if (!id) {
-    err = pouchdbErrors.createError(pouchdbErrors.MISSING_ID);
-  } else if (typeof id !== 'string') {
-    err = pouchdbErrors.createError(pouchdbErrors.INVALID_ID);
-  } else if (/^_/.test(id) && !(/^_(design|local)/).test(id)) {
-    err = pouchdbErrors.createError(pouchdbErrors.RESERVED_ID);
-  }
-  if (err) {
-    throw err;
-  }
-}
-
-function isCordova() {
-  return (typeof cordova !== "undefined" ||
-  typeof PhoneGap !== "undefined" ||
-  typeof phonegap !== "undefined");
-}
-
-function listenerCount(ee, type) {
-  return 'listenerCount' in ee ? ee.listenerCount(type) :
-                                 events.EventEmitter.listenerCount(ee, type);
-}
-
-// Custom nextTick() shim for browsers. In node, this will just be process.nextTick(). We
-// avoid using process.nextTick() directly because the polyfill is very large and we don't
-// need all of it (see: https://github.com/defunctzombie/node-process).
-// "immediate" 3.0.8 is used by lie, and it's a smaller version of the latest "immediate"
-// package, so it's the one we use.
-// When we use nextTick() in our codebase, we only care about not releasing Zalgo
-// (see: http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony).
-// Microtask vs macrotask doesn't matter to us. So we're free to use the fastest
-// (least latency) option, which is "immediate" due to use of microtasks.
-// All of our nextTicks are isolated to this one function so we can easily swap out one
-// implementation for another.
-
-function parseDesignDocFunctionName(s) {
-  if (!s) {
-    return null;
-  }
-  var parts = s.split('/');
-  if (parts.length === 2) {
-    return parts;
-  }
-  if (parts.length === 1) {
-    return [s, s];
-  }
-  return null;
-}
-
-function normalizeDesignDocFunctionName(s) {
-  var normalized = parseDesignDocFunctionName(s);
-  return normalized ? normalized.join('/') : null;
-}
-
-// originally parseUri 1.2.2, now patched by us
-// (c) Steven Levithan <stevenlevithan.com>
-// MIT License
-var keys = ["source", "protocol", "authority", "userInfo", "user", "password",
-    "host", "port", "relative", "path", "directory", "file", "query", "anchor"];
-var qName ="queryKey";
-var qParser = /(?:^|&)([^&=]*)=?([^&]*)/g;
-
-// use the "loose" parser
-/* jshint maxlen: false */
-var parser = /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
-
-function parseUri(str) {
-  var m = parser.exec(str);
-  var uri = {};
-  var i = 14;
-
-  while (i--) {
-    var key = keys[i];
-    var value = m[i] || "";
-    var encoded = ['user', 'password'].indexOf(key) !== -1;
-    uri[key] = encoded ? decodeURIComponent(value) : value;
-  }
-
-  uri[qName] = {};
-  uri[keys[12]].replace(qParser, function ($0, $1, $2) {
-    if ($1) {
-      uri[qName][$1] = $2;
-    }
-  });
-
-  return uri;
-}
-
-// this is essentially the "update sugar" function from daleharvey/pouchdb#1388
-// the diffFun tells us what delta to apply to the doc.  it either returns
-// the doc, or false if it doesn't need to do an update after all
-function upsert(db, docId, diffFun) {
-  return new Promise(function (fulfill, reject) {
-    db.get(docId, function (err, doc) {
-      if (err) {
-        /* istanbul ignore next */
-        if (err.status !== 404) {
-          return reject(err);
-        }
-        doc = {};
-      }
-
-      // the user might change the _rev, so save it for posterity
-      var docRev = doc._rev;
-      var newDoc = diffFun(doc);
-
-      if (!newDoc) {
-        // if the diffFun returns falsy, we short-circuit as
-        // an optimization
-        return fulfill({updated: false, rev: docRev});
-      }
-
-      // users aren't allowed to modify these values,
-      // so reset them here
-      newDoc._id = docId;
-      newDoc._rev = docRev;
-      fulfill(tryAndPut(db, newDoc, diffFun));
-    });
-  });
-}
-
-function tryAndPut(db, doc, diffFun) {
-  return db.put(doc).then(function (res) {
-    return {
-      updated: true,
-      rev: res.rev
-    };
-  }, function (err) {
-    /* istanbul ignore next */
-    if (err.status !== 409) {
-      throw err;
-    }
-    return upsert(db, doc._id, diffFun);
-  });
-}
-
-// BEGIN Math.uuid.js
-
-/*!
-Math.uuid.js (v1.4)
-http://www.broofa.com
-mailto:robert@broofa.com
-
-Copyright (c) 2010 Robert Kieffer
-Dual licensed under the MIT and GPL licenses.
-*/
-
-/*
- * Generate a random uuid.
- *
- * USAGE: Math.uuid(length, radix)
- *   length - the desired number of characters
- *   radix  - the number of allowable values for each character.
- *
- * EXAMPLES:
- *   // No arguments  - returns RFC4122, version 4 ID
- *   >>> Math.uuid()
- *   "92329D39-6F5C-4520-ABFC-AAB64544E172"
- *
- *   // One argument - returns ID of the specified length
- *   >>> Math.uuid(15)     // 15 character ID (default base=62)
- *   "VcydxgltxrVZSTV"
- *
- *   // Two arguments - returns ID of the specified length, and radix. 
- *   // (Radix must be <= 62)
- *   >>> Math.uuid(8, 2)  // 8 character ID (base=2)
- *   "01001010"
- *   >>> Math.uuid(8, 10) // 8 character ID (base=10)
- *   "47473046"
- *   >>> Math.uuid(8, 16) // 8 character ID (base=16)
- *   "098F4D35"
- */
-var chars = (
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-  'abcdefghijklmnopqrstuvwxyz'
-).split('');
-function getValue(radix) {
-  return 0 | Math.random() * radix;
-}
-function uuid(len, radix) {
-  radix = radix || chars.length;
-  var out = '';
-  var i = -1;
-
-  if (len) {
-    // Compact form
-    while (++i < len) {
-      out += chars[getValue(radix)];
-    }
-    return out;
-  }
-    // rfc4122, version 4 form
-    // Fill in random data.  At i==19 set the high bits of clock sequence as
-    // per rfc4122, sec. 4.1.5
-  while (++i < 36) {
-    switch (i) {
-      case 8:
-      case 13:
-      case 18:
-      case 23:
-        out += '-';
-        break;
-      case 19:
-        out += chars[(getValue(16) & 0x3) | 0x8];
-        break;
-      default:
-        out += chars[getValue(16)];
-    }
-  }
-
-  return out;
-}
-
-exports.adapterFun = adapterFun;
-exports.bulkGetShim = bulkGet;
-exports.changesHandler = Changes;
-exports.clone = clone;
-exports.defaultBackOff = defaultBackOff;
-exports.explainError = explainError;
-exports.assign = assign$1;
-exports.filterChange = filterChange;
-exports.flatten = flatten;
-exports.functionName = res$1;
-exports.guardedConsole = guardedConsole;
-exports.hasLocalStorage = hasLocalStorage;
-exports.invalidIdError = invalidIdError;
-exports.isChromeApp = isChromeApp;
-exports.isCordova = isCordova;
-exports.listenerCount = listenerCount;
-exports.nextTick = immediate;
-exports.normalizeDdocFunctionName = normalizeDesignDocFunctionName;
-exports.once = once;
-exports.parseDdocFunctionName = parseDesignDocFunctionName;
-exports.parseUri = parseUri;
-exports.pick = pick;
-exports.toPromise = toPromise;
-exports.upsert = upsert;
-exports.uuid = uuid;
-
-},{"argsarray":19,"debug":489,"events":426,"immediate":428,"inherits":429,"pouchdb-collections":451,"pouchdb-errors":455,"pouchdb-promise":483,"pouchdb-utils":488}],489:[function(require,module,exports){
+},{"dup":437,"immediate":428}],492:[function(require,module,exports){
+arguments[4][481][0].apply(exports,arguments)
+},{"dup":481,"lie":491}],493:[function(require,module,exports){
+arguments[4][459][0].apply(exports,arguments)
+},{"argsarray":19,"debug":494,"dup":459,"events":426,"immediate":428,"inherits":429,"pouchdb-collections":451,"pouchdb-errors":460,"pouchdb-promise":488,"pouchdb-utils":493}],494:[function(require,module,exports){
 arguments[4][424][0].apply(exports,arguments)
-},{"./debug":490,"_process":491,"dup":424}],490:[function(require,module,exports){
+},{"./debug":495,"_process":496,"dup":424}],495:[function(require,module,exports){
 arguments[4][442][0].apply(exports,arguments)
-},{"dup":442,"ms":438}],491:[function(require,module,exports){
+},{"dup":442,"ms":438}],496:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -35458,7 +35589,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],492:[function(require,module,exports){
+},{}],497:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -35992,7 +36123,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],493:[function(require,module,exports){
+},{}],498:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -36078,7 +36209,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],494:[function(require,module,exports){
+},{}],499:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -36165,13 +36296,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],495:[function(require,module,exports){
+},{}],500:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":493,"./encode":494}],496:[function(require,module,exports){
+},{"./decode":498,"./encode":499}],501:[function(require,module,exports){
 void function(root){
 
     // return a number between 0 and max-1
@@ -36208,7 +36339,7 @@ void function(root){
 
 }(this)
 
-},{}],497:[function(require,module,exports){
+},{}],502:[function(require,module,exports){
 (function (global){
 // This method of obtaining a reference to the global object needs to be
 // kept identical to the way it is obtained in runtime.js
@@ -36243,7 +36374,7 @@ if (hadRuntime) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./runtime":498}],498:[function(require,module,exports){
+},{"./runtime":503}],503:[function(require,module,exports){
 (function (process,global){
 /**
  * Copyright (c) 2014, Facebook, Inc.
@@ -36511,90 +36642,34 @@ if (hadRuntime) {
         return doneResult();
       }
 
+      context.method = method;
+      context.arg = arg;
+
       while (true) {
         var delegate = context.delegate;
         if (delegate) {
-          if (method === "return" ||
-              (method === "throw" && delegate.iterator[method] === undefined)) {
-            // A return or throw (when the delegate iterator has no throw
-            // method) always terminates the yield* loop.
-            context.delegate = null;
-
-            // If the delegate iterator has a return method, give it a
-            // chance to clean up.
-            var returnMethod = delegate.iterator["return"];
-            if (returnMethod) {
-              var record = tryCatch(returnMethod, delegate.iterator, arg);
-              if (record.type === "throw") {
-                // If the return method threw an exception, let that
-                // exception prevail over the original return or throw.
-                method = "throw";
-                arg = record.arg;
-                continue;
-              }
-            }
-
-            if (method === "return") {
-              // Continue with the outer return, now that the delegate
-              // iterator has been terminated.
-              continue;
-            }
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
           }
-
-          var record = tryCatch(
-            delegate.iterator[method],
-            delegate.iterator,
-            arg
-          );
-
-          if (record.type === "throw") {
-            context.delegate = null;
-
-            // Like returning generator.throw(uncaught), but without the
-            // overhead of an extra function call.
-            method = "throw";
-            arg = record.arg;
-            continue;
-          }
-
-          // Delegate generator ran and handled its own exceptions so
-          // regardless of what the method was, we continue as if it is
-          // "next" with an undefined arg.
-          method = "next";
-          arg = undefined;
-
-          var info = record.arg;
-          if (info.done) {
-            context[delegate.resultName] = info.value;
-            context.next = delegate.nextLoc;
-          } else {
-            state = GenStateSuspendedYield;
-            return info;
-          }
-
-          context.delegate = null;
         }
 
-        if (method === "next") {
+        if (context.method === "next") {
           // Setting context._sent for legacy support of Babel's
           // function.sent implementation.
-          context.sent = context._sent = arg;
+          context.sent = context._sent = context.arg;
 
-        } else if (method === "throw") {
+        } else if (context.method === "throw") {
           if (state === GenStateSuspendedStart) {
             state = GenStateCompleted;
-            throw arg;
+            throw context.arg;
           }
 
-          if (context.dispatchException(arg)) {
-            // If the dispatched exception was caught by a catch block,
-            // then let that catch block handle the exception normally.
-            method = "next";
-            arg = undefined;
-          }
+          context.dispatchException(context.arg);
 
-        } else if (method === "return") {
-          context.abrupt("return", arg);
+        } else if (context.method === "return") {
+          context.abrupt("return", context.arg);
         }
 
         state = GenStateExecuting;
@@ -36607,30 +36682,106 @@ if (hadRuntime) {
             ? GenStateCompleted
             : GenStateSuspendedYield;
 
-          var info = {
+          if (record.arg === ContinueSentinel) {
+            continue;
+          }
+
+          return {
             value: record.arg,
             done: context.done
           };
 
-          if (record.arg === ContinueSentinel) {
-            if (context.delegate && method === "next") {
-              // Deliberately forget the last sent value so that we don't
-              // accidentally pass it on to the delegate.
-              arg = undefined;
-            }
-          } else {
-            return info;
-          }
-
         } else if (record.type === "throw") {
           state = GenStateCompleted;
           // Dispatch the exception by looping back around to the
-          // context.dispatchException(arg) call above.
-          method = "throw";
-          arg = record.arg;
+          // context.dispatchException(context.arg) call above.
+          context.method = "throw";
+          context.arg = record.arg;
         }
       }
     };
+  }
+
+  // Call delegate.iterator[context.method](context.arg) and handle the
+  // result, either by returning a { value, done } result from the
+  // delegate iterator, or by modifying context.method and context.arg,
+  // setting context.delegate to null, and returning the ContinueSentinel.
+  function maybeInvokeDelegate(delegate, context) {
+    var method = delegate.iterator[context.method];
+    if (method === undefined) {
+      // A .throw or .return when the delegate iterator has no .throw
+      // method always terminates the yield* loop.
+      context.delegate = null;
+
+      if (context.method === "throw") {
+        if (delegate.iterator.return) {
+          // If the delegate iterator has a return method, give it a
+          // chance to clean up.
+          context.method = "return";
+          context.arg = undefined;
+          maybeInvokeDelegate(delegate, context);
+
+          if (context.method === "throw") {
+            // If maybeInvokeDelegate(context) changed context.method from
+            // "return" to "throw", let that override the TypeError below.
+            return ContinueSentinel;
+          }
+        }
+
+        context.method = "throw";
+        context.arg = new TypeError(
+          "The iterator does not provide a 'throw' method");
+      }
+
+      return ContinueSentinel;
+    }
+
+    var record = tryCatch(method, delegate.iterator, context.arg);
+
+    if (record.type === "throw") {
+      context.method = "throw";
+      context.arg = record.arg;
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    var info = record.arg;
+
+    if (! info) {
+      context.method = "throw";
+      context.arg = new TypeError("iterator result is not an object");
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    if (info.done) {
+      // Assign the result of the finished delegate to the temporary
+      // variable specified by delegate.resultName (see delegateYield).
+      context[delegate.resultName] = info.value;
+
+      // Resume execution at the desired location (see delegateYield).
+      context.next = delegate.nextLoc;
+
+      // If context.method was "throw" but the delegate handled the
+      // exception, let the outer generator proceed normally. If
+      // context.method was "next", forget context.arg since it has been
+      // "consumed" by the delegate iterator. If context.method was
+      // "return", allow the original .return call to continue in the
+      // outer generator.
+      if (context.method !== "return") {
+        context.method = "next";
+        context.arg = undefined;
+      }
+
+    } else {
+      // Re-yield the result returned by the delegate method.
+      return info;
+    }
+
+    // The delegate iterator is finished, so forget it and continue with
+    // the outer generator.
+    context.delegate = null;
+    return ContinueSentinel;
   }
 
   // Define Generator.prototype.{next,throw,return} in terms of the
@@ -36753,6 +36904,9 @@ if (hadRuntime) {
       this.done = false;
       this.delegate = null;
 
+      this.method = "next";
+      this.arg = undefined;
+
       this.tryEntries.forEach(resetTryEntry);
 
       if (!skipTempReset) {
@@ -36789,7 +36943,15 @@ if (hadRuntime) {
         record.type = "throw";
         record.arg = exception;
         context.next = loc;
-        return !!caught;
+
+        if (caught) {
+          // If the dispatched exception was caught by a catch block,
+          // then let that catch block handle the exception normally.
+          context.method = "next";
+          context.arg = undefined;
+        }
+
+        return !! caught;
       }
 
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
@@ -36857,12 +37019,12 @@ if (hadRuntime) {
       record.arg = arg;
 
       if (finallyEntry) {
+        this.method = "next";
         this.next = finallyEntry.finallyLoc;
-      } else {
-        this.complete(record);
+        return ContinueSentinel;
       }
 
-      return ContinueSentinel;
+      return this.complete(record);
     },
 
     complete: function(record, afterLoc) {
@@ -36874,11 +37036,14 @@ if (hadRuntime) {
           record.type === "continue") {
         this.next = record.arg;
       } else if (record.type === "return") {
-        this.rval = record.arg;
+        this.rval = this.arg = record.arg;
+        this.method = "return";
         this.next = "end";
       } else if (record.type === "normal" && afterLoc) {
         this.next = afterLoc;
       }
+
+      return ContinueSentinel;
     },
 
     finish: function(finallyLoc) {
@@ -36917,6 +37082,12 @@ if (hadRuntime) {
         nextLoc: nextLoc
       };
 
+      if (this.method === "next") {
+        // Deliberately forget the last sent value so that we don't
+        // accidentally pass it on to the delegate.
+        this.arg = undefined;
+      }
+
       return ContinueSentinel;
     }
   };
@@ -36930,7 +37101,7 @@ if (hadRuntime) {
 );
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":491}],499:[function(require,module,exports){
+},{"_process":496}],504:[function(require,module,exports){
 
 var toString = Object.prototype.toString;
 
@@ -36952,7 +37123,7 @@ module.exports = exports = function (regexp) {
 }
 
 
-},{}],500:[function(require,module,exports){
+},{}],505:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37002,7 +37173,7 @@ var BehaviorSubject = (function (_super) {
 }(Subject_1.Subject));
 exports.BehaviorSubject = BehaviorSubject;
 
-},{"./Subject":508,"./util/ObjectUnsubscribedError":568}],501:[function(require,module,exports){
+},{"./Subject":513,"./util/ObjectUnsubscribedError":573}],506:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37039,7 +37210,7 @@ var InnerSubscriber = (function (_super) {
 }(Subscriber_1.Subscriber));
 exports.InnerSubscriber = InnerSubscriber;
 
-},{"./Subscriber":510}],502:[function(require,module,exports){
+},{"./Subscriber":515}],507:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('./Observable');
 /**
@@ -37167,7 +37338,7 @@ var Notification = (function () {
 }());
 exports.Notification = Notification;
 
-},{"./Observable":503}],503:[function(require,module,exports){
+},{"./Observable":508}],508:[function(require,module,exports){
 "use strict";
 var root_1 = require('./util/root');
 var toSubscriber_1 = require('./util/toSubscriber');
@@ -37212,7 +37383,7 @@ var Observable = (function () {
             operator.call(sink, this.source);
         }
         else {
-            sink.add(this._subscribe(sink));
+            sink.add(this._trySubscribe(sink));
         }
         if (sink.syncErrorThrowable) {
             sink.syncErrorThrowable = false;
@@ -37221,6 +37392,16 @@ var Observable = (function () {
             }
         }
         return sink;
+    };
+    Observable.prototype._trySubscribe = function (sink) {
+        try {
+            return this._subscribe(sink);
+        }
+        catch (err) {
+            sink.syncErrorThrown = true;
+            sink.syncErrorValue = err;
+            sink.error(err);
+        }
     };
     /**
      * @method forEach
@@ -37297,7 +37478,7 @@ var Observable = (function () {
 }());
 exports.Observable = Observable;
 
-},{"./symbol/observable":565,"./util/root":579,"./util/toSubscriber":581}],504:[function(require,module,exports){
+},{"./symbol/observable":570,"./util/root":585,"./util/toSubscriber":587}],509:[function(require,module,exports){
 "use strict";
 exports.empty = {
     closed: true,
@@ -37306,7 +37487,7 @@ exports.empty = {
     complete: function () { }
 };
 
-},{}],505:[function(require,module,exports){
+},{}],510:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37337,7 +37518,7 @@ var OuterSubscriber = (function (_super) {
 }(Subscriber_1.Subscriber));
 exports.OuterSubscriber = OuterSubscriber;
 
-},{"./Subscriber":510}],506:[function(require,module,exports){
+},{"./Subscriber":515}],511:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37440,7 +37621,7 @@ var ReplayEvent = (function () {
     return ReplayEvent;
 }());
 
-},{"./Subject":508,"./SubjectSubscription":509,"./Subscription":511,"./operator/observeOn":552,"./scheduler/queue":563,"./util/ObjectUnsubscribedError":568}],507:[function(require,module,exports){
+},{"./Subject":513,"./SubjectSubscription":514,"./Subscription":516,"./operator/observeOn":557,"./scheduler/queue":568,"./util/ObjectUnsubscribedError":573}],512:[function(require,module,exports){
 "use strict";
 /**
  * An execution context and a data structure to order tasks and schedule their
@@ -37490,7 +37671,7 @@ var Scheduler = (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{}],508:[function(require,module,exports){
+},{}],513:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37582,6 +37763,14 @@ var Subject = (function (_super) {
         this.closed = true;
         this.observers = null;
     };
+    Subject.prototype._trySubscribe = function (subscriber) {
+        if (this.closed) {
+            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+        }
+        else {
+            return _super.prototype._trySubscribe.call(this, subscriber);
+        }
+    };
     Subject.prototype._subscribe = function (subscriber) {
         if (this.closed) {
             throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
@@ -37651,7 +37840,7 @@ var AnonymousSubject = (function (_super) {
 }(Subject));
 exports.AnonymousSubject = AnonymousSubject;
 
-},{"./Observable":503,"./SubjectSubscription":509,"./Subscriber":510,"./Subscription":511,"./symbol/rxSubscriber":566,"./util/ObjectUnsubscribedError":568}],509:[function(require,module,exports){
+},{"./Observable":508,"./SubjectSubscription":514,"./Subscriber":515,"./Subscription":516,"./symbol/rxSubscriber":571,"./util/ObjectUnsubscribedError":573}],514:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37692,7 +37881,7 @@ var SubjectSubscription = (function (_super) {
 }(Subscription_1.Subscription));
 exports.SubjectSubscription = SubjectSubscription;
 
-},{"./Subscription":511}],510:[function(require,module,exports){
+},{"./Subscription":516}],515:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37827,6 +38016,17 @@ var Subscriber = (function (_super) {
         this.destination.complete();
         this.unsubscribe();
     };
+    Subscriber.prototype._unsubscribeAndRecycle = function () {
+        var _a = this, _parent = _a._parent, _parents = _a._parents;
+        this._parent = null;
+        this._parents = null;
+        this.unsubscribe();
+        this.closed = false;
+        this.isStopped = false;
+        this._parent = _parent;
+        this._parents = _parents;
+        return this;
+    };
     return Subscriber;
 }(Subscription_1.Subscription));
 exports.Subscriber = Subscriber;
@@ -37837,9 +38037,9 @@ exports.Subscriber = Subscriber;
  */
 var SafeSubscriber = (function (_super) {
     __extends(SafeSubscriber, _super);
-    function SafeSubscriber(_parent, observerOrNext, error, complete) {
+    function SafeSubscriber(_parentSubscriber, observerOrNext, error, complete) {
         _super.call(this);
-        this._parent = _parent;
+        this._parentSubscriber = _parentSubscriber;
         var next;
         var context = this;
         if (isFunction_1.isFunction(observerOrNext)) {
@@ -37862,49 +38062,49 @@ var SafeSubscriber = (function (_super) {
     }
     SafeSubscriber.prototype.next = function (value) {
         if (!this.isStopped && this._next) {
-            var _parent = this._parent;
-            if (!_parent.syncErrorThrowable) {
+            var _parentSubscriber = this._parentSubscriber;
+            if (!_parentSubscriber.syncErrorThrowable) {
                 this.__tryOrUnsub(this._next, value);
             }
-            else if (this.__tryOrSetError(_parent, this._next, value)) {
+            else if (this.__tryOrSetError(_parentSubscriber, this._next, value)) {
                 this.unsubscribe();
             }
         }
     };
     SafeSubscriber.prototype.error = function (err) {
         if (!this.isStopped) {
-            var _parent = this._parent;
+            var _parentSubscriber = this._parentSubscriber;
             if (this._error) {
-                if (!_parent.syncErrorThrowable) {
+                if (!_parentSubscriber.syncErrorThrowable) {
                     this.__tryOrUnsub(this._error, err);
                     this.unsubscribe();
                 }
                 else {
-                    this.__tryOrSetError(_parent, this._error, err);
+                    this.__tryOrSetError(_parentSubscriber, this._error, err);
                     this.unsubscribe();
                 }
             }
-            else if (!_parent.syncErrorThrowable) {
+            else if (!_parentSubscriber.syncErrorThrowable) {
                 this.unsubscribe();
                 throw err;
             }
             else {
-                _parent.syncErrorValue = err;
-                _parent.syncErrorThrown = true;
+                _parentSubscriber.syncErrorValue = err;
+                _parentSubscriber.syncErrorThrown = true;
                 this.unsubscribe();
             }
         }
     };
     SafeSubscriber.prototype.complete = function () {
         if (!this.isStopped) {
-            var _parent = this._parent;
+            var _parentSubscriber = this._parentSubscriber;
             if (this._complete) {
-                if (!_parent.syncErrorThrowable) {
+                if (!_parentSubscriber.syncErrorThrowable) {
                     this.__tryOrUnsub(this._complete);
                     this.unsubscribe();
                 }
                 else {
-                    this.__tryOrSetError(_parent, this._complete);
+                    this.__tryOrSetError(_parentSubscriber, this._complete);
                     this.unsubscribe();
                 }
             }
@@ -37934,21 +38134,16 @@ var SafeSubscriber = (function (_super) {
         return false;
     };
     SafeSubscriber.prototype._unsubscribe = function () {
-        var _parent = this._parent;
+        var _parentSubscriber = this._parentSubscriber;
         this._context = null;
-        this._parent = null;
-        _parent.unsubscribe();
+        this._parentSubscriber = null;
+        _parentSubscriber.unsubscribe();
     };
     return SafeSubscriber;
 }(Subscriber));
 
-},{"./Observer":504,"./Subscription":511,"./symbol/rxSubscriber":566,"./util/isFunction":574}],511:[function(require,module,exports){
+},{"./Observer":509,"./Subscription":516,"./symbol/rxSubscriber":571,"./util/isFunction":580}],516:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var isArray_1 = require('./util/isArray');
 var isObject_1 = require('./util/isObject');
 var isFunction_1 = require('./util/isFunction');
@@ -37978,6 +38173,9 @@ var Subscription = (function () {
          * @type {boolean}
          */
         this.closed = false;
+        this._parent = null;
+        this._parents = null;
+        this._subscriptions = null;
         if (unsubscribe) {
             this._unsubscribe = unsubscribe;
         }
@@ -37994,9 +38192,23 @@ var Subscription = (function () {
         if (this.closed) {
             return;
         }
+        var _a = this, _parent = _a._parent, _parents = _a._parents, _unsubscribe = _a._unsubscribe, _subscriptions = _a._subscriptions;
         this.closed = true;
-        var _a = this, _unsubscribe = _a._unsubscribe, _subscriptions = _a._subscriptions;
+        this._parent = null;
+        this._parents = null;
+        // null out _subscriptions first so any child subscriptions that attempt
+        // to remove themselves from this subscription will noop
         this._subscriptions = null;
+        var index = -1;
+        var len = _parents ? _parents.length : 0;
+        // if this._parent is null, then so is this._parents, and we
+        // don't have to remove ourselves from any parent subscriptions.
+        while (_parent) {
+            _parent.remove(this);
+            // if this._parents is null or index >= len,
+            // then _parent is set to null, and the loop exits
+            _parent = ++index < len && _parents[index] || null;
+        }
         if (isFunction_1.isFunction(_unsubscribe)) {
             var trial = tryCatch_1.tryCatch(_unsubscribe).call(this);
             if (trial === errorObject_1.errorObject) {
@@ -38006,8 +38218,8 @@ var Subscription = (function () {
             }
         }
         if (isArray_1.isArray(_subscriptions)) {
-            var index = -1;
-            var len = _subscriptions.length;
+            index = -1;
+            len = _subscriptions.length;
             while (++index < len) {
                 var sub = _subscriptions[index];
                 if (isObject_1.isObject(sub)) {
@@ -38055,26 +38267,31 @@ var Subscription = (function () {
         if (teardown === this) {
             return this;
         }
-        var sub = teardown;
+        var subscription = teardown;
         switch (typeof teardown) {
             case 'function':
-                sub = new Subscription(teardown);
+                subscription = new Subscription(teardown);
             case 'object':
-                if (sub.closed || typeof sub.unsubscribe !== 'function') {
-                    return sub;
+                if (subscription.closed || typeof subscription.unsubscribe !== 'function') {
+                    return subscription;
                 }
                 else if (this.closed) {
-                    sub.unsubscribe();
-                    return sub;
+                    subscription.unsubscribe();
+                    return subscription;
+                }
+                else if (typeof subscription._addParent !== 'function' /* quack quack */) {
+                    var tmp = subscription;
+                    subscription = new Subscription();
+                    subscription._subscriptions = [tmp];
                 }
                 break;
             default:
                 throw new Error('unrecognized teardown ' + teardown + ' added to Subscription.');
         }
-        var childSub = new ChildSubscription(sub, this);
-        this._subscriptions = this._subscriptions || [];
-        this._subscriptions.push(childSub);
-        return childSub;
+        var subscriptions = this._subscriptions || (this._subscriptions = []);
+        subscriptions.push(subscription);
+        subscription._addParent(this);
+        return subscription;
     };
     /**
      * Removes a Subscription from the internal list of subscriptions that will
@@ -38083,16 +38300,29 @@ var Subscription = (function () {
      * @return {void}
      */
     Subscription.prototype.remove = function (subscription) {
-        // HACK: This might be redundant because of the logic in `add()`
-        if (subscription == null || (subscription === this) || (subscription === Subscription.EMPTY)) {
-            return;
-        }
         var subscriptions = this._subscriptions;
         if (subscriptions) {
             var subscriptionIndex = subscriptions.indexOf(subscription);
             if (subscriptionIndex !== -1) {
                 subscriptions.splice(subscriptionIndex, 1);
             }
+        }
+    };
+    Subscription.prototype._addParent = function (parent) {
+        var _a = this, _parent = _a._parent, _parents = _a._parents;
+        if (!_parent || _parent === parent) {
+            // If we don't have a parent, or the new parent is the same as the
+            // current parent, then set this._parent to the new parent.
+            this._parent = parent;
+        }
+        else if (!_parents) {
+            // If there's already one parent, but not multiple, allocate an Array to
+            // store the rest of the parent Subscriptions.
+            this._parents = [parent];
+        }
+        else if (_parents.indexOf(parent) === -1) {
+            // Only add the new parent to the _parents list if it's not already there.
+            _parents.push(parent);
         }
     };
     Subscription.EMPTY = (function (empty) {
@@ -38102,118 +38332,103 @@ var Subscription = (function () {
     return Subscription;
 }());
 exports.Subscription = Subscription;
-var ChildSubscription = (function (_super) {
-    __extends(ChildSubscription, _super);
-    function ChildSubscription(_innerSub, _parent) {
-        _super.call(this);
-        this._innerSub = _innerSub;
-        this._parent = _parent;
-    }
-    ChildSubscription.prototype._unsubscribe = function () {
-        var _a = this, _innerSub = _a._innerSub, _parent = _a._parent;
-        _parent.remove(this);
-        _innerSub.unsubscribe();
-    };
-    return ChildSubscription;
-}(Subscription));
-exports.ChildSubscription = ChildSubscription;
 function flattenUnsubscriptionErrors(errors) {
     return errors.reduce(function (errs, err) { return errs.concat((err instanceof UnsubscriptionError_1.UnsubscriptionError) ? err.errors : err); }, []);
 }
 
-},{"./util/UnsubscriptionError":570,"./util/errorObject":571,"./util/isArray":572,"./util/isFunction":574,"./util/isObject":576,"./util/tryCatch":582}],512:[function(require,module,exports){
+},{"./util/UnsubscriptionError":575,"./util/errorObject":576,"./util/isArray":577,"./util/isFunction":580,"./util/isObject":582,"./util/tryCatch":588}],517:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var from_1 = require('../../observable/from');
 Observable_1.Observable.from = from_1.from;
 
-},{"../../Observable":503,"../../observable/from":537}],513:[function(require,module,exports){
+},{"../../Observable":508,"../../observable/from":542}],518:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var fromEvent_1 = require('../../observable/fromEvent');
 Observable_1.Observable.fromEvent = fromEvent_1.fromEvent;
 
-},{"../../Observable":503,"../../observable/fromEvent":538}],514:[function(require,module,exports){
+},{"../../Observable":508,"../../observable/fromEvent":543}],519:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var interval_1 = require('../../observable/interval');
 Observable_1.Observable.interval = interval_1.interval;
 
-},{"../../Observable":503,"../../observable/interval":539}],515:[function(require,module,exports){
+},{"../../Observable":508,"../../observable/interval":544}],520:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var merge_1 = require('../../observable/merge');
 Observable_1.Observable.merge = merge_1.merge;
 
-},{"../../Observable":503,"../../observable/merge":540}],516:[function(require,module,exports){
+},{"../../Observable":508,"../../observable/merge":545}],521:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var delay_1 = require('../../operator/delay');
 Observable_1.Observable.prototype.delay = delay_1.delay;
 
-},{"../../Observable":503,"../../operator/delay":542}],517:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/delay":547}],522:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var distinctUntilChanged_1 = require('../../operator/distinctUntilChanged');
 Observable_1.Observable.prototype.distinctUntilChanged = distinctUntilChanged_1.distinctUntilChanged;
 
-},{"../../Observable":503,"../../operator/distinctUntilChanged":543}],518:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/distinctUntilChanged":548}],523:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var do_1 = require('../../operator/do');
 Observable_1.Observable.prototype.do = do_1._do;
 Observable_1.Observable.prototype._do = do_1._do;
 
-},{"../../Observable":503,"../../operator/do":544}],519:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/do":549}],524:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var filter_1 = require('../../operator/filter');
 Observable_1.Observable.prototype.filter = filter_1.filter;
 
-},{"../../Observable":503,"../../operator/filter":545}],520:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/filter":550}],525:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var first_1 = require('../../operator/first');
 Observable_1.Observable.prototype.first = first_1.first;
 
-},{"../../Observable":503,"../../operator/first":546}],521:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/first":551}],526:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var map_1 = require('../../operator/map');
 Observable_1.Observable.prototype.map = map_1.map;
 
-},{"../../Observable":503,"../../operator/map":547}],522:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/map":552}],527:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var mergeMap_1 = require('../../operator/mergeMap');
 Observable_1.Observable.prototype.mergeMap = mergeMap_1.mergeMap;
 Observable_1.Observable.prototype.flatMap = mergeMap_1.mergeMap;
 
-},{"../../Observable":503,"../../operator/mergeMap":550}],523:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/mergeMap":555}],528:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var publishReplay_1 = require('../../operator/publishReplay');
 Observable_1.Observable.prototype.publishReplay = publishReplay_1.publishReplay;
 
-},{"../../Observable":503,"../../operator/publishReplay":553}],524:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/publishReplay":558}],529:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var startWith_1 = require('../../operator/startWith');
 Observable_1.Observable.prototype.startWith = startWith_1.startWith;
 
-},{"../../Observable":503,"../../operator/startWith":554}],525:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/startWith":559}],530:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var timeout_1 = require('../../operator/timeout');
 Observable_1.Observable.prototype.timeout = timeout_1.timeout;
 
-},{"../../Observable":503,"../../operator/timeout":555}],526:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/timeout":560}],531:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var toPromise_1 = require('../../operator/toPromise');
 Observable_1.Observable.prototype.toPromise = toPromise_1.toPromise;
 
-},{"../../Observable":503,"../../operator/toPromise":556}],527:[function(require,module,exports){
+},{"../../Observable":508,"../../operator/toPromise":561}],532:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38284,7 +38499,7 @@ var ArrayLikeObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ArrayLikeObservable = ArrayLikeObservable;
 
-},{"../Observable":503,"./EmptyObservable":530,"./ScalarObservable":536}],528:[function(require,module,exports){
+},{"../Observable":508,"./EmptyObservable":535,"./ScalarObservable":541}],533:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38407,7 +38622,7 @@ var ArrayObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ArrayObservable = ArrayObservable;
 
-},{"../Observable":503,"../util/isScheduler":578,"./EmptyObservable":530,"./ScalarObservable":536}],529:[function(require,module,exports){
+},{"../Observable":508,"../util/isScheduler":584,"./EmptyObservable":535,"./ScalarObservable":541}],534:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38570,7 +38785,7 @@ var RefCountSubscriber = (function (_super) {
     return RefCountSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Observable":503,"../Subject":508,"../Subscriber":510,"../Subscription":511}],530:[function(require,module,exports){
+},{"../Observable":508,"../Subject":513,"../Subscriber":515,"../Subscription":516}],535:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38652,7 +38867,7 @@ var EmptyObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.EmptyObservable = EmptyObservable;
 
-},{"../Observable":503}],531:[function(require,module,exports){
+},{"../Observable":508}],536:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38665,7 +38880,7 @@ var isFunction_1 = require('../util/isFunction');
 var errorObject_1 = require('../util/errorObject');
 var Subscription_1 = require('../Subscription');
 var toString = Object.prototype.toString;
-function isNodeStyleEventEmmitter(sourceObj) {
+function isNodeStyleEventEmitter(sourceObj) {
     return !!sourceObj && typeof sourceObj.addListener === 'function' && typeof sourceObj.removeListener === 'function';
 }
 function isJQueryStyleEventEmitter(sourceObj) {
@@ -38759,7 +38974,7 @@ var FromEventObservable = (function (_super) {
             sourceObj.on(eventName, handler);
             unsubscribe = function () { return source_2.off(eventName, handler); };
         }
-        else if (isNodeStyleEventEmmitter(sourceObj)) {
+        else if (isNodeStyleEventEmitter(sourceObj)) {
             var source_3 = sourceObj;
             sourceObj.addListener(eventName, handler);
             unsubscribe = function () { return source_3.removeListener(eventName, handler); };
@@ -38793,7 +39008,7 @@ var FromEventObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.FromEventObservable = FromEventObservable;
 
-},{"../Observable":503,"../Subscription":511,"../util/errorObject":571,"../util/isFunction":574,"../util/tryCatch":582}],532:[function(require,module,exports){
+},{"../Observable":508,"../Subscription":516,"../util/errorObject":576,"../util/isFunction":580,"../util/tryCatch":588}],537:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38801,6 +39016,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var isArray_1 = require('../util/isArray');
+var isArrayLike_1 = require('../util/isArrayLike');
 var isPromise_1 = require('../util/isPromise');
 var PromiseObservable_1 = require('./PromiseObservable');
 var IteratorObservable_1 = require('./IteratorObservable');
@@ -38810,7 +39026,6 @@ var iterator_1 = require('../symbol/iterator');
 var Observable_1 = require('../Observable');
 var observeOn_1 = require('../operator/observeOn');
 var observable_1 = require('../symbol/observable');
-var isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
@@ -38896,7 +39111,7 @@ var FromObservable = (function (_super) {
             else if (typeof ish[iterator_1.$$iterator] === 'function' || typeof ish === 'string') {
                 return new IteratorObservable_1.IteratorObservable(ish, scheduler);
             }
-            else if (isArrayLike(ish)) {
+            else if (isArrayLike_1.isArrayLike(ish)) {
                 return new ArrayLikeObservable_1.ArrayLikeObservable(ish, scheduler);
             }
         }
@@ -38916,7 +39131,7 @@ var FromObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.FromObservable = FromObservable;
 
-},{"../Observable":503,"../operator/observeOn":552,"../symbol/iterator":564,"../symbol/observable":565,"../util/isArray":572,"../util/isPromise":577,"./ArrayLikeObservable":527,"./ArrayObservable":528,"./IteratorObservable":534,"./PromiseObservable":535}],533:[function(require,module,exports){
+},{"../Observable":508,"../operator/observeOn":557,"../symbol/iterator":569,"../symbol/observable":570,"../util/isArray":577,"../util/isArrayLike":578,"../util/isPromise":583,"./ArrayLikeObservable":532,"./ArrayObservable":533,"./IteratorObservable":539,"./PromiseObservable":540}],538:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39005,7 +39220,7 @@ var IntervalObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.IntervalObservable = IntervalObservable;
 
-},{"../Observable":503,"../scheduler/async":562,"../util/isNumeric":575}],534:[function(require,module,exports){
+},{"../Observable":508,"../scheduler/async":567,"../util/isNumeric":581}],539:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39169,7 +39384,7 @@ function sign(value) {
     return valueAsNumber < 0 ? -1 : 1;
 }
 
-},{"../Observable":503,"../symbol/iterator":564,"../util/root":579}],535:[function(require,module,exports){
+},{"../Observable":508,"../symbol/iterator":569,"../util/root":585}],540:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39291,7 +39506,7 @@ function dispatchError(arg) {
     }
 }
 
-},{"../Observable":503,"../util/root":579}],536:[function(require,module,exports){
+},{"../Observable":508,"../util/root":585}],541:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39350,32 +39565,33 @@ var ScalarObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ScalarObservable = ScalarObservable;
 
-},{"../Observable":503}],537:[function(require,module,exports){
+},{"../Observable":508}],542:[function(require,module,exports){
 "use strict";
 var FromObservable_1 = require('./FromObservable');
 exports.from = FromObservable_1.FromObservable.create;
 
-},{"./FromObservable":532}],538:[function(require,module,exports){
+},{"./FromObservable":537}],543:[function(require,module,exports){
 "use strict";
 var FromEventObservable_1 = require('./FromEventObservable');
 exports.fromEvent = FromEventObservable_1.FromEventObservable.create;
 
-},{"./FromEventObservable":531}],539:[function(require,module,exports){
+},{"./FromEventObservable":536}],544:[function(require,module,exports){
 "use strict";
 var IntervalObservable_1 = require('./IntervalObservable');
 exports.interval = IntervalObservable_1.IntervalObservable.create;
 
-},{"./IntervalObservable":533}],540:[function(require,module,exports){
+},{"./IntervalObservable":538}],545:[function(require,module,exports){
 "use strict";
 var merge_1 = require('../operator/merge');
 exports.merge = merge_1.mergeStatic;
 
-},{"../operator/merge":548}],541:[function(require,module,exports){
+},{"../operator/merge":553}],546:[function(require,module,exports){
 "use strict";
+var Observable_1 = require('../Observable');
 var isScheduler_1 = require('../util/isScheduler');
 var ArrayObservable_1 = require('../observable/ArrayObservable');
 var mergeAll_1 = require('./mergeAll');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Creates an output Observable which sequentially emits all values from every
  * given input Observable after the current Observable.
@@ -39416,7 +39632,7 @@ var mergeAll_1 = require('./mergeAll');
  * @see {@link concatMap}
  * @see {@link concatMapTo}
  *
- * @param {Observable} other An input Observable to concatenate after the source
+ * @param {ObservableInput} other An input Observable to concatenate after the source
  * Observable. More than one input Observables may be given as argument.
  * @param {Scheduler} [scheduler=null] An optional IScheduler to schedule each
  * Observable subscription on.
@@ -39435,17 +39651,41 @@ function concat() {
 exports.concat = concat;
 /* tslint:enable:max-line-length */
 /**
- * Creates an output Observable which sequentially emits all values from every
- * given input Observable after the current Observable.
+ * Creates an output Observable which sequentially emits all values from given
+ * Observable and then moves on to the next.
  *
  * <span class="informal">Concatenates multiple Observables together by
  * sequentially emitting their values, one Observable after the other.</span>
  *
  * <img src="./img/concat.png" width="100%">
  *
- * Joins multiple Observables together by subscribing to them one at a time and
- * merging their results into the output Observable. Will wait for each
- * Observable to complete before moving on to the next.
+ * `concat` joins multiple Observables together, by subscribing to them one at a time and
+ * merging their results into the output Observable. You can pass either an array of
+ * Observables, or put them directly as arguments. Passing an empty array will result
+ * in Observable that completes immediately.
+ *
+ * `concat` will subscribe to first input Observable and emit all its values, without
+ * changing or affecting them in any way. When that Observable completes, it will
+ * subscribe to then next Observable passed and, again, emit its values. This will be
+ * repeated, until the operator runs out of Observables. When last input Observable completes,
+ * `concat` will complete as well. At any given moment only one Observable passed to operator
+ * emits values. If you would like to emit values from passed Observables concurrently, check out
+ * {@link merge} instead, especially with optional `concurrent` parameter. As a matter of fact,
+ * `concat` is an equivalent of `merge` operator with `concurrent` parameter set to `1`.
+ *
+ * Note that if some input Observable never completes, `concat` will also never complete
+ * and Observables following the one that did not complete will never be subscribed. On the other
+ * hand, if some Observable simply completes immediately after it is subscribed, it will be
+ * invisible for `concat`, which will just move on to the next Observable.
+ *
+ * If any Observable in chain errors, instead of passing control to the next Observable,
+ * `concat` will error immediately as well. Observables that would be subscribed after
+ * the one that emitted error, never will.
+ *
+ * If you pass to `concat` the same Observable many times, its stream of values
+ * will be "replayed" on every subscription, which means you can repeat given Observable
+ * as many times as you like. If passing the same Observable to `concat` 1000 times becomes tedious,
+ * you can always use {@link repeat}.
  *
  * @example <caption>Concatenate a timer counting from 0 to 3 with a synchronous sequence from 1 to 10</caption>
  * var timer = Rx.Observable.interval(1000).take(4);
@@ -39456,11 +39696,12 @@ exports.concat = concat;
  * // results in:
  * // 0 -1000ms-> 1 -1000ms-> 2 -1000ms-> 3 -immediate-> 1 ... 10
  *
- * @example <caption>Concatenate 3 Observables</caption>
+ *
+ * @example <caption>Concatenate an array of 3 Observables</caption>
  * var timer1 = Rx.Observable.interval(1000).take(10);
  * var timer2 = Rx.Observable.interval(2000).take(6);
  * var timer3 = Rx.Observable.interval(500).take(10);
- * var result = Rx.Observable.concat(timer1, timer2, timer3);
+ * var result = Rx.Observable.concat([timer1, timer2, timer3]); // note that array is passed
  * result.subscribe(x => console.log(x));
  *
  * // results in the following:
@@ -39469,12 +39710,30 @@ exports.concat = concat;
  * // -2000ms-> 0 -2000ms-> 1 -2000ms-> ... 5
  * // -500ms-> 0 -500ms-> 1 -500ms-> ... 9
  *
+ *
+ * @example <caption>Concatenate the same Observable to repeat it</caption>
+ * const timer = Rx.Observable.interval(1000).take(2);
+ *
+ * Rx.Observable.concat(timer, timer) // concating the same Observable!
+ * .subscribe(
+ *   value => console.log(value),
+ *   err => {},
+ *   () => console.log('...and it is done!')
+ * );
+ *
+ * // Logs:
+ * // 0 after 1s
+ * // 1 after 2s
+ * // 0 after 3s
+ * // 1 after 4s
+ * // "...and it is done!" also after 4s
+ *
  * @see {@link concatAll}
  * @see {@link concatMap}
  * @see {@link concatMapTo}
  *
- * @param {Observable} input1 An input Observable to concatenate with others.
- * @param {Observable} input2 An input Observable to concatenate with others.
+ * @param {ObservableInput} input1 An input Observable to concatenate with others.
+ * @param {ObservableInput} input2 An input Observable to concatenate with others.
  * More than one input Observables may be given as argument.
  * @param {Scheduler} [scheduler=null] An optional IScheduler to schedule each
  * Observable subscription on.
@@ -39494,14 +39753,14 @@ function concatStatic() {
     if (isScheduler_1.isScheduler(args[observables.length - 1])) {
         scheduler = args.pop();
     }
-    if (scheduler === null && observables.length === 1) {
+    if (scheduler === null && observables.length === 1 && observables[0] instanceof Observable_1.Observable) {
         return observables[0];
     }
     return new ArrayObservable_1.ArrayObservable(observables, scheduler).lift(new mergeAll_1.MergeAllOperator(1));
 }
 exports.concatStatic = concatStatic;
 
-},{"../observable/ArrayObservable":528,"../util/isScheduler":578,"./mergeAll":549}],542:[function(require,module,exports){
+},{"../Observable":508,"../observable/ArrayObservable":533,"../util/isScheduler":584,"./mergeAll":554}],547:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39637,7 +39896,7 @@ var DelayMessage = (function () {
     return DelayMessage;
 }());
 
-},{"../Notification":502,"../Subscriber":510,"../scheduler/async":562,"../util/isDate":573}],543:[function(require,module,exports){
+},{"../Notification":507,"../Subscriber":515,"../scheduler/async":567,"../util/isDate":579}],548:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39647,7 +39906,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var Subscriber_1 = require('../Subscriber');
 var tryCatch_1 = require('../util/tryCatch');
 var errorObject_1 = require('../util/errorObject');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the previous item.
  *
@@ -39682,8 +39941,8 @@ var errorObject_1 = require('../util/errorObject');
  * @see {@link distinct}
  * @see {@link distinctUntilKeyChanged}
  *
- * @param {function} [compare] optional comparison function called to test if an item is distinct from the previous item in the source.
- * @return {Observable} an Observable that emits items from the source Observable with distinct values.
+ * @param {function} [compare] Optional comparison function called to test if an item is distinct from the previous item in the source.
+ * @return {Observable} An Observable that emits items from the source Observable with distinct values.
  * @method distinctUntilChanged
  * @owner Observable
  */
@@ -39746,7 +40005,7 @@ var DistinctUntilChangedSubscriber = (function (_super) {
     return DistinctUntilChangedSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":510,"../util/errorObject":571,"../util/tryCatch":582}],544:[function(require,module,exports){
+},{"../Subscriber":515,"../util/errorObject":576,"../util/tryCatch":588}],549:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39754,7 +40013,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subscriber_1 = require('../Subscriber');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Perform a side effect for every emission on the source Observable, but return
  * an Observable that is identical to the source.
@@ -39860,7 +40119,7 @@ var DoSubscriber = (function (_super) {
     return DoSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":510}],545:[function(require,module,exports){
+},{"../Subscriber":515}],550:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39868,7 +40127,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subscriber_1 = require('../Subscriber');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Filter items emitted by the source Observable by only emitting those that
  * satisfy a specified predicate.
@@ -39954,7 +40213,7 @@ var FilterSubscriber = (function (_super) {
     return FilterSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":510}],546:[function(require,module,exports){
+},{"../Subscriber":515}],551:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40007,7 +40266,7 @@ var EmptyError_1 = require('../util/EmptyError');
  * - `index`: the "index" of the value from the source.
  * @param {R} [defaultValue] The default value emitted in case no valid value
  * was found on the source.
- * @return {Observable<T|R>} an Observable of the first item that matches the
+ * @return {Observable<T|R>} An Observable of the first item that matches the
  * condition.
  * @method first
  * @owner Observable
@@ -40107,7 +40366,7 @@ var FirstSubscriber = (function (_super) {
     return FirstSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":510,"../util/EmptyError":567}],547:[function(require,module,exports){
+},{"../Subscriber":515,"../util/EmptyError":572}],552:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40195,12 +40454,13 @@ var MapSubscriber = (function (_super) {
     return MapSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":510}],548:[function(require,module,exports){
+},{"../Subscriber":515}],553:[function(require,module,exports){
 "use strict";
+var Observable_1 = require('../Observable');
 var ArrayObservable_1 = require('../observable/ArrayObservable');
 var mergeAll_1 = require('./mergeAll');
 var isScheduler_1 = require('../util/isScheduler');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Creates an output Observable which concurrently emits all values from every
  * given input Observable.
@@ -40236,13 +40496,13 @@ var isScheduler_1 = require('../util/isScheduler');
  * @see {@link mergeMapTo}
  * @see {@link mergeScan}
  *
- * @param {Observable} other An input Observable to merge with the source
+ * @param {ObservableInput} other An input Observable to merge with the source
  * Observable. More than one input Observables may be given as argument.
  * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
  * Observables being subscribed to concurrently.
  * @param {Scheduler} [scheduler=null] The IScheduler to use for managing
  * concurrency of input Observables.
- * @return {Observable} an Observable that emits items that are the result of
+ * @return {Observable} An Observable that emits items that are the result of
  * every input Observable.
  * @method merge
  * @owner Observable
@@ -40305,7 +40565,7 @@ exports.merge = merge;
  * @see {@link mergeMapTo}
  * @see {@link mergeScan}
  *
- * @param {...Observable} observables Input Observables to merge together.
+ * @param {...ObservableInput} observables Input Observables to merge together.
  * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
  * Observables being subscribed to concurrently.
  * @param {Scheduler} [scheduler=null] The IScheduler to use for managing
@@ -40333,14 +40593,14 @@ function mergeStatic() {
     else if (typeof last === 'number') {
         concurrent = observables.pop();
     }
-    if (scheduler === null && observables.length === 1) {
+    if (scheduler === null && observables.length === 1 && observables[0] instanceof Observable_1.Observable) {
         return observables[0];
     }
     return new ArrayObservable_1.ArrayObservable(observables, scheduler).lift(new mergeAll_1.MergeAllOperator(concurrent));
 }
 exports.mergeStatic = mergeStatic;
 
-},{"../observable/ArrayObservable":528,"../util/isScheduler":578,"./mergeAll":549}],549:[function(require,module,exports){
+},{"../Observable":508,"../observable/ArrayObservable":533,"../util/isScheduler":584,"./mergeAll":554}],554:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40452,7 +40712,7 @@ var MergeAllSubscriber = (function (_super) {
 }(OuterSubscriber_1.OuterSubscriber));
 exports.MergeAllSubscriber = MergeAllSubscriber;
 
-},{"../OuterSubscriber":505,"../util/subscribeToResult":580}],550:[function(require,module,exports){
+},{"../OuterSubscriber":510,"../util/subscribeToResult":586}],555:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40461,7 +40721,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var subscribeToResult_1 = require('../util/subscribeToResult');
 var OuterSubscriber_1 = require('../OuterSubscriber');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Projects each source value to an Observable which is merged in the output
  * Observable.
@@ -40500,7 +40760,7 @@ var OuterSubscriber_1 = require('../OuterSubscriber');
  * @see {@link mergeScan}
  * @see {@link switchMap}
  *
- * @param {function(value: T, ?index: number): Observable} project A function
+ * @param {function(value: T, ?index: number): ObservableInput} project A function
  * that, when applied to an item emitted by the source Observable, returns an
  * Observable.
  * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
@@ -40624,24 +40884,24 @@ var MergeMapSubscriber = (function (_super) {
 }(OuterSubscriber_1.OuterSubscriber));
 exports.MergeMapSubscriber = MergeMapSubscriber;
 
-},{"../OuterSubscriber":505,"../util/subscribeToResult":580}],551:[function(require,module,exports){
+},{"../OuterSubscriber":510,"../util/subscribeToResult":586}],556:[function(require,module,exports){
 "use strict";
 var ConnectableObservable_1 = require('../observable/ConnectableObservable');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
  * Returns an Observable that emits the results of invoking a specified selector on items
  * emitted by a ConnectableObservable that shares a single subscription to the underlying stream.
  *
  * <img src="./img/multicast.png" width="100%">
  *
- * @param {Function|Subject} Factory function to create an intermediate subject through
+ * @param {Function|Subject} subjectOrSubjectFactory - Factory function to create an intermediate subject through
  * which the source sequence's elements will be multicast to the selector function
  * or Subject to push source elements into.
- * @param {Function} Optional selector function that can use the multicasted source stream
+ * @param {Function} [selector] - Optional selector function that can use the multicasted source stream
  * as many times as needed, without causing multiple subscriptions to the source stream.
  * Subscribers to the given source will receive all notifications of the source from the
  * time of the subscription forward.
- * @return {Observable} an Observable that emits the results of invoking the selector
+ * @return {Observable} An Observable that emits the results of invoking the selector
  * on the items emitted by a `ConnectableObservable` that shares a single subscription to
  * the underlying stream.
  * @method multicast
@@ -40682,7 +40942,7 @@ var MulticastOperator = (function () {
 }());
 exports.MulticastOperator = MulticastOperator;
 
-},{"../observable/ConnectableObservable":529}],552:[function(require,module,exports){
+},{"../observable/ConnectableObservable":534}],557:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40731,15 +40991,12 @@ var ObserveOnSubscriber = (function (_super) {
         this.delay = delay;
     }
     ObserveOnSubscriber.dispatch = function (arg) {
-        var notification = arg.notification, destination = arg.destination, subscription = arg.subscription;
+        var notification = arg.notification, destination = arg.destination;
         notification.observe(destination);
-        if (subscription) {
-            subscription.unsubscribe();
-        }
+        this.unsubscribe();
     };
     ObserveOnSubscriber.prototype.scheduleMessage = function (notification) {
-        var message = new ObserveOnMessage(notification, this.destination);
-        message.subscription = this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, message));
+        this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, new ObserveOnMessage(notification, this.destination)));
     };
     ObserveOnSubscriber.prototype._next = function (value) {
         this.scheduleMessage(Notification_1.Notification.createNext(value));
@@ -40762,7 +41019,7 @@ var ObserveOnMessage = (function () {
 }());
 exports.ObserveOnMessage = ObserveOnMessage;
 
-},{"../Notification":502,"../Subscriber":510}],553:[function(require,module,exports){
+},{"../Notification":507,"../Subscriber":515}],558:[function(require,module,exports){
 "use strict";
 var ReplaySubject_1 = require('../ReplaySubject');
 var multicast_1 = require('./multicast');
@@ -40781,22 +41038,24 @@ function publishReplay(bufferSize, windowTime, scheduler) {
 }
 exports.publishReplay = publishReplay;
 
-},{"../ReplaySubject":506,"./multicast":551}],554:[function(require,module,exports){
+},{"../ReplaySubject":511,"./multicast":556}],559:[function(require,module,exports){
 "use strict";
 var ArrayObservable_1 = require('../observable/ArrayObservable');
 var ScalarObservable_1 = require('../observable/ScalarObservable');
 var EmptyObservable_1 = require('../observable/EmptyObservable');
 var concat_1 = require('./concat');
 var isScheduler_1 = require('../util/isScheduler');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
- * Returns an Observable that emits the items in a specified Iterable before it begins to emit items emitted by the
- * source Observable.
+ * Returns an Observable that emits the items you specify as arguments before it begins to emit
+ * items emitted by the source Observable.
  *
  * <img src="./img/startWith.png" width="100%">
  *
- * @param {Values} an Iterable that contains the items you want the modified Observable to emit first.
- * @return {Observable} an Observable that emits the items in the specified Iterable and then emits the items
+ * @param {...T} values - Items you want the modified Observable to emit first.
+ * @param {Scheduler} [scheduler] - A {@link IScheduler} to use for scheduling
+ * the emissions of the `next` notifications.
+ * @return {Observable} An Observable that emits the items in the specified Iterable and then emits the items
  * emitted by the source Observable.
  * @method startWith
  * @owner Observable
@@ -40826,7 +41085,7 @@ function startWith() {
 }
 exports.startWith = startWith;
 
-},{"../observable/ArrayObservable":528,"../observable/EmptyObservable":530,"../observable/ScalarObservable":536,"../util/isScheduler":578,"./concat":541}],555:[function(require,module,exports){
+},{"../observable/ArrayObservable":533,"../observable/EmptyObservable":535,"../observable/ScalarObservable":541,"../util/isScheduler":584,"./concat":546}],560:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40928,13 +41187,56 @@ var TimeoutSubscriber = (function (_super) {
     return TimeoutSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":510,"../scheduler/async":562,"../util/TimeoutError":569,"../util/isDate":573}],556:[function(require,module,exports){
+},{"../Subscriber":515,"../scheduler/async":567,"../util/TimeoutError":574,"../util/isDate":579}],561:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
-/* tslint:disable:max-line-length */
+/* tslint:enable:max-line-length */
 /**
- * @param PromiseCtor
- * @return {Promise<T>}
+ * Converts an Observable sequence to a ES2015 compliant promise.
+ *
+ * @example
+ * // Using normal ES2015
+ * let source = Rx.Observable
+ *   .just(42)
+ *   .toPromise();
+ *
+ * source.then((value) => console.log('Value: %s', value));
+ * // => Value: 42
+ *
+ * // Rejected Promise
+ * // Using normal ES2015
+ * let source = Rx.Observable
+ *   .throw(new Error('woops'))
+ *   .toPromise();
+ *
+ * source
+ *   .then((value) => console.log('Value: %s', value))
+ *   .catch((err) => console.log('Error: %s', err));
+ * // => Error: Error: woops
+ *
+ * // Setting via the config
+ * Rx.config.Promise = RSVP.Promise;
+ *
+ * let source = Rx.Observable
+ *   .of(42)
+ *   .toPromise();
+ *
+ * source.then((value) => console.log('Value: %s', value));
+ * // => Value: 42
+ *
+ * // Setting via the method
+ * let source = Rx.Observable
+ *   .just(42)
+ *   .toPromise(RSVP.Promise);
+ *
+ * source.then((value) => console.log('Value: %s', value));
+ * // => Value: 42
+ *
+ * @param PromiseCtor promise The constructor of the promise. If not provided,
+ * it will look for a constructor first in Rx.config.Promise then fall back to
+ * the native Promise constructor if available.
+ * @return {Promise<T>} An ES2015 compatible promise with the last value from
+ * the observable sequence.
  * @method toPromise
  * @owner Observable
  */
@@ -40958,7 +41260,7 @@ function toPromise(PromiseCtor) {
 }
 exports.toPromise = toPromise;
 
-},{"../util/root":579}],557:[function(require,module,exports){
+},{"../util/root":585}],562:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41003,7 +41305,7 @@ var Action = (function (_super) {
 }(Subscription_1.Subscription));
 exports.Action = Action;
 
-},{"../Subscription":511}],558:[function(require,module,exports){
+},{"../Subscription":516}],563:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41146,7 +41448,7 @@ var AsyncAction = (function (_super) {
 }(Action_1.Action));
 exports.AsyncAction = AsyncAction;
 
-},{"../util/root":579,"./Action":557}],559:[function(require,module,exports){
+},{"../util/root":585,"./Action":562}],564:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41198,7 +41500,7 @@ var AsyncScheduler = (function (_super) {
 }(Scheduler_1.Scheduler));
 exports.AsyncScheduler = AsyncScheduler;
 
-},{"../Scheduler":507}],560:[function(require,module,exports){
+},{"../Scheduler":512}],565:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41248,7 +41550,7 @@ var QueueAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.QueueAction = QueueAction;
 
-},{"./AsyncAction":558}],561:[function(require,module,exports){
+},{"./AsyncAction":563}],566:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41265,19 +41567,122 @@ var QueueScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.QueueScheduler = QueueScheduler;
 
-},{"./AsyncScheduler":559}],562:[function(require,module,exports){
+},{"./AsyncScheduler":564}],567:[function(require,module,exports){
 "use strict";
 var AsyncAction_1 = require('./AsyncAction');
 var AsyncScheduler_1 = require('./AsyncScheduler');
+/**
+ *
+ * Async Scheduler
+ *
+ * <span class="informal">Schedule task as if you used setTimeout(task, duration)</span>
+ *
+ * `async` scheduler schedules tasks asynchronously, by putting them on the JavaScript
+ * event loop queue. It is best used to delay tasks in time or to schedule tasks repeating
+ * in intervals.
+ *
+ * If you just want to "defer" task, that is to perform it right after currently
+ * executing synchronous code ends (commonly achieved by `setTimeout(deferredTask, 0)`),
+ * better choice will be the {@link asap} scheduler.
+ *
+ * @example <caption>Use async scheduler to delay task</caption>
+ * const task = () => console.log('it works!');
+ *
+ * Rx.Scheduler.async.schedule(task, 2000);
+ *
+ * // After 2 seconds logs:
+ * // "it works!"
+ *
+ *
+ * @example <caption>Use async scheduler to repeat task in intervals</caption>
+ * function task(state) {
+ *   console.log(state);
+ *   this.schedule(state + 1, 1000); // `this` references currently executing Action,
+ *                                   // which we reschedule with new state and delay
+ * }
+ *
+ * Rx.Scheduler.async.schedule(task, 3000, 0);
+ *
+ * // Logs:
+ * // 0 after 3s
+ * // 1 after 4s
+ * // 2 after 5s
+ * // 3 after 6s
+ *
+ * @static true
+ * @name async
+ * @owner Scheduler
+ */
 exports.async = new AsyncScheduler_1.AsyncScheduler(AsyncAction_1.AsyncAction);
 
-},{"./AsyncAction":558,"./AsyncScheduler":559}],563:[function(require,module,exports){
+},{"./AsyncAction":563,"./AsyncScheduler":564}],568:[function(require,module,exports){
 "use strict";
 var QueueAction_1 = require('./QueueAction');
 var QueueScheduler_1 = require('./QueueScheduler');
+/**
+ *
+ * Queue Scheduler
+ *
+ * <span class="informal">Put every next task on a queue, instead of executing it immediately</span>
+ *
+ * `queue` scheduler, when used with delay, behaves the same as {@link async} scheduler.
+ *
+ * When used without delay, it schedules given task synchronously - executes it right when
+ * it is scheduled. However when called recursively, that is when inside the scheduled task,
+ * another task is scheduled with queue scheduler, instead of executing immediately as well,
+ * that task will be put on a queue and wait for current one to finish.
+ *
+ * This means that when you execute task with `queue` scheduler, you are sure it will end
+ * before any other task scheduled with that scheduler will start.
+ *
+ * @examples <caption>Schedule recursively first, then do something</caption>
+ *
+ * Rx.Scheduler.queue.schedule(() => {
+ *   Rx.Scheduler.queue.schedule(() => console.log('second')); // will not happen now, but will be put on a queue
+ *
+ *   console.log('first');
+ * });
+ *
+ * // Logs:
+ * // "first"
+ * // "second"
+ *
+ *
+ * @example <caption>Reschedule itself recursively</caption>
+ *
+ * Rx.Scheduler.queue.schedule(function(state) {
+ *   if (state !== 0) {
+ *     console.log('before', state);
+ *     this.schedule(state - 1); // `this` references currently executing Action,
+ *                               // which we reschedule with new state
+ *     console.log('after', state);
+ *   }
+ * }, 0, 3);
+ *
+ * // In scheduler that runs recursively, you would expect:
+ * // "before", 3
+ * // "before", 2
+ * // "before", 1
+ * // "after", 1
+ * // "after", 2
+ * // "after", 3
+ *
+ * // But with queue it logs:
+ * // "before", 3
+ * // "after", 3
+ * // "before", 2
+ * // "after", 2
+ * // "before", 1
+ * // "after", 1
+ *
+ *
+ * @static true
+ * @name queue
+ * @owner Scheduler
+ */
 exports.queue = new QueueScheduler_1.QueueScheduler(QueueAction_1.QueueAction);
 
-},{"./QueueAction":560,"./QueueScheduler":561}],564:[function(require,module,exports){
+},{"./QueueAction":565,"./QueueScheduler":566}],569:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 function symbolIteratorPonyfill(root) {
@@ -41312,7 +41717,7 @@ function symbolIteratorPonyfill(root) {
 exports.symbolIteratorPonyfill = symbolIteratorPonyfill;
 exports.$$iterator = symbolIteratorPonyfill(root_1.root);
 
-},{"../util/root":579}],565:[function(require,module,exports){
+},{"../util/root":585}],570:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 function getSymbolObservable(context) {
@@ -41335,14 +41740,14 @@ function getSymbolObservable(context) {
 exports.getSymbolObservable = getSymbolObservable;
 exports.$$observable = getSymbolObservable(root_1.root);
 
-},{"../util/root":579}],566:[function(require,module,exports){
+},{"../util/root":585}],571:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 var Symbol = root_1.root.Symbol;
 exports.$$rxSubscriber = (typeof Symbol === 'function' && typeof Symbol.for === 'function') ?
     Symbol.for('rxSubscriber') : '@@rxSubscriber';
 
-},{"../util/root":579}],567:[function(require,module,exports){
+},{"../util/root":585}],572:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41371,7 +41776,7 @@ var EmptyError = (function (_super) {
 }(Error));
 exports.EmptyError = EmptyError;
 
-},{}],568:[function(require,module,exports){
+},{}],573:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41399,7 +41804,7 @@ var ObjectUnsubscribedError = (function (_super) {
 }(Error));
 exports.ObjectUnsubscribedError = ObjectUnsubscribedError;
 
-},{}],569:[function(require,module,exports){
+},{}],574:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41425,7 +41830,7 @@ var TimeoutError = (function (_super) {
 }(Error));
 exports.TimeoutError = TimeoutError;
 
-},{}],570:[function(require,module,exports){
+},{}],575:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41451,30 +41856,34 @@ var UnsubscriptionError = (function (_super) {
 }(Error));
 exports.UnsubscriptionError = UnsubscriptionError;
 
-},{}],571:[function(require,module,exports){
+},{}],576:[function(require,module,exports){
 "use strict";
 // typeof any so that it we don't have to cast when comparing a result to the error object
 exports.errorObject = { e: {} };
 
-},{}],572:[function(require,module,exports){
+},{}],577:[function(require,module,exports){
 "use strict";
 exports.isArray = Array.isArray || (function (x) { return x && typeof x.length === 'number'; });
 
-},{}],573:[function(require,module,exports){
+},{}],578:[function(require,module,exports){
+"use strict";
+exports.isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
+
+},{}],579:[function(require,module,exports){
 "use strict";
 function isDate(value) {
     return value instanceof Date && !isNaN(+value);
 }
 exports.isDate = isDate;
 
-},{}],574:[function(require,module,exports){
+},{}],580:[function(require,module,exports){
 "use strict";
 function isFunction(x) {
     return typeof x === 'function';
 }
 exports.isFunction = isFunction;
 
-},{}],575:[function(require,module,exports){
+},{}],581:[function(require,module,exports){
 "use strict";
 var isArray_1 = require('../util/isArray');
 function isNumeric(val) {
@@ -41487,28 +41896,28 @@ function isNumeric(val) {
 exports.isNumeric = isNumeric;
 ;
 
-},{"../util/isArray":572}],576:[function(require,module,exports){
+},{"../util/isArray":577}],582:[function(require,module,exports){
 "use strict";
 function isObject(x) {
     return x != null && typeof x === 'object';
 }
 exports.isObject = isObject;
 
-},{}],577:[function(require,module,exports){
+},{}],583:[function(require,module,exports){
 "use strict";
 function isPromise(value) {
     return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
 }
 exports.isPromise = isPromise;
 
-},{}],578:[function(require,module,exports){
+},{}],584:[function(require,module,exports){
 "use strict";
 function isScheduler(value) {
     return value && typeof value.schedule === 'function';
 }
 exports.isScheduler = isScheduler;
 
-},{}],579:[function(require,module,exports){
+},{}],585:[function(require,module,exports){
 (function (global){
 "use strict";
 /**
@@ -41524,10 +41933,10 @@ if (!exports.root) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],580:[function(require,module,exports){
+},{}],586:[function(require,module,exports){
 "use strict";
 var root_1 = require('./root');
-var isArray_1 = require('./isArray');
+var isArrayLike_1 = require('./isArrayLike');
 var isPromise_1 = require('./isPromise');
 var isObject_1 = require('./isObject');
 var Observable_1 = require('../Observable');
@@ -41549,7 +41958,7 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
             return result.subscribe(destination);
         }
     }
-    else if (isArray_1.isArray(result)) {
+    else if (isArrayLike_1.isArrayLike(result)) {
         for (var i = 0, len = result.length; i < len && !destination.closed; i++) {
             destination.next(result[i]);
         }
@@ -41603,7 +42012,7 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
 }
 exports.subscribeToResult = subscribeToResult;
 
-},{"../InnerSubscriber":501,"../Observable":503,"../symbol/iterator":564,"../symbol/observable":565,"./isArray":572,"./isObject":576,"./isPromise":577,"./root":579}],581:[function(require,module,exports){
+},{"../InnerSubscriber":506,"../Observable":508,"../symbol/iterator":569,"../symbol/observable":570,"./isArrayLike":578,"./isObject":582,"./isPromise":583,"./root":585}],587:[function(require,module,exports){
 "use strict";
 var Subscriber_1 = require('../Subscriber');
 var rxSubscriber_1 = require('../symbol/rxSubscriber');
@@ -41624,7 +42033,7 @@ function toSubscriber(nextOrObserver, error, complete) {
 }
 exports.toSubscriber = toSubscriber;
 
-},{"../Observer":504,"../Subscriber":510,"../symbol/rxSubscriber":566}],582:[function(require,module,exports){
+},{"../Observer":509,"../Subscriber":515,"../symbol/rxSubscriber":571}],588:[function(require,module,exports){
 "use strict";
 var errorObject_1 = require('./errorObject');
 var tryCatchTarget;
@@ -41644,7 +42053,7 @@ function tryCatch(fn) {
 exports.tryCatch = tryCatch;
 ;
 
-},{"./errorObject":571}],583:[function(require,module,exports){
+},{"./errorObject":576}],589:[function(require,module,exports){
 // Generated by CoffeeScript 1.9.2
 (function() {
   var hasProp = {}.hasOwnProperty,
@@ -41668,7 +42077,7 @@ exports.tryCatch = tryCatch;
 
 }).call(this);
 
-},{}],584:[function(require,module,exports){
+},{}],590:[function(require,module,exports){
 
 /**
  * An Array.prototype.slice.call(arguments) alternative
@@ -41703,7 +42112,7 @@ module.exports = function (args, slice, sliceEnd) {
 }
 
 
-},{}],585:[function(require,module,exports){
+},{}],591:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -42456,7 +42865,7 @@ module.exports = function (args, slice, sliceEnd) {
     return SparkMD5;
 }));
 
-},{}],586:[function(require,module,exports){
+},{}],592:[function(require,module,exports){
 module.exports = (function() {
     var exports = {};
 
@@ -42495,7 +42904,7 @@ module.exports = (function() {
     return exports;
 })();
 
-},{}],587:[function(require,module,exports){
+},{}],593:[function(require,module,exports){
 module.exports = (function(
     envs
 ) {
@@ -42573,7 +42982,7 @@ module.exports = (function(
     browser: require('./browser.js')
 });
 
-},{"./browser.js":586,"./nodeJS.js":588}],588:[function(require,module,exports){
+},{"./browser.js":592,"./nodeJS.js":594}],594:[function(require,module,exports){
 (function (process){
 module.exports = (function() {
     var exports = {};
@@ -42644,7 +43053,7 @@ module.exports = (function() {
 })();
 
 }).call(this,require('_process'))
-},{"_process":491}],589:[function(require,module,exports){
+},{"_process":496}],595:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -43378,7 +43787,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":590,"punycode":492,"querystring":495}],590:[function(require,module,exports){
+},{"./util":596,"punycode":497,"querystring":500}],596:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -43396,7 +43805,7 @@ module.exports = {
   }
 };
 
-},{}],591:[function(require,module,exports){
+},{}],597:[function(require,module,exports){
 'use strict';
 
 /**

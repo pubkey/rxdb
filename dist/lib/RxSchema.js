@@ -368,17 +368,11 @@ function normalize(jsonSchema) {
             });
         }
         if ((0, _isPlainObject2.default)(src)) {
-            var _ret = function () {
-                var out = {};
-                Object.keys(src).sort(defaultSortFn).forEach(function (key) {
-                    out[key] = sort(src[key]);
-                });
-                return {
-                    v: out
-                };
-            }();
-
-            if ((typeof _ret === 'undefined' ? 'undefined' : (0, _typeof3.default)(_ret)) === "object") return _ret.v;
+            var out = {};
+            Object.keys(src).sort(defaultSortFn).forEach(function (key) {
+                out[key] = sort(src[key]);
+            });
+            return out;
         }
         return src;
     };

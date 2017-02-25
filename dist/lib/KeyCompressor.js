@@ -102,20 +102,14 @@ var KeyCompressor = function () {
 
             // object
             else {
-                    var _ret = function () {
-                        var ret = {};
-                        Object.keys(obj).forEach(function (key) {
-                            var replacedKey = key;
-                            if ((key.startsWith('|') || key.startsWith('_')) && reverseTable[key]) replacedKey = reverseTable[key];
+                    var ret = {};
+                    Object.keys(obj).forEach(function (key) {
+                        var replacedKey = key;
+                        if ((key.startsWith('|') || key.startsWith('_')) && reverseTable[key]) replacedKey = reverseTable[key];
 
-                            ret[replacedKey] = _this2._decompressObj(obj[key]);
-                        });
-                        return {
-                            v: ret
-                        };
-                    }();
-
-                    if ((typeof _ret === 'undefined' ? 'undefined' : (0, _typeof3.default)(_ret)) === "object") return _ret.v;
+                        ret[replacedKey] = _this2._decompressObj(obj[key]);
+                    });
+                    return ret;
                 }
         }
     }, {
@@ -190,35 +184,33 @@ var KeyCompressor = function () {
             var _this4 = this;
 
             if (!this._table) {
-                (function () {
-                    // create new table
+                // create new table
 
-                    var lastKeyNumber = 0;
-                    var nextKey = function nextKey() {
-                        lastKeyNumber++;
-                        return util.numberToLetter(lastKeyNumber - 1);
-                    };
-                    _this4._table = {};
-                    var jsonSchema = _this4.schema.normalized;
+                var lastKeyNumber = 0;
+                var nextKey = function nextKey() {
+                    lastKeyNumber++;
+                    return util.numberToLetter(lastKeyNumber - 1);
+                };
+                this._table = {};
+                var jsonSchema = this.schema.normalized;
 
-                    var propertiesToTable = function propertiesToTable(path, obj) {
-                        Object.keys(obj).map(function (key) {
-                            var propertyObj = obj[key];
-                            var fullPath = key == 'properties' ? path : util.trimDots(path + '.' + key);
-                            if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) === 'object' && // do not add schema-attributes
-                            !Array.isArray(propertyObj) && // do not use arrays
-                            !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
-                            !fullPath.startsWith('_') // _id/_rev etc should never be compressed
-                            ) _this4._table[fullPath] = '|' + nextKey();
+                var propertiesToTable = function propertiesToTable(path, obj) {
+                    Object.keys(obj).map(function (key) {
+                        var propertyObj = obj[key];
+                        var fullPath = key == 'properties' ? path : util.trimDots(path + '.' + key);
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) === 'object' && // do not add schema-attributes
+                        !Array.isArray(propertyObj) && // do not use arrays
+                        !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
+                        !fullPath.startsWith('_') // _id/_rev etc should never be compressed
+                        ) _this4._table[fullPath] = '|' + nextKey();
 
-                            // primary-key is always compressed to _id
-                            if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
+                        // primary-key is always compressed to _id
+                        if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
 
-                            if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
-                        });
-                    };
-                    propertiesToTable('', jsonSchema);
-                })();
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
+                    });
+                };
+                propertiesToTable('', jsonSchema);
             }
             return this._table;
         }
@@ -228,15 +220,13 @@ var KeyCompressor = function () {
             var _this5 = this;
 
             if (!this._reverseTable) {
-                (function () {
-                    var table = _this5.table;
-                    _this5._reverseTable = {};
-                    Object.keys(table).forEach(function (key) {
-                        var value = table[key];
-                        var fieldName = key.split('.').pop();
-                        _this5._reverseTable[value] = fieldName;
-                    });
-                })();
+                var table = this.table;
+                this._reverseTable = {};
+                Object.keys(table).forEach(function (key) {
+                    var value = table[key];
+                    var fieldName = key.split('.').pop();
+                    _this5._reverseTable[value] = fieldName;
+                });
             }
             return this._reverseTable;
         }
