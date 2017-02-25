@@ -138,7 +138,7 @@ console.log(lastState);
 
 ### synced$
 Emits a boolean value, depending if the RxDocument is in the same state then its value stored in the database.
-// TODO add better example
+This is usefull to show warings when 2 or more users edit a document at the same time.
 
 ```js
 let lastState = null;
@@ -157,6 +157,20 @@ await myDocument2.save();
 console.log(lastState);
 // false
 ```
+
+<details>
+<summary>
+  <b>Example with angular2</b>
+</summary>
+```html
+<div *ngIf="!(hero.synced$ | async)">
+    <h4>Warning:</h4>
+    <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
+    <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
+</div>
+```
+![multiwindow.gif](docs/files/synced.gif)
+</details>
 
 ### resync()
 If the RxDocument is not in sync (sycned$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
