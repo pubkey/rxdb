@@ -1,11 +1,29 @@
 <md-card *ngIf="hero">
-  <h4>Edit hero: {{hero.name}}</h4>
-  <md-input-container>
-      <input mdInput type="number" [(ngModel)]="hero.hp" min="0" [max]="hero.maxHP" name="hp" />
-  </md-input-container>
+    <md-card-subtitle>Edit</md-card-subtitle>
 
-  <br />
-  <button md-raised-button color="primary" (click)=done.emit(false)>cancel</button>
-  <button md-raised-button color="primary" (click)=submit()>submit</button>
+    <div class="alert" *ngIf="!(hero.synced$ | async)">
+        <h4>Warning:</h4>
+        <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
+        <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
+    </div>
+
+    <div class="alert deleted" *ngIf="(hero.deleted$ | async)">
+        <h4>Error:</h4>
+        <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
+    </div>
+
+    <h5>
+      <div class="color-box" [style.background-color]="hero.color"></div>
+      {{hero.name}}
+    </h5>
+
+
+    <md-input-container>
+        HP: <input mdInput type="number" [(ngModel)]="hero.hp" min="0" [max]="hero.maxHP" name="hp" />
+    </md-input-container>
+
+    <br />
+    <button md-raised-button color="primary" (click)="cancel()">cancel</button>
+    <button *ngIf="!(hero.deleted$ | async)" md-raised-button color="primary" (click)=submit()>submit</button>
 
 </md-card>

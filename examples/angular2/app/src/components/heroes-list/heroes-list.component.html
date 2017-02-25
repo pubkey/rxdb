@@ -5,7 +5,15 @@
 <md-list *ngIf="heroes">
     <md-list-item *ngFor="let hero of heroes" class="listHero">
         <div class="color-box" [style.background-color]="hero.color"></div>
-        <div class="name">{{hero.name}}   -  {{hero.hp}}</div>
-        <button md-raised-button (click)="editHero(hero)">Edit</button>
+        <div class="name">
+          {{hero.name}}
+          <div class="life">
+            <div class="currentPercent" [style.width]="hero.hpPercent() + '%'"></div>
+          </div>
+        </div>
+        <div class="actions">
+            <i class="fa fa-pencil-square-o" aria-hidden="true" (click)="editHero(hero)"></i>
+            <i class="fa fa-trash-o" aria-hidden="true" (click)="deleteHero(hero)"></i>
+        </div>
     </md-list-item>
 </md-list>

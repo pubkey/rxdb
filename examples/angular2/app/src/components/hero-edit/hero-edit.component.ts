@@ -1,4 +1,4 @@
-import { Component, ViewChildren, Input, OnChanges, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChildren, Input, OnChanges, Output, EventEmitter, OnInit } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
 import { RxDocument } from '../../../../../../';
 
@@ -20,5 +20,10 @@ export class HeroEditComponent {
     async submit() {
         await this.hero.save();
         this.done.emit(true);
+    }
+
+    async cancel() {
+        this.hero.resync();
+        this.done.emit(false)
     }
 }

@@ -24,6 +24,9 @@ export class HeroesListComponent implements OnInit, OnDestroy {
     editHero(hero) {
         this.edit = hero;
     }
+    deleteHero(hero) {
+        hero.remove();
+    }
 
     constructor(
         private databaseService: DatabaseService,

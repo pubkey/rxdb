@@ -1,4 +1,6 @@
 .listHero {
+    width: 100%;
+
     .color-box {
         width: 20px;
         height: 20px;
@@ -9,4 +11,25 @@
         border-style: solid;
         border-color: grey;
     }
+
+    .name {
+        flex: 1;
+
+        .life {
+            width: 35%;
+            height: 2px;
+            background-color: red;
+
+            .currentPercent {
+                height: 100%;
+                background-color: green;
+            }
+        }
+    }
+
+    i {
+        cursor: pointer;
+    }
+
+    .actions {}
 }
