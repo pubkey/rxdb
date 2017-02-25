@@ -426,7 +426,7 @@ export async function create(database, name, schema, pouchSettings = {}) {
         name.length == 0
     ) throw new TypeError('given name is no string or empty');
 
-    const collection = new RxCollection(database, name, schema);
+    const collection = new RxCollection(database, name, schema, pouchSettings);
     await collection.prepare();
 
     return collection;
