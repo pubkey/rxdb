@@ -158,6 +158,19 @@ console.log(lastState);
 // false
 ```
 
+### resync()
+If the RxDocument is not in sync (sycned$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
+
+```js
+myDocument.firstName = 'foobar';
+
+// now someone else overwrites firstName with 'Alice'
+
+myDocument.resync();
+
+console.log(myDocument.firstName);
+// Alice
+```
 
 ---------
 If you are new to RxDB, you should continue [here](./Middleware.md)
