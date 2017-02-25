@@ -46,6 +46,15 @@ class RxDocument {
         return this._synced$.asObservable().distinctUntilChanged();
     }
 
+    resync() {
+        if (this._synced$.getValue())
+            return;
+        else {
+            this._data = clone(this._dataSync$.getValue());
+            this._synced$.next(true);
+        }
+    }
+
     /**
      * returns the observable which emits the plain-data of this document
      * @return {Observable}
@@ -67,13 +76,15 @@ class RxDocument {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = changeEvent.data.v;
+                const newData = clone(changeEvent.data.v);
+                delete newData._ext;
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 
                 if (isDeepEqual(prevSyncData, prevData)) {
                     // document is in sync, overwrite _data
-                    this._data = clone(newData);
+                    this._data = newData;
+
                     if (this._synced$.getValue() != true)
                         this._synced$.next(true);
                 } else {
