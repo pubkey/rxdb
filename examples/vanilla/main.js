@@ -12,6 +12,7 @@ var leaderIcon = document.querySelector('#leader-icon');
 var heroSchema = {
     "title": "hero schema",
     "description": "describes a simple hero",
+    "version": 0,
     "type": "object",
     "properties": {
         "name": {
@@ -29,7 +30,11 @@ console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 
 window.RxDB
-    .create('heroesDB', 'idb', 'myLongAndStupidPassword', true)
+    .create({
+        name: 'heroesdb',
+        adapter: 'idb',
+        password: 'myLongAndStupidPassword'
+    })
     .then(function(db) {
         console.log('created database');
         window.db = db;
@@ -39,7 +44,10 @@ window.RxDB
             document.title = '♛ ' + document.title;
             leaderIcon.style.display = 'block';
         });
-        return db.collection('hero', heroSchema);
+        return db.collection({
+            name: 'hero',
+            schema: heroSchema
+        });
     })
     .then(function(col) {
         window.col = col;
