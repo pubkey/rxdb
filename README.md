@@ -41,7 +41,7 @@ The <b>reactive</b>, <b>serverless</b>, <b>client-side</b>, <b><a href="http://o
         <br/>
         <li>Schemas (jsonschema)</li>
         <br/>
-        <li>Mango-Query (MongoDB)</li>
+        <li>Mongo-Query (MongoDB)</li>
         <br/>
         <li>Encryption</li>
         <br/>
