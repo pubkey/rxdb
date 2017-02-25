@@ -1,9 +1,7 @@
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
-import {Observable} from 'rxjs';
+import { Component, OnInit, OnDestroy, NgZone, Output, Input, EventEmitter } from '@angular/core';
 import { RxDocument } from '../../../../../../';
 
 import { DatabaseService } from '../../services/database.service';
-import { Hero } from '../../logic/hero';
 
 
 @Component({
@@ -17,6 +15,15 @@ export class HeroesListComponent implements OnInit, OnDestroy {
 
     heroes: RxDocument[];
     sub;
+
+    @Output('edit') editChange: EventEmitter<RxDocument> = new EventEmitter();
+    set edit(hero) {
+        console.log('editHero: ' + hero.name);
+        this.editChange.emit(hero);
+    }
+    editHero(hero) {
+        this.edit = hero;
+    }
 
     constructor(
         private databaseService: DatabaseService,

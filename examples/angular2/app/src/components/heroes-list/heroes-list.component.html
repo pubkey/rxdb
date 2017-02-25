@@ -5,7 +5,7 @@
 <md-list *ngIf="heroes">
     <md-list-item *ngFor="let hero of heroes" class="listHero">
         <div class="color-box" [style.background-color]="hero.color"></div>
-        <div class="name">{{hero.name}}</div>
-        <md-icon svgIcon="thumb-up" class="green"></md-icon>
+        <div class="name">{{hero.name}}   -  {{hero.hp}}</div>
+        <button md-raised-button (click)="editHero(hero)">Edit</button>
     </md-list-item>
 </md-list>

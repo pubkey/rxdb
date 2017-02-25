@@ -11,4 +11,8 @@ export class HomeComponent {
 
     constructor() { }
     ngOnInit() { }
+
+    editHero(hero) {
+        this.editedHero = hero;
+    }
 }

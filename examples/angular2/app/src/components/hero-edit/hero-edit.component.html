@@ -1,4 +1,11 @@
-<md-card>
-  <h4>Edit hero</h4>
-    sdafasdf
+<md-card *ngIf="hero">
+  <h4>Edit hero: {{hero.name}}</h4>
+  <md-input-container>
+      <input mdInput type="number" [(ngModel)]="hero.hp" min="0" [max]="hero.maxHP" name="hp" />
+  </md-input-container>
+
+  <br />
+  <button md-raised-button color="primary" (click)=done.emit(false)>cancel</button>
+  <button md-raised-button color="primary" (click)=submit()>submit</button>
+
 </md-card>
