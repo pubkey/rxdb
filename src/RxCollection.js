@@ -17,33 +17,7 @@ import * as RxChangeEvent from './RxChangeEvent';
 import * as KeyCompressor from './KeyCompressor';
 import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
-
-
-class DocCache {
-    constructor() {
-        this._map = new WeakMap();
-        this._keys = {};
-    }
-    _getKeyById(id) {
-        if (!this._keys[id])
-            this._keys[id] = {};
-        return this._keys[id];
-    }
-    _removeKey(id) {
-        delete this._keys[id];
-    }
-    get(id) {
-        return this._map.get(this._getKeyById(id));
-    }
-    set(id, obj) {
-        return this._map.set(this._getKeyById(id), obj);
-    }
-    delete(id) {
-        this._map.delete(this._getKeyById(id));
-        this._removeKey(id);
-    }
-};
-
+import * as DocCache from './DocCache';
 
 class RxCollection {
 
@@ -59,7 +33,7 @@ class RxCollection {
         this._methods = methods;
 
         // contains a weak link to all used RxDocuments of this collection
-        this._docCache = new DocCache();
+        this._docCache = DocCache.create();
 
 
         // defaults

@@ -158,6 +158,26 @@ describe('Reactive-Query.test.js', () => {
             await util.promiseWait(20);
             assert.equal(valuesAr.length, 1);
         });
+
+        it('BUG: should have the document in DocCache when getting it from observe', async() => {
+            const name = util.randomCouchString(10);
+            const c = await humansCollection.createPrimary(1, name);
+            const c2 = await humansCollection.createPrimary(0, name);
+            const doc = await c.findOne().exec();
+            const docId = doc.getPrimary();
+
+            assert.deepEqual(c2._docCache.get(docId), undefined);
+
+            const results = [];
+            const sub = c2.find().$.subscribe(docs => results.push(docs));
+            await util.waitUntil(() => results.length >= 2);
+
+            assert.equal(c2._docCache.get(docId).getPrimary(), docId);
+
+            sub.unsubscribe();
+            c.database.destroy();
+            c2.database.destroy();
+        });
     });
     describe('negative', () => {
         it('get no change when nothing happens', async() => {

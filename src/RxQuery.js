@@ -101,7 +101,7 @@ class RxQuery {
                 .distinctUntilChanged((prev, now) => {
                     return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
                 })
-                .map(docs => RxDocument.createAr(this.collection, docs, this.toJSON()))
+                .map(docs => this.collection._createDocuments(docs))
                 .do(docs => this._subject.next(docs))
                 .map(x => '');
 
