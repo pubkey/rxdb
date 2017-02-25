@@ -1,3 +1,9 @@
+## 2.0.5 (February 25, 2017)
+
+Features:
+  - possibility to add `pouchSettings` when creating a collection
+  - typings compatible with `noImplicitAny` Typescript projects
+
 ## 2.0.4 (February 12, 2017)
 
 Bugfixes:
