@@ -179,6 +179,7 @@ declare class RxDocument {
     $: Observable<any>;
     deleted$: Observable<boolean>;
     synced$: Observable<boolean>;
+    resync(): void;
 
     getPrimary(): string;
     get$(path: string): Observable<any>;
