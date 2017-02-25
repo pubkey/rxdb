@@ -169,7 +169,7 @@ console.log(lastState);
     <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
 </div>
 ```
-![multiwindow.gif](docs/files/synced.gif)
+![synced.gif](files/synced.gif)
 </details>
 
 ### resync()
