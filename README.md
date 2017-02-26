@@ -12,6 +12,13 @@
   Reactive, serverless, client-side, offline-first database in javascript.
 </p>
 
+<p align="center">
+  <a href="https://gitter.im/pubkey/rxdb">
+    <img src="https://camo.githubusercontent.com/55e37350129c6b1e6410f3f985e295a101361439/68747470733a2f2f696d672e736869656c64732e696f2f6769747465722f726f6f6d2f616d61726b2f67756e2e6a732e737667" />
+  </a>
+</p>
+
+
 <br/>
 
 ---
