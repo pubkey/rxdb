@@ -28,7 +28,7 @@
 
 * **Omniusable** on browsers, nodejs, election, cordova, react-native and every other javascript-runtime
 * **Reactive** data-handling based on [rxjs](https://github.com/ReactiveX/rxjs)
-* **Replication** between client and server-data, compatible with pouchdb, nodejs, couchdb and IBM Cloudant
+* **Replication** between client and server-data, compatible with pouchdb, couchdb and IBM Cloudant
 * **Schema-based** with the easy-to-learn standard of [jsonschema](http://json-schema.org/)
 * **Mango-Query** exactly like you know from mongoDB and mongoose
 * **Encryption** of single data-fields to protect your users data
