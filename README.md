@@ -1,7 +1,3 @@
-<a href="https://twitter.com/pubkeypubkey" target="_blank">
-  <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Twitter_bird_logo_2012.svg/600px-Twitter_bird_logo_2012.svg.png" width="30px" align="right" />
-</a>
-
 <p align="center">
   <a href="https://github.com/pubkey/rxdb">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="450px" />
