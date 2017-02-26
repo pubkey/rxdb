@@ -333,4 +333,5 @@ Get started now by [reading the docs](./docs/README.md) or exploring the [exampl
 [Check out how you can contribute to this project](./docs/Contribute.md).
 
 ## Follow up
-Follow me on [twitter](https://twitter.com/pubkeypubkey) to not miss the latest enhancements.
+- Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
+- Joint the chat on [gitter](https://gitter.im/pubkey/rxdb)
