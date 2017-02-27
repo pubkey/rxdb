@@ -11,6 +11,12 @@ This is an example usage of RxDB with React-native. It implements a simple heroe
 6. run `npm install`
 7. run `react-native run-ios` or `react-native run-android`
 
+# Developing with android
+1. Import `react-native/android` as project into Android-Studio
+2. Start an emulation-device
+3. Run `react-native start` in Terminal 1
+4. run `react-native run-android` in Terminal 2
+
 # Screenshot
 
 ![Screenshot](docfiles/screenshot.png?raw=true)
