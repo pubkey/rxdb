@@ -20,6 +20,9 @@
   <a href="https://twitter.com/rxdbjs">
     <img src="docs/files/twitter_follow.png" width="111px" />
   </a>
+  <a href="https://www.patreon.com/rxdb">
+    <img src="docs/files/icons/patreon.png" width="111px" />
+  </a>
 </p>
 
 
