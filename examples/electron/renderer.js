@@ -1,50 +1,56 @@
 //var RxDB = require('../../'); // TODO use this
-var RxDB = require('rxdb');
+require('babel-polyfill');
+const RxDB = require('../../');
 RxDB.plugin(require('pouchdb-adapter-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
 
-var listBox = document.querySelector('#list-box');
-var insertBox = document.querySelector('#insert-box');
-var heroesList = document.querySelector('#heroes-list');
+const listBox = document.querySelector('#list-box');
+const insertBox = document.querySelector('#insert-box');
+const heroesList = document.querySelector('#heroes-list');
 
-var heroSchema = {
-    "title": "hero schema",
-    "description": "describes a simple hero",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "primary": true
+const heroSchema = {
+    title: 'hero schema',
+    description: 'describes a simple hero',
+    version: 0,
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string',
+            primary: true
         },
-        "color": {
-            "type": "string"
+        color: {
+            type: 'string'
         }
     },
-    "required": ["color"]
+    required: ['color']
 };
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 
-let database, column;
+let database;
 
 RxDB
-    .create('heroesDB2', 'websql', 'myLongAndStupidPassword', true)
+    .create({
+        name: 'heroesdb',
+        adapter: 'websql',
+        password: 'myLongAndStupidPassword'
+    })
     .then(function(db) {
+        console.log('creating hero-collection..');
         database = db;
-        return db.collection('hero', heroSchema);
+        return db.collection({
+            name: 'heroes',
+            schema: heroSchema
+        });
     })
     .then(function(col) {
-        column = col;
-        return column;
-    })
-    .then(function(col) {
-        console.log('DatabaseService: sync');
-        col.sync(syncURL + 'hero/');
-        return col;
-    })
-    .then(function(col) {
+
+        // sync
+        console.log('starting sync');
+        database.heroes.sync(syncURL + 'hero/');
+
         col.query()
             .sort({
                 name: 1
@@ -56,25 +62,26 @@ RxDB
                 }
                 console.log('observable fired');
                 console.dir(heroes);
-                heroesList.innerHTML = '';
-                heroes.forEach(function(hero) {
-                    heroesList.innerHTML = heroesList.innerHTML +
-                        '<li>' +
-                        '<div class="color-box" style="background:' + hero.get('color') + '"></div>' +
-                        '<div class="name">' + hero.get('name') + '</div>' +
-                        '</li>'
-                });
+
+                heroesList.innerHTML = heroes
+                    .map(hero => {
+                        return '<li>' +
+                            '<div class="color-box" style="background:' + hero.color + '"></div>' +
+                            '<div class="name">' + hero.name + '</div>' +
+                            '</li>';
+                    })
+                    .reduce((pre, cur) => pre += cur, '');
             });
     });
 
 addHero = function() {
-    var name = document.querySelector('input[name="name"]').value;
-    var color = document.querySelector('input[name="color"]').value;
-    var obj = {
+    const name = document.querySelector('input[name="name"]').value;
+    const color = document.querySelector('input[name="color"]').value;
+    const obj = {
         name: name,
         color: color
     };
     console.log('inserting hero:');
     console.dir(obj);
-    column.insert(obj);
-}
+    database.heroes.insert(obj);
+};
