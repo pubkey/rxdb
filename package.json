@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "Offline-first database with Reactive, Sync, Schema, Promises, Mongo-Query, Encryption, LevelDown",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -59,7 +59,7 @@
     "crypto-js": "3.1.8",
     "es6-promise": "^4.0.5",
     "jsonschema": "1.1.1",
-    "object-path": "0.11.3",
+    "object-path": "^0.11.4",
     "pouchdb-core": "6.1.2",
     "pouchdb-find": "^0.10.5",
     "random-token": "0.0.8",
@@ -130,7 +130,7 @@
     "rollup-plugin-babel": "2.7.1",
     "rollup-plugin-commonjs": "7.0.0",
     "rollup-plugin-node-resolve": "2.0.0",
-    "rollup-plugin-sizes": "0.2.3",
+    "rollup-plugin-sizes": "^0.3.0",
     "rollup-plugin-uglify": "1.0.1",
     "rxjs": "5.2.0",
     "typescript": "^2.2.1",
