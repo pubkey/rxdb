@@ -8,7 +8,7 @@ Environment          | Status
 -------------------- | ---------------------
 browser (vanilla-js) | [done](./vanilla)
 nodeJS               | TODO
-react-native         | [done](./reactNative)
+react-native         | [done](./react-native)
 ionic2               | TODO
 cordova              | TODO
 nativescript         | TODO
