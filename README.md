@@ -343,3 +343,4 @@ Get started now by [reading the docs](./docs/README.md) or exploring the [exampl
 ## Follow up
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
 - Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
+- Support RxDB at [patreon](https://www.patreon.com/rxdb)
