@@ -9,11 +9,8 @@ import '@angular/router';
 
 
 // RxJS stuff
-import 'rxjs/Observable';
-import 'rxjs/add/operator/map';
+import 'rxjs';
 
 // Other vendors for example jQuery, Lodash or Bootstrap
 // You can import js, ts, css, sass, ...
-
-
 import 'hammerjs';

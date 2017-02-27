@@ -34,8 +34,7 @@ class RxQuery {
         // merge mquery-prototype functions to this
         const mquery_proto = Object.getPrototypeOf(this.mquery);
         Object.keys(mquery_proto).forEach(attrName => {
-
-            if (['select'].includes(attrName)) return;
+            if (['select', 'remove', 'update'].includes(attrName)) return;
 
             // only param1 is tunneled here on purpose so no callback-call can be done
             this[attrName] = param1 => {
@@ -52,13 +51,19 @@ class RxQuery {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         this.sort = params => {
-
             // workarround because sort wont work on unused keys
             if (typeof params !== 'object')
                 this.mquery.where(params).gt(null);
-            else
-                Object.keys(params).map(k => this.mquery.where(k).gt(null));
-
+            else {
+                Object.keys(params).forEach(k => {
+                    if (!this.mquery._conditions[k] || !this.mquery._conditions[k].$gt) {
+                        const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
+                        if (schemaObj.type == 'integer')
+                            this.mquery.where(k).gt(-Infinity);
+                        else this.mquery.where(k).gt(null);
+                    }
+                });
+            }
             this.mquery.sort(params);
             return this;
         };
@@ -84,7 +89,7 @@ class RxQuery {
             this._subject = new util.Rx.BehaviorSubject(null);
             this._obsRunning = false;
             const collection$ = this.collection.$
-                .filter(cEvent => ['RxCollection.insert', 'RxDocument.save', 'RxDocument.remove'].includes(cEvent.data.op))
+                .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
                 .startWith(1)
                 .filter(x => !this._obsRunning)
                 .do(x => this._obsRunning = true)
@@ -96,7 +101,7 @@ class RxQuery {
                 .distinctUntilChanged((prev, now) => {
                     return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
                 })
-                .map(docs => RxDocument.createAr(this.collection, docs, this.toJSON()))
+                .map(docs => this.collection._createDocuments(docs))
                 .do(docs => this._subject.next(docs))
                 .map(x => '');
 
@@ -174,14 +179,34 @@ class RxQuery {
     keyCompress() {
         return this
             .collection
-            .keyCompressor
+            ._keyCompressor
             .compressQuery(this.toJSON());
+    }
+
+
+    /**
+     * deletes all found documents
+     * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
+     */
+    async remove() {
+        const docs = await this.exec();
+        if (Array.isArray(docs)) {
+            await Promise.all(
+                docs.map(doc => doc.remove())
+            );
+        } else {
+            // via findOne()
+            await docs.remove();
+        }
+        return docs;
     }
 
 }
 
 export function create(queryObj = defaultQuery, collection) {
-    if (Array.isArray(queryObj)) // TODO should typecheck be done here ?
+    if (typeof queryObj !== 'object')
+        throw new TypeError('query must be an object');
+    if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
     return new RxQuery(queryObj, collection);

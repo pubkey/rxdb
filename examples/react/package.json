@@ -1,0 +1,28 @@
+{
+  "name": "rxdb-example-react",
+  "version": "3.0.0",
+  "dependencies": {
+    "babel-polyfill": "^6.23.0",
+    "concurrently": "^3.3.0",
+    "pouchdb-adapter-http": "^6.1.2",
+    "pouchdb-adapter-idb": "^6.1.2",
+    "pouchdb-replication": "^6.1.2",
+    "pouchdb-server": "^2.3.4",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "rxjs": "^5.2.0"
+  },
+  "devDependencies": {
+    "react-scripts": "^0.9.0",
+    "rimraf": "^2.6.1"
+  },
+  "scripts": {
+    "preinstall": "echo \"PREINSTALL\" && npm install --production --prefix ../../",
+    "dev": "PORT=8888 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "start": "concurrently \"npm run server\" \"npm run serve\"",
+    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
+  }
+}

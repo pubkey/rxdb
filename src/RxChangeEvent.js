@@ -34,7 +34,7 @@ class RxChangeEvent {
         return false;
     }
 
-    hash() {
+    get hash() {
         if (!this._hash)
             this._hash = util.hash(this.data);
         return this._hash;
@@ -48,8 +48,8 @@ export function fromJSON(data) {
 
 export function fromPouchChange(changeDoc, collection) {
 
-    // TODO is this right?
-    const op = changeDoc._rev.startsWith('1-') ? 'RxDocument.save' : 'RxDocument.insert';
+    let op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
+    if (changeDoc._deleted) op = 'REMOVE';
 
     // decompress / primarySwap
     changeDoc = collection._handleFromPouch(changeDoc);

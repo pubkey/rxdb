@@ -1,6 +1,7 @@
 {
     "title": "hero schema",
     "description": "describes a simple hero",
+    "version": 0,
     "type": "object",
     "properties": {
         "name": {
@@ -9,6 +10,11 @@
         },
         "color": {
             "type": "string"
+        },
+        "maxHP": {
+          "type": "number",
+          "min": 0,
+          "max": 1000
         },
         "hp": {
             "type": "number",
@@ -36,5 +42,5 @@
             }
         }
     },
-    "required": ["color"]
+    "required": ["color", "maxHP"]
 }

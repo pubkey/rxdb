@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 
 import * as RxDB from '../../../../../';
 import { RxDatabase } from '../../../../../';
@@ -22,9 +21,13 @@ RxDB.plugin(require('pouchdb-replication'));
 let collections = [
     {
         name: 'hero',
-        schema: RxDB.RxSchema.create(require('../schemas/hero.schema.json')),
-        sync: true,
-        dbCol: null
+        schema: require('../schemas/hero.schema.json'),
+        methods: {
+            hpPercent() {
+                return this.hp / this.maxHP * 100;
+            }
+        },
+        sync: true
     }
 ];
 
@@ -36,60 +39,54 @@ if (window.location.hash == '#nosync') doSync = false;
 
 @Injectable()
 export class DatabaseService {
+    static dbPromise: Promise<RxDatabase> = null;
+    private async _create(): Promise<RxDatabase> {
+        console.log('DatabaseService: creating database..');
+        const db = await RxDB.create({ name: 'heroesdb', adapter: useAdapter, password: 'myLongAndStupidPassword' });
+        console.log('DatabaseService: created database');
+        window['db'] = db; // write to window for debugging
 
+        // show leadership in title
+        db.waitForLeadership()
+            .then(() => {
+                console.log('isLeader now');
+                document.title = '♛ ' + document.title;
+            });
 
-    static db$: Observable<RxDatabase> = Observable.fromPromise(RxDB
-        .create('heroesDB', useAdapter, 'myLongAndStupidPassword', true)
         // create collections
-        .then(db => {
-            console.log('created database');
-            window['db'] = db; // write to window for debugging
+        console.log('DatabaseService: create collections');
+        await Promise.all(collections.map(colData => db.collection(colData)));
 
-            db.waitForLeadership()
-                .then(() => {
-                    console.log('isLeader now');
-                    document.title = '♛ ' + document.title;
-                });
-            console.log('DatabaseService: create collections');
-            const fns = collections
-                .map(col => db.collection(col.name, col.schema));
-            return Promise.all(fns)
-                .then((cols) => {
-                    collections.map(col => col.dbCol = cols.shift());
+        // hooks
+        console.log('DatabaseService: add hooks');
+        db.collections.hero.preInsert(function(docObj) {
+            const color = docObj.color;
+            return db.collections.hero.findOne({ color }).exec()
+                .then(has => {
+                    if (has != null) {
+                        alert('another hero already has the color ' + color);
+                        throw new Error('color already there');
+                    }
                     return db;
                 });
-        })
-        // hooks
-        .then(db => {
-          db.collections.hero.preInsert(function(docObj){
-            const color = docObj.color;
-            return db.collections.hero.findOne({color}).exec()
-              .then(has => {
-                if(has!=null){
-                  alert('another hero already has the color ' + color);
-                  throw new Error('color already there');
-                }
-                return db;
-              });
-          });
-        })
+        });
+
         // sync
-        .then(db => {
-            if (!doSync) return db;
-            console.log('DatabaseService: sync');
-            collections
-                .filter(col => col.sync)
-                .map(col => col.dbCol)
-                .map(dbCol => dbCol.sync(syncURL + dbCol.name + '/'));
-            return db;
-        })
-        .then(db => {
-            console.log('created collections');
-            return db;
-        })
-    );
+        console.log('DatabaseService: sync');
+        collections
+            .filter(col => col.sync)
+            .map(col => col.name)
+            .map(colName => db[colName].sync(syncURL + colName + '/'));
+
+        return db;
+    }
 
     get(): Promise<RxDatabase> {
-        return DatabaseService.db$.toPromise();
+        if (DatabaseService.dbPromise)
+            return DatabaseService.dbPromise;
+
+        // create database
+        DatabaseService.dbPromise = this._create();
+        return DatabaseService.dbPromise;
     }
 }

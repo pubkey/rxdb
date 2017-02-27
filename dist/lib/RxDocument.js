@@ -8,6 +8,10 @@ var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
 var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
 
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
+
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -15,10 +19,6 @@ var _regenerator2 = _interopRequireDefault(_regenerator);
 var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _typeof2 = require('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
 
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
@@ -28,6 +28,7 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
+exports.isDeepEqual = isDeepEqual;
 exports.create = create;
 exports.createAr = createAr;
 exports.properties = properties;
@@ -53,14 +54,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var RxDocument = function () {
-    (0, _createClass3.default)(RxDocument, [{
-        key: Symbol.toStringTag,
-        get: function get() {
-            return 'RxDocument';
-        }
-    }]);
-
-    function RxDocument(collection, jsonData, query) {
+    function RxDocument(collection, jsonData) {
         var _this = this;
 
         (0, _classCallCheck3.default)(this, RxDocument);
@@ -70,15 +64,17 @@ var RxDocument = function () {
         };
 
         this.collection = collection;
-        this.query = query;
 
+        // assume that this is always equal to the doc-data in the database
+        this._dataSync$ = new util.Rx.BehaviorSubject((0, _clone2.default)(jsonData));
+
+        // current doc-data, changes when setting values etc
         this._data = (0, _clone2.default)(jsonData);
 
-        this.deleted = false;
-        this._deleted$;
-        this.changed = false;
+        // false when _data !== _dataSync
+        this._synced$ = new util.Rx.BehaviorSubject(true);
 
-        this._observable$;
+        this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
 
     (0, _createClass3.default)(RxDocument, [{
@@ -102,10 +98,64 @@ var RxDocument = function () {
         value: function getRevision() {
             return this._data._rev;
         }
+    }, {
+        key: 'resync',
+        value: function resync() {
+            if (this._synced$.getValue()) return;else {
+                this._data = (0, _clone2.default)(this._dataSync$.getValue());
+                this._synced$.next(true);
+            }
+        }
 
         /**
          * returns the observable which emits the plain-data of this document
          * @return {Observable}
+         */
+
+    }, {
+        key: '_handleChangeEvent',
+
+
+        /**
+         * @param {ChangeEvent}
+         */
+        value: function _handleChangeEvent(changeEvent) {
+            if (changeEvent.data.doc != this.getPrimary()) return;
+
+            //TODO check if new _rev is higher then current
+
+            switch (changeEvent.data.op) {
+                case 'INSERT':
+                    break;
+                case 'UPDATE':
+                    var newData = (0, _clone2.default)(changeEvent.data.v);
+                    delete newData._ext;
+                    var prevSyncData = this._dataSync$.getValue();
+                    var prevData = this._data;
+
+                    if (isDeepEqual(prevSyncData, prevData)) {
+                        // document is in sync, overwrite _data
+                        this._data = newData;
+
+                        if (this._synced$.getValue() != true) this._synced$.next(true);
+                    } else {
+                        // not in sync, emit to synced$
+                        if (this._synced$.getValue() != false) this._synced$.next(false);
+
+                        // overwrite _rev of data
+                        this._data._rev = newData._rev;
+                    }
+                    this._dataSync$.next((0, _clone2.default)(newData));
+                    break;
+                case 'REMOVE':
+                    this._deleted$.next(true);
+                    break;
+            }
+        }
+
+        /**
+         * emits the changeEvent to the upper instance (RxCollection)
+         * @param  {RxChangeEvent} changeEvent
          */
 
     }, {
@@ -118,22 +168,83 @@ var RxDocument = function () {
          * @return {Observable}
          */
         value: function get$(path) {
+            if (path.includes('.item.')) throw new Error('cannot get observable of in-array fields because order cannot be guessed: ' + path);
+
             var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
             if (!schemaObj) throw new Error('cannot observe a non-existed field (' + path + ')');
 
-            return this.$.map(function (data) {
+            return this._dataSync$.map(function (data) {
                 return _objectPath2.default.get(data, path);
-            }).distinctUntilChanged().startWith(this.get(path));
+            }).distinctUntilChanged().asObservable();
         }
     }, {
-        key: 'get',
+        key: 'populate',
+        value: function () {
+            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(path, object) {
+                var schemaObj, value, refCollection, doc;
+                return _regenerator2.default.wrap(function _callee$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                                schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+                                value = this.get(path);
 
+                                if (schemaObj) {
+                                    _context.next = 4;
+                                    break;
+                                }
+
+                                throw new Error('cannot populate a non-existed field (' + path + ')');
+
+                            case 4:
+                                if (schemaObj.ref) {
+                                    _context.next = 6;
+                                    break;
+                                }
+
+                                throw new Error('cannot populate because path has no ref (' + path + ')');
+
+                            case 6:
+                                refCollection = this.collection.database.collections[schemaObj.ref];
+
+                                if (refCollection) {
+                                    _context.next = 9;
+                                    break;
+                                }
+
+                                throw new Error('ref-collection (' + schemaObj.ref + ') not in database');
+
+                            case 9:
+                                _context.next = 11;
+                                return refCollection.findOne(value).exec();
+
+                            case 11:
+                                doc = _context.sent;
+                                return _context.abrupt('return', doc);
+
+                            case 13:
+                            case 'end':
+                                return _context.stop();
+                        }
+                    }
+                }, _callee, this);
+            }));
+
+            function populate(_x, _x2) {
+                return _ref.apply(this, arguments);
+            }
+
+            return populate;
+        }()
 
         /**
          * get data by objectPath
          * @param {string} objPath
          * @return {object} valueObj
          */
+
+    }, {
+        key: 'get',
         value: function get(objPath) {
             if (!this._data) return undefined;
 
@@ -167,6 +278,11 @@ var RxDocument = function () {
                 valueObj.__defineGetter__(key + '$', function () {
                     return _this2.get$(util.trimDots(objPath + '.' + key));
                 });
+                // getter - populate_
+                valueObj.__defineGetter__(key + '_', function () {
+                    return _this2.populate(util.trimDots(objPath + '.' + key));
+                });
+
                 // setter - value
                 valueObj.__defineSetter__(key, function (val) {
                     return _this2.set(util.trimDots(objPath + '.' + key), val);
@@ -193,7 +309,7 @@ var RxDocument = function () {
                 throw new Error('RxDocument.set(): primary-key (' + this.getPrimaryPath() + ')\n                cannot be modified');
             }
             // check if equal
-            if (Object.is(this.get(objPath), value)) return;else this.changed = true;
+            if (Object.is(this.get(objPath), value)) return;
 
             // check if nested without root-object
             var pathEls = objPath.split('.');
@@ -213,110 +329,77 @@ var RxDocument = function () {
         }
     }, {
         key: 'save',
+
+
+        /**
+         * save document if its data has changed
+         * @return {boolean} false if nothing to save
+         */
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
-                var emitValue, ret, changeEvent;
-                return _regenerator2.default.wrap(function _callee$(_context) {
+            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
+                var ret, emitValue, changeEvent;
+                return _regenerator2.default.wrap(function _callee2$(_context2) {
                     while (1) {
-                        switch (_context.prev = _context.next) {
+                        switch (_context2.prev = _context2.next) {
                             case 0:
-                                if (this.changed) {
-                                    _context.next = 2;
-                                    break;
-                                }
-
-                                return _context.abrupt('return');
-
-                            case 2:
-                                if (!this.deleted) {
-                                    _context.next = 4;
+                                if (!this._deleted$.getValue()) {
+                                    _context2.next = 2;
                                     break;
                                 }
 
                                 throw new Error('RxDocument.save(): cant save deleted document');
 
-                            case 4:
-                                emitValue = (0, _clone2.default)(this._data);
-                                _context.next = 7;
+                            case 2:
+                                if (!isDeepEqual(this._data, this._dataSync$.getValue())) {
+                                    _context2.next = 5;
+                                    break;
+                                }
+
+                                this._synced$.next(true);
+                                return _context2.abrupt('return', false);
+
+                            case 5:
+                                _context2.next = 7;
                                 return this.collection._runHooks('pre', 'save', this);
 
                             case 7:
-                                _context.next = 9;
+                                this.collection.schema.validate(this._data);
+
+                                _context2.next = 10;
                                 return this.collection._pouchPut((0, _clone2.default)(this._data));
 
-                            case 9:
-                                ret = _context.sent;
+                            case 10:
+                                ret = _context2.sent;
 
                                 if (ret.ok) {
-                                    _context.next = 12;
+                                    _context2.next = 13;
                                     break;
                                 }
 
                                 throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
 
-                            case 12:
-                                this._data._rev = ret.rev;
+                            case 13:
+                                emitValue = (0, _clone2.default)(this._data);
 
-                                _context.next = 15;
+                                emitValue._rev = ret.rev;
+
+                                this._data = emitValue;
+
+                                _context2.next = 18;
                                 return this.collection._runHooks('post', 'save', this);
 
-                            case 15:
+                            case 18:
 
                                 // event
-                                changeEvent = RxChangeEvent.create('RxDocument.save', this.collection.database, this.collection, this, emitValue);
+                                this._synced$.next(true);
+                                this._dataSync$.next((0, _clone2.default)(emitValue));
+
+                                changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
                                 this.$emit(changeEvent);
+                                return _context2.abrupt('return', true);
 
-                                this.changed = false;
-
-                            case 18:
-                            case 'end':
-                                return _context.stop();
-                        }
-                    }
-                }, _callee, this);
-            }));
-
-            function save() {
-                return _ref.apply(this, arguments);
-            }
-
-            return save;
-        }()
-    }, {
-        key: 'remove',
-        value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
-                return _regenerator2.default.wrap(function _callee2$(_context2) {
-                    while (1) {
-                        switch (_context2.prev = _context2.next) {
-                            case 0:
-                                if (!this.deleted) {
-                                    _context2.next = 2;
-                                    break;
-                                }
-
-                                throw new Error('RxDocument.remove(): Document is already deleted');
-
-                            case 2:
-                                _context2.next = 4;
-                                return this.collection._runHooks('pre', 'remove', this);
-
-                            case 4:
-
-                                this.deleted = true;
-                                _context2.next = 7;
-                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
-
-                            case 7:
-                                _context2.next = 9;
-                                return this.collection._runHooks('post', 'remove', this);
-
-                            case 9:
-
-                                this.$emit(RxChangeEvent.create('RxDocument.remove', this.collection.database, this.collection, this, null));
-
-                            case 10:
+                            case 23:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -324,8 +407,55 @@ var RxDocument = function () {
                 }, _callee2, this);
             }));
 
-            function remove() {
+            function save() {
                 return _ref2.apply(this, arguments);
+            }
+
+            return save;
+        }()
+    }, {
+        key: 'remove',
+        value: function () {
+            var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3() {
+                return _regenerator2.default.wrap(function _callee3$(_context3) {
+                    while (1) {
+                        switch (_context3.prev = _context3.next) {
+                            case 0:
+                                if (!this.deleted) {
+                                    _context3.next = 2;
+                                    break;
+                                }
+
+                                throw new Error('RxDocument.remove(): Document is already deleted');
+
+                            case 2:
+                                _context3.next = 4;
+                                return this.collection._runHooks('pre', 'remove', this);
+
+                            case 4:
+
+                                this.deleted = true;
+                                _context3.next = 7;
+                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+
+                            case 7:
+                                _context3.next = 9;
+                                return this.collection._runHooks('post', 'remove', this);
+
+                            case 9:
+
+                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, null));
+
+                            case 10:
+                            case 'end':
+                                return _context3.stop();
+                        }
+                    }
+                }, _callee3, this);
+            }));
+
+            function remove() {
+                return _ref3.apply(this, arguments);
             }
 
             return remove;
@@ -334,111 +464,99 @@ var RxDocument = function () {
         key: 'destroy',
         value: function destroy() {}
     }, {
-        key: '$',
-        get: function get() {
-            var _this3 = this;
-
-            if (!this._observable$) {
-                this._observable$ = this.collection.$.filter(function (event) {
-                    return event.data.doc == _this3.getPrimary() || event.data.doc == '*';
-                }).mergeMap(function () {
-                    var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(ev) {
-                        var newData;
-                        return _regenerator2.default.wrap(function _callee3$(_context3) {
-                            while (1) {
-                                switch (_context3.prev = _context3.next) {
-                                    case 0:
-                                        if (!(ev.data.op == 'RxDocument.remove')) {
-                                            _context3.next = 3;
-                                            break;
-                                        }
-
-                                        _this3.deleted = true;
-                                        return _context3.abrupt('return', null);
-
-                                    case 3:
-                                        if (!ev.data.v) {
-                                            _context3.next = 5;
-                                            break;
-                                        }
-
-                                        return _context3.abrupt('return', ev.data.v);
-
-                                    case 5:
-                                        _context3.next = 7;
-                                        return _this3.collection._pouchGet(_this3.getPrimary());
-
-                                    case 7:
-                                        newData = _context3.sent;
-                                        return _context3.abrupt('return', newData);
-
-                                    case 9:
-                                    case 'end':
-                                        return _context3.stop();
-                                }
-                            }
-                        }, _callee3, _this3);
-                    }));
-
-                    return function (_x2) {
-                        return _ref3.apply(this, arguments);
-                    };
-                }()).do(function (docData) {
-                    return _this3._data = docData;
-                });
-            }
-            return this._observable$;
-        }
-    }, {
         key: 'deleted$',
         get: function get() {
-            if (!this._deleted$) {
-                this._deleted$ = this.$.filter(function (docData) {
-                    return docData == null;
-                });
-            }
-            return this._deleted$;
+            return this._deleted$.asObservable();
+        }
+    }, {
+        key: 'synced$',
+        get: function get() {
+            return this._synced$.asObservable().distinctUntilChanged();
+        }
+    }, {
+        key: '$',
+        get: function get() {
+            return this._dataSync$.asObservable();
         }
     }]);
     return RxDocument;
 }();
 
-function create(collection, jsonData, query) {
+/**
+ * performs a deep-equal without comparing internal getters and setter (observe$ and populate_ etc.)
+ * @param  {object}  data1
+ * @param  {object}  data2
+ * @throws {Error} if given data not a plain js object
+ * @return {Boolean} true if equal
+ */
+
+
+function isDeepEqual(data1, data2) {
+    if ((typeof data1 === 'undefined' ? 'undefined' : (0, _typeof3.default)(data1)) !== (typeof data2 === 'undefined' ? 'undefined' : (0, _typeof3.default)(data2))) return false;
+
+    var ret = true;
+
+    // array
+    if (Array.isArray(data1)) {
+        var k = 0;
+        while (k < data1.length && ret == true) {
+            if (!data2[k] || !isDeepEqual(data1[k], data2[k])) ret = false;
+            k++;
+        }
+        return ret;
+    }
+
+    // object
+    if ((typeof data1 === 'undefined' ? 'undefined' : (0, _typeof3.default)(data1)) === 'object') {
+        var entries = Object.entries(data1).filter(function (entry) {
+            return !entry[0].endsWith('$');
+        }) // observe
+        .filter(function (entry) {
+            return !entry[0].endsWith('_');
+        }); // populate;
+        var _k = 0;
+        while (_k < entries.length && ret) {
+            var entry = entries[_k];
+            var name = entry[0];
+            var value = entry[1];
+            if (!isDeepEqual(data2[name], value)) ret = false;
+            _k++;
+        }
+        return ret;
+    }
+
+    // other
+    return data1 == data2;
+}
+
+function create(collection, jsonData) {
     if (jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
 
-    var doc = new RxDocument(collection, jsonData, query);
+    var doc = new RxDocument(collection, jsonData);
     doc.prepare();
     return doc;
 }
 
-function createAr(collection, jsonDataAr, query) {
+function createAr(collection, jsonDataAr) {
     return jsonDataAr.map(function (jsonData) {
-        return create(collection, jsonData, query);
+        return create(collection, jsonData);
     }).filter(function (doc) {
         return doc != null;
     });
 }
 
-var pseudoRxDocument = new RxDocument({
-    schema: {
-        getEncryptedPaths: function getEncryptedPaths() {
-            return [];
-        }
-    },
-    $: {
-        filter: function filter() {
-            return false;
-        }
-    }
-}, {}, {});
-
 /**
  * returns all possible properties of a RxDocument
  * @return {string[]} property-names
  */
+var _properties = void 0;
 function properties() {
-    var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-    var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
-    var properties = [].concat((0, _toConsumableArray3.default)(ownProperties), (0, _toConsumableArray3.default)(prototypeProperties));
-    return properties;
+    if (!_properties) {
+        var reserved = ['deleted', 'synced'];
+        var pseudoRxDocument = new RxDocument();
+        var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
+        var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+        _properties = [].concat((0, _toConsumableArray3.default)(ownProperties), (0, _toConsumableArray3.default)(prototypeProperties), reserved);
+    }
+    return _properties;
 }

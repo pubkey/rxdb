@@ -6,7 +6,10 @@ A collection stores documents of the same type.
 To create a collection you need a RxDatabase-Object which has the .collection()-method. Every colletion needs a collection-name and a RxSchema.
 
 ```js
-myDatabase.collection(name, mySchema, optionalPouchDbSettings)
+myDatabase.collection({
+  name: 'humans',
+  schema: mySchema
+})
   .then(collection => console.dir(collection));
 ```
 
@@ -15,6 +18,19 @@ The name identifies the collection and should be used to refind the collection i
 
 ### schema
 The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.
+
+
+## get a collection from the database
+To get an existing collection from the database, call the collection-name directly on the database:
+
+```javascript
+const collection = await db.collection('heroes');
+const collection2 = db.heroes;
+
+console.log(collection == collection2);
+// true
+
+```
 
 ## Functions
 
@@ -26,12 +42,21 @@ myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### insert()
-Use this to insert new documents to the database. The collection will validate the schema and encrypt the encrypted fields by itself.
+Use this to insert new documents to the database. The collection will validate the schema and encrypt the encrypted fields by itself. Returns the new RxDocument.
 
 ```js
-myCollection.insert({
+const doc = await myCollection.insert({
   name: 'foo',
   lastname: 'bar'
+});
+```
+
+### upsert()
+Inserts if documents does not exsits. Overwrites if document exists. Returns the new or overwritten RxDocument.
+```js
+const doc = await myCollection.upsert({
+  name: 'foo',
+  lastname: 'bar2'
 });
 ```
 

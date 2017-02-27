@@ -1,0 +1,202 @@
+/**
+ * this tests the reactive behaviour of RxDocument
+ */
+
+import assert from 'assert';
+import {
+    default as clone
+} from 'clone';
+import {
+    default as memdown
+} from 'memdown';
+
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection';
+
+import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as RxSchema from '../../dist/lib/RxSchema';
+import * as RxCollection from '../../dist/lib/RxCollection';
+import * as util from '../../dist/lib/util';
+import * as RxDB from '../../dist/lib/index';
+
+
+process.on('unhandledRejection', function(err) {
+    throw err;
+});
+
+describe('Reactive-Document.test.js', () => {
+    describe('.save()', () => {
+        describe('positive', () => {
+            it('should fire on save', async() => {
+                const c = await humansCollection.create();
+                const doc = await c.findOne().exec();
+                doc.set('firstName', util.randomCouchString(8));
+                doc.save();
+                const changeEvent = await doc.$.first().toPromise();
+                assert.equal(changeEvent._id, doc.getPrimary());
+                c.database.destroy();
+            });
+            it('should observe a single field', async() => {
+                const c = await humansCollection.create();
+                const doc = await c.findOne().exec();
+                const valueObj = {
+                    v: doc.get('firstName')
+                };
+                doc.get$('firstName').subscribe(newVal => {
+                    valueObj.v = newVal;
+                });
+                const setName = util.randomCouchString(10);
+                doc.set('firstName', setName);
+                await doc.save();
+                await util.promiseWait(5);
+                assert.equal(valueObj.v, setName);
+                c.database.destroy();
+            });
+            it('should observe a nested field', async() => {
+                const c = await humansCollection.createNested();
+                const doc = await c.findOne().exec();
+                const valueObj = {
+                    v: doc.get('mainSkill.name')
+                };
+                doc.get$('mainSkill.name').subscribe(newVal => {
+                    valueObj.v = newVal;
+                });
+                const setName = util.randomCouchString(10);
+                doc.set('mainSkill.name', setName);
+                await doc.save();
+                util.promiseWait(5);
+                assert.equal(valueObj.v, setName);
+                c.database.destroy();
+            });
+            it('get equal values when subscribing again later', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                let v1;
+                const sub = doc.get$('firstName').subscribe(newVal => v1 = newVal);
+                await util.promiseWait(5);
+
+                doc.set('firstName', 'foobar');
+                await doc.save();
+
+                let v2;
+                doc.get$('firstName').subscribe(newVal => v2 = newVal);
+
+                assert.equal(v1, v2);
+                assert.equal(v1, 'foobar');
+                sub.unsubscribe();
+                c.database.destroy();
+            });
+        });
+        describe('negative', () => {
+            it('cannot observe non-existend field', async() => {
+                const c = await humansCollection.create();
+                const doc = await c.findOne().exec();
+                await util.assertThrowsAsync(
+                    () => doc.get$('foobar').subscribe(newVal => newVal),
+                    Error
+                );
+                c.database.destroy();
+            });
+        });
+    });
+    describe('.deleted$', () => {
+        describe('positive', () => {
+            it('deleted$ is true, on delete', async() => {
+                const c = await humansCollection.create();
+                const doc = await c.findOne().exec();
+                let deleted = null;
+                doc.deleted$.subscribe(v => deleted = v);
+                util.promiseWait(5);
+                assert.deepEqual(deleted, false);
+                await doc.remove();
+                util.promiseWait(5);
+                assert.deepEqual(deleted, true);
+                c.database.destroy();
+            });
+        });
+        describe('negative', () => {});
+    });
+    describe('synced$', () => {
+        describe('positive', () => {
+            it('should be in sync when unchanged document gets changed by other instance', async() => {
+                const name = util.randomCouchString(10);
+                const c1 = await humansCollection.createMultiInstance(name, 1);
+                const c2 = await humansCollection.createMultiInstance(name, 0);
+                const doc = await c1.findOne().exec();
+                const doc2 = await c2.findOne().exec();
+                assert.deepEqual(doc.firstName, doc2.firstName);
+                assert.notEqual(doc, doc2);
+
+                const ok = await doc.synced$.first().toPromise();
+                assert.ok(ok);
+
+                doc2.firstName = 'foobar';
+                await doc2.save();
+
+                await c1.database.socket.pull();
+                await c2.database.socket.pull();
+                assert.equal(doc.firstName, 'foobar');
+                const ok2 = await doc.synced$.first().toPromise();
+                assert.ok(ok2);
+
+                c1.database.destroy();
+                c2.database.destroy();
+
+            });
+            it('should not be in sync when changed document gets changed by other instance', async() => {
+                const name = util.randomCouchString(10);
+                const c1 = await humansCollection.createMultiInstance(name, 1);
+                const c2 = await humansCollection.createMultiInstance(name, 0);
+                const doc = await c1.findOne().exec();
+                const doc2 = await c2.findOne().exec();
+                assert.deepEqual(doc.firstName, doc2.firstName);
+                assert.notEqual(doc, doc2);
+
+                doc.firstName = 'foobar1';
+                doc2.firstName = 'foobar2';
+                await doc2.save();
+
+                await c1.database.socket.pull();
+                await c2.database.socket.pull();
+                assert.equal(doc.firstName, 'foobar1');
+                const notOk = await doc.synced$.first().toPromise();
+                assert.ok(!notOk);
+
+                c1.database.destroy();
+                c2.database.destroy();
+            });
+            it('should be in sync again when unsync doc saves', async() => {
+                const name = util.randomCouchString(10);
+                const c1 = await humansCollection.createMultiInstance(name, 1);
+                const c2 = await humansCollection.createMultiInstance(name, 0);
+                const doc = await c1.findOne().exec();
+                const doc2 = await c2.findOne().exec();
+                assert.deepEqual(doc.firstName, doc2.firstName);
+                assert.notEqual(doc, doc2);
+
+                doc.firstName = 'foobar1';
+
+                // unsyc
+                doc2.firstName = 'foobar2';
+                await doc2.save();
+                await c1.database.socket.pull();
+                await c2.database.socket.pull();
+                const notOk = await doc.synced$.first().toPromise();
+                assert.ok(!notOk);
+
+                // resync
+                await doc.save();
+                await c1.database.socket.pull();
+                await c2.database.socket.pull();
+
+                const ok = await doc.synced$.first().toPromise();
+                assert.ok(ok);
+
+                c1.database.destroy();
+                c2.database.destroy();
+            });
+        });
+        describe('negative', () => {});
+    });
+});

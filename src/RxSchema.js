@@ -1,66 +1,65 @@
 import {
     default as objectPath
 } from 'object-path';
-
 import {
     default as clone
 } from 'clone';
-
-import {
-    default as isPlainObject
-} from 'is-plain-object';
-
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
 class RxSchema {
     constructor(jsonID) {
-        this.jsonID = clone(jsonID);
-        this._normalized;
+        this.jsonID = jsonID;
 
-        this.compoundIndexes = this.jsonID.compoundIndexes || [];
+        this.compoundIndexes = this.jsonID.compoundIndexes;
         delete this.jsonID.compoundIndexes;
 
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.jsonID.required = this.jsonID.required || [];
-
-        // fill with key-compression-state
-        if (!this.jsonID.hasOwnProperty('disableKeyCompression'))
-            this.jsonID.disableKeyCompression = false;
-
         this.indexes.map(indexAr => {
             indexAr
                 .filter(index => !this.jsonID.required.includes(index))
+                .filter(index => !index.includes('.')) // TODO make them sub-required
                 .forEach(index => this.jsonID.required.push(index));
         });
 
-        // primary
+        // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
 
-        // add primary to schema
+        // add primary to schema if not there (if _id)
         if (!this.jsonID.properties[this.primaryPath]) {
             this.jsonID.properties[this.primaryPath] = {
                 type: 'string',
                 minLength: 1
             };
         }
+    }
 
-        // add _rev
-        this.jsonID.properties._rev = {
-            type: 'string',
-            minLength: 1
-        };
+    get version() {
+        return this.jsonID.version;
+    }
 
-        // true if schema contains a crypt-field
-        this.crypt = hasCrypt(this.jsonID);
-        this.encryptedPaths;
+    /**
+     * @return {number[]} array with previous version-numbers
+     */
+    get previousVersions() {
+        let c = 0;
+        return new Array(this.version)
+            .fill(0)
+            .map(() => c++);
+    }
 
-        // always false
-        this.jsonID.additionalProperties = false;
+    /**
+     * true if schema contains at least one encrypted path
+     * @type {boolean}
+     */
+    get crypt() {
+        if (!this._crypt)
+            this._crypt = hasCrypt(this.jsonID);
+        return this._crypt;
     }
 
     get normalized() {
@@ -78,12 +77,17 @@ class RxSchema {
         return ret;
     }
 
+    get topLevelFields() {
+        return Object.keys(this.normalized.properties);
+    }
+
     /**
      * get all encrypted paths
      */
-    getEncryptedPaths() {
-        if (!this.encryptedPaths) this.encryptedPaths = getEncryptedPaths(this.jsonID);
-        return this.encryptedPaths;
+    get encryptedPaths() {
+        if (!this._encryptedPaths)
+            this._encryptedPaths = getEncryptedPaths(this.jsonID);
+        return this._encryptedPaths;
     }
 
     /**
@@ -98,9 +102,11 @@ class RxSchema {
         return obj;
     }
 
-    hash() {
-        // TODO use getter for hash and cache
-        return util.hash(this.normalized);
+
+    get hash() {
+        if (!this._hash)
+            this._hash = util.hash(this.normalized);
+        return this._hash;
     }
 
     swapIdToPrimary(obj) {
@@ -161,12 +167,28 @@ export function hasCrypt(jsonSchema) {
 }
 
 
-export function getIndexes(jsonID) {
-    return Object.keys(jsonID.properties)
-        .filter(key => jsonID.properties[key].index)
-        .map(key => [key])
-        .concat(jsonID.compoundIndexes || [])
-        .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique
+export function getIndexes(jsonID, prePath = '') {
+
+    let indexes = [];
+    Object.entries(jsonID).forEach(entry => {
+        const key = entry[0];
+        const obj = entry[1];
+        const path = key == 'properties' ? prePath : util.trimDots(prePath + '.' + key);
+
+        if (obj.index)
+            indexes.push([path]);
+
+        if (typeof obj === 'object' && !Array.isArray(obj)) {
+            const add = getIndexes(obj, path);
+            indexes = indexes.concat(add);
+        }
+    });
+
+    if (prePath == '')
+        indexes = indexes.concat(jsonID.compoundIndexes || []);
+
+    return indexes
+        .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique;
 }
 
 /**
@@ -184,6 +206,30 @@ export function getPrimary(jsonID) {
 
 
 /**
+ * checks if the fieldname is allowed
+ * this makes sure that the fieldnames can be transformed into javascript-vars
+ * and does not conquer the observe$ and populate_ fields
+ * @param  {string} fieldName
+ * @throws {Error}
+ */
+export function checkFieldNameRegex(fieldName) {
+    if (fieldName == '') return;
+
+    if (['properties', 'language'].includes(fieldName))
+        throw new Error(`fieldname is not allowed: ${fieldName}`);
+
+    const regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
+    const regex = new RegExp(regexStr);
+    if (!fieldName.match(regex)) {
+        throw new Error(`
+        fieldnames must match the regex:
+        - regex: ${regexStr}
+        - fieldName: ${fieldName}
+        `);
+    }
+}
+
+/**
  * validate that all schema-related things are ok
  * @param  {object} jsonSchema
  * @return {boolean} true always
@@ -191,28 +237,32 @@ export function getPrimary(jsonID) {
 export function validateFieldsDeep(jsonSchema) {
 
     function checkField(fieldName, schemaObj, path) {
-        // all
-        if (['properties', 'language'].includes(fieldName))
-            throw new Error(`fieldname is not allowed: ${fieldName}`);
-        if (fieldName.includes('.'))
-            throw new Error(`field-names cannot contain dots: ${fieldName}`);
-
-        if (fieldName.includes('$'))
-            throw new Error(`field-names cannot contain $-char: ${fieldName}`);
+        if (
+            typeof fieldName == 'string' &&
+            typeof schemaObj == 'object' &&
+            !Array.isArray(schemaObj)
+        ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')
             throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
 
+        // if ref given, must be type=='string'
+        if (schemaObj.hasOwnProperty('ref') && schemaObj.type != 'string')
+            throw new Error(`fieldname ${fieldName} has a ref but is not type:string`);
+        // if primary is ref, throw
+        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary)
+            throw new Error(`fieldname ${fieldName} cannot be primary and ref at same time`);
+
 
         const isNested = path.split('.').length >= 2;
+
         // nested only
         if (isNested) {
             if (schemaObj.primary)
                 throw new Error('primary can only be defined at top-level');
-            if (schemaObj.index)
-                throw new Error('index can only be defined at top-level');
         }
+
         // first level
         if (!isNested) {
             // check underscore fields
@@ -253,6 +303,14 @@ export function checkSchema(jsonID) {
     if (jsonID.properties._rev)
         throw new Error('schema defines ._rev, this will be done automatically');
 
+
+    // check version
+    if (!jsonID.hasOwnProperty('version') ||
+        typeof jsonID.version !== 'number' ||
+        jsonID.version < 0
+    ) throw new Error(`schema need an number>=0 as version; given: ${jsonID.version}`);
+
+
     validateFieldsDeep(jsonID);
 
     let primaryPath;
@@ -286,37 +344,41 @@ export function checkSchema(jsonID) {
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        try {
-            /**
-             * TODO do not validate via jsonschema here so that the validation
-             * can be a seperate, optional module to decrease build-size
-             */
-            util.jsonSchemaValidate({
-                type: 'array',
-                items: {
-                    type: 'array',
-                    items: {
-                        type: 'string'
-                    }
-                }
-            }, jsonID.compoundIndexes);
-        } catch (e) {
-            throw new Error('schema.compoundIndexes must be array<array><string>');
-        }
+        let error = null;
+        if (!Array.isArray(jsonID.compoundIndexes))
+            throw new Error('compoundIndexes must be an array');
+        jsonID.compoundIndexes.forEach(ar => {
+            if (!Array.isArray(ar))
+                throw new Error('compoundIndexes must contain arrays');
+
+            ar.forEach(str => {
+                if (typeof str !== 'string')
+                    throw new Error('compoundIndexes.array must contains strings');
+            });
+        });
     }
 
     // check that indexes are string
     getIndexes(jsonID)
         .reduce((a, b) => a.concat(b), [])
         .filter((elem, pos, arr) => arr.indexOf(elem) == pos) // unique
-        .filter(indexKey =>
-            jsonID.properties[indexKey].type != 'string' &&
-            jsonID.properties[indexKey].type != 'integer'
+        .map(key => {
+            const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
+            if (!schemaObj || typeof schemaObj !== 'object')
+                throw new Error(`given index(${key}) is not defined in schema`);
+            return {
+                key,
+                schemaObj
+            };
+        })
+        .filter(index =>
+            index.schemaObj.type != 'string' &&
+            index.schemaObj.type != 'integer'
         )
-        .forEach(indexKey => {
+        .forEach(index => {
             throw new Error(
-                `given indexKey (${indexKey}) is not type:string but
-                ${jsonID.properties[indexKey].type}`
+                `given indexKey (${index.key}) is not type:string but
+                ${index.schemaObj.type}`
             );
         });
 }
@@ -327,32 +389,46 @@ export function checkSchema(jsonID) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    let defaultSortFn = (a, b) => {
-        return a.localeCompare(b);
-    };
-    let sort = src => {
-        if (Array.isArray(src)) {
-            return src
-                .sort()
-                .map(i => sort(i));
-        }
-        if (isPlainObject(src)) {
-            const out = {};
-            Object.keys(src)
-                .sort(defaultSortFn)
-                .forEach(key => {
-                    out[key] = sort(src[key]);
-                });
-            return out;
-        }
-        return src;
-    };
-    return sort(jsonSchema);
+    return util.sortObject(
+        clone(jsonSchema)
+    );
 }
 
+/**
+ * fills the schema-json with default-values
+ * @param  {Object} schemaObj
+ * @return {Object} cloned schemaObj
+ */
+const fillWithDefaults = function(schemaObj) {
+    schemaObj = clone(schemaObj);
+
+    // additionalProperties is always false
+    schemaObj.additionalProperties = false;
+
+    // fill with key-compression-state ()
+    if (!schemaObj.hasOwnProperty('disableKeyCompression'))
+        schemaObj.disableKeyCompression = false;
+
+    // compoundIndexes must be array
+    schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];
+
+    // required must be array
+    schemaObj.required = schemaObj.required || [];
+
+    // add _rev
+    schemaObj.properties._rev = {
+        type: 'string',
+        minLength: 1
+    };
 
 
-export function create(jsonID) {
-    checkSchema(jsonID);
-    return new RxSchema(jsonID);
+    // version is 0 by default
+    schemaObj.version = schemaObj.version || 0;
+
+    return schemaObj;
+};
+
+export function create(jsonID, doCheck = true) {
+    if (doCheck) checkSchema(jsonID);
+    return new RxSchema(fillWithDefaults(jsonID));
 }

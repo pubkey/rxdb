@@ -1,3 +1,6 @@
+const tests = require('../test/unit.test');
+
+
 module.exports = function(config) {
     config.set({
         basePath: '',
@@ -6,15 +9,15 @@ module.exports = function(config) {
             'browserify',
             'detectBrowsers'
         ],
-
-        files: [
-            '../test_tmp/browser/Adapters.test.js',
-            '../test_tmp/browser/RxBroadcastChannel.test.js',
-            '../test_tmp/browser/Insert.test.js',
-            '../test_tmp/browser/Observe.test.js',
-            '../test_tmp/browser/CrossInstance.test.js',
-            '../test_tmp/browser/LeaderElection.test.js'
-        ],
+        files: tests,
+        /*        files: [
+                    '../test_tmp/browser/Adapters.test.js',
+                    '../test_tmp/browser/RxBroadcastChannel.test.js',
+                    '../test_tmp/browser/Insert.test.js',
+                    '../test_tmp/browser/Observe.test.js',
+                    '../test_tmp/browser/CrossInstance.test.js',
+                    '../test_tmp/browser/LeaderElection.test.js'
+                ],*/
         port: 9876,
         colors: true,
         autoWatch: false,
@@ -28,7 +31,7 @@ module.exports = function(config) {
             usePhantomJS: false,
             postDetection: function(availableBrowser) {
 
-//                return ['Firefox']; // comment in to test specific browser
+                // return ['Firefox']; // comment in to test specific browser
 
                 return availableBrowser
                     .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly'].includes(b));
@@ -50,7 +53,7 @@ module.exports = function(config) {
         // Source files that you wanna generate coverage for.
         // Do not include tests or libraries (these files will be instrumented by Istanbul)
         preprocessors: {
-            '../test_tmp/browser/*.test.js': ['browserify']
+            '../test_tmp/unit/*.test.js': ['browserify']
         },
 
         client: {

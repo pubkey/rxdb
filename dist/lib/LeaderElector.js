@@ -143,7 +143,7 @@ var LeaderElector = function () {
                                 obj = void 0;
                                 _context2.prev = 1;
                                 _context2.next = 4;
-                                return this.database.administrationCollection.pouch.get(documentID);
+                                return this.database._adminPouch.get(documentID);
 
                             case 4:
                                 obj = _context2.sent;
@@ -156,7 +156,7 @@ var LeaderElector = function () {
 
                                 obj = this.createLeaderObject();
                                 _context2.next = 12;
-                                return this.database.administrationCollection.pouch.put(obj);
+                                return this.database._adminPouch.put(obj);
 
                             case 12:
                                 ret = _context2.sent;
@@ -189,7 +189,7 @@ var LeaderElector = function () {
                         switch (_context3.prev = _context3.next) {
                             case 0:
                                 _context3.next = 2;
-                                return this.database.administrationCollection.pouch.put(newObj);
+                                return this.database._adminPouch.put(newObj);
 
                             case 2:
                                 return _context3.abrupt('return');
@@ -507,7 +507,6 @@ var LeaderElector = function () {
 
                             case 2:
                                 this.leaderSignal_run = true;
-
                                 _context8.t0 = this.electionChannel;
                                 _context8.next = _context8.t0 === 'broadcast' ? 6 : _context8.t0 === 'socket' ? 9 : 29;
                                 break;
@@ -560,7 +559,6 @@ var LeaderElector = function () {
                                 return _context8.abrupt('break', 29);
 
                             case 29:
-
                                 this.leaderSignal_run = false;
                                 return _context8.abrupt('return');
 
@@ -696,7 +694,8 @@ var LeaderElector = function () {
                             case 4:
                                 this.isDead = true;
                                 this.isLeader = false;
-                                this.signalLeadership.unsubscribe();
+
+                                if (this.signalLeadership) this.signalLeadership.unsubscribe();
 
                                 // force.write to db
                                 _context10.t0 = this.electionChannel;

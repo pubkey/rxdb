@@ -1,5 +1,6 @@
-import { Component, ViewChildren, Input } from '@angular/core';
+import { Component, ViewChildren } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
+import * as randomInt from 'random-int';
 
 @Component({
     selector: 'hero-insert',
@@ -11,8 +12,8 @@ export class HeroInsertComponent {
 
     @ViewChildren('input') inputfield;
 
-    name: string = '';
-    color: string = '';
+    name = '';
+    color = '';
 
     constructor(
         private databaseService: DatabaseService
@@ -22,25 +23,24 @@ export class HeroInsertComponent {
 
 
 
-    submit() {
+    async submit() {
         console.log('HeroInsertComponent.submit():');
-        if(this.name=='' || this.color=='') return;
+        if (this.name == '' || this.color == '') return;
 
         const addDoc = {
             name: this.name,
-            color: this.color
+            color: this.color,
+            maxHP: randomInt(100, 1000),
+            hp: 100
         };
 
         this.name = '';
         this.color = '';
 
-        this.inputfield.first._inputElement.nativeElement.focus();
+        const db = await this.databaseService.get();
+        db['hero'].insert(addDoc);
 
-        this.databaseService.get()
-            .catch(e => console.log('cant get database'))
-            .then(db => db.collection('hero'))
-            .then(col => col.insert(addDoc))
-            .then(d => console.log('done!'));
+        this.inputfield.first._inputElement.nativeElement.focus();
     }
 
 

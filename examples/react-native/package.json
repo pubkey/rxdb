@@ -1,0 +1,37 @@
+{
+  "name": "reactNative",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "(cd android/ && ./gradlew assembleDebug)",
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "bundle-android": "react-native bundle --platform android --dev false --entry-file index.android.js --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output android/app/src/main/assets/index.android.map --assets-dest android/app/src/main/res/",
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "babel-plugin-transform-runtime": "6.15.0",
+    "babel-polyfill": "6.20.0",
+    "babel-preset-es2015-native-modules": "6.9.4",
+    "babel-runtime": "6.20.0",
+    "es6-symbol": "3.1.0",
+    "fbjs": "^0.8.8",
+    "pouchdb-adapter-asyncstorage": "6.1.23",
+    "random-token": "0.0.8",
+    "react": "15.4.1",
+    "react-native": "0.39.2",
+    "rxdb": "2.0.5"
+  },
+  "devDependencies": {
+    "babel-jest": "18.0.0",
+    "babel-preset-react-native": "1.9.1",
+    "eslint": "3.12.2",
+    "eslint-plugin-react": "6.8.0",
+    "eslint-plugin-react-native": "2.2.1",
+    "jest": "18.0.0",
+    "react-test-renderer": "15.4.1"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}

@@ -1,7 +1,8 @@
 # API - Documentation
 
-If you are new to RxDB, you should start [here](./RxDatabase.md).
+If you are new to RxDB, you should start [here](./Install.md).
 
+- [Install](./Install.md)
 - [RxDatabase](./RxDatabase.md)
   - [Creation](./RxDatabase.md#creation)
     - [name](./RxDatabase.md#name)
@@ -23,6 +24,7 @@ If you are new to RxDB, you should start [here](./RxDatabase.md).
   - [Functions](./RxCollection.md#functions)
     - [$()](./RxCollection.md#observe-)
     - [insert()](./RxCollection.md#insert)
+    - [upsert()](./RxCollection.md#upsert)
     - [find()](./RxCollection.md#find)
     - [findOne()](./RxCollection.md#findone)
     - [query()](./RxCollection.md#query)
@@ -39,4 +41,7 @@ If you are new to RxDB, you should start [here](./RxDatabase.md).
     - [remove()](./RxDocument.md#remove)
     - [$()](./RxDocument.md#observe-path)
 - [Middleware-hooks](./Middleware.md)
+- [ORM/DRM](./ORM.md)
+- [Population](./Population.md)
+- [DataMigration](./DataMigration.md)
 - [LeaderElection](./LeaderElection.md)

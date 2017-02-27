@@ -1,9 +1,11 @@
 <div class="content">
     <h3>RxDB Heroes Angular2</h3>
 
+    <hero-edit *ngIf="editedHero" [(hero)]="editedHero" (done)="editedHero=null"></hero-edit>
+
     <md-card>
         <md-card-subtitle>Heroes</md-card-subtitle>
-        <heroes-list></heroes-list>
+        <heroes-list (edit)="editHero($event)"></heroes-list>
     </md-card>
     <br/>
     <md-card>

@@ -1,7 +1,11 @@
 <form autocomplete="off">
-    <md-input #input [(ngModel)]="name" [autofocus]="true" name="name" placeholder="Name"></md-input>
+    <md-input-container>
+        <input mdInput #input [(ngModel)]="name" [autofocus]="true" name="name" placeholder="Name" />
+    </md-input-container>
     <br/>
-    <md-input [(ngModel)]="color" name="color" placeholder="Color"></md-input>
+    <md-input-container>
+        <input mdInput [(ngModel)]="color" name="color" placeholder="Color" />
+    </md-input-container>
     <br/>
     <button md-raised-button color="primary" (click)=submit()>insert</button>
 </form>

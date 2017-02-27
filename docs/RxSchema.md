@@ -6,6 +6,7 @@ Schemas define how your data looks. Which field should be used as primary, which
 
 In this example-schema we define a hero-collection with the following settings:
 
+- the version-number of the schema is 0
 - the name-property is the **primary**. This means its an unique, indexed, required string which can be used to definitly find a single document.
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
@@ -15,6 +16,7 @@ In this example-schema we define a hero-collection with the following settings:
   ```json
   {
     "title": "hero schema",
+    "version": 0,
     "description": "describes a simple hero",
     "type": "object",
     "properties": {
@@ -58,9 +60,18 @@ In this example-schema we define a hero-collection with the following settings:
 ## Create a collection with the schema
 
 ```javascript
-myDatabase.collection('hero', myHeroSchema)
-  .then(collection => console.dir(collection));
+await myDatabase.collection({
+  name: 'heroes',
+  schema: myHeroSchema
+});
+console.dir(myDatabase.heroes.name);
+// heroes
 ```
+
+
+## version
+The `version` field is a number, starting with `0`.
+When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.
 
 ## disableKeyCompression
 
@@ -69,6 +80,7 @@ If you want to not use the internal key-compression, you can disable it by setti
 ```javascript
 const mySchema = {
   disableKeyCompression: true,
+  version: 0,
   title: 'human schema no compression',
   type: 'object',
   properties: {

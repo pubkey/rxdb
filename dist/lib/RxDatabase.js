@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxSchema = exports.create = undefined;
 
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -22,72 +26,72 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9(prefix, adapter, password) {
-        var multiInstance = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9(_ref10) {
+        var name = _ref10.name,
+            adapter = _ref10.adapter,
+            password = _ref10.password,
+            _ref10$multiInstance = _ref10.multiInstance,
+            multiInstance = _ref10$multiInstance === undefined ? true : _ref10$multiInstance;
         var db;
         return _regenerator2.default.wrap(function _callee9$(_context9) {
             while (1) {
                 switch (_context9.prev = _context9.next) {
                     case 0:
-                        if (!(typeof prefix !== 'string')) {
-                            _context9.next = 2;
-                            break;
-                        }
+                        util.validateCouchDBString(name);
 
-                        throw new TypeError('given prefix is no string ');
+                        // check if pouchdb-adapter
 
-                    case 2:
                         if (!(typeof adapter == 'string')) {
-                            _context9.next = 7;
+                            _context9.next = 6;
                             break;
                         }
 
                         if (!(!_PouchDB2.default.adapters || !_PouchDB2.default.adapters[adapter])) {
-                            _context9.next = 5;
+                            _context9.next = 4;
                             break;
                         }
 
                         throw new Error('Adapter ' + adapter + ' not added.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-' + adapter + '\');');
 
-                    case 5:
-                        _context9.next = 10;
+                    case 4:
+                        _context9.next = 9;
                         break;
 
-                    case 7:
+                    case 6:
                         util.isLevelDown(adapter);
 
                         if (!(!_PouchDB2.default.adapters || !_PouchDB2.default.adapters.leveldb)) {
-                            _context9.next = 10;
+                            _context9.next = 9;
                             break;
                         }
 
                         throw new Error('To use leveldown-adapters, you have to add the leveldb-plugin.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));');
 
-                    case 10:
+                    case 9:
                         if (!(password && typeof password !== 'string')) {
-                            _context9.next = 12;
+                            _context9.next = 11;
                             break;
                         }
 
                         throw new TypeError('password is no string');
 
-                    case 12:
+                    case 11:
                         if (!(password && password.length < RxDatabase.settings.minPassLength)) {
-                            _context9.next = 14;
+                            _context9.next = 13;
                             break;
                         }
 
                         throw new Error('password must have at least ' + RxDatabase.settings.minPassLength + ' chars');
 
-                    case 14:
-                        db = new RxDatabase(prefix, adapter, password, multiInstance);
-                        _context9.next = 17;
+                    case 13:
+                        db = new RxDatabase(name, adapter, password, multiInstance);
+                        _context9.next = 16;
                         return db.prepare();
 
-                    case 17:
+                    case 16:
                         return _context9.abrupt('return', db);
 
-                    case 18:
+                    case 17:
                     case 'end':
                         return _context9.stop();
                 }
@@ -95,10 +99,12 @@ var create = exports.create = function () {
         }, _callee9, this);
     }));
 
-    return function create(_x10, _x11, _x12) {
+    return function create(_x9) {
         return _ref9.apply(this, arguments);
     };
 }();
+
+exports.properties = properties;
 
 var _randomToken = require('random-token');
 
@@ -115,10 +121,6 @@ var RxCollection = _interopRequireWildcard(_RxCollection);
 var _RxSchema = require('./RxSchema');
 
 var RxSchema = _interopRequireWildcard(_RxSchema);
-
-var _Database = require('./Database.schemas');
-
-var DatabaseSchemas = _interopRequireWildcard(_Database);
 
 var _RxChangeEvent = require('./RxChangeEvent');
 
@@ -141,11 +143,10 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var RxDatabase = function () {
-    function RxDatabase(prefix, adapter, password) {
-        var multiInstance = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    function RxDatabase(name, adapter, password, multiInstance) {
         (0, _classCallCheck3.default)(this, RxDatabase);
 
-        this.prefix = prefix;
+        this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
@@ -158,11 +159,9 @@ var RxDatabase = function () {
         // cache for collection-objects
         this.collections = {};
 
-        // rx
-        this.subject = new util.Rx.Subject();
-        this.observable$ = this.subject.asObservable().filter(function (cEvent) {
-            return cEvent.constructor.name == 'RxChangeEvent';
-        });
+        // this is needed to preserver attribute-name
+        this.subject = null;
+        this.observable$ = null;
     }
 
     /**
@@ -181,79 +180,85 @@ var RxDatabase = function () {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
-                                _context.next = 2;
-                                return Promise.all([
-                                // create admin-collection
-                                RxCollection.create(this, '_admin', DatabaseSchemas.administration, {
+
+                                // rx
+                                this.subject = new util.Rx.Subject();
+                                this.observable$ = this.subject.asObservable().filter(function (cEvent) {
+                                    return cEvent.constructor.name == 'RxChangeEvent';
+                                });
+
+                                // create internal collections
+                                // - admin-collection
+                                this._adminPouch = this._spawnPouchDB('_admin', 0, {
                                     auto_compaction: false, // no compaction because this only stores local documents
                                     revs_limit: 1
-                                }).then(function (col) {
-                                    return _this.administrationCollection = col;
-                                }),
-                                // create collections-collection
-                                RxCollection.create(this, '_collections', DatabaseSchemas.collections).then(function (col) {
-                                    return _this.collectionsCollection = col;
-                                })]);
+                                });
+                                // - collections-collection
+                                this._collectionsPouch = this._spawnPouchDB('_collections', 0, {
+                                    auto_compaction: false, // no compaction because this only stores local documents
+                                    revs_limit: 1
+                                });
 
-                            case 2:
+                                // validate/insert password-hash
+
                                 if (!this.password) {
-                                    _context.next = 22;
+                                    _context.next = 24;
                                     break;
                                 }
 
                                 pwHashDoc = null;
-                                _context.prev = 4;
-                                _context.next = 7;
-                                return this.administrationCollection.pouch.get('_local/pwHash');
+                                _context.prev = 6;
+                                _context.next = 9;
+                                return this._adminPouch.get('_local/pwHash');
 
-                            case 7:
+                            case 9:
                                 pwHashDoc = _context.sent;
-                                _context.next = 12;
+                                _context.next = 14;
                                 break;
 
-                            case 10:
-                                _context.prev = 10;
-                                _context.t0 = _context['catch'](4);
-
                             case 12:
+                                _context.prev = 12;
+                                _context.t0 = _context['catch'](6);
+
+                            case 14:
                                 if (pwHashDoc) {
-                                    _context.next = 20;
+                                    _context.next = 22;
                                     break;
                                 }
 
-                                _context.prev = 13;
-                                _context.next = 16;
-                                return this.administrationCollection.pouch.put({
+                                _context.prev = 15;
+                                _context.next = 18;
+                                return this._adminPouch.put({
                                     _id: '_local/pwHash',
                                     value: util.hash(this.password)
                                 });
 
-                            case 16:
-                                _context.next = 20;
+                            case 18:
+                                _context.next = 22;
                                 break;
 
-                            case 18:
-                                _context.prev = 18;
-                                _context.t1 = _context['catch'](13);
-
                             case 20:
+                                _context.prev = 20;
+                                _context.t1 = _context['catch'](15);
+
+                            case 22:
                                 if (!(pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)) {
-                                    _context.next = 22;
+                                    _context.next = 24;
                                     break;
                                 }
 
                                 throw new Error('another instance on this adapter has a different password');
 
-                            case 22:
+                            case 24:
                                 if (!this.multiInstance) {
-                                    _context.next = 27;
+                                    _context.next = 29;
                                     break;
                                 }
 
-                                _context.next = 25;
+                                _context.next = 27;
                                 return Socket.create(this);
 
-                            case 25:
+                            case 27:
                                 this.socket = _context.sent;
 
 
@@ -262,19 +267,19 @@ var RxDatabase = function () {
                                     return _this.$emit(cE);
                                 });
 
-                            case 27:
-                                _context.next = 29;
+                            case 29:
+                                _context.next = 31;
                                 return LeaderElector.create(this);
 
-                            case 29:
+                            case 31:
                                 this.leaderElector = _context.sent;
 
-                            case 30:
+                            case 32:
                             case 'end':
                                 return _context.stop();
                         }
                     }
-                }, _callee, this, [[4, 10], [13, 18]]);
+                }, _callee, this, [[6, 12], [15, 20]]);
             }));
 
             function prepare() {
@@ -283,6 +288,29 @@ var RxDatabase = function () {
 
             return prepare;
         }()
+
+        /**
+         * transforms the given adapter into a pouch-compatible object
+         * @return {Object} adapterObject
+         */
+
+    }, {
+        key: '_spawnPouchDB',
+
+
+        /**
+         * spawns a new pouch-instance
+         * @param {string} collectionName
+         * @param {string} schemaVersion
+         * @param {Object} [pouchSettings={}] pouchSettings
+         * @type {Object}
+         */
+        value: function _spawnPouchDB(collectionName, schemaVersion) {
+            var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+            var pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
+            return new _PouchDB2.default(pouchLocation, this._adapterObj, pouchSettings);
+        }
     }, {
         key: 'waitForLeadership',
         value: function () {
@@ -358,28 +386,57 @@ var RxDatabase = function () {
 
     }, {
         key: '$emit',
+        value: function $emit(changeEvent) {
+            if (!changeEvent) return;
+
+            // throw in own cycle
+            this.subject.next(changeEvent);
+
+            // write to socket if event was created by self
+            if (changeEvent.data.it == this.token) this.writeToSocket(changeEvent);
+        }
+
+        /**
+         * @return {Observable} observable
+         */
+
+    }, {
+        key: '_collectionNamePrimary',
+
+
+        /**
+         * returns the primary for a given collection-data
+         * used in the internal pouchdb-instances
+         * @param {string} name
+         * @param {RxSchema} schema
+         */
+        value: function _collectionNamePrimary(name, schema) {
+            return name + '-' + schema.version;
+        }
+
+        /**
+         * removes the collection-doc from this._collectionsPouch
+         * @return {Promise}
+         */
+
+    }, {
+        key: 'removeCollectionDoc',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4(changeEvent) {
+            var _ref4 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4(name, schema) {
+                var docId, doc;
                 return _regenerator2.default.wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
-                                if (changeEvent) {
-                                    _context4.next = 2;
-                                    break;
-                                }
+                                docId = this._collectionNamePrimary(name, schema);
+                                _context4.next = 3;
+                                return this._collectionsPouch.get(docId);
 
-                                return _context4.abrupt('return');
+                            case 3:
+                                doc = _context4.sent;
+                                return _context4.abrupt('return', this._collectionsPouch.remove(doc));
 
-                            case 2:
-
-                                // throw in own cycle
-                                this.subject.next(changeEvent);
-
-                                // write to socket if event was created by self
-                                if (changeEvent.data.it == this.token) this.writeToSocket(changeEvent);
-
-                            case 4:
+                            case 5:
                             case 'end':
                                 return _context4.stop();
                         }
@@ -387,142 +444,156 @@ var RxDatabase = function () {
                 }, _callee4, this);
             }));
 
-            function $emit(_x3) {
+            function removeCollectionDoc(_x3, _x4) {
                 return _ref4.apply(this, arguments);
             }
 
-            return $emit;
+            return removeCollectionDoc;
         }()
 
         /**
-         * @return {Observable} observable
+         * create or fetch a collection
+         * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
+         * @return {Collection}
          */
 
     }, {
         key: 'collection',
-
-
-        /**
-         * create or fetch a collection
-         * @return {Collection}
-         */
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(name, schema) {
-                var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+            var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(args) {
+                var _this2 = this;
 
-                var schemaHash, collectionDoc, _collection, cEvent;
-
+                var internalPrimary, schemaHash, collectionDoc, collection, cEvent;
                 return _regenerator2.default.wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
-                                if (!(name.charAt(0) == '_')) {
-                                    _context5.next = 2;
+                                args.database = this;
+
+                                if (!(args.name.charAt(0) == '_')) {
+                                    _context5.next = 3;
                                     break;
                                 }
 
-                                throw new Error('collection(' + name + '): collection-names cannot start with underscore _');
+                                throw new Error('collection(' + args.name + '): collection-names cannot start with underscore _');
 
-                            case 2:
+                            case 3:
+                                if (!this.collections[args.name]) {
+                                    _context5.next = 5;
+                                    break;
+                                }
 
-                                if (schema && schema.constructor.name != 'RxSchema') schema = RxSchema.create(schema);
+                                throw new Error('collection(' + args.name + ') already exists. use myDatabase.' + args.name + ' to get it');
 
-                                if (this.collections[name]) {
+                            case 5:
+                                if (args.schema) {
+                                    _context5.next = 7;
+                                    break;
+                                }
+
+                                throw new Error('collection(' + args.name + '): schema is missing');
+
+                            case 7:
+
+                                if (args.schema.constructor.name != 'RxSchema') args.schema = RxSchema.create(args.schema);
+
+                                internalPrimary = this._collectionNamePrimary(args.name, args.schema);
+
+                                // check unallowd collection-names
+
+                                if (!properties().includes(args.name)) {
+                                    _context5.next = 11;
+                                    break;
+                                }
+
+                                throw new Error('Collection-name ' + args.name + ' not allowed');
+
+                            case 11:
+
+                                // check schemaHash
+                                schemaHash = args.schema.hash;
+                                collectionDoc = null;
+                                _context5.prev = 13;
+                                _context5.next = 16;
+                                return this._collectionsPouch.get(internalPrimary);
+
+                            case 16:
+                                collectionDoc = _context5.sent;
+                                _context5.next = 21;
+                                break;
+
+                            case 19:
+                                _context5.prev = 19;
+                                _context5.t0 = _context5['catch'](13);
+
+                            case 21:
+                                if (!(collectionDoc && collectionDoc.schemaHash != schemaHash)) {
+                                    _context5.next = 23;
+                                    break;
+                                }
+
+                                throw new Error('collection(' + args.name + '): another instance created this collection with a different schema');
+
+                            case 23:
+                                _context5.next = 25;
+                                return RxCollection.create(args);
+
+                            case 25:
+                                collection = _context5.sent;
+
+                                if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
+                                    _context5.next = 28;
+                                    break;
+                                }
+
+                                throw new Error('collection(' + args.name + '): schema encrypted but no password given');
+
+                            case 28:
+                                if (collectionDoc) {
                                     _context5.next = 36;
                                     break;
                                 }
 
-                                // check schemaHash
-                                schemaHash = schema.hash();
-                                collectionDoc = null;
-                                _context5.prev = 6;
-                                _context5.next = 9;
-                                return this.collectionsCollection.pouch.get(name);
-
-                            case 9:
-                                collectionDoc = _context5.sent;
-                                _context5.next = 14;
-                                break;
-
-                            case 12:
-                                _context5.prev = 12;
-                                _context5.t0 = _context5['catch'](6);
-
-                            case 14:
-                                if (!(collectionDoc && collectionDoc.schemaHash != schemaHash)) {
-                                    _context5.next = 16;
-                                    break;
-                                }
-
-                                throw new Error('collection(' + name + '): another instance created this collection with a different schema');
-
-                            case 16:
-                                _context5.next = 18;
-                                return RxCollection.create(this, name, schema, pouchSettings);
-
-                            case 18:
-                                _collection = _context5.sent;
-
-                                if (!(Object.keys(_collection.schema.getEncryptedPaths()).length > 0 && !this.password)) {
-                                    _context5.next = 21;
-                                    break;
-                                }
-
-                                throw new Error('collection(' + name + '): schema encrypted but no password given');
-
-                            case 21:
-                                if (collectionDoc) {
-                                    _context5.next = 29;
-                                    break;
-                                }
-
-                                _context5.prev = 22;
-                                _context5.next = 25;
-                                return this.collectionsCollection.pouch.put({
-                                    _id: name,
+                                _context5.prev = 29;
+                                _context5.next = 32;
+                                return this._collectionsPouch.put({
+                                    _id: internalPrimary,
                                     schemaHash: schemaHash,
-                                    schema: _collection.schema.normalized
+                                    schema: collection.schema.normalized,
+                                    version: collection.schema.version
                                 });
 
-                            case 25:
-                                _context5.next = 29;
+                            case 32:
+                                _context5.next = 36;
                                 break;
 
-                            case 27:
-                                _context5.prev = 27;
-                                _context5.t1 = _context5['catch'](22);
+                            case 34:
+                                _context5.prev = 34;
+                                _context5.t1 = _context5['catch'](29);
 
-                            case 29:
+                            case 36:
                                 cEvent = RxChangeEvent.create('RxDatabase.collection', this);
 
-                                cEvent.data.v = _collection.name;
+                                cEvent.data.v = collection.name;
                                 cEvent.data.col = '_collections';
                                 this.$emit(cEvent);
 
-                                this.collections[name] = _collection;
-                                _context5.next = 38;
-                                break;
+                                this.collections[args.name] = collection;
+                                this.__defineGetter__(args.name, function () {
+                                    return _this2.collections[args.name];
+                                });
 
-                            case 36:
-                                if (!(schema && schema.hash() != this.collections[name].schema.hash())) {
-                                    _context5.next = 38;
-                                    break;
-                                }
+                                return _context5.abrupt('return', collection);
 
-                                throw new Error('collection(' + name + '): already has a different schema');
-
-                            case 38:
-                                return _context5.abrupt('return', this.collections[name]);
-
-                            case 39:
+                            case 43:
                             case 'end':
                                 return _context5.stop();
                         }
                     }
-                }, _callee5, this, [[6, 12], [22, 27]]);
+                }, _callee5, this, [[13, 19], [29, 34]]);
             }));
 
-            function collection(_x4, _x5) {
+            function collection(_x5) {
                 return _ref5.apply(this, arguments);
             }
 
@@ -539,7 +610,7 @@ var RxDatabase = function () {
         key: 'dump',
         value: function () {
             var _ref6 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6() {
-                var _this2 = this;
+                var _this3 = this;
 
                 var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
                 var collections = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -549,7 +620,7 @@ var RxDatabase = function () {
                         switch (_context6.prev = _context6.next) {
                             case 0:
                                 json = {
-                                    name: this.prefix,
+                                    name: this.name,
                                     instanceToken: this.token,
                                     encrypted: false,
                                     passwordHash: null,
@@ -567,7 +638,7 @@ var RxDatabase = function () {
                                 }).filter(function (colName) {
                                     return colName.charAt(0) != '_';
                                 }).map(function (colName) {
-                                    return _this2.collections[colName];
+                                    return _this3.collections[colName];
                                 });
                                 _context6.next = 5;
                                 return Promise.all(useCollections.map(function (col) {
@@ -602,16 +673,16 @@ var RxDatabase = function () {
         key: 'importDump',
         value: function () {
             var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7(dump) {
-                var _this3 = this;
+                var _this4 = this;
 
                 return _regenerator2.default.wrap(function _callee7$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
                             case 0:
                                 return _context7.abrupt('return', Promise.all(dump.collections.filter(function (colDump) {
-                                    return _this3.collections[colDump.name];
+                                    return _this4.collections[colDump.name];
                                 }).map(function (colDump) {
-                                    return _this3.collections[colDump.name].importDump(colDump);
+                                    return _this4.collections[colDump.name].importDump(colDump);
                                 })));
 
                             case 1:
@@ -622,7 +693,7 @@ var RxDatabase = function () {
                 }, _callee7, this);
             }));
 
-            function importDump(_x9) {
+            function importDump(_x8) {
                 return _ref7.apply(this, arguments);
             }
 
@@ -632,7 +703,7 @@ var RxDatabase = function () {
         key: 'destroy',
         value: function () {
             var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
-                var _this4 = this;
+                var _this5 = this;
 
                 return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
@@ -656,7 +727,7 @@ var RxDatabase = function () {
                                     return sub.unsubscribe();
                                 });
                                 Object.keys(this.collections).map(function (key) {
-                                    return _this4.collections[key];
+                                    return _this5.collections[key];
                                 }).map(function (col) {
                                     return col.destroy();
                                 });
@@ -676,6 +747,19 @@ var RxDatabase = function () {
             return destroy;
         }()
     }, {
+        key: '_adapterObj',
+        get: function get() {
+            var adapterObj = {
+                db: this.adapter
+            };
+            if (typeof this.adapter === 'string') {
+                adapterObj = {
+                    adapter: this.adapter
+                };
+            }
+            return adapterObj;
+        }
+    }, {
         key: 'isLeader',
         get: function get() {
             if (!this.multiInstance) return true;
@@ -690,7 +774,24 @@ var RxDatabase = function () {
     return RxDatabase;
 }();
 
+/**
+ * returns all possible properties of a RxDatabase-instance
+ * @return {string[]} property-names
+ */
+
+
 RxDatabase.settings = {
     minPassLength: 8
 };
+var _properties = null;
+function properties() {
+    if (!_properties) {
+        var pseudoInstance = new RxDatabase();
+        var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
+        var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
+        _properties = [].concat((0, _toConsumableArray3.default)(ownProperties), (0, _toConsumableArray3.default)(prototypeProperties));
+    }
+    return _properties;
+}
+
 exports.RxSchema = RxSchema;

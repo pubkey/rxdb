@@ -1,7 +1,7 @@
 {
 
-    "compileOnSave": true,
-    "buildOnSave": true,
+    "compileOnSave": false,
+    "buildOnSave": false,
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
@@ -22,7 +22,8 @@
         "./config.json"
     ],
     "include": [
-        "./app/**/*.ts"
+        "./app/**/*.ts",
+        "./app/**/*.less"
     ],
     "filesGlob": [
         "**/*.ts",

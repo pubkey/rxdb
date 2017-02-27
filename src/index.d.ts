@@ -1,19 +1,86 @@
 import {Promise} from "es6-promise";
 import {Observable} from "rxjs";
 
-
 declare class RxSchema {
-    jsonID: any;
+    jsonID: SchemaJSON;
     getSchemaByObjectPath(path: string): any;
-    getEncryptedPaths(): any;
-    validate(obj: any, schemaObj: any): any;
-    hash(): string;
+    encryptedPaths: any;
+    validate(obj: any, schemaObj: any): void;
+    hash: string;
 
-    static create(jsonSchema: any): any;
+    static create(jsonSchema: SchemaJSON): RxSchema;
+}
+
+/**
+ * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
+ */
+type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
+interface JsonSchema {
+    type?: JsonSchemaTypes | JsonSchemaTypes[];
+    description?: string;
+    multipleOf?: number;
+    maximum?: number;
+    exclusiveMaximum?: boolean;
+    minimum?: number;
+    exclusiveMinimum?: boolean;
+    maxLength?: number;
+    minLength?: number;
+    pattern?: string;
+    additionalItems?: boolean | JsonSchema;
+    items?: JsonSchema | JsonSchema[];
+    maxItems?: number;
+    minItems?: number;
+    uniqueItems?: boolean;
+    maxProperties?: number;
+    minProperties?: number;
+    required?: string[];
+    properties?: {
+        [key: string]: JsonSchema;
+    };
+    patternProperties?: {
+        [key: string]: JsonSchema;
+    };
+    dependencies?: {
+        [key: string]: JsonSchema | string[];
+    };
+    enum?: any[];
+    allOf?: JsonSchema[];
+    anyOf?: JsonSchema[];
+    oneOf?: JsonSchema[];
+    not?: JsonSchema;
+    definitions?: {
+        [key: string]: JsonSchema;
+    };
+    format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
+}
+
+interface SchemaJSON {
+    title?: string;
+    description?: string;
+    version: number;
+    type: string;
+    properties: JsonSchema;
+    required?: Array<string>;
+    compoundIndexes?: Array<string | Array<string>>;
+    disableKeyCompression?: boolean;
+}
+
+interface CollectionCreator {
+    name: string;
+    schema: SchemaJSON | RxSchema;
+    pouchSettings?: any;
+    migrationStrategies?: Function[];
+    autoMigrate?: boolean;
+    statics?: {
+        [key: number]: Function
+    };
+    methods?: {
+        [key: number]: Function
+    };
 }
 
 declare class RxDatabase {
-    prefix: string;
+    name: string;
     token: string;
     multiInstance: boolean;
     password: string;
@@ -22,7 +89,7 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection(name: string, schema?: any | RxSchema, pouchSettings?: any): Promise<RxCollection>;
+    collection(args: CollectionCreator): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -43,9 +110,9 @@ declare class RxCollection {
 
     $: Observable<RxChangeEvent>;
     insert(json: any): Promise<RxDocument>;
+    upsert(json: any): Promise<RxDocument>;
     find(queryObj?: any): RxQuery;
     findOne(queryObj?: any): RxQuery;
-    query(queryObj?: any): RxQuery;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
@@ -58,6 +125,18 @@ declare class RxCollection {
     postInsert(fun: Function, parallel: boolean): void;
     postSave(fun: Function, parallel: boolean): void;
     postRemove(fun: Function, parallel: boolean): void;
+
+    // migration
+    migrationNeeded(): Promise<boolean>;
+    migrate(batchSize: number): Observable<{
+        done: boolean, // true if finished
+        total: number, // will be the doc-count
+        handled: number, // amount of handled docs
+        success: number, // handled docs which successed
+        deleted: number, // handled docs which got deleted
+        percent: number // percentage
+    }>;
+    migratePromise(batchSize: number): Promise<any>;
 
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
@@ -91,6 +170,7 @@ declare class RxQuery {
 
     exec(): Promise<RxDocument[]>;
     $: Observable<RxDocument[]>;
+    remove(): Promise<RxDocument | RxDocument[]>;
 }
 
 declare class RxDocument {
@@ -98,33 +178,44 @@ declare class RxDocument {
     deleted: boolean;
 
     $: Observable<any>;
+    deleted$: Observable<boolean>;
+    synced$: Observable<boolean>;
+    resync(): void;
+
     getPrimary(): string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
     set(objPath: string, value: any): RxDocument;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
+    populate(objPath: string): Promise<RxDocument |null>;
     toJSON(): Object;
-    destroy(): any;
+    destroy(): void;
+}
+
+
+
+
+interface RxChangeEventData {
+    type: "INSERT" | "UPDATE" | "REMOVE";
 }
 
 declare class RxChangeEvent {
-    data: any;
+    data: RxChangeEventData;
     toJSON(): any;
 }
 
-export function create(
-    prefix: string,
-    storageEngine: any,
-    password?: string,
-    multiInstance?: boolean
-): Promise<RxDatabase>;
 
-export function plugin(mod: any): any;
+interface DatabaseCreator {
+    name: string;
+    storageEngine: any;
+    password?: string;
+    multiInstance?: boolean;
+}
 
-export const PouchDB: {
-    plugin(plugin: any): any;
-};
+export function create(DatabaseCreator): Promise<RxDatabase>;
+
+export function plugin(mod: any): void;
 
 export {
 RxDatabase as RxDatabase,

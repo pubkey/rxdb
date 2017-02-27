@@ -7,15 +7,13 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 The database is created by the asynchronos .create()-function of the main RxDB-module. It has the following 4 parameters.
 
 ```javascript
-RxDB.create(
-  'heroesDB',   // <- name
-  'websql',     // <- storage-adapter
-  'myPassword', // <- password (optional)
-  true          // <- multiInstance (optional)
-)
-.then(db => {
-  console.dir(db);
+const db = await RxDB.create({
+  name: 'heroesDB',           // <- name
+  adapter: 'websql',          // <- storage-adapter
+  password: 'myPassword',     // <- password (optional)
+  multiInstance: true         // <- multiInstance (default: true)
 });
+console.dir(db);
 ```
 
 ### name
@@ -24,7 +22,7 @@ The database-name is a string which identifies the database. When two RxDatabase
 Depending on the adapter this can also be used to define the storage-folder of your data.
 
 
-### storage-adapter
+### adapter
 
 The storage-adapter defines where the data is actually stored at. You can use a string for [pouchdb-adapters](https://pouchdb.com/adapters.html) or an object for level-adapters. To use an adapter it must before have been added with the RxDB.plugin()-function.
 
@@ -35,13 +33,13 @@ Example with level-adapter:
 ```javascript
 import { default as memdown } from 'memdown';
 RxDB.plugin(require('pouchdb-adapter-leveldb'));
-const db = await RxDB.create('mydatabase', memdown);
+const db = await RxDB.create({name: 'mydatabase', adapter: memdown});
 ```
 
 ### password (optional)
 If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
 
-### multiInstance (optional)
+### multiInstance (optional=true)
 When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be used in browsers for multi-window-support or electron.
 
 

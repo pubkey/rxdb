@@ -1,7 +1,6 @@
 import {
     default as clone
 } from 'clone';
-
 import {
     default as objectPath
 } from 'object-path';
@@ -10,29 +9,24 @@ import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
 
 class RxDocument {
-
-    get[Symbol.toStringTag]() {
-        return 'RxDocument';
-    }
-
-    constructor(collection, jsonData, query) {
+    constructor(collection, jsonData) {
         this.collection = collection;
-        this.query = query;
 
+        // assume that this is always equal to the doc-data in the database
+        this._dataSync$ = new util.Rx.BehaviorSubject(clone(jsonData));
+
+        // current doc-data, changes when setting values etc
         this._data = clone(jsonData);
 
-        this.deleted = false;
-        this._deleted$;
-        this.changed = false;
+        // false when _data !== _dataSync
+        this._synced$ = new util.Rx.BehaviorSubject(true);
 
-        this._observable$;
-
+        this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
     prepare() {
         // set getter/setter/observable
         this._defineGetterSetter(this, '');
     }
-
 
     getPrimaryPath() {
         return this.collection.schema.primaryPath;
@@ -45,39 +39,75 @@ class RxDocument {
         return this._data._rev;
     }
 
+    get deleted$() {
+        return this._deleted$.asObservable();
+    }
+    get synced$() {
+        return this._synced$.asObservable().distinctUntilChanged();
+    }
+
+    resync() {
+        if (this._synced$.getValue())
+            return;
+        else {
+            this._data = clone(this._dataSync$.getValue());
+            this._synced$.next(true);
+        }
+    }
 
     /**
      * returns the observable which emits the plain-data of this document
      * @return {Observable}
      */
     get $() {
-        if (!this._observable$) {
-            this._observable$ = this.collection.$
-                .filter(event => (
-                    event.data.doc == this.getPrimary() ||
-                    event.data.doc == '*'
-                ))
-                .mergeMap(async(ev) => {
-                    if (ev.data.op == 'RxDocument.remove') {
-                        this.deleted = true;
-                        return null;
-                    }
-                    if (ev.data.v) return ev.data.v;
-                    const newData = await this.collection._pouchGet(this.getPrimary());
-                    return newData;
-                })
-                .do(docData => this._data = docData);
-        }
-        return this._observable$;
+        return this._dataSync$.asObservable();
     }
 
-    get deleted$() {
-        if (!this._deleted$) {
-            this._deleted$ = this.$
-                .filter(docData => docData == null);
+    /**
+     * @param {ChangeEvent}
+     */
+    _handleChangeEvent(changeEvent) {
+        if (changeEvent.data.doc != this.getPrimary())
+            return;
+
+        //TODO check if new _rev is higher then current
+
+        switch (changeEvent.data.op) {
+            case 'INSERT':
+                break;
+            case 'UPDATE':
+                const newData = clone(changeEvent.data.v);
+                delete newData._ext;
+                const prevSyncData = this._dataSync$.getValue();
+                const prevData = this._data;
+
+                if (isDeepEqual(prevSyncData, prevData)) {
+                    // document is in sync, overwrite _data
+                    this._data = newData;
+
+                    if (this._synced$.getValue() != true)
+                        this._synced$.next(true);
+                } else {
+                    // not in sync, emit to synced$
+                    if (this._synced$.getValue() != false)
+                        this._synced$.next(false);
+
+                    // overwrite _rev of data
+                    this._data._rev = newData._rev;
+                }
+                this._dataSync$.next(clone(newData));
+                break;
+            case 'REMOVE':
+                this._deleted$.next(true);
+                break;
         }
-        return this._deleted$;
     }
+
+    /**
+     * emits the changeEvent to the upper instance (RxCollection)
+     * @param  {RxChangeEvent} changeEvent
+     */
+    $emit = changeEvent => this.collection.$emit(changeEvent);
 
     /**
      * returns observable of the value of the given path
@@ -85,17 +115,33 @@ class RxDocument {
      * @return {Observable}
      */
     get$(path) {
+        if (path.includes('.item.'))
+            throw new Error(`cannot get observable of in-array fields because order cannot be guessed: ${path}`);
+
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) throw new Error(`cannot observe a non-existed field (${path})`);
 
-        return this.$
+        return this._dataSync$
             .map(data => objectPath.get(data, path))
             .distinctUntilChanged()
-            .startWith(this.get(path));
+            .asObservable();
     }
 
+    async populate(path, object) {
+        const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
+        const value = this.get(path);
+        if (!schemaObj)
+            throw new Error(`cannot populate a non-existed field (${path})`);
+        if (!schemaObj.ref)
+            throw new Error(`cannot populate because path has no ref (${path})`);
 
-    $emit = changeEvent => this.collection.$emit(changeEvent);
+        const refCollection = this.collection.database.collections[schemaObj.ref];
+        if (!refCollection)
+            throw new Error(`ref-collection (${schemaObj.ref}) not in database`);
+
+        const doc = await refCollection.findOne(value).exec();
+        return doc;
+    }
 
     /**
      * get data by objectPath
@@ -121,10 +167,9 @@ class RxDocument {
         return valueObj;
     }
 
-
     _defineGetterSetter(valueObj, objPath = '') {
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
-        if(pathProperties.properties) pathProperties=pathProperties.properties;
+        if (pathProperties.properties) pathProperties = pathProperties.properties;
 
         Object.keys(pathProperties)
             .forEach(key => {
@@ -136,15 +181,17 @@ class RxDocument {
                 valueObj.__defineGetter__(key + '$', () => {
                     return this.get$(util.trimDots(objPath + '.' + key));
                 });
+                // getter - populate_
+                valueObj.__defineGetter__(key + '_', () => {
+                    return this.populate(util.trimDots(objPath + '.' + key));
+                });
+
                 // setter - value
                 valueObj.__defineSetter__(key, (val) => {
                     return this.set(util.trimDots(objPath + '.' + key), val);
                 });
             });
     }
-
-
-
 
     toJSON() {
         return clone(this._data);
@@ -165,7 +212,6 @@ class RxDocument {
         }
         // check if equal
         if (Object.is(this.get(objPath), value)) return;
-        else this.changed = true;
 
         // check if nested without root-object
         let pathEls = objPath.split('.');
@@ -186,46 +232,49 @@ class RxDocument {
         return this;
     };
 
+    /**
+     * save document if its data has changed
+     * @return {boolean} false if nothing to save
+     */
     async save() {
-        if (!this.changed) return;
-
-        if (this.deleted)
+        if (this._deleted$.getValue())
             throw new Error('RxDocument.save(): cant save deleted document');
 
-        const emitValue = clone(this._data);
+        // check if different
+        if (isDeepEqual(this._data, this._dataSync$.getValue())) {
+            this._synced$.next(true);
+            return false; // nothing changed, dont save
+        }
 
         await this.collection._runHooks('pre', 'save', this);
-
-
-        // handle encrypted data
-        // // TODO handle data
-        /*        const encPaths = this.collection.schema.getEncryptedPaths();
-                Object.keys(encPaths).map(path => {
-                    let value = objectPath.get(this.rawData, path);
-                    let encrypted = this.collection.database._encrypt(value);
-                    objectPath.set(this.rawData, path, encrypted);
-                });*/
+        this.collection.schema.validate(this._data);
 
         const ret = await this.collection._pouchPut(clone(this._data));
         if (!ret.ok)
             throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
-        this._data._rev = ret.rev;
+
+        const emitValue = clone(this._data);
+        emitValue._rev = ret.rev;
+
+        this._data = emitValue;
 
         await this.collection._runHooks('post', 'save', this);
 
         // event
+        this._synced$.next(true);
+        this._dataSync$.next(clone(emitValue));
+
+
         const changeEvent = RxChangeEvent.create(
-            'RxDocument.save',
+            'UPDATE',
             this.collection.database,
             this.collection,
             this,
             emitValue
         );
         this.$emit(changeEvent);
-
-        this.changed = false;
+        return true;
     }
-
 
     async remove() {
         if (this.deleted)
@@ -239,7 +288,7 @@ class RxDocument {
         await this.collection._runHooks('post', 'remove', this);
 
         this.$emit(RxChangeEvent.create(
-            'RxDocument.remove',
+            'REMOVE',
             this.collection.database,
             this.collection,
             this,
@@ -248,42 +297,79 @@ class RxDocument {
     }
 
     destroy() {}
-
 }
 
+/**
+ * performs a deep-equal without comparing internal getters and setter (observe$ and populate_ etc.)
+ * @param  {object}  data1
+ * @param  {object}  data2
+ * @throws {Error} if given data not a plain js object
+ * @return {Boolean} true if equal
+ */
+export function isDeepEqual(data1, data2) {
+    if (typeof data1 !== typeof data2) return false;
 
-export function create(collection, jsonData, query) {
+    let ret = true;
+
+    // array
+    if (Array.isArray(data1)) {
+        let k = 0;
+        while (k < data1.length && ret == true) {
+            if (!data2[k] || !isDeepEqual(data1[k], data2[k]))
+                ret = false;
+            k++;
+        }
+        return ret;
+    }
+
+    // object
+    if (typeof data1 === 'object') {
+        const entries = Object.entries(data1)
+            .filter(entry => !entry[0].endsWith('$')) // observe
+            .filter(entry => !entry[0].endsWith('_')); // populate;
+        let k = 0;
+        while (k < entries.length && ret) {
+            const entry = entries[k];
+            const name = entry[0];
+            const value = entry[1];
+            if (!isDeepEqual(data2[name], value))
+                ret = false;
+            k++;
+        }
+        return ret;
+    }
+
+    // other
+    return data1 == data2;
+}
+
+export function create(collection, jsonData) {
     if (jsonData[collection.schema.primaryPath].startsWith('_design'))
         return null;
 
-    const doc = new RxDocument(collection, jsonData, query);
+    const doc = new RxDocument(collection, jsonData);
     doc.prepare();
     return doc;
 }
 
-
-export function createAr(collection, jsonDataAr, query) {
+export function createAr(collection, jsonDataAr) {
     return jsonDataAr
-        .map(jsonData => create(collection, jsonData, query))
+        .map(jsonData => create(collection, jsonData))
         .filter(doc => doc != null);
 }
-
-const pseudoRxDocument = new RxDocument({
-    schema: {
-        getEncryptedPaths: () => []
-    },
-    $: {
-        filter: () => false
-    }
-}, {}, {});
 
 /**
  * returns all possible properties of a RxDocument
  * @return {string[]} property-names
  */
+let _properties;
 export function properties() {
-    const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-    const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
-    const properties = [...ownProperties, ...prototypeProperties];
-    return properties;
+    if (!_properties) {
+        const reserved = ['deleted', 'synced'];
+        const pseudoRxDocument = new RxDocument();
+        const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
+        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+        _properties = [...ownProperties, ...prototypeProperties, ...reserved];
+    }
+    return _properties;
 }

@@ -1,4 +1,3 @@
-import * as DatabaseSchemas from './Database.schemas';
 import * as RxCollection from './RxCollection';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as RxBroadcastChannel from './RxBroadcastChannel';
@@ -12,7 +11,6 @@ class Socket {
     constructor(database) {
         this.database = database;
         this.token = database.token;
-        this.collection;
         this.subs = [];
 
         this.pullCount = 0;
@@ -29,13 +27,10 @@ class Socket {
 
     async prepare() {
         // create socket-collection
-        this.collection = await RxCollection.create(
-            this.database,
-            '_socket',
-            DatabaseSchemas.socket, {
-                auto_compaction: false, // this is false because its done manually at .pull()
-                revs_limit: 1
-            });
+        this.pouch = this.database._spawnPouchDB('_socket', 0, {
+            auto_compaction: false, // this is false because its done manually at .pull()
+            revs_limit: 1
+        });
 
         // pull on BroadcastChannel-message
         if (this.bc) {
@@ -49,7 +44,7 @@ class Socket {
         // pull on intervall
         const autoPull = util.Rx.Observable
             .interval(PULL_TIME)
-            .filter(c => this.messages$.observers.length > 0) // TODO replace with subject$.hasObservers() https://github.com/Reactive-Extensions/RxJS/issues/1364
+            .filter(c => this.messages$.observers.length > 0)
             .subscribe(x => this.pull());
         this.subs.push(autoPull);
 
@@ -64,13 +59,10 @@ class Socket {
         const socketDoc = changeEvent.toJSON();
         delete socketDoc.db;
 
-        // do not write whole doc to socket
-        delete socketDoc.v;
-
         // TODO find a way to getAll on local documents
         //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
         socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;
-        await this.collection.pouch.put(socketDoc);
+        await this.pouch.put(socketDoc);
         this.bc && await this.bc.write('pull');
         return true;
     }
@@ -80,7 +72,7 @@ class Socket {
      * get all docs from the socket-collection
      */
     async fetchDocs() {
-        const result = await this.collection.pouch.allDocs({
+        const result = await this.pouch.allDocs({
             include_docs: true
         });
         return result.rows
@@ -88,7 +80,7 @@ class Socket {
     }
     async deleteDoc(doc) {
         try {
-            await this.collection.pouch.remove(doc);
+            await this.pouch.remove(doc);
         } catch (e) {}
     }
 
@@ -118,11 +110,11 @@ class Socket {
             .map(doc => RxChangeEvent.fromJSON(doc))
             // make sure the same event is not emitted twice
             .filter(cE => {
-                if (this.recievedEvents[cE.hash()]) return false;
-                return this.recievedEvents[cE.hash()] = new Date().getTime();
+                if (this.recievedEvents[cE.hash]) return false;
+                return this.recievedEvents[cE.hash] = new Date().getTime();
             })
             // prevent memory leak of this.recievedEvents
-            .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash()], EVENT_TTL * 3))
+            .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash], EVENT_TTL * 3))
             // emit to messages
             .forEach(cE => this.messages$.next(cE));
 
@@ -133,7 +125,7 @@ class Socket {
             .filter(doc => doc.t < maxAge)
             .map(doc => this.deleteDoc(doc));
         if (delDocs.length > 0)
-            await this.collection.pouch.compact();
+            await this.pouch.compact();
 
 
         this.lastPull = new Date().getTime();
@@ -150,7 +142,6 @@ class Socket {
     destroy() {
         this.subs.map(sub => sub.unsubscribe());
         if (this.bc) this.bc.destroy();
-        this.collection.destroy();
     }
 
 }

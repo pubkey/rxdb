@@ -59,7 +59,7 @@ var RxChangeEvent = function () {
         }
     }, {
         key: 'hash',
-        value: function hash() {
+        get: function get() {
             if (!this._hash) this._hash = util.hash(this.data);
             return this._hash;
         }
@@ -76,8 +76,8 @@ function fromJSON(data) {
 
 function fromPouchChange(changeDoc, collection) {
 
-    // TODO is this right?
-    var op = changeDoc._rev.startsWith('1-') ? 'RxDocument.save' : 'RxDocument.insert';
+    var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
+    if (changeDoc._deleted) op = 'REMOVE';
 
     // decompress / primarySwap
     changeDoc = collection._handleFromPouch(changeDoc);

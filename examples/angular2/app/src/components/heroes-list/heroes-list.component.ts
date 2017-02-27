@@ -1,9 +1,7 @@
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
-import {Observable} from 'rxjs';
+import { Component, OnInit, OnDestroy, NgZone, Output, Input, EventEmitter } from '@angular/core';
 import { RxDocument } from '../../../../../../';
 
 import { DatabaseService } from '../../services/database.service';
-import { Hero } from '../../logic/hero';
 
 
 @Component({
@@ -18,32 +16,40 @@ export class HeroesListComponent implements OnInit, OnDestroy {
     heroes: RxDocument[];
     sub;
 
+    @Output('edit') editChange: EventEmitter<RxDocument> = new EventEmitter();
+    set edit(hero) {
+        console.log('editHero: ' + hero.name);
+        this.editChange.emit(hero);
+    }
+    editHero(hero) {
+        this.edit = hero;
+    }
+    deleteHero(hero) {
+        hero.remove();
+    }
+
     constructor(
         private databaseService: DatabaseService,
         private zone: NgZone
     ) {
-        // console.log('constructor');
     }
 
     ngAfterContentInit() { }
 
-    ngOnInit() {
-        // console.log('ngOnInit');
-        // console.dir(this.databaseService.get());
+    private async _show() {
+        const db = await this.databaseService.get();
+        const heroes$ = db['hero']
+            .find()
+            .sort({ name: 1 })
+            .$;
+        this.sub = heroes$.subscribe(heroes => {
+            this.heroes = heroes;
+            this.zone.run(() => { });
+        });
+    }
 
-        this.databaseService.get()
-            .then(db => db.collection('hero'))
-            .then(col => col
-                .query()
-                .sort({ name: 1 })
-                .$
-            )
-            .then($ => this.sub = $.subscribe(heroes => {
-                // console.log('observable fired');
-                // console.dir(heroes);
-                this.heroes = heroes;
-                this.zone.run(() => {});
-            }));
+    ngOnInit() {
+        this._show();
     }
 
     ngOnDestroy() {

@@ -5,7 +5,6 @@ import {
 import * as util from './util';
 import * as RxCollection from './RxCollection';
 import * as RxSchema from './RxSchema';
-import * as DatabaseSchemas from './Database.schemas';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as Socket from './Socket';
 import * as LeaderElector from './LeaderElector';
@@ -19,8 +18,8 @@ class RxDatabase {
         minPassLength: 8
     };
 
-    constructor(prefix, adapter, password, multiInstance = false) {
-        this.prefix = prefix;
+    constructor(name, adapter, password, multiInstance) {
+        this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
@@ -34,10 +33,9 @@ class RxDatabase {
         // cache for collection-objects
         this.collections = {};
 
-        // rx
-        this.subject = new util.Rx.Subject();
-        this.observable$ = this.subject.asObservable()
-            .filter(cEvent => cEvent.constructor.name == 'RxChangeEvent');
+        // this is needed to preserver attribute-name
+        this.subject = null;
+        this.observable$ = null;
     }
 
     /**
@@ -45,33 +43,32 @@ class RxDatabase {
      */
     async prepare() {
 
+        // rx
+        this.subject = new util.Rx.Subject();
+        this.observable$ = this.subject.asObservable()
+            .filter(cEvent => cEvent.constructor.name == 'RxChangeEvent');
+
         // create internal collections
-        await Promise.all([
-            // create admin-collection
-            RxCollection.create(
-                this,
-                '_admin',
-                DatabaseSchemas.administration, {
-                    auto_compaction: false, // no compaction because this only stores local documents
-                    revs_limit: 1
-                })
-            .then(col => this.administrationCollection = col),
-            // create collections-collection
-            RxCollection
-            .create(this, '_collections', DatabaseSchemas.collections)
-            .then(col => this.collectionsCollection = col)
-        ]);
+        // - admin-collection
+        this._adminPouch = this._spawnPouchDB('_admin', 0, {
+            auto_compaction: false, // no compaction because this only stores local documents
+            revs_limit: 1
+        });
+        // - collections-collection
+        this._collectionsPouch = this._spawnPouchDB('_collections', 0, {
+            auto_compaction: false, // no compaction because this only stores local documents
+            revs_limit: 1
+        });
 
         // validate/insert password-hash
         if (this.password) {
             let pwHashDoc = null;
             try {
-                pwHashDoc = await this.administrationCollection
-                    .pouch.get('_local/pwHash');
+                pwHashDoc = await this._adminPouch.get('_local/pwHash');
             } catch (e) {}
             if (!pwHashDoc) {
                 try {
-                    await this.administrationCollection.pouch.put({
+                    await this._adminPouch.put({
                         _id: '_local/pwHash',
                         value: util.hash(this.password)
                     });
@@ -91,6 +88,39 @@ class RxDatabase {
 
         // leader elector
         this.leaderElector = await LeaderElector.create(this);
+    }
+
+
+    /**
+     * transforms the given adapter into a pouch-compatible object
+     * @return {Object} adapterObject
+     */
+    get _adapterObj() {
+        let adapterObj = {
+            db: this.adapter
+        };
+        if (typeof this.adapter === 'string') {
+            adapterObj = {
+                adapter: this.adapter
+            };
+        }
+        return adapterObj;
+    }
+
+    /**
+     * spawns a new pouch-instance
+     * @param {string} collectionName
+     * @param {string} schemaVersion
+     * @param {Object} [pouchSettings={}] pouchSettings
+     * @type {Object}
+     */
+    _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
+        const pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
+        return new PouchDB(
+            pouchLocation,
+            this._adapterObj,
+            pouchSettings
+        );
     }
 
     get isLeader() {
@@ -117,7 +147,7 @@ class RxDatabase {
     /**
      * throw a new event into the event-cicle
      */
-    async $emit(changeEvent) {
+    $emit(changeEvent) {
         if (!changeEvent) return;
 
         // throw in own cycle
@@ -136,58 +166,93 @@ class RxDatabase {
         return this.observable$;
     }
 
+
+    /**
+     * returns the primary for a given collection-data
+     * used in the internal pouchdb-instances
+     * @param {string} name
+     * @param {RxSchema} schema
+     */
+    _collectionNamePrimary(name, schema) {
+        return name + '-' + schema.version;
+    }
+
+    /**
+     * removes the collection-doc from this._collectionsPouch
+     * @return {Promise}
+     */
+    async removeCollectionDoc(name, schema) {
+        const docId = this._collectionNamePrimary(name, schema);
+        const doc = await this._collectionsPouch.get(docId);
+        return this._collectionsPouch.remove(doc);
+    }
+
+
     /**
      * create or fetch a collection
+     * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
      * @return {Collection}
      */
-    async collection(name, schema, pouchSettings = {}) {
-        if (name.charAt(0) == '_')
-            throw new Error(`collection(${name}): collection-names cannot start with underscore _`);
+    async collection(args) {
+        args.database = this;
 
-        if (schema && schema.constructor.name != 'RxSchema')
-            schema = RxSchema.create(schema);
+        if (args.name.charAt(0) == '_')
+            throw new Error(`collection(${args.name}): collection-names cannot start with underscore _`);
 
-        if (!this.collections[name]) {
-            // check schemaHash
-            const schemaHash = schema.hash();
-            let collectionDoc = null;
+        if (this.collections[args.name])
+            throw new Error(`collection(${args.name}) already exists. use myDatabase.${args.name} to get it`);
+
+        if (!args.schema)
+            throw new Error(`collection(${args.name}): schema is missing`);
+
+        if (args.schema.constructor.name != 'RxSchema')
+            args.schema = RxSchema.create(args.schema);
+
+        const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
+
+        // check unallowd collection-names
+        if (properties().includes(args.name))
+            throw new Error(`Collection-name ${args.name} not allowed`);
+
+        // check schemaHash
+        const schemaHash = args.schema.hash;
+        let collectionDoc = null;
+        try {
+            collectionDoc = await this._collectionsPouch.get(internalPrimary);
+        } catch (e) {}
+
+        if (collectionDoc && collectionDoc.schemaHash != schemaHash)
+            throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
+
+        const collection = await RxCollection.create(args);
+        if (
+            Object.keys(collection.schema.encryptedPaths).length > 0 &&
+            !this.password
+        ) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
+
+        if (!collectionDoc) {
             try {
-                collectionDoc = await this.collectionsCollection.pouch.get(name);
+                await this._collectionsPouch.put({
+                    _id: internalPrimary,
+                    schemaHash,
+                    schema: collection.schema.normalized,
+                    version: collection.schema.version
+                });
             } catch (e) {}
-
-            if (collectionDoc && collectionDoc.schemaHash != schemaHash)
-                throw new Error(`collection(${name}): another instance created this collection with a different schema`);
-
-            const collection = await RxCollection.create(this, name, schema, pouchSettings);
-            if (
-                Object.keys(collection.schema.getEncryptedPaths()).length > 0 &&
-                !this.password
-            ) throw new Error(`collection(${name}): schema encrypted but no password given`);
-
-            if (!collectionDoc) {
-                try {
-                    await this.collectionsCollection.pouch.put({
-                        _id: name,
-                        schemaHash,
-                        schema: collection.schema.normalized
-                    });
-                } catch (e) {}
-            }
-
-            const cEvent = RxChangeEvent.create(
-                'RxDatabase.collection',
-                this
-            );
-            cEvent.data.v = collection.name;
-            cEvent.data.col = '_collections';
-            this.$emit(cEvent);
-
-            this.collections[name] = collection;
-        } else {
-            if (schema && schema.hash() != this.collections[name].schema.hash())
-                throw new Error(`collection(${name}): already has a different schema`);
         }
-        return this.collections[name];
+
+        const cEvent = RxChangeEvent.create(
+            'RxDatabase.collection',
+            this
+        );
+        cEvent.data.v = collection.name;
+        cEvent.data.col = '_collections';
+        this.$emit(cEvent);
+
+        this.collections[args.name] = collection;
+        this.__defineGetter__(args.name, () => this.collections[args.name]);
+
+        return collection;
     }
 
     /**
@@ -197,7 +262,7 @@ class RxDatabase {
      */
     async dump(decrypted = false, collections = null) {
         const json = {
-            name: this.prefix,
+            name: this.name,
             instanceToken: this.token,
             encrypted: false,
             passwordHash: null,
@@ -250,10 +315,28 @@ class RxDatabase {
 }
 
 
-export async function create(prefix, adapter, password, multiInstance = false) {
-    if (typeof prefix !== 'string')
-        throw new TypeError('given prefix is no string ');
+/**
+ * returns all possible properties of a RxDatabase-instance
+ * @return {string[]} property-names
+ */
+let _properties = null;
+export function properties() {
+    if (!_properties) {
+        const pseudoInstance = new RxDatabase();
+        const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
+        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
+        _properties = [...ownProperties, ...prototypeProperties];
+    }
+    return _properties;
+}
 
+export async function create({
+    name,
+    adapter,
+    password,
+    multiInstance = true
+}) {
+    util.validateCouchDBString(name);
 
     // check if pouchdb-adapter
     if (typeof adapter == 'string') {
@@ -272,13 +355,12 @@ export async function create(prefix, adapter, password, multiInstance = false) {
         }
     }
 
-
-    if (password && typeof password !== 'string') // TODO typecheck here ?
+    if (password && typeof password !== 'string')
         throw new TypeError('password is no string');
     if (password && password.length < RxDatabase.settings.minPassLength)
         throw new Error(`password must have at least ${RxDatabase.settings.minPassLength} chars`);
 
-    const db = new RxDatabase(prefix, adapter, password, multiInstance);
+    const db = new RxDatabase(name, adapter, password, multiInstance);
     await db.prepare();
 
     return db;

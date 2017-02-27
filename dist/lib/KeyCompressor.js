@@ -154,6 +154,8 @@ var KeyCompressor = function () {
             var _this3 = this;
 
             queryJSON = (0, _clone2.default)(queryJSON);
+            if (!this.schema.doKeyCompression()) return queryJSON;
+
             var table = this.table;
 
             // selector

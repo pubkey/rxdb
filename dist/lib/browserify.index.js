@@ -1,5 +1,7 @@
 'use strict';
 
+require('babel-polyfill');
+
 var _index = require('./index.js');
 
 var RxDB = _interopRequireWildcard(_index);
