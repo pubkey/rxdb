@@ -110,7 +110,7 @@ RxDB.create({
 ```
 </details>
 
-## Feature-Showroom
+## Feature-Showroom (click to toggle)
 
 <details>
 <summary>
