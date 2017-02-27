@@ -49,11 +49,11 @@ class HeroList extends Component {
                                 <span className="name">
                                     {hero.name}
                                 </span>
-                                <div className="actions">
+{/* TODO                               <div className="actions">
                                     <i className="fa fa-pencil-square-o" aria-hidden="true" onClick="editHero(hero)"></i>
-                                    <i className="fa fa-trash-o" aria-hidden="true" onClick={this.deleteHero}></i>
+                                    <i className="fa fa-trash-o" aria-hidden="true" onClick={hero.remove}></i>
                                 </div>
-                            </li>
+*/}                            </li>
                         );
                     })}
                 </ul>
