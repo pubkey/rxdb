@@ -6,6 +6,8 @@ This means you can then use RxDB in production without the fear breaking your cl
 
 ## migration-strategies **BREAKING**
 
+[DONE](https://github.com/pubkey/rxdb/commit/3694436e96de666c457b558704c7588acc705a2e)
+
 ## conflict-resolution **BREAKING**
 
 Pouchdb requires the developer to solve conflicts manually.
@@ -19,6 +21,9 @@ It should also be possible to define custom resolution-strategies.
 
 
 ## ORM
+
+[DONE](https://github.com/pubkey/rxdb/commit/995a56e0a7500b5717a139f4edf27578e34c3399)
+
 ORM-like function assignment.
 
 ```js
@@ -32,12 +37,13 @@ ORM-like function assignment.
   });
 
   // laster
-  const doc = col.findOne().exec();
+  const doc = await col.findOne().exec();
   doc.doSomething();
   // > 'AAAH!'
 ```
 
 ## relations-populate [BREAKING]
 
+[DONE](https://github.com/pubkey/rxdb/commit/c6a7352e465431ec74117b76f210869ba1f8f7a8)
 
 ## RxCollection.upsert(), RxCollection.removeifexists()

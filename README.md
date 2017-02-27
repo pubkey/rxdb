@@ -45,7 +45,7 @@
 * **ORM-capabilities** to easily handle data-code-relations
 
 ## Platform-support
-RxDB is made so that you can use **exactly the same code** at 
+RxDB is made so that you can use **exactly the same code** at
 - ![Chrome](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png)
 ![Firefox](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png)
 ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
@@ -57,7 +57,7 @@ RxDB is made so that you can use **exactly the same code** at
 - ![cordova](docs/files/icons/cordova.png) Cordova/Phonegap
 - ![nativescript](docs/files/icons/nativescript.png) Nativescript
 
-We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like 
+We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
 - ![react](docs/files/icons/react.png) react
 - ![angular](docs/files/icons/angular.png) angular/ng2

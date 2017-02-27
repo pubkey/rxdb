@@ -1,4 +1,4 @@
-## 3.0.0 (XXX, 2017)
+## 3.0.0 (February 27, 2017)
 
 Features:
   - added [DataMigration](docs/DataMigration.md)
@@ -23,6 +23,12 @@ Breaking:
   - `RxDatabase.collection()` only to create collection, use `myDatabase.heroes` to get existing one
   - `RxDB.create()` multiInstance is now true by default
   - `rxjs` and `babel-polyfill` are now peerDependencies
+
+## 2.0.5 (February 25, 2017)
+
+Features:
+  - possibility to add `pouchSettings` when creating a collection
+  - typings compatible with `noImplicitAny` Typescript projects
 
 ## 2.0.4 (February 12, 2017)
 

@@ -9,6 +9,12 @@ So if you would now inspect the traffic that theses open tabs produce, you can s
 Imagine we have a website which displays the current temperature of the visitors location in various charts, numbers or heatmaps. To always display the live-data, the website opens a websocket to our API-Server which sends the current temperature every 10 seconds. Using the way most sites are currently build, we can now open it in 5 browser-tabs and it will open 5 websockets which send data 6*5=30 times per minute. This will not only waste the power of your clients device, but also wastes your api-servers ressources by opening redundant connections.
 
 # Solution
+<<<<<<< HEAD
+=======
+The solution to this redundancy is the usage of a [leader-election](https://en.wikipedia.org/wiki/Leader_election)-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is so the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly **one** leader.
+You could now start implementing a messaging-system between your browser-tabs, handle out which one is leader, solve conflicts and reasign a new leader when the old one 'dies'.
+Or just use RxDB which does all that things for you.
+>>>>>>> master
 
 The solution to this redundancy is the usage of a [leader-election](https://en.wikipedia.org/wiki/Leader_election)-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is so the elected leader and stays leader until it is closed. Not mather how many tabs are opened or closed, there must be always exactly **one** leader. You could now start implementing a messaging-system between your browser-tabs, handle out which one is leader, solve conflicts and reasign a new leader when the old one 'dies'. Or just use RxDB which does all that things for you.
 
