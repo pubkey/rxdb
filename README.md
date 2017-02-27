@@ -20,6 +20,9 @@
   <a href="https://twitter.com/rxdbjs">
     <img src="docs/files/twitter_follow.png" width="111px" />
   </a>
+  <a href="https://www.patreon.com/rxdb">
+    <img src="docs/files/icons/patreon.png" width="111px" />
+  </a>
 </p>
 
 
@@ -340,3 +343,4 @@ Get started now by [reading the docs](./docs/README.md) or exploring the [exampl
 ## Follow up
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
 - Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
+- Support RxDB at [patreon](https://www.patreon.com/rxdb)
