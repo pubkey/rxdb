@@ -26,12 +26,12 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
  * @return {Promise<Database>}
  */
 var create = exports.create = function () {
-    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(prefix, storageEngine, password, multiInstance) {
+    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(args) {
         return _regenerator2.default.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        return _context.abrupt('return', RxDatabase.create(prefix, storageEngine, password, multiInstance));
+                        return _context.abrupt('return', RxDatabase.create(args));
 
                     case 1:
                     case 'end':
@@ -41,14 +41,12 @@ var create = exports.create = function () {
         }, _callee, this);
     }));
 
-    return function create(_x, _x2, _x3, _x4) {
+    return function create(_x) {
         return _ref.apply(this, arguments);
     };
 }();
 
 exports.plugin = plugin;
-
-require('babel-polyfill');
 
 var _RxDatabase = require('./RxDatabase');
 

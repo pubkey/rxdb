@@ -49,7 +49,7 @@ var RxBroadcastChannel = function () {
         this.database = database;
         this.token = database.token;
 
-        this.bc = new BroadcastChannel('RxDB:' + this.database.prefix + ':' + this.name);
+        this.bc = new BroadcastChannel('RxDB:' + this.database.name + ':' + this.name);
 
         this.$ = util.Rx.Observable.fromEvent(this.bc, 'message').map(function (msg) {
             return msg.data;

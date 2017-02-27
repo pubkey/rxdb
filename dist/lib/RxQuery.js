@@ -68,8 +68,7 @@ var RxQuery = function () {
         // merge mquery-prototype functions to this
         var mquery_proto = Object.getPrototypeOf(this.mquery);
         Object.keys(mquery_proto).forEach(function (attrName) {
-
-            if (['select'].includes(attrName)) return;
+            if (['select', 'remove', 'update'].includes(attrName)) return;
 
             // only param1 is tunneled here on purpose so no callback-call can be done
             _this[attrName] = function (param1) {
@@ -85,12 +84,15 @@ var RxQuery = function () {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         this.sort = function (params) {
-
             // workarround because sort wont work on unused keys
-            if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3.default)(params)) !== 'object') _this.mquery.where(params).gt(null);else Object.keys(params).map(function (k) {
-                return _this.mquery.where(k).gt(null);
-            });
-
+            if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3.default)(params)) !== 'object') _this.mquery.where(params).gt(null);else {
+                Object.keys(params).forEach(function (k) {
+                    if (!_this.mquery._conditions[k] || !_this.mquery._conditions[k].$gt) {
+                        var schemaObj = _this.collection.schema.getSchemaByObjectPath(k);
+                        if (schemaObj.type == 'integer') _this.mquery.where(k).gt(-Infinity);else _this.mquery.where(k).gt(null);
+                    }
+                });
+            }
             _this.mquery.sort(params);
             return _this;
         };
@@ -123,21 +125,19 @@ var RxQuery = function () {
 
             // sort
             if (options.sort) {
-                (function () {
-                    var sortArray = [];
-                    Object.keys(options.sort).map(function (fieldName) {
-                        var dirInt = options.sort[fieldName];
-                        var dir = 'asc';
-                        if (dirInt == -1) dir = 'desc';
-                        var pushMe = {};
-                        // TODO run primary-swap somewhere else
-                        if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
+                var sortArray = [];
+                Object.keys(options.sort).map(function (fieldName) {
+                    var dirInt = options.sort[fieldName];
+                    var dir = 'asc';
+                    if (dirInt == -1) dir = 'desc';
+                    var pushMe = {};
+                    // TODO run primary-swap somewhere else
+                    if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
 
-                        pushMe[fieldName] = dir;
-                        sortArray.push(pushMe);
-                    });
-                    json.sort = sortArray;
-                })();
+                    pushMe[fieldName] = dir;
+                    sortArray.push(pushMe);
+                });
+                json.sort = sortArray;
             }
 
             if (options.limit) {
@@ -175,8 +175,64 @@ var RxQuery = function () {
          * @return {{selector: {}, sort: []}} compressedQuery
          */
         value: function keyCompress() {
-            return this.collection.keyCompressor.compressQuery(this.toJSON());
+            return this.collection._keyCompressor.compressQuery(this.toJSON());
         }
+
+        /**
+         * deletes all found documents
+         * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
+         */
+
+    }, {
+        key: 'remove',
+        value: function () {
+            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
+                var docs;
+                return _regenerator2.default.wrap(function _callee$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                                _context.next = 2;
+                                return this.exec();
+
+                            case 2:
+                                docs = _context.sent;
+
+                                if (!Array.isArray(docs)) {
+                                    _context.next = 8;
+                                    break;
+                                }
+
+                                _context.next = 6;
+                                return Promise.all(docs.map(function (doc) {
+                                    return doc.remove();
+                                }));
+
+                            case 6:
+                                _context.next = 10;
+                                break;
+
+                            case 8:
+                                _context.next = 10;
+                                return docs.remove();
+
+                            case 10:
+                                return _context.abrupt('return', docs);
+
+                            case 11:
+                            case 'end':
+                                return _context.stop();
+                        }
+                    }
+                }, _callee, this);
+            }));
+
+            function remove() {
+                return _ref.apply(this, arguments);
+            }
+
+            return remove;
+        }()
     }, {
         key: '$',
         get: function get() {
@@ -186,42 +242,42 @@ var RxQuery = function () {
                 this._subject = new util.Rx.BehaviorSubject(null);
                 this._obsRunning = false;
                 var collection$ = this.collection.$.filter(function (cEvent) {
-                    return ['RxCollection.insert', 'RxDocument.save', 'RxDocument.remove'].includes(cEvent.data.op);
+                    return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }).startWith(1).filter(function (x) {
                     return !_this3._obsRunning;
                 }).do(function (x) {
                     return _this3._obsRunning = true;
                 }).mergeMap(function () {
-                    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(cEvent) {
+                    var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(cEvent) {
                         var docs;
-                        return _regenerator2.default.wrap(function _callee$(_context) {
+                        return _regenerator2.default.wrap(function _callee2$(_context2) {
                             while (1) {
-                                switch (_context.prev = _context.next) {
+                                switch (_context2.prev = _context2.next) {
                                     case 0:
-                                        _context.next = 2;
+                                        _context2.next = 2;
                                         return _this3.collection._pouchFind(_this3);
 
                                     case 2:
-                                        docs = _context.sent;
-                                        return _context.abrupt('return', docs);
+                                        docs = _context2.sent;
+                                        return _context2.abrupt('return', docs);
 
                                     case 4:
                                     case 'end':
-                                        return _context.stop();
+                                        return _context2.stop();
                                 }
                             }
-                        }, _callee, _this3);
+                        }, _callee2, _this3);
                     }));
 
                     return function (_x) {
-                        return _ref.apply(this, arguments);
+                        return _ref2.apply(this, arguments);
                     };
                 }()).do(function (x) {
                     return _this3._obsRunning = false;
                 }).distinctUntilChanged(function (prev, now) {
                     return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
                 }).map(function (docs) {
-                    return RxDocument.createAr(_this3.collection, docs, _this3.toJSON());
+                    return _this3.collection._createDocuments(docs);
                 }).do(function (docs) {
                     return _this3._subject.next(docs);
                 }).map(function (x) {
@@ -242,8 +298,8 @@ function create() {
     var queryObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultQuery;
     var collection = arguments[1];
 
-    if (Array.isArray(queryObj)) // TODO should typecheck be done here ?
-        throw new TypeError('query cannot be an array');
+    if ((typeof queryObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(queryObj)) !== 'object') throw new TypeError('query must be an object');
+    if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
     return new RxQuery(queryObj, collection);
 }

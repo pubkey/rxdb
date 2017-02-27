@@ -3,7 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.promiseWait = exports.assertThrowsAsync = exports.Rx = undefined;
+exports.waitUntil = exports.promiseWait = exports.assertThrowsAsync = exports.Rx = undefined;
+
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -13,43 +17,65 @@ var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
+/**
+ * async version of assert.throws
+ * @param  {function}  test
+ * @param  {Error|TypeError|string} [error=Error] error
+ * @param  {?string} [contains=''] contains
+ * @return {Promise}       [description]
+ */
 var assertThrowsAsync = exports.assertThrowsAsync = function () {
-    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(test, error) {
+    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(test) {
+        var error = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Error;
+        var contains = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+        var shouldErrorName;
         return _regenerator2.default.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        _context.prev = 0;
-                        _context.next = 3;
+                        shouldErrorName = typeof error === 'string' ? error : error.name;
+                        _context.prev = 1;
+                        _context.next = 4;
                         return test();
 
-                    case 3:
-                        _context.next = 9;
+                    case 4:
+                        _context.next = 13;
                         break;
 
-                    case 5:
-                        _context.prev = 5;
-                        _context.t0 = _context['catch'](0);
+                    case 6:
+                        _context.prev = 6;
+                        _context.t0 = _context['catch'](1);
 
-                        if (!(!error || _context.t0 instanceof error)) {
-                            _context.next = 9;
+                        if (!(_context.t0.constructor.name != shouldErrorName)) {
+                            _context.next = 10;
                             break;
                         }
 
-                        return _context.abrupt('return', 'util.assertThrowsAsync(): everything is fine');
-
-                    case 9:
-                        throw new Error('util.assertThrowsAsync(): Missing rejection' + (error ? ' with ' + error.name : ''));
+                        throw new Error('\n            util.assertThrowsAsync(): Wrong Error-type\n            - is    : ' + _context.t0.constructor.name + '\n            - should: ' + shouldErrorName + '\n            - error: ' + _context.t0.toString() + '\n            ');
 
                     case 10:
+                        if (!(contains != '' && !_context.t0.toString().includes(contains))) {
+                            _context.next = 12;
+                            break;
+                        }
+
+                        throw new Error('\n              util.assertThrowsAsync(): Error does not contain\n              - should contain: ' + contains + '\n              - is string: ' + _context.t0.toString() + '\n            ');
+
+                    case 12:
+                        return _context.abrupt('return', 'util.assertThrowsAsync(): everything is fine');
+
+                    case 13:
+                        throw new Error('util.assertThrowsAsync(): Missing rejection' + (error ? ' with ' + error.name : ''));
+
+                    case 14:
                     case 'end':
                         return _context.stop();
                 }
             }
-        }, _callee, this, [[0, 5]]);
+        }, _callee, this, [[1, 6]]);
     }));
 
-    return function assertThrowsAsync(_x, _x2) {
+    return function assertThrowsAsync(_x) {
         return _ref.apply(this, arguments);
     };
 }();
@@ -98,6 +124,47 @@ var promiseWait = exports.promiseWait = function () {
  */
 
 
+/**
+ * waits until the given function returns true
+ * @param  {function}  fun
+ * @return {Promise}
+ */
+var waitUntil = exports.waitUntil = function () {
+    var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(fun) {
+        var ok;
+        return _regenerator2.default.wrap(function _callee3$(_context3) {
+            while (1) {
+                switch (_context3.prev = _context3.next) {
+                    case 0:
+                        ok = false;
+
+                    case 1:
+                        if (ok) {
+                            _context3.next = 7;
+                            break;
+                        }
+
+                        _context3.next = 4;
+                        return promiseWait(10);
+
+                    case 4:
+                        ok = fun();
+                        _context3.next = 1;
+                        break;
+
+                    case 7:
+                    case 'end':
+                        return _context3.stop();
+                }
+            }
+        }, _callee3, this);
+    }));
+
+    return function waitUntil(_x6) {
+        return _ref3.apply(this, arguments);
+    };
+}();
+
 exports.encrypt = encrypt;
 exports.decrypt = decrypt;
 exports.isLevelDown = isLevelDown;
@@ -110,6 +177,9 @@ exports.filledArray = filledArray;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
 exports.trimDots = trimDots;
+exports.validateCouchDBString = validateCouchDBString;
+exports.randomCouchString = randomCouchString;
+exports.sortObject = sortObject;
 
 var _randomToken = require('random-token');
 
@@ -153,6 +223,8 @@ require('rxjs/add/operator/toPromise');
 
 require('rxjs/add/operator/distinctUntilChanged');
 
+require('rxjs/add/operator/distinct');
+
 var _aes = require('crypto-js/aes');
 
 var crypto_AES = _interopRequireWildcard(_aes);
@@ -165,6 +237,12 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// rxjs cherry-pick
+/**
+ * this contains a mapping to basic dependencies
+ * which should be easy to change
+ */
+
 var Rx = exports.Rx = {
     Observable: _Observable.Observable,
     Subject: _Subject.Subject,
@@ -172,14 +250,6 @@ var Rx = exports.Rx = {
 };
 
 // crypto-js
-
-
-// rxjs cherry-pick
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-
 function encrypt(value, password) {
     var encrypted = crypto_AES.encrypt(value, password);
     return encrypted.toString();
@@ -195,9 +265,7 @@ function decrypt(ciphertext, password) {
  */
 function isLevelDown(adapter) {
     if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') throw new Error('given leveldown is no valid adapter');
-}
-
-function fastUnsecureHash(obj) {
+}function fastUnsecureHash(obj) {
     if (typeof obj !== 'string') obj = JSON.stringify(obj);
     var hash = 0,
         i = void 0,
@@ -217,8 +285,6 @@ function fastUnsecureHash(obj) {
  *  spark-md5 is used here
  *  because pouchdb uses the same
  *  and build-size could be reduced by 9kb
- *  TODO update spark-md5 to 2.0.2 after pouchdb-find does
- *  @link https://github.com/nolanlawson/pouchdb-find/pull/233
  */
 var Md5 = require('spark-md5');
 function hash(obj) {
@@ -260,9 +326,7 @@ function jsonSchemaValidate(schema, obj) {
         setTimeout(res, ms);
     });
     return ret;
-}
-
-function filledArray() {
+}function filledArray() {
     var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
     return new Array(size).fill(0);
@@ -318,4 +382,76 @@ function trimDots(str) {
     while (str.slice(-1) == '.') {
         str = str.slice(0, -1);
     }return str;
+}
+
+/**
+ * validates that a given string is ok to be used with couchdb-collection-names
+ * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @param  {string} name
+ * @throws  {Error}
+ * @return {boolean} true
+ */
+function validateCouchDBString(name) {
+    if (typeof name != 'string' || name.length == 0) throw new TypeError('given name is no string or empty');
+
+    // do not check, if foldername is given
+    if (name.includes('/')) return true;
+
+    var regStr = '^[a-z][a-z0-9]*$';
+    var reg = new RegExp(regStr);
+    if (!name.match(reg)) {
+        throw new Error('\n            collection- and database-names must match the regex:\n            - regex: ' + regStr + '\n            - given: ' + name + '\n    ');
+    }
+
+    return true;
+}
+
+/**
+ * get a random string which can be used with couchdb
+ * @link http://stackoverflow.com/a/1349426/3443137
+ * @param {number} [length=10] length
+ * @return {string}
+ */
+function randomCouchString() {
+    var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+
+    var text = '';
+    var possible = 'abcdefghijklmnopqrstuvwxyz';
+
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }return text;
+}
+
+/**
+ * deep-sort an object so its attributes are in lexical order.
+ * Also sorts the arrays inside of the object
+ * @param  {Object} obj unsorted
+ * @return {Object} sorted
+ */
+function sortObject(obj) {
+    // array
+    if (Array.isArray(obj)) {
+        return obj.sort(function (a, b) {
+            if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
+
+            if ((typeof a === 'undefined' ? 'undefined' : (0, _typeof3.default)(a)) === 'object') return 1;else return -1;
+        }).map(function (i) {
+            return sortObject(i);
+        });
+    }
+
+    // object
+    if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3.default)(obj)) === 'object') {
+        var out = {};
+        Object.keys(obj).sort(function (a, b) {
+            return a.localeCompare(b);
+        }).forEach(function (key) {
+            out[key] = sortObject(obj[key]);
+        });
+        return out;
+    }
+
+    // everything else
+    return obj;
 }

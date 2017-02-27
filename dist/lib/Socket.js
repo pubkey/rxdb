@@ -48,10 +48,6 @@ var create = exports.create = function () {
     };
 }();
 
-var _Database = require('./Database.schemas');
-
-var DatabaseSchemas = _interopRequireWildcard(_Database);
-
 var _RxCollection = require('./RxCollection');
 
 var RxCollection = _interopRequireWildcard(_RxCollection);
@@ -81,7 +77,6 @@ var Socket = function () {
 
         this.database = database;
         this.token = database.token;
-        this.collection;
         this.subs = [];
 
         this.pullCount = 0;
@@ -104,15 +99,11 @@ var Socket = function () {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
-                                _context.next = 2;
-                                return RxCollection.create(this.database, '_socket', DatabaseSchemas.socket, {
+                                // create socket-collection
+                                this.pouch = this.database._spawnPouchDB('_socket', 0, {
                                     auto_compaction: false, // this is false because its done manually at .pull()
                                     revs_limit: 1
                                 });
-
-                            case 2:
-                                this.collection = _context.sent;
-
 
                                 // pull on BroadcastChannel-message
                                 if (this.bc) {
@@ -126,8 +117,7 @@ var Socket = function () {
                                 // pull on intervall
                                 autoPull = util.Rx.Observable.interval(PULL_TIME).filter(function (c) {
                                     return _this.messages$.observers.length > 0;
-                                }) // TODO replace with subject$.hasObservers() https://github.com/Reactive-Extensions/RxJS/issues/1364
-                                .subscribe(function (x) {
+                                }).subscribe(function (x) {
                                     return _this.pull();
                                 });
 
@@ -135,7 +125,7 @@ var Socket = function () {
 
                                 return _context.abrupt('return');
 
-                            case 7:
+                            case 5:
                             case 'end':
                                 return _context.stop();
                         }
@@ -167,30 +157,27 @@ var Socket = function () {
 
                                 delete socketDoc.db;
 
-                                // do not write whole doc to socket
-                                delete socketDoc.v;
-
                                 // TODO find a way to getAll on local documents
                                 //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
                                 socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;
-                                _context2.next = 6;
-                                return this.collection.pouch.put(socketDoc);
+                                _context2.next = 5;
+                                return this.pouch.put(socketDoc);
 
-                            case 6:
+                            case 5:
                                 _context2.t0 = this.bc;
 
                                 if (!_context2.t0) {
-                                    _context2.next = 10;
+                                    _context2.next = 9;
                                     break;
                                 }
 
-                                _context2.next = 10;
+                                _context2.next = 9;
                                 return this.bc.write('pull');
 
-                            case 10:
+                            case 9:
                                 return _context2.abrupt('return', true);
 
-                            case 11:
+                            case 10:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -219,7 +206,7 @@ var Socket = function () {
                         switch (_context3.prev = _context3.next) {
                             case 0:
                                 _context3.next = 2;
-                                return this.collection.pouch.allDocs({
+                                return this.pouch.allDocs({
                                     include_docs: true
                                 });
 
@@ -253,7 +240,7 @@ var Socket = function () {
                             case 0:
                                 _context4.prev = 0;
                                 _context4.next = 3;
-                                return this.collection.pouch.remove(doc);
+                                return this.pouch.remove(doc);
 
                             case 3:
                                 _context4.next = 7;
@@ -330,13 +317,13 @@ var Socket = function () {
                                 })
                                 // make sure the same event is not emitted twice
                                 .filter(function (cE) {
-                                    if (_this2.recievedEvents[cE.hash()]) return false;
-                                    return _this2.recievedEvents[cE.hash()] = new Date().getTime();
+                                    if (_this2.recievedEvents[cE.hash]) return false;
+                                    return _this2.recievedEvents[cE.hash] = new Date().getTime();
                                 })
                                 // prevent memory leak of this.recievedEvents
                                 .filter(function (cE) {
                                     return setTimeout(function () {
-                                        return delete _this2.recievedEvents[cE.hash()];
+                                        return delete _this2.recievedEvents[cE.hash];
                                     }, EVENT_TTL * 3);
                                 })
                                 // emit to messages
@@ -358,7 +345,7 @@ var Socket = function () {
                                 }
 
                                 _context5.next = 15;
-                                return this.collection.pouch.compact();
+                                return this.pouch.compact();
 
                             case 15:
 
@@ -391,7 +378,6 @@ var Socket = function () {
                 return sub.unsubscribe();
             });
             if (this.bc) this.bc.destroy();
-            this.collection.destroy();
         }
     }, {
         key: '$',

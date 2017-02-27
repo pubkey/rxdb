@@ -56,7 +56,7 @@ var Crypter = function () {
 
             obj = (0, _clone2.default)(obj);
             if (!this._password) return obj;
-            Object.keys(this._schema.getEncryptedPaths()).map(function (path) {
+            Object.keys(this._schema.encryptedPaths).map(function (path) {
                 var value = _objectPath2.default.get(obj, path);
                 var encrypted = _this._encryptValue(value);
                 _objectPath2.default.set(obj, path, encrypted);
@@ -71,7 +71,7 @@ var Crypter = function () {
             obj = (0, _clone2.default)(obj);
             if (!this._password) return obj;
 
-            Object.keys(this._schema.getEncryptedPaths()).map(function (path) {
+            Object.keys(this._schema.encryptedPaths).map(function (path) {
                 var value = _objectPath2.default.get(obj, path);
                 var decrypted = _this2._decryptValue(value);
                 _objectPath2.default.set(obj, path, decrypted);
