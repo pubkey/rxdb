@@ -18,10 +18,10 @@ const {width, height} = Dimensions.get('window');
 import {
     default as randomToken
 } from 'random-token';
+import 'babel-polyfill';
 import * as RxDB from 'rxdb';
 import schema from './Schema';
 
-//RxDB.plugin(require('pouchdb-adapter-leveldb'));
 RxDB.plugin(require('pouchdb-adapter-asyncstorage').default);
 const syncURL = 'http://localhost:10102/';
 
