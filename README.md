@@ -84,7 +84,7 @@ Import/Require:
 import * as RxDB from 'rxdb';
 import 'babel-polyfill'; //only needed when you dont have polyfills
 const db = await RxDB.create({
-    name: 'heroesDB',
+    name: 'heroesdb',
     adapter: 'websql',
     password: 'myLongAndStupidPassword', // optional
     multiInstance: true                  // default: true
@@ -100,7 +100,7 @@ db.heroes.insert({ name: 'Bob' });                          // insert document
 ```javascript
 var RxDB = require('rxdb');
 RxDB.create({
-    name: 'heroesDB',
+    name: 'heroesdb',
     adapter: 'websql',
     password: 'myLongAndStupidPassword', // optional
     multiInstance: true                  // default: true
