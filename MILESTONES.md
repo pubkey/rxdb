@@ -50,6 +50,8 @@ console.log(query1 == query2);
 
 ## ChangeDetection on RxQuerys
 
+- Requires `Query-Cache`
+
 When a `ChangeEvent` is fired on the collection, the query should detect if it is necessary to re-exec() or if the changeEvent does not affect the querys result.
 
 Wanted:
