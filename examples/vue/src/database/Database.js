@@ -1,4 +1,5 @@
-import * as RxDB from 'rxdb';
+import 'babel-polyfill';
+import * as RxDB from '../../../../';
 RxDB.plugin(require('pouchdb-adapter-idb'));
 RxDB.plugin(require('pouchdb-replication')); //enable syncing
 RxDB.plugin(require('pouchdb-adapter-http')); //enable syncing over http
