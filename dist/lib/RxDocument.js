@@ -148,6 +148,9 @@ var RxDocument = function () {
                     this._dataSync$.next((0, _clone2.default)(newData));
                     break;
                 case 'REMOVE':
+                    // remove from docCache to assure new upserted RxDocuments will be a new instance
+                    this.collection._docCache.delete(this.getPrimary());
+
                     this._deleted$.next(true);
                     break;
             }
