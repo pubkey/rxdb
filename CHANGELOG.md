@@ -1,3 +1,8 @@
+## 3.0.1 (March 2, 2017)
+
+Bugfixes:
+  - new document does not get new state on remove-reinsert [#66](https://github.com/pubkey/rxdb/issues/66)
+
 ## 3.0.0 (February 27, 2017)
 
 Features:
