@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 
 
 import * as humansCollection from './../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
 import * as RxDocument from '../../dist/lib/RxDocument';
 
@@ -428,6 +429,31 @@ describe('RxDocument.test.js', () => {
                 const doc2 = await c.findOne().exec();
                 assert.equal(doc2.mainSkill.attack.good, true);
             });
+        });
+    });
+    describe('other', () => {
+        it('BUG #66 - insert -> remove -> insert does not give new state', async() => {
+            const c = await humansCollection.createPrimary(0);
+            const docData = schemaObjects.simpleHuman();
+            const primary = docData.passportId;
+            console.dir(docData);
+
+            // insert
+            await c.upsert(docData);
+            const doc1 = await c.findOne(primary).exec();
+            console.dir(doc1);
+            assert.equal(doc1.firstName, docData.firstName);
+
+            // remove
+            await doc1.remove();
+
+            // upsert
+            docData.firstName = 'foobar';
+            await c.upsert(docData);
+            const doc2 = await c.findOne(primary).exec();
+            assert.equal(doc2.firstName, 'foobar');
+
+            c.database.destroy();
         });
     });
 });

@@ -285,6 +285,7 @@ class RxDocument {
         this.deleted = true;
         await this.collection.pouch.remove(this.getPrimary(), this._data._rev);
 
+
         await this.collection._runHooks('post', 'remove', this);
 
         this.$emit(RxChangeEvent.create(
@@ -294,6 +295,9 @@ class RxDocument {
             this,
             null
         ));
+
+        // remove from docCache to assure upserted document will be a new instance
+        this.collection._docCache.delete(this.getPrimary());
     }
 
     destroy() {}
