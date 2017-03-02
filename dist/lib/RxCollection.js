@@ -254,7 +254,7 @@ var RxCollection = function () {
                                         var ret = _this2._keyCompressor._transformKey('', '', key.split('.'));
                                         return ret;
                                     });
-                                    _this2.pouch.createIndex({
+                                    return _this2.pouch.createIndex({
                                         index: {
                                             fields: compressedIdx
                                         }
@@ -262,6 +262,11 @@ var RxCollection = function () {
                                 }));
 
                             case 7:
+
+                                //        const indexes = await this.pouch.getIndexes();
+                                //        console.dir(indexes);
+                                //        console.dir(JSON.stringify(indexes));
+
 
                                 // when data changes, send it to RxDocument in docCache
                                 this._subs.push(this._observable$.subscribe(function (cE) {

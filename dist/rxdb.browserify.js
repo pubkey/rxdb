@@ -2554,7 +2554,7 @@ var RxCollection = function () {
                                         var ret = _this2._keyCompressor._transformKey('', '', key.split('.'));
                                         return ret;
                                     });
-                                    _this2.pouch.createIndex({
+                                    return _this2.pouch.createIndex({
                                         index: {
                                             fields: compressedIdx
                                         }
@@ -2562,6 +2562,11 @@ var RxCollection = function () {
                                 }));
 
                             case 7:
+
+                                //        const indexes = await this.pouch.getIndexes();
+                                //        console.dir(indexes);
+                                //        console.dir(JSON.stringify(indexes));
+
 
                                 // when data changes, send it to RxDocument in docCache
                                 this._subs.push(this._observable$.subscribe(function (cE) {
@@ -5294,11 +5299,10 @@ var RxSchema = function () {
         this.jsonID = jsonID;
 
         this.compoundIndexes = this.jsonID.compoundIndexes;
-        delete this.jsonID.compoundIndexes;
 
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.indexes.map(function (indexAr) {
+        this.indexes.forEach(function (indexAr) {
             indexAr.filter(function (index) {
                 return !_this.jsonID.required.includes(index);
             }).filter(function (index) {
@@ -5474,7 +5478,6 @@ function hasCrypt(jsonSchema) {
 function getIndexes(jsonID) {
     var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
-
     var indexes = [];
     Object.entries(jsonID).forEach(function (entry) {
         var key = entry[0];
@@ -5489,11 +5492,15 @@ function getIndexes(jsonID) {
         }
     });
 
-    if (prePath == '') indexes = indexes.concat(jsonID.compoundIndexes || []);
+    if (prePath == '') {
+        var addCompound = jsonID.compoundIndexes || [];
+        indexes = indexes.concat(addCompound);
+    }
 
-    return indexes.filter(function (elem, pos, arr) {
+    indexes = indexes.filter(function (elem, pos, arr) {
         return arr.indexOf(elem) == pos;
     }); // unique;
+    return indexes;
 }
 
 /**
