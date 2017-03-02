@@ -80,10 +80,6 @@ class RxCollection {
             })
         );
 
-//        const indexes = await this.pouch.getIndexes();
-//        console.dir(indexes);
-//        console.dir(JSON.stringify(indexes));
-
 
         // when data changes, send it to RxDocument in docCache
         this._subs.push(
