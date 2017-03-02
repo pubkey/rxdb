@@ -36,9 +36,9 @@ describe('RxSchema.test.js', () => {
             });
             it('get compoundIndex', () => {
                 const indexes = RxSchema.getIndexes(schemas.compoundIndex);
-                assert.ok(_.isArray(indexes));
-                assert.ok(_.isArray(indexes[0]));
-                assert.equal(indexes[0].length, 2);
+                assert.ok(Array.isArray(indexes));
+                assert.ok(Array.isArray(indexes[0]));
+                assert.deepEqual(indexes[0], ['passportId', 'passportCountry']);
             });
         });
         describe('.checkSchema()', () => {

@@ -13,11 +13,10 @@ class RxSchema {
         this.jsonID = jsonID;
 
         this.compoundIndexes = this.jsonID.compoundIndexes;
-        delete this.jsonID.compoundIndexes;
 
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.indexes.map(indexAr => {
+        this.indexes.forEach(indexAr => {
             indexAr
                 .filter(index => !this.jsonID.required.includes(index))
                 .filter(index => !index.includes('.')) // TODO make them sub-required
@@ -168,7 +167,6 @@ export function hasCrypt(jsonSchema) {
 
 
 export function getIndexes(jsonID, prePath = '') {
-
     let indexes = [];
     Object.entries(jsonID).forEach(entry => {
         const key = entry[0];
@@ -184,11 +182,14 @@ export function getIndexes(jsonID, prePath = '') {
         }
     });
 
-    if (prePath == '')
-        indexes = indexes.concat(jsonID.compoundIndexes || []);
+    if (prePath == '') {
+        const addCompound = jsonID.compoundIndexes || [];
+        indexes = indexes.concat(addCompound);
+    }
 
-    return indexes
+    indexes = indexes
         .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique;
+    return indexes;
 }
 
 /**

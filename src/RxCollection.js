@@ -72,12 +72,17 @@ class RxCollection {
                         const ret = this._keyCompressor._transformKey('', '', key.split('.'));
                         return ret;
                     });
-                this.pouch.createIndex({
+                return this.pouch.createIndex({
                     index: {
                         fields: compressedIdx
                     }
                 });
-            }));
+            })
+        );
+
+//        const indexes = await this.pouch.getIndexes();
+//        console.dir(indexes);
+//        console.dir(JSON.stringify(indexes));
 
 
         // when data changes, send it to RxDocument in docCache

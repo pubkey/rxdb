@@ -64,6 +64,52 @@ describe('RxCollection.test.js', () => {
                         .filter(i => !!i[compressedKey]);
                     assert.equal(has.length, 1);
                 });
+                it('should create compound-indexes (disableKeyCompression)', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const schemaJSON = clone(schemas.compoundIndex);
+                    schemaJSON.disableKeyCompression = true;
+                    const schema = RxSchema.create(schemaJSON);
+                    const col = await RxCollection.create({
+                        database: db,
+                        name: 'human',
+                        schema
+                    });
+                    const indexes = await col.pouch.getIndexes();
+                    assert.equal(indexes.indexes.length, 2);
+                    const lastIndexDefFields = indexes.indexes[1].def.fields;
+                    assert.deepEqual(
+                        lastIndexDefFields, [{
+                            'passportId': 'asc'
+                        }, {
+                            'passportCountry': 'asc'
+                        }]
+                    );
+                });
+                it('should create compound-indexes', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const schema = RxSchema.create(schemas.compoundIndex);
+                    const col = await RxCollection.create({
+                        database: db,
+                        name: 'human',
+                        schema
+                    });
+                    const indexes = await col.pouch.getIndexes();
+                    assert.equal(indexes.indexes.length, 2);
+                    const lastIndexDefFields = indexes.indexes[1].def.fields;
+                    assert.deepEqual(
+                        lastIndexDefFields, [{
+                            '|b': 'asc'
+                        }, {
+                            '|a': 'asc'
+                        }]
+                    );
+                });
                 it('should have the version-number in the pouchdb-prefix', async() => {
                     const db = await RxDatabase.create({
                         name: util.randomCouchString(10),

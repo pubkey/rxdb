@@ -1,3 +1,8 @@
+## 3.0.2 (March 2, 2017)
+
+Bugfixes:
+  - compound-index not being created [#68](https://github.com/pubkey/rxdb/issues/68)
+
 ## 3.0.1 (March 2, 2017)
 
 Bugfixes:
