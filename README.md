@@ -62,7 +62,7 @@ We optimized, double-checked and made boilerplates so you can directly start to 
 - ![react](docs/files/icons/react.png) react
 - ![angular](docs/files/icons/angular.png) angular/ng2
 - ![ionic](docs/files/icons/ionic.png) ionic2
-- ![vuejs](docs/files/icons/vuejs.png) vuejs (comming soon)
+- ![vuejs](docs/files/icons/vuejs.png) vuejs
 
 
 ## Quickstart

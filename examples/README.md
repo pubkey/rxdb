@@ -21,4 +21,4 @@ Framework        | Status
 plain javascript | [done](./vanilla)
 angular2         | [done](./angular2)
 react            | [done](./react)
-vuejs            | [in progress](./vue)
+vuejs            | [done](./vue)

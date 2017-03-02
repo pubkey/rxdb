@@ -1,26 +1,22 @@
 <template>
 <div class="hero-edit box">
     <h4>Edit</h4>
-
-    <!--    <div class="alert" *ngIf="!(hero.synced$ | async)">
+    <div class="alert" v-if="!hero.synced">
         <h4>Warning:</h4>
         <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
-        <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
+        <button v-on:click="resync()">resync</button>
     </div>
-
-    <div class="alert deleted" *ngIf="(hero.deleted$ | async)">
+    <div class="alert deleted" v-if="hero.deleted">
         <h4>Error:</h4>
         <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
     </div>
--->
     <h5>
       <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
       {{hero.name}}
-    </h5> HP: <input type="number" v-model="hero.hp" min="0" v-bind:max="hero.maxHP" name="hp" />
+    </h5> HP: <input type="number" v-model.number="hero.hp" min="0" v-bind:max="hero.maxHP" name="hp" />
     <br />
-    <!--    <button md-raised-button color="primary" (click)="cancel()">cancel</button>
-    <button *ngIf="!(hero.deleted$ | async)" md-raised-button color="primary" (click)=submit()>submit</button>
--->
+    <button v-on:click="cancel()">cancel</button>
+    <button v-on:click="submit()" v-if="!hero.deleted">submit</button>
 </div>
 </template>
 
@@ -30,25 +26,30 @@ import * as Database from '../database/Database';
 export default Vue.component('hero-edit', {
     data: () => {
         return {
+            unsync: null,
+            deleted: false,
             subs: []
         };
     },
     props: ['hero'],
-    mounted: async function() {
-      console.dir(this);
-    },
+    mounted: async function() {},
     beforeDestroy: function() {
         this.subs.forEach(sub => sub.unsubscribe());
     },
     methods: {
-        save() {
-            hero.remove();
+        async submit() {
+            console.log('heroEdit.submit()');
+            await this.hero.save();
+            this.$emit('submit');
         },
         resync() {
-
+            console.log('heroEdit.resync()');
+            this.hero.resync();
         },
         cancel() {
-
+            console.log('heroEdit.cancel()');
+            this.hero.resync();
+            this.$emit('cancel');
         }
     }
 });

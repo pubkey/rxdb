@@ -5,10 +5,15 @@
   "author": "pubkey",
   "private": true,
   "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run dev\"",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true"
   },
   "dependencies": {
+    "concurrently": "^3.4.0",
+    "pouchdb-server": "^2.3.5",
+    "random-int": "^1.0.0",
     "vue": "^2.2.1"
   },
   "devDependencies": {

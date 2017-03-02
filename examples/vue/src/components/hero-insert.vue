@@ -13,6 +13,8 @@
 <script>
 import Vue from 'vue';
 import * as Database from '../database/Database';
+import * as randomInt from 'random-int';
+
 export default Vue.component('hero-insert', {
   data: () => {
       return {
@@ -27,7 +29,9 @@ export default Vue.component('hero-insert', {
           const db = await Database.get();
           const obj = {
               name: this.name,
-              color: this.color
+              color: this.color,
+              hp: 100,
+              maxHP: randomInt(100, 1000)
           }
           console.dir(obj);
           await db.heroes.insert(obj);

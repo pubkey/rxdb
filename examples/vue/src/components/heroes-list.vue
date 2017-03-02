@@ -4,6 +4,9 @@
         <li v-for="hero in results">
             <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
             {{ hero.name }}
+            <div class="life">
+                <div class="currentPercent" v-bind:style="{ width: hero.hpPercent() +'%' }"></div>
+            </div>
             <div class="actions">
                 <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="editHero(hero)"></i>
                 <i class="fa fa-trash-o" aria-hidden="true" v-on:click="removeHero(hero)"></i>
@@ -80,7 +83,26 @@ ul li {
     border-color: grey;
 }
 
+.life {
+    width: 85%;
+    height: 2px;
+    background-color: red;
+    float: left;
+    position: absolute;
+    margin-left: 4%;
+    left: 10px;
+}
+
+.life .currentPercent {
+    height: 100%;
+    background-color: green;
+}
+
 .actions {
     float: right;
+}
+
+.actions i {
+    cursor: pointer;
 }
 </style>
