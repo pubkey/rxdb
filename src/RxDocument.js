@@ -98,6 +98,9 @@ class RxDocument {
                 this._dataSync$.next(clone(newData));
                 break;
             case 'REMOVE':
+                // remove from docCache to assure new upserted RxDocuments will be a new instance
+                this.collection._docCache.delete(this.getPrimary());
+
                 this._deleted$.next(true);
                 break;
         }
@@ -295,9 +298,6 @@ class RxDocument {
             this,
             null
         ));
-
-        // remove from docCache to assure upserted document will be a new instance
-        this.collection._docCache.delete(this.getPrimary());
     }
 
     destroy() {}
