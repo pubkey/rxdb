@@ -1,3 +1,9 @@
+## 3.0.3 (XXX ,2017)
+
+Features:
+  - Added RxDocument.[deleted]((docs/RxDocument.md#get-deleted))
+  - Added RxDocument.[synced](docs/RxDocument.md#get-synced)
+
 ## 3.0.2 (March 2, 2017)
 
 Bugfixes:

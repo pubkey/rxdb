@@ -135,6 +135,19 @@ console.log(lastState);
 // true
 ```
 
+### get deleted
+A getter to get the current value of `deleted$`.
+
+```js
+console.log(myDocument.deleted);
+// false
+
+await myDocument.remove();
+
+console.log(myDocument.deleted);
+// true
+```
+
 
 ### synced$
 Emits a boolean value, depending if the RxDocument is in the same state then its value stored in the database.
@@ -171,6 +184,25 @@ console.log(lastState);
 ```
 ![synced.gif](files/synced.gif)
 </details>
+
+### get synced
+A getter to get the current value of `synced$`.
+
+```js
+console.log(myDocument.synced);
+// true
+
+myDocument.firstName = 'foobar';
+console.log(myDocument.synced);
+// true
+
+// myDocument2 is the same document but in another instance (other browser-tab etc.)
+myDocument2.firstName = 'barfoo';
+await myDocument2.save();
+
+console.log(myDocument.synced);
+// false
+```
 
 ### resync()
 If the RxDocument is not in sync (sycned$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.

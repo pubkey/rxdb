@@ -42,8 +42,14 @@ class RxDocument {
     get deleted$() {
         return this._deleted$.asObservable();
     }
+    get deleted() {
+        return this._deleted$.getValue();
+    }
     get synced$() {
         return this._synced$.asObservable().distinctUntilChanged();
+    }
+    get synced() {
+        return this._synced$.getValue();
     }
 
     resync() {
@@ -70,7 +76,7 @@ class RxDocument {
         if (changeEvent.data.doc != this.getPrimary())
             return;
 
-        //TODO check if new _rev is higher then current
+        // TODO check if new _rev is higher then current
 
         switch (changeEvent.data.op) {
             case 'INSERT':
@@ -285,19 +291,17 @@ class RxDocument {
 
         await this.collection._runHooks('pre', 'remove', this);
 
-        this.deleted = true;
         await this.collection.pouch.remove(this.getPrimary(), this._data._rev);
 
+        this.$emit(RxChangeEvent.create(
+          'REMOVE',
+          this.collection.database,
+          this.collection,
+          this,
+          null
+        ));
 
         await this.collection._runHooks('post', 'remove', this);
-
-        this.$emit(RxChangeEvent.create(
-            'REMOVE',
-            this.collection.database,
-            this.collection,
-            this,
-            null
-        ));
     }
 
     destroy() {}
