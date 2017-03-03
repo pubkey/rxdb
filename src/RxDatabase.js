@@ -12,11 +12,12 @@ import {
     default as PouchDB
 } from './PouchDB';
 
+const SETTINGS = {
+    minPassLength: 8
+};
+
 class RxDatabase {
 
-    static settings = {
-        minPassLength: 8
-    };
 
     constructor(name, adapter, password, multiInstance) {
         this.name = name;
@@ -357,8 +358,8 @@ export async function create({
 
     if (password && typeof password !== 'string')
         throw new TypeError('password is no string');
-    if (password && password.length < RxDatabase.settings.minPassLength)
-        throw new Error(`password must have at least ${RxDatabase.settings.minPassLength} chars`);
+    if (password && password.length < SETTINGS.minPassLength)
+        throw new Error(`password must have at least ${SETTINGS.minPassLength} chars`);
 
     const db = new RxDatabase(name, adapter, password, multiInstance);
     await db.prepare();

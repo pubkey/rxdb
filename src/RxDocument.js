@@ -116,7 +116,9 @@ class RxDocument {
      * emits the changeEvent to the upper instance (RxCollection)
      * @param  {RxChangeEvent} changeEvent
      */
-    $emit = changeEvent => this.collection.$emit(changeEvent);
+    $emit(changeEvent) {
+        return this.collection.$emit(changeEvent);
+    }
 
     /**
      * returns observable of the value of the given path
@@ -294,11 +296,11 @@ class RxDocument {
         await this.collection.pouch.remove(this.getPrimary(), this._data._rev);
 
         this.$emit(RxChangeEvent.create(
-          'REMOVE',
-          this.collection.database,
-          this.collection,
-          this,
-          null
+            'REMOVE',
+            this.collection.database,
+            this.collection,
+            this,
+            null
         ));
 
         await this.collection._runHooks('post', 'remove', this);
