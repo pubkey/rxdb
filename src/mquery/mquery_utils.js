@@ -17,21 +17,20 @@ import {
  * @api private
  */
 
-var merge = exports.merge = function merge(to, from) {
-    var keys = Object.keys(from),
-        i = keys.length,
-        key
+const merge = exports.merge = function merge(to, from) {
+    const keys = Object.keys(from);
+    let i = keys.length;
+    let key;
 
     while (i--) {
         key = keys[i];
-        if ('undefined' === typeof to[key]) {
+        if ('undefined' === typeof to[key])
             to[key] = from[key];
-        } else {
-            if (exports.isObject(from[key])) {
+        else {
+            if (exports.isObject(from[key]))
                 merge(to[key], from[key]);
-            } else {
+            else
                 to[key] = from[key];
-            }
         }
     }
 };
@@ -43,11 +42,10 @@ var merge = exports.merge = function merge(to, from) {
  * @param {Object} from
  * @api private
  */
-
-var mergeClone = exports.mergeClone = function mergeClone(to, from) {
-    var keys = Object.keys(from),
-        i = keys.length,
-        key;
+const mergeClone = exports.mergeClone = function mergeClone(to, from) {
+    const keys = Object.keys(from);
+    let i = keys.length;
+    let key;
 
     while (i--) {
         key = keys[i];
@@ -88,7 +86,7 @@ const toString = exports.toString = function(arg) {
  * @return {Boolean}
  */
 
-var isObject = exports.isObject = function(arg) {
+const isObject = exports.isObject = function(arg) {
     return '[object Object]' == exports.toString(arg);
 };
 
