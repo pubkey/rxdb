@@ -24,6 +24,7 @@
   ],
   "license": "Apache-2.0",
   "main": "./dist/lib/index.js",
+  "jsnext:main": "./src/index.js",
   "types": "./src/index.d.ts",
   "scripts": {
     "pretest": "npm run transpile",
