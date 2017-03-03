@@ -1,9 +1,12 @@
 {
     "presets": ["es2015"],
     "plugins": [
-        ["transform-runtime", {
-            "polyfill": false,
-            "regenerator": false
-        }]
+        [
+            "transform-async-to-generator",
+            "transform-runtime", {
+                "polyfill": false,
+                "regenerator": false
+            }
+        ]
     ]
 }
