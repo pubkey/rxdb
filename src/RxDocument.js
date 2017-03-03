@@ -119,7 +119,9 @@ class RxDocument {
      * emits the changeEvent to the upper instance (RxCollection)
      * @param  {RxChangeEvent} changeEvent
      */
-    $emit = changeEvent => this.collection.$emit(changeEvent);
+    $emit(changeEvent) {
+        return this.collection.$emit(changeEvent);
+    }
 
     /**
      * returns observable of the value of the given path
