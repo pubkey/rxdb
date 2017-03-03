@@ -2,7 +2,7 @@ import babel from 'rollup-plugin-babel';
 import uglify from 'rollup-plugin-uglify';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import babelrc from 'babelrc-rollup';
+// import babelrc from 'babelrc-rollup';
 import sizes from 'rollup-plugin-sizes';
 
 
@@ -15,7 +15,7 @@ destPath += '.rollup.js';
 export default {
     moduleName: 'rxdb',
     format: 'iife',
-    entry: 'src/index.js',
+    entry: 'src/browserify.index.js',
     dest: destPath,
     intro: 'if(!vm) vm = {};if(!EventEmitter) EventEmitter = function(){};',
     plugins: [
@@ -28,17 +28,17 @@ export default {
             browser: true, // Default: false
             namedExports: {
                 'node_modules/events/events.js': ['EventEmitter'],
-                'node_modules/js-sha3/src/sha3.js': ['sha3_512']
-                //                'node_modules/crypto-js': ['encrypt', 'decrypt'] // TODO this shows error
+                'node_modules/js-sha3/src/sha3.js': ['sha3_512'],
+                //                'node_modules/crypto-js': ['encrypt', 'decrypt']
             }
         }),
         babel({
             babelrc: false,
-            presets: ['es2015-rollup', 'stage-0'],
+            presets: ['es2015-rollup'],
             runtimeHelpers: true,
             plugins: [
-                'external-helpers',
-                'transform-runtime'
+                'transform-async-to-generator',
+                'external-helpers'
             ]
         }),
         nodeResolve({
