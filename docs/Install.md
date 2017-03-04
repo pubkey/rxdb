@@ -6,7 +6,7 @@ To install rxdb and save it to your `package.json`, run
 
 `npm i rxdb --save`
 
-If you don't have es7-polyfills, you habe to add them by also installing
+If you don't have es7-polyfills, you have to add them by also installing
 
 `npm i babel-polyfill --save`
 
