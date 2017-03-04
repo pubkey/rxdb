@@ -2,7 +2,7 @@
 
 # npm
 
-To install rxdb and save it to your package.json, run
+To install rxdb and save it to your `package.json`, run
 
 `npm i rxdb --save`
 
@@ -10,13 +10,13 @@ If you don't have es7-polyfills, you habe to add them by also installing
 
 `npm i babel-polyfill --save`
 
-If you don't have rxjs installed, you habe to add it by also installing
+If you don't have rxjs installed, you have to add it by also installing
 
 `npm i rxjs --save`
 
 # import
 
-To import rxdb, add this to your js-file
+To import rxdb, add this to your javascript file
 
 ```js
 // es6
@@ -27,7 +27,7 @@ var rxdb = require('rxdb');
 ```
 
 
-If you dont have polyfills, also import `babel-polyfill`:
+If you don't have polyfills, also import `babel-polyfill`:
 
 ```js
 // es6
