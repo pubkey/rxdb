@@ -345,3 +345,6 @@ Get started now by [reading the docs](./docs/README.md) or exploring the [exampl
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
 - Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
 - Support RxDB at [patreon](https://www.patreon.com/rxdb)
+
+# Thank you
+A big **Thank you** to every [patreon-supporter](https://github.com/pubkey/rxdb/blob/master/SUPPORTER.md) and every [contributer](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
