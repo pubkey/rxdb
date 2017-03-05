@@ -15,30 +15,23 @@ const defaultQuery = {
 
 
 class RxQuery {
-    constructor(queryObj, collection) {
+    constructor(queryObj = defaultQuery, collection) {
         this.collection = collection;
 
         this.defaultQuery = false;
-        if (!queryObj ||
-            (
-                Object.keys(queryObj).length === 0 &&
-                !Array.isArray(queryObj)
-            )
-        ) {
-            queryObj = defaultQuery;
-            this.defaultQuery = true;
-        }
+
+        // force _id
+        if (!queryObj._id)
+            queryObj._id = {};
 
         this.mquery = mquery(queryObj);
 
         // merge mquery-prototype functions to this
         const mquery_proto = Object.getPrototypeOf(this.mquery);
         Object.keys(mquery_proto).forEach(attrName => {
-            if (['select', 'remove', 'update'].includes(attrName)) return;
-
-            // only param1 is tunneled here on purpose so no callback-call can be done
-            this[attrName] = param1 => {
-                this.mquery[attrName](param1);
+            // tunnel params to mquery-function
+            this[attrName] = (p1, p2, p3) => {
+                this.mquery[attrName](p1, p2, p3);
                 return this;
             };
         });
@@ -79,7 +72,10 @@ class RxQuery {
             this.mquery.regex(params);
             return this;
         };
+    }
 
+    // returns a clone of this RxQuery
+    _clone() {
 
     }
 
@@ -171,7 +167,6 @@ class RxQuery {
         return json;
     };
 
-
     /**
      * get the key-compression version of this query
      * @return {{selector: {}, sort: []}} compressedQuery
@@ -182,7 +177,6 @@ class RxQuery {
             ._keyCompressor
             .compressQuery(this.toJSON());
     }
-
 
     /**
      * deletes all found documents
@@ -200,7 +194,6 @@ class RxQuery {
         }
         return docs;
     }
-
 }
 
 export function create(queryObj = defaultQuery, collection) {
