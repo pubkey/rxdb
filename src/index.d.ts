@@ -163,10 +163,12 @@ declare class RxQuery {
     regex(queryObj: any): RxQuery;
     exists(queryObj: any): RxQuery;
     elemMatch(queryObj: any): RxQuery;
-    slice(queryObj: any): RxQuery;
     sort(params: any): RxQuery;
     limit(amount: number): RxQuery;
     skip(amount: number): RxQuery;
+
+    // TODO fix attribute-types of this function
+    mod(p1: any, p2: any, p3: any): RxQuery;
 
     exec(): Promise<RxDocument[]>;
     $: Observable<RxDocument[]>;
