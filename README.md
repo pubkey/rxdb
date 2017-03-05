@@ -81,8 +81,8 @@ Import/Require:
 <details>
   <summary>ES7</summary>
 ```javascript
-import * as RxDB from 'rxdb';
 import 'babel-polyfill'; //only needed when you dont have polyfills
+import * as RxDB from 'rxdb';
 const db = await RxDB.create({
     name: 'heroesdb',
     adapter: 'websql',
@@ -98,6 +98,7 @@ db.heroes.insert({ name: 'Bob' });                          // insert document
 <details>
   <summary>ES5</summary>
 ```javascript
+require('babel-polyfill'); //only needed when you dont have polyfills
 var RxDB = require('rxdb');
 RxDB.create({
     name: 'heroesdb',
