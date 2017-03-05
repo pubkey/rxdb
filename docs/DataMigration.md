@@ -136,4 +136,4 @@ If your migration takes very long, combine it with the leaderElection to make su
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](../LeaderElection.md)
+If you are new to RxDB, you should continue [here](./LeaderElection.md)
