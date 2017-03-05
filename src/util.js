@@ -8,10 +8,6 @@
 import {
     default as randomToken
 } from 'random-token';
-import {
-    Validator
-} from 'jsonschema';
-
 
 // rxjs cherry-pick
 import {
@@ -160,20 +156,6 @@ export function generate_id() {
     return randomToken(10) + ':' + new Date().getTime();
 }
 
-let VALIDATOR;
-export function jsonSchemaValidate(schema, obj) {
-    if (!VALIDATOR) VALIDATOR = new Validator();
-
-    const valid = VALIDATOR.validate(obj, schema);
-    if (valid.errors.length > 0) {
-        throw new Error(JSON.stringify({
-            name: 'object does not match schema',
-            errors: valid.errors,
-            object: obj,
-            schema: schema
-        }));
-    }
-}
 
 /**
  * [promiseWait description]

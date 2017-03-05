@@ -233,8 +233,7 @@ class RxDocument {
         }
 
         // check schema of changed field
-        const schemaObj = this.collection.schema.getSchemaByObjectPath(objPath);
-        this.collection.schema.validate(value, schemaObj);
+        this.collection.schema.validate(value, objPath);
 
         objectPath.set(this._data, objPath, value);
 

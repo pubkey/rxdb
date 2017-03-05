@@ -5,6 +5,8 @@ import {
     default as clone
 } from 'clone';
 
+const validator = require('is-my-json-valid');
+
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
@@ -92,13 +94,37 @@ class RxSchema {
     /**
      * validate if the obj matches the schema
      * @param {Object} obj
-     * @param {Object} schemaObj json-schema
+     * @param {string} schemaPath if given, validates agains deep-path of schema
+     * @throws {Error} if not valid
      * @param {Object} obj equal to input-obj
      */
-    validate(obj, schemaObj) {
-        schemaObj = schemaObj || this.jsonID;
-        util.jsonSchemaValidate(schemaObj, obj);
-        return obj;
+    validate(obj, schemaPath = '') {
+        if (!this._validators)
+            this._validators = {};
+
+        if (!this._validators[schemaPath]) {
+            const schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+
+            if (!schemaPart) {
+                throw new Error(JSON.stringify({
+                    name: 'sub-schema not found',
+                    error: 'does the field ' + schemaPath + ' exist in your schema?'
+                }));
+            }
+            this._validators[schemaPath] = validator(schemaPart);
+        }
+        const useValidator = this._validators[schemaPath];
+        const isValid = useValidator(obj);
+        if (isValid) return obj;
+        else {
+            throw new Error(JSON.stringify({
+                name: 'object does not match schema',
+                errors: useValidator.errors,
+                schemaPath,
+                obj,
+                schema: this.jsonID
+            }));
+        }
     }
 
 

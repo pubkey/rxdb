@@ -467,7 +467,22 @@ describe('RxSchema.test.js', () => {
         });
 
     });
+    describe('performance', () => {
+        it('validate object often', async() => {
+            return; // comment out to run speed-test
+            const schema = RxSchema.create(schemas.human);
+            const obj = schemaObjects.human();
+            obj._id = util.randomCouchString(10);
 
+            console.dir(obj);
+            console.time('t1');
+            for (let i = 0; i < 5000; i++)
+                schema.validate(obj);
+
+            console.timeEnd('t1');
+            process.exit();
+        });
+    });
 
     describe('wait a bit', () => {
         it('w8 a bit', (done) => {
