@@ -14,4 +14,4 @@ This is an example usage of RxDB with Angular2. It implements a simple heroes-li
 
 # Screenshot
 
-![Screenshot](docfiles/screenshot.png?raw=true)
+![angular2](docfiles/angular2.gif)
