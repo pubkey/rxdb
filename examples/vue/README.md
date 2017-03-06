@@ -11,6 +11,8 @@ This is an example usage of RxDB with VueJS. It implements a simple heroes-list 
 6. run `npm start`
 7. Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/) **IMPORTANT: do not use localhost**
 
+![video](./docs/vuejs.gif)
+
 
 ----
 Created from [vuejs-templates/webpack-simple](https://github.com/vuejs-templates/webpack-simple).
