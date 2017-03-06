@@ -122,7 +122,7 @@ var RxDocument = function () {
         value: function _handleChangeEvent(changeEvent) {
             if (changeEvent.data.doc != this.getPrimary()) return;
 
-            //TODO check if new _rev is higher then current
+            // TODO check if new _rev is higher then current
 
             switch (changeEvent.data.op) {
                 case 'INSERT':
@@ -323,8 +323,7 @@ var RxDocument = function () {
             }
 
             // check schema of changed field
-            var schemaObj = this.collection.schema.getSchemaByObjectPath(objPath);
-            this.collection.schema.validate(value, schemaObj);
+            this.collection.schema.validate(value, objPath);
 
             _objectPath2.default.set(this._data, objPath, value);
 
@@ -436,20 +435,17 @@ var RxDocument = function () {
                                 return this.collection._runHooks('pre', 'remove', this);
 
                             case 4:
-
-                                this.deleted = true;
-                                _context3.next = 7;
+                                _context3.next = 6;
                                 return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
 
-                            case 7:
+                            case 6:
+
+                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, null));
+
                                 _context3.next = 9;
                                 return this.collection._runHooks('post', 'remove', this);
 
                             case 9:
-
-                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, null));
-
-                            case 10:
                             case 'end':
                                 return _context3.stop();
                         }
@@ -472,9 +468,19 @@ var RxDocument = function () {
             return this._deleted$.asObservable();
         }
     }, {
+        key: 'deleted',
+        get: function get() {
+            return this._deleted$.getValue();
+        }
+    }, {
         key: 'synced$',
         get: function get() {
             return this._synced$.asObservable().distinctUntilChanged();
+        }
+    }, {
+        key: 'synced',
+        get: function get() {
+            return this._synced$.getValue();
         }
     }, {
         key: '$',

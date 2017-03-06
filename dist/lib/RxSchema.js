@@ -46,6 +46,8 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var validator = require('is-my-json-valid');
+
 var RxSchema = function () {
     function RxSchema(jsonID) {
         var _this = this;
@@ -99,13 +101,37 @@ var RxSchema = function () {
         /**
          * validate if the obj matches the schema
          * @param {Object} obj
-         * @param {Object} schemaObj json-schema
+         * @param {string} schemaPath if given, validates agains deep-path of schema
+         * @throws {Error} if not valid
          * @param {Object} obj equal to input-obj
          */
-        value: function validate(obj, schemaObj) {
-            schemaObj = schemaObj || this.jsonID;
-            util.jsonSchemaValidate(schemaObj, obj);
-            return obj;
+        value: function validate(obj) {
+            var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+            if (!this._validators) this._validators = {};
+
+            if (!this._validators[schemaPath]) {
+                var schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+
+                if (!schemaPart) {
+                    throw new Error(JSON.stringify({
+                        name: 'sub-schema not found',
+                        error: 'does the field ' + schemaPath + ' exist in your schema?'
+                    }));
+                }
+                this._validators[schemaPath] = validator(schemaPart);
+            }
+            var useValidator = this._validators[schemaPath];
+            var isValid = useValidator(obj);
+            if (isValid) return obj;else {
+                throw new Error(JSON.stringify({
+                    name: 'object does not match schema',
+                    errors: useValidator.errors,
+                    schemaPath: schemaPath,
+                    obj: obj,
+                    schema: this.jsonID
+                }));
+            }
         }
     }, {
         key: 'swapIdToPrimary',

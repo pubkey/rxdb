@@ -263,11 +263,6 @@ var RxCollection = function () {
 
                             case 7:
 
-                                //        const indexes = await this.pouch.getIndexes();
-                                //        console.dir(indexes);
-                                //        console.dir(JSON.stringify(indexes));
-
-
                                 // when data changes, send it to RxDocument in docCache
                                 this._subs.push(this._observable$.subscribe(function (cE) {
                                     var doc = _this2._docCache.get(cE.data.doc);
@@ -1021,7 +1016,7 @@ var RxCollection = function () {
                                     ob2 = this.$.map(function (cE) {
                                         return cE.data.v;
                                     }).map(function (doc) {
-                                        if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                                        if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
                                     }).subscribe();
 
                                     this._subs.push(ob2);

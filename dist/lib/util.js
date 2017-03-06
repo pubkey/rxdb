@@ -171,7 +171,6 @@ exports.isLevelDown = isLevelDown;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generate_id = generate_id;
-exports.jsonSchemaValidate = jsonSchemaValidate;
 exports.promiseWaitResolveable = promiseWaitResolveable;
 exports.filledArray = filledArray;
 exports.ucfirst = ucfirst;
@@ -184,8 +183,6 @@ exports.sortObject = sortObject;
 var _randomToken = require('random-token');
 
 var _randomToken2 = _interopRequireDefault(_randomToken);
-
-var _jsonschema = require('jsonschema');
 
 var _Observable = require('rxjs/Observable');
 
@@ -238,11 +235,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // rxjs cherry-pick
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
- */
-
 var Rx = exports.Rx = {
     Observable: _Observable.Observable,
     Subject: _Subject.Subject,
@@ -250,6 +242,11 @@ var Rx = exports.Rx = {
 };
 
 // crypto-js
+/**
+ * this contains a mapping to basic dependencies
+ * which should be easy to change
+ */
+
 function encrypt(value, password) {
     var encrypted = crypto_AES.encrypt(value, password);
     return encrypted.toString();
@@ -300,21 +297,6 @@ function hash(obj) {
  */
 function generate_id() {
     return (0, _randomToken2.default)(10) + ':' + new Date().getTime();
-}
-
-var VALIDATOR = void 0;
-function jsonSchemaValidate(schema, obj) {
-    if (!VALIDATOR) VALIDATOR = new _jsonschema.Validator();
-
-    var valid = VALIDATOR.validate(obj, schema);
-    if (valid.errors.length > 0) {
-        throw new Error(JSON.stringify({
-            name: 'object does not match schema',
-            errors: valid.errors,
-            object: obj,
-            schema: schema
-        }));
-    }
 }function promiseWaitResolveable() {
     var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
