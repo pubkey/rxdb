@@ -1,9 +1,12 @@
-## 3.0.3 (XXX, 2017)
+## 3.0.3 (March 6, 2017)
 
 Features:
   - Added RxDocument.[deleted](docs/RxDocument.md#get-deleted)
   - Added RxDocument.[synced](docs/RxDocument.md#get-synced)
   - moved from [jsonschema](https://www.npmjs.com/package/jsonschema) to [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid)
+
+Bugfixes:
+  - No error on sync when remote document is deleted
 
 ## 3.0.2 (March 2, 2017)
 
