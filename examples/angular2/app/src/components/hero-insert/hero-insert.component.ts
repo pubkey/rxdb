@@ -1,4 +1,4 @@
-import { Component, ViewChildren } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
 import * as randomInt from 'random-int';
 
@@ -10,16 +10,14 @@ import * as randomInt from 'random-int';
 })
 export class HeroInsertComponent {
 
-    @ViewChildren('input') inputfield;
+    @ViewChild('input') inputfield;
 
     name = '';
     color = '';
 
     constructor(
         private databaseService: DatabaseService
-    ) {
-
-    }
+    ) { }
 
 
 
@@ -40,7 +38,7 @@ export class HeroInsertComponent {
         const db = await this.databaseService.get();
         db['hero'].insert(addDoc);
 
-        this.inputfield.first._inputElement.nativeElement.focus();
+        this.inputfield.nativeElement.focus();
     }
 
 
