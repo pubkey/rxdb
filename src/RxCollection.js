@@ -452,7 +452,7 @@ class RxCollection {
             const ob2 = this.$
                 .map(cE => cE.data.v)
                 .map(doc => {
-                    if (sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
                 })
                 .subscribe();
             this._subs.push(ob2);
