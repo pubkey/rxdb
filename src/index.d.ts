@@ -208,7 +208,7 @@ declare class RxChangeEvent {
 
 interface DatabaseCreator {
     name: string;
-    storageEngine: any;
+    adapter: any;
     password?: string;
     multiInstance?: boolean;
 }
