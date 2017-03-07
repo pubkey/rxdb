@@ -6,7 +6,7 @@ Features:
   - moved from [jsonschema](https://www.npmjs.com/package/jsonschema) to [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid)
 
 Bugfixes:
-  - No error on sync when remote document is deleted
+  - No error on sync when remote document is deleted [680f75bfcbda3f71b6ba0a95ceecdc6b6f30ba58](https://github.com/pubkey/rxdb/commit/680f75bfcbda3f71b6ba0a95ceecdc6b6f30ba58)
 
 ## 3.0.2 (March 2, 2017)
 
