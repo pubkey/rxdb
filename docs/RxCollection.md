@@ -87,29 +87,6 @@ myCollection.findOne('foo')
   .exec().then(doc => console.dir(doc));
 ```
 
-### .query()
-This returns a query-object which can be observed.
-This should be used to always display the life-results of a query, also when the collection changes its documents.
-
-```js
-var myDocuments = [];
-
-// 1. get all documents
-myCollection.query().sort({name: 1})
-  .$.subscribe(documents => {
-    myDocuments = myDocuments;
-  });
-
-// 2. add another document
-await myCollection.insert({
-  name: 'foo2',
-  lastname: 'bar2'
-});
-
-// myDocuments will now contain one more document
-```
-
-
 ### dump()
 Use this function to create a json-export from every document in the collection. You can pass true as parameter to decrypted the encrypted data-fields of your documents.
 ```js
