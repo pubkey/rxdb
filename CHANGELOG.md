@@ -1,3 +1,10 @@
+## 3.0.4 (March 12, 2017)
+
+Bugfixes:
+  - Vuejs runs populate-getter on changedetection [#75](https://github.com/pubkey/rxdb/issues/75)
+  - `isDeepEqual` does not work correctly for Arrays [#76](https://github.com/pubkey/rxdb/issues/76)
+  - wrong `storageEngine` in the typings
+
 ## 3.0.3 (March 6, 2017)
 
 Features:
