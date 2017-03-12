@@ -40,7 +40,7 @@ const db = await RxDB.create({name: 'mydatabase', adapter: memdown});
 If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
 
 ### multiInstance (optional=true)
-When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be used in browsers for multi-window-support or electron.
+When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be set to `false` when you have single-instances like a single nodejs-process, a react-native-app, a cordova-app or a single-window electron-app.
 
 
 ## Functions
