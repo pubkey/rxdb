@@ -329,6 +329,11 @@ describe('RxDocument.test.js', () => {
                 const passportId = doc.get('passportId');
                 assert.equal(doc.passportId, passportId);
             });
+            it('hidden properties should not show up', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                assert.ok(!Object.keys(doc).includes('lastName_'));
+            });
             it('nested-value', async() => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
@@ -436,12 +441,11 @@ describe('RxDocument.test.js', () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
-            console.dir(docData);
+
 
             // insert
             await c.insert(docData);
             const doc1 = await c.findOne(primary).exec();
-            console.dir(doc1);
             assert.equal(doc1.firstName, docData.firstName);
 
             // remove
@@ -459,12 +463,10 @@ describe('RxDocument.test.js', () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
-            console.dir(docData);
 
             // insert
             await c.upsert(docData);
             const doc1 = await c.findOne(primary).exec();
-            console.dir(doc1);
             assert.equal(doc1.firstName, docData.firstName);
 
             // remove

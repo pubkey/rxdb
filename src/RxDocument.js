@@ -187,14 +187,21 @@ class RxDocument {
                     return this.get(util.trimDots(objPath + '.' + key));
                 });
                 // getter - observable$
-                valueObj.__defineGetter__(key + '$', () => {
-                    return this.get$(util.trimDots(objPath + '.' + key));
+                Object.defineProperty(valueObj, key + '$', {
+                    get: () => {
+                        return this.get$(util.trimDots(objPath + '.' + key));
+                    },
+                    enumerable: false,
+                    configurable: false
                 });
                 // getter - populate_
-                valueObj.__defineGetter__(key + '_', () => {
-                    return this.populate(util.trimDots(objPath + '.' + key));
+                Object.defineProperty(valueObj, key + '_', {
+                    get: () => {
+                        return this.populate(util.trimDots(objPath + '.' + key));
+                    },
+                    enumerable: false,
+                    configurable: false
                 });
-
                 // setter - value
                 valueObj.__defineSetter__(key, (val) => {
                     return this.set(util.trimDots(objPath + '.' + key), val);
@@ -293,11 +300,11 @@ class RxDocument {
         await this.collection.pouch.remove(this.getPrimary(), this._data._rev);
 
         this.$emit(RxChangeEvent.create(
-          'REMOVE',
-          this.collection.database,
-          this.collection,
-          this,
-          null
+            'REMOVE',
+            this.collection.database,
+            this.collection,
+            this,
+            null
         ));
 
         await this.collection._runHooks('post', 'remove', this);
