@@ -4,73 +4,17 @@ import * as _ from 'lodash';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
 import * as RxDocument from '../../dist/lib/RxDocument';
+import * as RxDatabase from '../../dist/lib/index';
 
 process.on('unhandledRejection', function(err) {
     throw err;
 });
 
 describe('RxDocument.test.js', () => {
-    describe('statics', () => {
-        describe('.isDeepEqual()', () => {
-            it('should true on standard object', () => {
-                const is = RxDocument.isDeepEqual({
-                    foo: 'baar'
-                }, {
-                    foo: 'baar'
-                });
-                assert.ok(is);
-            });
-            it('should false on standard object', () => {
-                const is = RxDocument.isDeepEqual({
-                    foo: 'baar'
-                }, {
-                    foo: 'baar1'
-                });
-                assert.equal(is, false);
-            });
-            it('should true on array', () => {
-                const is = RxDocument.isDeepEqual([{
-                    foo: 'baar'
-                }], [{
-                    foo: 'baar'
-                }]);
-                assert.ok(is);
-            });
-            it('should false on array', () => {
-                const is = RxDocument.isDeepEqual([{
-                    foo: 'baar'
-                }], [{
-                    foo: 'baar2'
-                }]);
-                assert.equal(is, false);
-            });
-            it('should true on getter', () => {
-                const obj1 = {};
-                obj1.__defineGetter__('foo', () => 'bar');
-                const obj2 = {};
-                obj2.__defineGetter__('foo', () => 'bar');
-                assert.ok(RxDocument.isDeepEqual(obj1, obj2));
-            });
-            it('should false on different getter', () => {
-                const obj1 = {};
-                obj1.__defineGetter__('foo', () => 'bar');
-                const obj2 = {};
-                obj2.__defineGetter__('foo', () => 'bar1');
-                assert.equal(RxDocument.isDeepEqual(obj1, obj2), false);
-            });
-            it('should ignore getter which endsWith $', () => {
-                const obj1 = {};
-                obj1.__defineGetter__('foo', () => 'bar');
-                obj1.__defineGetter__('foo$', () => 'bar');
-                const obj2 = {};
-                obj2.__defineGetter__('foo', () => 'bar');
-                assert.ok(RxDocument.isDeepEqual(obj1, obj2));
-            });
-
-        });
-    });
+    describe('statics', () => {});
     describe('.get()', () => {
         describe('positive', () => {
             it('get a value', async() => {
@@ -479,6 +423,36 @@ describe('RxDocument.test.js', () => {
             assert.equal(doc2.firstName, 'foobar');
 
             c.database.destroy();
+        });
+        it('BUG #76 - deepEqual does not work correctly for Arrays', async() => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const col = await await db.collection({
+                name: 'heroes',
+                schema: schemas.simpleArrayHero
+            });
+            const docData = {
+                name: 'foobar',
+                skills: [
+                    'skill1',
+                    'skill2',
+                    'skill3'
+                ]
+            };
+            await col.insert(docData);
+            const doc = await col.findOne().exec();
+            assert.equal(doc.skills.length, 3);
+
+            const newSkill = 'newSikSkill';
+            doc.set('skills', doc.skills.concat(newSkill));
+            await doc.save();
+
+            const colDump = await col.dump(true);
+            const afterSkills = colDump.docs[0].skills;
+            assert.equal(afterSkills.length, 4);
+            assert.ok(afterSkills.includes(newSkill));
         });
     });
 });

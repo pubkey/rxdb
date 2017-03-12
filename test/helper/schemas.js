@@ -457,6 +457,27 @@ export const heroArray = {
     'required': ['color']
 };
 
+export const simpleArrayHero = {
+    title: 'hero schema',
+    version: 0,
+    description: 'describes a hero with a string-array-field',
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string',
+            primary: true
+        },
+        skills: {
+            type: 'array',
+            maxItems: 5,
+            uniqueItems: true,
+            item: {
+                type: 'string',
+            }
+        }
+    }
+};
+
 
 export const primaryHuman = {
     title: 'human schema with primary',

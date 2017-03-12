@@ -4,6 +4,9 @@ import {
 import {
     default as objectPath
 } from 'object-path';
+import {
+    default as deepEqual
+} from 'deep-equal';
 
 import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
@@ -87,7 +90,7 @@ class RxDocument {
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 
-                if (isDeepEqual(prevSyncData, prevData)) {
+                if (deepEqual(prevSyncData, prevData)) {
                     // document is in sync, overwrite _data
                     this._data = newData;
 
@@ -256,7 +259,7 @@ class RxDocument {
             throw new Error('RxDocument.save(): cant save deleted document');
 
         // check if different
-        if (isDeepEqual(this._data, this._dataSync$.getValue())) {
+        if (deepEqual(this._data, this._dataSync$.getValue())) {
             this._synced$.next(true);
             return false; // nothing changed, dont save
         }
@@ -311,50 +314,6 @@ class RxDocument {
     }
 
     destroy() {}
-}
-
-/**
- * performs a deep-equal without comparing internal getters and setter (observe$ and populate_ etc.)
- * @param  {object}  data1
- * @param  {object}  data2
- * @throws {Error} if given data not a plain js object
- * @return {Boolean} true if equal
- */
-export function isDeepEqual(data1, data2) {
-    if (typeof data1 !== typeof data2) return false;
-
-    let ret = true;
-
-    // array
-    if (Array.isArray(data1)) {
-        let k = 0;
-        while (k < data1.length && ret == true) {
-            if (!data2[k] || !isDeepEqual(data1[k], data2[k]))
-                ret = false;
-            k++;
-        }
-        return ret;
-    }
-
-    // object
-    if (typeof data1 === 'object') {
-        const entries = Object.entries(data1)
-            .filter(entry => !entry[0].endsWith('$')) // observe
-            .filter(entry => !entry[0].endsWith('_')); // populate;
-        let k = 0;
-        while (k < entries.length && ret) {
-            const entry = entries[k];
-            const name = entry[0];
-            const value = entry[1];
-            if (!isDeepEqual(data2[name], value))
-                ret = false;
-            k++;
-        }
-        return ret;
-    }
-
-    // other
-    return data1 == data2;
 }
 
 export function create(collection, jsonData) {
