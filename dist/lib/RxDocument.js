@@ -28,7 +28,6 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
-exports.isDeepEqual = isDeepEqual;
 exports.create = create;
 exports.createAr = createAr;
 exports.properties = properties;
@@ -40,6 +39,10 @@ var _clone2 = _interopRequireDefault(_clone);
 var _objectPath = require('object-path');
 
 var _objectPath2 = _interopRequireDefault(_objectPath);
+
+var _deepEqual = require('deep-equal');
+
+var _deepEqual2 = _interopRequireDefault(_deepEqual);
 
 var _util = require('./util');
 
@@ -133,7 +136,7 @@ var RxDocument = function () {
                     var prevSyncData = this._dataSync$.getValue();
                     var prevData = this._data;
 
-                    if (isDeepEqual(prevSyncData, prevData)) {
+                    if ((0, _deepEqual2.default)(prevSyncData, prevData)) {
                         // document is in sync, overwrite _data
                         this._data = newData;
 
@@ -278,14 +281,21 @@ var RxDocument = function () {
                     return _this2.get(util.trimDots(objPath + '.' + key));
                 });
                 // getter - observable$
-                valueObj.__defineGetter__(key + '$', function () {
-                    return _this2.get$(util.trimDots(objPath + '.' + key));
+                Object.defineProperty(valueObj, key + '$', {
+                    get: function get() {
+                        return _this2.get$(util.trimDots(objPath + '.' + key));
+                    },
+                    enumerable: false,
+                    configurable: false
                 });
                 // getter - populate_
-                valueObj.__defineGetter__(key + '_', function () {
-                    return _this2.populate(util.trimDots(objPath + '.' + key));
+                Object.defineProperty(valueObj, key + '_', {
+                    get: function get() {
+                        return _this2.populate(util.trimDots(objPath + '.' + key));
+                    },
+                    enumerable: false,
+                    configurable: false
                 });
-
                 // setter - value
                 valueObj.__defineSetter__(key, function (val) {
                     return _this2.set(util.trimDots(objPath + '.' + key), val);
@@ -352,7 +362,7 @@ var RxDocument = function () {
                                 throw new Error('RxDocument.save(): cant save deleted document');
 
                             case 2:
-                                if (!isDeepEqual(this._data, this._dataSync$.getValue())) {
+                                if (!(0, _deepEqual2.default)(this._data, this._dataSync$.getValue())) {
                                     _context2.next = 5;
                                     break;
                                 }
@@ -490,53 +500,6 @@ var RxDocument = function () {
     }]);
     return RxDocument;
 }();
-
-/**
- * performs a deep-equal without comparing internal getters and setter (observe$ and populate_ etc.)
- * @param  {object}  data1
- * @param  {object}  data2
- * @throws {Error} if given data not a plain js object
- * @return {Boolean} true if equal
- */
-
-
-function isDeepEqual(data1, data2) {
-    if ((typeof data1 === 'undefined' ? 'undefined' : (0, _typeof3.default)(data1)) !== (typeof data2 === 'undefined' ? 'undefined' : (0, _typeof3.default)(data2))) return false;
-
-    var ret = true;
-
-    // array
-    if (Array.isArray(data1)) {
-        var k = 0;
-        while (k < data1.length && ret == true) {
-            if (!data2[k] || !isDeepEqual(data1[k], data2[k])) ret = false;
-            k++;
-        }
-        return ret;
-    }
-
-    // object
-    if ((typeof data1 === 'undefined' ? 'undefined' : (0, _typeof3.default)(data1)) === 'object') {
-        var entries = Object.entries(data1).filter(function (entry) {
-            return !entry[0].endsWith('$');
-        }) // observe
-        .filter(function (entry) {
-            return !entry[0].endsWith('_');
-        }); // populate;
-        var _k = 0;
-        while (_k < entries.length && ret) {
-            var entry = entries[_k];
-            var name = entry[0];
-            var value = entry[1];
-            if (!isDeepEqual(data2[name], value)) ret = false;
-            _k++;
-        }
-        return ret;
-    }
-
-    // other
-    return data1 == data2;
-}
 
 function create(collection, jsonData) {
     if (jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
