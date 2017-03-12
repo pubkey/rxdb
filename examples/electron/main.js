@@ -7,30 +7,34 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 const windows = [];
-function createWindow () {
-  const width = 300;
-  const height = 600;
-  let w = new BrowserWindow({width, height});
 
-  w.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true
-  }));
+function createWindow() {
+    const width = 300;
+    const height = 600;
+    let w = new BrowserWindow({
+        width,
+        height
+    });
 
-  const x = windows.length*width;
-  const y = 0;
-  w.setPosition(x, y);
-  windows.push(w);
+    w.loadURL(url.format({
+        pathname: path.join(__dirname, 'index.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+
+    const x = windows.length * width;
+    const y = 0;
+    w.setPosition(x, y);
+    windows.push(w);
 }
 
-app.on('ready', function(){
-  createWindow();
-  createWindow();
+app.on('ready', function() {
+    createWindow();
+    createWindow();
 });
 
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+app.on('window-all-closed', function() {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
 });
