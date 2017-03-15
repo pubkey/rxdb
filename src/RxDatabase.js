@@ -210,7 +210,7 @@ class RxDatabase {
 
         const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
-        // check unallowd collection-names
+        // check unallowed collection-names
         if (properties().includes(args.name))
             throw new Error(`Collection-name ${args.name} not allowed`);
 
