@@ -7,7 +7,7 @@ Schemas define how your data looks. Which field should be used as primary, which
 In this example-schema we define a hero-collection with the following settings:
 
 - the version-number of the schema is 0
-- the name-property is the **primary**. This means its an unique, indexed, required string which can be used to definitly find a single document.
+- the name-property is the **primary**. This means its an unique, indexed, required string which can be used to definitely find a single document.
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
 - the secret-field stores an encrypted value
