@@ -80,6 +80,7 @@ Import/Require:
 
 <details>
   <summary>ES7</summary>
+
 ```javascript
 import 'babel-polyfill'; //only needed when you dont have polyfills
 import * as RxDB from 'rxdb';
@@ -97,6 +98,7 @@ db.heroes.insert({ name: 'Bob' });                          // insert document
 
 <details>
   <summary>ES5</summary>
+
 ```javascript
 require('babel-polyfill'); //only needed when you dont have polyfills
 var RxDB = require('rxdb');
@@ -116,8 +118,10 @@ RxDB.create({
 <details>
 <summary>
   <b>Mango-Query</b>
-  <p>To find data in your collection, you can use chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
-</p>
+  <p>
+
+To find data in your collection, you can use chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
+  </p>
 </summary>
 
 ```javascript
@@ -136,9 +140,12 @@ myCollection
 <details>
 <summary>
   <b>Reactive</b>
-  <p>RxDB implements [rxjs](https://github.com/ReactiveX/rxjs) to make your data reactive.
+  <p>
+
+RxDB implements [rxjs](https://github.com/ReactiveX/rxjs) to make your data reactive.
 This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.</p>
 </summary>
+
 ```javascript
 db.heroes
   .find()
@@ -151,32 +158,40 @@ db.heroes
   });
 ```
 ![reactive.gif](docs/files/reactive.gif)
-
 </details>
 
 <details>
 <summary>
   <b>MultiWindow/Tab</b>
-  <p>When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
-This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely serverless.</p>
+  <p>
+
+When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
+This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely serverless.
+</p>
 </summary>
+
 ![multiwindow.gif](docs/files/multiwindow.gif)
 </details>
 
 <details>
 <summary>
   <b>Replication</b>
-  <p>Because RxDB relies on glorious [PouchDB](https://github.com/pouchdb/pouchdb), it is easy to replicate
+  <p>
+Because RxDB relies on glorious [PouchDB](https://github.com/pouchdb/pouchdb), it is easy to replicate
 the data between devices and servers. And yes, the changeEvents are also synced.</p>
 </summary>
+
 ![sync.gif](docs/files/sync.gif)
 </details>
 
 <details>
 <summary>
   <b>Schema</b>
-  <p>Schemas are defined via [jsonschema](http://json-schema.org/) and are used to describe your data.</p>
+  <p>
+
+Schemas are defined via [jsonschema](http://json-schema.org/) and are used to describe your data.</p>
 </summary>
+
 ```javascript
 const mySchema = {
     title: "hero schema",
@@ -214,13 +229,14 @@ const mySchema = {
 ```
 </details>
 
-
-
 <details>
 <summary>
   <b>Encryption</b>
-  <p>By setting a schema-field to `encrypted: true`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
+  <p>
+
+By setting a schema-field to `encrypted: true`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
 </summary>
+
 ```json
 "secret": {
   "type": "string",
@@ -233,9 +249,12 @@ const mySchema = {
 <details>
 <summary>
   <b>Level-adapters</b>
-  <p>The underlaying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. You can so use RxDB in different environments by just switching the adapter.
+  <p>
+
+The underlaying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. You can so use RxDB in different environments by just switching the adapter.
 For example you can use websql in the browser, localstorage in mobile-browsers and a leveldown-adapter in nodejs.</p>
 </summary>
+
 ```js
 // this requires the localstorage-adapter
 RxDB.plugin(require('rxdb-adapter-localstorage'));
@@ -252,12 +271,14 @@ Some adapters you can use:
 - [Or any leveldown-adapter](https://github.com/Level/levelup/wiki/Modules#storage-back-ends)
 </details>
 
-
 <details>
 <summary>
   <b>Import / Export</b>
-  <p>RxDB lets you import and export the whole database or single collections into json-objects. This is helpful to trace bugs in your application or to move to a given state in your tests.</p>
+  <p>
+
+RxDB lets you import and export the whole database or single collections into json-objects. This is helpful to trace bugs in your application or to move to a given state in your tests.</p>
 </summary>
+
 ```js
 
 // export a single collection
@@ -275,14 +296,16 @@ await emptyDatabase.importDump(json);
 ```
 </details>
 
-
 <details>
 <summary>
   <b>Leader-Election</b>
-  <p>Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
+  <p>
+
+Imagine your website needs to get a piece of data from the server once every minute. To accomplish this task
 you create a websocket or pull-interval. If your user now opens the site in 5 tabs parallel, it will run the interval
 or create the socket 5 times. This is a waste of resources which can be solved by RxDB's LeaderElection.</p>
 </summary>
+
 ```js
 myRxDatabase.waitForLeadership()
   .then(() => {
@@ -296,11 +319,12 @@ In this example the leader is marked with the crown &#9819;
 ![reactive.gif](docs/files/leader-election.gif)
 </details>
 
-
 <details>
 <summary>
   <b>Key-Compression</b>
-  <p>Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.</p>
+  <p>
+
+Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.</p>
 </summary>
 
 Example:
@@ -325,7 +349,6 @@ await myCollection.insert({
 console.log(myDoc.firstName);
 // 'foo'
 ```
-
 </details>
 
 ## Browser support
