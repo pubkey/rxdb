@@ -177,6 +177,7 @@ This means with two browser-windows the change of window #1 will automatically a
 <summary>
   <b>Replication</b>
   <p>
+
 Because RxDB relies on glorious [PouchDB](https://github.com/pouchdb/pouchdb), it is easy to replicate
 the data between devices and servers. And yes, the changeEvents are also synced.</p>
 </summary>
