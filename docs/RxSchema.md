@@ -11,7 +11,7 @@ In this example-schema we define a hero-collection with the following settings:
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
 - the secret-field stores an encrypted value
-- the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is an maximum of 5 skills per hero.
+- the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
 
   ```json
   {
