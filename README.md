@@ -233,7 +233,7 @@ const mySchema = {
 <details>
 <summary>
   <b>Level-adapters</b>
-  <p>The underlaying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. You can so use RxDB in different environments by just switching the adapter.
+  <p>The underlaying pouchdb can use different <a href="https://pouchdb.com/adapters.html">adapters</a> as storage engine. You can also use RxDB in different environments by just switching the adapter.
 For example you can use websql in the browser, localstorage in mobile-browsers and a leveldown-adapter in nodejs.</p>
 </summary>
 ```js
