@@ -1,12 +1,12 @@
 # DataMigration
 
-Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make the dates better compareable. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: What happens with the messages which are already saved on the users device in the old schema?
+Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make the dates better compareable. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already saved on the user's device in the old schema?
 
-With RxDB you can provide migration-strategies to your collections which automatically (or on call) transform your exisiting data from older to newer schemas. This assures that the clients data always matches your newest code-version.
+With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your exisiting data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
 ## providing strategies
 
-On the creation of a collection, you have to provide migrationStrategies when your schemas version-number is greater than `0`. To do this, you have to add an object to the property `migrationStrategies` where a function for every schema-version is assigned. A migration-strategy is a function which gets the old document-data as paramter and returns the new, transformed document-data. If the strategy returns `null`, this means that the document will be removed instead of migrated.
+Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as paramter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
 
 
 ```javascript
@@ -79,7 +79,7 @@ myDatabase.collection({
 
 ## autoMigrate
 
-By default, the migration automatically performs when the collection is created. If you have much data or the migrationStrategies take very long, it could be better to start the migration 'by hand' and show the migration-state to the user as loading-bar.
+By default, the migration automatically happens when the collection is created. If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration 'by hand' and show the migration-state to the user as a loading-bar.
 
 ```javascript
 const messageCol = await myDatabase.collection({
@@ -123,7 +123,7 @@ migrationState$.subscribe(
 
 ```
 
-If you dont want to show the state to the user, you can also use `.migratePromise()`:
+If you don't want to show the state to the user, you can also use `.migratePromise()`:
 ```js
   const migrationPromise = messageCol.migratePromise(10);
   await migratePromise;
@@ -131,7 +131,7 @@ If you dont want to show the state to the user, you can also use `.migratePromis
 
 
 ## hint
-If your migration takes very long, combine it with the leaderElection to make sure you not waste your users ressources by running it in 2 open tabs.
+If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
 
 
 --------------------------------------------------------------------------------
