@@ -79,7 +79,7 @@ myDatabase.collection({
 
 ## autoMigrate
 
-By default, the migration automatically happens when the collection is created. If you have lots of data or the migrationStrategies take long a long time, it might be better to start the migration 'by hand' and show the migration-state to the user as a loading-bar.
+By default, the migration automatically happens when the collection is created. If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration 'by hand' and show the migration-state to the user as a loading-bar.
 
 ```javascript
 const messageCol = await myDatabase.collection({
@@ -131,7 +131,7 @@ If you don't want to show the state to the user, you can also use `.migratePromi
 
 
 ## hint
-If your migration takes long a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
+If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
 
 
 --------------------------------------------------------------------------------
