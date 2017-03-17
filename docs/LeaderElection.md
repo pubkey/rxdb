@@ -16,7 +16,7 @@ Or just use RxDB which does all that things for you.
 
 # Code-example
 
-To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab is becoming leader.
+To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.
 
 ```javascript
 const db = await RxDB.create({
