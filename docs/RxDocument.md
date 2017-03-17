@@ -153,6 +153,7 @@ console.log(myDocument.deleted);
 Emits a boolean value, depending if the RxDocument is in the same state then its value stored in the database.
 This is usefull to show warings when 2 or more users edit a document at the same time.
 
+Browser tab A
 ```js
 let lastState = null;
 myDocument.synced$.subscribe(state => lastState = state);
@@ -162,11 +163,16 @@ console.log(lastState);
 myDocument.firstName = 'foobar';
 console.log(lastState);
 // true
+```
 
-// myDocument2 is the same document but in another instance (other browser-tab etc.)
-myDocument2.firstName = 'barfoo';
-await myDocument2.save();
+Browser tab B
+```js
+myDocument.firstName = 'barfoo';
+await myDocument.save();
+```
 
+Browser tab A
+```js
 console.log(lastState);
 // false
 ```
