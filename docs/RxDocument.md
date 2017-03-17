@@ -173,8 +173,9 @@ console.log(lastState);
 
 <details>
 <summary>
-  <b>Example with angular2</b>
+  <b>Example with Angular 2</b>
 </summary>
+
 ```html
 <div *ngIf="!(hero.synced$ | async)">
     <h4>Warning:</h4>
@@ -182,6 +183,7 @@ console.log(lastState);
     <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
 </div>
 ```
+
 ![synced.gif](files/synced.gif)
 </details>
 
