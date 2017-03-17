@@ -6,7 +6,7 @@ With RxDB you can provide migrationStrategies for your collections that automati
 
 ## providing strategies
 
-Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as paramter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
+Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as a parameter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
 
 
 ```javascript
