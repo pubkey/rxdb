@@ -38,7 +38,7 @@ As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/
 ```
 
 ### set()
-To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() afterly to submit changes.
+To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.
 
 ```js
 myDocument.set('firstName', 'foobar');
