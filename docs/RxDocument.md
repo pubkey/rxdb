@@ -150,8 +150,8 @@ console.log(myDocument.deleted);
 
 
 ### synced$
-Emits a boolean value, depending if the RxDocument is in the same state then its value stored in the database.
-This is usefull to show warings when 2 or more users edit a document at the same time.
+Emits a boolean value of whether the RxDocument is in the same state as its value stored in the database.
+This is useful to show warnings when two or more users edit a document at the same time.
 
 ```js
 let lastState = null;
