@@ -75,9 +75,24 @@ myDocument.$()
   .subscribe(changeEvent => console.dir(changeEvent));
 ```
 
+### get$()
+This function returns an observable of the given paths-value.
+The current value of this path will be emitted each time the document changes.
+```js
+// get the life-updating value of 'name'
+var isName;
+myDocument.get$('name')
+  .subscribe(newName => {
+    isName = newName;
+  });
 
+myDocument.set('name', 'foobar2');
+await myDocument.save();
 
-### fieldName$
+console.dir(isName); // isName is now 'foobar2'
+```
+
+### proxy-get$
 You can directly get value-observables for a fieldName by adding the dollarSign ($) to its name.
 
 ```js
@@ -100,23 +115,6 @@ myDocument.whatever.nestedfield$
 myDocument.whatever.nestedfield = 'foobar2';
 await myDocument.save();
 console.dir(currentNestedValue); // currentNestedValue is now 'foobar2'
-```
-
-### get$()
-This function returns an observable of the given paths-value.
-The current value of this path will be emitted, even and every time when the document changes.
-```js
-// get the life-updating value of 'name'
-var isName;
-myDocument.get$('name')
-  .subscribe(newName => {
-    isName = newName;
-  });
-
-myDocument.set('name', 'foobar2');
-await myDocument.save();
-
-console.dir(isName); // isName is now 'foobar2'
 ```
 
 ### deleted$
