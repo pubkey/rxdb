@@ -1,5 +1,5 @@
 # RxDocument
-A document is a single object which is stored in a collection. It can be compared to a single line of a mysql-table.
+A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table.
 
 
 ## insert
