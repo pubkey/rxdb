@@ -95,7 +95,7 @@ myCollection.postInsert(function(documentData){
 
 
 ### Save
-An save-hook recieves the document which is saved.
+An save-hook receives the document which is saved.
 
 #### lifecycle
 - RxDocument.save is called
