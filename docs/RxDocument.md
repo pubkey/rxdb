@@ -205,7 +205,7 @@ console.log(myDocument.synced);
 ```
 
 ### resync()
-If the RxDocument is not in sync (sycned$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
+If the RxDocument is not in sync (synced$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
 
 ```js
 myDocument.firstName = 'foobar';
