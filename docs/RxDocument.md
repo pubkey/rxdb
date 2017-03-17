@@ -54,7 +54,7 @@ myDocument.whatever.nestedfield = 'foobar2';
 ```
 
 ### save()
-This will store the document in the storage if it has been changed before. Call this everytime after calling the set-method.
+This will store the document in the storage if it has been changed before. Call this every time after calling the set-method.
 ```js
 myDocument.name = 'foobar';
 await myDocument.save(); // submit the changes to the storage
