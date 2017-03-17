@@ -3,7 +3,7 @@ A document is a single object which is stored in a collection. It can be compare
 
 
 ## insert
-To insert a document into a collection, you have to call the collections .insert()-function.
+To insert a document into a collection, you have to call the collection's .insert()-function.
 ```js
 myCollection.insert({
   name: 'foo',
@@ -12,7 +12,7 @@ myCollection.insert({
 ```
 
 ## find
-To find document in a collection, you have to call the collections .find()-function.
+To find document in a collection, you have to call the collection's .find()-function.
 ```js
 myCollection.find().exec() // <- find all documents
   .then(documents => console.dir(documents));
