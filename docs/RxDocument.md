@@ -192,6 +192,7 @@ console.log(lastState);
 ### get synced
 A getter to get the current value of `synced$`.
 
+Browser tab A
 ```js
 console.log(myDocument.synced);
 // true
@@ -199,11 +200,16 @@ console.log(myDocument.synced);
 myDocument.firstName = 'foobar';
 console.log(myDocument.synced);
 // true
+```
 
-// myDocument2 is the same document but in another instance (other browser-tab etc.)
-myDocument2.firstName = 'barfoo';
-await myDocument2.save();
+Browser tab B
+```js
+myDocument.firstName = 'barfoo';
+await myDocument.save();
+```
 
+Browser tab A
+```js
 console.log(myDocument.synced);
 // false
 ```
