@@ -8,7 +8,6 @@
 /**
  * Dependencies
  */
-
 const utils = require('./mquery_utils');
 import {
     default as clone
@@ -80,7 +79,7 @@ function Query(criteria, options) {
  * @api public
  * @property use$geoWithin
  */
-
+// TODO can this be removed?
 let $withinCmd = '$geoWithin';
 Object.defineProperty(Query, 'use$geoWithin', {
     get: function() {
@@ -97,6 +96,14 @@ Object.defineProperty(Query, 'use$geoWithin', {
 });
 
 
+
+/**
+ * returns a cloned version of the query
+ * @return {Query}
+ */
+Query.prototype.clone = function() {
+
+};
 
 /**
  * Specifies a `path` for use with chaining.
