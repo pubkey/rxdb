@@ -4,7 +4,7 @@ Middleware (also called pre and post hooks) are functions which are passed contr
 The hooks are specified on RxCollection-level and help to create a clear what-happens-when-structure of your code.
 
 Hooks can be defined to run parallel or as series one after another.
-Hooks can be synchronous or asynchronos when they return a Promise.
+Hooks can be synchronous or asynchronous when they return a Promise.
 To stop the operation at a specific hook, throw an error.
 
 ## List
