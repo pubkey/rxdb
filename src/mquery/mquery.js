@@ -64,18 +64,10 @@ Query.prototype.where = function() {
 
 /**
  * Specifies the complementary comparison value for paths specified with `where()`
- *
  * ####Example
- *
  *     User.where('age').equals(49);
- *
- *     // is the same as
- *
- *     User.where('age', 49);
- *
  * @param {Object} val
  * @return {Query} this
- * @api public
  */
 Query.prototype.equals = function equals(val) {
     this._ensurePath('equals');
@@ -87,22 +79,8 @@ Query.prototype.equals = function equals(val) {
 /**
  * Specifies the complementary comparison value for paths specified with `where()`
  * This is alias of `equals`
- *
- * ####Example
- *
- *     User.where('age').eq(49);
- *
- *     // is the same as
- *
- *     User.where('age').equals(49);
- *
- *     // is the same as
- *
- *     User.where('age', 49);
- *
  * @param {Object} val
  * @return {Query} this
- * @api public
  */
 Query.prototype.eq = function eq(val) {
     this._ensurePath('eq');
@@ -113,17 +91,13 @@ Query.prototype.eq = function eq(val) {
 
 /**
  * Specifies arguments for an `$or` condition.
- *
  * ####Example
- *
  *     query.or([{ color: 'red' }, { status: 'emergency' }])
- *
  * @param {Array} array array of conditions
  * @return {Query} this
- * @api public
  */
-Query.prototype.or = function or(array) {
-    var or = this._conditions.$or || (this._conditions.$or = []);
+Query.prototype.or = function(array) {
+    const or = this._conditions.$or || (this._conditions.$or = []);
     if (!Array.isArray(array)) array = [array];
     or.push.apply(or, array);
     return this;
@@ -131,17 +105,13 @@ Query.prototype.or = function or(array) {
 
 /**
  * Specifies arguments for a `$nor` condition.
- *
  * ####Example
- *
  *     query.nor([{ color: 'green' }, { status: 'ok' }])
- *
  * @param {Array} array array of conditions
  * @return {Query} this
- * @api public
  */
-Query.prototype.nor = function nor(array) {
-    var nor = this._conditions.$nor || (this._conditions.$nor = []);
+Query.prototype.nor = function(array) {
+    const nor = this._conditions.$nor || (this._conditions.$nor = []);
     if (!Array.isArray(array)) array = [array];
     nor.push.apply(nor, array);
     return this;
@@ -149,18 +119,14 @@ Query.prototype.nor = function nor(array) {
 
 /**
  * Specifies arguments for a `$and` condition.
- *
  * ####Example
- *
  *     query.and([{ color: 'green' }, { status: 'ok' }])
- *
  * @see $and http://docs.mongodb.org/manual/reference/operator/and/
  * @param {Array} array array of conditions
  * @return {Query} this
- * @api public
  */
-Query.prototype.and = function and(array) {
-    var and = this._conditions.$and || (this._conditions.$and = []);
+Query.prototype.and = function(array) {
+    const and = this._conditions.$and || (this._conditions.$and = []);
     if (!Array.isArray(array)) array = [array];
     and.push.apply(and, array);
     return this;
@@ -178,7 +144,6 @@ Query.prototype.and = function and(array) {
     Query.prototype[$conditional] = function() {
         let path;
         let val;
-
         if (1 === arguments.length) {
             this._ensurePath($conditional);
             val = arguments[0];
@@ -231,18 +196,11 @@ Query.prototype.mod = function() {
 
 /**
  * Specifies an `$exists` condition
- *
  * ####Example
- *
  *     // { name: { $exists: true }}
  *     Thing.where('name').exists()
  *     Thing.where('name').exists(true)
  *     Thing.find().exists('name')
- *
- *     // { name: { $exists: false }}
- *     Thing.where('name').exists(false);
- *     Thing.find().exists('name', false);
- *
  * @param {String} [path]
  * @param {Number} val
  * @return {Query} this
@@ -251,7 +209,6 @@ Query.prototype.mod = function() {
 Query.prototype.exists = function() {
     let path;
     let val;
-
     if (0 === arguments.length) {
         this._ensurePath('exists');
         path = this._path;
@@ -277,27 +234,20 @@ Query.prototype.exists = function() {
 
 /**
  * Specifies an `$elemMatch` condition
- *
  * ####Example
- *
  *     query.elemMatch('comment', { author: 'autobot', votes: {$gte: 5}})
- *
  *     query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
- *
  *     query.elemMatch('comment', function (elem) {
  *       elem.where('author').equals('autobot');
  *       elem.where('votes').gte(5);
  *     })
- *
  *     query.where('comment').elemMatch(function (elem) {
  *       elem.where({ author: 'autobot' });
  *       elem.where('votes').gte(5);
  *     })
- *
  * @param {String|Object|Function} path
  * @param {Object|Function} criteria
  * @return {Query} this
- * @api public
  */
 Query.prototype.elemMatch = function() {
     if (null == arguments[0])
@@ -324,7 +274,6 @@ Query.prototype.elemMatch = function() {
     } else
         throw new TypeError('Invalid argument');
 
-
     if (fn) {
         criteria = new Query;
         fn(criteria);
@@ -339,35 +288,19 @@ Query.prototype.elemMatch = function() {
 
 /**
  * Sets the sort order
- *
  * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
- *
  * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
- *
  * ####Example
- *
- *     // these are equivalent
  *     query.sort({ field: 'asc', test: -1 });
  *     query.sort('field -test');
  *     query.sort([['field', 1], ['test', -1]]);
- *
- * ####Note
- *
- *  - The array syntax `.sort([['field', 1], ['test', -1]])` can only be used with [mongodb driver >= 2.0.46](https://github.com/mongodb/node-mongodb-native/blob/2.1/HISTORY.md#2046-2015-10-15).
- *  - Cannot be used with `distinct()`
- *
  * @param {Object|String|Array} arg
  * @return {Query} this
- * @api public
  */
 Query.prototype.sort = function(arg) {
     if (!arg) return this;
     let len;
-
-    this._validate('sort');
-
     let type = typeof arg;
-
     // .sort([['field', 1], ['test', -1]])
     if (Array.isArray(arg)) {
         len = arg.length;
@@ -394,12 +327,8 @@ Query.prototype.sort = function(arg) {
 
     // .sort({ field: 1, test: -1 })
     if (utils.isObject(arg)) {
-        var keys = Object.keys(arg);
-        for (let i = 0; i < keys.length; ++i) {
-            var field = keys[i];
-            push(this.options, field, arg[field]);
-        }
-
+        const keys = Object.keys(arg);
+        keys.forEach(field => push(this.options, field, arg[field]));
         return this;
     }
 
@@ -464,7 +393,6 @@ function _pushArr(opts, field, value) {
  */
 ['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function(method) {
     Query.prototype[method] = function(v) {
-        this._validate(method);
         this.options[method] = v;
         return this;
     };
@@ -522,18 +450,11 @@ Query.prototype.merge = function(source) {
 
 /**
  * Finds documents.
- *
- * Passing a `callback` executes the query.
- *
  * ####Example
- *
  *     query.find()
- *     query.find(callback)
- *     query.find({ name: 'Burning Lights' }, callback)
- *
+ *     query.find({ name: 'Burning Lights' })
  * @param {Object} [criteria] mongodb selector
  * @return {Query} this
- * @api public
  */
 Query.prototype.find = function(criteria) {
     if ('function' === typeof criteria) {
@@ -546,13 +467,9 @@ Query.prototype.find = function(criteria) {
 };
 
 
-
-
 /**
  * Returns default options.
- *
  * @return {Object}
- * @api private
  */
 Query.prototype._optionsForExec = function() {
     const options = clone(this.options);
@@ -565,7 +482,6 @@ Query.prototype._optionsForExec = function() {
  *
  * @parmam {String} method
  */
-
 Query.prototype._ensurePath = function(method) {
     if (!this._path) {
         throw new Error(`
@@ -574,8 +490,6 @@ Query.prototype._ensurePath = function(method) {
         `);
     }
 };
-
-Query.prototype._validate = function(action) {};
 
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
