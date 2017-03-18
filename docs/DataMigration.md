@@ -116,7 +116,7 @@ migrationState$.subscribe(
     done: false, // true if finished
     total: 50,   // amount of documents which must be migrated
     handled: 0,  // amount of handled docs
-    success: 0,  // handled docs which successed
+    success: 0,  // handled docs which succeeded
     deleted: 0,  // handled docs which got deleted
     percent: 0   // percentage
 }
