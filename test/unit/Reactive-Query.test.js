@@ -23,7 +23,7 @@ describe('Reactive-Query.test.js', () => {
     describe('positive', () => {
         it('get an init value of null on .subscribe() and [] later', async() => {
             const c = await humansCollection.create(1);
-            const query = c.query();
+            const query = c.find();
             let lastValue = null;
             const pw8 = util.promiseWaitResolveable();
 
@@ -41,7 +41,7 @@ describe('Reactive-Query.test.js', () => {
         });
         it('get the updated docs on Collection.insert()', async() => {
             const c = await humansCollection.create(1);
-            const query = c.query();
+            const query = c.find();
             let lastValue = [];
             let pw8 = util.promiseWaitResolveable(500);
             query.$.subscribe(newResults => {
@@ -67,7 +67,7 @@ describe('Reactive-Query.test.js', () => {
         });
         it('get the value twice when subscribing 2 times', async() => {
             const c = await humansCollection.create(1);
-            const query = c.query();
+            const query = c.find();
             let lastValue = [];
             query.$.subscribe(newResults => {
                 lastValue = newResults;
@@ -82,7 +82,7 @@ describe('Reactive-Query.test.js', () => {
         });
         it('get the base-value when subscribing again later', async() => {
             const c = await humansCollection.create(1);
-            const query = c.query();
+            const query = c.find();
             let lastValue = [];
             query.$.subscribe(newResults => {
                 lastValue = newResults;
@@ -182,7 +182,7 @@ describe('Reactive-Query.test.js', () => {
     describe('negative', () => {
         it('get no change when nothing happens', async() => {
             const c = await humansCollection.create(1);
-            const query = c.query();
+            const query = c.find();
             let recieved = 0;
             query.$.subscribe(newResults => {
                 recieved++;

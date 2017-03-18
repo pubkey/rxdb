@@ -333,18 +333,6 @@ class RxCollection {
     }
 
     /**
-     * get a query only
-     * @return {RxQuery} query which can be subscribed to
-     */
-    query(queryObj) {
-        if (typeof queryObj === 'string')
-            throw new Error('if you want to search by _id, use .findOne(_id)');
-
-        const query = RxQuery.create(queryObj, this);
-        return query;
-    }
-
-    /**
      * export to json
      * @param {boolean} decrypted if true, all encrypted values will be decrypted
      */

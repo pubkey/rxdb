@@ -290,7 +290,7 @@ describe('Primary.test.js', () => {
                 it('subscribe to query', async() => {
                     const c = await humansCollection.createPrimary(0);
                     let docs;
-                    c.query().$.subscribe(newDocs => docs = newDocs);
+                    c.find().$.subscribe(newDocs => docs = newDocs);
                     await c.insert(schemaObjects.simpleHuman());
                     await util.waitUntil(() => docs && docs.length == 1);
                     c.database.destroy();
@@ -300,7 +300,7 @@ describe('Primary.test.js', () => {
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     let docs;
-                    c2.query().$.subscribe(newDocs => docs = newDocs);
+                    c2.find().$.subscribe(newDocs => docs = newDocs);
                     await c1.insert(schemaObjects.simpleHuman());
                     await util.waitUntil(() => docs && docs.length == 1);
 
