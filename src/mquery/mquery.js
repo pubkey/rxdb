@@ -23,78 +23,20 @@ import {
  *     query.where('age').gte(21).exec(callback);
  *
  * @param {Object} [criteria]
- * @param {Object} [options]
- * @api public
  */
-
-function Query(criteria, options) {
-    if (!(this instanceof Query))
-        return new Query(criteria, options);
-
+function Query(criteria) {
     const proto = this.constructor.prototype;
-
-    this.op = proto.op || undefined;
-
     this.options = {};
-
-    this._conditions = proto._conditions ?
-        clone(proto._conditions, {
-            retainKeyOrder: this.options.retainKeyOrder
-        }) : {};
-
-    this._fields = proto._fields ?
-        clone(proto._fields, {
-            retainKeyOrder: this.options.retainKeyOrder
-        }) :
-        undefined;
-
-    this._update = proto._update ?
-        clone(proto._update, {
-            retainKeyOrder: this.options.retainKeyOrder
-        }) :
-        undefined;
-
+    this._conditions = proto._conditions ? clone(proto._conditions) : {};
+    this._fields = proto._fields ? clone(proto._fields) : undefined;
+    this._update = proto._update ? clone(proto._update) : undefined;
     this._path = proto._path || undefined;
     this._distinct = proto._distinct || undefined;
     this._traceFunction = proto._traceFunction || undefined;
 
-    if (options)
-        this.setOptions(options);
-
-    if (criteria) {
-        if (criteria.find && criteria.remove && criteria.update)
-            this.collection(criteria);
-        else
-            this.find(criteria);
-
-    }
+    if (criteria)
+        this.find(criteria);
 }
-
-/**
- * This is a parameter that the user can set which determines if mquery
- * uses $within or $geoWithin for queries. It defaults to true which
- * means $geoWithin will be used. If using MongoDB < 2.4 you should
- * set this to false.
- *
- * @api public
- * @property use$geoWithin
- */
-// TODO can this be removed?
-let $withinCmd = '$geoWithin';
-Object.defineProperty(Query, 'use$geoWithin', {
-    get: function() {
-        return $withinCmd == '$geoWithin';
-    },
-    set: function(v) {
-        if (true === v) {
-            // mongodb >= 2.4
-            $withinCmd = '$geoWithin';
-        } else
-            $withinCmd = '$within';
-
-    }
-});
-
 
 
 /**
@@ -133,8 +75,6 @@ Query.prototype.clone = function() {
  */
 Query.prototype.where = function() {
     if (!arguments.length) return this;
-    if (!this.op) this.op = 'find';
-
     const type = typeof arguments[0];
 
     if ('string' == type) {
@@ -627,8 +567,6 @@ Query.prototype.merge = function(source) {
  * @api public
  */
 Query.prototype.find = function(criteria) {
-    this.op = 'find';
-
     if ('function' === typeof criteria) {
         callback = criteria;
         criteria = undefined;
@@ -648,9 +586,7 @@ Query.prototype.find = function(criteria) {
  * @api private
  */
 Query.prototype._optionsForExec = function() {
-    var options = clone(this.options, {
-        retainKeyOrder: true
-    });
+    const options = clone(this.options);
     return options;
 };
 

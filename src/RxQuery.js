@@ -4,7 +4,7 @@
  */
 
 import {
-    default as mquery
+    default as MQuery
 } from './mquery/mquery';
 import * as util from './util';
 import * as RxDocument from './RxDocument';
@@ -24,7 +24,7 @@ class RxQuery {
         if (!queryObj._id)
             queryObj._id = {};
 
-        this.mquery = mquery(queryObj);
+        this.mquery = new MQuery(queryObj);
 
         // merge mquery-prototype functions to this
         const mquery_proto = Object.getPrototypeOf(this.mquery);

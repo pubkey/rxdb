@@ -23,8 +23,6 @@ const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove'];
 
 class RxCollection {
-
-
     constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
         this.database = database;
         this.name = name;
