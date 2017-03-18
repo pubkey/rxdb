@@ -118,7 +118,7 @@ console.dir(currentNestedValue); // currentNestedValue is now 'foobar2'
 ```
 
 ### deleted$
-Emits a boolean value, depending if the RxDocument is deleted or not.
+Emits a boolean value, depending on whether the RxDocument is deleted or not.
 
 ```js
 let lastState = null;
