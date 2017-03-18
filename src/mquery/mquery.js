@@ -2,12 +2,7 @@
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-
 'use strict';
-
-/**
- * Dependencies
- */
 const utils = require('./mquery_utils');
 import {
     default as clone
@@ -17,9 +12,7 @@ import {
  * Query constructor used for building queries.
  *
  * ####Example:
- *
  *     var query = new Query({ name: 'mquery' });
- *     query.setOptions({ collection: moduleCollection })
  *     query.where('age').gte(21).exec(callback);
  *
  * @param {Object} [criteria]
@@ -29,61 +22,37 @@ function Query(criteria) {
     this.options = {};
     this._conditions = proto._conditions ? clone(proto._conditions) : {};
     this._fields = proto._fields ? clone(proto._fields) : undefined;
-    this._update = proto._update ? clone(proto._update) : undefined;
     this._path = proto._path || undefined;
-    this._distinct = proto._distinct || undefined;
-    this._traceFunction = proto._traceFunction || undefined;
 
     if (criteria)
         this.find(criteria);
 }
-
 
 /**
  * returns a cloned version of the query
  * @return {Query}
  */
 Query.prototype.clone = function() {
-
+    const same = new Query();
+    Object.entries(this).forEach(ar => {
+        same[ar[0]] = ar[1];
+    });
+    return same;
 };
 
 /**
  * Specifies a `path` for use with chaining.
- *
- * ####Example
- *
- *     // instead of writing:
- *     User.find({age: {$gte: 21, $lte: 65}}, callback);
- *
- *     // we can instead write:
- *     User.where('age').gte(21).lte(65);
- *
- *     // passing query conditions is permitted
- *     User.find().where({ name: 'vonderful' })
- *
- *     // chaining
- *     User
- *     .where('age').gte(21).lte(65)
- *     .where('name', /^vonderful/i)
- *     .where('friends').slice(10)
- *     .exec(callback)
- *
  * @param {String} [path]
  * @param {Object} [val]
  * @return {Query} this
- * @api public
  */
 Query.prototype.where = function() {
     if (!arguments.length) return this;
     const type = typeof arguments[0];
-
     if ('string' == type) {
         this._path = arguments[0];
-
         if (2 === arguments.length)
             this._conditions[this._path] = arguments[1];
-
-
         return this;
     }
 
