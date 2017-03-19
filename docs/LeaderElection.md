@@ -2,7 +2,7 @@
 
 Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..
 
-So if you would now inspect the traffic that theses open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is send with an open websocket or by polling.
+So if you would now inspect the traffic that theses open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is sent with an open websocket or by polling.
 
 # Use-case-example
 
