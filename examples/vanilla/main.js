@@ -59,7 +59,7 @@ window.RxDB
         return col;
     })
     .then(function(col) {
-        col.query()
+        col.find()
             .sort({
                 name: 1
             })

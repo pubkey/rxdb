@@ -10,13 +10,13 @@ Imagine we have a website which displays the current temperature of the visitors
 
 # Solution
 
-The solution to this redundancy is the usage of a [leader-election](https://en.wikipedia.org/wiki/Leader_election)-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is so the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly **one** leader.
+The solution to this redundancy is the usage of a [leader-election](https://en.wikipedia.org/wiki/Leader_election)-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly **one** leader.
 You could now start implementing a messaging-system between your browser-tabs, hand out which one is leader, solve conflicts and reasign a new leader when the old one 'dies'.
-Or just use RxDB which does all that things for you.
+Or just use RxDB which does all these things for you.
 
 # Code-example
 
-To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab is becoming leader.
+To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.
 
 ```javascript
 const db = await RxDB.create({

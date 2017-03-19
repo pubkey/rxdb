@@ -1,9 +1,9 @@
 # RxDocument
-A document is a single object which is stored in a collection. It can be compared to a single line of a mysql-table.
+A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table.
 
 
 ## insert
-To insert a document into a collection, you have to call the collections .insert()-function.
+To insert a document into a collection, you have to call the collection's .insert()-function.
 ```js
 myCollection.insert({
   name: 'foo',
@@ -12,7 +12,7 @@ myCollection.insert({
 ```
 
 ## find
-To find document in a collection, you have to call the collections .find()-function.
+To find document in a collection, you have to call the collection's .find()-function.
 ```js
 myCollection.find().exec() // <- find all documents
   .then(documents => console.dir(documents));
@@ -38,7 +38,7 @@ As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/
 ```
 
 ### set()
-To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() afterly to submit changes.
+To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.
 
 ```js
 myDocument.set('firstName', 'foobar');
@@ -54,7 +54,7 @@ myDocument.whatever.nestedfield = 'foobar2';
 ```
 
 ### save()
-This will store the document in the storage if it has been changed before. Call this everytime after calling the set-method.
+This will store the document in the storage if it has been changed before. Call this every time after calling the set-method.
 ```js
 myDocument.name = 'foobar';
 await myDocument.save(); // submit the changes to the storage
@@ -75,9 +75,24 @@ myDocument.$()
   .subscribe(changeEvent => console.dir(changeEvent));
 ```
 
+### get$()
+This function returns an observable of the given paths-value.
+The current value of this path will be emitted each time the document changes.
+```js
+// get the life-updating value of 'name'
+var isName;
+myDocument.get$('name')
+  .subscribe(newName => {
+    isName = newName;
+  });
 
+myDocument.set('name', 'foobar2');
+await myDocument.save();
 
-### fieldName$
+console.dir(isName); // isName is now 'foobar2'
+```
+
+### proxy-get$
 You can directly get value-observables for a fieldName by adding the dollarSign ($) to its name.
 
 ```js
@@ -102,25 +117,8 @@ await myDocument.save();
 console.dir(currentNestedValue); // currentNestedValue is now 'foobar2'
 ```
 
-### get$()
-This function returns an observable of the given paths-value.
-The current value of this path will be emitted, even and every time when the document changes.
-```js
-// get the life-updating value of 'name'
-var isName;
-myDocument.get$('name')
-  .subscribe(newName => {
-    isName = newName;
-  });
-
-myDocument.set('name', 'foobar2');
-await myDocument.save();
-
-console.dir(isName); // isName is now 'foobar2'
-```
-
 ### deleted$
-Emits a boolean value, depending if the RxDocument is deleted or not.
+Emits a boolean value, depending on whether the RxDocument is deleted or not.
 
 ```js
 let lastState = null;
@@ -150,9 +148,10 @@ console.log(myDocument.deleted);
 
 
 ### synced$
-Emits a boolean value, depending if the RxDocument is in the same state then its value stored in the database.
-This is usefull to show warings when 2 or more users edit a document at the same time.
+Emits a boolean value of whether the RxDocument is in the same state as its value stored in the database.
+This is useful to show warnings when two or more users edit a document at the same time.
 
+Browser tab A
 ```js
 let lastState = null;
 myDocument.synced$.subscribe(state => lastState = state);
@@ -162,19 +161,25 @@ console.log(lastState);
 myDocument.firstName = 'foobar';
 console.log(lastState);
 // true
+```
 
-// myDocument2 is the same document but in another instance (other browser-tab etc.)
-myDocument2.firstName = 'barfoo';
-await myDocument2.save();
+Browser tab B
+```js
+myDocument.firstName = 'barfoo';
+await myDocument.save();
+```
 
+Browser tab A
+```js
 console.log(lastState);
 // false
 ```
 
 <details>
 <summary>
-  <b>Example with angular2</b>
+  <b>Example with Angular 2</b>
 </summary>
+
 ```html
 <div *ngIf="!(hero.synced$ | async)">
     <h4>Warning:</h4>
@@ -182,12 +187,14 @@ console.log(lastState);
     <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
 </div>
 ```
+
 ![synced.gif](files/synced.gif)
 </details>
 
 ### get synced
 A getter to get the current value of `synced$`.
 
+Browser tab A
 ```js
 console.log(myDocument.synced);
 // true
@@ -195,17 +202,22 @@ console.log(myDocument.synced);
 myDocument.firstName = 'foobar';
 console.log(myDocument.synced);
 // true
+```
 
-// myDocument2 is the same document but in another instance (other browser-tab etc.)
-myDocument2.firstName = 'barfoo';
-await myDocument2.save();
+Browser tab B
+```js
+myDocument.firstName = 'barfoo';
+await myDocument.save();
+```
 
+Browser tab A
+```js
 console.log(myDocument.synced);
 // false
 ```
 
 ### resync()
-If the RxDocument is not in sync (sycned$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
+If the RxDocument is not in sync (synced$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
 
 ```js
 myDocument.firstName = 'foobar';
