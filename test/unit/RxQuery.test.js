@@ -11,9 +11,21 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('RxQuery.test.js', () => {
-
-    describe('', {
-
+    describe('mquery', () => {
+        describe('.clone()', () => {
+            it('should clone the mquery', async() => {
+                const col = await humansCollection.create(0);
+                const q = col.find()
+                    .where('age').gt(10)
+                    .sort('name').limit(3);
+                const mquery = q.mquery;
+                console.dir(mquery);
+                console.dir(q.toJSON());
+                const cloned = mquery.clone();
+                console.log(':::::');
+                console.dir(cloned);
+                process.exit();
+            });
+        });
     });
-
 });
