@@ -1,12 +1,12 @@
 # DataMigration
 
-Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make the dates better compareable. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already saved on the user's device in the old schema?
+Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make it easier to compare dates. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already saved on the user's device in the old schema?
 
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your exisiting data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
 ## providing strategies
 
-Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as paramter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
+Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as a parameter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
 
 
 ```javascript
@@ -116,7 +116,7 @@ migrationState$.subscribe(
     done: false, // true if finished
     total: 50,   // amount of documents which must be migrated
     handled: 0,  // amount of handled docs
-    success: 0,  // handled docs which successed
+    success: 0,  // handled docs which succeeded
     deleted: 0,  // handled docs which got deleted
     percent: 0   // percentage
 }
