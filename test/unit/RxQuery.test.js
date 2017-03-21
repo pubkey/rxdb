@@ -11,13 +11,46 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('RxQuery.test.js', () => {
+    describe('.toJSON()', () => {
+
+        it('should produce the correct selector-object', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find()
+                .where('name').ne('Alice')
+                .where('age').gt(18).lt(67)
+                .limit(10)
+                .sort('-age');
+            const queryObj = q.toJSON();
+            console.dir(queryObj);
+            assert.deepEqual(queryObj, {
+                selector: {
+                    name: {
+                        $ne: 'Alice'
+                    },
+                    age: {
+                        $gt: 18,
+                        $lt: 67
+                    }
+                },
+                limit: 10,
+                sort: [{
+                    age: 'desc'
+                }]
+            });
+            col.database.destroy();
+        });
+
+    });
+
     describe('mquery', () => {
         describe('.clone()', () => {
             it('should clone the mquery', async() => {
                 const col = await humansCollection.create(0);
                 const q = col.find()
-                    .where('age').gt(10)
-                    .sort('name').limit(3);
+                    .where('name').ne('Alice')
+                    .where('age').gt(18).lt(67)
+                    .limit(10)
+                    .sort('-age');
                 const mquery = q.mquery;
                 console.dir(mquery);
                 console.dir(q.toJSON());
