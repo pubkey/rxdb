@@ -45,17 +45,19 @@ class RxQuery {
          */
         this.sort = params => {
             // workarround because sort wont work on unused keys
-            if (typeof params !== 'object')
-                this.mquery.where(params).gt(null);
-            else {
-                Object.keys(params).forEach(k => {
-                    if (!this.mquery._conditions[k] || !this.mquery._conditions[k].$gt) {
+            if (typeof params !== 'object') {
+                const checkParam =  params.charAt(0) == '-' ? params.substring(1) : params;
+                if (!this.mquery._conditions[checkParam])
+                    this.mquery.where(checkParam).gt(null);
+            } else {
+                Object.keys(params)
+                    .filter(k => !this.mquery._conditions[k] || !this.mquery._conditions[k].$gt)
+                    .forEach(k => {
                         const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
                         if (schemaObj.type == 'integer')
                             this.mquery.where(k).gt(-Infinity);
                         else this.mquery.where(k).gt(null);
-                    }
-                });
+                    });
             }
             this.mquery.sort(params);
             return this;
@@ -76,7 +78,13 @@ class RxQuery {
 
     // returns a clone of this RxQuery
     _clone() {
+        const cloned = new RxQuery(defaultQuery, this.collection);
+        cloned.mquery = this.mquery.clone();
+        return cloned;
+    }
 
+    toString() {
+        return JSON.stringify(this.mquery);
     }
 
     // observe the result of this query

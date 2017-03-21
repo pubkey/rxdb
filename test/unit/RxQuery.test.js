@@ -11,6 +11,25 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('RxQuery.test.js', () => {
+    describe('mquery', () => {
+        describe('.clone()', () => {
+            it('should clone the mquery', async() => {
+                const col = await humansCollection.create(0);
+                const q = col.find()
+                    .where('name').ne('Alice')
+                    .where('age').gt(18).lt(67)
+                    .limit(10)
+                    .sort('-age');
+                const mquery = q.mquery;
+                const cloned = mquery.clone();
+
+                assert.deepEqual(mquery.options, cloned.options);
+                assert.deepEqual(mquery._conditions, cloned._conditions);
+                assert.deepEqual(mquery._fields, cloned._fields);
+                assert.deepEqual(mquery._path, cloned._path);
+            });
+        });
+    });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async() => {
             const col = await humansCollection.create(0);
@@ -29,9 +48,6 @@ describe('RxQuery.test.js', () => {
                         '$gt': 18,
                         '$lt': 67
                     },
-                    '-age': {
-                        '$gt': null
-                    },
                     language: {
                         '$ne': 'query'
                     }
@@ -43,26 +59,29 @@ describe('RxQuery.test.js', () => {
             });
             col.database.destroy();
         });
-
     });
-
-    describe('mquery', () => {
-        describe('.clone()', () => {
-            it('should clone the mquery', async() => {
-                const col = await humansCollection.create(0);
-                const q = col.find()
-                    .where('name').ne('Alice')
-                    .where('age').gt(18).lt(67)
-                    .limit(10)
-                    .sort('-age');
-                const mquery = q.mquery;
-                const cloned = mquery.clone();
-
-                assert.deepEqual(mquery.options, cloned.options);
-                assert.deepEqual(mquery._conditions, cloned._conditions);
-                assert.deepEqual(mquery._fields, cloned._fields);
-                assert.deepEqual(mquery._path, cloned._path);
-            });
+    describe('.clone()', () => {
+        it('should deep-clone the query', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find()
+                .where('name').ne('Alice')
+                .where('age').gt(18).lt(67)
+                .limit(10)
+                .sort('-age');
+            const cloned = q._clone();
+            col.database.destroy();
+        });
+    });
+    describe('.toString()', () => {
+        it('should get a valid string-representation', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find()
+                .where('name').ne('Alice')
+                .where('age').gt(18).lt(67)
+                .limit(10)
+                .sort('-age');
+            const str = q.toString();
+            assert.equal(str, '{"options":{"limit":10,"sort":{"age":-1}},"_conditions":{"_id":{},"name":{"$ne":"Alice"},"age":{"$gt":18,"$lt":67}},"_path":"age"}');
         });
     });
 });
