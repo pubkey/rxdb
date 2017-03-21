@@ -18,7 +18,7 @@ import * as RxDB from 'rxdb';
 var rxdb = require('rxdb');
 ```
 
-To import `babel-polyfill`, add this to your javascript file:
+In most cases, you also have to import `babel-polyfill`. To do this, add the following to your javascript file:
 
 ```js
 // es6
