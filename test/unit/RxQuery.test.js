@@ -12,7 +12,6 @@ process.on('unhandledRejection', function(err) {
 
 describe('RxQuery.test.js', () => {
     describe('.toJSON()', () => {
-
         it('should produce the correct selector-object', async() => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -21,21 +20,26 @@ describe('RxQuery.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const queryObj = q.toJSON();
-            console.dir(queryObj);
             assert.deepEqual(queryObj, {
                 selector: {
                     name: {
-                        $ne: 'Alice'
+                        '$ne': 'Alice'
                     },
                     age: {
-                        $gt: 18,
-                        $lt: 67
+                        '$gt': 18,
+                        '$lt': 67
+                    },
+                    '-age': {
+                        '$gt': null
+                    },
+                    language: {
+                        '$ne': 'query'
                     }
                 },
-                limit: 10,
                 sort: [{
                     age: 'desc'
-                }]
+                }],
+                limit: 10
             });
             col.database.destroy();
         });
@@ -52,12 +56,12 @@ describe('RxQuery.test.js', () => {
                     .limit(10)
                     .sort('-age');
                 const mquery = q.mquery;
-                console.dir(mquery);
-                console.dir(q.toJSON());
                 const cloned = mquery.clone();
-                console.log(':::::');
-                console.dir(cloned);
-                process.exit();
+
+                assert.deepEqual(mquery.options, cloned.options);
+                assert.deepEqual(mquery._conditions, cloned._conditions);
+                assert.deepEqual(mquery._fields, cloned._fields);
+                assert.deepEqual(mquery._path, cloned._path);
             });
         });
     });

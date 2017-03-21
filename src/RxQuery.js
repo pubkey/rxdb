@@ -30,8 +30,8 @@ class RxQuery {
         const mquery_proto = Object.getPrototypeOf(this.mquery);
         Object.keys(mquery_proto).forEach(attrName => {
             // tunnel params to mquery-function
-            this[attrName] = (p1, p2, p3) => {
-                this.mquery[attrName](p1, p2, p3);
+            this[attrName] = (p1) => {
+                this.mquery[attrName](p1);
                 return this;
             };
         });
