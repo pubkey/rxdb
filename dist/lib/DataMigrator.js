@@ -4,21 +4,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * The DataMigrator handles the documents from collections with older schemas
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * and transforms/saves them into the newest collection
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
 
 exports.create = create;
 
@@ -50,14 +39,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * The DataMigrator handles the documents from collections with older schemas
- * and transforms/saves them into the newest collection
- */
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var DataMigrator = function () {
     function DataMigrator(newestCollection, migrationStrategies) {
-        (0, _classCallCheck3.default)(this, DataMigrator);
+        _classCallCheck(this, DataMigrator);
 
         this.newestCollection = newestCollection;
         this.migrationStrategies = migrationStrategies;
@@ -72,14 +60,14 @@ var DataMigrator = function () {
      */
 
 
-    (0, _createClass3.default)(DataMigrator, [{
+    _createClass(DataMigrator, [{
         key: '_getOldCollections',
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
+            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
                 var _this = this;
 
                 var oldColDocs;
-                return _regenerator2.default.wrap(function _callee$(_context) {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -141,10 +129,10 @@ var DataMigrator = function () {
             };
 
             var migrationState$ = new util.Rx.Observable(function () {
-                var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(observer) {
+                var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(observer) {
                     var oldCols, countAll, total_count, currentCol, error, _loop;
 
-                    return _regenerator2.default.wrap(function _callee2$(_context3) {
+                    return regeneratorRuntime.wrap(function _callee2$(_context3) {
                         while (1) {
                             switch (_context3.prev = _context3.next) {
                                 case 0:
@@ -170,9 +158,9 @@ var DataMigrator = function () {
 
                                     currentCol = null;
                                     error = null;
-                                    _loop = _regenerator2.default.mark(function _loop() {
+                                    _loop = regeneratorRuntime.mark(function _loop() {
                                         var migrationState$;
-                                        return _regenerator2.default.wrap(function _loop$(_context2) {
+                                        return regeneratorRuntime.wrap(function _loop$(_context2) {
                                             while (1) {
                                                 switch (_context2.prev = _context2.next) {
                                                     case 0:
@@ -250,12 +238,13 @@ var DataMigrator = function () {
             return this._migratePromise;
         }
     }]);
+
     return DataMigrator;
 }();
 
 var OldCollection = function () {
     function OldCollection(version, schemaObj, dataMigrator) {
-        (0, _classCallCheck3.default)(this, OldCollection);
+        _classCallCheck(this, OldCollection);
 
         this.version = version;
         this.dataMigrator = dataMigrator;
@@ -264,11 +253,11 @@ var OldCollection = function () {
         this.database = dataMigrator.newestCollection.database;
     }
 
-    (0, _createClass3.default)(OldCollection, [{
+    _createClass(OldCollection, [{
         key: 'countAllUndeleted',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3() {
-                return _regenerator2.default.wrap(function _callee3$(_context4) {
+            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
+                return regeneratorRuntime.wrap(function _callee3$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
@@ -291,11 +280,11 @@ var OldCollection = function () {
     }, {
         key: 'getBatch',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4(batchSize) {
+            var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(batchSize) {
                 var _this4 = this;
 
                 var docs;
-                return _regenerator2.default.wrap(function _callee4$(_context5) {
+                return regeneratorRuntime.wrap(function _callee4$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
@@ -346,9 +335,9 @@ var OldCollection = function () {
     }, {
         key: 'migrateDocumentData',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(doc) {
+            var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(doc) {
                 var nextVersion, error;
-                return _regenerator2.default.wrap(function _callee5$(_context6) {
+                return regeneratorRuntime.wrap(function _callee5$(_context6) {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
                             case 0:
@@ -423,9 +412,9 @@ var OldCollection = function () {
     }, {
         key: '_migrateDocument',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6(doc) {
+            var _ref6 = _asyncToGenerator(regeneratorRuntime.mark(function _callee6(doc) {
                 var migrated, action;
-                return _regenerator2.default.wrap(function _callee6$(_context7) {
+                return regeneratorRuntime.wrap(function _callee6$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
                             case 0:
@@ -495,8 +484,8 @@ var OldCollection = function () {
     }, {
         key: 'delete',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
-                return _regenerator2.default.wrap(function _callee7$(_context8) {
+            var _ref7 = _asyncToGenerator(regeneratorRuntime.mark(function _callee7() {
+                return regeneratorRuntime.wrap(function _callee7$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
@@ -537,9 +526,9 @@ var OldCollection = function () {
             this._migrate = true;
 
             var stateStream$ = new util.Rx.Observable(function () {
-                var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(observer) {
+                var _ref8 = _asyncToGenerator(regeneratorRuntime.mark(function _callee8(observer) {
                     var batch, error;
-                    return _regenerator2.default.wrap(function _callee8$(_context9) {
+                    return regeneratorRuntime.wrap(function _callee8$(_context9) {
                         while (1) {
                             switch (_context9.prev = _context9.next) {
                                 case 0:
@@ -647,6 +636,7 @@ var OldCollection = function () {
             return this._pouchdb;
         }
     }]);
+
     return OldCollection;
 }();
 

@@ -4,17 +4,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _typeof3 = _interopRequireDefault(_typeof2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 exports.getEncryptedPaths = getEncryptedPaths;
 exports.hasCrypt = hasCrypt;
@@ -46,13 +38,15 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var validator = require('is-my-json-valid');
 
 var RxSchema = function () {
     function RxSchema(jsonID) {
         var _this = this;
 
-        (0, _classCallCheck3.default)(this, RxSchema);
+        _classCallCheck(this, RxSchema);
 
         this.jsonID = jsonID;
 
@@ -84,7 +78,7 @@ var RxSchema = function () {
         }
     }
 
-    (0, _createClass3.default)(RxSchema, [{
+    _createClass(RxSchema, [{
         key: 'getSchemaByObjectPath',
         value: function getSchemaByObjectPath(path) {
             path = path.replace(/\./g, '.properties.');
@@ -218,6 +212,7 @@ var RxSchema = function () {
             return this._hash;
         }
     }]);
+
     return RxSchema;
 }();
 
@@ -232,7 +227,7 @@ function getEncryptedPaths(jsonSchema) {
     var ret = {};
 
     function traverse(currentObj, currentPath) {
-        if ((typeof currentObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(currentObj)) !== 'object') return;
+        if ((typeof currentObj === 'undefined' ? 'undefined' : _typeof(currentObj)) !== 'object') return;
         if (currentObj.encrypted) {
             ret[currentPath.substring(1)] = currentObj;
             return;
@@ -268,7 +263,7 @@ function getIndexes(jsonID) {
 
         if (obj.index) indexes.push([path]);
 
-        if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3.default)(obj)) === 'object' && !Array.isArray(obj)) {
+        if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && !Array.isArray(obj)) {
             var add = getIndexes(obj, path);
             indexes = indexes.concat(add);
         }
@@ -324,7 +319,7 @@ function checkFieldNameRegex(fieldName) {
 function validateFieldsDeep(jsonSchema) {
 
     function checkField(fieldName, schemaObj, path) {
-        if (typeof fieldName == 'string' && (typeof schemaObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(schemaObj)) == 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
+        if (typeof fieldName == 'string' && (typeof schemaObj === 'undefined' ? 'undefined' : _typeof(schemaObj)) == 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array') throw new Error('name \'item\' reserved for array-fields: ' + fieldName);
@@ -349,7 +344,7 @@ function validateFieldsDeep(jsonSchema) {
     }
 
     function traverse(currentObj, currentPath) {
-        if ((typeof currentObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(currentObj)) !== 'object') return;
+        if ((typeof currentObj === 'undefined' ? 'undefined' : _typeof(currentObj)) !== 'object') return;
         for (var attributeName in currentObj) {
             if (!currentObj.properties) {
                 checkField(attributeName, currentObj[attributeName], currentPath);
@@ -421,7 +416,7 @@ function checkSchema(jsonID) {
     }) // unique
     .map(function (key) {
         var schemaObj = _objectPath2.default.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
-        if (!schemaObj || (typeof schemaObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(schemaObj)) !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
+        if (!schemaObj || (typeof schemaObj === 'undefined' ? 'undefined' : _typeof(schemaObj)) !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
         return {
             key: key,
             schemaObj: schemaObj

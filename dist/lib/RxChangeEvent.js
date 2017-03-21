@@ -4,13 +4,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * RxChangeEvents a emitted when something in the database changes
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * they can be grabbed by the observables of database, collection and document
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
 
 exports.fromJSON = fromJSON;
 exports.fromPouchChange = fromPouchChange;
@@ -22,16 +19,16 @@ var util = _interopRequireWildcard(_util);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var RxChangeEvent = function () {
     function RxChangeEvent(data) {
-        (0, _classCallCheck3.default)(this, RxChangeEvent);
+        _classCallCheck(this, RxChangeEvent);
 
         this.data = data;
     }
 
-    (0, _createClass3.default)(RxChangeEvent, [{
+    _createClass(RxChangeEvent, [{
         key: 'toJSON',
         value: function toJSON() {
             var ret = {
@@ -64,11 +61,9 @@ var RxChangeEvent = function () {
             return this._hash;
         }
     }]);
+
     return RxChangeEvent;
-}(); /**
-      * RxChangeEvents a emitted when something in the database changes
-      * they can be grabbed by the observables of database, collection and document
-      */
+}();
 
 function fromJSON(data) {
     return new RxChangeEvent(data);

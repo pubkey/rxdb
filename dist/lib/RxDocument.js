@@ -4,29 +4,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
-
-var _typeof2 = require('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 exports.create = create;
 exports.createAr = createAr;
@@ -56,15 +36,15 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var RxDocument = function () {
     function RxDocument(collection, jsonData) {
-        var _this = this;
-
-        (0, _classCallCheck3.default)(this, RxDocument);
-
-        this.$emit = function (changeEvent) {
-            return _this.collection.$emit(changeEvent);
-        };
+        _classCallCheck(this, RxDocument);
 
         this.collection = collection;
 
@@ -80,7 +60,7 @@ var RxDocument = function () {
         this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
 
-    (0, _createClass3.default)(RxDocument, [{
+    _createClass(RxDocument, [{
         key: 'prepare',
         value: function prepare() {
             // set getter/setter/observable
@@ -165,14 +145,19 @@ var RxDocument = function () {
          */
 
     }, {
-        key: 'get$',
-
+        key: '$emit',
+        value: function $emit(changeEvent) {
+            return this.collection.$emit(changeEvent);
+        }
 
         /**
          * returns observable of the value of the given path
          * @param {string} path
          * @return {Observable}
          */
+
+    }, {
+        key: 'get$',
         value: function get$(path) {
             if (path.includes('.item.')) throw new Error('cannot get observable of in-array fields because order cannot be guessed: ' + path);
 
@@ -186,9 +171,9 @@ var RxDocument = function () {
     }, {
         key: 'populate',
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(path, object) {
+            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(path, object) {
                 var schemaObj, value, refCollection, doc;
-                return _regenerator2.default.wrap(function _callee$(_context) {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -260,7 +245,7 @@ var RxDocument = function () {
             valueObj = (0, _clone2.default)(valueObj);
 
             // direct return if array or non-object
-            if ((typeof valueObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(valueObj)) != 'object' || Array.isArray(valueObj)) return valueObj;
+            if ((typeof valueObj === 'undefined' ? 'undefined' : _typeof(valueObj)) != 'object' || Array.isArray(valueObj)) return valueObj;
 
             this._defineGetterSetter(valueObj, objPath);
             return valueObj;
@@ -268,7 +253,7 @@ var RxDocument = function () {
     }, {
         key: '_defineGetterSetter',
         value: function _defineGetterSetter(valueObj) {
-            var _this2 = this;
+            var _this = this;
 
             var objPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
@@ -278,12 +263,12 @@ var RxDocument = function () {
             Object.keys(pathProperties).forEach(function (key) {
                 // getter - value
                 valueObj.__defineGetter__(key, function () {
-                    return _this2.get(util.trimDots(objPath + '.' + key));
+                    return _this.get(util.trimDots(objPath + '.' + key));
                 });
                 // getter - observable$
                 Object.defineProperty(valueObj, key + '$', {
                     get: function get() {
-                        return _this2.get$(util.trimDots(objPath + '.' + key));
+                        return _this.get$(util.trimDots(objPath + '.' + key));
                     },
                     enumerable: false,
                     configurable: false
@@ -291,14 +276,14 @@ var RxDocument = function () {
                 // getter - populate_
                 Object.defineProperty(valueObj, key + '_', {
                     get: function get() {
-                        return _this2.populate(util.trimDots(objPath + '.' + key));
+                        return _this.populate(util.trimDots(objPath + '.' + key));
                     },
                     enumerable: false,
                     configurable: false
                 });
                 // setter - value
                 valueObj.__defineSetter__(key, function (val) {
-                    return _this2.set(util.trimDots(objPath + '.' + key), val);
+                    return _this.set(util.trimDots(objPath + '.' + key), val);
                 });
             });
         }
@@ -348,9 +333,9 @@ var RxDocument = function () {
          * @return {boolean} false if nothing to save
          */
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
+            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
                 var ret, emitValue, changeEvent;
-                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                return regeneratorRuntime.wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
@@ -428,8 +413,8 @@ var RxDocument = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3() {
-                return _regenerator2.default.wrap(function _callee3$(_context3) {
+            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
+                return regeneratorRuntime.wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
@@ -498,6 +483,7 @@ var RxDocument = function () {
             return this._dataSync$.asObservable();
         }
     }]);
+
     return RxDocument;
 }();
 
@@ -528,7 +514,7 @@ function properties() {
         var pseudoRxDocument = new RxDocument();
         var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
         var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
-        _properties = [].concat((0, _toConsumableArray3.default)(ownProperties), (0, _toConsumableArray3.default)(prototypeProperties), reserved);
+        _properties = [].concat(_toConsumableArray(ownProperties), _toConsumableArray(prototypeProperties), reserved);
     }
     return _properties;
 }

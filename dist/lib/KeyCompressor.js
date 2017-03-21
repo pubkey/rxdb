@@ -4,17 +4,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _typeof3 = _interopRequireDefault(_typeof2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 exports.create = create;
 
@@ -34,13 +26,15 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var KeyCompressor = function () {
 
     /**
      * @param {RxSchema} schema
      */
     function KeyCompressor(schema) {
-        (0, _classCallCheck3.default)(this, KeyCompressor);
+        _classCallCheck(this, KeyCompressor);
 
         this.schema = schema;
         this._table;
@@ -48,7 +42,7 @@ var KeyCompressor = function () {
         this._fullTable;
     }
 
-    (0, _createClass3.default)(KeyCompressor, [{
+    _createClass(KeyCompressor, [{
         key: '_compressObj',
         value: function _compressObj(obj) {
             var _this = this;
@@ -56,7 +50,7 @@ var KeyCompressor = function () {
             var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
             var ret = {};
-            if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3.default)(obj)) !== 'object') return obj;
+            if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object') return obj;
             if (Array.isArray(obj)) {
                 return obj.map(function (o) {
                     return _this._compressObj(o, util.trimDots(path + '.item'));
@@ -93,7 +87,7 @@ var KeyCompressor = function () {
             var reverseTable = this.reverseTable;
 
             // non-object
-            if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3.default)(obj)) !== 'object') return obj;
+            if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object') return obj;
 
             // array
             if (Array.isArray(obj)) return obj.map(function (item) {
@@ -200,7 +194,7 @@ var KeyCompressor = function () {
                     Object.keys(obj).map(function (key) {
                         var propertyObj = obj[key];
                         var fullPath = key == 'properties' ? path : util.trimDots(path + '.' + key);
-                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) === 'object' && // do not add schema-attributes
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : _typeof(propertyObj)) === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
                         !fullPath.startsWith('_') // _id/_rev etc should never be compressed
@@ -209,7 +203,7 @@ var KeyCompressor = function () {
                         // primary-key is always compressed to _id
                         if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
 
-                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : _typeof(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
                     });
                 };
                 propertiesToTable('', jsonSchema);
@@ -233,6 +227,7 @@ var KeyCompressor = function () {
             return this._reverseTable;
         }
     }]);
+
     return KeyCompressor;
 }();
 

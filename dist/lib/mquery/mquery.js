@@ -1,300 +1,82 @@
 /**
- * this is copied from
+ * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-
 'use strict';
-
-/**
- * Dependencies
- */
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _typeof3 = _interopRequireDefault(_typeof2);
+var _clone = require('clone');
+
+var _clone2 = _interopRequireDefault(_clone);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var slice = require('sliced');
 var utils = require('./mquery_utils');
+
 
 /**
  * Query constructor used for building queries.
  *
  * ####Example:
- *
  *     var query = new Query({ name: 'mquery' });
- *     query.setOptions({ collection: moduleCollection })
  *     query.where('age').gte(21).exec(callback);
  *
  * @param {Object} [criteria]
- * @param {Object} [options]
- * @api public
  */
-
-function Query(criteria, options) {
-    if (!(this instanceof Query)) return new Query(criteria, options);
-
+function Query(criteria) {
     var proto = this.constructor.prototype;
-
-    this.op = proto.op || undefined;
-
     this.options = {};
-    this.setOptions(proto.options);
-
-    this._conditions = proto._conditions ? utils.clone(proto._conditions, {
-        retainKeyOrder: this.options.retainKeyOrder
-    }) : {};
-
-    this._fields = proto._fields ? utils.clone(proto._fields, {
-        retainKeyOrder: this.options.retainKeyOrder
-    }) : undefined;
-
-    this._update = proto._update ? utils.clone(proto._update, {
-        retainKeyOrder: this.options.retainKeyOrder
-    }) : undefined;
-
+    this._conditions = proto._conditions ? (0, _clone2.default)(proto._conditions) : {};
+    this._fields = proto._fields ? (0, _clone2.default)(proto._fields) : undefined;
     this._path = proto._path || undefined;
-    this._distinct = proto._distinct || undefined;
-    this._traceFunction = proto._traceFunction || undefined;
 
-    if (options) {
-        this.setOptions(options);
-    }
-
-    if (criteria) {
-        if (criteria.find && criteria.remove && criteria.update) {
-            // quack quack!
-            this.collection(criteria);
-        } else {
-            this.find(criteria);
-        }
-    }
+    if (criteria) this.find(criteria);
 }
 
 /**
- * This is a parameter that the user can set which determines if mquery
- * uses $within or $geoWithin for queries. It defaults to true which
- * means $geoWithin will be used. If using MongoDB < 2.4 you should
- * set this to false.
- *
- * @api public
- * @property use$geoWithin
+ * returns a cloned version of the query
+ * @return {Query}
  */
-
-var $withinCmd = '$geoWithin';
-Object.defineProperty(Query, 'use$geoWithin', {
-    get: function get() {
-        return $withinCmd == '$geoWithin';
-    },
-    set: function set(v) {
-        if (true === v) {
-            // mongodb >= 2.4
-            $withinCmd = '$geoWithin';
-        } else {
-            $withinCmd = '$within';
-        }
-    }
-});
-
-/**
- * Converts this query to a constructor function with all arguments and options retained.
- *
- * ####Example
- *
- *     // Create a query that will read documents with a "video" category from
- *     // `aCollection` on the primary node in the replica-set unless it is down,
- *     // in which case we'll read from a secondary node.
- *     var query = mquery({ category: 'video' })
- *     query.setOptions({ collection: aCollection, read: 'primaryPreferred' });
- *
- *     // create a constructor based off these settings
- *     var Video = query.toConstructor();
- *
- *     // Video is now a subclass of mquery() and works the same way but with the
- *     // default query parameters and options set.
- *
- *     // run a query with the previous settings but filter for movies with names
- *     // that start with "Life".
- *     Video().where({ name: /^Life/ }).exec(cb);
- *
- * @return {Query} new Query
- * @api public
- */
-
-Query.prototype.toConstructor = function toConstructor() {
-    function CustomQuery(criteria, options) {
-        if (!(this instanceof CustomQuery)) return new CustomQuery(criteria, options);
-        Query.call(this, criteria, options);
-    }
-
-    utils.inherits(CustomQuery, Query);
-
-    // set inherited defaults
-    var p = CustomQuery.prototype;
-
-    p.options = {};
-    p.setOptions(this.options);
-
-    p.op = this.op;
-    p._conditions = utils.clone(this._conditions, {
-        retainKeyOrder: this.options.retainKeyOrder
+Query.prototype.clone = function () {
+    var same = new Query();
+    Object.entries(this).forEach(function (ar) {
+        same[ar[0]] = ar[1];
     });
-    p._fields = utils.clone(this._fields, {
-        retainKeyOrder: this.options.retainKeyOrder
-    });
-    p._update = utils.clone(this._update, {
-        retainKeyOrder: this.options.retainKeyOrder
-    });
-    p._path = this._path;
-    p._distinct = this._distinct;
-    p._traceFunction = this._traceFunction;
-
-    return CustomQuery;
-};
-
-/**
- * Sets query options.
- *
- * ####Options:
- *
- * - [tailable](http://www.mongodb.org/display/DOCS/Tailable+Cursors) *
- * - [sort](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Bsort(\)%7D%7D) *
- * - [limit](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Blimit%28%29%7D%7D) *
- * - [skip](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Bskip%28%29%7D%7D) *
- * - [maxScan](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24maxScan) *
- * - [maxTime](http://docs.mongodb.org/manual/reference/operator/meta/maxTimeMS/#op._S_maxTimeMS) *
- * - [batchSize](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7BbatchSize%28%29%7D%7D) *
- * - [comment](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24comment) *
- * - [snapshot](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Bsnapshot%28%29%7D%7D) *
- * - [hint](http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24hint) *
- * - [slaveOk](http://docs.mongodb.org/manual/applications/replication/#read-preference) *
- * - [safe](http://www.mongodb.org/display/DOCS/getLastError+Command)
- * - collection the collection to query against
- *
- * _* denotes a query helper method is also available_
- *
- * @param {Object} options
- * @api public
- */
-
-Query.prototype.setOptions = function (options) {
-    if (!(options && utils.isObject(options))) return this;
-
-    // set arbitrary options
-    var methods = utils.keys(options),
-        method;
-
-    for (var i = 0; i < methods.length; ++i) {
-        method = methods[i];
-
-        // use methods if exist (safer option manipulation)
-        if ('function' == typeof this[method]) {
-            var args = utils.isArray(options[method]) ? options[method] : [options[method]];
-            this[method].apply(this, args);
-        } else {
-            this.options[method] = options[method];
-        }
-    }
-
-    return this;
-};
-
-/**
- * Specifies a `$where` condition
- *
- * Use `$where` when you need to select documents using a JavaScript expression.
- *
- * ####Example
- *
- *     query.$where('this.comments.length > 10 || this.name.length > 5')
- *
- *     query.$where(function () {
- *       return this.comments.length > 10 || this.name.length > 5;
- *     })
- *
- * @param {String|Function} js javascript string or function
- * @return {Query} this
- * @memberOf Query
- * @method $where
- * @api public
- */
-
-Query.prototype.$where = function (js) {
-    this._conditions.$where = js;
-    return this;
+    return same;
 };
 
 /**
  * Specifies a `path` for use with chaining.
- *
- * ####Example
- *
- *     // instead of writing:
- *     User.find({age: {$gte: 21, $lte: 65}}, callback);
- *
- *     // we can instead write:
- *     User.where('age').gte(21).lte(65);
- *
- *     // passing query conditions is permitted
- *     User.find().where({ name: 'vonderful' })
- *
- *     // chaining
- *     User
- *     .where('age').gte(21).lte(65)
- *     .where('name', /^vonderful/i)
- *     .where('friends').slice(10)
- *     .exec(callback)
- *
  * @param {String} [path]
  * @param {Object} [val]
  * @return {Query} this
- * @api public
  */
-
 Query.prototype.where = function () {
     if (!arguments.length) return this;
-    if (!this.op) this.op = 'find';
-
-    var type = (0, _typeof3.default)(arguments[0]);
-
+    var type = _typeof(arguments[0]);
     if ('string' == type) {
         this._path = arguments[0];
-
-        if (2 === arguments.length) {
-            this._conditions[this._path] = arguments[1];
-        }
-
+        if (2 === arguments.length) this._conditions[this._path] = arguments[1];
         return this;
     }
 
-    if ('object' == type && !Array.isArray(arguments[0])) {
-        return this.merge(arguments[0]);
-    }
+    if ('object' == type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
 
     throw new TypeError('path must be a string or object');
 };
 
 /**
  * Specifies the complementary comparison value for paths specified with `where()`
- *
  * ####Example
- *
  *     User.where('age').equals(49);
- *
- *     // is the same as
- *
- *     User.where('age', 49);
- *
  * @param {Object} val
  * @return {Query} this
- * @api public
  */
-
 Query.prototype.equals = function equals(val) {
     this._ensurePath('equals');
     var path = this._path;
@@ -305,24 +87,9 @@ Query.prototype.equals = function equals(val) {
 /**
  * Specifies the complementary comparison value for paths specified with `where()`
  * This is alias of `equals`
- *
- * ####Example
- *
- *     User.where('age').eq(49);
- *
- *     // is the same as
- *
- *     User.shere('age').equals(49);
- *
- *     // is the same as
- *
- *     User.where('age', 49);
- *
  * @param {Object} val
  * @return {Query} this
- * @api public
  */
-
 Query.prototype.eq = function eq(val) {
     this._ensurePath('eq');
     var path = this._path;
@@ -332,56 +99,41 @@ Query.prototype.eq = function eq(val) {
 
 /**
  * Specifies arguments for an `$or` condition.
- *
  * ####Example
- *
  *     query.or([{ color: 'red' }, { status: 'emergency' }])
- *
  * @param {Array} array array of conditions
  * @return {Query} this
- * @api public
  */
-
-Query.prototype.or = function or(array) {
+Query.prototype.or = function (array) {
     var or = this._conditions.$or || (this._conditions.$or = []);
-    if (!utils.isArray(array)) array = [array];
+    if (!Array.isArray(array)) array = [array];
     or.push.apply(or, array);
     return this;
 };
 
 /**
  * Specifies arguments for a `$nor` condition.
- *
  * ####Example
- *
  *     query.nor([{ color: 'green' }, { status: 'ok' }])
- *
  * @param {Array} array array of conditions
  * @return {Query} this
- * @api public
  */
-
-Query.prototype.nor = function nor(array) {
+Query.prototype.nor = function (array) {
     var nor = this._conditions.$nor || (this._conditions.$nor = []);
-    if (!utils.isArray(array)) array = [array];
+    if (!Array.isArray(array)) array = [array];
     nor.push.apply(nor, array);
     return this;
 };
 
 /**
  * Specifies arguments for a `$and` condition.
- *
  * ####Example
- *
  *     query.and([{ color: 'green' }, { status: 'ok' }])
- *
  * @see $and http://docs.mongodb.org/manual/reference/operator/and/
  * @param {Array} array array of conditions
  * @return {Query} this
- * @api public
  */
-
-Query.prototype.and = function and(array) {
+Query.prototype.and = function (array) {
     var and = this._conditions.$and || (this._conditions.$and = []);
     if (!Array.isArray(array)) array = [array];
     and.push.apply(and, array);
@@ -389,154 +141,14 @@ Query.prototype.and = function and(array) {
 };
 
 /**
- * Specifies a $gt query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * ####Example
- *
- *     Thing.find().where('age').gt(21)
- *
- *     // or
- *     Thing.find().gt('age', 21)
- *
- * @method gt
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $gte query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method gte
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $lt query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method lt
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $lte query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method lte
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $ne query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method ne
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies an $in query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method in
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies an $nin query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method nin
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies an $all query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method all
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $size query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method size
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $regex query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method regex
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/**
- * Specifies a $maxDistance query condition.
- *
- * When called with one argument, the most recent path passed to `where()` is used.
- *
- * @method maxDistance
- * @memberOf Query
- * @param {String} [path]
- * @param {Number} val
- * @api public
- */
-
-/*!
  * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
  *
  *     Thing.where('type').nin(array)
  */
-
-'gt gte lt lte ne in nin all regex size maxDistance minDistance'.split(' ').forEach(function ($conditional) {
+['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'].forEach(function ($conditional) {
     Query.prototype[$conditional] = function () {
-        var path, val;
-
+        var path = void 0;
+        var val = void 0;
         if (1 === arguments.length) {
             this._ensurePath($conditional);
             val = arguments[0];
@@ -546,7 +158,7 @@ Query.prototype.and = function and(array) {
             path = arguments[0];
         }
 
-        var conds = this._conditions[path] === null || (0, _typeof3.default)(this._conditions[path]) === 'object' ? this._conditions[path] : this._conditions[path] = {};
+        var conds = this._conditions[path] === null || _typeof(this._conditions[path]) === 'object' ? this._conditions[path] : this._conditions[path] = {};
         conds['$' + $conditional] = val;
         return this;
     };
@@ -560,20 +172,20 @@ Query.prototype.and = function and(array) {
  * @return {Query} this
  * @api public
  */
-
 Query.prototype.mod = function () {
-    var val, path;
+    var val = void 0;
+    var path = void 0;
 
     if (1 === arguments.length) {
         this._ensurePath('mod');
         val = arguments[0];
         path = this._path;
-    } else if (2 === arguments.length && !utils.isArray(arguments[1])) {
+    } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
         this._ensurePath('mod');
-        val = slice(arguments);
+        val = arguments.slice();
         path = this._path;
     } else if (3 === arguments.length) {
-        val = slice(arguments, 1);
+        val = arguments.slice(1);
         path = arguments[0];
     } else {
         val = arguments[1];
@@ -587,27 +199,19 @@ Query.prototype.mod = function () {
 
 /**
  * Specifies an `$exists` condition
- *
  * ####Example
- *
  *     // { name: { $exists: true }}
  *     Thing.where('name').exists()
  *     Thing.where('name').exists(true)
  *     Thing.find().exists('name')
- *
- *     // { name: { $exists: false }}
- *     Thing.where('name').exists(false);
- *     Thing.find().exists('name', false);
- *
  * @param {String} [path]
  * @param {Number} val
  * @return {Query} this
  * @api public
  */
-
 Query.prototype.exists = function () {
-    var path, val;
-
+    var path = void 0;
+    var val = void 0;
     if (0 === arguments.length) {
         this._ensurePath('exists');
         path = this._path;
@@ -633,33 +237,27 @@ Query.prototype.exists = function () {
 
 /**
  * Specifies an `$elemMatch` condition
- *
  * ####Example
- *
  *     query.elemMatch('comment', { author: 'autobot', votes: {$gte: 5}})
- *
  *     query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
- *
  *     query.elemMatch('comment', function (elem) {
  *       elem.where('author').equals('autobot');
  *       elem.where('votes').gte(5);
  *     })
- *
  *     query.where('comment').elemMatch(function (elem) {
  *       elem.where({ author: 'autobot' });
  *       elem.where('votes').gte(5);
  *     })
- *
  * @param {String|Object|Function} path
  * @param {Object|Function} criteria
  * @return {Query} this
- * @api public
  */
-
 Query.prototype.elemMatch = function () {
-    if (null == arguments[0]) throw new TypeError("Invalid argument");
+    if (null == arguments[0]) throw new TypeError('Invalid argument');
 
-    var fn, path, criteria;
+    var fn = void 0;
+    var path = void 0;
+    var criteria = void 0;
 
     if ('function' === typeof arguments[0]) {
         this._ensurePath('elemMatch');
@@ -675,10 +273,7 @@ Query.prototype.elemMatch = function () {
     } else if (arguments[1] && utils.isObject(arguments[1])) {
         path = arguments[0];
         criteria = arguments[1];
-    } else {
-        throw new TypeError("Invalid argument");
-    }
-
+    } else throw new TypeError('Invalid argument');
     if (fn) {
         criteria = new Query();
         fn(criteria);
@@ -690,545 +285,38 @@ Query.prototype.elemMatch = function () {
     return this;
 };
 
-// Spatial queries
-
-/**
- * Sugar for geo-spatial queries.
- *
- * ####Example
- *
- *     query.within().box()
- *     query.within().circle()
- *     query.within().geometry()
- *
- *     query.where('loc').within({ center: [50,50], radius: 10, unique: true, spherical: true });
- *     query.where('loc').within({ box: [[40.73, -73.9], [40.7, -73.988]] });
- *     query.where('loc').within({ polygon: [[],[],[],[]] });
- *
- *     query.where('loc').within([], [], []) // polygon
- *     query.where('loc').within([], []) // box
- *     query.where('loc').within({ type: 'LineString', coordinates: [...] }); // geometry
- *
- * #### n o t e:
- *
- * Must be used after `where()`.
- *
- * @memberOf Query
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.within = function within() {
-    // opinionated, must be used after where
-    this._ensurePath('within');
-    this._geoComparison = $withinCmd;
-
-    if (0 === arguments.length) {
-        return this;
-    }
-
-    if (2 === arguments.length) {
-        return this.box.apply(this, arguments);
-    } else if (2 < arguments.length) {
-        return this.polygon.apply(this, arguments);
-    }
-
-    var area = arguments[0];
-
-    if (!area) throw new TypeError('Invalid argument');
-
-    if (area.center) return this.circle(area);
-
-    if (area.box) return this.box.apply(this, area.box);
-
-    if (area.polygon) return this.polygon.apply(this, area.polygon);
-
-    if (area.type && area.coordinates) return this.geometry(area);
-
-    throw new TypeError('Invalid argument');
-};
-
-/**
- * Specifies a $box condition
- *
- * ####Example
- *
- *     var lowerLeft = [40.73083, -73.99756]
- *     var upperRight= [40.741404,  -73.988135]
- *
- *     query.where('loc').within().box(lowerLeft, upperRight)
- *     query.box('loc', lowerLeft, upperRight )
- *
- * @see http://www.mongodb.org/display/DOCS/Geospatial+Indexing
- * @see Query#within #query_Query-within
- * @param {String} path
- * @param {Object} val
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.box = function () {
-    var path, box;
-
-    if (3 === arguments.length) {
-        // box('loc', [], [])
-        path = arguments[0];
-        box = [arguments[1], arguments[2]];
-    } else if (2 === arguments.length) {
-        // box([], [])
-        this._ensurePath('box');
-        path = this._path;
-        box = [arguments[0], arguments[1]];
-    } else {
-        throw new TypeError("Invalid argument");
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-    conds[this._geoComparison || $withinCmd] = {
-        '$box': box
-    };
-    return this;
-};
-
-/**
- * Specifies a $polygon condition
- *
- * ####Example
- *
- *     query.where('loc').within().polygon([10,20], [13, 25], [7,15])
- *     query.polygon('loc', [10,20], [13, 25], [7,15])
- *
- * @param {String|Array} [path]
- * @param {Array|Object} [val]
- * @return {Query} this
- * @see http://www.mongodb.org/display/DOCS/Geospatial+Indexing
- * @api public
- */
-
-Query.prototype.polygon = function () {
-    var val, path;
-
-    if ('string' == typeof arguments[0]) {
-        // polygon('loc', [],[],[])
-        path = arguments[0];
-        val = slice(arguments, 1);
-    } else {
-        // polygon([],[],[])
-        this._ensurePath('polygon');
-        path = this._path;
-        val = slice(arguments);
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-    conds[this._geoComparison || $withinCmd] = {
-        '$polygon': val
-    };
-    return this;
-};
-
-/**
- * Specifies a $center or $centerSphere condition.
- *
- * ####Example
- *
- *     var area = { center: [50, 50], radius: 10, unique: true }
- *     query.where('loc').within().circle(area)
- *     query.center('loc', area);
- *
- *     // for spherical calculations
- *     var area = { center: [50, 50], radius: 10, unique: true, spherical: true }
- *     query.where('loc').within().circle(area)
- *     query.center('loc', area);
- *
- * @param {String} [path]
- * @param {Object} area
- * @return {Query} this
- * @see http://www.mongodb.org/display/DOCS/Geospatial+Indexing
- * @api public
- */
-
-Query.prototype.circle = function () {
-    var path, val;
-
-    if (1 === arguments.length) {
-        this._ensurePath('circle');
-        path = this._path;
-        val = arguments[0];
-    } else if (2 === arguments.length) {
-        path = arguments[0];
-        val = arguments[1];
-    } else {
-        throw new TypeError("Invalid argument");
-    }
-
-    if (!('radius' in val && val.center)) throw new Error('center and radius are required');
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-
-    var type = val.spherical ? '$centerSphere' : '$center';
-
-    var wKey = this._geoComparison || $withinCmd;
-    conds[wKey] = {};
-    conds[wKey][type] = [val.center, val.radius];
-
-    if ('unique' in val) conds[wKey].$uniqueDocs = !!val.unique;
-
-    return this;
-};
-
-/**
- * Specifies a `$near` or `$nearSphere` condition
- *
- * These operators return documents sorted by distance.
- *
- * ####Example
- *
- *     query.where('loc').near({ center: [10, 10] });
- *     query.where('loc').near({ center: [10, 10], maxDistance: 5 });
- *     query.where('loc').near({ center: [10, 10], maxDistance: 5, spherical: true });
- *     query.near('loc', { center: [10, 10], maxDistance: 5 });
- *     query.near({ center: { type: 'Point', coordinates: [..] }})
- *     query.near().geometry({ type: 'Point', coordinates: [..] })
- *
- * @param {String} [path]
- * @param {Object} val
- * @return {Query} this
- * @see http://www.mongodb.org/display/DOCS/Geospatial+Indexing
- * @api public
- */
-
-Query.prototype.near = function near() {
-    var path, val;
-
-    this._geoComparison = '$near';
-
-    if (0 === arguments.length) {
-        return this;
-    } else if (1 === arguments.length) {
-        this._ensurePath('near');
-        path = this._path;
-        val = arguments[0];
-    } else if (2 === arguments.length) {
-        path = arguments[0];
-        val = arguments[1];
-    } else {
-        throw new TypeError("Invalid argument");
-    }
-
-    if (!val.center) {
-        throw new Error('center is required');
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-
-    var type = val.spherical ? '$nearSphere' : '$near';
-
-    // center could be a GeoJSON object or an Array
-    if (Array.isArray(val.center)) {
-        conds[type] = val.center;
-
-        var radius = 'maxDistance' in val ? val.maxDistance : null;
-
-        if (null != radius) {
-            conds.$maxDistance = radius;
-        }
-        if (null != val.minDistance) {
-            conds.$minDistance = val.minDistance;
-        }
-    } else {
-        // GeoJSON?
-        if (val.center.type != 'Point' || !Array.isArray(val.center.coordinates)) {
-            throw new Error("Invalid GeoJSON specified for " + type);
-        }
-        conds[type] = {
-            $geometry: val.center
-        };
-
-        // MongoDB 2.6 insists on maxDistance being in $near / $nearSphere
-        if ('maxDistance' in val) {
-            conds[type]['$maxDistance'] = val.maxDistance;
-        }
-        if ('minDistance' in val) {
-            conds[type]['$minDistance'] = val.minDistance;
-        }
-    }
-
-    return this;
-};
-
-/**
- * Declares an intersects query for `geometry()`.
- *
- * ####Example
- *
- *     query.where('path').intersects().geometry({
- *         type: 'LineString'
- *       , coordinates: [[180.0, 11.0], [180, 9.0]]
- *     })
- *
- *     query.where('path').intersects({
- *         type: 'LineString'
- *       , coordinates: [[180.0, 11.0], [180, 9.0]]
- *     })
- *
- * @param {Object} [arg]
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.intersects = function intersects() {
-    // opinionated, must be used after where
-    this._ensurePath('intersects');
-
-    this._geoComparison = '$geoIntersects';
-
-    if (0 === arguments.length) {
-        return this;
-    }
-
-    var area = arguments[0];
-
-    if (null != area && area.type && area.coordinates) return this.geometry(area);
-
-    throw new TypeError('Invalid argument');
-};
-
-/**
- * Specifies a `$geometry` condition
- *
- * ####Example
- *
- *     var polyA = [[[ 10, 20 ], [ 10, 40 ], [ 30, 40 ], [ 30, 20 ]]]
- *     query.where('loc').within().geometry({ type: 'Polygon', coordinates: polyA })
- *
- *     // or
- *     var polyB = [[ 0, 0 ], [ 1, 1 ]]
- *     query.where('loc').within().geometry({ type: 'LineString', coordinates: polyB })
- *
- *     // or
- *     var polyC = [ 0, 0 ]
- *     query.where('loc').within().geometry({ type: 'Point', coordinates: polyC })
- *
- *     // or
- *     query.where('loc').intersects().geometry({ type: 'Point', coordinates: polyC })
- *
- * #### N O T E :
- *
- * `geometry()` **must** come after either `intersects()` or `within()`.
- *
- * The `object` argument must contain `type` and `coordinates` properties.
- * - type {String}
- * - coordinates {Array}
- *
- * The most recent path passed to `where()` is used.
- *
- * @param {Object} object Must contain a `type` property which is a String and a `coordinates` property which is an Array. See the examples.
- * @return {Query} this
- * @see http://docs.mongodb.org/manual/release-notes/2.4/#new-geospatial-indexes-with-geojson-and-improved-spherical-geometry
- * @see http://www.mongodb.org/display/DOCS/Geospatial+Indexing
- * @see $geometry http://docs.mongodb.org/manual/reference/operator/geometry/
- * @api public
- */
-
-Query.prototype.geometry = function geometry() {
-    if (!('$within' == this._geoComparison || '$geoWithin' == this._geoComparison || '$near' == this._geoComparison || '$geoIntersects' == this._geoComparison)) {
-        throw new Error('geometry() must come after `within()`, `intersects()`, or `near()');
-    }
-
-    var val, path;
-
-    if (1 === arguments.length) {
-        this._ensurePath('geometry');
-        path = this._path;
-        val = arguments[0];
-    } else {
-        throw new TypeError("Invalid argument");
-    }
-
-    if (!(val.type && Array.isArray(val.coordinates))) {
-        throw new TypeError('Invalid argument');
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-    conds[this._geoComparison] = {
-        $geometry: val
-    };
-
-    return this;
-};
-
-// end spatial
-
-/**
- * Specifies which document fields to include or exclude
- *
- * ####String syntax
- *
- * When passing a string, prefixing a path with `-` will flag that path as excluded. When a path does not have the `-` prefix, it is included.
- *
- * ####Example
- *
- *     // include a and b, exclude c
- *     query.select('a b -c');
- *
- *     // or you may use object notation, useful when
- *     // you have keys already prefixed with a "-"
- *     query.select({a: 1, b: 1, c: 0});
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @param {Object|String} arg
- * @return {Query} this
- * @see SchemaType
- * @api public
- */
-
-Query.prototype.select = function select() {
-    var arg = arguments[0];
-    if (!arg) return this;
-
-    if (arguments.length !== 1) {
-        throw new Error("Invalid select: select only takes 1 argument");
-    }
-
-    this._validate('select');
-
-    var fields = this._fields || (this._fields = {});
-    var type = typeof arg === 'undefined' ? 'undefined' : (0, _typeof3.default)(arg);
-
-    if (('string' == type || utils.isArgumentsObject(arg)) && 'number' == typeof arg.length) {
-        if ('string' == type) arg = arg.split(/\s+/);
-
-        for (var i = 0, len = arg.length; i < len; ++i) {
-            var field = arg[i];
-            if (!field) continue;
-            var include = '-' == field[0] ? 0 : 1;
-            if (include === 0) field = field.substring(1);
-            fields[field] = include;
-        }
-
-        return this;
-    }
-
-    if (utils.isObject(arg) && !Array.isArray(arg)) {
-        var keys = utils.keys(arg);
-        for (var i = 0; i < keys.length; ++i) {
-            fields[keys[i]] = arg[keys[i]];
-        }
-        return this;
-    }
-
-    throw new TypeError('Invalid select() argument. Must be string or object.');
-};
-
-/**
- * Specifies a $slice condition for a `path`
- *
- * ####Example
- *
- *     query.slice('comments', 5)
- *     query.slice('comments', -5)
- *     query.slice('comments', [10, 5])
- *     query.where('comments').slice(5)
- *     query.where('comments').slice([-10, 5])
- *
- * @param {String} [path]
- * @param {Number} val number/range of elements to slice
- * @return {Query} this
- * @see mongodb http://www.mongodb.org/display/DOCS/Retrieving+a+Subset+of+Fields#RetrievingaSubsetofFields-RetrievingaSubrangeofArrayElements
- * @api public
- */
-
-Query.prototype.slice = function () {
-    if (0 === arguments.length) return this;
-
-    this._validate('slice');
-
-    var path, val;
-
-    if (1 === arguments.length) {
-        var arg = arguments[0];
-        if ((typeof arg === 'undefined' ? 'undefined' : (0, _typeof3.default)(arg)) === 'object' && !Array.isArray(arg)) {
-            var keys = Object.keys(arg);
-            var numKeys = keys.length;
-            for (var i = 0; i < numKeys; ++i) {
-                this.slice(keys[i], arg[keys[i]]);
-            }
-            return this;
-        }
-        this._ensurePath('slice');
-        path = this._path;
-        val = arguments[0];
-    } else if (2 === arguments.length) {
-        if ('number' === typeof arguments[0]) {
-            this._ensurePath('slice');
-            path = this._path;
-            val = slice(arguments);
-        } else {
-            path = arguments[0];
-            val = arguments[1];
-        }
-    } else if (3 === arguments.length) {
-        path = arguments[0];
-        val = slice(arguments, 1);
-    }
-
-    var myFields = this._fields || (this._fields = {});
-    myFields[path] = {
-        '$slice': val
-    };
-    return this;
-};
-
 /**
  * Sets the sort order
- *
+<<<<<<< HEAD
  * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
- *
  * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
- *
  * ####Example
- *
- *     // these are equivalent
  *     query.sort({ field: 'asc', test: -1 });
  *     query.sort('field -test');
  *     query.sort([['field', 1], ['test', -1]]);
- *
- * ####Note
- *
- *  - The array syntax `.sort([['field', 1], ['test', -1]])` can only be used with [mongodb driver >= 2.0.46](https://github.com/mongodb/node-mongodb-native/blob/2.1/HISTORY.md#2046-2015-10-15).
- *  - Cannot be used with `distinct()`
- *
  * @param {Object|String|Array} arg
  * @return {Query} this
- * @api public
  */
-
 Query.prototype.sort = function (arg) {
+    var _this = this;
+
     if (!arg) return this;
-    var len;
-
-    this._validate('sort');
-
-    var type = typeof arg === 'undefined' ? 'undefined' : (0, _typeof3.default)(arg);
-
+    var len = void 0;
+    var type = typeof arg === 'undefined' ? 'undefined' : _typeof(arg);
     // .sort([['field', 1], ['test', -1]])
     if (Array.isArray(arg)) {
         len = arg.length;
         for (var i = 0; i < arg.length; ++i) {
             _pushArr(this.options, arg[i][0], arg[i][1]);
-        }
-        return this;
+        }return this;
     }
 
     // .sort('field -test')
     if (1 === arguments.length && 'string' == type) {
         arg = arg.split(/\s+/);
         len = arg.length;
-        for (var i = 0; i < len; ++i) {
-            var field = arg[i];
+        for (var _i = 0; _i < len; ++_i) {
+            var field = arg[_i];
             if (!field) continue;
             var ascend = '-' == field[0] ? -1 : 1;
             if (ascend === -1) field = field.substring(1);
@@ -1240,12 +328,10 @@ Query.prototype.sort = function (arg) {
 
     // .sort({ field: 1, test: -1 })
     if (utils.isObject(arg)) {
-        var keys = utils.keys(arg);
-        for (var i = 0; i < keys.length; ++i) {
-            var field = keys[i];
-            push(this.options, field, arg[field]);
-        }
-
+        var keys = Object.keys(arg);
+        keys.forEach(function (field) {
+            return push(_this.options, field, arg[field]);
+        });
         return this;
     }
 
@@ -1255,10 +341,9 @@ Query.prototype.sort = function (arg) {
 /*!
  * @ignore
  */
-
 function push(opts, field, value) {
     if (Array.isArray(opts.sort)) {
-        throw new TypeError("Can't mix sort syntaxes. Use either array or object:" + "\n- `.sort([['field', 1], ['test', -1]])`" + "\n- `.sort({ field: 1, test: -1 })`");
+        throw new TypeError('Can\'t mix sort syntaxes. Use either array or object:' + '\n- `.sort([[\'field\', 1], [\'test\', -1]])`' + '\n- `.sort({ field: 1, test: -1 })`');
     }
 
     if (value && value.$meta) {
@@ -1271,314 +356,37 @@ function push(opts, field, value) {
 
     var val = String(value || 1).toLowerCase();
     if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
-        if (utils.isArray(value)) value = '[' + value + ']';
+        if (Array.isArray(value)) value = '[' + value + ']';
         throw new TypeError('Invalid sort value: {' + field + ': ' + value + ' }');
     }
     // store `sort` in a sane format
     var s = opts.sort || (opts.sort = {});
-    var valueStr = value.toString().replace("asc", "1").replace("ascending", "1").replace("desc", "-1").replace("descending", "-1");
+    var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
 }
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
     if (!Array.isArray(opts.sort)) {
-        throw new TypeError("Can't mix sort syntaxes. Use either array or object:" + "\n- `.sort([['field', 1], ['test', -1]])`" + "\n- `.sort({ field: 1, test: -1 })`");
+        throw new TypeError('\n          Can\'t mix sort syntaxes. Use either array or object:\n            \n- .sort([[\'field\', 1], [\'test\', -1]])\n            \n- .sort({ field: 1, test: -1 })');
     }
-    var valueStr = value.toString().replace("asc", "1").replace("ascending", "1").replace("desc", "-1").replace("descending", "-1");
+    var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     opts.sort.push([field, value]);
-}
+};
 
 /**
- * Specifies the limit option.
- *
- * ####Example
- *
- *     query.limit(20)
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @method limit
- * @memberOf Query
- * @param {Number} val
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Blimit%28%29%7D%7D
- * @api public
- */
-/**
- * Specifies the skip option.
- *
- * ####Example
- *
- *     query.skip(100).limit(20)
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @method skip
- * @memberOf Query
- * @param {Number} val
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Bskip%28%29%7D%7D
- * @api public
- */
-/**
- * Specifies the maxScan option.
- *
- * ####Example
- *
- *     query.maxScan(100)
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @method maxScan
- * @memberOf Query
- * @param {Number} val
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24maxScan
- * @api public
- */
-/**
- * Specifies the batchSize option.
- *
- * ####Example
- *
- *     query.batchSize(100)
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @method batchSize
- * @memberOf Query
- * @param {Number} val
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7BbatchSize%28%29%7D%7D
- * @api public
- */
-/**
- * Specifies the `comment` option.
- *
- * ####Example
- *
- *     query.comment('login query')
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @method comment
- * @memberOf Query
- * @param {Number} val
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24comment
- * @api public
- */
-
-/*!
  * limit, skip, maxScan, batchSize, comment
  *
  * Sets these associated options.
  *
  *     query.comment('feed query');
  */
-
-;
 ['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
     Query.prototype[method] = function (v) {
-        this._validate(method);
         this.options[method] = v;
         return this;
     };
 });
-
-/**
- * Specifies the maxTimeMS option.
- *
- * ####Example
- *
- *     query.maxTime(100)
- *
- * @method maxTime
- * @memberOf Query
- * @param {Number} val
- * @see mongodb http://docs.mongodb.org/manual/reference/operator/meta/maxTimeMS/#op._S_maxTimeMS
- * @api public
- */
-
-Query.prototype.maxTime = function (v) {
-    this._validate('maxTime');
-    this.options.maxTimeMS = v;
-    return this;
-};
-
-/**
- * Specifies this query as a `snapshot` query.
- *
- * ####Example
- *
- *     mquery().snapshot() // true
- *     mquery().snapshot(true)
- *     mquery().snapshot(false)
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%7B%7Bsnapshot%28%29%7D%7D
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.snapshot = function () {
-    this._validate('snapshot');
-
-    this.options.snapshot = arguments.length ? !!arguments[0] : true;
-
-    return this;
-};
-
-/**
- * Sets query hints.
- *
- * ####Example
- *
- *     query.hint({ indexA: 1, indexB: -1})
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @param {Object} val a hint object
- * @return {Query} this
- * @see mongodb http://www.mongodb.org/display/DOCS/Advanced+Queries#AdvancedQueries-%24hint
- * @api public
- */
-
-Query.prototype.hint = function () {
-    if (0 === arguments.length) return this;
-
-    this._validate('hint');
-
-    var arg = arguments[0];
-    if (utils.isObject(arg)) {
-        var hint = this.options.hint || (this.options.hint = {});
-
-        // must keep object keys in order so don't use Object.keys()
-        for (var k in arg) {
-            hint[k] = arg[k];
-        }
-
-        return this;
-    }
-
-    throw new TypeError('Invalid hint. ' + arg);
-};
-
-/**
- * Sets the slaveOk option. _Deprecated_ in MongoDB 2.2 in favor of read preferences.
- *
- * ####Example:
- *
- *     query.slaveOk() // true
- *     query.slaveOk(true)
- *     query.slaveOk(false)
- *
- * @deprecated use read() preferences instead if on mongodb >= 2.2
- * @param {Boolean} v defaults to true
- * @see mongodb http://docs.mongodb.org/manual/applications/replication/#read-preference
- * @see read()
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.slaveOk = function (v) {
-    this.options.slaveOk = arguments.length ? !!v : true;
-    return this;
-};
-
-/**
- * Sets the readPreference option for the query.
- *
- * ####Example:
- *
- *     new Query().read('primary')
- *     new Query().read('p')  // same as primary
- *
- *     new Query().read('primaryPreferred')
- *     new Query().read('pp') // same as primaryPreferred
- *
- *     new Query().read('secondary')
- *     new Query().read('s')  // same as secondary
- *
- *     new Query().read('secondaryPreferred')
- *     new Query().read('sp') // same as secondaryPreferred
- *
- *     new Query().read('nearest')
- *     new Query().read('n')  // same as nearest
- *
- *     // you can also use mongodb.ReadPreference class to also specify tags
- *     new Query().read(mongodb.ReadPreference('secondary', [{ dc:'sf', s: 1 },{ dc:'ma', s: 2 }]))
- *
- * ####Preferences:
- *
- *     primary - (default)  Read from primary only. Operations will produce an error if primary is unavailable. Cannot be combined with tags.
- *     secondary            Read from secondary if available, otherwise error.
- *     primaryPreferred     Read from primary if available, otherwise a secondary.
- *     secondaryPreferred   Read from a secondary if available, otherwise read from the primary.
- *     nearest              All operations read from among the nearest candidates, but unlike other modes, this option will include both the primary and all secondaries in the random selection.
- *
- * Aliases
- *
- *     p   primary
- *     pp  primaryPreferred
- *     s   secondary
- *     sp  secondaryPreferred
- *     n   nearest
- *
- * Read more about how to use read preferences [here](http://docs.mongodb.org/manual/applications/replication/#read-preference) and [here](http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences).
- *
- * @param {String|ReadPreference} pref one of the listed preference options or their aliases
- * @see mongodb http://docs.mongodb.org/manual/applications/replication/#read-preference
- * @see driver http://mongodb.github.com/node-mongodb-native/driver-articles/anintroductionto1_1and2_2.html#read-preferences
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.read = function (pref) {
-    if (arguments.length > 1 && !Query.prototype.read.deprecationWarningIssued) {
-        console.error("Deprecation warning: 'tags' argument is not supported anymore in Query.read() method. Please use mongodb.ReadPreference object instead.");
-        Query.prototype.read.deprecationWarningIssued = true;
-    }
-    this.options.readPreference = utils.readPref(pref);
-    return this;
-};
-
-/**
- * Sets tailable option.
- *
- * ####Example
- *
- *     query.tailable() <== true
- *     query.tailable(true)
- *     query.tailable(false)
- *
- * ####Note
- *
- * Cannot be used with `distinct()`
- *
- * @param {Boolean} v defaults to true
- * @see mongodb http://www.mongodb.org/display/DOCS/Tailable+Cursors
- * @api public
- */
-
-Query.prototype.tailable = function () {
-    this._validate('tailable');
-
-    this.options.tailable = arguments.length ? !!arguments[0] : true;
-
-    return this;
-};
 
 /**
  * Merges another Query or conditions object into this one.
@@ -1588,7 +396,6 @@ Query.prototype.tailable = function () {
  * @param {Query|Object} source
  * @return {Query} this
  */
-
 Query.prototype.merge = function (source) {
     if (!source) return this;
 
@@ -1597,9 +404,7 @@ Query.prototype.merge = function (source) {
     if (source instanceof Query) {
         // if source has a feature, apply it to ourselves
 
-        if (source._conditions) {
-            utils.merge(this._conditions, source._conditions);
-        }
+        if (source._conditions) utils.merge(this._conditions, source._conditions);
 
         if (source._fields) {
             this._fields || (this._fields = {});
@@ -1616,9 +421,7 @@ Query.prototype.merge = function (source) {
             utils.mergeClone(this._update, source._update);
         }
 
-        if (source._distinct) {
-            this._distinct = source._distinct;
-        }
+        if (source._distinct) this._distinct = source._distinct;
 
         return this;
     }
@@ -1631,534 +434,28 @@ Query.prototype.merge = function (source) {
 
 /**
  * Finds documents.
- *
- * Passing a `callback` executes the query.
- *
  * ####Example
- *
  *     query.find()
- *     query.find(callback)
- *     query.find({ name: 'Burning Lights' }, callback)
- *
+ *     query.find({ name: 'Burning Lights' })
  * @param {Object} [criteria] mongodb selector
- * @param {Function} [callback]
  * @return {Query} this
- * @api public
  */
-
-Query.prototype.find = function (criteria, callback) {
-    this.op = 'find';
-
+Query.prototype.find = function (criteria) {
     if ('function' === typeof criteria) {
         callback = criteria;
         criteria = undefined;
-    } else if (Query.canMerge(criteria)) {
-        this.merge(criteria);
-    }
-
-    if (!callback) return this;
-
-    var self = this,
-        conds = this._conditions,
-        options = this._optionsForExec();
-
-    options.fields = this._fieldsForExec();
-
-    callback = this._wrapCallback('find', callback, {
-        conditions: conds,
-        options: options
-    });
+    } else if (Query.canMerge(criteria)) this.merge(criteria);
 
     return this;
-};
-
-/**
- * Declares or executes a distinct() operation.
- *
- * Passing a `callback` executes the query.
- *
- * ####Example
- *
- *     distinct(criteria, field, fn)
- *     distinct(criteria, field)
- *     distinct(field, fn)
- *     distinct(field)
- *     distinct(fn)
- *     distinct()
- *
- * @param {Object|Query} [criteria]
- * @param {String} [field]
- * @param {Function} [callback]
- * @return {Query} this
- * @see mongodb http://www.mongodb.org/display/DOCS/Aggregation#Aggregation-Distinct
- * @api public
- */
-
-Query.prototype.distinct = function (criteria, field, callback) {
-    this.op = 'distinct';
-    this._validate();
-
-    if (!callback) {
-        switch (typeof field === 'undefined' ? 'undefined' : (0, _typeof3.default)(field)) {
-            case 'function':
-                callback = field;
-                if ('string' == typeof criteria) {
-                    field = criteria;
-                    criteria = undefined;
-                }
-                break;
-            case 'undefined':
-            case 'string':
-                break;
-            default:
-                throw new TypeError('Invalid `field` argument. Must be string or function');
-                break;
-        }
-
-        switch (typeof criteria === 'undefined' ? 'undefined' : (0, _typeof3.default)(criteria)) {
-            case 'function':
-                callback = criteria;
-                criteria = field = undefined;
-                break;
-            case 'string':
-                field = criteria;
-                criteria = undefined;
-                break;
-        }
-    }
-
-    if ('string' == typeof field) {
-        this._distinct = field;
-    }
-
-    if (Query.canMerge(criteria)) {
-        this.merge(criteria);
-    }
-
-    if (!callback) {
-        return this;
-    }
-
-    if (!this._distinct) {
-        throw new Error('No value for `distinct` has been declared');
-    }
-
-    var conds = this._conditions,
-        options = this._optionsForExec();
-
-    callback = this._wrapCallback('distinct', callback, {
-        conditions: conds,
-        options: options
-    });
-
-    this._collection.distinct(this._distinct, conds, options, utils.tick(callback));
-
-    return this;
-};
-
-/**
- * Declare and/or execute this query as an update() operation.
- *
- * _All paths passed that are not $atomic operations will become $set ops._
- *
- * ####Example
- *
- *     mquery({ _id: id }).update({ title: 'words' }, ...)
- *
- * becomes
- *
- *     collection.update({ _id: id }, { $set: { title: 'words' }}, ...)
- *
- * ####Note
- *
- * Passing an empty object `{}` as the doc will result in a no-op unless the `overwrite` option is passed. Without the `overwrite` option set, the update operation will be ignored and the callback executed without sending the command to MongoDB so as to prevent accidently overwritting documents in the collection.
- *
- * ####Note
- *
- * The operation is only executed when a callback is passed. To force execution without a callback (which would be an unsafe write), we must first call update() and then execute it by using the `exec()` method.
- *
- *     var q = mquery(collection).where({ _id: id });
- *     q.update({ $set: { name: 'bob' }}).update(); // not executed
- *
- *     var q = mquery(collection).where({ _id: id });
- *     q.update({ $set: { name: 'bob' }}).exec(); // executed as unsafe
- *
- *     // keys that are not $atomic ops become $set.
- *     // this executes the same command as the previous example.
- *     q.update({ name: 'bob' }).where({ _id: id }).exec();
- *
- *     var q = mquery(collection).update(); // not executed
- *
- *     // overwriting with empty docs
- *     var q.where({ _id: id }).setOptions({ overwrite: true })
- *     q.update({ }, callback); // executes
- *
- *     // multi update with overwrite to empty doc
- *     var q = mquery(collection).where({ _id: id });
- *     q.setOptions({ multi: true, overwrite: true })
- *     q.update({ });
- *     q.update(callback); // executed
- *
- *     // multi updates
- *     mquery()
- *       .collection(coll)
- *       .update({ name: /^match/ }, { $set: { arr: [] }}, { multi: true }, callback)
- *     // more multi updates
- *     mquery({ })
- *       .collection(coll)
- *       .setOptions({ multi: true })
- *       .update({ $set: { arr: [] }}, callback)
- *
- *     // single update by default
- *     mquery({ email: 'address@example.com' })
- *      .collection(coll)
- *      .update({ $inc: { counter: 1 }}, callback)
- *
- *     // summary
- *     update(criteria, doc, opts, cb) // executes
- *     update(criteria, doc, opts)
- *     update(criteria, doc, cb) // executes
- *     update(criteria, doc)
- *     update(doc, cb) // executes
- *     update(doc)
- *     update(cb) // executes
- *     update(true) // executes (unsafe write)
- *     update()
- *
- * @param {Object} [criteria]
- * @param {Object} [doc] the update command
- * @param {Object} [options]
- * @param {Function} [callback]
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.update = function update(criteria, doc, options, callback) {
-    this.op = 'update';
-    var force;
-
-    switch (arguments.length) {
-        case 3:
-            if ('function' == typeof options) {
-                callback = options;
-                options = undefined;
-            }
-            break;
-        case 2:
-            if ('function' == typeof doc) {
-                callback = doc;
-                doc = criteria;
-                criteria = undefined;
-            }
-            break;
-        case 1:
-            switch (typeof criteria === 'undefined' ? 'undefined' : (0, _typeof3.default)(criteria)) {
-                case 'function':
-                    callback = criteria;
-                    criteria = options = doc = undefined;
-                    break;
-                case 'boolean':
-                    // execution with no callback (unsafe write)
-                    force = criteria;
-                    criteria = undefined;
-                    break;
-                default:
-                    doc = criteria;
-                    criteria = options = undefined;
-                    break;
-            }
-    }
-
-    if (Query.canMerge(criteria)) {
-        this.merge(criteria);
-    }
-
-    if (doc) {
-        this._mergeUpdate(doc);
-    }
-
-    if (utils.isObject(options)) {
-        // { overwrite: true }
-        this.setOptions(options);
-    }
-
-    // we are done if we don't have callback and they are
-    // not forcing an unsafe write.
-    if (!(force || callback)) return this;
-
-    if (!this._update || !this.options.overwrite && 0 === utils.keys(this._update).length) {
-        callback && utils.soon(callback.bind(null, null, 0));
-        return this;
-    }
-
-    options = this._optionsForExec();
-    if (!callback) options.safe = false;
-
-    var criteria = this._conditions;
-    doc = this._updateForExec();
-
-    callback = this._wrapCallback('update', callback, {
-        conditions: criteria,
-        doc: doc,
-        options: options
-    });
-
-    this._collection.update(criteria, doc, options, utils.tick(callback));
-
-    return this;
-};
-
-/**
- * Declare and/or execute this query as a remove() operation.
- *
- * ####Example
- *
- *     mquery(collection).remove({ artist: 'Anne Murray' }, callback)
- *
- * ####Note
- *
- * The operation is only executed when a callback is passed. To force execution without a callback (which would be an unsafe write), we must first call remove() and then execute it by using the `exec()` method.
- *
- *     // not executed
- *     var query = mquery(collection).remove({ name: 'Anne Murray' })
- *
- *     // executed
- *     mquery(collection).remove({ name: 'Anne Murray' }, callback)
- *     mquery(collection).remove({ name: 'Anne Murray' }).remove(callback)
- *
- *     // executed without a callback (unsafe write)
- *     query.exec()
- *
- *     // summary
- *     query.remove(conds, fn); // executes
- *     query.remove(conds)
- *     query.remove(fn) // executes
- *     query.remove()
- *
- * @param {Object|Query} [criteria] mongodb selector
- * @param {Function} [callback]
- * @return {Query} this
- * @api public
- */
-
-Query.prototype.remove = function (criteria, callback) {
-    this.op = 'remove';
-    var force;
-
-    if ('function' === typeof criteria) {
-        callback = criteria;
-        criteria = undefined;
-    } else if (Query.canMerge(criteria)) {
-        this.merge(criteria);
-    } else if (true === criteria) {
-        force = criteria;
-        criteria = undefined;
-    }
-
-    if (!(force || callback)) return this;
-
-    var options = this._optionsForExec();
-    if (!callback) options.safe = false;
-
-    var conds = this._conditions;
-
-    callback = this._wrapCallback('remove', callback, {
-        conditions: conds,
-        options: options
-    });
-
-    this._collection.remove(conds, options, utils.tick(callback));
-
-    return this;
-};
-
-/**
- * Wrap callback to add tracing
- *
- * @param {Function} callback
- * @param {Object} [queryInfo]
- * @api private
- */
-Query.prototype._wrapCallback = function (method, callback, queryInfo) {
-    var traceFunction = this._traceFunction || Query.traceFunction;
-
-    if (traceFunction) {
-        queryInfo.collectionName = this._collection.collectionName;
-
-        var traceCallback = traceFunction && traceFunction.call(null, method, queryInfo, this);
-
-        var startTime = new Date().getTime();
-
-        return function wrapperCallback(err, result) {
-            if (traceCallback) {
-                var millis = new Date().getTime() - startTime;
-                traceCallback.call(null, err, result, millis);
-            }
-
-            if (callback) {
-                callback.apply(null, arguments);
-            }
-        };
-    }
-
-    return callback;
-};
-
-/**
- * Determines if field selection has been made.
- *
- * @return {Boolean}
- * @api public
- */
-
-Query.prototype.selected = function selected() {
-    return !!(this._fields && Object.keys(this._fields).length > 0);
-};
-
-/**
- * Determines if inclusive field selection has been made.
- *
- *     query.selectedInclusively() // false
- *     query.select('name')
- *     query.selectedInclusively() // true
- *     query.selectedExlusively() // false
- *
- * @returns {Boolean}
- */
-
-Query.prototype.selectedInclusively = function selectedInclusively() {
-    if (!this._fields) return false;
-
-    var keys = Object.keys(this._fields);
-    if (0 === keys.length) return false;
-
-    for (var i = 0; i < keys.length; ++i) {
-        var key = keys[i];
-        if (0 === this._fields[key]) return false;
-        if (this._fields[key] && (0, _typeof3.default)(this._fields[key]) === 'object' && this._fields[key].$meta) {
-            return false;
-        }
-    }
-
-    return true;
-};
-
-/**
- * Determines if exclusive field selection has been made.
- *
- *     query.selectedExlusively() // false
- *     query.select('-name')
- *     query.selectedExlusively() // true
- *     query.selectedInclusively() // false
- *
- * @returns {Boolean}
- */
-
-Query.prototype.selectedExclusively = function selectedExclusively() {
-    if (!this._fields) return false;
-
-    var keys = Object.keys(this._fields);
-    if (0 === keys.length) return false;
-
-    for (var i = 0; i < keys.length; ++i) {
-        var key = keys[i];
-        if (0 === this._fields[key]) return true;
-    }
-
-    return false;
-};
-
-/**
- * Merges `doc` with the current update object.
- *
- * @param {Object} doc
- */
-
-Query.prototype._mergeUpdate = function (doc) {
-    if (!this._update) this._update = {};
-    if (doc instanceof Query) {
-        if (doc._update) {
-            utils.mergeClone(this._update, doc._update);
-        }
-    } else {
-        utils.mergeClone(this._update, doc);
-    }
 };
 
 /**
  * Returns default options.
- *
  * @return {Object}
- * @api private
  */
-
 Query.prototype._optionsForExec = function () {
-    var options = utils.clone(this.options, {
-        retainKeyOrder: true
-    });
+    var options = (0, _clone2.default)(this.options);
     return options;
-};
-
-/**
- * Returns fields selection for this query.
- *
- * @return {Object}
- * @api private
- */
-
-Query.prototype._fieldsForExec = function () {
-    return utils.clone(this._fields, {
-        retainKeyOrder: true
-    });
-};
-
-/**
- * Return an update document with corrected $set operations.
- *
- * @api private
- */
-
-Query.prototype._updateForExec = function () {
-    var update = utils.clone(this._update, {
-        retainKeyOrder: true
-    }),
-        ops = utils.keys(update),
-        i = ops.length,
-        ret = {},
-        hasKeys,
-        val;
-
-    while (i--) {
-        var op = ops[i];
-
-        if (this.options.overwrite) {
-            ret[op] = update[op];
-            continue;
-        }
-
-        if ('$' !== op[0]) {
-            // fix up $set sugar
-            if (!ret.$set) {
-                if (update.$set) {
-                    ret.$set = update.$set;
-                } else {
-                    ret.$set = {};
-                }
-            }
-            ret.$set[op] = update[op];
-            ops.splice(i, 1);
-            if (!~ops.indexOf('$set')) ops.push('$set');
-        } else if ('$set' === op) {
-            if (!ret.$set) {
-                ret[op] = update[op];
-            }
-        } else {
-            ret[op] = update[op];
-        }
-    }
-
-    this._compiledUpdate = ret;
-    return ret;
 };
 
 /**
@@ -2166,22 +463,11 @@ Query.prototype._updateForExec = function () {
  *
  * @parmam {String} method
  */
-
 Query.prototype._ensurePath = function (method) {
     if (!this._path) {
-        var msg = method + '() must be used after where() ' + 'when called with these arguments';
-        throw new Error(msg);
+        throw new Error('\n          ' + method + '() must be used after where()\n          when called with these arguments\n        ');
     }
 };
-
-/*!
- * Permissions
- */
-
-Query._isPermitted = function (a, b) {
-    return false;
-};
-
 Query.prototype._validate = function (action) {};
 
 /**
@@ -2190,28 +476,9 @@ Query.prototype._validate = function (action) {};
  * @param {Object} conds
  * @return {Boolean}
  */
-
 Query.canMerge = function (conds) {
     return conds instanceof Query || utils.isObject(conds);
 };
 
-/**
- * Set a trace function that will get called whenever a
- * query is executed.
- *
- * See `setTraceFunction()` for details.
- *
- * @param {Object} conds
- * @return {Boolean}
- */
-Query.setGlobalTraceFunction = function (traceFunction) {
-    Query.traceFunction = traceFunction;
-};
-
-/*!
- * Exports.
- */
-
 Query.utils = utils;
-
 exports.default = Query;

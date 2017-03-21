@@ -4,25 +4,12 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _regenerator = require('babel-runtime/regenerator');
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _typeof2 = require('babel-runtime/helpers/typeof');
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * this is the query-builder
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * it basically uses mquery with a few overwrites
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
 
 exports.create = create;
 
@@ -42,80 +29,53 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var defaultQuery = {
     _id: {}
-}; /**
-    * this is the query-builder
-    * it basically uses mquery with a few overwrites
-    */
+};
 
 var RxQuery = function () {
-    function RxQuery(queryObj, collection) {
-        var _this = this;
+    function RxQuery() {
+        var queryObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultQuery;
+        var collection = arguments[1];
 
-        (0, _classCallCheck3.default)(this, RxQuery);
+        _classCallCheck(this, RxQuery);
 
         this.collection = collection;
 
         this.defaultQuery = false;
-        if (!queryObj || Object.keys(queryObj).length === 0 && !Array.isArray(queryObj)) {
-            queryObj = defaultQuery;
-            this.defaultQuery = true;
-        }
 
-        this.mquery = (0, _mquery2.default)(queryObj);
+        // force _id
+        if (!queryObj._id) queryObj._id = {};
 
-        // merge mquery-prototype functions to this
-        var mquery_proto = Object.getPrototypeOf(this.mquery);
-        Object.keys(mquery_proto).forEach(function (attrName) {
-            if (['select', 'remove', 'update'].includes(attrName)) return;
-
-            // only param1 is tunneled here on purpose so no callback-call can be done
-            _this[attrName] = function (param1) {
-                _this.mquery[attrName](param1);
-                return _this;
-            };
-        });
-
-        // overwrites
-
-        /**
-         * make sure it searches index because of pouchdb-find bug
-         * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-         */
-        this.sort = function (params) {
-            // workarround because sort wont work on unused keys
-            if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3.default)(params)) !== 'object') _this.mquery.where(params).gt(null);else {
-                Object.keys(params).forEach(function (k) {
-                    if (!_this.mquery._conditions[k] || !_this.mquery._conditions[k].$gt) {
-                        var schemaObj = _this.collection.schema.getSchemaByObjectPath(k);
-                        if (schemaObj.type == 'integer') _this.mquery.where(k).gt(-Infinity);else _this.mquery.where(k).gt(null);
-                    }
-                });
-            }
-            _this.mquery.sort(params);
-            return _this;
-        };
-
-        /**
-         * regex cannot run on primary _id
-         * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-         */
-        this.regex = function (params) {
-            if (_this.mquery._path == _this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + _this.mquery._path + '\'');
-
-            _this.mquery.regex(params);
-            return _this;
-        };
+        this.mquery = new _mquery2.default(queryObj);
     }
 
-    // observe the result of this query
+    // returns a clone of this RxQuery
 
 
-    (0, _createClass3.default)(RxQuery, [{
+    _createClass(RxQuery, [{
+        key: '_clone',
+        value: function _clone() {
+            var cloned = new RxQuery(defaultQuery, this.collection);
+            cloned.mquery = this.mquery.clone();
+            return cloned;
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return JSON.stringify(this.mquery);
+        }
+
+        // observe the result of this query
+
+    }, {
         key: 'toJSON',
         value: function toJSON() {
-            var _this2 = this;
+            var _this = this;
 
             var json = {
                 selector: this.mquery._conditions
@@ -132,7 +92,7 @@ var RxQuery = function () {
                     if (dirInt == -1) dir = 'desc';
                     var pushMe = {};
                     // TODO run primary-swap somewhere else
-                    if (fieldName == _this2.collection.schema.primaryPath) fieldName = '_id';
+                    if (fieldName == _this.collection.schema.primaryPath) fieldName = '_id';
 
                     pushMe[fieldName] = dir;
                     sortArray.push(pushMe);
@@ -186,9 +146,9 @@ var RxQuery = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
+            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
                 var docs;
-                return _regenerator2.default.wrap(function _callee$(_context) {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -233,6 +193,46 @@ var RxQuery = function () {
 
             return remove;
         }()
+
+        /**
+         * make sure it searches index because of pouchdb-find bug
+         * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+         */
+
+    }, {
+        key: 'sort',
+        value: function sort(params) {
+            var _this2 = this;
+
+            // workarround because sort wont work on unused keys
+            if ((typeof params === 'undefined' ? 'undefined' : _typeof(params)) !== 'object') {
+                var checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+                if (!this.mquery._conditions[checkParam]) this.mquery.where(checkParam).gt(null);
+            } else {
+                Object.keys(params).filter(function (k) {
+                    return !_this2.mquery._conditions[k] || !_this2.mquery._conditions[k].$gt;
+                }).forEach(function (k) {
+                    var schemaObj = _this2.collection.schema.getSchemaByObjectPath(k);
+                    if (schemaObj.type == 'integer') _this2.mquery.where(k).gt(-Infinity);else _this2.mquery.where(k).gt(null);
+                });
+            }
+            this.mquery.sort(params);
+            return this;
+        }
+    }, {
+        key: 'regex',
+
+
+        /**
+         * regex cannot run on primary _id
+         * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
+         */
+        value: function regex(params) {
+            if (this.mquery._path == this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + this.mquery._path + '\'');
+
+            this.mquery.regex(params);
+            return this;
+        }
     }, {
         key: '$',
         get: function get() {
@@ -248,9 +248,9 @@ var RxQuery = function () {
                 }).do(function (x) {
                     return _this3._obsRunning = true;
                 }).mergeMap(function () {
-                    var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(cEvent) {
+                    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(cEvent) {
                         var docs;
-                        return _regenerator2.default.wrap(function _callee2$(_context2) {
+                        return regeneratorRuntime.wrap(function _callee2$(_context2) {
                             while (1) {
                                 switch (_context2.prev = _context2.next) {
                                     case 0:
@@ -269,7 +269,7 @@ var RxQuery = function () {
                         }, _callee2, _this3);
                     }));
 
-                    return function (_x) {
+                    return function (_x2) {
                         return _ref2.apply(this, arguments);
                     };
                 }()).do(function (x) {
@@ -291,15 +291,40 @@ var RxQuery = function () {
             return this._observable$;
         }
     }]);
+
     return RxQuery;
 }();
 
+// tunnel the proto-functions of mquery to RxQuery
+
+
+var protoMerge = function protoMerge(rxQueryProto, mQueryProto) {
+    Object.keys(mQueryProto).filter(function (attrName) {
+        return !attrName.startsWith('_');
+    }).filter(function (attrName) {
+        return !rxQueryProto[attrName];
+    }).forEach(function (attrName) {
+        rxQueryProto[attrName] = function (p1) {
+            this.mquery[attrName](p1);
+            return this;
+        };
+    });
+};
+
+var protoMerged = false;
 function create() {
     var queryObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultQuery;
     var collection = arguments[1];
 
-    if ((typeof queryObj === 'undefined' ? 'undefined' : (0, _typeof3.default)(queryObj)) !== 'object') throw new TypeError('query must be an object');
+    if ((typeof queryObj === 'undefined' ? 'undefined' : _typeof(queryObj)) !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
-    return new RxQuery(queryObj, collection);
+    var ret = new RxQuery(queryObj, collection);
+
+    if (!protoMerged) {
+        protoMerged = true;
+        protoMerge(Object.getPrototypeOf(ret), Object.getPrototypeOf(ret.mquery));
+    }
+
+    return ret;
 }

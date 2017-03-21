@@ -5,26 +5,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.SIGNAL_TIME = exports.documentID = exports.create = undefined;
 
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * this handles the leader-election for the given RxDatabase-instance
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
 
 var create = exports.create = function () {
-    var _ref13 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee13(database) {
+    var _ref13 = _asyncToGenerator(regeneratorRuntime.mark(function _callee13(database) {
         var elector;
-        return _regenerator2.default.wrap(function _callee13$(_context13) {
+        return regeneratorRuntime.wrap(function _callee13$(_context13) {
             while (1) {
                 switch (_context13.prev = _context13.next) {
                     case 0:
@@ -66,19 +54,16 @@ var RxBroadcastChannel = _interopRequireWildcard(_RxBroadcastChannel);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-/**
- * this handles the leader-election for the given RxDatabase-instance
- */
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var documentID = '_local/leader';
 var SIGNAL_TIME = 500; // TODO evaluate this time
 
 var LeaderElector = function () {
     function LeaderElector(database) {
-        (0, _classCallCheck3.default)(this, LeaderElector);
-
+        _classCallCheck(this, LeaderElector);
 
         // things that must be cleared on destroy
         this.subs = [];
@@ -100,11 +85,11 @@ var LeaderElector = function () {
         this.electionChannel = this.bc ? 'broadcast' : 'socket';
     }
 
-    (0, _createClass3.default)(LeaderElector, [{
+    _createClass(LeaderElector, [{
         key: 'prepare',
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
-                return _regenerator2.default.wrap(function _callee$(_context) {
+            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -134,9 +119,9 @@ var LeaderElector = function () {
     }, {
         key: 'getLeaderObject',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
+            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
                 var obj, ret;
-                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                return regeneratorRuntime.wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
@@ -183,8 +168,8 @@ var LeaderElector = function () {
     }, {
         key: 'setLeaderObject',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(newObj) {
-                return _regenerator2.default.wrap(function _callee3$(_context3) {
+            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(newObj) {
+                return regeneratorRuntime.wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
@@ -216,9 +201,9 @@ var LeaderElector = function () {
     }, {
         key: 'applyOnce',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
+            var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4() {
                 var elected;
-                return _regenerator2.default.wrap(function _callee4$(_context4) {
+                return regeneratorRuntime.wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
@@ -290,9 +275,9 @@ var LeaderElector = function () {
     }, {
         key: 'apply_socket',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5() {
+            var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5() {
                 var leaderObj, minTime;
-                return _regenerator2.default.wrap(function _callee5$(_context5) {
+                return regeneratorRuntime.wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
@@ -367,11 +352,11 @@ var LeaderElector = function () {
     }, {
         key: 'apply_broadcast',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
+            var _ref6 = _asyncToGenerator(regeneratorRuntime.mark(function _callee7() {
                 var _this = this;
 
                 var applyTime, subs, errors, whileNoError, ret;
-                return _regenerator2.default.wrap(function _callee7$(_context7) {
+                return regeneratorRuntime.wrap(function _callee7$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
                             case 0:
@@ -380,9 +365,9 @@ var LeaderElector = function () {
                                 errors = [];
 
                                 whileNoError = function () {
-                                    var _ref7 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6() {
+                                    var _ref7 = _asyncToGenerator(regeneratorRuntime.mark(function _callee6() {
                                         var circles;
-                                        return _regenerator2.default.wrap(function _callee6$(_context6) {
+                                        return regeneratorRuntime.wrap(function _callee6$(_context6) {
                                             while (1) {
                                                 switch (_context6.prev = _context6.next) {
                                                     case 0:
@@ -492,9 +477,9 @@ var LeaderElector = function () {
     }, {
         key: 'leaderSignal',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
+            var _ref8 = _asyncToGenerator(regeneratorRuntime.mark(function _callee8() {
                 var success, leaderObj;
-                return _regenerator2.default.wrap(function _callee8$(_context8) {
+                return regeneratorRuntime.wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
@@ -584,10 +569,10 @@ var LeaderElector = function () {
     }, {
         key: 'beLeader',
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9() {
+            var _ref9 = _asyncToGenerator(regeneratorRuntime.mark(function _callee9() {
                 var _this2 = this;
 
-                return _regenerator2.default.wrap(function _callee9$(_context9) {
+                return regeneratorRuntime.wrap(function _callee9$(_context9) {
                     while (1) {
                         switch (_context9.prev = _context9.next) {
                             case 0:
@@ -670,9 +655,9 @@ var LeaderElector = function () {
     }, {
         key: 'die',
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10() {
+            var _ref10 = _asyncToGenerator(regeneratorRuntime.mark(function _callee10() {
                 var success, leaderObj;
-                return _regenerator2.default.wrap(function _callee10$(_context10) {
+                return regeneratorRuntime.wrap(function _callee10$(_context10) {
                     while (1) {
                         switch (_context10.prev = _context10.next) {
                             case 0:
@@ -770,11 +755,11 @@ var LeaderElector = function () {
     }, {
         key: 'waitForLeadership',
         value: function () {
-            var _ref11 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee11() {
+            var _ref11 = _asyncToGenerator(regeneratorRuntime.mark(function _callee11() {
                 var _this3 = this;
 
                 var subs;
-                return _regenerator2.default.wrap(function _callee11$(_context11) {
+                return regeneratorRuntime.wrap(function _callee11$(_context11) {
                     while (1) {
                         switch (_context11.prev = _context11.next) {
                             case 0:
@@ -845,8 +830,8 @@ var LeaderElector = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref12 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee12() {
-                return _regenerator2.default.wrap(function _callee12$(_context12) {
+            var _ref12 = _asyncToGenerator(regeneratorRuntime.mark(function _callee12() {
+                return regeneratorRuntime.wrap(function _callee12$(_context12) {
                     while (1) {
                         switch (_context12.prev = _context12.next) {
                             case 0:
@@ -877,6 +862,7 @@ var LeaderElector = function () {
             return destroy;
         }()
     }]);
+
     return LeaderElector;
 }();
 
