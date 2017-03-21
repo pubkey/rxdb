@@ -4,7 +4,7 @@
  */
 
 import {
-    default as mquery
+    default as MQuery
 } from './mquery/mquery';
 import * as util from './util';
 import * as RxDocument from './RxDocument';
@@ -15,72 +15,27 @@ const defaultQuery = {
 
 
 class RxQuery {
-    constructor(queryObj, collection) {
+    constructor(queryObj = defaultQuery, collection) {
         this.collection = collection;
 
         this.defaultQuery = false;
-        if (!queryObj ||
-            (
-                Object.keys(queryObj).length === 0 &&
-                !Array.isArray(queryObj)
-            )
-        ) {
-            queryObj = defaultQuery;
-            this.defaultQuery = true;
-        }
 
-        this.mquery = mquery(queryObj);
+        // force _id
+        if (!queryObj._id)
+            queryObj._id = {};
 
-        // merge mquery-prototype functions to this
-        const mquery_proto = Object.getPrototypeOf(this.mquery);
-        Object.keys(mquery_proto).forEach(attrName => {
-            if (['select', 'remove', 'update'].includes(attrName)) return;
+        this.mquery = new MQuery(queryObj);
+    }
 
-            // only param1 is tunneled here on purpose so no callback-call can be done
-            this[attrName] = param1 => {
-                this.mquery[attrName](param1);
-                return this;
-            };
-        });
+    // returns a clone of this RxQuery
+    _clone() {
+        const cloned = new RxQuery(defaultQuery, this.collection);
+        cloned.mquery = this.mquery.clone();
+        return cloned;
+    }
 
-
-        // overwrites
-
-        /**
-         * make sure it searches index because of pouchdb-find bug
-         * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-         */
-        this.sort = params => {
-            // workarround because sort wont work on unused keys
-            if (typeof params !== 'object')
-                this.mquery.where(params).gt(null);
-            else {
-                Object.keys(params).forEach(k => {
-                    if (!this.mquery._conditions[k] || !this.mquery._conditions[k].$gt) {
-                        const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
-                        if (schemaObj.type == 'integer')
-                            this.mquery.where(k).gt(-Infinity);
-                        else this.mquery.where(k).gt(null);
-                    }
-                });
-            }
-            this.mquery.sort(params);
-            return this;
-        };
-
-        /**
-         * regex cannot run on primary _id
-         * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-         */
-        this.regex = params => {
-            if (this.mquery._path == this.collection.schema.primaryPath)
-                throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
-
-            this.mquery.regex(params);
-            return this;
-        };
-
-
+    toString() {
+        return JSON.stringify(this.mquery);
     }
 
     // observe the result of this query
@@ -171,7 +126,6 @@ class RxQuery {
         return json;
     };
 
-
     /**
      * get the key-compression version of this query
      * @return {{selector: {}, sort: []}} compressedQuery
@@ -182,7 +136,6 @@ class RxQuery {
             ._keyCompressor
             .compressQuery(this.toJSON());
     }
-
 
     /**
      * deletes all found documents
@@ -201,13 +154,71 @@ class RxQuery {
         return docs;
     }
 
+    /**
+     * make sure it searches index because of pouchdb-find bug
+     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+     */
+    sort(params) {
+        // workarround because sort wont work on unused keys
+        if (typeof params !== 'object') {
+            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+            if (!this.mquery._conditions[checkParam])
+                this.mquery.where(checkParam).gt(null);
+        } else {
+            Object.keys(params)
+                .filter(k => !this.mquery._conditions[k] || !this.mquery._conditions[k].$gt)
+                .forEach(k => {
+                    const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
+                    if (schemaObj.type == 'integer')
+                        this.mquery.where(k).gt(-Infinity);
+                    else this.mquery.where(k).gt(null);
+                });
+        }
+        this.mquery.sort(params);
+        return this;
+    };
+
+    /**
+     * regex cannot run on primary _id
+     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
+     */
+    regex(params) {
+        if (this.mquery._path == this.collection.schema.primaryPath)
+            throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
+
+        this.mquery.regex(params);
+        return this;
+    };
+
 }
 
+
+// tunnel the proto-functions of mquery to RxQuery
+const protoMerge = function(rxQueryProto, mQueryProto) {
+    Object.keys(mQueryProto)
+        .filter(attrName => !attrName.startsWith('_'))
+        .filter(attrName => !rxQueryProto[attrName])
+        .forEach(attrName => {
+            rxQueryProto[attrName] = function(p1) {
+                this.mquery[attrName](p1);
+                return this;
+            };
+        });
+};
+
+let protoMerged = false;
 export function create(queryObj = defaultQuery, collection) {
     if (typeof queryObj !== 'object')
         throw new TypeError('query must be an object');
     if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
-    return new RxQuery(queryObj, collection);
+    const ret = new RxQuery(queryObj, collection);
+
+    if (!protoMerged) {
+        protoMerged = true;
+        protoMerge(Object.getPrototypeOf(ret), Object.getPrototypeOf(ret.mquery));
+    }
+
+    return ret;
 }

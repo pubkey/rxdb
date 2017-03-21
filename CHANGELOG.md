@@ -1,3 +1,13 @@
+## 3.0.5 (March 21, 2017)
+
+Bugfixes:
+  - overwrites default selector on `RxQuery.sort()`
+
+Other:
+  - Refactor RxQuery for better performance
+  - Refactor mquery for smaller build
+  - More tests for RxQuery
+
 ## 3.0.4 (March 12, 2017)
 
 Bugfixes:

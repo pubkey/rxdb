@@ -19,11 +19,10 @@ import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
 
+const HOOKS_WHEN = ['pre', 'post'];
+const HOOKS_KEYS = ['insert', 'save', 'remove'];
+
 class RxCollection {
-
-    static HOOKS_WHEN = ['pre', 'post'];
-    static HOOKS_KEYS = ['insert', 'save', 'remove'];
-
     constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
         this.database = database;
         this.name = name;
@@ -44,8 +43,8 @@ class RxCollection {
         this.pouch = null; // this is needed to preserve this name
 
         // set HOOKS-functions dynamically
-        RxCollection.HOOKS_KEYS.forEach(key => {
-            RxCollection.HOOKS_WHEN.map(when => {
+        HOOKS_KEYS.forEach(key => {
+            HOOKS_WHEN.map(when => {
                 const fnName = when + util.ucfirst(key);
                 this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
             });
@@ -223,8 +222,9 @@ class RxCollection {
     get $() {
         return this._observable$;
     }
-    $emit = changeEvent => this.database.$emit(changeEvent);
-
+    $emit(changeEvent) {
+        return this.database.$emit(changeEvent);
+    }
 
     /**
      * @param {Object} json data
@@ -463,10 +463,10 @@ class RxCollection {
         if (typeof fun != 'function')
             throw new TypeError(key + '-hook must be a function');
 
-        if (!RxCollection.HOOKS_WHEN.includes(when))
+        if (!HOOKS_WHEN.includes(when))
             throw new TypeError('hooks-when not known');
 
-        if (!RxCollection.HOOKS_KEYS.includes(key))
+        if (!HOOKS_KEYS.includes(key))
             throw new Error('hook-name ' + key + 'not known');
 
         const runName = parallel ? 'parallel' : 'series';
