@@ -373,6 +373,13 @@ describe('RxCollection.test.js', () => {
                         for (let doc of docs)
                             assert.equal(doc.constructor.name, 'RxDocument');
                     });
+                    it('find 2 times', async() => {
+                        const c = await humansCollection.create();
+                        const docs = await c.find().exec();
+                        const docs2 = await c.find().exec();
+                        assert.ok(docs.length >= 10);
+                        assert.ok(docs2.length >= 10);
+                    });
                     it('find all by empty object', async() => {
                         const c = await humansCollection.create();
                         const docs = await c.find({}).exec();
@@ -821,7 +828,8 @@ describe('RxCollection.test.js', () => {
                     const docById = await c.findOne(_id).exec();
                     assert.deepEqual(docById.data, doc.data);
                 });
-                it('BUG: insert and find very often', async() => {
+                it('BUG: insert and find very often', async function() {
+                    this.timeout(5000);
                     const amount = 10;
                     for (let i = 0; i < amount; i++) {
                         let db = await RxDatabase.create({
