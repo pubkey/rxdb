@@ -15,7 +15,7 @@ class HeroList extends Component {
     async componentDidMount() {
         const db = await Database.get();
 
-        const sub = db.heroes.query().sort({name: 1}).$.subscribe(heroes => {
+        const sub = db.heroes.find().sort({name: 1}).$.subscribe(heroes => {
             if (!heroes)
                 return;
             console.log('reload heroes-list ');

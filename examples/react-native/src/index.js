@@ -67,7 +67,7 @@ export default class App extends React.Component {
             this.col = col;
             return col;
         }).then(col => {
-          col.query().sort({name: 1}).$.subscribe((heroes) => {
+          col.find().sort({name: 1}).$.subscribe((heroes) => {
             if (!heroes) return;
             console.log('observable fired');
             this.setState({heroes: heroes});
