@@ -22,7 +22,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "start": "concurrently \"npm run server\" \"npm run serve\"",
+    "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
   }
 }
