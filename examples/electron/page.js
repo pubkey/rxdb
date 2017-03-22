@@ -51,7 +51,7 @@ RxDB
         console.log('starting sync');
         database.heroes.sync(syncURL + 'hero/');
 
-        col.query()
+        col.find()
             .sort({
                 name: 1
             })
