@@ -309,13 +309,14 @@ export function randomCouchString(length = 10) {
 
 /**
  * deep-sort an object so its attributes are in lexical order.
- * Also sorts the arrays inside of the object
+ * Also sorts the arrays inside of the object if no-array-sort not set
  * @param  {Object} obj unsorted
+ * @param  {?boolean} noArraysort
  * @return {Object} sorted
  */
-export function sortObject(obj) {
+export function sortObject(obj, noArraySort = false) {
     // array
-    if (Array.isArray(obj)) {
+    if (!noArraySort && Array.isArray(obj)) {
         return obj
             .sort((a, b) => {
                 if (typeof a === 'string' && typeof b === 'string')

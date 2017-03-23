@@ -60,7 +60,7 @@ describe('RxQuery.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.clone()', () => {
+    describe('._clone()', () => {
         it('should deep-clone the query', async() => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -69,6 +69,12 @@ describe('RxQuery.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const cloned = q._clone();
+            assert.equal(q.constructor.name, 'RxQuery');
+            assert.equal(cloned.constructor.name, 'RxQuery');
+            assert.deepEqual(q.mquery._conditions, cloned.mquery._conditions);
+            assert.deepEqual(q.mquery._fields, cloned.mquery._fields);
+            assert.deepEqual(q.mquery._path, cloned.mquery._path);
+            assert.deepEqual(q.mquery.options, cloned.mquery.options);
             col.database.destroy();
         });
     });
@@ -81,7 +87,39 @@ describe('RxQuery.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            assert.equal(str, '{"options":{"limit":10,"sort":{"age":-1}},"_conditions":{"_id":{},"name":{"$ne":"Alice"},"age":{"$gt":18,"$lt":67}},"_path":"age"}');
+            assert.equal(str, '{"_conditions":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"_path":"age","op":"find","options":{"limit":10,"sort":{"age":-1}}}');
+            col.database.destroy();
         });
+    });
+
+    describe('immutable', () => {
+        it('should not be the same object (sort)', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find()
+                .where('name').ne('Alice')
+                .where('age').gt(18).lt(67)
+                .limit(10)
+                .sort('-age');
+            const q2 = q.sort('name');
+            assert.equal(q2.constructor.name, 'RxQuery');
+            assert.notEqual(q, q2);
+            col.database.destroy();
+        });
+        it('should not be the same object (where)', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find()
+                .where('name').ne('Alice')
+                .where('age').gt(18).lt(67)
+                .limit(10)
+                .sort('-age');
+            const q2 = q.where('name').eq('foobar');
+            assert.equal(q2.constructor.name, 'RxQuery');
+            assert.notEqual(q, q2);
+            col.database.destroy();
+        });
+    });
+
+    describe('e', () => {
+        //it('e', () => process.exit());
     });
 });
