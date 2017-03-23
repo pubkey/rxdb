@@ -283,6 +283,7 @@ export function validateCouchDBString(name) {
             collection- and database-names must match the regex:
             - regex: ${regStr}
             - given: ${name}
+            - info: if your database-name specifies a folder, the name must contain the slash-char '/'
     `);
     }
 
