@@ -1,3 +1,8 @@
+## 4.0.0
+Breaking:
+  - RxQuery's are now [immutable](docs/RxQuery.md)
+
+
 ## 3.X.X
 
 Features:

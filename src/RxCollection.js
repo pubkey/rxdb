@@ -296,12 +296,7 @@ class RxCollection {
         if (typeof queryObj === 'string')
             throw new Error('if you want to search by _id, use .findOne(_id)');
 
-        const query = RxQuery.create(queryObj, this);
-        query.exec = async() => {
-            const docs = await this._pouchFind(query);
-            const ret = this._createDocuments(docs);
-            return ret;
-        };
+        const query = RxQuery.create('find', queryObj, this);
         return query;
     }
 
@@ -309,26 +304,16 @@ class RxCollection {
         let query;
 
         if (typeof queryObj === 'string') {
-            query = RxQuery.create({
+            query = RxQuery.create('findOne', {
                 _id: queryObj
             }, this);
-        } else query = RxQuery.create(queryObj, this);
+        } else query = RxQuery.create('findOne', queryObj, this);
 
         if (
             typeof queryObj === 'number' ||
             Array.isArray(queryObj)
         ) throw new TypeError('.findOne() needs a queryObject or string');
 
-        query.exec = async() => {
-            const docs = await this._pouchFind(query, 1);
-            if (docs.length === 0) return null;
-            const doc = docs.shift();
-            const ret = this._createDocument(doc);
-            return ret;
-        };
-        query.limit = () => {
-            throw new Error('.limit() cannot be called on .findOne()');
-        };
         return query;
     }
 
@@ -352,7 +337,7 @@ class RxCollection {
             json.encrypted = true;
         }
 
-        const query = RxQuery.create({}, this);
+        const query = RxQuery.create('find', {}, this);
         let docs = await this._pouchFind(query, null, encrypted);
         json.docs = docs.map(docData => {
             delete docData._rev;

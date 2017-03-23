@@ -15,9 +15,9 @@ const defaultQuery = {
 
 
 class RxQuery {
-    constructor(queryObj = defaultQuery, collection) {
+    constructor(op, queryObj = defaultQuery, collection) {
+        this.op = op;
         this.collection = collection;
-
         this.defaultQuery = false;
 
         // force _id
@@ -29,13 +29,21 @@ class RxQuery {
 
     // returns a clone of this RxQuery
     _clone() {
-        const cloned = new RxQuery(defaultQuery, this.collection);
+        const cloned = new RxQuery(this.op, defaultQuery, this.collection);
         cloned.mquery = this.mquery.clone();
         return cloned;
     }
 
     toString() {
-        return JSON.stringify(this.mquery);
+        const stringObj = util.sortObject({
+            op: this.op,
+            options: this.mquery.options,
+            _conditions: this.mquery._conditions,
+            _path: this.mquery._path,
+            _fields: this.mquery._fields
+        }, true);
+
+        return JSON.stringify(stringObj);
     }
 
     // observe the result of this query
@@ -154,29 +162,25 @@ class RxQuery {
         return docs;
     }
 
-    /**
-     * make sure it searches index because of pouchdb-find bug
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-    sort(params) {
-        // workarround because sort wont work on unused keys
-        if (typeof params !== 'object') {
-            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
-            if (!this.mquery._conditions[checkParam])
-                this.mquery.where(checkParam).gt(null);
-        } else {
-            Object.keys(params)
-                .filter(k => !this.mquery._conditions[k] || !this.mquery._conditions[k].$gt)
-                .forEach(k => {
-                    const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
-                    if (schemaObj.type == 'integer')
-                        this.mquery.where(k).gt(-Infinity);
-                    else this.mquery.where(k).gt(null);
-                });
+    async exec() {
+        let docs, ret, doc;
+        switch (this.op) {
+            case 'find':
+                docs = await this.collection._pouchFind(this);
+                ret = this.collection._createDocuments(docs);
+                return ret;
+                break;
+            case 'findOne':
+                docs = await this.collection._pouchFind(this, 1);
+                if (docs.length === 0) return null;
+                doc = docs.shift();
+                ret = this.collection._createDocument(doc);
+                return ret;
+                break;
+            default:
+                throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
         }
-        this.mquery.sort(params);
-        return this;
-    };
+    }
 
     /**
      * regex cannot run on primary _id
@@ -190,8 +194,42 @@ class RxQuery {
         return this;
     };
 
-}
+    /**
+     * make sure it searches index because of pouchdb-find bug
+     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+     */
+    sort(params) {
+        const clonedThis = this._clone();
 
+        // workarround because sort wont work on unused keys
+        if (typeof params !== 'object') {
+            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+            if (!clonedThis.mquery._conditions[checkParam])
+                clonedThis.mquery.where(checkParam).gt(null);
+        } else {
+            Object.keys(params)
+                .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
+                .forEach(k => {
+                    const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
+                    if (schemaObj.type == 'integer')
+                        clonedThis.mquery.where(k).gt(-Infinity);
+                    else clonedThis.mquery.where(k).gt(null);
+                });
+        }
+        clonedThis.mquery.sort(params);
+        return clonedThis;
+    };
+
+    limit(amount) {
+        if (this.op == 'findOne')
+            throw new Error('.limit() cannot be called on .findOne()');
+        else {
+            const clonedThis = this._clone();
+            clonedThis.mquery.limit(amount);
+            return clonedThis;
+        }
+    }
+}
 
 // tunnel the proto-functions of mquery to RxQuery
 const protoMerge = function(rxQueryProto, mQueryProto) {
@@ -200,20 +238,21 @@ const protoMerge = function(rxQueryProto, mQueryProto) {
         .filter(attrName => !rxQueryProto[attrName])
         .forEach(attrName => {
             rxQueryProto[attrName] = function(p1) {
-                this.mquery[attrName](p1);
-                return this;
+                const clonedThis = this._clone();
+                clonedThis.mquery[attrName](p1);
+                return clonedThis;
             };
         });
 };
 
 let protoMerged = false;
-export function create(queryObj = defaultQuery, collection) {
+export function create(op, queryObj = defaultQuery, collection) {
     if (typeof queryObj !== 'object')
         throw new TypeError('query must be an object');
     if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
-    const ret = new RxQuery(queryObj, collection);
+    const ret = new RxQuery(op, queryObj, collection);
 
     if (!protoMerged) {
         protoMerged = true;

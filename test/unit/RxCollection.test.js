@@ -484,13 +484,15 @@ describe('RxCollection.test.js', () => {
                 describe('positive', () => {
                     it('sort by age desc (with own index-search)', async() => {
                         const c = await humansCollection.createAgeIndex();
-                        const docs = await c.find({
+                        const query = c.find({
                             age: {
                                 $gt: null
                             }
                         }).sort({
                             age: -1
-                        }).exec();
+                        });
+                        assert.equal(query.constructor.name, 'RxQuery');
+                        const docs = await query.exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
                     });
