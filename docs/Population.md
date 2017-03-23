@@ -7,7 +7,7 @@ This works exactly like population with [mongoose](http://mongoosejs.com/docs/po
 
 ## Schema with ref
 
-The `ref`-keyword describes which collection the field-value belongs to.
+The `ref`-keyword describes to which collection the field-value belongs to.
 
 ```javascript
 export const refHuman = {
