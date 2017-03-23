@@ -622,7 +622,7 @@ export async function create({
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
-            throw new Error(`collection-method not allowed because its in the schema ${funName}`);
+            throw new Error(`collection-method not allowed because fieldname is in the schema ${funName}`);
         });
 
     const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
