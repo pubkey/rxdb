@@ -501,12 +501,6 @@ class RxCollection {
         );
     }
 
-
-    async _mustMigrate() {
-
-    }
-
-
     async destroy() {
         this._subs.forEach(sub => sub.unsubscribe());
         this.pouchSyncs.forEach(sync => sync.cancel());
