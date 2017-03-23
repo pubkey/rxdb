@@ -74,7 +74,7 @@
     "assert": "1.4.1",
     "babel-cli": "^6.23.0",
     "babel-core": "^6.23.1",
-    "babel-eslint": "^7.2.0",
+    "babel-eslint": "^7.2.1",
     "babel-loader": "^6.4.1",
     "babel-plugin-lodash": "3.2.11",
     "babel-plugin-transform-async-to-generator": "^6.22.0",
@@ -135,10 +135,10 @@
     "rollup-plugin-uglify": "1.0.1",
     "rxjs": "5.2.0",
     "typescript": "^2.2.1",
-    "uglify-js": "^2.8.14",
+    "uglify-js": "^2.8.15",
     "watch": "^1.0.2",
     "watchify": "3.9.0",
-    "webpack": "2.2.1",
+    "webpack": "^2.3.1",
     "webpack-dev-server": "^2.3.0"
   }
 }
