@@ -1,5 +1,5 @@
 import assert from 'assert';
-import * as _ from 'lodash';
+import * as faker from 'faker';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -128,6 +128,49 @@ describe('Population.test.js', () => {
                 assert.equal(friend.constructor.name, 'RxDocument');
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
+            });
+            it('populate string-array', async() => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'human',
+                    schema: {
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                primary: true
+                            },
+                            friends: {
+                                type: 'array',
+                                ref: 'human',
+                                items: {
+                                    type: 'string'
+                                }
+                            }
+                        }
+                    }
+                });
+                const friends = new Array(5).fill(0).map(() => {
+                    return {
+                        name: faker.name.firstName(),
+                        friends: []
+                    };
+                });
+                await Promise.all(friends.map(friend => col.insert(friend)));
+                const oneGuy = {
+                    name: 'Piotr',
+                    friends: friends.map(friend => friend.name)
+                };
+                await col.insert(oneGuy);
+                const doc = await col.findOne(oneGuy.name).exec();
+                const friendDocs = await doc.friends_;
+                friendDocs.forEach(friend => {
+                    assert.equal(friend.constructor.name, 'RxDocument');
+                });
             });
         });
     });

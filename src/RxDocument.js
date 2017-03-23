@@ -153,8 +153,10 @@ class RxDocument {
         if (!refCollection)
             throw new Error(`ref-collection (${schemaObj.ref}) not in database`);
 
-        const doc = await refCollection.findOne(value).exec();
-        return doc;
+        if (schemaObj.type == 'array')
+            return Promise.all(value.map(id => refCollection.findOne(id).exec()));
+        else
+            return await refCollection.findOne(value).exec();
     }
 
     /**
@@ -187,14 +189,16 @@ class RxDocument {
 
         Object.keys(pathProperties)
             .forEach(key => {
+                const fullPath = util.trimDots(objPath + '.' + key);
+
                 // getter - value
                 valueObj.__defineGetter__(key, () => {
-                    return this.get(util.trimDots(objPath + '.' + key));
+                    return this.get(fullPath);
                 });
                 // getter - observable$
                 Object.defineProperty(valueObj, key + '$', {
                     get: () => {
-                        return this.get$(util.trimDots(objPath + '.' + key));
+                        return this.get$(fullPath);
                     },
                     enumerable: false,
                     configurable: false
@@ -202,14 +206,14 @@ class RxDocument {
                 // getter - populate_
                 Object.defineProperty(valueObj, key + '_', {
                     get: () => {
-                        return this.populate(util.trimDots(objPath + '.' + key));
+                        return this.populate(fullPath);
                     },
                     enumerable: false,
                     configurable: false
                 });
                 // setter - value
                 valueObj.__defineSetter__(key, (val) => {
-                    return this.set(util.trimDots(objPath + '.' + key), val);
+                    return this.set(fullPath, val);
                 });
             });
     }

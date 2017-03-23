@@ -43,5 +43,61 @@ const doc = await humansCollection.findOne().exec();
 const bestFriend = await doc.bestFriend_; // added underscore_
 ```
 
+## Example with nested reference
+
+```javascript
+const myCollection = await myDatabase.collection({
+  name: 'human',
+  schema: {
+    version: 0,
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      family: {
+        type: 'object',
+        properties: {
+          mother: {
+            type: 'string',
+            ref: 'human'
+          }
+        }
+      }
+    }
+  }
+});
+
+const mother = await myDocument.family.mother_;
+console.dir(mother); //> RxDocument
+```
+
+## Example with array
+
+```javascript
+const myCollection = await myDatabase.collection({
+  name: 'human',
+  schema: {
+    version: 0,
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      friends: {
+        type: 'array',
+        ref: 'human',
+        items: {
+            type: 'string'
+        }
+      }
+    }
+  }
+});
+
+const friends = await myDocument.friends_;
+console.dir(friends); //> Array.<RxDocument>
+```
+
 ---------
 If you are new to RxDB, you should continue [here](./DataMigration.md)

@@ -1,3 +1,8 @@
+## 3.X.X
+
+Features:
+  - [Population](https://github.com/pubkey/rxdb/blob/master/docs/Population.md) can now be done on arrays
+
 ## 3.0.5 (March 21, 2017)
 
 Bugfixes:
