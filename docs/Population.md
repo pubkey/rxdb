@@ -1,6 +1,9 @@
 # Population
 
-There are no joins in RxDB but sometimes we still want references to documents in other collections. This is where population comes in. You can specify a relation to another RxDocument in the same or another RxCollection of the same database.
+There are no joins in RxDB but sometimes we still want references to documents in other collections. This is where population comes in. You can specify a relation from one RxDocument to another RxDocument in the same or another RxCollection of the same database.
+Then you can get the referenced document with the population-getter.
+
+This works exactly like population with [mongoose](http://mongoosejs.com/docs/populate.html).
 
 ## Schema with ref
 
@@ -30,8 +33,17 @@ To get the refered RxDocument, you can use the populate()-method.
 It takes the field-path as attribute and returns a Promise which resolves to the foreign document or null if not found.
 
 ```javascript
-const doc = await humansCollection.findOne().exec();
+await humansCollection.insert({
+  name: 'Alice',
+  bestFriend: 'Carol'
+});
+await humansCollection.insert({
+  name: 'Bob',
+  bestFriend: 'Alice'
+});
+const doc = await humansCollection.findOne('Bob').exec();
 const bestFriend = await doc.populate('bestFriend');
+console.dir(bestFriend); //> RxDocument[Alice]
 ```
 
 ### via getter
@@ -39,8 +51,17 @@ You can also get the populated RxDocument with the direct getter. Therefore you 
 This works also on nested values.
 
 ```javascript
-const doc = await humansCollection.findOne().exec();
-const bestFriend = await doc.bestFriend_; // added underscore_
+await humansCollection.insert({
+  name: 'Alice',
+  bestFriend: 'Carol'
+});
+await humansCollection.insert({
+  name: 'Bob',
+  bestFriend: 'Alice'
+});
+const doc = await humansCollection.findOne('Bob').exec();
+const bestFriend = await doc.bestFriend_; // notice the underscore_
+console.dir(bestFriend); //> RxDocument[Alice]
 ```
 
 ## Example with nested reference
@@ -95,6 +116,18 @@ const myCollection = await myDatabase.collection({
   }
 });
 
+//[insert other humans here]
+
+await myCollection.insert({
+  name: 'Alice',
+  friends: [
+    'Bob',
+    'Carol',
+    'Dave'
+  ]
+});
+
+const doc = await humansCollection.findOne('Alice').exec();
 const friends = await myDocument.friends_;
 console.dir(friends); //> Array.<RxDocument>
 ```
