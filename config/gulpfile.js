@@ -6,7 +6,8 @@ gulp.task('test', function() {
     return gulp
         .src(tests)
         .pipe(mocha({
-            bail: true
+            bail: true,
+            "expose-gc": true
         }))
         .once('end', function() {
             process.exit();
