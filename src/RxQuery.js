@@ -13,12 +13,18 @@ const defaultQuery = {
     _id: {}
 };
 
+let _queryCount = 0;
+const newQueryID = function() {
+    return ++_queryCount;
+};
+
 
 class RxQuery {
     constructor(op, queryObj = defaultQuery, collection) {
         this.op = op;
         this.collection = collection;
         this.defaultQuery = false;
+        this.id = newQueryID();
 
         // force _id
         if (!queryObj._id)
@@ -34,16 +40,26 @@ class RxQuery {
         return cloned;
     }
 
-    toString() {
-        const stringObj = util.sortObject({
-            op: this.op,
-            options: this.mquery.options,
-            _conditions: this.mquery._conditions,
-            _path: this.mquery._path,
-            _fields: this.mquery._fields
-        }, true);
+    /**
+     * run this query through the QueryCache
+     * @return {RxQuery} can be this or another query with the equal state
+     */
+    _tunnelQueryCache() {
+        return this.collection._queryCache.getByQuery(this);
+    }
 
-        return JSON.stringify(stringObj);
+    toString() {
+        if (!this.stringRep) {
+            const stringObj = util.sortObject({
+                op: this.op,
+                options: this.mquery.options,
+                _conditions: this.mquery._conditions,
+                _path: this.mquery._path,
+                _fields: this.mquery._fields
+            }, true);
+            this.stringRep = JSON.stringify(stringObj);
+        }
+        return this.stringRep;
     }
 
     // observe the result of this query
@@ -217,7 +233,7 @@ class RxQuery {
                 });
         }
         clonedThis.mquery.sort(params);
-        return clonedThis;
+        return clonedThis._tunnelQueryCache();
     };
 
     limit(amount) {
@@ -226,7 +242,7 @@ class RxQuery {
         else {
             const clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
-            return clonedThis;
+            return clonedThis._tunnelQueryCache();
         }
     }
 }
@@ -240,7 +256,7 @@ const protoMerge = function(rxQueryProto, mQueryProto) {
             rxQueryProto[attrName] = function(p1) {
                 const clonedThis = this._clone();
                 clonedThis.mquery[attrName](p1);
-                return clonedThis;
+                return clonedThis._tunnelQueryCache();
             };
         });
 };

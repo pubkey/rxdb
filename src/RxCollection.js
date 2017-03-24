@@ -18,6 +18,7 @@ import * as KeyCompressor from './KeyCompressor';
 import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
+import * as QueryCache from './QueryCache';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove'];
@@ -33,7 +34,7 @@ class RxCollection {
 
         // contains a weak link to all used RxDocuments of this collection
         this._docCache = DocCache.create();
-
+        this._queryCache = QueryCache.create();
 
         // defaults
         this.synced = false;
