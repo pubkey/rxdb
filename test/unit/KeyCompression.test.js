@@ -370,10 +370,9 @@ describe('KeyCompressor.test.js', () => {
         });
         it('.sort()', async() => {
             const c = await humansCollection.createDeepNested(0);
-            const query = c.find()
-                .sort('mainSkill')
-                .keyCompress();
-            assert.equal(query.sort[0][c._keyCompressor.table['mainSkill']], 'asc');
+            const query = c.find().sort('mainSkill');
+            const compressed = query.keyCompress();
+            assert.equal(compressed.sort[0][c._keyCompressor.table['mainSkill']], 'asc');
         });
         it('.sort() nested', async() => {
             const c = await humansCollection.createNested(0);

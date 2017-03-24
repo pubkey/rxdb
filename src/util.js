@@ -4,7 +4,9 @@
  */
 
 
-
+import {
+    default as clone
+} from 'clone';
 import {
     default as randomToken
 } from 'random-token';
@@ -315,6 +317,8 @@ export function randomCouchString(length = 10) {
  * @return {Object} sorted
  */
 export function sortObject(obj, noArraySort = false) {
+    if (!obj) return obj; // do not sort null, false or undefined
+
     // array
     if (!noArraySort && Array.isArray(obj)) {
         return obj
