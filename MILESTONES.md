@@ -1,4 +1,4 @@
-# 4.0.0
+# 4.0.0 [Branch](https://github.com/pubkey/rxdb/tree/4.0.0)
 
 ## Immutable Querys DONE
 When a query is created and mango-functions are done on it, it should return a new RxQuery each time without transforming the old one.
