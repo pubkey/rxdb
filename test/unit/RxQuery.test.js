@@ -48,6 +48,7 @@ describe('RxQuery.test.js', () => {
                 assert.deepEqual(mquery._conditions, cloned._conditions);
                 assert.deepEqual(mquery._fields, cloned._fields);
                 assert.deepEqual(mquery._path, cloned._path);
+                col.database.destroy();
             });
         });
     });
@@ -205,10 +206,9 @@ describe('RxQuery.test.js', () => {
             assert.notEqual(q.id, q2.id);
             col.database.destroy();
         });
-
     });
 
     describe('e', () => {
-    //    it('e', () => process.exit());
+        //    it('e', () => process.exit());
     });
 });

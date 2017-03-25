@@ -4,6 +4,7 @@
  */
 class QueryCache {
     constructor() {
+        this.subs = [];
         this._map = new WeakMap();
 
         /**
@@ -35,6 +36,27 @@ class QueryCache {
             useQuery = query;
         }
         return useQuery;
+    }
+
+    /**
+     * runs the given function over every query
+     * @param  {function} fun with query as first param
+     */
+    forEach(fun) {
+        Object.entries(this._keys).forEach(entry => {
+            const query = this._map.get(entry[1]);
+            // clean up keys with garbage-collected values
+            if (!query) {
+                delete this._keys[entry[0]];
+                return;
+            } else
+                fun(query);
+        });
+    }
+
+    destroy() {
+        this.subs.forEach(sub => sub.unsubscribe());
+        this._keys = {};
     }
 };
 

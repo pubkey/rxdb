@@ -19,6 +19,7 @@ import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
 import * as QueryCache from './QueryCache';
+import * as ChangeEventBuffer from './ChangeEventBuffer';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove'];
@@ -33,6 +34,7 @@ class RxCollection {
         this._methods = methods;
 
         // contains a weak link to all used RxDocuments of this collection
+        // TODO weak links are a joke!
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
 
@@ -57,10 +59,13 @@ class RxCollection {
         this._crypter = Crypter.create(this.database.password, this.schema);
         this._keyCompressor = KeyCompressor.create(this.schema);
 
+
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
 
         this._observable$ = this.database.$
             .filter(event => event.data.col == this.name);
+
+        this._changeEventBuffer = ChangeEventBuffer.create(this);
 
         // INDEXES
         await Promise.all(
@@ -81,12 +86,15 @@ class RxCollection {
         );
 
 
-        // when data changes, send it to RxDocument in docCache
         this._subs.push(
             this._observable$.subscribe(cE => {
+
+                // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
-                if (!doc) return;
-                else doc._handleChangeEvent(cE);
+                if (doc) doc._handleChangeEvent(cE);
+
+                // when data changes, send it to every RxQuery in queryCache
+                this._queryCache.forEach(query => query._handleChangeEvent(cE));
             })
         );
     }
@@ -489,6 +497,8 @@ class RxCollection {
 
     async destroy() {
         this._subs.forEach(sub => sub.unsubscribe());
+        this._changeEventBuffer && this._changeEventBuffer.destroy();
+        this._queryCache.destroy();
         this.pouchSyncs.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
     }
