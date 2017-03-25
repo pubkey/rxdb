@@ -120,7 +120,7 @@ class RxQuery {
 
             // selector
             json.selector._id = json.selector[primPath];
-            delete json.selector[primPath];
+            if(primPath !== '_id') delete json.selector[primPath]; 
         }
 
         return json;
