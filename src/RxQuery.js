@@ -31,6 +31,16 @@ class RxQuery {
             queryObj._id = {};
 
         this.mquery = new MQuery(queryObj);
+
+
+        this.results$ = new util.Rx.BehaviorSubject(null);
+
+        /**
+         * if this is true, the results-state is not equal to the database
+         * which means that the query must run agains the database again
+         * @type {Boolean}
+         */
+        this.mustReExec = true;
     }
 
     // returns a clone of this RxQuery
@@ -60,6 +70,15 @@ class RxQuery {
             this.stringRep = JSON.stringify(stringObj);
         }
         return this.stringRep;
+    }
+
+    /**
+     * TODO
+     * @param {ChangeEvent}
+     */
+    _handleChangeEvent(changeEvent) {
+      
+
     }
 
     // observe the result of this query
