@@ -1,7 +1,10 @@
-## 3.X.X
+## 3.0.6 (March 29, 2017)
 
 Features:
   - [Population](https://github.com/pubkey/rxdb/blob/master/docs/Population.md) can now be done on arrays
+
+Other:
+  - improved typings
 
 ## 3.0.5 (March 21, 2017)
 

@@ -19,27 +19,27 @@ var _createClass = function () { function defineProperties(target, props) { for 
  * @return {Promise.<RxCollection>} promise with collection
  */
 var create = exports.create = function () {
-    var _ref16 = _asyncToGenerator(regeneratorRuntime.mark(function _callee16(_ref17) {
-        var database = _ref17.database,
-            name = _ref17.name,
-            schema = _ref17.schema,
-            _ref17$pouchSettings = _ref17.pouchSettings,
-            pouchSettings = _ref17$pouchSettings === undefined ? {} : _ref17$pouchSettings,
-            _ref17$migrationStrat = _ref17.migrationStrategies,
-            migrationStrategies = _ref17$migrationStrat === undefined ? {} : _ref17$migrationStrat,
-            _ref17$autoMigrate = _ref17.autoMigrate,
-            autoMigrate = _ref17$autoMigrate === undefined ? true : _ref17$autoMigrate,
-            _ref17$statics = _ref17.statics,
-            statics = _ref17$statics === undefined ? {} : _ref17$statics,
-            _ref17$methods = _ref17.methods,
-            methods = _ref17$methods === undefined ? {} : _ref17$methods;
+    var _ref15 = _asyncToGenerator(regeneratorRuntime.mark(function _callee15(_ref16) {
+        var database = _ref16.database,
+            name = _ref16.name,
+            schema = _ref16.schema,
+            _ref16$pouchSettings = _ref16.pouchSettings,
+            pouchSettings = _ref16$pouchSettings === undefined ? {} : _ref16$pouchSettings,
+            _ref16$migrationStrat = _ref16.migrationStrategies,
+            migrationStrategies = _ref16$migrationStrat === undefined ? {} : _ref16$migrationStrat,
+            _ref16$autoMigrate = _ref16.autoMigrate,
+            autoMigrate = _ref16$autoMigrate === undefined ? true : _ref16$autoMigrate,
+            _ref16$statics = _ref16.statics,
+            statics = _ref16$statics === undefined ? {} : _ref16$statics,
+            _ref16$methods = _ref16.methods,
+            methods = _ref16$methods === undefined ? {} : _ref16$methods;
         var collection;
-        return regeneratorRuntime.wrap(function _callee16$(_context16) {
+        return regeneratorRuntime.wrap(function _callee15$(_context15) {
             while (1) {
-                switch (_context16.prev = _context16.next) {
+                switch (_context15.prev = _context15.next) {
                     case 0:
                         if (!(schema.constructor.name !== 'RxSchema')) {
-                            _context16.next = 2;
+                            _context15.next = 2;
                             break;
                         }
 
@@ -47,7 +47,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(database.constructor.name !== 'RxDatabase')) {
-                            _context16.next = 4;
+                            _context15.next = 4;
                             break;
                         }
 
@@ -55,7 +55,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof autoMigrate !== 'boolean')) {
-                            _context16.next = 6;
+                            _context15.next = 6;
                             break;
                         }
 
@@ -72,11 +72,11 @@ var create = exports.create = function () {
                         Object.keys(methods).filter(function (funName) {
                             return schema.topLevelFields.includes(funName);
                         }).forEach(function (funName) {
-                            throw new Error('collection-method not allowed because its in the schema ' + funName);
+                            throw new Error('collection-method not allowed because fieldname is in the schema ' + funName);
                         });
 
                         collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
-                        _context16.next = 14;
+                        _context15.next = 14;
                         return collection.prepare();
 
                     case 14:
@@ -91,26 +91,26 @@ var create = exports.create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context16.next = 18;
+                            _context15.next = 18;
                             break;
                         }
 
-                        _context16.next = 18;
+                        _context15.next = 18;
                         return collection.migratePromise();
 
                     case 18:
-                        return _context16.abrupt('return', collection);
+                        return _context15.abrupt('return', collection);
 
                     case 19:
                     case 'end':
-                        return _context16.stop();
+                        return _context15.stop();
                 }
             }
-        }, _callee16, this);
+        }, _callee15, this);
     }));
 
     return function create(_x23) {
-        return _ref16.apply(this, arguments);
+        return _ref15.apply(this, arguments);
     };
 }();
 
@@ -1116,33 +1116,12 @@ var RxCollection = function () {
             return _runHooks;
         }()
     }, {
-        key: '_mustMigrate',
+        key: 'destroy',
         value: function () {
             var _ref14 = _asyncToGenerator(regeneratorRuntime.mark(function _callee14() {
                 return regeneratorRuntime.wrap(function _callee14$(_context14) {
                     while (1) {
                         switch (_context14.prev = _context14.next) {
-                            case 0:
-                            case 'end':
-                                return _context14.stop();
-                        }
-                    }
-                }, _callee14, this);
-            }));
-
-            function _mustMigrate() {
-                return _ref14.apply(this, arguments);
-            }
-
-            return _mustMigrate;
-        }()
-    }, {
-        key: 'destroy',
-        value: function () {
-            var _ref15 = _asyncToGenerator(regeneratorRuntime.mark(function _callee15() {
-                return regeneratorRuntime.wrap(function _callee15$(_context15) {
-                    while (1) {
-                        switch (_context15.prev = _context15.next) {
                             case 0:
                                 this._subs.forEach(function (sub) {
                                     return sub.unsubscribe();
@@ -1154,14 +1133,14 @@ var RxCollection = function () {
 
                             case 3:
                             case 'end':
-                                return _context15.stop();
+                                return _context14.stop();
                         }
                     }
-                }, _callee15, this);
+                }, _callee14, this);
             }));
 
             function destroy() {
-                return _ref15.apply(this, arguments);
+                return _ref14.apply(this, arguments);
             }
 
             return destroy;

@@ -324,8 +324,20 @@ function validateFieldsDeep(jsonSchema) {
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array') throw new Error('name \'item\' reserved for array-fields: ' + fieldName);
 
-        // if ref given, must be type=='string'
-        if (schemaObj.hasOwnProperty('ref') && schemaObj.type != 'string') throw new Error('fieldname ' + fieldName + ' has a ref but is not type:string');
+        // if ref given, must be type=='string' or type=='array' with string-items
+        if (schemaObj.hasOwnProperty('ref')) {
+            switch (schemaObj.type) {
+                case 'string':
+                    break;
+                case 'array':
+                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type != 'string') throw new Error('fieldname ' + fieldName + ' has a ref-array but items-type is not string');
+                    break;
+                default:
+                    throw new Error('fieldname ' + fieldName + ' has a ref but is not type string or array<string>');
+                    break;
+            }
+        }
+
         // if primary is ref, throw
         if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) throw new Error('fieldname ' + fieldName + ' cannot be primary and ref at same time');
 
