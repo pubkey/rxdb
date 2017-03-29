@@ -215,7 +215,7 @@ interface DatabaseCreator {
     multiInstance?: boolean;
 }
 
-export function create(DatabaseCreator): Promise<RxDatabase>;
+export function create(creator: DatabaseCreator): Promise<RxDatabase>;
 
 export function plugin(mod: any): void;
 
