@@ -196,7 +196,7 @@ declare class RxDocument {
 }
 
 declare class PouchDB {
-    collection(name: string, options:{ adapter:string }): Promise<RxCollection>;
+    constructor(name: string, options:{ adapter:string });
     info();
 }
 
