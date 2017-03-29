@@ -1,5 +1,9 @@
 <!-- REMOVE EVERYTHING WRITTEN IN UPPERCASE -->
 
+<!-- IMPORTANT: 
+If you have a common question which cannot be solved with a PR, ask it here https://gitter.im/pubkey/rxdb
+-->
+
 ## Case
 <!-- IS IT A BUG OR A REQUEST FOR A NEW FEATURE?-->
 
