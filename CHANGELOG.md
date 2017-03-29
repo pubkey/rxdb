@@ -2,7 +2,7 @@
 
 Breaking:
   - RxQuery's are now [immutable](docs/RxQuery.md)
-
+  - RxQuery.$ does not emit `null` when running
 
 ## 3.X.X
 

@@ -88,13 +88,9 @@ class RxCollection {
 
         this._subs.push(
             this._observable$.subscribe(cE => {
-
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
-
-                // when data changes, send it to every RxQuery in queryCache
-                this._queryCache.forEach(query => query._handleChangeEvent(cE));
             })
         );
     }

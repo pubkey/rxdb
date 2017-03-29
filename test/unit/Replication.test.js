@@ -150,7 +150,7 @@ describe('Replication.test.js', () => {
                     live: true
                 });
 
-                const pw8 = util.promiseWaitResolveable(1400);
+                const pw8 = util.promiseWaitResolveable(1700);
                 let events = [];
                 c2.$.subscribe(e => {
                     events.push(e);
@@ -160,8 +160,7 @@ describe('Replication.test.js', () => {
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
-                await util.promiseWait(100);
-                assert.equal(events.length, 1);
+                await util.waitUntil(() => events.length == 1);
                 assert.equal(events[0].constructor.name, 'RxChangeEvent');
 
                 c.database.destroy();
@@ -183,9 +182,9 @@ describe('Replication.test.js', () => {
                 const results = [];
                 c2.find().$.subscribe(res => {
                     results.push(res);
-                    if (results.length == 3) pw8.resolve();
+                    if (results.length == 2) pw8.resolve();
                 });
-                assert.equal(results.length, 1);
+                assert.equal(results.length, 0);
                 await util.promiseWait(5);
 
 
@@ -193,7 +192,7 @@ describe('Replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                assert.equal(results.length, 3);
+                assert.equal(results.length, 2);
 
                 c.database.destroy();
                 c2.database.destroy();
