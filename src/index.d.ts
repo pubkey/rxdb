@@ -15,7 +15,7 @@ declare class RxSchema {
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
 type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
-interface JsonSchema {
+export interface JsonSchema {
     type?: JsonSchemaTypes | JsonSchemaTypes[];
     description?: string;
     multipleOf?: number;
@@ -54,7 +54,7 @@ interface JsonSchema {
     format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
 }
 
-interface SchemaJSON {
+export interface SchemaJSON {
     title?: string;
     description?: string;
     version: number;
@@ -65,7 +65,7 @@ interface SchemaJSON {
     disableKeyCompression?: boolean;
 }
 
-interface CollectionCreator {
+export interface CollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: any;
@@ -201,7 +201,7 @@ declare class PouchDB {
 }
 
 
-interface RxChangeEventData {
+export interface RxChangeEventData {
     type: "INSERT" | "UPDATE" | "REMOVE";
 }
 
@@ -211,7 +211,7 @@ declare class RxChangeEvent {
 }
 
 
-interface DatabaseCreator {
+export interface DatabaseCreator {
     name: string;
     adapter: any;
     password?: string;
