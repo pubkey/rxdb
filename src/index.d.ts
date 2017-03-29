@@ -195,7 +195,10 @@ declare class RxDocument {
     destroy(): void;
 }
 
-
+declare class PouchDB {
+    constructor(name: string, options:{ adapter:string });
+    info();
+}
 
 
 interface RxChangeEventData {
@@ -208,7 +211,7 @@ declare class RxChangeEvent {
 }
 
 
-interface DatabaseCreator {
+export interface DatabaseCreator {
     name: string;
     adapter: any;
     password?: string;
@@ -225,5 +228,6 @@ RxCollection as RxCollection,
 RxQuery as RxQuery,
 RxSchema as RxSchema,
 RxDocument as RxDocument,
-RxChangeEvent as RxChangeEvent
+RxChangeEvent as RxChangeEvent,
+PouchDB as PouchDB
 };
