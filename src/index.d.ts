@@ -195,7 +195,10 @@ declare class RxDocument {
     destroy(): void;
 }
 
-
+declare class PouchDB {
+    collection(name: string, options:{ adapter:string }): Promise<RxCollection>;
+    info();
+}
 
 
 interface RxChangeEventData {
@@ -215,7 +218,7 @@ interface DatabaseCreator {
     multiInstance?: boolean;
 }
 
-export function create(DatabaseCreator): Promise<RxDatabase>;
+export function create(mod: DatabaseCreator): Promise<RxDatabase>;
 
 export function plugin(mod: any): void;
 
@@ -225,5 +228,6 @@ RxCollection as RxCollection,
 RxQuery as RxQuery,
 RxSchema as RxSchema,
 RxDocument as RxDocument,
-RxChangeEvent as RxChangeEvent
+RxChangeEvent as RxChangeEvent,
+PouchDB as PouchDB
 };
