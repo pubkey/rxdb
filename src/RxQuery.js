@@ -1,13 +1,13 @@
-/**
- * this is the query-builder
- * it basically uses mquery with a few overwrites
- */
+import {
+    default as deepEqual
+} from 'deep-equal';
 
 import {
     default as MQuery
 } from './mquery/mquery';
 import * as util from './util';
 import * as RxDocument from './RxDocument';
+import * as QueryChangeDetector from './QueryChangeDetector';
 
 const defaultQuery = {
     _id: {}
@@ -32,15 +32,19 @@ class RxQuery {
 
         this.mquery = new MQuery(queryObj);
 
-
-        this.results$ = new util.Rx.BehaviorSubject(null);
+        this._queryChangeDetector = QueryChangeDetector.create(this);
+        this._resultsData = null;
+        this._results$ = new util.Rx.BehaviorSubject(null);
+        this._observable$ = null;
+        this._latestChangeEvent = -1;
+        this._runningPromise = Promise.resolve(true);
 
         /**
          * if this is true, the results-state is not equal to the database
          * which means that the query must run agains the database again
          * @type {Boolean}
          */
-        this.mustReExec = true;
+        this._mustReExec = true;
     }
 
     // returns a clone of this RxQuery
@@ -72,46 +76,94 @@ class RxQuery {
         return this.stringRep;
     }
 
-    /**
-     * TODO
-     * @param {ChangeEvent}
-     */
-    _handleChangeEvent(changeEvent) {
-      
 
+    /**
+     * ensures that the results of this query is equal to the results which a query over the database would give
+     * @return {Promise}
+     */
+    async _ensureEqual() {
+        // make sure it does not run in parallel
+        await this._runningPromise;
+        let resolve;
+        this._runningPromise = new Promise(res => {
+            resolve = res;
+        });
+
+        if (!this._mustReExec) {
+            const changeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent);
+            this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+            if (!changeEvents) this._mustReExec = true; // _latestChangeEvent is too old
+            else {
+                const changeResult = this._queryChangeDetector.runChangeDetection(this._resultsData, changeEvents);
+                if (changeResult.mustReExec) this._mustReExec = true;
+                if (changeResult.resultData) this._setResultData(changeResult.resultData);
+            }
+        }
+
+        if (this._mustReExec) {
+            this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+            const newResultData = await this._execOverDatabase();
+            this._setResultData(newResultData);
+        }
+
+        resolve(true);
     }
 
-    // observe the result of this query
-    get $() {
-        if (!this._subject) {
-            this._subject = new util.Rx.BehaviorSubject(null);
-            this._obsRunning = false;
-            const collection$ = this.collection.$
-                .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
-                .startWith(1)
-                .filter(x => !this._obsRunning)
-                .do(x => this._obsRunning = true)
-                .mergeMap(async(cEvent) => {
-                    const docs = await this.collection._pouchFind(this);
-                    return docs;
-                })
-                .do(x => this._obsRunning = false)
-                .distinctUntilChanged((prev, now) => {
-                    return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
-                })
-                .map(docs => this.collection._createDocuments(docs))
-                .do(docs => this._subject.next(docs))
-                .map(x => '');
+    _setResultData(newResultData) {
+        if (!deepEqual(newResultData, this._resultsData)) {
+            this._resultsData = newResultData;
+            const newResults = this.collection._createDocuments(this._resultsData);
+            this._results$.next(newResults);
+        }
+    }
 
+    /**
+     * executes the query on the database
+     * @return {Promise<{}[]>} returns new resultData
+     */
+    async _execOverDatabase() {
+        let docsData, ret;
+        switch (this.op) {
+            case 'find':
+                docsData = await this.collection._pouchFind(this);
+                break;
+            case 'findOne':
+                docsData = await this.collection._pouchFind(this, 1);
+                break;
+            default:
+                throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
+        }
+
+        this._mustReExec = false;
+        return docsData;
+    }
+
+    get $() {
+        if (!this._observable$) {
             this._observable$ = util.Rx.Observable.merge(
-                    this._subject,
-                    collection$
-                )
-                .filter(x => (typeof x != 'string' || x != ''));
+                    this._results$,
+                    this.collection.$
+                    .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
+                    .mergeMap(async(changeEvent) => this._ensureEqual())
+                    .filter(() => false),
+                    util.Rx.Observable.defer(() => {
+                        return this._ensureEqual();
+                    })
+                    .mergeMap(async(changeEvent) => this._ensureEqual())
+                ).filter(results => results != null)
+                .map(results => {
+                    switch (this.op) {
+                        case 'find':
+                            return results;
+                        case 'findOne':
+                            if (results.length === 0) return null;
+                            return results[0];
+                            break;
+                    }
+                });
         }
         return this._observable$;
     }
-
 
     toJSON() {
         const json = {
@@ -197,24 +249,10 @@ class RxQuery {
         return docs;
     }
 
+
     async exec() {
-        let docs, ret, doc;
-        switch (this.op) {
-            case 'find':
-                docs = await this.collection._pouchFind(this);
-                ret = this.collection._createDocuments(docs);
-                return ret;
-                break;
-            case 'findOne':
-                docs = await this.collection._pouchFind(this, 1);
-                if (docs.length === 0) return null;
-                doc = docs.shift();
-                ret = this.collection._createDocument(doc);
-                return ret;
-                break;
-            default:
-                throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
-        }
+        return await this.$
+            .first().toPromise();
     }
 
     /**

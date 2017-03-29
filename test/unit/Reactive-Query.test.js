@@ -170,7 +170,7 @@ describe('Reactive-Query.test.js', () => {
 
             const results = [];
             const sub = c2.find().$.subscribe(docs => results.push(docs));
-            await util.waitUntil(() => results.length >= 2);
+            await util.waitUntil(() => results.length >= 1);
 
             assert.equal(c2._docCache.get(docId).getPrimary(), docId);
 
@@ -187,7 +187,7 @@ describe('Reactive-Query.test.js', () => {
             query.$.subscribe(newResults => {
                 recieved++;
             });
-            await util.waitUntil(() => recieved == 2);
+            await util.waitUntil(() => recieved == 1);
             c.database.destroy();
         });
     });

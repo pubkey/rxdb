@@ -37,6 +37,21 @@ class ChangeEventBuffer {
         return this.buffer.length - (this.counter - pointer);
     }
 
+    getFrom(pointer) {
+        const lowestCounter = this.counter - this.buffer.length;
+        if (pointer < lowestCounter)
+            return null;
+
+        const ret = [];
+        while (pointer < this.counter) {
+            const index = this.getArrayIndexByPointer(pointer);
+            const cE = this.buffer[index];
+            ret.push(cE);
+            pointer++;
+        }
+        return;
+    }
+
     runFrom(pointer, fn) {
         const lowestCounter = this.counter - this.buffer.length;
         if (pointer < lowestCounter)
