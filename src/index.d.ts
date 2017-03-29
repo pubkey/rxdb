@@ -15,7 +15,7 @@ declare class RxSchema {
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
 type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
-export interface JsonSchema {
+interface JsonSchema {
     type?: JsonSchemaTypes | JsonSchemaTypes[];
     description?: string;
     multipleOf?: number;
@@ -54,7 +54,7 @@ export interface JsonSchema {
     format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
 }
 
-export interface SchemaJSON {
+interface SchemaJSON {
     title?: string;
     description?: string;
     version: number;
@@ -65,7 +65,7 @@ export interface SchemaJSON {
     disableKeyCompression?: boolean;
 }
 
-export interface CollectionCreator {
+interface CollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: any;
@@ -201,7 +201,7 @@ declare class PouchDB {
 }
 
 
-export interface RxChangeEventData {
+interface RxChangeEventData {
     type: "INSERT" | "UPDATE" | "REMOVE";
 }
 
@@ -218,7 +218,7 @@ export interface DatabaseCreator {
     multiInstance?: boolean;
 }
 
-export function create(mod: DatabaseCreator): Promise<RxDatabase>;
+export function create(creator: DatabaseCreator): Promise<RxDatabase>;
 
 export function plugin(mod: any): void;
 
