@@ -374,7 +374,7 @@ function validateCouchDBString(name) {
     var regStr = '^[a-z][a-z0-9]*$';
     var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new Error('\n            collection- and database-names must match the regex:\n            - regex: ' + regStr + '\n            - given: ' + name + '\n    ');
+        throw new Error('\n            collection- and database-names must match the regex:\n            - regex: ' + regStr + '\n            - given: ' + name + '\n            - info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n    ');
     }
 
     return true;

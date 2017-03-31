@@ -172,7 +172,7 @@ var RxDocument = function () {
         key: 'populate',
         value: function () {
             var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(path, object) {
-                var schemaObj, value, refCollection, doc;
+                var schemaObj, value, refCollection;
                 return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
@@ -206,14 +206,23 @@ var RxDocument = function () {
                                 throw new Error('ref-collection (' + schemaObj.ref + ') not in database');
 
                             case 9:
-                                _context.next = 11;
-                                return refCollection.findOne(value).exec();
+                                if (!(schemaObj.type == 'array')) {
+                                    _context.next = 13;
+                                    break;
+                                }
 
-                            case 11:
-                                doc = _context.sent;
-                                return _context.abrupt('return', doc);
+                                return _context.abrupt('return', Promise.all(value.map(function (id) {
+                                    return refCollection.findOne(id).exec();
+                                })));
 
                             case 13:
+                                _context.next = 15;
+                                return refCollection.findOne(value).exec();
+
+                            case 15:
+                                return _context.abrupt('return', _context.sent);
+
+                            case 16:
                             case 'end':
                                 return _context.stop();
                         }
@@ -261,14 +270,16 @@ var RxDocument = function () {
             if (pathProperties.properties) pathProperties = pathProperties.properties;
 
             Object.keys(pathProperties).forEach(function (key) {
+                var fullPath = util.trimDots(objPath + '.' + key);
+
                 // getter - value
                 valueObj.__defineGetter__(key, function () {
-                    return _this.get(util.trimDots(objPath + '.' + key));
+                    return _this.get(fullPath);
                 });
                 // getter - observable$
                 Object.defineProperty(valueObj, key + '$', {
                     get: function get() {
-                        return _this.get$(util.trimDots(objPath + '.' + key));
+                        return _this.get$(fullPath);
                     },
                     enumerable: false,
                     configurable: false
@@ -276,14 +287,14 @@ var RxDocument = function () {
                 // getter - populate_
                 Object.defineProperty(valueObj, key + '_', {
                     get: function get() {
-                        return _this.populate(util.trimDots(objPath + '.' + key));
+                        return _this.populate(fullPath);
                     },
                     enumerable: false,
                     configurable: false
                 });
                 // setter - value
                 valueObj.__defineSetter__(key, function (val) {
-                    return _this.set(util.trimDots(objPath + '.' + key), val);
+                    return _this.set(fullPath, val);
                 });
             });
         }
