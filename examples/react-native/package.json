@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "babel-plugin-transform-runtime": "6.15.0",
-    "babel-polyfill": "6.20.0",
+    "babel-polyfill": "^6.20.0",
     "babel-preset-es2015-native-modules": "6.9.4",
     "babel-runtime": "6.20.0",
     "es6-symbol": "3.1.0",
@@ -20,7 +20,8 @@
     "random-token": "0.0.8",
     "react": "15.4.1",
     "react-native": "0.39.2",
-    "rxdb": "2.0.5"
+    "rxdb": "2.0.5",
+    "rxjs": "^5.2.1-smooth"
   },
   "devDependencies": {
     "babel-jest": "18.0.0",
