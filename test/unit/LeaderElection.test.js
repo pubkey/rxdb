@@ -68,7 +68,6 @@ describe('LeaderElection.test.js', () => {
             c.database.destroy();
         });
         it('should signal after time', async() => {
-
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -77,8 +76,13 @@ describe('LeaderElection.test.js', () => {
             await leaderElector.beLeader();
             const dbObj = await c.database._adminPouch.get(LeaderElector.documentID);
             const t = dbObj.t;
-            await util.promiseWait(LeaderElector.SIGNAL_TIME * 2);
-            const dbObj2 = await c.database._adminPouch.get(LeaderElector.documentID);
+
+            let dbObj2;
+            await util.waitUntil(async() => {
+                dbObj2 = await c.database._adminPouch.get(LeaderElector.documentID);
+                return dbObj2.t > t;
+            });
+
             assert.ok(dbObj2.t > t);
             c.database.destroy();
         });
@@ -145,7 +149,8 @@ describe('LeaderElection.test.js', () => {
                 .subscribe(msg => msgs.push(msg));
             const is = await leaderElector.die();
             assert.ok(is);
-            await util.promiseWait(500);
+
+            await util.waitUntil(() => msgs.length == 1);
             assert.equal(msgs.length, 1);
 
             sub.unsubscribe();
@@ -240,9 +245,13 @@ describe('LeaderElection.test.js', () => {
                 dbs.map(db => db.leaderElector.applyOnce())
             );
 
-            let leaderCount = dbs
-                .filter(db => db.leaderElector.isLeader == true)
-                .length;
+            let leaderCount;
+            await util.waitUntil(async() => {
+                leaderCount = dbs
+                    .filter(db => db.leaderElector.isLeader == true)
+                    .length;
+                return leaderCount == 1;
+            });
             assert.equal(leaderCount, 1);
 
             // let leader die
@@ -252,9 +261,12 @@ describe('LeaderElection.test.js', () => {
             await leader.destroy();
 
             // noone should be leader
-            leaderCount = dbs
-                .filter(db => db.leaderElector.isLeader == true)
-                .length;
+            await util.waitUntil(async() => {
+                leaderCount = dbs
+                    .filter(db => db.leaderElector.isLeader == true)
+                    .length;
+                return leaderCount == 0;
+            });
             assert.equal(leaderCount, 0);
 
             // restart election
@@ -262,9 +274,12 @@ describe('LeaderElection.test.js', () => {
                 dbs.map(db => db.leaderElector.applyOnce())
             );
 
-            leaderCount = dbs
-                .filter(db => db.leaderElector.isLeader == true)
-                .length;
+            await util.waitUntil(async() => {
+                leaderCount = dbs
+                    .filter(db => db.leaderElector.isLeader == true)
+                    .length;
+                return leaderCount == 1;
+            });
             assert.equal(leaderCount, 1);
 
             let leader2 = dbs
