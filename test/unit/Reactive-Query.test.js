@@ -21,22 +21,19 @@ process.on('unhandledRejection', function(err) {
 
 describe('Reactive-Query.test.js', () => {
     describe('positive', () => {
-        it('get an init value of null on .subscribe() and [] later', async() => {
+        it('get results of array when .subscribe() and filled array later', async() => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = null;
-            const pw8 = util.promiseWaitResolveable();
-
+            let count = 0;
             query.$.subscribe(newResults => {
+                count++;
                 lastValue = newResults;
-                if (!newResults) pw8.resolve();
             });
-            assert.equal(lastValue, null);
-            await pw8.promise;
-
-            await util.promiseWait(100); // w8 a bit to make sure no other fires
+            await util.waitUntil(() => count == 1);
             assert.ok(lastValue);
             assert.equal(lastValue.length, 1);
+            assert.equal(count, 1);
             c.database.destroy();
         });
         it('get the updated docs on Collection.insert()', async() => {
@@ -87,12 +84,13 @@ describe('Reactive-Query.test.js', () => {
             query.$.subscribe(newResults => {
                 lastValue = newResults;
             });
-            await util.promiseWait(100);
+            await util.waitUntil(() => lastValue.length > 0);
             let lastValue2 = [];
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
-            await util.promiseWait(150);
+            await util.waitUntil(() => lastValue2.length > 0);
+            await util.promiseWait(10);
             assert.equal(lastValue2.length, 1);
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();

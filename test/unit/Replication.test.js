@@ -81,7 +81,7 @@ describe('Replication.test.js', () => {
             const obj = schemaObjects.human();
             await c.insert(obj);
             await pw8.promise;
-            await util.promiseWait(150);
+            await util.promiseWait(10);
 
             const docs = await c2.find().exec();
             assert.equal(docs.length, 1);
@@ -125,7 +125,7 @@ describe('Replication.test.js', () => {
             const obj = schemaObjects.human();
             await c.insert(obj);
             await pw8.promise;
-            await util.promiseWait(150);
+            await util.promiseWait(10);
 
             assert.equal(e1.length, 1);
             assert.equal(e1.length, e2.length);

@@ -194,7 +194,7 @@ export async function waitUntil(fun) {
     let ok = false;
     while (!ok) {
         await promiseWait(10);
-        ok = fun();
+        ok = await fun();
     }
 }
 
