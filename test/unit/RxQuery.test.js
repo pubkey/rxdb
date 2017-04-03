@@ -208,7 +208,73 @@ describe('RxQuery.test.js', () => {
         });
     });
 
+    describe('.exec()', () => {
+        it('reusing exec should not make a execOverDatabase', async() => {
+            const col = await humansCollection.create(2);
+            const q = col.find().where('name').ne('Alice');
+
+
+            let results = await q.exec();
+            assert.equal(results.length, 2);
+            assert.equal(q._execOverDatabaseCount, 1);
+
+            await util.promiseWait(5);
+            results = await q.exec();
+            assert.equal(results.length, 2);
+            assert.equal(q._execOverDatabaseCount, 1);
+
+            col.database.destroy();
+        });
+        it('should execOverDatabase when still subscribed and changeEvent comes in', async() => {
+            const col = await humansCollection.create(2);
+
+            // it is assumed that this query can never handled by the QueryChangeDetector
+            const q = col.find().sort('-passportId').limit(1);
+
+            const fired = [];
+            q.$.subscribe(res => fired.push(res));
+
+            await util.waitUntil(() => fired.length == 1);
+            assert.equal(q._execOverDatabaseCount, 1);
+            assert.equal(q._latestChangeEvent, 2);
+
+            const addObj = schemaObjects.human();
+            addObj.passportId = 'zzzzzzzz';
+            await col.insert(addObj);
+            assert.equal(q.collection._changeEventBuffer.counter, 3);
+            assert.equal(q._latestChangeEvent, 3);
+
+            await util.waitUntil(() => fired.length == 2);
+            assert.equal(fired[1].pop().passportId, addObj.passportId);
+        });
+        it('reusing exec should execOverDatabase when change happened', async() => {
+            const col = await humansCollection.create(2);
+
+            // it is assumed that this query can never handled by the QueryChangeDetector
+            const q = col.find().where('name').ne('Alice').limit(1).skip(1);
+
+
+            let results = await q.exec();
+            assert.equal(results.length, 1);
+            assert.equal(q._execOverDatabaseCount, 1);
+            assert.equal(q._latestChangeEvent, 2);
+
+            await col.insert(schemaObjects.human());
+            assert.equal(q.collection._changeEventBuffer.counter, 3);
+            assert.equal(q._latestChangeEvent, 2);
+
+            console.log('________--_____________');
+
+            await util.promiseWait(5);
+            results = await q.exec();
+            assert.equal(results.length, 1);
+            assert.equal(q._execOverDatabaseCount, 2);
+
+            col.database.destroy();
+        });
+    });
+
     describe('e', () => {
-        //    it('e', () => process.exit());
+        it('e', () => process.exit());
     });
 });

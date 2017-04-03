@@ -45,6 +45,13 @@ class RxQuery {
          * @type {Boolean}
          */
         this._mustReExec = true;
+
+        /**
+         * counts how often the execution on the whole db was done
+         * (used for tests and debugging)
+         * @type {Number}
+         */
+        this._execOverDatabaseCount = 0;
     }
 
     // returns a clone of this RxQuery
@@ -77,11 +84,22 @@ class RxQuery {
     }
 
 
+    _isEqualToDatabaseState() {
+        return this._latestChangeEvent >= this.collection._changeEventBuffer.counter;
+    }
+
     /**
      * ensures that the results of this query is equal to the results which a query over the database would give
      * @return {Promise}
      */
     async _ensureEqual() {
+
+        console.log('ee');
+        console.log(this.collection._changeEventBuffer.counter);
+        console.log(this._latestChangeEvent);
+        console.dir(this.collection._changeEventBuffer.buffer);
+
+
         // make sure it does not run in parallel
         await this._runningPromise;
         let resolve;
@@ -122,6 +140,9 @@ class RxQuery {
      * @return {Promise<{}[]>} returns new resultData
      */
     async _execOverDatabase() {
+        console.log('execoverdb');
+        console.log(this._latestChangeEvent);
+        this._execOverDatabaseCount++;
         let docsData, ret;
         switch (this.op) {
             case 'find':
@@ -140,27 +161,24 @@ class RxQuery {
 
     get $() {
         if (!this._observable$) {
+
+            const res$ = this._results$
+                .filter(() => {
+                    if (!this._isEqualToDatabaseState()) {
+                        this._ensureEqual();
+                        return false;
+                    } else return true;
+                }).asObservable();
+
+            const changeEvents$ = this.collection.$
+                .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
+                .mergeMap(async(changeEvent) => this._ensureEqual())
+                .filter(() => false);
+
             this._observable$ = util.Rx.Observable.merge(
-                    this._results$,
-                    this.collection.$
-                    .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
-                    .mergeMap(async(changeEvent) => this._ensureEqual())
-                    .filter(() => false),
-                    util.Rx.Observable.defer(() => {
-                        return this._ensureEqual();
-                    })
-                    .mergeMap(async(changeEvent) => this._ensureEqual())
-                ).filter(results => results != null)
-                .map(results => {
-                    switch (this.op) {
-                        case 'find':
-                            return results;
-                        case 'findOne':
-                            if (results.length === 0) return null;
-                            return results[0];
-                            break;
-                    }
-                });
+                res$,
+                changeEvents$
+            );
         }
         return this._observable$;
     }
