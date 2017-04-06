@@ -119,8 +119,12 @@ class RxQuery {
         }
 
         if (this._mustReExec) {
-            this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+
+            // counter can change while _execOverDatabase() is running
+            const latestAfter = this.collection._changeEventBuffer.counter;
+
             const newResultData = await this._execOverDatabase();
+            this._latestChangeEvent = latestAfter;
             this._setResultData(newResultData);
         }
 
