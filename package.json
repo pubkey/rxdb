@@ -30,10 +30,10 @@
   "scripts": {
     "pretest": "npm run transpile",
     "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
-    "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test && npm run posttest",
+    "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test",
     "test:browser": "npm run pretest && karma start ./config/karma.conf.js",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
-    "posttest": "rimraf -rf test_tmp/",
+    "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/lib/ && rm .transpile_state.json",
     "lint": "eslint --ignore-path ./config/.eslintignore src test ./config/gulpfile.js",
     "transpile": "node scripts/transpile.js",
     "build:rollup": "rollup -c --environment UGLIFY:true --config ./config/rollup.config.js && rollup -c --environment UGLIFY:false --config ./config/rollup.config.js",
