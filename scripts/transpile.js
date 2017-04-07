@@ -35,13 +35,15 @@ async function transpileFile(srcLocation, goalLocation) {
 
     // ensure folder exists
     const folder = path.join(goalLocation, '..');
-    if (!fs.existsSync(folder)) fs.mkdirSync(folder);
+    if (!fs.existsSync(folder)) shell.mkdir('-p', folder);
 
     await del.promise([goalLocation]);
     const cmd = 'node node_modules/babel-cli/bin/babel.js ' + srcLocation + ' --out-file ' + goalLocation;
     DEBUG && console.dir(cmd);
     if (shell.exec(cmd).code !== 0)
         throw new Error('transpiling ' + srcLocation + ' failed');
+    console.log('transpiled: ' + srcLocation);
+
 
     return;
 }
@@ -85,8 +87,8 @@ Promise.all(files
             });
         }))
     .then(() => {
-        DEBUG && console.log('DONE');
         nconf.save(function(err) {
             DEBUG && console.log('conf saved');
+            console.log('transpile.js: DONE');
         });
     });
