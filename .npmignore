@@ -5,3 +5,4 @@ docfiles/
 docs/
 log.txt
 test/
+.transpile_state.json
