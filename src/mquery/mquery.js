@@ -287,7 +287,6 @@ Query.prototype.elemMatch = function() {
 
 /**
  * Sets the sort order
-<<<<<<< HEAD
  * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
  * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
  * ####Example
