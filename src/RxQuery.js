@@ -84,17 +84,20 @@ class RxQuery {
     }
 
 
-    _isEqualToDatabaseState() {
-        return this._latestChangeEvent >= this.collection._changeEventBuffer.counter;
-    }
-
     /**
      * ensures that the results of this query is equal to the results which a query over the database would give
-     * @return {Promise}
+     * @return {Promise<boolean>} true if results have changed
      */
     async _ensureEqual() {
 
-        console.log('ee');
+        if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
+            return false;
+
+
+
+        let ret = false;
+
+        console.log('_ensureEqual()');
         console.log(this.collection._changeEventBuffer.counter);
         console.log(this._latestChangeEvent);
         console.dir(this.collection._changeEventBuffer.buffer);
@@ -102,6 +105,7 @@ class RxQuery {
 
         // make sure it does not run in parallel
         await this._runningPromise;
+        console.log('XXXXXXXX');
         let resolve;
         this._runningPromise = new Promise(res => {
             resolve = res;
@@ -114,9 +118,14 @@ class RxQuery {
             else {
                 const changeResult = this._queryChangeDetector.runChangeDetection(this._resultsData, changeEvents);
                 if (changeResult.mustReExec) this._mustReExec = true;
-                if (changeResult.resultData) this._setResultData(changeResult.resultData);
+                if (changeResult.resultData && !deepEqual(changeResult.resultData, this._resultsData)) {
+                    ret = true;
+                    this._setResultData(changeResult.resultData);
+                }
             }
         }
+
+        console.log('IIIIII');
 
         if (this._mustReExec) {
 
@@ -125,18 +134,24 @@ class RxQuery {
 
             const newResultData = await this._execOverDatabase();
             this._latestChangeEvent = latestAfter;
-            this._setResultData(newResultData);
+            if (!deepEqual(newResultData, this._resultsData)) {
+                ret = true;
+                this._setResultData(newResultData);
+            }
         }
 
+        console.log('MMMMMMM');
+
         resolve(true);
+
+        console.log('_ensureEqual(): DONE');
+        return ret;
     }
 
     _setResultData(newResultData) {
-        if (!deepEqual(newResultData, this._resultsData)) {
-            this._resultsData = newResultData;
-            const newResults = this.collection._createDocuments(this._resultsData);
-            this._results$.next(newResults);
-        }
+        this._resultsData = newResultData;
+        const newResults = this.collection._createDocuments(this._resultsData);
+        this._results$.next(newResults);
     }
 
     /**
@@ -167,12 +182,13 @@ class RxQuery {
         if (!this._observable$) {
 
             const res$ = this._results$
-                .filter(() => {
-                    if (!this._isEqualToDatabaseState()) {
-                        this._ensureEqual();
-                        return false;
-                    } else return true;
-                }).asObservable();
+                .mergeMap(async(results) => {
+                    const hasChanged = await this._ensureEqual();
+                    if (hasChanged) return 'WAITFORNEXTEMIT';
+                    return results;
+                })
+                .filter(results => results != 'WAITFORNEXTEMIT')
+                .asObservable();
 
             const changeEvents$ = this.collection.$
                 .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
@@ -274,7 +290,12 @@ class RxQuery {
 
     async exec() {
         return await this.$
-            .first().toPromise();
+            .first()
+            .do((x) => {
+                console.log('FIRST!');
+                console.dir(x);
+            })
+            .toPromise();
     }
 
     /**
