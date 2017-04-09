@@ -17,7 +17,7 @@ import {
  * @api private
  */
 
-const merge = exports.merge = function merge(to, from) {
+export function merge(to, from) {
     const keys = Object.keys(from);
     let i = keys.length;
     let key;
@@ -27,7 +27,7 @@ const merge = exports.merge = function merge(to, from) {
         if ('undefined' === typeof to[key])
             to[key] = from[key];
         else {
-            if (exports.isObject(from[key]))
+            if (isObject(from[key]))
                 merge(to[key], from[key]);
             else
                 to[key] = from[key];
@@ -42,7 +42,7 @@ const merge = exports.merge = function merge(to, from) {
  * @param {Object} from
  * @api private
  */
-const mergeClone = exports.mergeClone = function mergeClone(to, from) {
+export function mergeClone(to, from) {
     const keys = Object.keys(from);
     let i = keys.length;
     let key;
@@ -56,7 +56,7 @@ const mergeClone = exports.mergeClone = function mergeClone(to, from) {
                 retainKeyOrder: 1
             });
         } else {
-            if (exports.isObject(from[key]))
+            if (isObject(from[key]))
                 mergeClone(to[key], from[key]);
             else {
                 // make sure to retain key order here because of a bug handling the
@@ -75,7 +75,7 @@ const mergeClone = exports.mergeClone = function mergeClone(to, from) {
  */
 
 const _toString = Object.prototype.toString;
-const toString = exports.toString = function(arg) {
+export function toString(arg) {
     return _toString.call(arg);
 };
 
@@ -86,19 +86,19 @@ const toString = exports.toString = function(arg) {
  * @return {Boolean}
  */
 
-const isObject = exports.isObject = function(arg) {
-    return '[object Object]' == exports.toString(arg);
+export function isObject(arg) {
+    return '[object Object]' == toString(arg);
 };
 
 
-exports.create = Object.create;
+export const create = Object.create;
 
 
 /**
  * inheritance
  */
-exports.inherits = function(ctor, superCtor) {
-    ctor.prototype = exports.create(superCtor.prototype);
+export function inherits(ctor, superCtor) {
+    ctor.prototype = create(superCtor.prototype);
     ctor.prototype.constructor = ctor;
 };
 
@@ -110,6 +110,6 @@ exports.inherits = function(ctor, superCtor) {
  * @return {Boolean}
  */
 
-exports.isArgumentsObject = function(v) {
+export function isArgumentsObject(v) {
     return Object.prototype.toString.call(v) === '[object Arguments]';
 };

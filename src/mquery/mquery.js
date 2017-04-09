@@ -3,7 +3,7 @@
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
 'use strict';
-const utils = require('./mquery_utils');
+import * as utils from './mquery_utils';
 import {
     default as clone
 } from 'clone';
