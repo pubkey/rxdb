@@ -91,8 +91,9 @@ describe('PouchDB-integration.test.js', () => {
                 if (platform.isNode()) return;
                 if (/Firefox/.test(window.navigator.userAgent)) return;
 
-                // no websql in internet explorer
+                // no websql in internet explorer nor Edge
                 if (platform.name == 'IE') return;
+                if (platform.name == 'Microsoft Edge') return;
 
                 RxDB.plugin(require('pouchdb-adapter-websql'));
                 const db = await RxDB.create({
