@@ -43,7 +43,7 @@ class QueryChangeDetector {
      * @param {object} docData
      * @return {boolean}
      */
-    doesDocumentMatchQuery(docData) {
+    doesDocMatchQuery(docData) {
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
         const retDocs = inMemoryFilter(
             [{
@@ -54,6 +54,17 @@ class QueryChangeDetector {
             inMemoryFields
         );
         return retDocs.length == 1;
+    }
+
+    /**
+     * check if the document exists in the results data
+     * @param {object} docData
+     * @param {object[]} resultData
+     */
+    isDocInResultData(docData, resultData) {
+        const primaryPath = this.query.collection.schema.primaryPath;
+        const first = resultData.find(doc => doc[primaryPath] == docData[primaryPath]);
+        return !!first;
     }
 
 }
