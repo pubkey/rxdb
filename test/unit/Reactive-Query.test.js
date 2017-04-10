@@ -73,6 +73,8 @@ describe('Reactive-Query.test.js', () => {
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
+            await util.promiseWait(100);
+
             await util.waitUntil(() => lastValue2 && lastValue2.length == 1);
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();

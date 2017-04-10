@@ -248,11 +248,6 @@ describe('RxQuery.test.js', () => {
             assert.equal(fired[1].pop().passportId, addObj.passportId);
         });
         it('reusing exec should execOverDatabase when change happened', async() => {
-
-            // TODO this test fails sometimes
-            console.log('-----------------');
-
-
             const col = await humansCollection.create(2);
 
             // it is assumed that this query can never handled by the QueryChangeDetector
@@ -271,9 +266,7 @@ describe('RxQuery.test.js', () => {
             assert.equal(q._latestChangeEvent, 2);
 
             await util.promiseWait(1);
-            console.log('PPPPOOOOIIINNNTTTT');
             results = await q.exec();
-            console.log('222222222PPPPOOOOIIINNNTTTT');
             assert.equal(results.length, 1);
             assert.equal(q._execOverDatabaseCount, 2);
 
@@ -282,6 +275,6 @@ describe('RxQuery.test.js', () => {
     });
 
     describe('e', () => {
-        it('e', () => process.exit());
+//        it('e', () => process.exit());
     });
 });

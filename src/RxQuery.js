@@ -93,19 +93,10 @@ class RxQuery {
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
 
-
-
         let ret = false;
-
-        console.log('_ensureEqual()');
-        console.log(this.collection._changeEventBuffer.counter);
-        console.log(this._latestChangeEvent);
-        console.dir(this.collection._changeEventBuffer.buffer);
-
 
         // make sure it does not run in parallel
         await this._runningPromise;
-        console.log('XXXXXXXX');
         let resolve;
         this._runningPromise = new Promise(res => {
             resolve = res;
@@ -125,8 +116,6 @@ class RxQuery {
             }
         }
 
-        console.log('IIIIII');
-
         if (this._mustReExec) {
 
             // counter can change while _execOverDatabase() is running
@@ -140,11 +129,7 @@ class RxQuery {
             }
         }
 
-        console.log('MMMMMMM');
-
         resolve(true);
-
-        console.log('_ensureEqual(): DONE');
         return ret;
     }
 
@@ -159,8 +144,6 @@ class RxQuery {
      * @return {Promise<{}[]>} returns new resultData
      */
     async _execOverDatabase() {
-        console.log('execoverdb');
-        console.log(this._latestChangeEvent);
         this._execOverDatabaseCount++;
         let docsData, ret;
         switch (this.op) {
@@ -196,9 +179,29 @@ class RxQuery {
                 .filter(() => false);
 
             this._observable$ = util.Rx.Observable.merge(
-                res$,
-                changeEvents$
-            );
+                    res$,
+                    changeEvents$
+                )
+                .filter(x => x != null)
+                .map(results => {
+                    if (this.op != 'findOne') return results;
+                    else if (results.length == 0) return null;
+                    else return results[0];
+                });
+
+            /**
+             * switch (this.op) {
+                 case 'find':
+                     docsData = await this.collection._pouchFind(this);
+                     break;
+                 case 'findOne':
+                     docsData = await this.collection._pouchFind(this, 1);
+                     break;
+                 default:
+                     throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
+             }
+             */
+
         }
         return this._observable$;
     }
@@ -291,10 +294,6 @@ class RxQuery {
     async exec() {
         return await this.$
             .first()
-            .do((x) => {
-                console.log('FIRST!');
-                console.dir(x);
-            })
             .toPromise();
     }
 
