@@ -10,14 +10,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+var _mquery_utils = require('./mquery_utils');
+
+var utils = _interopRequireWildcard(_mquery_utils);
+
 var _clone = require('clone');
 
 var _clone2 = _interopRequireDefault(_clone);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var utils = require('./mquery_utils');
-
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * Query constructor used for building queries.
@@ -287,7 +290,6 @@ Query.prototype.elemMatch = function () {
 
 /**
  * Sets the sort order
-<<<<<<< HEAD
  * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
  * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
  * ####Example
