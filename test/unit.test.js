@@ -4,6 +4,7 @@ module.exports = [
     '../test_tmp/unit/PouchDB-integration.test.js',
     '../test_tmp/unit/ChangeEventBuffer.test.js', // TODO move this down
     '../test_tmp/unit/RxQuery.test.js', // TODO move this down
+    '../test_tmp/unit/QueryChangeDetector.test.js', // TODO move this down
     '../test_tmp/unit/RxBroadcastChannel.test.js',
     '../test_tmp/unit/RxSchema.test.js',
     '../test_tmp/unit/KeyCompression.test.js',
@@ -26,4 +27,3 @@ module.exports = [
     '../test_tmp/unit/ImportExport.test.js',
     '../test_tmp/unit/CrossInstance.test.js'
 ];
- 

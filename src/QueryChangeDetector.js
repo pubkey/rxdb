@@ -1,3 +1,10 @@
+import {
+    default as inMemoryFilter
+} from 'pouchdb-find/lib/adapters/local/find/in-memory-filter.js';
+import {
+    massageSelector
+} from 'pouchdb-find/lib/adapters/local/utils.js';
+
 /**
  * if a query is observed and a changeEvent comes in,
  * the QueryChangeDetector tries to execute the changeEvent-delta on the exisiting query-results
@@ -21,9 +28,9 @@ class QueryChangeDetector {
                 results: null
             };
         }
-//        const docId = changeEvent.data.doc;
-//        const previousResults = this.query.results;
-//        const wasDocInResults = previousResults.find();
+        //        const docId = changeEvent.data.doc;
+        //        const previousResults = this.query.results;
+        //        const wasDocInResults = previousResults.find();
         // TODO continue here
         return {
             mustReExec: true,
@@ -31,13 +38,30 @@ class QueryChangeDetector {
         };
     }
 
+    /**
+     * check if the document matches the query
+     * @param {object} docData
+     * @return {boolean}
+     */
+    doesDocumentMatchQuery(docData) {
+        const inMemoryFields = Object.keys(this.query.toJSON().selector);
+        const retDocs = inMemoryFilter(
+            [{
+                doc: docData
+            }], {
+                selector: massageSelector(this.query.toJSON().selector)
+            },
+            inMemoryFields
+        );
+        return retDocs.length == 1;
+    }
+
 }
 
 
 /**
- * [create description]
- * @param  {RxQuery} query [description]
- * @return {QueryChangeDetector}         [description]
+ * @param  {RxQuery} query
+ * @return {QueryChangeDetector}
  */
 export function create(query) {
     const ret = new QueryChangeDetector(query);
