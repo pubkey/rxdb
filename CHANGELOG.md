@@ -1,3 +1,8 @@
+## 3.0.7 (April 10, 2017)
+
+Bugfixes:
+  - Fixed es6-imports for webpack-builds
+
 ## 3.0.6 (March 29, 2017)
 
 Features:
