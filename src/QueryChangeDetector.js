@@ -28,13 +28,38 @@ class QueryChangeDetector {
                 results: null
             };
         }
+
+        const previousResults = this.query._resultsData;
+
+        let mustReExec = false;
+        let results = null;
+
+        let t = 0;
+        while (!mustReExec && t < changeEvents.length) {
+            const changeEvent = changeEvents[t];
+            const wasDocInResults = this.isDocInResultData(changeEvent.data.v, previousResults);
+            const doesMatchNow = this.doesDocMatchQuery(changeEvent.data.v);
+
+            // doc does still not match -> do nothing
+            if (!wasDocInResults && !doesMatchNow) {
+                t++;
+                continue;
+            }
+
+            mustReExec = true;
+            t++;
+        }
+
+
         //        const docId = changeEvent.data.doc;
-        //        const previousResults = this.query.results;
-        //        const wasDocInResults = previousResults.find();
+
+
+
+
         // TODO continue here
         return {
-            mustReExec: true,
-            results: resultsData
+            mustReExec,
+            results
         };
     }
 

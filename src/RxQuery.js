@@ -103,11 +103,12 @@ class RxQuery {
         });
 
         if (!this._mustReExec) {
-            const changeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent);
+            const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent);
             this._latestChangeEvent = this.collection._changeEventBuffer.counter;
-            if (!changeEvents) this._mustReExec = true; // _latestChangeEvent is too old
+            if (!missedChangeEvents) this._mustReExec = true; // _latestChangeEvent is too old
             else {
-                const changeResult = this._queryChangeDetector.runChangeDetection(this._resultsData, changeEvents);
+                const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+                const changeResult = this._queryChangeDetector.runChangeDetection(this._resultsData, runChangeEvents);
                 if (changeResult.mustReExec) this._mustReExec = true;
                 if (changeResult.resultData && !deepEqual(changeResult.resultData, this._resultsData)) {
                     ret = true;

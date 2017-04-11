@@ -70,7 +70,6 @@ class ChangeEventBuffer {
     reduceByLastOfDoc(changeEvents) {
         const docEventMap = {};
         changeEvents.forEach(changeEvent => {
-            console.log(changeEvent.data.op);
             if (!docEventMap[changeEvent.data.doc] ||
                 docEventMap[changeEvent.data.doc].data.t < changeEvent.data.t
             ) docEventMap[changeEvent.data.doc] = changeEvent;

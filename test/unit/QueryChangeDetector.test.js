@@ -13,11 +13,6 @@ process.on('unhandledRejection', function(err) {
 });
 
 describe('QueryChangeDetector.test.js', () => {
-
-    describe('runChangeDetection()', () => {
-
-    });
-
     describe('.doesDocMatchQuery()', () => {
         it('should match', async() => {
             const col = await humansCollection.create(0);
@@ -75,6 +70,31 @@ describe('QueryChangeDetector.test.js', () => {
             col.database.destroy();
         });
     });
+
+    describe('runChangeDetection()', () => {
+        describe('mustReExec', () => {
+            // TODO
+        });
+        describe('no change', () => {
+            it('should detect that change is not relevant for result', async() => {
+                const col = await humansCollection.create(5);
+                const q = col.find().where('name').eq('foobar');
+                const res = await q.exec();
+                assert.equal(q._execOverDatabaseCount, 1);
+                assert.equal(res.length, 0);
+
+                await col.insert(schemaObjects.human());
+
+                await q.exec();
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                col.database.destroy();
+            });
+        });
+
+
+    });
+
     describe('e', () => {
         it('e', () => process.exit());
     });
