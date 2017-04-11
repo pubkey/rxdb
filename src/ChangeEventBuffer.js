@@ -49,7 +49,7 @@ class ChangeEventBuffer {
             ret.push(cE);
             pointer++;
         }
-        return;
+        return ret;
     }
 
     runFrom(pointer, fn) {
@@ -57,12 +57,25 @@ class ChangeEventBuffer {
         if (pointer < lowestCounter)
             throw new Error('pointer to low');
 
-        while (pointer < this.counter) {
-            const index = this.getArrayIndexByPointer(pointer);
-            const cE = this.buffer[index];
-            fn(cE);
-            pointer++;
-        }
+        this.getFrom(pointer).forEach(cE => fn(cE));
+    }
+
+    /**
+     * no matter how many operations are done on one document,
+     * only the last operation has to be checked to calculate the new state
+     * this function reduces the events to the last ChangeEvent of each doc
+     * @param {ChangeEvent[]} changeEvents
+     * @return {ChangeEvents[]}
+     */
+    reduceByLastOfDoc(changeEvents) {
+        const docEventMap = {};
+        changeEvents.forEach(changeEvent => {
+            console.log(changeEvent.data.op);
+            if (!docEventMap[changeEvent.data.doc] ||
+                docEventMap[changeEvent.data.doc].data.t < changeEvent.data.t
+            ) docEventMap[changeEvent.data.doc] = changeEvent;
+        });
+        return Object.values(docEventMap);
     }
 
     destroy() {

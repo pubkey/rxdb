@@ -75,7 +75,6 @@ describe('QueryChangeDetector.test.js', () => {
             col.database.destroy();
         });
     });
-
     describe('e', () => {
         it('e', () => process.exit());
     });

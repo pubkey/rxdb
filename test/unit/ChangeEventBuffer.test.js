@@ -152,6 +152,28 @@ describe('ChangeEventBuffer.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('.reduceByLastOfDoc()', () => {
+        it('should only have the last changeEvent for the doc', async() => {
+            const col = await humansCollection.create(5);
+            const q = col.find();
+            await q.exec();
+            const oneDoc = await col.findOne().exec();
+            let newVal = 0;
+            while (newVal < 5) {
+                newVal++;
+                oneDoc.age = newVal;
+                await oneDoc.save();
+            }
+            const allEvents = q.collection._changeEventBuffer.getFrom(0);
+            const reduced = q.collection._changeEventBuffer.reduceByLastOfDoc(allEvents);
 
+            assert.equal(reduced.length, 5);
+            const lastEvent = reduced.find(cE => cE.data.doc == oneDoc.getPrimary());
+            assert.equal(lastEvent.data.v.age, 5);
+            col.database.destroy();
+        });
+
+
+    });
 
 });

@@ -34,7 +34,7 @@ class QueryChangeDetector {
         // TODO continue here
         return {
             mustReExec: true,
-            results: results
+            results: resultsData
         };
     }
 
