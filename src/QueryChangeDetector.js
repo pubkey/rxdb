@@ -74,9 +74,9 @@ class QueryChangeDetector {
                 if (options.skip) {
                     const sortBefore = this._isSortedBefore(docData, results[0]);
                     const sortAfter = this._isSortedBefore(results[results.length - 1], docData);
-                    if (!doesMatchNow) {
+                    if (!doesMatchNow)
                         continue;
-                    }
+
                     if (doesMatchNow && sortBefore && !isFilled) {
                         results.shift();
                         continue;
@@ -85,9 +85,9 @@ class QueryChangeDetector {
                         results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                         continue;
                     }
-                    if (doesMatchNow && sortAfter) {
+                    if (doesMatchNow && sortAfter)
                         continue;
-                    }
+
                 }
             }
 
