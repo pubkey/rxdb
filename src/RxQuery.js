@@ -25,6 +25,7 @@ class RxQuery {
         this.collection = collection;
         this.defaultQuery = false;
         this.id = newQueryID();
+        this.disableQueryChangeDetection = false;
 
         // force _id
         if (!queryObj._id)
@@ -109,10 +110,10 @@ class RxQuery {
             else {
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(this._resultsData, runChangeEvents);
-                if (changeResult.mustReExec) this._mustReExec = true;
-                if (changeResult.resultData && !deepEqual(changeResult.resultData, this._resultsData)) {
+                if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
+                if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
                     ret = true;
-                    this._setResultData(changeResult.resultData);
+                    this._setResultData(changeResult);
                 }
             }
         }
@@ -208,6 +209,8 @@ class RxQuery {
     }
 
     toJSON() {
+        if (this._toJSON) return this._toJSON;
+
         const json = {
             selector: this.mquery._conditions
         };
@@ -230,6 +233,11 @@ class RxQuery {
                 sortArray.push(pushMe);
             });
             json.sort = sortArray;
+        } else {
+            // sort by primaryKey as default
+            json.sort = [{
+                [this.collection.schema.primaryPath]: 'asc'
+            }];
         }
 
         if (options.limit) {
@@ -260,7 +268,8 @@ class RxQuery {
             delete json.selector[primPath];
         }
 
-        return json;
+        this._toJSON = json;
+        return this._toJSON;
     };
 
     /**

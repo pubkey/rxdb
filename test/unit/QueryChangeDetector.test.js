@@ -93,6 +93,18 @@ describe('QueryChangeDetector.test.js', () => {
         });
 
 
+        /**
+         * there can be different constelations which are the square-combinations of these settings:
+         * - limit: null, overflow, underflow
+         * - skip: 0, >0
+         * - sort: null, changedField, unchangedField
+         *
+         * this makes 3*2*3=18 tests which follow under this comment:
+         */
+        describe('all constelations', ()=>{
+
+        });
+
     });
 
     describe('e', () => {
