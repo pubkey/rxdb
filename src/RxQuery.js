@@ -109,7 +109,7 @@ class RxQuery {
             if (!missedChangeEvents) this._mustReExec = true; // _latestChangeEvent is too old
             else {
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-                const changeResult = this._queryChangeDetector.runChangeDetection(this._resultsData, runChangeEvents);
+                const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
                 if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
                 if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
                     ret = true;
@@ -190,20 +190,6 @@ class RxQuery {
                     else if (results.length == 0) return null;
                     else return results[0];
                 });
-
-            /**
-             * switch (this.op) {
-                 case 'find':
-                     docsData = await this.collection._pouchFind(this);
-                     break;
-                 case 'findOne':
-                     docsData = await this.collection._pouchFind(this, 1);
-                     break;
-                 default:
-                     throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
-             }
-             */
-
         }
         return this._observable$;
     }

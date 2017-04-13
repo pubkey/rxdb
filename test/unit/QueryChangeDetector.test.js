@@ -71,6 +71,47 @@ describe('QueryChangeDetector.test.js', () => {
         });
     });
 
+    describe('._isSortedBefore()', () => {
+        it('should return true', async() => {
+            const col = await humansCollection.createPrimary(0);
+            const q = col.find().sort('age');
+            const docData1 = schemaObjects.human();
+            docData1.age = 5;
+            const docData2 = schemaObjects.human();
+            docData2.age = 10;
+            const res = q._queryChangeDetector._isSortedBefore(docData1, docData2);
+            assert.equal(res, true);
+            col.database.destroy();
+        });
+        it('should return false', async() => {
+            const col = await humansCollection.createPrimary(0);
+            const q = col.find().sort('age');
+            const docData1 = schemaObjects.human();
+            docData1.passportId = '000';
+            docData1.age = 10;
+            const docData2 = schemaObjects.human();
+            docData2.passportId = '111';
+            docData2.age = 5;
+            const res = q._queryChangeDetector._isSortedBefore(docData1, docData2);
+            assert.equal(res, false);
+            col.database.destroy();
+        });
+        it('should return true (sort by _id when equal)', async() => {
+            const col = await humansCollection.createPrimary(0);
+            const q = col.find().sort('age');
+            const docData1 = schemaObjects.human();
+            docData1.passportId = '000';
+            docData1.age = 5;
+            const docData2 = schemaObjects.human();
+            docData2.passportId = '111';
+            docData2.age = 5;
+            const res = q._queryChangeDetector._isSortedBefore(docData1, docData2);
+            assert.equal(res, true);
+            col.database.destroy();
+        });
+
+    });
+
     describe('runChangeDetection()', () => {
         describe('mustReExec', () => {
             // TODO
@@ -94,20 +135,15 @@ describe('QueryChangeDetector.test.js', () => {
 
 
         /**
-         * there can be different constelations which are the square-combinations of these settings:
-         * - limit: null, overflow, underflow
-         * - skip: 0, >0
-         * - sort: null, changedField, unchangedField
-         *
-         * this makes 3*2*3=18 tests which follow under this comment:
+         * each optimisation-shortcut has a number, this tests each of them
          */
-        describe('all constelations', ()=>{
+        describe('all constelations', () => {
 
         });
 
     });
 
     describe('e', () => {
-        it('e', () => process.exit());
+        //  it('e', () => process.exit());
     });
 });
