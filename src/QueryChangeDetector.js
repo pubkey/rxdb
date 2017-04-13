@@ -33,6 +33,7 @@ class QueryChangeDetector {
      * the query-change-detection does not work is the is a 'hidden state'
      * in the database, therefore the new result-set cannot be calculated without
      * querying the database
+     * TODO is this needed?
      * @return {boolean}
      */
     changeDetectionSupported() {
@@ -75,6 +76,7 @@ class QueryChangeDetector {
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     handleSingleChange(resultsData, changeEvent) {
+
         let results = resultsData.splice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
@@ -83,15 +85,18 @@ class QueryChangeDetector {
         const isFilled = resultsData.length >= options.limit;
         const removeIt = wasDocInResults && !doesMatchNow;
 
+
         // TODO write tests for this
         if (changeEvent.data.op == 'REMOVE') {
+
+            // R1 (never matched)
+            if (!doesMatchNow)
+                return false;
+
             if (options.skip) {
                 const sortBefore = this._isSortedBefore(docData, results[0]);
                 const sortAfter = this._isSortedBefore(results[results.length - 1], docData);
 
-                // R1
-                if (!doesMatchNow)
-                    return false;
 
                 // R2
                 if (doesMatchNow && sortBefore && !isFilled) {
@@ -128,6 +133,8 @@ class QueryChangeDetector {
 
     /**
      * check if the document matches the query
+     * TODO this can be done better when PR is merged:
+     * @link https://github.com/pouchdb/pouchdb/pull/6422
      * @param {object} docData
      * @return {boolean}
      */
@@ -158,6 +165,8 @@ class QueryChangeDetector {
     /**
      * checks if the newDocLeft would be placed before docDataRight
      * when the query would be reExecuted
+     * TODO this can be done better when PR is merged:
+     * @link https://github.com/pouchdb/pouchdb/pull/6422
      * @param  {Object} docDataNew
      * @param  {Object} docDataIs
      * @return {boolean} true if before, false if after

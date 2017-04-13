@@ -91,6 +91,7 @@ class RxQuery {
      */
     async _ensureEqual() {
 
+
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
 
@@ -105,6 +106,8 @@ class RxQuery {
 
         if (!this._mustReExec) {
             const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent);
+            console.log('ensureE');
+            console.dir(missedChangeEvents);
             this._latestChangeEvent = this.collection._changeEventBuffer.counter;
             if (!missedChangeEvents) this._mustReExec = true; // _latestChangeEvent is too old
             else {

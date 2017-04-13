@@ -70,7 +70,6 @@ describe('QueryChangeDetector.test.js', () => {
             col.database.destroy();
         });
     });
-
     describe('._isSortedBefore()', () => {
         it('should return true', async() => {
             const col = await humansCollection.createPrimary(0);
@@ -108,6 +107,24 @@ describe('QueryChangeDetector.test.js', () => {
             const res = q._queryChangeDetector._isSortedBefore(docData1, docData2);
             assert.equal(res, true);
             col.database.destroy();
+        });
+    });
+    describe('.handleSingleChange()', () => {
+        describe('R1 (removed and never matched)', () => {
+            it('should jump in and return false', async() => {
+                const col = await humansCollection.createPrimary(0);
+                const q = col.find().where('firstName').ne('Alice');
+                const changeEvents = [];
+                const docData = schemaObjects.simpleHuman();
+                docData.passportId = 'foobar';
+                docData.firstName = 'Alice';
+                await col.insert(docData);
+                col.$.first().toPromise().then(cE => changeEvents.push(cE));
+                await col.findOne('foobar').remove();
+                await util.waitUntil(() => changeEvents.length == 1);
+                const res = q._queryChangeDetector.handleSingleChange([], changeEvents[0]);
+                assert.equal(res, false);
+            });
         });
 
     });

@@ -313,10 +313,12 @@ class RxDocument {
             this.collection.database,
             this.collection,
             this,
-            null
+            this._data
         ));
 
         await this.collection._runHooks('post', 'remove', this);
+        await util.promiseWait(0);
+        return;
     }
 
     destroy() {}

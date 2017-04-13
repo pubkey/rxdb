@@ -116,6 +116,39 @@ describe('ChangeEventBuffer.test.js', () => {
 
             col.database.destroy();
         });
+        it('return the correct pointer', async() => {
+            const col = await humansCollection.create(10);
+            col._changeEventBuffer.limit = 10;
+
+            const lastDoc = schemaObjects.human();
+            await col.insert(lastDoc);
+            console.dir(lastDoc);
+
+            let gotIndex = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter - 1);
+            assert.equal(col._changeEventBuffer.buffer[gotIndex].data.v.firstName, lastDoc.firstName);
+
+            // TODO bug: it returns the wrong document
+
+            const cE = col._changeEventBuffer.buffer[gotIndex];
+            console.dir(cE.data);
+
+            console.dir(gotIndex);
+
+            process.exit();
+            assert.deepEqual();
+            assert.equal(got, 5);
+
+            await Promise.all(
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+            );
+            got = col._changeEventBuffer.getArrayIndexByPointer(25);
+            assert.equal(got, 5);
+
+            got = col._changeEventBuffer.getArrayIndexByPointer(20);
+            assert.equal(got, 0);
+
+            col.database.destroy();
+        });
     });
     describe('.runFrom()', () => {
         it('should run from correctly', async() => {
@@ -150,6 +183,51 @@ describe('ChangeEventBuffer.test.js', () => {
             }), Error);
 
             col.database.destroy();
+        });
+    });
+    describe('.getFrom()', () => {
+        it('should getFrom correctly', async() => {
+            const col = await humansCollection.create(0);
+            col._changeEventBuffer.limit = 10;
+
+            await Promise.all(
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+            );
+
+            const evs = col._changeEventBuffer.getFrom(0);
+            assert.equal(evs.length, 10);
+            evs.forEach(cE => assert.equal(cE.constructor.name, 'RxChangeEvent'));
+
+
+            col.database.destroy();
+        });
+        it('should run correct on remove', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find();
+            await q.exec();
+            await col.insert(schemaObjects.human());
+            await q.exec();
+
+            // remove the doc
+            const doc = await col.findOne().exec();
+            await doc.remove();
+            await util.promiseWait(0);
+
+
+
+            console.log(':::::::::::::::::::::::::::::');
+            console.log(q._latestChangeEvent);
+            const evs = col._changeEventBuffer.getFrom(q._latestChangeEvent);
+            console.dir(evs);
+            assert.equal(evs.length, 1);
+            assert.equal(evs[0].data.op, 'REMOVE');
+            console.log('XXXXXX');
+            process.exit();
+
+
+
+            sub.unsubscribe();
+            c.database.destroy();
         });
     });
     describe('.reduceByLastOfDoc()', () => {
