@@ -29,6 +29,14 @@ describe('RxQuery.test.js', () => {
                 assert.deepEqual(mquery._path, cloned._path);
             });
         });
+        describe('.findOne()', () => {
+            it('should only return one for primary key search', async() => {
+                const col = await humansCollection.create(0);
+                const [general] = await col.find().where('name').eq('Alice').exec()
+                const [specific] = await col.findOne(general._id).exec()
+                assert.deepEqual(general, specific)
+            });
+        });
     });
     describe('.toJSON()', () => {
         it('should produce the correct selector-object', async() => {
