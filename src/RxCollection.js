@@ -171,6 +171,7 @@ class RxCollection {
     async _pouchFind(rxQuery, limit, noDecrypt = false) {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
+
         const docsCompressed = await this.pouch.find(compressedQueryJSON);
         const docs = docsCompressed.docs
             .map(doc => this._handleFromPouch(doc, noDecrypt));
@@ -311,8 +312,8 @@ class RxCollection {
         if (typeof queryObj === 'string') {
             query = RxQuery.create({
                 _id: queryObj
-            }, this);
-        } else query = RxQuery.create(queryObj, this);
+            }, this, 'findOne');
+        } else query = RxQuery.create(queryObj, this, 'findOne');
 
         if (
             typeof queryObj === 'number' ||

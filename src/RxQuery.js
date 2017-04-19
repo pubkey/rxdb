@@ -15,7 +15,8 @@ const defaultQuery = {
 
 
 class RxQuery {
-    constructor(queryObj = defaultQuery, collection) {
+    constructor(queryObj = defaultQuery, collection, op) {
+        this.op = op;
         this.collection = collection;
 
         this.defaultQuery = false;
@@ -49,7 +50,8 @@ class RxQuery {
                 .filter(x => !this._obsRunning)
                 .do(x => this._obsRunning = true)
                 .mergeMap(async(cEvent) => {
-                    const docs = await this.collection._pouchFind(this);
+                    const overwriteLimit = this.op === 'findOne' ? 1 : null;
+                    const docs = await this.collection._pouchFind(this, overwriteLimit);
                     return docs;
                 })
                 .do(x => this._obsRunning = false)
@@ -64,7 +66,19 @@ class RxQuery {
                     this._subject,
                     collection$
                 )
-                .filter(x => (typeof x != 'string' || x != ''));
+                .filter(x => (typeof x != 'string' || x != ''))
+                .map(x => {
+                    if (x === null) return null;
+                    switch (this.op) {
+                        case 'find':
+                            return x;
+                            break;
+                        case 'findOne':
+                            if (x.length === 0) return null;
+                            return x[0];
+                            break;
+                    }
+                });
         }
         return this._observable$;
     }
@@ -207,13 +221,13 @@ const protoMerge = function(rxQueryProto, mQueryProto) {
 };
 
 let protoMerged = false;
-export function create(queryObj = defaultQuery, collection) {
+export function create(queryObj = defaultQuery, collection, op = 'find') {
     if (typeof queryObj !== 'object')
         throw new TypeError('query must be an object');
     if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
-    const ret = new RxQuery(queryObj, collection);
+    const ret = new RxQuery(queryObj, collection, op);
 
     if (!protoMerged) {
         protoMerged = true;

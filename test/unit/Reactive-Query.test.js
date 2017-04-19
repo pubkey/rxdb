@@ -178,6 +178,21 @@ describe('Reactive-Query.test.js', () => {
             c.database.destroy();
             c2.database.destroy();
         });
+
+        it('BUG #138 : findOne().$ returns every doc if no id given', async() => {
+            const col = await humansCollection.create(3);
+            const streamed = [];
+            const sub = col.findOne().$
+                .filter(doc => doc != null)
+                .subscribe(doc => {
+                    streamed.push(doc);
+                });
+            await util.promiseWait(10);
+            assert.equal(streamed.length, 1);
+            assert.equal(streamed[0].constructor.name, 'RxDocument');
+            sub.unsubscribe();
+            col.database.destroy();
+        });
     });
     describe('negative', () => {
         it('get no change when nothing happens', async() => {
