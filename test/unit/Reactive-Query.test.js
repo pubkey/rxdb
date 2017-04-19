@@ -179,6 +179,41 @@ describe('Reactive-Query.test.js', () => {
             c2.database.destroy();
         });
 
+        it('BUG #136 : findOne(string).$ streams all documents (_id as primary)', async() => {
+            const subs = [];
+            const col = await humansCollection.create(3);
+            const docData = schemaObjects.human();
+            const doc = await col.insert(docData);
+            const _id = doc._id;
+            const streamed = [];
+            subs.push(
+                col.findOne(_id).$
+                .filter(doc => doc != null)
+                .subscribe(doc => {
+                    streamed.push(doc);
+                })
+            );
+            await util.waitUntil(() => streamed.length == 1);
+            assert.equal(streamed[0].constructor.name, 'RxDocument');
+            assert.equal(streamed[0]._id, _id);
+
+            const streamed2 = [];
+            subs.push(
+                col.findOne().where('_id').eq(_id).$
+                .filter(doc => doc != null)
+                .subscribe(doc => {
+                    streamed2.push(doc);
+                })
+            );
+            await util.promiseWait(10);
+            assert.equal(streamed2.length, 1);
+            assert.equal(streamed2[0].constructor.name, 'RxDocument');
+            assert.equal(streamed2[0]._id, _id);
+
+            subs.forEach(sub => sub.unsubscribe());
+            col.database.destroy();
+        });
+
         it('BUG #138 : findOne().$ returns every doc if no id given', async() => {
             const col = await humansCollection.create(3);
             const streamed = [];

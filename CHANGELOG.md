@@ -2,7 +2,8 @@
 
 
 Bugfixes:
-  - findOne().$ did not have `limit:1`
+  - `findOne().$` did not have `limit:1`
+  - `findOne(string).$` streams all documents when `_id` as primary
 
 ## 3.0.7 (April 10, 2017)
 
