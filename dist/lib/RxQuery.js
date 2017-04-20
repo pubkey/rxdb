@@ -41,9 +41,11 @@ var RxQuery = function () {
     function RxQuery() {
         var queryObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultQuery;
         var collection = arguments[1];
+        var op = arguments[2];
 
         _classCallCheck(this, RxQuery);
 
+        this.op = op;
         this.collection = collection;
 
         this.defaultQuery = false;
@@ -121,7 +123,8 @@ var RxQuery = function () {
 
                 // selector
                 json.selector._id = json.selector[primPath];
-                delete json.selector[primPath];
+
+                if (primPath !== '_id' || Object.keys(json.selector[primPath]).length == 0) delete json.selector[primPath];
             }
 
             return json;
@@ -249,19 +252,20 @@ var RxQuery = function () {
                     return _this3._obsRunning = true;
                 }).mergeMap(function () {
                     var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(cEvent) {
-                        var docs;
+                        var overwriteLimit, docs;
                         return regeneratorRuntime.wrap(function _callee2$(_context2) {
                             while (1) {
                                 switch (_context2.prev = _context2.next) {
                                     case 0:
-                                        _context2.next = 2;
-                                        return _this3.collection._pouchFind(_this3);
+                                        overwriteLimit = _this3.op === 'findOne' ? 1 : null;
+                                        _context2.next = 3;
+                                        return _this3.collection._pouchFind(_this3, overwriteLimit);
 
-                                    case 2:
+                                    case 3:
                                         docs = _context2.sent;
                                         return _context2.abrupt('return', docs);
 
-                                    case 4:
+                                    case 5:
                                     case 'end':
                                         return _context2.stop();
                                 }
@@ -286,6 +290,17 @@ var RxQuery = function () {
 
                 this._observable$ = util.Rx.Observable.merge(this._subject, collection$).filter(function (x) {
                     return typeof x != 'string' || x != '';
+                }).map(function (x) {
+                    if (x === null) return null;
+                    switch (_this3.op) {
+                        case 'find':
+                            return x;
+                            break;
+                        case 'findOne':
+                            if (x.length === 0) return null;
+                            return x[0];
+                            break;
+                    }
                 });
             }
             return this._observable$;
@@ -315,11 +330,12 @@ var protoMerged = false;
 function create() {
     var queryObj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultQuery;
     var collection = arguments[1];
+    var op = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'find';
 
     if ((typeof queryObj === 'undefined' ? 'undefined' : _typeof(queryObj)) !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
-    var ret = new RxQuery(queryObj, collection);
+    var ret = new RxQuery(queryObj, collection, op);
 
     if (!protoMerged) {
         protoMerged = true;

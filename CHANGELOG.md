@@ -1,5 +1,4 @@
-## 3.0.8 (XXX, 2017)
-
+## 3.0.8 (April 20, 2017)
 
 Bugfixes:
   - `findOne().$` did not have `limit:1`

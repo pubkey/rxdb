@@ -491,6 +491,7 @@ var RxCollection = function () {
                                 compressedQueryJSON = rxQuery.keyCompress();
 
                                 if (limit) compressedQueryJSON.limit = limit;
+
                                 _context5.next = 4;
                                 return this.pouch.find(compressedQueryJSON);
 
@@ -762,8 +763,8 @@ var RxCollection = function () {
             if (typeof queryObj === 'string') {
                 query = RxQuery.create({
                     _id: queryObj
-                }, this);
-            } else query = RxQuery.create(queryObj, this);
+                }, this, 'findOne');
+            } else query = RxQuery.create(queryObj, this, 'findOne');
 
             if (typeof queryObj === 'number' || Array.isArray(queryObj)) throw new TypeError('.findOne() needs a queryObject or string');
 
