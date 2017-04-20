@@ -205,7 +205,7 @@ describe('Reactive-Query.test.js', () => {
                     streamed2.push(doc);
                 })
             );
-            await util.promiseWait(10);
+            await util.waitUntil(() => streamed2.length == 1);
             assert.equal(streamed2.length, 1);
             assert.equal(streamed2[0].constructor.name, 'RxDocument');
             assert.equal(streamed2[0]._id, _id);
@@ -222,7 +222,7 @@ describe('Reactive-Query.test.js', () => {
                 .subscribe(doc => {
                     streamed.push(doc);
                 });
-            await util.promiseWait(10);
+            await util.waitUntil(() => streamed.length == 1);
             assert.equal(streamed.length, 1);
             assert.equal(streamed[0].constructor.name, 'RxDocument');
             sub.unsubscribe();
