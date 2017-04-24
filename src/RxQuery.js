@@ -105,12 +105,11 @@ class RxQuery {
         });
 
         if (!this._mustReExec) {
-            const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent);
-            console.log('ensureE');
+					try{
+						const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent+1);
+						console.log('ensureE');
             console.dir(missedChangeEvents);
             this._latestChangeEvent = this.collection._changeEventBuffer.counter;
-            if (!missedChangeEvents) this._mustReExec = true; // _latestChangeEvent is too old
-            else {
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
                 if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
@@ -118,7 +117,10 @@ class RxQuery {
                     ret = true;
                     this._setResultData(changeResult);
                 }
-            }
+
+					}catch(e){
+						this._mustReExec = true;
+					}
         }
 
         if (this._mustReExec) {

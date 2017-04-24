@@ -1,21 +1,21 @@
 /**
- * a bugger-cache which holds the last X changeEvents of the collection
- * TODO this could be refactored to only store the last event of one document
+ * a buffer-cache which holds the last X changeEvents of the collection
+ * TODO this could be optimized to only store the last event of one document
  */
 class ChangeEventBuffer {
     constructor(collection) {
         this.collection = collection;
-
         this.subs = [];
-
         this.limit = 100;
+
         /**
          * array with changeEvents
-         * starts with newest event, ends with oldest
+         * starts with oldest known event, ends with newest
          * @type {RxChangeEvent[]}
          */
         this.buffer = [];
         this.counter = 0;
+        this.eventCounterMap = new WeakMap();
 
         this.subs.push(
             this.collection.$.subscribe(cE => this._handleChangeEvent(cE))
@@ -24,52 +24,42 @@ class ChangeEventBuffer {
 
     _handleChangeEvent(changeEvent) {
         this.counter++;
-        this.buffer.unshift(changeEvent);
+        this.buffer.push(changeEvent);
+        this.eventCounterMap.set(changeEvent, this.counter);
         while (this.buffer.length > this.limit)
-            this.buffer.pop();
+            this.buffer.shift();
     }
 
 
     getArrayIndexByPointer(pointer) {
-        if (pointer < (this.counter - this.limit) || pointer > this.counter)
-            return null;
+        const oldestEvent = this.buffer[0];
+        const oldestCounter = this.eventCounterMap.get(oldestEvent);
 
-        return this.buffer.length - (this.counter - pointer);
+        if (pointer < oldestCounter){
+            throw new Error(`
+							pointer lower than lowest cache-pointer
+							- wanted: ${pointer}
+							- oldest: ${oldestCounter}
+							`);
+				}
+
+        const rest = pointer - oldestCounter;
+        return rest;
     }
 
     getFrom(pointer) {
-        console.log('getFrom():');
-        const lowestCounter = this.counter - this.buffer.length;
-        if (pointer < lowestCounter)
-            return null;
-
-        console.dir(this.buffer);
+			console.log('getFrom('+pointer+')');
+        let currentIndex = this.getArrayIndexByPointer(pointer);
         const ret = [];
-        while (pointer < this.counter) {
-            console.log('p:');
-            console.log(pointer);
-            const index = this.getArrayIndexByPointer(pointer);
-            console.log(index);
-            const cE = this.buffer[index];
-            ret.push(cE);
-            pointer++;
+        while (true) {
+            const nextEvent = this.buffer[currentIndex];
+            currentIndex++;
+            if (!nextEvent) return ret;
+            else ret.push(nextEvent);
         }
-
-        console.log(pointer);
-        console.log(this.counter);
-        console.dir(this.buffer[this.getArrayIndexByPointer(pointer)]);
-
-        console.log('--------');
-        console.dir(ret);
-
-        return ret;
     }
 
     runFrom(pointer, fn) {
-        const lowestCounter = this.counter - this.buffer.length;
-        if (pointer < lowestCounter)
-            throw new Error('pointer to low');
-
         this.getFrom(pointer).forEach(cE => fn(cE));
     }
 
@@ -83,9 +73,7 @@ class ChangeEventBuffer {
     reduceByLastOfDoc(changeEvents) {
         const docEventMap = {};
         changeEvents.forEach(changeEvent => {
-            if (!docEventMap[changeEvent.data.doc] ||
-                docEventMap[changeEvent.data.doc].data.t < changeEvent.data.t
-            ) docEventMap[changeEvent.data.doc] = changeEvent;
+            docEventMap[changeEvent.data.doc] = changeEvent;
         });
         return Object.values(docEventMap);
     }
