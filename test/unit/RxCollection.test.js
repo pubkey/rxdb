@@ -547,6 +547,8 @@ describe('RxCollection.test.js', () => {
                         });
                         assert.equal(all.docs.length, 10);
 
+                        // console.log('NATIVE POUCH WORKED');
+
                         // with RxQuery
                         const query = collection.find({}).sort({
                             'other.age': 1

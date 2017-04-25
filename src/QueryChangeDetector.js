@@ -7,16 +7,7 @@
  * @link https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md
  */
 
-import {
-    default as inMemoryFilter
-} from 'pouchdb-find/lib/adapters/local/find/in-memory-filter.js';
-import {
-    massageSelector
-} from 'pouchdb-find/lib/adapters/local/utils.js';
-import {
-    collate
-} from 'pouchdb-collate';
-
+import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import {
     default as clone
 } from 'clone';
@@ -140,7 +131,7 @@ class QueryChangeDetector {
      */
     doesDocMatchQuery(docData) {
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
-        const retDocs = inMemoryFilter(
+        const retDocs = filterInMemoryFields(
             [{
                 doc: docData
             }], {
@@ -183,7 +174,9 @@ class QueryChangeDetector {
             id: doc._id,
             doc
         }));
-        const sortedRows = inMemoryFilter(
+
+        // TODO use createFieldSorter
+        const sortedRows = filterInMemoryFields(
             rows, {
                 selector: massageSelector(this.query.toJSON().selector),
                 sort: options.sort
