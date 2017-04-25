@@ -68,7 +68,7 @@ class QueryChangeDetector {
      */
     handleSingleChange(resultsData, changeEvent) {
 
-        let results = resultsData.splice(0); // copy to stay immutable
+        let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
         const wasDocInResults = this.isDocInResultData(docData, resultsData);

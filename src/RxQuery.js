@@ -91,11 +91,11 @@ class RxQuery {
      */
     async _ensureEqual() {
 
-
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
 
         let ret = false;
+
 
         // make sure it does not run in parallel
         await this._runningPromise;
@@ -107,8 +107,6 @@ class RxQuery {
         if (!this._mustReExec) {
             try {
                 const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
-                console.log('ensureE');
-                console.dir(missedChangeEvents);
                 this._latestChangeEvent = this.collection._changeEventBuffer.counter;
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);

@@ -67,19 +67,17 @@ describe('Reactive-Collection.test.js', () => {
     describe('.remove()', () => {
         describe('positive', () => {
             it('should fire on remove', async() => {
-
-                console.log('-------------------------------------------');
-
                 const c = await humansCollection.create(0);
+                const q = c.find();
                 let ar = [];
-                const sub = c
-                    .find()
-                    .$
-                    .subscribe(docs => ar.push(docs));
+                const sub = q.$
+                    .subscribe(docs => {
+                        console.log('got subscribe event!');
+                        ar.push(docs);
+                    });
 
                 // nothing is fired until no results
                 assert.equal(ar.length, 0);
-
 
                 // empty array since no documents
                 await util.waitUntil(() => ar.length == 1);
@@ -89,11 +87,10 @@ describe('Reactive-Collection.test.js', () => {
                 await c.insert(schemaObjects.human());
                 await util.waitUntil(() => ar.length == 2);
 
+
                 const doc = await c.findOne().exec();
-                console.log('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD');
                 await doc.remove();
                 await util.waitUntil(() => ar.length == 3);
-
                 sub.unsubscribe();
                 c.database.destroy();
             });
