@@ -8,6 +8,7 @@ const fs = require('fs');
 const walkSync = require('walk-sync');
 const shell = require('shelljs');
 const del = require('delete');
+const existsFile = require('exists-file');
 const basePath = path.join(__dirname, '..');
 
 const confLocation = path.join(basePath, '.transpile_state.json');
@@ -40,8 +41,10 @@ async function transpileFile(srcLocation, goalLocation) {
     await del.promise([goalLocation]);
     const cmd = 'node node_modules/babel-cli/bin/babel.js ' + srcLocation + ' --out-file ' + goalLocation;
     DEBUG && console.dir(cmd);
-    if (shell.exec(cmd).code !== 0)
-        throw new Error('transpiling ' + srcLocation + ' failed');
+    if (shell.exec(cmd).code !== 0) {
+        console.error('transpiling ' + srcLocation + ' failed');
+        process.exit(1);
+    }
     console.log('transpiled: ' + srcLocation);
 
 
@@ -68,7 +71,7 @@ const files = Object.entries(transpileFolders)
         entry.lastTime = nconf.get(entry.fullPath);
         return entry;
     })
-    .filter(entry => entry.lastTime != entry.mtime);
+    .filter(entry => entry.lastTime != entry.mtime || !existsFile.sync(entry.goalPath));
 
 DEBUG && console.dir(files);
 
