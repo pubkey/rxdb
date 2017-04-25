@@ -7,7 +7,10 @@
  * @link https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md
  */
 
-import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
+import {
+    filterInMemoryFields,
+    massageSelector
+} from 'pouchdb-selector-core';
 import {
     default as clone
 } from 'clone';
@@ -73,21 +76,25 @@ class QueryChangeDetector {
         const docData = changeEvent.data.v;
         const wasDocInResults = this.isDocInResultData(docData, resultsData);
         const doesMatchNow = this.doesDocMatchQuery(docData);
-        const isFilled = resultsData.length >= options.limit;
+        const isFilled = !options.limit || resultsData.length >= options.limit;
         const removeIt = wasDocInResults && !doesMatchNow;
 
 
-        // TODO write tests for this
         if (changeEvent.data.op == 'REMOVE') {
 
             // R1 (never matched)
             if (!doesMatchNow)
                 return false;
 
+            // R3 (was in results and got removed)
+            if (doesMatchNow && wasDocInResults && !isFilled) {
+                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                return results;
+            }
+
             if (options.skip) {
                 const sortBefore = this._isSortedBefore(docData, results[0]);
                 const sortAfter = this._isSortedBefore(results[results.length - 1], docData);
-
 
                 // R2
                 if (doesMatchNow && sortBefore && !isFilled) {
@@ -95,13 +102,7 @@ class QueryChangeDetector {
                     return results;
                 }
 
-                // R3
-                if (doesMatchNow && wasDocInResults && !isFilled) {
-                    results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
-                    return results;
-                }
-
-                // R4
+                // R4 TODO test
                 if (doesMatchNow && sortAfter)
                     return false;
 

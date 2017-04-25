@@ -123,9 +123,7 @@ describe('QueryChangeDetector.test.js', () => {
                 assert.equal(res, false);
             });
         });
-
     });
-
     describe('runChangeDetection()', () => {
         describe('mustReExec', () => {
             // TODO
@@ -147,17 +145,61 @@ describe('QueryChangeDetector.test.js', () => {
             });
         });
 
-
         /**
          * each optimisation-shortcut has a number, this tests each of them
          */
-        describe('all constelations', () => {
+        describe('all constellations', () => {
+            it('R1: doc which did not match, was removed', async() => {
+                const col = await humansCollection.create(1);
+                const q = col.find().where('name').eq('foobar');
+                let results = await q.exec();
+                assert.equal(results.length, 0);
+                assert.equal(q._execOverDatabaseCount, 1);
 
+                await col.findOne().remove();
+
+                results = await q.exec();
+                assert.equal(results.length, 0);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                col.database.destroy();
+            });
+            it('R2: doc which was before first result was removed', async() => {
+                const col = await humansCollection.create(5);
+                const q = col.find().skip(1).limit(10);
+                let results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                // removed skipped one
+                await col.find().sort('passportId').limit(1).remove();
+
+                results = await q.exec();
+                assert.equal(results.length, 3);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                col.database.destroy();
+            });
+            it('R3: doc which was in results got removed', async() => {
+                const col = await humansCollection.create(5);
+                const q = col.find().limit(10);
+                let results = await q.exec();
+                assert.equal(results.length, 5);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                await col.findOne().skip(1).remove();
+
+                results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                col.database.destroy();
+            });
         });
 
     });
 
     describe('e', () => {
-        //  it('e', () => process.exit());
+        it('e', () => process.exit());
     });
 });

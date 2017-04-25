@@ -72,7 +72,6 @@ describe('Reactive-Collection.test.js', () => {
                 let ar = [];
                 const sub = q.$
                     .subscribe(docs => {
-                        console.log('got subscribe event!');
                         ar.push(docs);
                     });
 
@@ -86,7 +85,6 @@ describe('Reactive-Collection.test.js', () => {
 
                 await c.insert(schemaObjects.human());
                 await util.waitUntil(() => ar.length == 2);
-
 
                 const doc = await c.findOne().exec();
                 await doc.remove();

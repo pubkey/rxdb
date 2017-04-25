@@ -91,6 +91,8 @@ class RxQuery {
      */
     async _ensureEqual() {
 
+        console.log('_ensureEqual(' + this.toString() + ')');
+
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
 
@@ -107,9 +109,11 @@ class RxQuery {
         if (!this._mustReExec) {
             try {
                 const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+                console.dir(missedChangeEvents);
                 this._latestChangeEvent = this.collection._changeEventBuffer.counter;
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
+
                 if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
                 if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
                     ret = true;
@@ -120,6 +124,7 @@ class RxQuery {
                 this._mustReExec = true;
             }
         }
+
 
         if (this._mustReExec) {
 
