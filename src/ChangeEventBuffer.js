@@ -35,20 +35,20 @@ class ChangeEventBuffer {
         const oldestEvent = this.buffer[0];
         const oldestCounter = this.eventCounterMap.get(oldestEvent);
 
-        if (pointer < oldestCounter){
+        if (pointer < oldestCounter) {
             throw new Error(`
 							pointer lower than lowest cache-pointer
 							- wanted: ${pointer}
 							- oldest: ${oldestCounter}
 							`);
-				}
+        }
 
         const rest = pointer - oldestCounter;
         return rest;
     }
 
     getFrom(pointer) {
-			console.log('getFrom('+pointer+')');
+        console.log('getFrom(' + pointer + ')');
         let currentIndex = this.getArrayIndexByPointer(pointer);
         const ret = [];
         while (true) {

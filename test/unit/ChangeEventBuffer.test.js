@@ -58,37 +58,37 @@ describe('ChangeEventBuffer.test.js', () => {
             );
 
             await util.assertThrowsAsync(
-								() => col._changeEventBuffer.getArrayIndexByPointer(0),
-								Error,
-								'lowest'
-						);
+                () => col._changeEventBuffer.getArrayIndexByPointer(0),
+                Error,
+                'lowest'
+            );
 
             await Promise.all(
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
             await util.assertThrowsAsync(
-								() => col._changeEventBuffer.getArrayIndexByPointer(10),
-								Error,
-								'lowest'
-						);
+                () => col._changeEventBuffer.getArrayIndexByPointer(10),
+                Error,
+                'lowest'
+            );
 
             col.database.destroy();
         });
         it('return the right pointer', async() => {
             const col = await humansCollection.create(0);
-						let got;
+            let got;
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-						await util.assertThrowsAsync(
-								() => col._changeEventBuffer.getArrayIndexByPointer(0),
-								Error,
-								'lowest'
-						);
+            await util.assertThrowsAsync(
+                () => col._changeEventBuffer.getArrayIndexByPointer(0),
+                Error,
+                'lowest'
+            );
 
             await Promise.all(
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
@@ -182,9 +182,9 @@ describe('ChangeEventBuffer.test.js', () => {
             // remove the doc
             const doc = await col.findOne().exec();
             await doc.remove();
-						await util.waitUntil(()=>col._changeEventBuffer.counter == 2);
+            await util.waitUntil(() => col._changeEventBuffer.counter == 2);
 
-            const evs = col._changeEventBuffer.getFrom(q._latestChangeEvent+1);
+            const evs = col._changeEventBuffer.getFrom(q._latestChangeEvent + 1);
             assert.equal(evs.length, 1);
             assert.equal(evs[0].data.op, 'REMOVE');
 
