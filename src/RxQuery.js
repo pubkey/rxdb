@@ -328,7 +328,10 @@ class RxQuery {
                 .forEach(k => {
                     const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
                     if (schemaObj.type == 'integer')
+                        // TODO change back to -Infinity when issue resolved
+                        // @link https://github.com/pouchdb/pouchdb/issues/6454
                         clonedThis.mquery.where(k).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+
                     else clonedThis.mquery.where(k).gt(null);
                 });
         }
