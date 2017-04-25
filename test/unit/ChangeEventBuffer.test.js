@@ -6,11 +6,6 @@ import * as util from '../../dist/lib/util';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import * as ChangeEventBuffer from '../../dist/lib/ChangeEventBuffer';
 
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('ChangeEventBuffer.test.js', () => {
     describe('basic', () => {
         it('should contains some events', async() => {

@@ -9,10 +9,6 @@ import * as util from '../../dist/lib/util';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import * as RxDatabase from '../../dist/lib/index';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('RxDocument.test.js', () => {
     describe('statics', () => {});
     describe('.get()', () => {

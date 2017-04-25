@@ -15,10 +15,6 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('Reactive-Query.test.js', () => {
     describe('positive', () => {
         it('get results of array when .subscribe() and filled array later', async() => {

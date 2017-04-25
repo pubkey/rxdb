@@ -20,11 +20,6 @@ import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 import * as RxDB from '../../dist/lib/index';
 
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('Reactive-Document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {

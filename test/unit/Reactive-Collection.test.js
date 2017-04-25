@@ -15,9 +15,6 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
 
 describe('Reactive-Collection.test.js', () => {
     describe('.insert()', () => {

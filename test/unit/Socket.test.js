@@ -9,10 +9,6 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('Socket.test.js', () => {
 
     it('socket should be able to fetch self-inserted event', async() => {

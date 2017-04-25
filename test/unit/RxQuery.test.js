@@ -9,11 +9,6 @@ import {
     default as MQuery
 } from '../../dist/lib/mquery/mquery';
 
-
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 describe('RxQuery.test.js', () => {
     describe('mquery', () => {
         describe('basic', () => {
