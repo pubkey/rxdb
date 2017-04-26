@@ -237,19 +237,24 @@ describe('QueryChangeDetector.test.js', () => {
                 col.database.destroy();
             });
             it('U2: still matching', async() => {
-/*                const col = await humansCollection.create(5);
+                console.log('-------------------------------');
+                const col = await humansCollection.createAgeIndex(5);
                 const q = col.find().sort('age');
                 let results = await q.exec();
                 assert.equal(results.length, 5);
                 assert.equal(q._execOverDatabaseCount, 1);
 
                 const oneDoc = await col.findOne().skip(2).exec();
-                oneDoc.age = 4;
+                oneDoc.age = 1;
                 await oneDoc.save();
 
+                console.log(':::::');
+
                 results = await q.exec();
+
+                await util.promiseWait(1000);
                 assert.equal(results.length, 5);
-                assert.equal(q._execOverDatabaseCount, 1);*/
+                assert.equal(q._execOverDatabaseCount, 1);
             });
         });
 

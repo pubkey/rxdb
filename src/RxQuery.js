@@ -331,7 +331,7 @@ class RxQuery {
                 if (schemaObj && schemaObj.type == 'integer')
                     // TODO change back to -Infinity when issue resolved
                     // @link https://github.com/pouchdb/pouchdb/issues/6454
-                    clonedThis.mquery.where(checkParam).ne(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+                    clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
                 else clonedThis.mquery.where(checkParam).gt(null);
             }
         } else {

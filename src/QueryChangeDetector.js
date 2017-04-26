@@ -124,10 +124,14 @@ class QueryChangeDetector {
 
             // U2 still matching -> only resort
             if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
+                console.log('DDDDDDDXXX');
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 results.push(docData);
+
+
                 // TODO only resort if sort-related field changed
-                return this._resort(results);
+                const resorted = this._resort(results);
+                console.dir(resorted);
             }
 
         }
@@ -203,18 +207,25 @@ class QueryChangeDetector {
      * @return {object[]}
      */
     _resort(resultsData) {
+
+        console.log('resort!!!!!!!!!!!!!!!!!!!!!!!');
+
         let results = resultsData.slice(0); // copy to stay immutable
+        results = results.map(doc => this.query.collection.schema.swapPrimaryToId(doc));
         const options = this.query.toJSON();
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
 
         // TODO use createFieldSorter
-        const sortedRows = filterInMemoryFields(
-            resultsData, {
-                selector: massageSelector(this.query.toJSON().selector),
-                sort: options.sort
-            },
-            inMemoryFields
-        );
+
+        console.log('DRRR');
+        const fooo = {
+            selector: massageSelector(this.query.toJSON().selector),
+            sort: options.sort
+        };
+        const sortedRows = filterInMemoryFields(resultsData, fooo, inMemoryFields);
+        console.log('FFFFFF111');
+        console.dir(sortedRows);
+
         return sortedRows;
     }
 }
