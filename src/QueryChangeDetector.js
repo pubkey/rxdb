@@ -18,7 +18,8 @@ import {
     default as objectPath
 } from 'object-path';
 
-const DEBUG = true;
+let DEBUG = false;
+let ENABLED = false;
 
 class QueryChangeDetector {
 
@@ -29,28 +30,13 @@ class QueryChangeDetector {
 
 
     /**
-     * the query-change-detection does not work is the is a 'hidden state'
-     * in the database, therefore the new result-set cannot be calculated without
-     * querying the database
-     * TODO is this needed?
-     * @return {boolean}
-     */
-    changeDetectionSupported() {
-        const options = this.query.toJSON();
-
-        if (this.query.disableQueryChangeDetection)
-            return false;
-
-        return true;
-    }
-
-    /**
      * @param {ChangeEvent[]} changeEvents
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     runChangeDetection(changeEvents) {
         if (changeEvents.length == 0) return false;
-        if (!this.changeDetectionSupported()) return true;
+
+        if (!ENABLED) return true;
 
         const options = this.query.toJSON();
         let resultsData = this.query._resultsData;
@@ -67,6 +53,15 @@ class QueryChangeDetector {
         }
         if (!changed) return false;
         else return resultsData;
+    }
+
+    _debugMessage(key, changeEventData) {
+        console.dir({
+            name: 'QueryChangeDetector optimized',
+            query: this.query.toString(),
+            key,
+            changeEventData
+        });
     }
 
     /**
@@ -112,27 +107,27 @@ class QueryChangeDetector {
 
             // R1 (never matched)
             if (!doesMatchNow) {
-                DEBUG && console.log('QCD: R1');
+                DEBUG && this._debugMessage('R1', docData);
                 return false;
             }
 
             // R2 sorted before got removed but results not filled
             if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
-                DEBUG && console.log('QCD: R2');
+                DEBUG && this._debugMessage('R2', docData);
                 results.shift();
                 return results;
             }
 
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
-                DEBUG && console.log('QCD: R3');
+                DEBUG && this._debugMessage('R3', docData);
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 return results;
             }
 
             // R4 matching but after results got removed
             if (doesMatchNow && options.limit && sortAfter()) {
-                DEBUG && console.log('QCD: R4');
+                DEBUG && this._debugMessage('R4', docData);
                 return false;
             }
 
@@ -140,22 +135,22 @@ class QueryChangeDetector {
 
             // U1 doc not matched and also not matches now
             if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
-                DEBUG && console.log('QCD: U1');
+                DEBUG && this._debugMessage('U1', docData);
                 return false;
             }
 
             // U2 still matching -> only resort
             if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
-                DEBUG && console.log('QCD: U2');
+                DEBUG && this._debugMessage('U2', docData);
 
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 results.push(docData);
 
                 if (sortFieldChanged()) {
-                    DEBUG && console.log('QCD: U2 resort');
+                    DEBUG && this._debugMessage('U2 - resort', docData);
                     return this._resortDocData(results);
                 } else {
-                    DEBUG && console.log('QCD: U2 no-resort');
+                    DEBUG && this._debugMessage('U2 - no-resort', docData);
                     return results;
                 }
             }
@@ -279,6 +274,14 @@ class QueryChangeDetector {
     }
 }
 
+
+export function enableDebugging() {
+    DEBUG = true;
+};
+
+export function enable(set = true) {
+    ENABLED = set;
+}
 
 /**
  * @param  {RxQuery} query

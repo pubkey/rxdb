@@ -48,7 +48,6 @@ class ChangeEventBuffer {
     }
 
     getFrom(pointer) {
-        console.log('getFrom(' + pointer + ')');
         let currentIndex = this.getArrayIndexByPointer(pointer);
         const ret = [];
         while (true) {

@@ -6,7 +6,12 @@ import {
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
-import * as RxDocument from '../../dist/lib/RxDocument';
+
+import * as QueryChangeDetector from '../../dist/lib/QueryChangeDetector';
+
+// TODO disable later
+QueryChangeDetector.enableDebugging();
+QueryChangeDetector.enable();
 
 
 describe('QueryChangeDetector.test.js', () => {

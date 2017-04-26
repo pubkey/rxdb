@@ -25,7 +25,6 @@ class RxQuery {
         this.collection = collection;
         this.defaultQuery = false;
         this.id = newQueryID();
-        this.disableQueryChangeDetection = false;
 
         // force _id
         if (!queryObj._id)
@@ -101,7 +100,7 @@ class RxQuery {
         // make sure it does not run in parallel
         await this._runningPromise;
 
-        console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
+        // console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
 
         let resolve;
         this._runningPromise = new Promise(res => {
@@ -111,7 +110,7 @@ class RxQuery {
         if (!this._mustReExec) {
             try {
                 const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
-                console.dir(missedChangeEvents);
+                // console.dir(missedChangeEvents);
                 this._latestChangeEvent = this.collection._changeEventBuffer.counter;
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
@@ -142,7 +141,7 @@ class RxQuery {
             }
         }
 
-        console.log('_ensureEqual DONE (' + this.toString() + ')');
+        // console.log('_ensureEqual DONE (' + this.toString() + ')');
 
         resolve(true);
         return ret;
