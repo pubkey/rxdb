@@ -305,6 +305,6 @@ describe('QueryChangeDetector.test.js', () => {
     });
 
     describe('e', () => {
-        it('e', () => process.exit());
+    //    it('e', () => process.exit());
     });
 });

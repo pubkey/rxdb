@@ -18,6 +18,8 @@ import {
     default as objectPath
 } from 'object-path';
 
+const DEBUG = true;
+
 class QueryChangeDetector {
 
     constructor(query) {
@@ -109,38 +111,53 @@ class QueryChangeDetector {
         if (changeEvent.data.op == 'REMOVE') {
 
             // R1 (never matched)
-            if (!doesMatchNow)
+            if (!doesMatchNow) {
+                DEBUG && console.log('QCD: R1');
                 return false;
+            }
 
             // R2 sorted before got removed but results not filled
             if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
+                DEBUG && console.log('QCD: R2');
                 results.shift();
                 return results;
             }
 
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
+                DEBUG && console.log('QCD: R3');
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 return results;
             }
 
             // R4 matching but after results got removed
-            if (doesMatchNow && sortAfter())
+            if (doesMatchNow && options.limit && sortAfter()) {
+                DEBUG && console.log('QCD: R4');
                 return false;
+            }
 
         } else {
 
             // U1 doc not matched and also not matches now
-            if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow)
+            if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
+                DEBUG && console.log('QCD: U1');
                 return false;
+            }
 
             // U2 still matching -> only resort
             if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
+                DEBUG && console.log('QCD: U2');
+
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 results.push(docData);
 
-                if (sortFieldChanged()) return this._resortDocData(results);
-                else return results;
+                if (sortFieldChanged()) {
+                    DEBUG && console.log('QCD: U2 resort');
+                    return this._resortDocData(results);
+                } else {
+                    DEBUG && console.log('QCD: U2 no-resort');
+                    return results;
+                }
             }
 
         }
@@ -255,7 +272,9 @@ class QueryChangeDetector {
             },
             inMemoryFields
         );
-        const sortedDocs = sortedRows.map(row => row.doc);
+        const sortedDocs = sortedRows
+            .map(row => row.doc)
+            .map(doc => this.query.collection.schema.swapIdToPrimary(doc));
         return sortedDocs;
     }
 }
