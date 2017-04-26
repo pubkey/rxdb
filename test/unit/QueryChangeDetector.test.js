@@ -106,6 +106,28 @@ describe('QueryChangeDetector.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('._resortDocData()', () => {
+        it('should return resorted doc-data', async() => {
+            const col = await humansCollection.createAgeIndex(3);
+            const q = col.find().sort('age');
+            const docData1 = schemaObjects.human();
+            docData1.age = 5;
+            docData1._id = 'aaaaaaaa';
+            const docData2 = schemaObjects.human();
+            docData2.age = 10;
+            docData2._id = 'bbbbbbb';
+
+            const res = q._queryChangeDetector._resortDocData([docData2, docData1]);
+            assert.equal(res[0].age, 5);
+            assert.equal(res[1].age, 10);
+
+            const res2 = q._queryChangeDetector._resortDocData([docData1, docData2]);
+            assert.equal(res2[0].age, 5);
+            assert.equal(res2[1].age, 10);
+
+            col.database.destroy();
+        });
+    });
     describe('.handleSingleChange()', () => {
         describe('R1 (removed and never matched)', () => {
             it('should jump in and return false', async() => {
@@ -237,7 +259,6 @@ describe('QueryChangeDetector.test.js', () => {
                 col.database.destroy();
             });
             it('U2: still matching', async() => {
-                console.log('-------------------------------');
                 const col = await humansCollection.createAgeIndex(5);
                 const q = col.find().sort('age');
                 let results = await q.exec();
@@ -248,11 +269,7 @@ describe('QueryChangeDetector.test.js', () => {
                 oneDoc.age = 1;
                 await oneDoc.save();
 
-                console.log(':::::');
-
                 results = await q.exec();
-
-                await util.promiseWait(1000);
                 assert.equal(results.length, 5);
                 assert.equal(q._execOverDatabaseCount, 1);
             });

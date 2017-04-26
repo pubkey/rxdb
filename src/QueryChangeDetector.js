@@ -50,10 +50,11 @@ class QueryChangeDetector {
         const options = this.query.toJSON();
         let resultsData = this.query._resultsData;
         let changed = false;
-
         for (let i = 0; i < changeEvents.length; i++) {
             const changeEvent = changeEvents[i];
+
             const res = this.handleSingleChange(resultsData, changeEvent);
+
             if (Array.isArray(res)) {
                 changed = true;
                 resultsData = res;
@@ -70,7 +71,6 @@ class QueryChangeDetector {
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     handleSingleChange(resultsData, changeEvent) {
-
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
@@ -78,6 +78,7 @@ class QueryChangeDetector {
         const doesMatchNow = this.doesDocMatchQuery(docData);
         const isFilled = !options.limit || resultsData.length >= options.limit;
         const removeIt = wasDocInResults && !doesMatchNow;
+
 
         let _sortAfter = null;
         const sortAfter = () => {
@@ -124,14 +125,13 @@ class QueryChangeDetector {
 
             // U2 still matching -> only resort
             if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
-                console.log('DDDDDDDXXX');
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 results.push(docData);
 
 
                 // TODO only resort if sort-related field changed
-                const resorted = this._resort(results);
-                console.dir(resorted);
+                const resorted = this._resortDocData(results);
+                return resorted;
             }
 
         }
@@ -206,27 +206,27 @@ class QueryChangeDetector {
      * @param  {object[]} resultsData
      * @return {object[]}
      */
-    _resort(resultsData) {
-
-        console.log('resort!!!!!!!!!!!!!!!!!!!!!!!');
+    _resortDocData(resultsData) {
 
         let results = resultsData.slice(0); // copy to stay immutable
-        results = results.map(doc => this.query.collection.schema.swapPrimaryToId(doc));
+        const rows = results.map(doc => {
+            return {
+                doc: this.query.collection.schema.swapPrimaryToId(doc)
+            };
+        });
         const options = this.query.toJSON();
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
 
         // TODO use createFieldSorter
-
-        console.log('DRRR');
-        const fooo = {
-            selector: massageSelector(this.query.toJSON().selector),
-            sort: options.sort
-        };
-        const sortedRows = filterInMemoryFields(resultsData, fooo, inMemoryFields);
-        console.log('FFFFFF111');
-        console.dir(sortedRows);
-
-        return sortedRows;
+        const sortedRows = filterInMemoryFields(
+            rows, {
+                selector: massageSelector(this.query.toJSON().selector),
+                sort: options.sort
+            },
+            inMemoryFields
+        );
+        const sortedDocs = sortedRows.map(row => row.doc);
+        return sortedDocs;
     }
 }
 

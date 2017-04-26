@@ -91,7 +91,6 @@ class RxQuery {
      */
     async _ensureEqual() {
 
-        console.log('_ensureEqual(' + this.toString() + ')');
 
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
@@ -101,6 +100,9 @@ class RxQuery {
 
         // make sure it does not run in parallel
         await this._runningPromise;
+
+        console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
+
         let resolve;
         this._runningPromise = new Promise(res => {
             resolve = res;
@@ -113,7 +115,6 @@ class RxQuery {
                 this._latestChangeEvent = this.collection._changeEventBuffer.counter;
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
-
                 if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
                 if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
                     ret = true;
@@ -121,6 +122,8 @@ class RxQuery {
                 }
 
             } catch (e) {
+                console.error('RxQuery()._ensureEqual(): Unexpected Error:');
+                console.dir(e);
                 this._mustReExec = true;
             }
         }
@@ -138,6 +141,8 @@ class RxQuery {
                 this._setResultData(newResultData);
             }
         }
+
+        console.log('_ensureEqual DONE (' + this.toString() + ')');
 
         resolve(true);
         return ret;
@@ -319,9 +324,6 @@ class RxQuery {
      */
     sort(params) {
         const clonedThis = this._clone();
-
-        console.log('sort:');
-        console.dir(params);
 
         // workarround because sort wont work on unused keys
         if (typeof params !== 'object') {
