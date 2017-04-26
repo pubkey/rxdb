@@ -14,6 +14,9 @@ import {
 import {
     default as clone
 } from 'clone';
+import {
+    default as objectPath
+} from 'object-path';
 
 class QueryChangeDetector {
 
@@ -74,7 +77,7 @@ class QueryChangeDetector {
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
-        const wasDocInResults = this.isDocInResultData(docData, resultsData);
+        const wasDocInResults = this._isDocInResultData(docData, resultsData);
         const doesMatchNow = this.doesDocMatchQuery(docData);
         const isFilled = !options.limit || resultsData.length >= options.limit;
         const removeIt = wasDocInResults && !doesMatchNow;
@@ -94,6 +97,14 @@ class QueryChangeDetector {
             return _sortBefore;
         };
 
+        let _sortFieldChanged = null;
+        const sortFieldChanged = () => {
+            if (_sortFieldChanged === null) {
+                const docBefore = results.find(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                _sortFieldChanged = this._sortFieldChanged(docBefore, docData);
+            }
+            return _sortFieldChanged;
+        };
 
         if (changeEvent.data.op == 'REMOVE') {
 
@@ -128,10 +139,8 @@ class QueryChangeDetector {
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 results.push(docData);
 
-
-                // TODO only resort if sort-related field changed
-                const resorted = this._resortDocData(results);
-                return resorted;
+                if (sortFieldChanged()) return this._resortDocData(results);
+                else return results;
             }
 
         }
@@ -164,10 +173,33 @@ class QueryChangeDetector {
      * @param {object} docData
      * @param {object[]} resultData
      */
-    isDocInResultData(docData, resultData) {
+    _isDocInResultData(docData, resultData) {
         const primaryPath = this.query.collection.schema.primaryPath;
         const first = resultData.find(doc => doc[primaryPath] == docData[primaryPath]);
         return !!first;
+    }
+
+
+    /**
+     * checks if the sort-relevant fields have changed
+     * @param  {object} docDataBefore
+     * @param  {object} docDataAfter
+     * @return {boolean}
+     */
+    _sortFieldChanged(docDataBefore, docDataAfter) {
+        const options = this.query.toJSON();
+        const sortFields = options.sort.map(sortObj => Object.keys(sortObj).pop());
+
+        let changed = false;
+        sortFields.find(field => {
+            const beforeData = objectPath.get(docDataBefore, field);
+            const afterData = objectPath.get(docDataAfter, field);
+            if (beforeData != afterData) {
+                changed = true;
+                return true;
+            } else return false;
+        });
+        return changed;
     }
 
     /**
@@ -207,9 +239,7 @@ class QueryChangeDetector {
      * @return {object[]}
      */
     _resortDocData(resultsData) {
-
-        let results = resultsData.slice(0); // copy to stay immutable
-        const rows = results.map(doc => {
+        const rows = resultsData.map(doc => {
             return {
                 doc: this.query.collection.schema.swapPrimaryToId(doc)
             };

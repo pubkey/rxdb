@@ -43,14 +43,14 @@ describe('QueryChangeDetector.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('.isDocInResultData()', async() => {
+    describe('._isDocInResultData()', async() => {
         it('should return true', async() => {
             const col = await humansCollection.create(5);
             const q = col.find();
             await q.exec();
             const resData = q._resultsData;
             assert.equal(q._resultsData.length, 5);
-            const is = q._queryChangeDetector.isDocInResultData(resData[0], resData);
+            const is = q._queryChangeDetector._isDocInResultData(resData[0], resData);
             assert.equal(is, true);
             col.database.destroy();
         });
@@ -62,7 +62,7 @@ describe('QueryChangeDetector.test.js', () => {
             const anyDoc = clone(resData[0]);
             anyDoc._id = 'foobar';
             assert.equal(q._resultsData.length, 5);
-            const is = q._queryChangeDetector.isDocInResultData(anyDoc, resData);
+            const is = q._queryChangeDetector._isDocInResultData(anyDoc, resData);
             assert.equal(is, false);
             col.database.destroy();
         });
@@ -125,6 +125,32 @@ describe('QueryChangeDetector.test.js', () => {
             assert.equal(res2[0].age, 5);
             assert.equal(res2[1].age, 10);
 
+            col.database.destroy();
+        });
+    });
+    describe('._sortFieldChanged()', () => {
+        it('should return true', async() => {
+            const col = await humansCollection.createAgeIndex(0);
+
+            const q = col.find().sort('age');
+            const docDataBefore = schemaObjects.human();
+            docDataBefore.age = 5;
+            const docDataAfter = clone(docDataBefore);
+            docDataAfter.age = 10;
+
+            const changed = q._queryChangeDetector._sortFieldChanged(docDataBefore, docDataAfter);
+            assert.equal(changed, true);
+            col.database.destroy();
+        });
+        it('should return false', async() => {
+            const col = await humansCollection.createAgeIndex(0);
+
+            const q = col.find().sort('age');
+            const docDataBefore = schemaObjects.human();
+            const docDataAfter = clone(docDataBefore);
+
+            const changed = q._queryChangeDetector._sortFieldChanged(docDataBefore, docDataAfter);
+            assert.equal(changed, false);
             col.database.destroy();
         });
     });
@@ -272,6 +298,7 @@ describe('QueryChangeDetector.test.js', () => {
                 results = await q.exec();
                 assert.equal(results.length, 5);
                 assert.equal(q._execOverDatabaseCount, 1);
+                assert.equal(results[0].age, 1);
             });
         });
 
