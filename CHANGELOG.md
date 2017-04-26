@@ -1,9 +1,13 @@
-## 4.0.0
+## 4.0.0 (XXX, 2017)
 
 Breaking:
   - RxQuery's are now [immutable](docs/RxQuery.md)
   - RxQuery.$ does not emit `null` when running
   - RxQuery will sort by primary (ASC) as default
+
+Features:
+  - Added [QueryChangeDetection](docs/QueryChangeDetection,md) (in **beta**, disabled by default)
+  - re-executing queries while nothing happend to the collection, is now fetched
 
 ## 3.0.7 (April 10, 2017)
 

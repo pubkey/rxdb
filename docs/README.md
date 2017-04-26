@@ -45,3 +45,4 @@ If you are new to RxDB, you should start [here](./Install.md).
 - [Population](./Population.md)
 - [DataMigration](./DataMigration.md)
 - [LeaderElection](./LeaderElection.md)
+- [QueryChangeDetection](./QueryChangeDetection.md)
