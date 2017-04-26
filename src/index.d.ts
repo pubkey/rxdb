@@ -69,13 +69,15 @@ interface CollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: any;
-    migrationStrategies?: Function[];
-    autoMigrate?: boolean;
-    statics?: {
+    migrationStrategies?: {
         [key: number]: Function
     };
+    autoMigrate?: boolean;
+    statics?: {
+        [key: string]: Function
+    };
     methods?: {
-        [key: number]: Function
+        [key: string]: Function
     };
 }
 
