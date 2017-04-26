@@ -320,11 +320,20 @@ class RxQuery {
     sort(params) {
         const clonedThis = this._clone();
 
+        console.log('sort:');
+        console.dir(params);
+
         // workarround because sort wont work on unused keys
         if (typeof params !== 'object') {
             const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
-            if (!clonedThis.mquery._conditions[checkParam])
-                clonedThis.mquery.where(checkParam).gt(null);
+            if (!clonedThis.mquery._conditions[checkParam]) {
+                const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
+                if (schemaObj && schemaObj.type == 'integer')
+                    // TODO change back to -Infinity when issue resolved
+                    // @link https://github.com/pouchdb/pouchdb/issues/6454
+                    clonedThis.mquery.where(checkParam).ne(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+                else clonedThis.mquery.where(checkParam).gt(null);
+            }
         } else {
             Object.keys(params)
                 .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)

@@ -176,6 +176,10 @@ class RxCollection {
     async _pouchFind(rxQuery, limit, noDecrypt = false) {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
+
+        console.log('compressedQueryJSON:');
+        console.dir(compressedQueryJSON);
+
         const docsCompressed = await this.pouch.find(compressedQueryJSON);
         const docs = docsCompressed.docs
             .map(doc => this._handleFromPouch(doc, noDecrypt));

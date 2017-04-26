@@ -79,6 +79,20 @@ class QueryChangeDetector {
         const isFilled = !options.limit || resultsData.length >= options.limit;
         const removeIt = wasDocInResults && !doesMatchNow;
 
+        let _sortAfter = null;
+        const sortAfter = () => {
+            if (_sortAfter === null)
+                _sortAfter = this._isSortedBefore(results[results.length - 1], docData);
+            return _sortAfter;
+        };
+
+        let _sortBefore = null;
+        const sortBefore = () => {
+            if (_sortBefore === null)
+                _sortBefore = this._isSortedBefore(docData, results[0]);
+            return _sortBefore;
+        };
+
 
         if (changeEvent.data.op == 'REMOVE') {
 
@@ -86,35 +100,35 @@ class QueryChangeDetector {
             if (!doesMatchNow)
                 return false;
 
+            // R2 sorted before got removed but results not filled
+            if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
+                results.shift();
+                return results;
+            }
+
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 return results;
             }
 
-            if (options.skip) {
-                const sortBefore = this._isSortedBefore(docData, results[0]);
-                const sortAfter = this._isSortedBefore(results[results.length - 1], docData);
+            // R4 matching but after results got removed
+            if (doesMatchNow && sortAfter())
+                return false;
 
-                // R2
-                if (doesMatchNow && sortBefore && !isFilled) {
-                    results.shift();
-                    return results;
-                }
-
-                // R4 TODO test
-                if (doesMatchNow && sortAfter)
-                    return false;
-
-            }
         } else {
 
-            /**
-             * doc does still not match
-             */
+            // U1 doc not matched and also not matches now
             if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow)
                 return false;
 
+            // U2 still matching -> only resort
+            if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
+                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                results.push(docData);
+                // TODO only resort if sort-related field changed
+                return this._resort(results);
+            }
 
         }
 
@@ -125,8 +139,6 @@ class QueryChangeDetector {
 
     /**
      * check if the document matches the query
-     * TODO this can be done better when PR is merged:
-     * @link https://github.com/pouchdb/pouchdb/pull/6422
      * @param {object} docData
      * @return {boolean}
      */
@@ -157,8 +169,6 @@ class QueryChangeDetector {
     /**
      * checks if the newDocLeft would be placed before docDataRight
      * when the query would be reExecuted
-     * TODO this can be done better when PR is merged:
-     * @link https://github.com/pouchdb/pouchdb/pull/6422
      * @param  {Object} docDataNew
      * @param  {Object} docDataIs
      * @return {boolean} true if before, false if after
@@ -185,6 +195,27 @@ class QueryChangeDetector {
             inMemoryFields
         );
         return sortedRows[0].id == swapedLeft._id;
+    }
+
+    /**
+     * reruns the sort on the given resultsData
+     * @param  {object[]} resultsData
+     * @return {object[]}
+     */
+    _resort(resultsData) {
+        let results = resultsData.slice(0); // copy to stay immutable
+        const options = this.query.toJSON();
+        const inMemoryFields = Object.keys(this.query.toJSON().selector);
+
+        // TODO use createFieldSorter
+        const sortedRows = filterInMemoryFields(
+            resultsData, {
+                selector: massageSelector(this.query.toJSON().selector),
+                sort: options.sort
+            },
+            inMemoryFields
+        );
+        return sortedRows;
     }
 }
 

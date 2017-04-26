@@ -195,6 +195,62 @@ describe('QueryChangeDetector.test.js', () => {
 
                 col.database.destroy();
             });
+            it('R4: sorted after and got removed', async() => {
+                const col = await humansCollection.create(5);
+
+                const q = col.find().limit(4);
+                let results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                const last = await col.findOne().skip(4).exec();
+                assert.ok(!results.map(doc => doc.passportId).includes(last.passportId));
+
+                await last.remove();
+
+                results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                col.database.destroy();
+            });
+            it('U1: not matched and not matches now', async() => {
+                const col = await humansCollection.create(4);
+
+                const other = schemaObjects.human();
+                other.passportId = 'foobar';
+                const otherDoc = await col.insert(other);
+
+                const q = col.find().where('passportId').ne('foobar');
+                let results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+
+                otherDoc.firstName = 'piotr';
+                await otherDoc.save();
+
+                results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                col.database.destroy();
+            });
+            it('U2: still matching', async() => {
+/*                const col = await humansCollection.create(5);
+                const q = col.find().sort('age');
+                let results = await q.exec();
+                assert.equal(results.length, 5);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                const oneDoc = await col.findOne().skip(2).exec();
+                oneDoc.age = 4;
+                await oneDoc.save();
+
+                results = await q.exec();
+                assert.equal(results.length, 5);
+                assert.equal(q._execOverDatabaseCount, 1);*/
+            });
         });
 
     });
