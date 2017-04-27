@@ -10,9 +10,9 @@ The QueryChangeDetection is currently in **beta** and disabled by default.
 You can enable it by calling the `enable()`-function on its module.
 
 ```js
-import * as QueryChangeDetection from 'node_modules/dist/lib/QueryChangeDetection';
-QueryChangeDetection.enable();
-QueryChangeDetection.enableDebugging(); // shows a console.log everytime an optimisation is made
+import { QueryChangeDetector } from 'rxdb';
+QueryChangeDetector.enable();
+QueryChangeDetector.enableDebugging(); // shows a console.log everytime an optimisation is made
 ```
 
 # Use-case-example

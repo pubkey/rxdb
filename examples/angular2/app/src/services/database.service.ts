@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 
 import * as RxDB from '../../../../../';
-import { RxDatabase } from '../../../../../';
+import { RxDatabase, QueryChangeDetector } from '../../../../../';
 
-
+QueryChangeDetector.enable();
+QueryChangeDetector.enableDebugging();
 
 const adapters = {
     localstorage: require('../../../../../plugins/adapter-localstorage/'),

@@ -191,12 +191,12 @@ declare class RxDocument {
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
     populate(objPath: string): Promise<RxDocument |null>;
-    toJSON(): Object;
-    destroy(): void;
+toJSON(): Object;
+destroy(): void;
 }
 
 declare class PouchDB {
-    constructor(name: string, options:{ adapter:string });
+    constructor(name: string, options: { adapter: string });
     info();
 }
 
@@ -219,6 +219,10 @@ export interface DatabaseCreator {
 }
 
 export function create(creator: DatabaseCreator): Promise<RxDatabase>;
+export const QueryChangeDetector: {
+    enable(): void;
+    enableDebugging(set?: boolean): void;
+}
 
 export function plugin(mod: any): void;
 

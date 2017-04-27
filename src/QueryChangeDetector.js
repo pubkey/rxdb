@@ -276,10 +276,12 @@ class QueryChangeDetector {
 
 
 export function enableDebugging() {
+    console.log('QueryChangeDetector.enableDebugging()');
     DEBUG = true;
 };
 
 export function enable(set = true) {
+    console.log(`QueryChangeDetector.enableDebugging(${set})`);
     ENABLED = set;
 }
 
