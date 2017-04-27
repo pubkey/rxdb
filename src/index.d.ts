@@ -59,7 +59,7 @@ interface SchemaJSON {
     description?: string;
     version: number;
     type: string;
-    properties: JsonSchema;
+    properties: { [key: string]: JsonSchema };
     required?: Array<string>;
     compoundIndexes?: Array<string | Array<string>>;
     disableKeyCompression?: boolean;
