@@ -70,16 +70,21 @@ class QueryChangeDetector {
      */
     handleSingleChange(resultsData, changeEvent) {
 
-        if (DEBUG) this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
-
-
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
         const wasDocInResults = this._isDocInResultData(docData, resultsData);
         const doesMatchNow = this.doesDocMatchQuery(docData);
-        const isFilled = !options.limit || resultsData.length >= options.limit;
-        const removeIt = wasDocInResults && !doesMatchNow;
+        const isFilled = !options.limit || (options.limit && resultsData.length >= options.limit);
+
+        if (DEBUG) {
+            this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
+            console.log('changeEvent.data:');
+            console.dir(changeEvent.data);
+            console.log('wasDocInResults: ' + wasDocInResults);
+            console.log('doesMatchNow: ' + doesMatchNow);
+            console.log('isFilled: ' + isFilled);
+        }
 
 
         let _sortAfter = null;
@@ -126,6 +131,13 @@ class QueryChangeDetector {
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 return results;
             }
+            // R3.1 was in results and got removed, no limit, no skip
+            if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
+                DEBUG && this._debugMessage('R3.1', docData);
+                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                return results;
+            }
+
 
             // R4 matching but after results got removed
             if (doesMatchNow && options.limit && sortAfter()) {

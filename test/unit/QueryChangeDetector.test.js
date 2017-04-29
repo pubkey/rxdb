@@ -264,6 +264,20 @@ describe('QueryChangeDetector.test.js', () => {
 
                 col.database.destroy();
             });
+            it('BUG: R3: does not work when no limit and no skip', async() => {
+                const col = await humansCollection.create(5);
+                const q = col.find();
+                let results = await q.exec();
+                assert.equal(results.length, 5);
+                assert.equal(q._execOverDatabaseCount, 1);
+
+                await col.findOne().skip(1).remove();
+
+                results = await q.exec();
+                assert.equal(results.length, 4);
+                assert.equal(q._execOverDatabaseCount, 1);
+                col.database.destroy();
+            });
             it('R4: sorted after and got removed', async() => {
                 const col = await humansCollection.create(5);
 
