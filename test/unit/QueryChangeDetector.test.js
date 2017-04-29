@@ -47,6 +47,22 @@ describe('QueryChangeDetector.test.js', () => {
             assert.equal(false, q._queryChangeDetector.doesDocMatchQuery(docData));
             col.database.destroy();
         });
+        it('BUG: this should match', async() => {
+            const col = await humansCollection.create(0);
+            const q = col.find().sort('name');
+
+            const docData = {
+                color: 'green',
+                hp: 100,
+                maxHP: 767,
+                name: 'asdfsadf',
+                _ext: true,
+                _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
+            };
+
+            assert.equal(true, q._queryChangeDetector.doesDocMatchQuery(docData));
+            col.database.destroy();
+        });
     });
     describe('._isDocInResultData()', async() => {
         it('should return true', async() => {
@@ -310,6 +326,6 @@ describe('QueryChangeDetector.test.js', () => {
     });
 
     describe('e', () => {
-    //    it('e', () => process.exit());
+        //    it('e', () => process.exit());
     });
 });

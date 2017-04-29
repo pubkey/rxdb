@@ -55,9 +55,10 @@ class QueryChangeDetector {
         else return resultsData;
     }
 
-    _debugMessage(key, changeEventData) {
+    _debugMessage(key, changeEventData = {}, title = 'optimized') {
         console.dir({
-            name: 'QueryChangeDetector optimized',
+            name: 'QueryChangeDetector',
+            title,
             query: this.query.toString(),
             key,
             changeEventData
@@ -71,6 +72,10 @@ class QueryChangeDetector {
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     handleSingleChange(resultsData, changeEvent) {
+
+        if (DEBUG) this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
+
+
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
@@ -168,6 +173,7 @@ class QueryChangeDetector {
      * @return {boolean}
      */
     doesDocMatchQuery(docData) {
+        docData = this.query.collection.schema.swapPrimaryToId(docData);
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
         const retDocs = filterInMemoryFields(
             [{
@@ -177,7 +183,16 @@ class QueryChangeDetector {
             },
             inMemoryFields
         );
-        return retDocs.length == 1;
+        const ret = retDocs.length == 1;
+
+
+        console.log('doesDocMatchQuery: selector:');
+        console.dir(massageSelector(this.query.toJSON().selector));
+        console.log('doesDocMatchQuery: docData:');
+        console.dir(docData);
+        console.log('doesDocMatchQuery: ret: ' + ret);
+
+        return ret;
     }
 
     /**
