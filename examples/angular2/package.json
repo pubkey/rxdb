@@ -44,6 +44,7 @@
     "pouchdb-server": "2.3.4",
     "random-int": "1.0.0",
     "regenerator": "0.9.7",
+    "roboto-npm-webfont": "0.0.2",
     "rxjs": "5.2.0",
     "zone.js": "0.7.7"
   },
