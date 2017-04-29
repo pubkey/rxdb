@@ -43,14 +43,6 @@ module.exports = {
         publicPath: '/'
     },
     plugins: [
-        /*
-         * @link https://github.com/ansman/validate.js/issues/12#issuecomment-71919930
-         * TODO maybe remove ContextReplacementPlugin in the next angular version
-         */
-        new webpack.ContextReplacementPlugin(
-            /angular(\\|\/)core(\\|\/)(esm(\\|\/)src|src)(\\|\/)linker/,
-            __dirname
-        ),
         new webpack.optimize.CommonsChunkPlugin({
             name: ['app', 'vendor', 'polyfills']
         }),
