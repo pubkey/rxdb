@@ -376,14 +376,20 @@ describe('QueryChangeDetector.test.js', () => {
                     assert.equal(results.length, 5);
                     assert.equal(q._execOverDatabaseCount, 1);
 
-                    const other = schemaObjects.simpleHuman();
-                    other.passportId = '000aaa'; // to make sure it sorts at start
-                    const otherDoc = await col.insert(other);
+                    const first = schemaObjects.simpleHuman();
+                    first.passportId = '000aaa'; // to make sure it sorts at start
+                    await col.insert(first);
+
+                    const last = schemaObjects.simpleHuman();
+                    last.passportId = 'zzzzzz'; // to make sure it sorts at last
+                    await col.insert(last);
+
 
                     results = await q.exec();
-                    assert.equal(results.length, 6);
+                    assert.equal(results.length, 7);
                     assert.equal(q._execOverDatabaseCount, 1);
                     assert.equal(results[0].passportId, '000aaa');
+                    assert.equal(results[6].passportId, 'zzzzzz');
                 });
             });
         });
