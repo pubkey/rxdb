@@ -215,130 +215,179 @@ describe('QueryChangeDetector.test.js', () => {
         });
 
         /**
-         * each optimisation-shortcut has a number, this tests each of them
+         * each optimisation-shortcut has a key, this tests each of them
          */
         describe('all constellations', () => {
-            it('R1: doc which did not match, was removed', async() => {
-                const col = await humansCollection.create(1);
-                const q = col.find().where('name').eq('foobar');
-                let results = await q.exec();
-                assert.equal(results.length, 0);
-                assert.equal(q._execOverDatabaseCount, 1);
 
-                await col.findOne().remove();
+            describe('R1', () => {
+                it('R1: doc which did not match, was removed', async() => {
+                    const col = await humansCollection.create(1);
+                    const q = col.find().where('name').eq('foobar');
+                    let results = await q.exec();
+                    assert.equal(results.length, 0);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                results = await q.exec();
-                assert.equal(results.length, 0);
-                assert.equal(q._execOverDatabaseCount, 1);
+                    await col.findOne().remove();
 
-                col.database.destroy();
+                    results = await q.exec();
+                    assert.equal(results.length, 0);
+                    assert.equal(q._execOverDatabaseCount, 1);
+
+                    col.database.destroy();
+                });
             });
-            it('R2: doc which was before first result was removed', async() => {
-                const col = await humansCollection.create(5);
-                const q = col.find().skip(1).limit(10);
-                let results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
+            describe('R2', () => {
+                it('R2: doc which was before first result was removed', async() => {
+                    const col = await humansCollection.create(5);
+                    const q = col.find().skip(1).limit(10);
+                    let results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                // removed skipped one
-                await col.find().sort('passportId').limit(1).remove();
+                    // removed skipped one
+                    await col.find().sort('passportId').limit(1).remove();
 
-                results = await q.exec();
-                assert.equal(results.length, 3);
-                assert.equal(q._execOverDatabaseCount, 1);
+                    results = await q.exec();
+                    assert.equal(results.length, 3);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                col.database.destroy();
+                    col.database.destroy();
+                });
             });
-            it('R3: doc which was in results got removed', async() => {
-                const col = await humansCollection.create(5);
-                const q = col.find().limit(10);
-                let results = await q.exec();
-                assert.equal(results.length, 5);
-                assert.equal(q._execOverDatabaseCount, 1);
+            describe('R3', () => {
+                it('R3: doc which was in results got removed', async() => {
+                    const col = await humansCollection.create(5);
+                    const q = col.find().limit(10);
+                    let results = await q.exec();
+                    assert.equal(results.length, 5);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                await col.findOne().skip(1).remove();
+                    await col.findOne().skip(1).remove();
 
-                results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
+                    results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                col.database.destroy();
+                    col.database.destroy();
+                });
+                it('BUG: R3: does not work when no limit and no skip', async() => {
+                    const col = await humansCollection.create(5);
+                    const q = col.find();
+                    let results = await q.exec();
+                    assert.equal(results.length, 5);
+                    assert.equal(q._execOverDatabaseCount, 1);
+
+                    await col.findOne().skip(1).remove();
+
+                    results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
+                    col.database.destroy();
+                });
             });
-            it('BUG: R3: does not work when no limit and no skip', async() => {
-                const col = await humansCollection.create(5);
-                const q = col.find();
-                let results = await q.exec();
-                assert.equal(results.length, 5);
-                assert.equal(q._execOverDatabaseCount, 1);
+            describe('R4', () => {
+                it('R4: sorted after and got removed', async() => {
+                    const col = await humansCollection.create(5);
 
-                await col.findOne().skip(1).remove();
+                    const q = col.find().limit(4);
+                    let results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
-                col.database.destroy();
+                    const last = await col.findOne().skip(4).exec();
+                    assert.ok(!results.map(doc => doc.passportId).includes(last.passportId));
+
+                    await last.remove();
+
+                    results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
+
+                    col.database.destroy();
+                });
             });
-            it('R4: sorted after and got removed', async() => {
-                const col = await humansCollection.create(5);
+            describe('U1', () => {
+                it('U1: not matched and not matches now', async() => {
+                    const col = await humansCollection.create(4);
 
-                const q = col.find().limit(4);
-                let results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
+                    const other = schemaObjects.human();
+                    other.passportId = 'foobar';
+                    const otherDoc = await col.insert(other);
 
-                const last = await col.findOne().skip(4).exec();
-                assert.ok(!results.map(doc => doc.passportId).includes(last.passportId));
+                    const q = col.find().where('passportId').ne('foobar');
+                    let results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                await last.remove();
 
-                results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
+                    otherDoc.firstName = 'piotr';
+                    await otherDoc.save();
 
-                col.database.destroy();
+                    results = await q.exec();
+                    assert.equal(results.length, 4);
+                    assert.equal(q._execOverDatabaseCount, 1);
+
+                    col.database.destroy();
+                });
             });
-            it('U1: not matched and not matches now', async() => {
-                const col = await humansCollection.create(4);
+            describe('U2', () => {
+                it('U2: still matching', async() => {
+                    const col = await humansCollection.createAgeIndex(5);
+                    const q = col.find().sort('age');
+                    let results = await q.exec();
+                    assert.equal(results.length, 5);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                const other = schemaObjects.human();
-                other.passportId = 'foobar';
-                const otherDoc = await col.insert(other);
+                    const oneDoc = await col.findOne().skip(2).exec();
+                    oneDoc.age = 1;
+                    await oneDoc.save();
 
-                const q = col.find().where('passportId').ne('foobar');
-                let results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
-
-
-                otherDoc.firstName = 'piotr';
-                await otherDoc.save();
-
-                results = await q.exec();
-                assert.equal(results.length, 4);
-                assert.equal(q._execOverDatabaseCount, 1);
-
-                col.database.destroy();
+                    results = await q.exec();
+                    assert.equal(results.length, 5);
+                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.equal(results[0].age, 1);
+                });
             });
-            it('U2: still matching', async() => {
-                const col = await humansCollection.createAgeIndex(5);
-                const q = col.find().sort('age');
-                let results = await q.exec();
-                assert.equal(results.length, 5);
-                assert.equal(q._execOverDatabaseCount, 1);
+            describe('U3', () => {
+                it('U3: not matched, but matches now, no.skip, limit < length', async() => {
+                    const col = await humansCollection.createAgeIndex(5);
+                    const q = col.find().sort('passportId');
+                    let results = await q.exec();
+                    assert.equal(results.length, 5);
+                    assert.equal(q._execOverDatabaseCount, 1);
 
-                const oneDoc = await col.findOne().skip(2).exec();
-                oneDoc.age = 1;
-                await oneDoc.save();
+                    const other = schemaObjects.human();
+                    other.passportId = '000aaaaa'; // to make sure it sorts at start
+                    const otherDoc = await col.insert(other);
 
-                results = await q.exec();
-                assert.equal(results.length, 5);
-                assert.equal(q._execOverDatabaseCount, 1);
-                assert.equal(results[0].age, 1);
+
+                    results = await q.exec();
+                    assert.equal(results.length, 6);
+                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.equal(results[0].passportId, '000aaaaa');
+                });
+                it('U3: BUG: does not resort when sorted by primary', async() => {
+                    console.log('--------------------------------------------------');
+                    console.log('--------------------------------------------------');
+
+                    const col = await humansCollection.createPrimary(5);
+                    const q = col.find().sort('passportId');
+                    let results = await q.exec();
+                    assert.equal(results.length, 5);
+                    assert.equal(q._execOverDatabaseCount, 1);
+
+                    const other = schemaObjects.simpleHuman();
+                    other.passportId = '000aaa'; // to make sure it sorts at start
+                    const otherDoc = await col.insert(other);
+
+                    results = await q.exec();
+                    assert.equal(results.length, 6);
+                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.equal(results[0].passportId, '000aaa');
+                });
             });
         });
-
     });
-
     describe('e', () => {
         //    it('e', () => process.exit());
     });

@@ -76,6 +76,7 @@ class QueryChangeDetector {
         const wasDocInResults = this._isDocInResultData(docData, resultsData);
         const doesMatchNow = this.doesDocMatchQuery(docData);
         const isFilled = !options.limit || (options.limit && resultsData.length >= options.limit);
+        const limitAndFilled = options.limit && resultsData.length >= options.limit;
 
         if (DEBUG) {
             this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
@@ -167,6 +168,21 @@ class QueryChangeDetector {
                     DEBUG && this._debugMessage('U2 - no-resort', docData);
                     return results;
                 }
+            }
+
+
+            // U3 not matched, but matches now, no.skip, limit < length
+            if (!options.skip && !limitAndFilled && !wasDocInResults && doesMatchNow) {
+                DEBUG && this._debugMessage('U3', docData);
+                results.push(docData);
+
+                console.log('U3: preSort:');
+                console.dir(results);
+
+                const sorted = this._resortDocData(results);
+                console.log('U3: postSort:');
+                console.dir(sorted);
+                return sorted;
             }
 
         }
