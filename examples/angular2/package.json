@@ -32,6 +32,7 @@
     "babel-polyfill": "6.23.0",
     "concurrently": "3.3.0",
     "core-js": "2.4.1",
+    "font-awesome": "^4.7.0",
     "hammerjs": "2.0.8",
     "json-loader": "0.5.4",
     "node-gyp": "3.5.0",
@@ -57,6 +58,7 @@
     "copy-webpack-plugin": "4.0.1",
     "css-loader": "0.26.1",
     "extract-text-webpack-plugin": "2.0.0-beta.3",
+    "file-loader": "^0.11.1",
     "fsmonitor": "0.2.4",
     "html-webpack-plugin": "2.28.0",
     "less": "2.7.2",
@@ -68,6 +70,7 @@
     "style-loader": "0.13.1",
     "tslint": "4.4.2",
     "typescript": "2.2.1",
+    "url-loader": "^0.5.8",
     "webpack": "2.2.1",
     "webpack-dev-server": "2.4.1",
     "webpack-merge": "3.0.0"

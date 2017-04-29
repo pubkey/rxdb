@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, NgZone, Output, Input, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, Output, EventEmitter } from '@angular/core';
 import { RxDocument } from '../../../../../../';
 
 import { DatabaseService } from '../../services/database.service';
