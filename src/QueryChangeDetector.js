@@ -11,12 +11,8 @@ import {
     filterInMemoryFields,
     massageSelector
 } from 'pouchdb-selector-core';
-import {
-    default as clone
-} from 'clone';
-import {
-    default as objectPath
-} from 'object-path';
+import clone from 'clone';
+import objectPath from 'object-path';
 
 let DEBUG = false;
 let ENABLED = false;
@@ -40,17 +36,18 @@ class QueryChangeDetector {
 
         const options = this.query.toJSON();
         let resultsData = this.query._resultsData;
+
         let changed = false;
-        for (let i = 0; i < changeEvents.length; i++) {
-            const changeEvent = changeEvents[i];
 
+        const found = changeEvents.find(changeEvent => {
             const res = this.handleSingleChange(resultsData, changeEvent);
-
             if (Array.isArray(res)) {
                 changed = true;
                 resultsData = res;
+                return false;
             } else if (res) return true;
-        }
+        });
+        if (found) return true;
         if (!changed) return false;
         else return resultsData;
     }
@@ -184,14 +181,6 @@ class QueryChangeDetector {
             inMemoryFields
         );
         const ret = retDocs.length == 1;
-
-
-        console.log('doesDocMatchQuery: selector:');
-        console.dir(massageSelector(this.query.toJSON().selector));
-        console.log('doesDocMatchQuery: docData:');
-        console.dir(docData);
-        console.log('doesDocMatchQuery: ret: ' + ret);
-
         return ret;
     }
 

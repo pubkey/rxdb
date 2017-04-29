@@ -4,12 +4,8 @@
  */
 
 
-import {
-    default as clone
-} from 'clone';
-import {
-    default as randomToken
-} from 'random-token';
+import clone from 'clone';
+import randomToken from 'random-token';
 
 // rxjs cherry-pick
 import {

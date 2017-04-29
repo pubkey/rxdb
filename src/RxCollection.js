@@ -1,14 +1,6 @@
-import {
-    default as PouchDB
-} from './PouchDB';
-
-import {
-    default as objectPath
-} from 'object-path';
-
-import {
-    default as clone
-} from 'clone';
+import PouchDB from './PouchDB';
+import objectPath from 'object-path';
+import clone from 'clone';
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';

@@ -2,9 +2,7 @@ import * as RxDatabase from './RxDatabase';
 import * as RxSchema from './RxSchema';
 import * as QueryChangeDetector from './QueryChangeDetector';
 
-import {
-    default as PouchDB
-} from './PouchDB';
+import PouchDB from './PouchDB';
 
 /**
  * create a database

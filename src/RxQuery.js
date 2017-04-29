@@ -1,10 +1,6 @@
-import {
-    default as deepEqual
-} from 'deep-equal';
+import deepEqual from 'deep-equal';
+import MQuery from './mquery/mquery';
 
-import {
-    default as MQuery
-} from './mquery/mquery';
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 import * as QueryChangeDetector from './QueryChangeDetector';

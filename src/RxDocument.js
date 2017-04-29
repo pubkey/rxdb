@@ -1,12 +1,6 @@
-import {
-    default as clone
-} from 'clone';
-import {
-    default as objectPath
-} from 'object-path';
-import {
-    default as deepEqual
-} from 'deep-equal';
+import clone from 'clone';
+import objectPath from 'object-path';
+import deepEqual from 'deep-equal';
 
 import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
