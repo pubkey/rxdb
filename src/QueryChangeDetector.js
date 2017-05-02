@@ -79,6 +79,7 @@ class QueryChangeDetector {
         const limitAndFilled = options.limit && resultsData.length >= options.limit;
 
         if (DEBUG) {
+            console.log('!!!:!!!:   handleSingleChange()'); // TODO this should not be an error
             this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
             console.log('changeEvent.data:');
             console.dir(changeEvent.data);
@@ -156,7 +157,7 @@ class QueryChangeDetector {
 
             // U2 still matching -> only resort
             if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
-                DEBUG && this._debugMessage('U2', docData);
+                // DEBUG && this._debugMessage('U2', docData);
 
                 results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
                 results.push(docData);
@@ -176,12 +177,12 @@ class QueryChangeDetector {
                 DEBUG && this._debugMessage('U3', docData);
                 results.push(docData);
 
-                console.log('U3: preSort:');
-                console.dir(results);
+            //    console.log('U3: preSort:');
+            //    console.dir(results);
 
                 const sorted = this._resortDocData(results);
-                console.log('U3: postSort:');
-                console.dir(sorted);
+        //        console.log('U3: postSort:');
+    //            console.dir(sorted);
                 return sorted;
             }
 

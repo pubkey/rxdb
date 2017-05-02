@@ -405,6 +405,7 @@ class RxCollection {
                     doc._ext = true;
                     return doc;
                 })
+                .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
                 .filter(doc => sendChanges[doc._rev] = 'YES')
                 .delay(10)
                 .map(doc => {

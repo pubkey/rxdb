@@ -1,13 +1,21 @@
 import assert from 'assert';
-import {
-    default as clone
-} from 'clone';
+import clone from 'clone';
+import platform from 'platform';
+import request from 'request-promise';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
+import * as RxDB from '../../dist/lib/index';
 
 import * as QueryChangeDetector from '../../dist/lib/QueryChangeDetector';
+
+let SpawnServer;
+if (platform.isNode()) {
+    SpawnServer = require('../helper/spawnServer');
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
+    RxDB.PouchDB.plugin(require('pouchdb-replication'));
+}
 
 // TODO disable later
 QueryChangeDetector.enableDebugging();
@@ -194,9 +202,6 @@ describe('QueryChangeDetector.test.js', () => {
         });
     });
     describe('runChangeDetection()', () => {
-        describe('mustReExec', () => {
-            // TODO
-        });
         describe('no change', () => {
             it('should detect that change is not relevant for result', async() => {
                 const col = await humansCollection.create(5);
@@ -218,7 +223,6 @@ describe('QueryChangeDetector.test.js', () => {
          * each optimisation-shortcut has a key, this tests each of them
          */
         describe('all constellations', () => {
-
             describe('R1', () => {
                 it('R1: doc which did not match, was removed', async() => {
                     const col = await humansCollection.create(1);
@@ -367,9 +371,6 @@ describe('QueryChangeDetector.test.js', () => {
                     assert.equal(results[0].passportId, '000aaaaa');
                 });
                 it('U3: BUG: does not resort when sorted by primary', async() => {
-                    console.log('--------------------------------------------------');
-                    console.log('--------------------------------------------------');
-
                     const col = await humansCollection.createPrimary(5);
                     const q = col.find().sort('passportId');
                     let results = await q.exec();
@@ -392,6 +393,48 @@ describe('QueryChangeDetector.test.js', () => {
                     assert.equal(results[6].passportId, 'zzzzzz');
                 });
             });
+        });
+    });
+    describe('BUGS', () => {
+        it('SYNC and Observe does not work with R3 - resort', async() => {
+            if (!platform.isNode()) return;
+            const serverURL = await SpawnServer.spawn();
+            const col = await humansCollection.createPrimary(5);
+            col.sync(serverURL, {
+                live: true
+            });
+
+            const results = [];
+            const q = col.find().sort('passportId');
+            const sub = q.$.subscribe(res => results.push(res));
+            await util.waitUntil(() => results.length == 1);
+            assert.equal(results[0].length, 5);
+            assert.equal(q._execOverDatabaseCount, 1);
+
+
+            const first = schemaObjects.simpleHuman();
+            first.passportId = '000aaa'; // to make sure it sorts at start
+            await col.insert(first);
+
+            await util.waitUntil(() => results.length == 2);
+            await util.promiseWait(100);
+
+            // here is the error -> this must be 6
+            assert.equal(col._changeEventBuffer.counter, 6);
+
+            const last = schemaObjects.simpleHuman();
+            last.passportId = 'zzzzzz'; // to make sure it sorts at last
+            await col.insert(last);
+
+            await util.waitUntil(() => results.length == 3);
+
+            assert.equal(results[2].length, 7);
+            assert.equal(q._execOverDatabaseCount, 1);
+            assert.equal(results[2][0].passportId, '000aaa');
+            assert.equal(results[2][6].passportId, 'zzzzzz');
+
+            sub.unsubscribe();
+            col.database.destroy();
         });
     });
     describe('e', () => {
