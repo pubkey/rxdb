@@ -1,4 +1,5 @@
 // Polyfills
+import 'babel-polyfill';
 
 // import 'ie-shim'; // Internet Explorer 9 support
 

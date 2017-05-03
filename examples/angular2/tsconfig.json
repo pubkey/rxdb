@@ -2,7 +2,7 @@
     "compileOnSave": false,
     "buildOnSave": false,
     "compilerOptions": {
-        "target": "es2015",
+        "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
         "sourceMap": true,
@@ -13,6 +13,12 @@
         "types": [
             "core-js",
             "requirejs"
+        ],
+        "lib": [
+            "dom",
+            "es2015",
+            "es5",
+            "es6"
         ]
     },
     "exclude": [
