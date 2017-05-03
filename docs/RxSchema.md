@@ -95,6 +95,39 @@ const mySchema = {
 };
 ```
 
+
+## Indexes
+RxDB supports second indexes which are defined at the schema-level of the collection.
+To add a simple index, add `index: true` to any fieldName.
+To add compound-indexes, add them in an array to a `compoundIndexes`-field at the top-level of the schema-definition.
+
+### Index-example
+
+```js
+const schemaWithIndexes = {
+  disableKeyCompression: true,
+  version: 0,
+  title: 'human schema no compression',
+  type: 'object',
+  properties: {
+      firstName: {
+          type: 'string',
+          index: true       // <- and index for firstName will now be created
+      },
+      lastName: {
+          type: 'string'
+      },
+      familyName: {
+          type: 'string'
+      }
+  },
+  compoundIndexes: [
+      ['lastName', 'familyName']   // <- this will create a compound-index for these two fields
+  ]
+};
+```
+
+
 ## NOTICE: Not everything of the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database. It is also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.
