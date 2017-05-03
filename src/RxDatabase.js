@@ -12,7 +12,7 @@ const SETTINGS = {
     minPassLength: 8
 };
 
-class RxDatabase {
+export class RxDatabase {
 
 
     constructor(name, adapter, password, multiInstance) {

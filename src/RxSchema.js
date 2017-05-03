@@ -6,7 +6,7 @@ const validator = require('is-my-json-valid');
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
-class RxSchema {
+export class RxSchema {
     constructor(jsonID) {
         this.jsonID = jsonID;
 

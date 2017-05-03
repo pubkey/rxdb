@@ -12,6 +12,8 @@ import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
 import * as QueryCache from './QueryCache';
 import * as ChangeEventBuffer from './ChangeEventBuffer';
+import { RxSchema } from './RxSchema';
+import { RxDatabase } from './RxDatabase';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove'];
@@ -590,10 +592,10 @@ export async function create({
     statics = {},
     methods = {}
 }) {
-    if (schema.constructor.name !== 'RxSchema')
+    if (!schema instanceof RxSchema)
         throw new TypeError('given schema is no Schema-object');
 
-    if (database.constructor.name !== 'RxDatabase')
+    if (!database instanceof RxDatabase)
         throw new TypeError('given database is no Database-object');
 
     if (typeof autoMigrate !== 'boolean')
