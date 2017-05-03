@@ -564,7 +564,7 @@ const checkORMmethdods = function(statics) {
             throw new TypeError(`static method-names cannot start with underscore _ (${entry[0]})`);
 
         if (typeof entry[1] != 'function')
-            throw new TypeError(`given static method (${entry[0]}) is not a function`);
+            throw new TypeError(`given static method (${entry[0]}) is not a function but ${typeof entry[1]}`);
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0]))
             throw new Error(`statics-name not allowed: ${entry[0]}`);

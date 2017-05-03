@@ -282,6 +282,5 @@ describe('ORM.test.js', () => {
                 db.destroy();
             });
         });
-
     });
 });
