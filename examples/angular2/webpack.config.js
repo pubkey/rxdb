@@ -13,7 +13,7 @@ module.exports = function(options) {
             new webpack.DefinePlugin({
                 'ENV': JSON.stringify(ENV)
             }),
-            new webpack.NoErrorsPlugin(),
+            new webpack.NoEmitOnErrorsPlugin(),
             new webpack.optimize.UglifyJsPlugin({
                 // beautify: true, //debug
                 // mangle: false, //debug
