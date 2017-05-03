@@ -24,7 +24,7 @@ module.exports = function(options) {
         },
         devServer: {
             port: PORT,
-//            hot: true,
+            //            hot: true,
             inline: true,
             historyApiFallback: true
         },
