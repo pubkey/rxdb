@@ -15,16 +15,16 @@ module.exports = function(options) {
             }),
             new webpack.NoEmitOnErrorsPlugin(),
             new webpack.optimize.UglifyJsPlugin({
-                beautify: false, //prod
+                beautify: false,
                 mangle: {
                     screw_ie8: true,
-                    keep_fnames: true // required for ng2 rc.5
-                }, //prod
-                compress: { //prod
+                    keep_fnames: false
+                },
+                compress: {
                     screw_ie8: true,
                     warnings: false
                 },
-                comments: false //prod
+                comments: false
             }),
             new AppCachePlugin({
                 exclude: ['app.js', 'styles.css'],
