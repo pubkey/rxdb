@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.PouchDB = exports.RxSchema = exports.create = undefined;
+exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.create = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -46,6 +46,10 @@ var _RxSchema = require('./RxSchema');
 
 var RxSchema = _interopRequireWildcard(_RxSchema);
 
+var _QueryChangeDetector = require('./QueryChangeDetector');
+
+var QueryChangeDetector = _interopRequireWildcard(_QueryChangeDetector);
+
 var _PouchDB = require('./PouchDB');
 
 var _PouchDB2 = _interopRequireDefault(_PouchDB);
@@ -63,3 +67,4 @@ function plugin(mod) {
 
 exports.RxSchema = RxSchema;
 exports.PouchDB = _PouchDB2.default;
+exports.QueryChangeDetector = QueryChangeDetector;

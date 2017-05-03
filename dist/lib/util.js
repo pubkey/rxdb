@@ -130,7 +130,7 @@ var waitUntil = exports.waitUntil = function () {
 
                     case 1:
                         if (ok) {
-                            _context3.next = 7;
+                            _context3.next = 9;
                             break;
                         }
 
@@ -138,11 +138,15 @@ var waitUntil = exports.waitUntil = function () {
                         return promiseWait(10);
 
                     case 4:
-                        ok = fun();
+                        _context3.next = 6;
+                        return fun();
+
+                    case 6:
+                        ok = _context3.sent;
                         _context3.next = 1;
                         break;
 
-                    case 7:
+                    case 9:
                     case 'end':
                         return _context3.stop();
                 }
@@ -170,6 +174,10 @@ exports.validateCouchDBString = validateCouchDBString;
 exports.randomCouchString = randomCouchString;
 exports.sortObject = sortObject;
 
+var _clone = require('clone');
+
+var _clone2 = _interopRequireDefault(_clone);
+
 var _randomToken = require('random-token');
 
 var _randomToken2 = _interopRequireDefault(_randomToken);
@@ -188,7 +196,11 @@ require('rxjs/add/observable/from');
 
 require('rxjs/add/observable/fromEvent');
 
+require('rxjs/add/observable/defer');
+
 require('rxjs/add/operator/publishReplay');
+
+require('rxjs/add/operator/publish');
 
 require('rxjs/add/operator/timeout');
 
@@ -399,13 +411,18 @@ function randomCouchString() {
 
 /**
  * deep-sort an object so its attributes are in lexical order.
- * Also sorts the arrays inside of the object
+ * Also sorts the arrays inside of the object if no-array-sort not set
  * @param  {Object} obj unsorted
+ * @param  {?boolean} noArraysort
  * @return {Object} sorted
  */
 function sortObject(obj) {
+    var noArraySort = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    if (!obj) return obj; // do not sort null, false or undefined
+
     // array
-    if (Array.isArray(obj)) {
+    if (!noArraySort && Array.isArray(obj)) {
         return obj.sort(function (a, b) {
             if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
 
