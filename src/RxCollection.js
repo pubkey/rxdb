@@ -592,10 +592,10 @@ export async function create({
     statics = {},
     methods = {}
 }) {
-    if (schema.constructor instanceof RxSchema)
+    if (!schema instanceof RxSchema)
         throw new TypeError('given schema is no Schema-object');
 
-    if (database.constructor instanceof RxDatabase)
+    if (!database instanceof RxDatabase)
         throw new TypeError('given database is no Database-object');
 
     if (typeof autoMigrate !== 'boolean')
