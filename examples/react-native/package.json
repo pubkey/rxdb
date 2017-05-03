@@ -20,7 +20,7 @@
     "random-token": "0.0.8",
     "react": "15.4.1",
     "react-native": "0.39.2",
-    "rxdb": "2.0.5",
+    "rxdb": "*",
     "rxjs": "^5.2.1-smooth"
   },
   "devDependencies": {
