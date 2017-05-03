@@ -138,10 +138,15 @@ var RxSchema = function () {
     }, {
         key: 'swapPrimaryToId',
         value: function swapPrimaryToId(obj) {
+            var _this2 = this;
+
             if (this.primaryPath == '_id') return obj;
-            obj._id = obj[this.primaryPath];
-            delete obj[this.primaryPath];
-            return obj;
+            var ret = {};
+            Object.entries(obj).forEach(function (entry) {
+                var newKey = entry[0] == _this2.primaryPath ? '_id' : entry[0];
+                ret[newKey] = entry[1];
+            });
+            return ret;
         }
 
         /**

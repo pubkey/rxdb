@@ -10,6 +10,10 @@ exports.create = create;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// TODO this is wrong
+// In a WeakMap, the keys are weak, not the values
+// This must be reworked and the weak-thing must be tested
+
 var DocCache = function () {
     function DocCache() {
         _classCallCheck(this, DocCache);

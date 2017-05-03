@@ -4,9 +4,7 @@
  */
 'use strict';
 import * as utils from './mquery_utils';
-import {
-    default as clone
-} from 'clone';
+import clone from 'clone';
 
 /**
  * Query constructor used for building queries.
@@ -345,21 +343,21 @@ function push(opts, field, value) {
     }
 
     if (value && value.$meta) {
-        var s = opts.sort || (opts.sort = {});
+        const s = opts.sort || (opts.sort = {});
         s[field] = {
             $meta: value.$meta
         };
         return;
     }
 
-    var val = String(value || 1).toLowerCase();
+    const val = String(value || 1).toLowerCase();
     if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
         if (Array.isArray(value)) value = '[' + value + ']';
         throw new TypeError('Invalid sort value: {' + field + ': ' + value + ' }');
     }
     // store `sort` in a sane format
-    var s = opts.sort || (opts.sort = {});
-    var valueStr = value.toString()
+    const s = opts.sort || (opts.sort = {});
+    const valueStr = value.toString()
         .replace('asc', '1')
         .replace('ascending', '1')
         .replace('desc', '-1')

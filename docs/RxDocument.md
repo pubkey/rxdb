@@ -231,4 +231,4 @@ console.log(myDocument.firstName);
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](./Middleware.md)
+If you are new to RxDB, you should continue [here](./RxQuery.md)

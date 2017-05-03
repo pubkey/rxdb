@@ -1,6 +1,5 @@
-import {
-    default as randomToken
-} from 'random-token';
+import randomToken from 'random-token';
+import PouchDB from './PouchDB';
 
 import * as util from './util';
 import * as RxCollection from './RxCollection';
@@ -8,9 +7,6 @@ import * as RxSchema from './RxSchema';
 import * as RxChangeEvent from './RxChangeEvent';
 import * as Socket from './Socket';
 import * as LeaderElector from './LeaderElector';
-import {
-    default as PouchDB
-} from './PouchDB';
 
 const SETTINGS = {
     minPassLength: 8

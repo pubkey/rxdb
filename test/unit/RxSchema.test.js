@@ -6,10 +6,6 @@ import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
-
 const g = {};
 
 describe('RxSchema.test.js', () => {

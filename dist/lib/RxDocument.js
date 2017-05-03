@@ -446,12 +446,19 @@ var RxDocument = function () {
 
                             case 6:
 
-                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, null));
+                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
 
                                 _context3.next = 9;
                                 return this.collection._runHooks('post', 'remove', this);
 
                             case 9:
+                                _context3.next = 11;
+                                return util.promiseWait(0);
+
+                            case 11:
+                                return _context3.abrupt('return');
+
+                            case 12:
                             case 'end':
                                 return _context3.stop();
                         }

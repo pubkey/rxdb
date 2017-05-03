@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 
 import * as RxDB from '../../../../../';
-import { RxDatabase } from '../../../../../';
+import { RxDatabase, QueryChangeDetector } from '../../../../../';
 
-
+QueryChangeDetector.enable();
+QueryChangeDetector.enableDebugging();
 
 const adapters = {
     localstorage: require('../../../../../plugins/adapter-localstorage/'),
@@ -76,7 +77,7 @@ export class DatabaseService {
         collections
             .filter(col => col.sync)
             .map(col => col.name)
-            .map(colName => db[colName].sync(syncURL + colName + '/'));
+            .forEach(colName => db[colName].sync(syncURL + colName + '/'));
 
         return db;
     }

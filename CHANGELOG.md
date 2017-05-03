@@ -1,3 +1,18 @@
+## 4.0.0 (XXX, 2017)
+
+Breaking:
+  - RxQuery's are now [immutable](docs/RxQuery.md#notice-rxquerys-are-immutable)
+  - RxQuery.$ does not emit `null` when running
+  - RxQuery will sort by primary (ASC) as default
+
+Features:
+  - Added [QueryChangeDetection](docs/QueryChangeDetection,md) (in **beta**, disabled by default)
+
+Other:
+  - upgraded to pouchdb [v6.2.0](https://pouchdb.com/2017/04/20/pouchdb-6.2.0.html)
+  - re-executing queries while nothing happend to the collection, is now fetched
+
+
 ## 3.0.8 (April 20, 2017)
 
 Bugfixes:

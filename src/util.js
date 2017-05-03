@@ -4,10 +4,8 @@
  */
 
 
-
-import {
-    default as randomToken
-} from 'random-token';
+import clone from 'clone';
+import randomToken from 'random-token';
 
 // rxjs cherry-pick
 import {
@@ -23,9 +21,11 @@ import 'rxjs/add/observable/merge';
 import 'rxjs/add/observable/interval';
 import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/fromEvent';
-import 'rxjs/add/observable/merge';
-import 'rxjs/add/operator/publishReplay';
+import 'rxjs/add/observable/defer';
 
+
+import 'rxjs/add/operator/publishReplay';
+import 'rxjs/add/operator/publish';
 import 'rxjs/add/operator/timeout';
 import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/do';
@@ -190,7 +190,7 @@ export async function waitUntil(fun) {
     let ok = false;
     while (!ok) {
         await promiseWait(10);
-        ok = fun();
+        ok = await fun();
     }
 }
 
@@ -309,13 +309,16 @@ export function randomCouchString(length = 10) {
 
 /**
  * deep-sort an object so its attributes are in lexical order.
- * Also sorts the arrays inside of the object
+ * Also sorts the arrays inside of the object if no-array-sort not set
  * @param  {Object} obj unsorted
+ * @param  {?boolean} noArraysort
  * @return {Object} sorted
  */
-export function sortObject(obj) {
+export function sortObject(obj, noArraySort = false) {
+    if (!obj) return obj; // do not sort null, false or undefined
+
     // array
-    if (Array.isArray(obj)) {
+    if (!noArraySort && Array.isArray(obj)) {
         return obj
             .sort((a, b) => {
                 if (typeof a === 'string' && typeof b === 'string')

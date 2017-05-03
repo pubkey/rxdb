@@ -92,6 +92,10 @@ var _randomToken = require('random-token');
 
 var _randomToken2 = _interopRequireDefault(_randomToken);
 
+var _PouchDB = require('./PouchDB');
+
+var _PouchDB2 = _interopRequireDefault(_PouchDB);
+
 var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
@@ -115,10 +119,6 @@ var Socket = _interopRequireWildcard(_Socket);
 var _LeaderElector = require('./LeaderElector');
 
 var LeaderElector = _interopRequireWildcard(_LeaderElector);
-
-var _PouchDB = require('./PouchDB');
-
-var _PouchDB2 = _interopRequireDefault(_PouchDB);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 

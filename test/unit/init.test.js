@@ -18,6 +18,8 @@ if (platform.name != 'Node.js') {
     };
 } else {
     process.on('unhandledRejection', function(err) {
-        throw err;
+        console.log('init.test.js: unhandledRejection');
+        console.error(err);
+        process.exit(1);
     });
 }

@@ -349,8 +349,8 @@ function push(opts, field, value) {
     }
 
     if (value && value.$meta) {
-        var s = opts.sort || (opts.sort = {});
-        s[field] = {
+        var _s = opts.sort || (opts.sort = {});
+        _s[field] = {
             $meta: value.$meta
         };
         return;

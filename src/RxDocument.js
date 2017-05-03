@@ -1,12 +1,6 @@
-import {
-    default as clone
-} from 'clone';
-import {
-    default as objectPath
-} from 'object-path';
-import {
-    default as deepEqual
-} from 'deep-equal';
+import clone from 'clone';
+import objectPath from 'object-path';
+import deepEqual from 'deep-equal';
 
 import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
@@ -313,10 +307,12 @@ class RxDocument {
             this.collection.database,
             this.collection,
             this,
-            null
+            this._data
         ));
 
         await this.collection._runHooks('post', 'remove', this);
+        await util.promiseWait(0);
+        return;
     }
 
     destroy() {}

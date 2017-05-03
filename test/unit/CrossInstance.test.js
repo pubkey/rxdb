@@ -117,6 +117,7 @@ describe('CrossInstance.test.js', () => {
                     got = change;
             });
             await c1.insert(schemaObjects.human());
+
             await util.promiseWait(50);
             assert.equal(got, null);
             c1.database.destroy();
@@ -147,7 +148,9 @@ describe('CrossInstance.test.js', () => {
             doc1.set('firstName', 'foobar');
             await doc1.save();
             await c2.database.socket.pull();
-            await util.promiseWait(100);
+
+            await util.promiseWait(10);
+            await util.waitUntil(() => firstNameAfter == 'foobar');
 
             assert.equal(firstNameAfter, 'foobar');
             c1.database.destroy();
@@ -199,7 +202,8 @@ describe('CrossInstance.test.js', () => {
             doc1.set('secret', 'foobar');
             await doc1.save();
             await c2.database.socket.pull();
-            await util.promiseWait(100);
+
+            await util.waitUntil(() => secretAfter == 'foobar');
             assert.equal(secretAfter, 'foobar');
 
             db1.destroy();
@@ -254,7 +258,8 @@ describe('CrossInstance.test.js', () => {
             });
             await doc1.save();
             await c2.database.socket.pull();
-            await util.promiseWait(100);
+
+            await util.waitUntil(() => secretAfter.name == 'foo');
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'
@@ -289,17 +294,16 @@ describe('CrossInstance.test.js', () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const waitPromise = util.promiseWaitResolveable(500);
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
                     recieved++;
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
-                    if (recieved == 2) waitPromise.resolve();
                 });
+
                 await c1.insert(schemaObjects.human());
                 await c1.insert(schemaObjects.human());
 
-                await waitPromise.promise;
+                await util.waitUntil(() => recieved == 2);
                 assert.equal(recieved, 2);
                 c1.database.destroy();
                 c2.database.destroy();

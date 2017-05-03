@@ -3,9 +3,7 @@
  * @link https://github.com/pouchdb/express-pouchdb
  */
 
-import {
-    default as randomToken
-} from 'random-token';
+import randomToken from 'random-token';
 
 const express = require('express');
 const app = express();
