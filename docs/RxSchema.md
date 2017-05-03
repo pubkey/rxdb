@@ -112,7 +112,7 @@ const schemaWithIndexes = {
   properties: {
       firstName: {
           type: 'string',
-          index: true       // <- and index for firstName will now be created
+          index: true       // <- an index for firstName will now be created
       },
       lastName: {
           type: 'string'
