@@ -18,7 +18,7 @@ if (platform.isNode()) {
 }
 
 // TODO disable later
-QueryChangeDetector.enableDebugging();
+// QueryChangeDetector.enableDebugging();
 QueryChangeDetector.enable();
 
 
