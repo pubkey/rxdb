@@ -1,14 +1,6 @@
-import {
-    default as PouchDB
-} from './PouchDB';
-
-import {
-    default as objectPath
-} from 'object-path';
-
-import {
-    default as clone
-} from 'clone';
+import PouchDB from './PouchDB';
+import objectPath from 'object-path';
+import clone from 'clone';
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';
@@ -18,6 +10,8 @@ import * as KeyCompressor from './KeyCompressor';
 import * as DataMigrator from './DataMigrator';
 import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
+import * as QueryCache from './QueryCache';
+import * as ChangeEventBuffer from './ChangeEventBuffer';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove'];
@@ -32,8 +26,9 @@ class RxCollection {
         this._methods = methods;
 
         // contains a weak link to all used RxDocuments of this collection
+        // TODO weak links are a joke!
         this._docCache = DocCache.create();
-
+        this._queryCache = QueryCache.create();
 
         // defaults
         this.synced = false;
@@ -56,10 +51,13 @@ class RxCollection {
         this._crypter = Crypter.create(this.database.password, this.schema);
         this._keyCompressor = KeyCompressor.create(this.schema);
 
+
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
 
         this._observable$ = this.database.$
             .filter(event => event.data.col == this.name);
+
+        this._changeEventBuffer = ChangeEventBuffer.create(this);
 
         // INDEXES
         await Promise.all(
@@ -80,12 +78,11 @@ class RxCollection {
         );
 
 
-        // when data changes, send it to RxDocument in docCache
         this._subs.push(
             this._observable$.subscribe(cE => {
+                // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
-                if (!doc) return;
-                else doc._handleChangeEvent(cE);
+                if (doc) doc._handleChangeEvent(cE);
             })
         );
     }
@@ -297,12 +294,7 @@ class RxCollection {
         if (typeof queryObj === 'string')
             throw new Error('if you want to search by _id, use .findOne(_id)');
 
-        const query = RxQuery.create(queryObj, this);
-        query.exec = async() => {
-            const docs = await this._pouchFind(query);
-            const ret = this._createDocuments(docs);
-            return ret;
-        };
+        const query = RxQuery.create('find', queryObj, this);
         return query;
     }
 
@@ -310,26 +302,16 @@ class RxCollection {
         let query;
 
         if (typeof queryObj === 'string') {
-            query = RxQuery.create({
+            query = RxQuery.create('findOne', {
                 _id: queryObj
-            }, this, 'findOne');
-        } else query = RxQuery.create(queryObj, this, 'findOne');
+            }, this);
+        } else query = RxQuery.create('findOne', queryObj, this);
 
         if (
             typeof queryObj === 'number' ||
             Array.isArray(queryObj)
         ) throw new TypeError('.findOne() needs a queryObject or string');
 
-        query.exec = async() => {
-            const docs = await this._pouchFind(query, 1);
-            if (docs.length === 0) return null;
-            const doc = docs.shift();
-            const ret = this._createDocument(doc);
-            return ret;
-        };
-        query.limit = () => {
-            throw new Error('.limit() cannot be called on .findOne()');
-        };
         return query;
     }
 
@@ -353,7 +335,7 @@ class RxCollection {
             json.encrypted = true;
         }
 
-        const query = RxQuery.create({}, this);
+        const query = RxQuery.create('find', {}, this);
         let docs = await this._pouchFind(query, null, encrypted);
         json.docs = docs.map(docData => {
             delete docData._rev;
@@ -424,6 +406,7 @@ class RxCollection {
                     doc._ext = true;
                     return doc;
                 })
+                .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
                 .filter(doc => sendChanges[doc._rev] = 'YES')
                 .delay(10)
                 .map(doc => {
@@ -504,6 +487,8 @@ class RxCollection {
 
     async destroy() {
         this._subs.forEach(sub => sub.unsubscribe());
+        this._changeEventBuffer && this._changeEventBuffer.destroy();
+        this._queryCache.destroy();
         this.pouchSyncs.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
     }

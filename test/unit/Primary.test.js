@@ -18,9 +18,6 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
 
 describe('Primary.test.js', () => {
     describe('Schema', () => {

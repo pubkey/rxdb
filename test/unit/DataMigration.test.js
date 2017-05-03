@@ -377,7 +377,7 @@ describe('DataMigration.test.js', () => {
                 it('should emit status for every handled document', async() => {
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: async(doc) => {
-                            await util.promiseWait(50);
+                            await util.promiseWait(10);
                             doc.age = parseInt(doc.age);
                             return doc;
                         }

@@ -27,6 +27,12 @@ module.exports = {
         }, {
             test: /\.json$/,
             loader: 'json-loader'
+        }, {
+            test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+            loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+        }, {
+            test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+            loader: 'file-loader'
         }]
     },
 
@@ -37,14 +43,6 @@ module.exports = {
         publicPath: '/'
     },
     plugins: [
-        /*
-         * @link https://github.com/ansman/validate.js/issues/12#issuecomment-71919930
-         * TODO maybe remove ContextReplacementPlugin in the next angular version
-         */
-        new webpack.ContextReplacementPlugin(
-            /angular(\\|\/)core(\\|\/)(esm(\\|\/)src|src)(\\|\/)linker/,
-            __dirname
-        ),
         new webpack.optimize.CommonsChunkPlugin({
             name: ['app', 'vendor', 'polyfills']
         }),

@@ -1,3 +1,8 @@
+
+// TODO this is wrong
+// In a WeakMap, the keys are weak, not the values
+// This must be reworked and the weak-thing must be tested
+
 class DocCache {
     constructor() {
         this._map = new WeakMap();

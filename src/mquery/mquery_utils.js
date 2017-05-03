@@ -3,9 +3,7 @@
  * @link https://github.com/aheckmann/mquery/blob/master/lib/utils.js
  */
 
-import {
-    default as clone
-} from 'clone';
+import clone from 'clone';
 
 
 

@@ -1,90 +1,210 @@
-/**
- * this is the query-builder
- * it basically uses mquery with a few overwrites
- */
+import deepEqual from 'deep-equal';
+import MQuery from './mquery/mquery';
 
-import {
-    default as MQuery
-} from './mquery/mquery';
 import * as util from './util';
 import * as RxDocument from './RxDocument';
+import * as QueryChangeDetector from './QueryChangeDetector';
 
 const defaultQuery = {
     _id: {}
 };
 
+let _queryCount = 0;
+const newQueryID = function() {
+    return ++_queryCount;
+};
+
 
 class RxQuery {
-    constructor(queryObj = defaultQuery, collection, op) {
+    constructor(op, queryObj = defaultQuery, collection) {
         this.op = op;
         this.collection = collection;
-
         this.defaultQuery = false;
+        this.id = newQueryID();
 
         // force _id
         if (!queryObj._id)
             queryObj._id = {};
 
         this.mquery = new MQuery(queryObj);
+
+        this._queryChangeDetector = QueryChangeDetector.create(this);
+        this._resultsData = null;
+        this._results$ = new util.Rx.BehaviorSubject(null);
+        this._observable$ = null;
+        this._latestChangeEvent = -1;
+        this._runningPromise = Promise.resolve(true);
+
+        /**
+         * if this is true, the results-state is not equal to the database
+         * which means that the query must run agains the database again
+         * @type {Boolean}
+         */
+        this._mustReExec = true;
+
+        /**
+         * counts how often the execution on the whole db was done
+         * (used for tests and debugging)
+         * @type {Number}
+         */
+        this._execOverDatabaseCount = 0;
     }
 
     // returns a clone of this RxQuery
     _clone() {
-        const cloned = new RxQuery(defaultQuery, this.collection);
+        const cloned = new RxQuery(this.op, defaultQuery, this.collection);
         cloned.mquery = this.mquery.clone();
         return cloned;
     }
 
-    toString() {
-        return JSON.stringify(this.mquery);
+    /**
+     * run this query through the QueryCache
+     * @return {RxQuery} can be this or another query with the equal state
+     */
+    _tunnelQueryCache() {
+        return this.collection._queryCache.getByQuery(this);
     }
 
-    // observe the result of this query
+    toString() {
+        if (!this.stringRep) {
+            const stringObj = util.sortObject({
+                op: this.op,
+                options: this.mquery.options,
+                _conditions: this.mquery._conditions,
+                _path: this.mquery._path,
+                _fields: this.mquery._fields
+            }, true);
+            this.stringRep = JSON.stringify(stringObj);
+        }
+        return this.stringRep;
+    }
+
+
+    /**
+     * ensures that the results of this query is equal to the results which a query over the database would give
+     * @return {Promise<boolean>} true if results have changed
+     */
+    async _ensureEqual() {
+
+
+        if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
+            return false;
+
+        let ret = false;
+
+
+        // make sure it does not run in parallel
+        await this._runningPromise;
+
+        // console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
+
+        let resolve;
+        this._runningPromise = new Promise(res => {
+            resolve = res;
+        });
+
+        if (!this._mustReExec) {
+            try {
+                const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+                // console.dir(missedChangeEvents);
+                this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+                const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+                const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
+                if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
+                if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
+                    ret = true;
+                    this._setResultData(changeResult);
+                }
+
+            } catch (e) {
+                console.error('RxQuery()._ensureEqual(): Unexpected Error:');
+                console.dir(e);
+                this._mustReExec = true;
+            }
+        }
+
+
+        if (this._mustReExec) {
+
+            // counter can change while _execOverDatabase() is running
+            const latestAfter = this.collection._changeEventBuffer.counter;
+
+            const newResultData = await this._execOverDatabase();
+            this._latestChangeEvent = latestAfter;
+            if (!deepEqual(newResultData, this._resultsData)) {
+                ret = true;
+                this._setResultData(newResultData);
+            }
+        }
+
+        // console.log('_ensureEqual DONE (' + this.toString() + ')');
+
+        resolve(true);
+        return ret;
+    }
+
+    _setResultData(newResultData) {
+        this._resultsData = newResultData;
+        const newResults = this.collection._createDocuments(this._resultsData);
+        this._results$.next(newResults);
+    }
+
+    /**
+     * executes the query on the database
+     * @return {Promise<{}[]>} returns new resultData
+     */
+    async _execOverDatabase() {
+        this._execOverDatabaseCount++;
+        let docsData, ret;
+        switch (this.op) {
+            case 'find':
+                docsData = await this.collection._pouchFind(this);
+                break;
+            case 'findOne':
+                docsData = await this.collection._pouchFind(this, 1);
+                break;
+            default:
+                throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
+        }
+
+        this._mustReExec = false;
+        return docsData;
+    }
+
     get $() {
-        if (!this._subject) {
-            this._subject = new util.Rx.BehaviorSubject(null);
-            this._obsRunning = false;
-            const collection$ = this.collection.$
+        if (!this._observable$) {
+
+            const res$ = this._results$
+                .mergeMap(async(results) => {
+                    const hasChanged = await this._ensureEqual();
+                    if (hasChanged) return 'WAITFORNEXTEMIT';
+                    return results;
+                })
+                .filter(results => results != 'WAITFORNEXTEMIT')
+                .asObservable();
+
+            const changeEvents$ = this.collection.$
                 .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
-                .startWith(1)
-                .filter(x => !this._obsRunning)
-                .do(x => this._obsRunning = true)
-                .mergeMap(async(cEvent) => {
-                    const overwriteLimit = this.op === 'findOne' ? 1 : null;
-                    const docs = await this.collection._pouchFind(this, overwriteLimit);
-                    return docs;
-                })
-                .do(x => this._obsRunning = false)
-                .distinctUntilChanged((prev, now) => {
-                    return util.fastUnsecureHash(prev) == util.fastUnsecureHash(now);
-                })
-                .map(docs => this.collection._createDocuments(docs))
-                .do(docs => this._subject.next(docs))
-                .map(x => '');
+                .mergeMap(async(changeEvent) => this._ensureEqual())
+                .filter(() => false);
 
             this._observable$ = util.Rx.Observable.merge(
-                    this._subject,
-                    collection$
+                    res$,
+                    changeEvents$
                 )
-                .filter(x => (typeof x != 'string' || x != ''))
-                .map(x => {
-                    if (x === null) return null;
-                    switch (this.op) {
-                        case 'find':
-                            return x;
-                            break;
-                        case 'findOne':
-                            if (x.length === 0) return null;
-                            return x[0];
-                            break;
-                    }
+                .filter(x => x != null)
+                .map(results => {
+                    if (this.op != 'findOne') return results;
+                    else if (results.length == 0) return null;
+                    else return results[0];
                 });
         }
         return this._observable$;
     }
 
-
     toJSON() {
+        if (this._toJSON) return this._toJSON;
+
         const json = {
             selector: this.mquery._conditions
         };
@@ -107,6 +227,11 @@ class RxQuery {
                 sortArray.push(pushMe);
             });
             json.sort = sortArray;
+        } else {
+            // sort by primaryKey as default
+            json.sort = [{
+                [this.collection.schema.primaryPath]: 'asc'
+            }];
         }
 
         if (options.limit) {
@@ -139,7 +264,8 @@ class RxQuery {
                 delete json.selector[primPath];
         }
 
-        return json;
+        this._toJSON = json;
+        return this._toJSON;
     };
 
     /**
@@ -170,29 +296,12 @@ class RxQuery {
         return docs;
     }
 
-    /**
-     * make sure it searches index because of pouchdb-find bug
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-    sort(params) {
-        // workarround because sort wont work on unused keys
-        if (typeof params !== 'object') {
-            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
-            if (!this.mquery._conditions[checkParam])
-                this.mquery.where(checkParam).gt(null);
-        } else {
-            Object.keys(params)
-                .filter(k => !this.mquery._conditions[k] || !this.mquery._conditions[k].$gt)
-                .forEach(k => {
-                    const schemaObj = this.collection.schema.getSchemaByObjectPath(k);
-                    if (schemaObj.type == 'integer')
-                        this.mquery.where(k).gt(-Infinity);
-                    else this.mquery.where(k).gt(null);
-                });
-        }
-        this.mquery.sort(params);
-        return this;
-    };
+
+    async exec() {
+        return await this.$
+            .first()
+            .toPromise();
+    }
 
     /**
      * regex cannot run on primary _id
@@ -206,8 +315,51 @@ class RxQuery {
         return this;
     };
 
-}
+    /**
+     * make sure it searches index because of pouchdb-find bug
+     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+     */
+    sort(params) {
+        const clonedThis = this._clone();
 
+        // workarround because sort wont work on unused keys
+        if (typeof params !== 'object') {
+            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+            if (!clonedThis.mquery._conditions[checkParam]) {
+                const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
+                if (schemaObj && schemaObj.type == 'integer')
+                    // TODO change back to -Infinity when issue resolved
+                    // @link https://github.com/pouchdb/pouchdb/issues/6454
+                    clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+                else clonedThis.mquery.where(checkParam).gt(null);
+            }
+        } else {
+            Object.keys(params)
+                .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
+                .forEach(k => {
+                    const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
+                    if (schemaObj.type == 'integer')
+                        // TODO change back to -Infinity when issue resolved
+                        // @link https://github.com/pouchdb/pouchdb/issues/6454
+                        clonedThis.mquery.where(k).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+
+                    else clonedThis.mquery.where(k).gt(null);
+                });
+        }
+        clonedThis.mquery.sort(params);
+        return clonedThis._tunnelQueryCache();
+    };
+
+    limit(amount) {
+        if (this.op == 'findOne')
+            throw new Error('.limit() cannot be called on .findOne()');
+        else {
+            const clonedThis = this._clone();
+            clonedThis.mquery.limit(amount);
+            return clonedThis._tunnelQueryCache();
+        }
+    }
+}
 
 // tunnel the proto-functions of mquery to RxQuery
 const protoMerge = function(rxQueryProto, mQueryProto) {
@@ -216,20 +368,21 @@ const protoMerge = function(rxQueryProto, mQueryProto) {
         .filter(attrName => !rxQueryProto[attrName])
         .forEach(attrName => {
             rxQueryProto[attrName] = function(p1) {
-                this.mquery[attrName](p1);
-                return this;
+                const clonedThis = this._clone();
+                clonedThis.mquery[attrName](p1);
+                return clonedThis._tunnelQueryCache();
             };
         });
 };
 
 let protoMerged = false;
-export function create(queryObj = defaultQuery, collection, op = 'find') {
+export function create(op, queryObj = defaultQuery, collection) {
     if (typeof queryObj !== 'object')
         throw new TypeError('query must be an object');
     if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
-    const ret = new RxQuery(queryObj, collection, op);
+    const ret = new RxQuery(op, queryObj, collection);
 
     if (!protoMerged) {
         protoMerged = true;

@@ -3,13 +3,8 @@
  * and transforms/saves them into the newest collection
  */
 
-import {
-    default as PouchDB
-} from './PouchDB';
-
-import {
-    default as clone
-} from 'clone';
+import PouchDB from './PouchDB';
+import clone from 'clone';
 
 import * as util from './util';
 import * as RxSchema from './RxSchema';

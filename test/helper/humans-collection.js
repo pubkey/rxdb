@@ -62,7 +62,7 @@ export async function createNoCompression(size = 20, name = 'human') {
 }
 
 
-export async function createAgeIndex() {
+export async function createAgeIndex(amount = 20) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
@@ -76,7 +76,7 @@ export async function createAgeIndex() {
 
     // insert data
     const fns = [];
-    for (let i = 0; i < 20; i++)
+    for (let i = 0; i < amount; i++)
         fns.push(collection.insert(schemaObjects.human()));
     await Promise.all(fns);
 

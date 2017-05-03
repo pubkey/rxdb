@@ -1,8 +1,8 @@
 import * as RxDatabase from './RxDatabase';
 import * as RxSchema from './RxSchema';
-import {
-    default as PouchDB
-} from './PouchDB';
+import * as QueryChangeDetector from './QueryChangeDetector';
+
+import PouchDB from './PouchDB';
 
 /**
  * create a database
@@ -23,5 +23,6 @@ export function plugin(mod) {
 
 export {
     RxSchema as RxSchema,
-    PouchDB as PouchDB
+    PouchDB as PouchDB,
+    QueryChangeDetector as QueryChangeDetector
 };

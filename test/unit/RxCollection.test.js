@@ -19,9 +19,6 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
 
 describe('RxCollection.test.js', () => {
     describe('static', () => {
@@ -484,13 +481,15 @@ describe('RxCollection.test.js', () => {
                 describe('positive', () => {
                     it('sort by age desc (with own index-search)', async() => {
                         const c = await humansCollection.createAgeIndex();
-                        const docs = await c.find({
+                        const query = c.find({
                             age: {
                                 $gt: null
                             }
                         }).sort({
                             age: -1
-                        }).exec();
+                        });
+                        assert.equal(query.constructor.name, 'RxQuery');
+                        const docs = await query.exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
                     });
@@ -547,6 +546,8 @@ describe('RxCollection.test.js', () => {
                             }]
                         });
                         assert.equal(all.docs.length, 10);
+
+                        // console.log('NATIVE POUCH WORKED');
 
                         // with RxQuery
                         const query = collection.find({}).sort({

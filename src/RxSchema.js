@@ -1,9 +1,5 @@
-import {
-    default as objectPath
-} from 'object-path';
-import {
-    default as clone
-} from 'clone';
+import objectPath from 'object-path';
+import clone from 'clone';
 
 const validator = require('is-my-json-valid');
 
@@ -142,9 +138,14 @@ class RxSchema {
     }
     swapPrimaryToId(obj) {
         if (this.primaryPath == '_id') return obj;
-        obj._id = obj[this.primaryPath];
-        delete obj[this.primaryPath];
-        return obj;
+        const ret = {};
+        Object
+            .entries(obj)
+            .forEach(entry => {
+                const newKey = entry[0] == this.primaryPath ? '_id' : entry[0];
+                ret[newKey] = entry[1];
+            });
+        return ret;
     }
 
     /**

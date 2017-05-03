@@ -15,9 +15,6 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 
-process.on('unhandledRejection', function(err) {
-    throw err;
-});
 
 describe('Reactive-Collection.test.js', () => {
     describe('.insert()', () => {
@@ -71,28 +68,27 @@ describe('Reactive-Collection.test.js', () => {
         describe('positive', () => {
             it('should fire on remove', async() => {
                 const c = await humansCollection.create(0);
+                const q = c.find();
                 let ar = [];
-                const sub = c
-                    .find()
-                    .$
-                    .subscribe(docs => ar.push(docs));
+                const sub = q.$
+                    .subscribe(docs => {
+                        ar.push(docs);
+                    });
 
-                // null is fired until no results
-                assert.equal(ar.length, 1);
-                assert.deepEqual(ar[0], null);
+                // nothing is fired until no results
+                assert.equal(ar.length, 0);
 
                 // empty array since no documents
-                await util.waitUntil(() => ar.length == 2);
+                await util.waitUntil(() => ar.length == 1);
 
-                assert.deepEqual(ar[1], []);
+                assert.deepEqual(ar[0], []);
 
                 await c.insert(schemaObjects.human());
-                await util.waitUntil(() => ar.length == 3);
+                await util.waitUntil(() => ar.length == 2);
 
                 const doc = await c.findOne().exec();
                 await doc.remove();
-                await util.waitUntil(() => ar.length == 4);
-
+                await util.waitUntil(() => ar.length == 3);
                 sub.unsubscribe();
                 c.database.destroy();
             });

@@ -101,7 +101,7 @@ describe('PouchDB-integration.test.js', () => {
                     adapter: 'websql'
                 });
                 assert.equal(db.constructor.name, 'RxDatabase');
-                await util.promiseWait(1000);
+                await util.promiseWait(10);
                 db.destroy();
             });
         });
