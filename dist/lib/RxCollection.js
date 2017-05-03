@@ -38,7 +38,7 @@ var create = exports.create = function () {
             while (1) {
                 switch (_context13.prev = _context13.next) {
                     case 0:
-                        if (!(schema.constructor.name !== 'RxSchema')) {
+                        if (!(!schema instanceof _RxSchema.RxSchema)) {
                             _context13.next = 2;
                             break;
                         }
@@ -46,7 +46,7 @@ var create = exports.create = function () {
                         throw new TypeError('given schema is no Schema-object');
 
                     case 2:
-                        if (!(database.constructor.name !== 'RxDatabase')) {
+                        if (!(!database instanceof _RxDatabase.RxDatabase)) {
                             _context13.next = 4;
                             break;
                         }
@@ -167,6 +167,10 @@ var QueryCache = _interopRequireWildcard(_QueryCache);
 var _ChangeEventBuffer = require('./ChangeEventBuffer');
 
 var ChangeEventBuffer = _interopRequireWildcard(_ChangeEventBuffer);
+
+var _RxSchema = require('./RxSchema');
+
+var _RxDatabase = require('./RxDatabase');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -1176,7 +1180,7 @@ var checkORMmethdods = function checkORMmethdods(statics) {
 
         if (entry[0].startsWith('_')) throw new TypeError('static method-names cannot start with underscore _ (' + entry[0] + ')');
 
-        if (typeof entry[1] != 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function');
+        if (typeof entry[1] != 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function but ' + _typeof(entry[1]));
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
     });

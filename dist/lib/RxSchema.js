@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.RxSchema = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -42,7 +43,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var validator = require('is-my-json-valid');
 
-var RxSchema = function () {
+var RxSchema = exports.RxSchema = function () {
     function RxSchema(jsonID) {
         var _this = this;
 

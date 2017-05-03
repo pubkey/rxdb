@@ -2878,7 +2878,7 @@ var create = exports.create = function () {
             while (1) {
                 switch (_context13.prev = _context13.next) {
                     case 0:
-                        if (!(schema.constructor.name !== 'RxSchema')) {
+                        if (!(!schema instanceof _RxSchema.RxSchema)) {
                             _context13.next = 2;
                             break;
                         }
@@ -2886,7 +2886,7 @@ var create = exports.create = function () {
                         throw new TypeError('given schema is no Schema-object');
 
                     case 2:
-                        if (!(database.constructor.name !== 'RxDatabase')) {
+                        if (!(!database instanceof _RxDatabase.RxDatabase)) {
                             _context13.next = 4;
                             break;
                         }
@@ -3007,6 +3007,10 @@ var QueryCache = _interopRequireWildcard(_QueryCache);
 var _ChangeEventBuffer = require('./ChangeEventBuffer');
 
 var ChangeEventBuffer = _interopRequireWildcard(_ChangeEventBuffer);
+
+var _RxSchema = require('./RxSchema');
+
+var _RxDatabase = require('./RxDatabase');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -4016,19 +4020,19 @@ var checkORMmethdods = function checkORMmethdods(statics) {
 
         if (entry[0].startsWith('_')) throw new TypeError('static method-names cannot start with underscore _ (' + entry[0] + ')');
 
-        if (typeof entry[1] != 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function');
+        if (typeof entry[1] != 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function but ' + _typeof(entry[1]));
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
     });
 };
 
-},{"./ChangeEventBuffer":1,"./Crypter":2,"./DataMigrator":3,"./DocCache":4,"./KeyCompressor":5,"./PouchDB":7,"./QueryCache":8,"./RxChangeEvent":11,"./RxDocument":14,"./RxQuery":15,"./util":22,"clone":27,"object-path":345}],13:[function(require,module,exports){
+},{"./ChangeEventBuffer":1,"./Crypter":2,"./DataMigrator":3,"./DocCache":4,"./KeyCompressor":5,"./PouchDB":7,"./QueryCache":8,"./RxChangeEvent":11,"./RxDatabase":13,"./RxDocument":14,"./RxQuery":15,"./RxSchema":16,"./util":22,"clone":27,"object-path":345}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.RxSchema = exports.create = undefined;
+exports.RxSchema = exports.create = exports.RxDatabase = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -4159,7 +4163,7 @@ var SETTINGS = {
     minPassLength: 8
 };
 
-var RxDatabase = function () {
+var RxDatabase = exports.RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance) {
         _classCallCheck(this, RxDatabase);
 
@@ -5986,6 +5990,7 @@ function create(op) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.RxSchema = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -6025,7 +6030,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var validator = require('is-my-json-valid');
 
-var RxSchema = function () {
+var RxSchema = exports.RxSchema = function () {
     function RxSchema(jsonID) {
         var _this = this;
 
