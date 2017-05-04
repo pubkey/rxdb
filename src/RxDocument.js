@@ -1,6 +1,7 @@
 import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
+import modify from 'modifyjs';
 
 import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
@@ -249,6 +250,21 @@ class RxDocument {
 
         return this;
     };
+
+    /**
+     * updates document
+     *  @param  {object} updateObj
+     */
+    async update(updateObj) {
+        const newDoc = modify(this._data, updateObj);
+        delete newDoc._rev;
+        delete newDoc._id;
+        Object.keys(newDoc).forEach((el) => {
+            if (!deepEqual(this[el], newDoc[el]))
+                this[el] = newDoc[el];
+        });
+        await this.save();
+    }
 
     /**
      * save document if its data has changed
