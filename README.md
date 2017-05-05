@@ -1,10 +1,9 @@
-<!--
+
 
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **3.0.0** is now released, read the [CHANGELOG](./CHANGELOG.md#300-february-27-2017) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **4.0.0** is now released, read the [CHANGELOG](./CHANGELOG.md#400-may-5-2017) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 
--->
 
 <p align="center">
   <a href="https://github.com/pubkey/rxdb">

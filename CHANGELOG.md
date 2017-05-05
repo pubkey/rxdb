@@ -1,4 +1,4 @@
-## 4.0.0 (XXX, 2017)
+## 4.0.0 (May 5, 2017)
 
 Breaking:
   - RxQuery's are now [immutable](docs/RxQuery.md#notice-rxquerys-are-immutable)
