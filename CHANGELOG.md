@@ -6,7 +6,7 @@ Breaking:
   - RxQuery will sort by primary (ASC) as default
 
 Features:
-  - Added [QueryChangeDetection](docs/QueryChangeDetection,md) (in **beta**, disabled by default)
+  - Added [QueryChangeDetection](docs/QueryChangeDetection.md) (in **beta**, disabled by default)
 
 Other:
   - upgraded to pouchdb [v6.2.0](https://pouchdb.com/2017/04/20/pouchdb-6.2.0.html)
