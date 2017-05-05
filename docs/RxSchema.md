@@ -97,7 +97,7 @@ const mySchema = {
 
 
 ## Indexes
-RxDB supports second indexes which are defined at the schema-level of the collection.
+RxDB supports secondary indexes which are defined at the schema-level of the collection.
 To add a simple index, add `index: true` to any fieldName.
 To add compound-indexes, add them in an array to a `compoundIndexes`-field at the top-level of the schema-definition.
 
@@ -112,7 +112,7 @@ const schemaWithIndexes = {
   properties: {
       firstName: {
           type: 'string',
-          index: true       // <- and index for firstName will now be created
+          index: true       // <- an index for firstName will now be created
       },
       lastName: {
           type: 'string'
