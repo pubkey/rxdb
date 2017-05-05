@@ -19,15 +19,7 @@ var QueryCache = function () {
         _classCallCheck(this, QueryCache);
 
         this.subs = [];
-        this._map = new WeakMap();
-
-        /**
-         * TODO also using a weak-set would be much easier, but it's not supported in IE11
-         * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/WeakSet
-         */
-        // this._set = new WeakSet();
-
-        this._keys = {};
+        this._map = {};
     }
 
     /**
@@ -43,37 +35,11 @@ var QueryCache = function () {
         key: "getByQuery",
         value: function getByQuery(query) {
             var stringRep = query.toString();
-            var indexObj = this._keys[stringRep];
-            if (!indexObj) {
-                indexObj = {};
-                this._keys[stringRep] = indexObj;
-            }
-            var useQuery = this._map.get(indexObj);
-            if (!useQuery) {
-                this._map.set(indexObj, query);
-                useQuery = query;
-            }
-            return useQuery;
-        }
-
-        /**
-         * runs the given function over every query
-         * @param  {function} fun with query as first param
-         */
-
-    }, {
-        key: "forEach",
-        value: function forEach(fun) {
-            var _this = this;
-
-            Object.entries(this._keys).forEach(function (entry) {
-                var query = _this._map.get(entry[1]);
-                // clean up keys with garbage-collected values
-                if (!query) {
-                    delete _this._keys[entry[0]];
-                    return;
-                } else fun(query);
-            });
+            var has = this._map[stringRep];
+            if (!has) {
+                this._map[stringRep] = query;
+                return query;
+            } else return has;
         }
     }, {
         key: "destroy",
@@ -81,7 +47,7 @@ var QueryCache = function () {
             this.subs.forEach(function (sub) {
                 return sub.unsubscribe();
             });
-            this._keys = {};
+            this._map = {};
         }
     }]);
 

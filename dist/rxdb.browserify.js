@@ -862,44 +862,29 @@ exports.create = create;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// TODO this is wrong
-// In a WeakMap, the keys are weak, not the values
-// This must be reworked and the weak-thing must be tested
+// TODO add a function to run a cache-clear
 
 var DocCache = function () {
     function DocCache() {
         _classCallCheck(this, DocCache);
 
-        this._map = new WeakMap();
-        this._keys = {};
+        this._map = {};
     }
 
     _createClass(DocCache, [{
-        key: "_getKeyById",
-        value: function _getKeyById(id) {
-            if (!this._keys[id]) this._keys[id] = {};
-            return this._keys[id];
-        }
-    }, {
-        key: "_removeKey",
-        value: function _removeKey(id) {
-            delete this._keys[id];
-        }
-    }, {
         key: "get",
         value: function get(id) {
-            return this._map.get(this._getKeyById(id));
+            return this._map[id];
         }
     }, {
         key: "set",
         value: function set(id, obj) {
-            return this._map.set(this._getKeyById(id), obj);
+            return this._map[id] = obj;
         }
     }, {
         key: "delete",
         value: function _delete(id) {
-            this._map.delete(this._getKeyById(id));
-            this._removeKey(id);
+            delete this._map[id];
         }
     }]);
 
@@ -2164,15 +2149,7 @@ var QueryCache = function () {
         _classCallCheck(this, QueryCache);
 
         this.subs = [];
-        this._map = new WeakMap();
-
-        /**
-         * TODO also using a weak-set would be much easier, but it's not supported in IE11
-         * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/WeakSet
-         */
-        // this._set = new WeakSet();
-
-        this._keys = {};
+        this._map = {};
     }
 
     /**
@@ -2188,37 +2165,11 @@ var QueryCache = function () {
         key: "getByQuery",
         value: function getByQuery(query) {
             var stringRep = query.toString();
-            var indexObj = this._keys[stringRep];
-            if (!indexObj) {
-                indexObj = {};
-                this._keys[stringRep] = indexObj;
-            }
-            var useQuery = this._map.get(indexObj);
-            if (!useQuery) {
-                this._map.set(indexObj, query);
-                useQuery = query;
-            }
-            return useQuery;
-        }
-
-        /**
-         * runs the given function over every query
-         * @param  {function} fun with query as first param
-         */
-
-    }, {
-        key: "forEach",
-        value: function forEach(fun) {
-            var _this = this;
-
-            Object.entries(this._keys).forEach(function (entry) {
-                var query = _this._map.get(entry[1]);
-                // clean up keys with garbage-collected values
-                if (!query) {
-                    delete _this._keys[entry[0]];
-                    return;
-                } else fun(query);
-            });
+            var has = this._map[stringRep];
+            if (!has) {
+                this._map[stringRep] = query;
+                return query;
+            } else return has;
         }
     }, {
         key: "destroy",
@@ -2226,7 +2177,7 @@ var QueryCache = function () {
             this.subs.forEach(function (sub) {
                 return sub.unsubscribe();
             });
-            this._keys = {};
+            this._map = {};
         }
     }]);
 
