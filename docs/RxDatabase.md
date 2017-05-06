@@ -4,7 +4,7 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 
 ## Creation
 
-The database is created by the asynchronous `.create()` function of the main RxDB module. It has the following 4 parameters.
+The database is created by the asynchronous .create()-function of the main RxDB-module. It has the following 4 parameters.
 
 ```javascript
 const db = await RxDB.create({
