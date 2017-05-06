@@ -18,7 +18,7 @@ RxDB supports the following hooks:
 
 ### Why is there no validate-hook?
 Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
-This means if your set the value ```lastName``` of a RxDocument, then the validation will only run on the changed field, not the whole document.
+This means if you set the value ```lastName``` of a RxDocument, then the validation will only run on the changed field, not the whole document.
 Therefore it is not usefull to have validate-hooks when a document is written to the database.
 
 
