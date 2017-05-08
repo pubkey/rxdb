@@ -262,6 +262,17 @@ class RxQuery {
                 delete json.selector[key];
         });
 
+
+        // primary swap
+        if (
+            primPath != '_id' &&
+            json.selector[primPath]
+        ) {
+            // selector
+            json.selector._id = json.selector[primPath];
+            delete json.selector[primPath];
+        }
+
         this._toJSON = json;
         return this._toJSON;
     };
