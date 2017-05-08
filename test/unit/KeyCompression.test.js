@@ -331,7 +331,6 @@ describe('KeyCompressor.test.js', () => {
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('level'));
             assert.ok(jsonString.includes(5));
-
             assert.equal(query.selector[cString], 5);
         });
 

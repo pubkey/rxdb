@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-
+import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
@@ -269,7 +269,62 @@ describe('RxQuery.test.js', () => {
         });
     });
 
+
+
+    describe('issues', () => {
+        it('#157 Cannot sort on field(s) "XXX" when using the default index', async() => {
+            const schema = {
+                'disableKeyCompression': true,
+                'version': 0,
+                'type': 'object',
+                'properties': {
+                    'user_id': {
+                        'type': 'string',
+                        'primary': true
+                    },
+                    'user_pwd': {
+                        'type': 'string',
+                        'encrypted': true
+                    },
+                    'last_login': {
+                        'type': 'number'
+                    },
+                    'status': {
+                        'type': 'string'
+                    }
+                },
+                'required': ['user_pwd', 'last_login', 'status']
+            };
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                password: util.randomCouchString(20)
+            });
+            const collection = await db.collection({
+                name: util.randomCouchString(10),
+                schema
+            });
+
+            const query = collection
+                .findOne()
+                .where('status')
+                .eq('foobar');
+
+            const resultDoc = await query.exec();
+            assert.equal(resultDoc, null);
+
+            const queryAll = collection
+                .find()
+                .where('status')
+                .eq('foobar');
+
+            const resultsAll = await queryAll.exec();
+            assert.equal(resultsAll.length, 0);
+            db.destroy();
+        });
+    });
+
     describe('e', () => {
-//        it('e', () => process.exit());
+        //    it('e', () => process.exit());
     });
 });
