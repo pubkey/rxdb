@@ -26,7 +26,7 @@ const heroSchema = {
 const HOSTNAME = 'localhost';
 const syncURL = 'http://' + HOSTNAME + ':10102/';
 
-let database, heroesCollection;
+let database, heroesCollection, heroStatus$;
 
 const create = async() => {
     return RxDB
@@ -46,16 +46,10 @@ const create = async() => {
         .then(col => {
             // sync
             database.collections.heroes.sync(syncURL + 'hero/');
-            col.find()
+            heroStatus$ = col.find()
                 .sort({
                     name: 1
-                })
-                .$.subscribe(heroes => {
-                    if (!heroes) return;
-                    Log.heroCollectionUpdate();
-                    heroes.forEach(hero => Log.logHero(hero));
-                });
-
+                }).$;
         });
 };
 
@@ -75,7 +69,12 @@ const upsertHero = async(name, color) => {
 const get = async() => {
     if (!database) await create();
     try {
-        return database.collections.heroes.find();
+        heroStatus$.subscribe(heroes => {
+            if (!heroes) return;
+            Log.heroCollectionUpdate();
+            heroes.forEach(hero => Log.logHero(hero));
+        });
+        // return database.collections.heroes.find();
     } catch (e) {
         Log.error(e);
     }
