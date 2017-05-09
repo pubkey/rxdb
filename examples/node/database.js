@@ -46,10 +46,7 @@ const create = async() => {
         .then(col => {
             // sync
             database.collections.heroes.sync(syncURL + 'hero/');
-            heroStatus$ = col.find()
-                .sort({
-                    name: 1
-                }).$;
+            heroStatus$ = col.find().sort({name: 1}).$;
         });
 };
 
@@ -74,7 +71,6 @@ const get = async() => {
             Log.heroCollectionUpdate();
             heroes.forEach(hero => Log.logHero(hero));
         });
-        // return database.collections.heroes.find();
     } catch (e) {
         Log.error(e);
     }
