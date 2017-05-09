@@ -31,7 +31,7 @@ let database, heroesCollection, heroStatus$;
 const create = async() => {
     return RxDB
         .create({
-            name: 'heroesdb2',
+            name: 'heroesdb',
             adapter: 'leveldb',
             password: 'myLongAndStupidPassword',
             multiInstance: true
