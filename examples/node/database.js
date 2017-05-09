@@ -1,6 +1,7 @@
 require('babel-polyfill');
 const RxDB = require('../../');
 const memdown = require('memdown');
+const Log = require('./log');
 RxDB.plugin(require('pouchdb-adapter-leveldb'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
@@ -23,7 +24,6 @@ const heroSchema = {
 };
 
 const HOSTNAME = 'localhost';
-console.log('hostname: ' + HOSTNAME);
 const syncURL = 'http://' + HOSTNAME + ':10102/';
 
 let database, heroesCollection;
@@ -36,7 +36,7 @@ const create = async() => {
             password: 'myLongAndStupidPassword'
         })
         .then(db => {
-            console.log('creating hero-collection..');
+            Log.createdDB();
             database = db;
             return db.collection({
                 name: 'heroes',
@@ -45,26 +45,17 @@ const create = async() => {
         })
         .then(col => {
             // sync
-            console.log('starting sync');
             database.collections.heroes.sync(syncURL + 'hero/');
             col.find()
                 .sort({
                     name: 1
                 })
-                .$.subscribe(function(heroes) {
-                    if (!heroes) {
-                        console.log('Loading..');
-                        return;
-                    }
-                    console.log('observable fired');
-
-                    const logs = heroes
-                        .map(hero => {
-                            return 'Hero: ' + JSON.stringify(hero);
-                        })
-                        .reduce((pre, cur) => pre += cur, '');
-                    console.dir(logs);
+                .$.subscribe(heroes => {
+                    if (!heroes) return;
+                    Log.heroCollectionUpdate();
+                    heroes.forEach(hero => Log.logHero(hero));
                 });
+
         });
 };
 
@@ -74,17 +65,25 @@ const upsertHero = async(name, color) => {
         name: name,
         color: color
     };
-    console.log('inserting hero:');
-    console.dir(obj);
     try {
         database.collections.heroes.upsert(obj);
     } catch (e) {
-        console.log(e);
+        Log.error(e);
+    }
+};
+
+const get = async() => {
+    if (!database) await create();
+    try {
+        return database.collections.heroes.find();
+    } catch (e) {
+        Log.error(e);
     }
 };
 
 const Database = {
-    upsertHero: upsertHero
+    upsertHero: upsertHero,
+    get: get
 };
 
 module.exports = Database;
