@@ -148,7 +148,6 @@ describe('Hooks.test.js', () => {
             });
         });
     });
-
     describe('save', () => {
         describe('pre', () => {
             describe('positive', () => {
@@ -287,7 +286,6 @@ describe('Hooks.test.js', () => {
             describe('negative', () => {});
         });
     });
-
     describe('remove', () => {
         describe('pre', () => {
             describe('positive', () => {
@@ -371,6 +369,25 @@ describe('Hooks.test.js', () => {
                 });
             });
             describe('negative', () => {});
+        });
+    });
+    describe('issues', () => {
+        it('BUG #158 : Throwing error in async preInsert does not prevent insert', async() => {
+            const c = await humansCollection.create(0);
+            c.preInsert(async function(doc) {
+                await util.promiseWait(1);
+                throw new Error('This throw should prevent the insert');
+            }, false);
+            let hasThrown = false;
+            try {
+                await c.insert(schemaObjects.human());
+            } catch (e) {
+                hasThrown = true;
+            }
+            assert.ok(hasThrown);
+            await util.promiseWait(10);
+            const allDocs = await c.find().exec();
+            assert.equal(allDocs.length, 0);
         });
     });
 });
