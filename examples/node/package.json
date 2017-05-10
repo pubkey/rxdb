@@ -4,9 +4,7 @@
   "description": "rxdb node example",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start:1": "babel-node app1.js",
-    "start:2": "babel-node app2.js"
+    "start": "babel-node src/app.js"
   },
   "author": "",
   "license": "ISC",
@@ -16,9 +14,8 @@
     "babel-polyfill": "^6.23.0",
     "chalk": "^1.1.3",
     "keypress": "^0.2.1",
-    "memdown": "^1.2.4",
     "pouchdb-adapter-http": "^6.2.0",
-    "pouchdb-adapter-leveldb": "^6.2.0",
+    "pouchdb-adapter-node-websql": "^6.2.0",
     "pouchdb-replication": "^6.2.0",
     "random-name": "^0.1.2"
   }

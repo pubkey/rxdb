@@ -1,8 +1,7 @@
 require('babel-polyfill');
-const RxDB = require('../../');
-const memdown = require('memdown');
+const RxDB = require('../../../');
 const Log = require('./log');
-RxDB.plugin(require('pouchdb-adapter-leveldb'));
+RxDB.plugin(require('pouchdb-adapter-node-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
 
@@ -32,7 +31,7 @@ const create = async() => {
     return RxDB
         .create({
             name: 'heroesdb',
-            adapter: 'leveldb',
+            adapter: 'websql',
             password: 'myLongAndStupidPassword',
             multiInstance: true
         })
