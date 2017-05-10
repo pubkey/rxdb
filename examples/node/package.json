@@ -2,12 +2,11 @@
   "name": "rxdb-node-example",
   "version": "1.0.0",
   "description": "rxdb node example",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "babel-node src/app.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "salomonelli",
   "dependencies": {
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
