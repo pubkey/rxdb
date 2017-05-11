@@ -24,5 +24,6 @@ export function plugin(mod) {
 export {
     RxSchema as RxSchema,
     PouchDB as PouchDB,
-    QueryChangeDetector as QueryChangeDetector
+    QueryChangeDetector as QueryChangeDetector,
+    RxDatabase as RxDatabase
 };
