@@ -1,6 +1,6 @@
 # RxSchema
 
-Schemas define how your data looks. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. The schema also validates that every inserted document of your collections matches to it. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard so that you dont have to learn anything new.
+Schemas define how your data looks. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. The schema also validates that every inserted document of your collections conforms to the schema. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard so that you dont have to learn anything new.
 
 ## Example
 
@@ -75,7 +75,7 @@ When the version is greater than 0, you have to provide the migrationStrategies 
 
 ## disableKeyCompression
 
-If you want to not use the internal key-compression, you can disable it by setting the field `disableKeyCompression` to true.
+If you do not want to use the internal key-compression, you can disable it by setting the field `disableKeyCompression` to true.
 
 ```javascript
 const mySchema = {
@@ -128,9 +128,9 @@ const schemaWithIndexes = {
 ```
 
 
-## NOTICE: Not everything of the jsonschema-spec is allowed
-The schema is not only used to validate objects before they are written into the database. It is also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
-For example fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.
+## NOTICE: Not everything within the jsonschema-spec is allowed
+The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
+For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.
 
 
 --------------------------------------------------------------------------------

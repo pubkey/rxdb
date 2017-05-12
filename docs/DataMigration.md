@@ -4,7 +4,7 @@ Imagine you have your awesome messenger-app distributed to many users. After a w
 
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your exisiting data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
-## providing strategies
+## Providing strategies
 
 Upon creation of a collection, you have to provide migrationStrategies when your schema's version-number is greater than `0`. To do this, you have to add an object to the `migrationStrategies` property where a function for every schema-version is assigned. A migrationStrategy is a function which gets the old document-data as a parameter and returns the new, transformed document-data. If the strategy returns `null`, the document will be removed instead of migrated.
 
@@ -23,7 +23,7 @@ myDatabase.collection({
 });
 ```
 
-asynchronous strategies can also be used:
+Asynchronous strategies can also be used:
 
 ```javascript
 myDatabase.collection({
@@ -130,7 +130,7 @@ If you don't want to show the state to the user, you can also use `.migratePromi
 ```
 
 
-## hint
+## Hint
 If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
 
 

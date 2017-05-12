@@ -3,7 +3,7 @@ A collection stores documents of the same type.
 
 
 ## Creating a Collection
-To create a collection you need a RxDatabase-Object which has the .collection()-method. Every collection needs a collection-name and a RxSchema.
+To create a collection you need a RxDatabase-Object which has the .collection()-method. Every collection needs a collection-name and a valid RxSchema.
 
 ```js
 myDatabase.collection({
@@ -14,13 +14,13 @@ myDatabase.collection({
 ```
 
 ### name
-The name identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name.
+The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name.
 
 ### schema
 The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.
 
 
-## get a collection from the database
+## Get a collection from the database
 To get an existing collection from the database, call the collection-name directly on the database:
 
 ```javascript
@@ -42,7 +42,7 @@ myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### insert()
-Use this to insert new documents to the database. The collection will validate the schema and encrypt the encrypted fields by itself. Returns the new RxDocument.
+Use this to insert new documents to the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.
 
 ```js
 const doc = await myCollection.insert({
@@ -52,7 +52,7 @@ const doc = await myCollection.insert({
 ```
 
 ### upsert()
-Inserts if documents does not exsits. Overwrites if document exists. Returns the new or overwritten RxDocument.
+Insert's the document if it does not exist within the collection, else it will overwrite it. Returns the new or overwritten RxDocument.
 ```js
 const doc = await myCollection.upsert({
   name: 'foo',
@@ -69,7 +69,7 @@ This will return a RxQuery-Object with the exec-function.
 myCollection.find({name: {$eq: 'foo'}})
   .exec().then(documents => console.dir(documents));
 
-// chain querys
+// chained queries
 myCollection.find().where('name').eq('foo')
   .exec().then(documents => console.dir(documents));
 ```
@@ -82,13 +82,13 @@ This does basically what find() does, but it returns only a single document. You
 myCollection.findOne().where('name').eq('foo')
   .exec().then(doc => console.dir(doc));
 
-// get document by primary
+// get document by primary, functionally identical to above query
 myCollection.findOne('foo')
   .exec().then(doc => console.dir(doc));
 ```
 
 ### dump()
-Use this function to create a json-export from every document in the collection. You can pass true as parameter to decrypted the encrypted data-fields of your documents.
+Use this function to create a json-export from every document in the collection. You can pass true as parameter to decrypt the encrypted data-fields of your documents.
 ```js
 myCollection.dump()
   .then(json => console.dir(json));
@@ -107,7 +107,7 @@ myCollection.importDump(json)
 ```
 
 ### sync()
-To replicate the colletion with another server, use this function. It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also add event-handles to make sure that change-events will be recognized.
+To replicate the collection with another server, use this function. It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also adds event-handles to make sure that change-events will be recognized.
 ```js
 mycollection.sync('http://localhost:10102/db/');
 ```
