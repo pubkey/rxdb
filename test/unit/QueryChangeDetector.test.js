@@ -385,6 +385,8 @@ describe('QueryChangeDetector.test.js', () => {
                     last.passportId = 'zzzzzz'; // to make sure it sorts at last
                     await col.insert(last);
 
+                    const referenceResults = await col.find().where('passportId').ne('foobar').exec();
+                    assert.equal(referenceResults.length, 7);
 
                     results = await q.exec();
                     assert.equal(results.length, 7);

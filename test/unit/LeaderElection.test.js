@@ -234,7 +234,8 @@ describe('LeaderElection.test.js', () => {
             assert.equal(leaderCount, 1);
             await Promise.all(dbs.map(db => db.destroy()));
         });
-        it('when the leader dies, a new one should be elected', async() => {
+        it('when the leader dies, a new one should be elected', async function() {
+            this.timeout(5 * 1000);
             const name = util.randomCouchString(10);
             const dbs = [];
             while (dbs.length < 6) {

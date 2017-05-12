@@ -48,7 +48,7 @@ console.log(query1 == query2);
 ```
 
 
-## ChangeDetection on RxQuerys
+## ChangeDetection on RxQuerys DONE
 
 - Requires `Query-Cache`
 

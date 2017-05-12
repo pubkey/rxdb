@@ -3,7 +3,7 @@ A collection stores documents of the same type.
 
 
 ## Creating a Collection
-To create a collection you need a RxDatabase-Object which has the .collection()-method. Every colletion needs a collection-name and a RxSchema.
+To create a collection you need a RxDatabase-Object which has the .collection()-method. Every collection needs a collection-name and a RxSchema.
 
 ```js
 myDatabase.collection({

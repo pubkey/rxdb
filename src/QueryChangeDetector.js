@@ -106,7 +106,7 @@ class QueryChangeDetector {
         let _sortFieldChanged = null;
         const sortFieldChanged = () => {
             if (_sortFieldChanged === null) {
-                const docBefore = results.find(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                const docBefore = resultsData.find(doc => doc[this.primaryKey] == docData[this.primaryKey]);
                 _sortFieldChanged = this._sortFieldChanged(docBefore, docData);
             }
             return _sortFieldChanged;
@@ -159,8 +159,10 @@ class QueryChangeDetector {
             if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
                 // DEBUG && this._debugMessage('U2', docData);
 
-                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
-                results.push(docData);
+                // replace but make sure its the same position
+                const wasDoc = results.find(doc => doc[this.primaryKey] == docData[this.primaryKey]);
+                const i = results.indexOf(wasDoc);
+                results[i] = docData;
 
                 if (sortFieldChanged()) {
                     DEBUG && this._debugMessage('U2 - resort', docData);
@@ -177,12 +179,12 @@ class QueryChangeDetector {
                 DEBUG && this._debugMessage('U3', docData);
                 results.push(docData);
 
-            //    console.log('U3: preSort:');
-            //    console.dir(results);
+                //    console.log('U3: preSort:');
+                //    console.dir(results);
 
                 const sorted = this._resortDocData(results);
-        //        console.log('U3: postSort:');
-    //            console.dir(sorted);
+                //        console.log('U3: postSort:');
+                //            console.dir(sorted);
                 return sorted;
             }
 

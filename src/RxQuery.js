@@ -1,13 +1,11 @@
 import deepEqual from 'deep-equal';
 import MQuery from './mquery/mquery';
+import clone from 'clone';
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 import * as QueryChangeDetector from './QueryChangeDetector';
 
-const defaultQuery = {
-    _id: {}
-};
 
 let _queryCount = 0;
 const newQueryID = function() {
@@ -16,15 +14,12 @@ const newQueryID = function() {
 
 
 class RxQuery {
-    constructor(op, queryObj = defaultQuery, collection) {
+    constructor(op, queryObj, collection) {
         this.op = op;
         this.collection = collection;
-        this.defaultQuery = false;
         this.id = newQueryID();
 
-        // force _id
-        if (!queryObj._id)
-            queryObj._id = {};
+        if (!queryObj) queryObj = this._defaultQuery();
 
         this.mquery = new MQuery(queryObj);
 
@@ -50,9 +45,15 @@ class RxQuery {
         this._execOverDatabaseCount = 0;
     }
 
+    _defaultQuery() {
+        return {
+            [this.collection.schema.primaryPath]: {}
+        };
+    }
+
     // returns a clone of this RxQuery
     _clone() {
-        const cloned = new RxQuery(this.op, defaultQuery, this.collection);
+        const cloned = new RxQuery(this.op, this._defaultQuery(), this.collection);
         cloned.mquery = this.mquery.clone();
         return cloned;
     }
@@ -205,6 +206,8 @@ class RxQuery {
     toJSON() {
         if (this._toJSON) return this._toJSON;
 
+        const primPath = this.collection.schema.primaryPath;
+
         const json = {
             selector: this.mquery._conditions
         };
@@ -220,7 +223,7 @@ class RxQuery {
                 if (dirInt == -1) dir = 'desc';
                 const pushMe = {};
                 // TODO run primary-swap somewhere else
-                if (fieldName == this.collection.schema.primaryPath)
+                if (fieldName == primPath)
                     fieldName = '_id';
 
                 pushMe[fieldName] = dir;
@@ -229,8 +232,9 @@ class RxQuery {
             json.sort = sortArray;
         } else {
             // sort by primaryKey as default
+            // (always use _id because there is no primary-swap on json.sort)
             json.sort = [{
-                [this.collection.schema.primaryPath]: 'asc'
+                _id: 'asc'
             }];
         }
 
@@ -250,18 +254,23 @@ class RxQuery {
         json.selector.language.$ne = 'query';
 
 
+        // strip empty selectors
+        Object.entries(json.selector).forEach(entry => {
+            const key = entry[0];
+            const select = entry[1];
+            if (typeof select === 'object' && Object.keys(select) == 0)
+                delete json.selector[key];
+        });
+
+
         // primary swap
         if (
-            this.collection.schema.primaryPath &&
-            json.selector[this.collection.schema.primaryPath]
+            primPath != '_id' &&
+            json.selector[primPath]
         ) {
-            const primPath = this.collection.schema.primaryPath;
-
             // selector
             json.selector._id = json.selector[primPath];
-
-            if (primPath !== '_id' || Object.keys(json.selector[primPath]).length == 0)
-                delete json.selector[primPath];
+            delete json.selector[primPath];
         }
 
         this._toJSON = json;
@@ -393,8 +402,8 @@ const protoMerge = function(rxQueryProto, mQueryProto) {
 };
 
 let protoMerged = false;
-export function create(op, queryObj = defaultQuery, collection) {
-    if (typeof queryObj !== 'object')
+export function create(op, queryObj, collection) {
+    if (queryObj && typeof queryObj !== 'object')
         throw new TypeError('query must be an object');
     if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
