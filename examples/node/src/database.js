@@ -1,9 +1,10 @@
 require('babel-polyfill');
 const RxDB = require('../../../');
-const Log = require('./log');
 RxDB.plugin(require('pouchdb-adapter-node-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-replication'));
+
+const Database = {};
 
 const heroSchema = {
     title: 'hero schema',
@@ -22,63 +23,37 @@ const heroSchema = {
     required: ['color']
 };
 
-const HOSTNAME = 'localhost';
-const syncURL = 'http://' + HOSTNAME + ':10102/';
-
-let database, heroesCollection, heroStatus$;
+const SYNC_URL = 'http://localhost:10102/';
 
 const create = async() => {
-    return RxDB
+    const database = await RxDB
         .create({
             name: 'heroesdb',
             adapter: 'websql',
             password: 'myLongAndStupidPassword',
             multiInstance: true
-        })
-        .then(db => {
-            Log.createdDB();
-            database = db;
-            return db.collection({
-                name: 'heroes',
-                schema: heroSchema
-            });
-        })
-        .then(col => {
-            // sync
-            database.collections.heroes.sync(syncURL + 'hero/');
-            heroStatus$ = col.find().sort({name: 1}).$;
         });
+    await database.collection({
+        name: 'heroes',
+        schema: heroSchema,
+        statics: {
+            async addHero(name, color) {
+                return this.upsert({
+                    name,
+                    color
+                });
+            }
+        }
+    });
+    database.collections.heroes.sync(SYNC_URL + 'hero/');
+    return database;
 };
 
-const upsertHero = async(name, color) => {
-    if (!database) await create();
-    const obj = {
-        name: name,
-        color: color
-    };
-    try {
-        database.collections.heroes.upsert(obj);
-    } catch (e) {
-        Log.error(e);
-    }
+let createPromise = null;
+Database.get = async() => {
+    if (!createPromise) createPromise = create();
+    return createPromise;
 };
 
-const get = async() => {
-    if (!database) await create();
-    try {
-        heroStatus$.subscribe(heroes => {
-            if (!heroes) return;
-            Log.heroCollectionUpdate();
-            heroes.forEach(hero => Log.logHero(hero));
-        });
-    } catch (e) {
-        Log.error(e);
-    }
-};
-
-const Database = {
-    upsertHero: upsertHero,
-    get: get
-};
 
 module.exports = Database;

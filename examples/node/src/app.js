@@ -7,13 +7,13 @@ const randomColor = require('./random-color');
 
 const start = async() => {
     Log.intro();
-    await Database.get();
+    observeHeroes();
     Log.explanation();
     keypress(process.stdin);
     process.stdin.on('keypress', async ch => {
         switch (ch) {
             case '\r':
-                await Database.upsertHero(random(), randomColor());
+                await upsertHero();
                 break;
             case '\u0003':
                 process.exit();
@@ -24,6 +24,33 @@ const start = async() => {
     });
     process.stdin.setRawMode(true);
     process.stdin.resume();
+};
+
+const upsertHero = async() => {
+    try {
+        const db = await Database.get();
+        return db.heroes.addHero(random(), randomColor());
+    } catch (e) {
+        Log.error(e);
+    }
+};
+
+const observeHeroes = async() => {
+    try {
+        const db = await Database.get();
+        Log.createdDB();
+        db.heroes.find()
+            .sort({
+                name: 1
+            }).$
+            .subscribe(heroes => {
+                if (!heroes) return;
+                Log.heroCollectionUpdate();
+                heroes.forEach(hero => Log.logHero(hero));
+            });
+    } catch (e) {
+        Log.error(e);
+    }
 };
 
 start();
