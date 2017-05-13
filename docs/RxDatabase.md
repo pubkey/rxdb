@@ -18,7 +18,7 @@ console.dir(db);
 
 ### name
 
-The database-name is a string which identifies the database. When two RxDatabases have the same name and use the same storage-adapter, their data can be assumed as equal and they will share change-events between each other.
+The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same storage-adapter, their data can be assumed as equal and they will share change-events between each other.
 Depending on the adapter this can also be used to define the storage-folder of your data.
 
 
@@ -56,7 +56,7 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 Returns a Promise which resolves when the RxDatabase becomes [elected leader](./LeaderElection.md).
 
 ### dump()
-Use this function to create a json-export from every piece of data in every collection of this database. You can pass true as parameter to decrypted the encrypted data-fields of your document.
+Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
 ```js
 myDatabase.dump()
   .then(json => console.dir(json));

@@ -12,7 +12,7 @@ myCollection.insert({
 ```
 
 ## find
-To find document in a collection, you have to call the collection's .find()-function.
+To find documents in a collection, you have to call the collection's .find()-function.
 ```js
 myCollection.find().exec() // <- find all documents
   .then(documents => console.dir(documents));
@@ -32,8 +32,9 @@ var name = myDocument.get('name'); // returns the name
 As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly access values instead of using the get()-function.
 
 ```js
+  // Identical to myDocument.get('name');
   var name = myDocument.name;
-
+  // Can also get nested values.
   var nestedValue = myDocument.whatever.nestedfield;
 ```
 
@@ -54,7 +55,7 @@ myDocument.whatever.nestedfield = 'foobar2';
 ```
 
 ### save()
-This will store the document in the storage if it has been changed before. Call this every time after calling the set-method.
+This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).
 ```js
 myDocument.name = 'foobar';
 await myDocument.save(); // submit the changes to the storage
