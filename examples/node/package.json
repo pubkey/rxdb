@@ -4,7 +4,8 @@
   "description": "rxdb node example",
   "main": "src/app.js",
   "scripts": {
-    "start": "node --harmony-async-await src/app.js"
+    "start": "node --harmony-async-await src/app.js",
+    "clear": "rimraf heroesdb-rxdb*"
   },
   "author": "salomonelli",
   "dependencies": {
@@ -15,5 +16,8 @@
     "pouchdb-adapter-node-websql": "^6.2.0",
     "pouchdb-replication": "^6.2.0",
     "random-name": "^0.1.2"
+  },
+  "devDependencies": {
+    "rimraf": "^2.6.1"
   }
 }
