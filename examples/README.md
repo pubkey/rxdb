@@ -7,7 +7,7 @@ In this folder you can find some example-projects with RxDB. If you have coding-
 Environment          | Status
 -------------------- | ---------------------
 browser (vanilla-js) | [done](./vanilla)
-nodeJS               | TODO
+nodeJS               | [done](./node)
 react-native         | [done](./react-native)
 ionic2               | TODO
 cordova              | TODO
