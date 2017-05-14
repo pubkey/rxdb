@@ -1,0 +1,35 @@
+.listHero {
+  width: 100%;
+
+  .color-box {
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-right: 11px;
+    border-radius: 2px;
+    border: 1px solid grey;
+  }
+
+  .name {
+    flex: 1;
+
+    .life {
+      width: 80%;
+      height: 2px;
+      background-color: red;
+      margin-left: 30px;
+
+      .currentPercent {
+        height: 100%;
+        background-color: green;
+      }
+    }
+  }
+
+  i {
+    cursor: pointer;
+  }
+
+  .actions {
+  }
+}

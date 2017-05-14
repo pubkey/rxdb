@@ -1,0 +1,13 @@
+<form autocomplete="off">
+  <ion-list no-lines>
+    <ion-item>
+      <ion-label floating>Name</ion-label>
+      <ion-input #input type="text" [(ngModel)]="name" name="name" required></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label floating>Color</ion-label>
+      <ion-input type="text" [(ngModel)]="color" name="color" required></ion-input>
+    </ion-item>
+  </ion-list>
+  <button ion-button (click)="submit()" type="submit">Insert</button>
+</form>

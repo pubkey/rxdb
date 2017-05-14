@@ -1,0 +1,22 @@
+<div class="loading" *ngIf="!heroes">
+  <ion-spinner class="app-spinner"></ion-spinner>
+</div>
+
+<ion-list *ngIf="heroes">
+  <ion-item *ngFor="let hero of heroes" class="listHero">
+    <div class="color-box" [style.background-color]="hero.color"></div>
+    <div class="name">
+      {{hero.name}}
+      <div class="life">
+        <div class="currentPercent" [style.width]="hero.hpPercent() + '%'"></div>
+      </div>
+    </div>
+    <button ion-button clear icon-only item-right (click)="editHero(hero)" color="dark">
+      <ion-icon name="open"></ion-icon>
+    </button>
+    <button ion-button clear icon-only item-right (click)="deleteHero(hero)" color="dark">
+      <ion-icon name="trash"></ion-icon>
+    </button>
+  </ion-item>
+  <ion-item *ngIf="heroes.length == 0">No Heroes yet, insert one</ion-item>
+</ion-list>

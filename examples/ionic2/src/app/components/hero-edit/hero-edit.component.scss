@@ -1,0 +1,35 @@
+hero-edit {
+  position: fixed;
+  z-index: 10;
+  width: 70%;
+  margin-left: 10%;
+  min-height: 200px;
+  margin-top: -5px;
+
+  .color-box {
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-right: 11px;
+    border-radius: 2px;
+    border: 1px solid grey;
+  }
+
+  .alert {
+    border-radius: 10px;
+    padding: 8px;
+    border: 2px solid #e0e021;
+    &.deleted {
+      border-color: red;
+    }
+
+    h4 {
+      padding: 0;
+      margin: 0;
+    }
+  }
+
+  .range {
+    padding: 0;
+  }
+}
