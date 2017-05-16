@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      <b>RxDB Heroes Ionic2</b>
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <hero-edit *ngIf="editedHero" [(hero)]="editedHero" (done)="editedHero=null"></hero-edit>
+
+  <ion-card>
+    <ion-card-header>
+      Heroes
+    </ion-card-header>
+    <ion-card-content>
+      <heroes-list (edit)="editHero($event)"></heroes-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      Add Hero
+    </ion-card-header>
+    <ion-card-content>
+      <hero-insert></hero-insert>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

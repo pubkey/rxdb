@@ -1,0 +1,40 @@
+<ion-card *ngIf="hero">
+  <ion-card-header>Edit</ion-card-header>
+
+  <ion-card-content>
+
+    <div class="alert" *ngIf="!(hero.synced$ | async)">
+      <h4>Warning:</h4>
+      <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
+      <button (click)=hero.resync()>resync</button>
+    </div>
+
+    <div class="alert deleted" *ngIf="(hero.deleted$ | async)">
+      <h4>Error:</h4>
+      <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
+    </div>
+
+    <ion-item>
+      <div class="color-box" [style.background-color]="hero.color"></div>
+      {{hero.name}}
+    </ion-item>
+
+
+    <ion-item>
+      <ion-range [ngModel]="hero.hp" (ngModelChange)="hero.hp = convertToNumber($event)" min="0" [max]="hero.maxHP">
+        <div range-left>HP:</div>
+        <div range-right>{{hero.hp}}</div>
+      </ion-range>
+    </ion-item>
+
+    <br/>
+
+    <button ion-button (click)="cancel()">
+      Cancel
+    </button>
+    <button ion-button *ngIf="!(hero.deleted$ | async)" (click)=submit()>
+      Submit
+    </button>
+  </ion-card-content>
+
+</ion-card>
