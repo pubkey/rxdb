@@ -9,7 +9,7 @@ Environment          | Status
 browser (vanilla-js) | [done](./vanilla)
 nodeJS               | [done](./node)
 react-native         | [done](./react-native)
-ionic2               | TODO
+ionic2               | [done](./ionic2)
 cordova              | TODO
 nativescript         | TODO
 electron             | [done](./electron)
