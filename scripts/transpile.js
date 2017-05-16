@@ -1,3 +1,5 @@
+process.env['NODE_ENV'] = 'es5';
+
 /**
  * runs the babel-transpile
  * remembers mtime of files and only transpiles the changed ones

@@ -1,12 +1,19 @@
 {
-    "presets": ["es2015"],
-    "plugins": [
-        [
-            "transform-async-to-generator",
-            "transform-runtime", {
-                "polyfill": false,
-                "regenerator": false
-            }
-        ]
-    ]
+    "env": {
+        "es5": {
+            "presets": ["es2015"],
+            "plugins": [
+                [
+                    "transform-async-to-generator",
+                    "transform-runtime", {
+                        "polyfill": false,
+                        "regenerator": false
+                    }
+                ]
+            ]
+        },
+        "es6": {
+            "presets": ["es2017"]
+        }
+    }
 }
