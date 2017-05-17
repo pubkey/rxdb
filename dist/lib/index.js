@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.create = undefined;
+exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.create = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -68,3 +68,4 @@ function plugin(mod) {
 exports.RxSchema = RxSchema;
 exports.PouchDB = _PouchDB2.default;
 exports.QueryChangeDetector = QueryChangeDetector;
+exports.RxDatabase = RxDatabase;

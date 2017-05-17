@@ -18,6 +18,10 @@ var _mquery = require('./mquery/mquery');
 
 var _mquery2 = _interopRequireDefault(_mquery);
 
+var _clone2 = require('clone');
+
+var _clone3 = _interopRequireDefault(_clone2);
+
 var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
@@ -34,15 +38,11 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var defaultQuery = {
-    _id: {}
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
@@ -50,19 +50,14 @@ var newQueryID = function newQueryID() {
 };
 
 var RxQuery = function () {
-    function RxQuery(op) {
-        var queryObj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultQuery;
-        var collection = arguments[2];
-
+    function RxQuery(op, queryObj, collection) {
         _classCallCheck(this, RxQuery);
 
         this.op = op;
         this.collection = collection;
-        this.defaultQuery = false;
         this.id = newQueryID();
 
-        // force _id
-        if (!queryObj._id) queryObj._id = {};
+        if (!queryObj) queryObj = this._defaultQuery();
 
         this.mquery = new _mquery2.default(queryObj);
 
@@ -88,13 +83,18 @@ var RxQuery = function () {
         this._execOverDatabaseCount = 0;
     }
 
-    // returns a clone of this RxQuery
-
-
     _createClass(RxQuery, [{
+        key: '_defaultQuery',
+        value: function _defaultQuery() {
+            return _defineProperty({}, this.collection.schema.primaryPath, {});
+        }
+
+        // returns a clone of this RxQuery
+
+    }, {
         key: '_clone',
         value: function _clone() {
-            var cloned = new RxQuery(this.op, defaultQuery, this.collection);
+            var cloned = new RxQuery(this.op, this._defaultQuery(), this.collection);
             cloned.mquery = this.mquery.clone();
             return cloned;
         }
@@ -133,7 +133,7 @@ var RxQuery = function () {
     }, {
         key: '_ensureEqual',
         value: function () {
-            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
                 var ret, resolve, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
                 return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
@@ -220,7 +220,7 @@ var RxQuery = function () {
             }));
 
             function _ensureEqual() {
-                return _ref.apply(this, arguments);
+                return _ref2.apply(this, arguments);
             }
 
             return _ensureEqual;
@@ -241,7 +241,7 @@ var RxQuery = function () {
     }, {
         key: '_execOverDatabase',
         value: function () {
-            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
+            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
                 var docsData, ret;
                 return regeneratorRuntime.wrap(function _callee2$(_context2) {
                     while (1) {
@@ -286,7 +286,7 @@ var RxQuery = function () {
             }));
 
             function _execOverDatabase() {
-                return _ref2.apply(this, arguments);
+                return _ref3.apply(this, arguments);
             }
 
             return _execOverDatabase;
@@ -294,9 +294,9 @@ var RxQuery = function () {
     }, {
         key: 'toJSON',
         value: function toJSON() {
-            var _this = this;
-
             if (this._toJSON) return this._toJSON;
+
+            var primPath = this.collection.schema.primaryPath;
 
             var json = {
                 selector: this.mquery._conditions
@@ -313,7 +313,7 @@ var RxQuery = function () {
                     if (dirInt == -1) dir = 'desc';
                     var pushMe = {};
                     // TODO run primary-swap somewhere else
-                    if (fieldName == _this.collection.schema.primaryPath) fieldName = '_id';
+                    if (fieldName == primPath) fieldName = '_id';
 
                     pushMe[fieldName] = dir;
                     sortArray.push(pushMe);
@@ -321,7 +321,10 @@ var RxQuery = function () {
                 json.sort = sortArray;
             } else {
                 // sort by primaryKey as default
-                json.sort = [_defineProperty({}, this.collection.schema.primaryPath, 'asc')];
+                // (always use _id because there is no primary-swap on json.sort)
+                json.sort = [{
+                    _id: 'asc'
+                }];
             }
 
             if (options.limit) {
@@ -339,14 +342,18 @@ var RxQuery = function () {
             if (!json.selector.language) json.selector.language = {};
             json.selector.language.$ne = 'query';
 
-            // primary swap
-            if (this.collection.schema.primaryPath && json.selector[this.collection.schema.primaryPath]) {
-                var primPath = this.collection.schema.primaryPath;
+            // strip empty selectors
+            Object.entries(json.selector).forEach(function (entry) {
+                var key = entry[0];
+                var select = entry[1];
+                if ((typeof select === 'undefined' ? 'undefined' : _typeof(select)) === 'object' && Object.keys(select) == 0) delete json.selector[key];
+            });
 
+            // primary swap
+            if (primPath != '_id' && json.selector[primPath]) {
                 // selector
                 json.selector._id = json.selector[primPath];
-
-                if (primPath !== '_id' || Object.keys(json.selector[primPath]).length == 0) delete json.selector[primPath];
+                delete json.selector[primPath];
             }
 
             this._toJSON = json;
@@ -511,7 +518,7 @@ var RxQuery = function () {
     }, {
         key: '$',
         get: function get() {
-            var _this2 = this;
+            var _this = this;
 
             if (!this._observable$) {
 
@@ -523,7 +530,7 @@ var RxQuery = function () {
                                 switch (_context5.prev = _context5.next) {
                                     case 0:
                                         _context5.next = 2;
-                                        return _this2._ensureEqual();
+                                        return _this._ensureEqual();
 
                                     case 2:
                                         hasChanged = _context5.sent;
@@ -543,10 +550,10 @@ var RxQuery = function () {
                                         return _context5.stop();
                                 }
                             }
-                        }, _callee5, _this2);
+                        }, _callee5, _this);
                     }));
 
-                    return function (_x2) {
+                    return function (_x) {
                         return _ref6.apply(this, arguments);
                     };
                 }()).filter(function (results) {
@@ -561,17 +568,17 @@ var RxQuery = function () {
                             while (1) {
                                 switch (_context6.prev = _context6.next) {
                                     case 0:
-                                        return _context6.abrupt('return', _this2._ensureEqual());
+                                        return _context6.abrupt('return', _this._ensureEqual());
 
                                     case 1:
                                     case 'end':
                                         return _context6.stop();
                                 }
                             }
-                        }, _callee6, _this2);
+                        }, _callee6, _this);
                     }));
 
-                    return function (_x3) {
+                    return function (_x2) {
                         return _ref7.apply(this, arguments);
                     };
                 }()).filter(function () {
@@ -581,7 +588,7 @@ var RxQuery = function () {
                 this._observable$ = util.Rx.Observable.merge(res$, changeEvents$).filter(function (x) {
                     return x != null;
                 }).map(function (results) {
-                    if (_this2.op != 'findOne') return results;else if (results.length == 0) return null;else return results[0];
+                    if (_this.op != 'findOne') return results;else if (results.length == 0) return null;else return results[0];
                 });
             }
             return this._observable$;
@@ -609,11 +616,8 @@ var protoMerge = function protoMerge(rxQueryProto, mQueryProto) {
 };
 
 var protoMerged = false;
-function create(op) {
-    var queryObj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultQuery;
-    var collection = arguments[2];
-
-    if ((typeof queryObj === 'undefined' ? 'undefined' : _typeof(queryObj)) !== 'object') throw new TypeError('query must be an object');
+function create(op, queryObj, collection) {
+    if (queryObj && (typeof queryObj === 'undefined' ? 'undefined' : _typeof(queryObj)) !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
     var ret = new RxQuery(op, queryObj, collection);

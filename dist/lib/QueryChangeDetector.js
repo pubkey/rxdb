@@ -133,8 +133,8 @@ var QueryChangeDetector = function () {
             var _sortFieldChanged = null;
             var sortFieldChanged = function sortFieldChanged() {
                 if (_sortFieldChanged === null) {
-                    var docBefore = results.find(function (doc) {
-                        return doc[_this2.primaryKey] != docData[_this2.primaryKey];
+                    var docBefore = resultsData.find(function (doc) {
+                        return doc[_this2.primaryKey] == docData[_this2.primaryKey];
                     });
                     _sortFieldChanged = _this2._sortFieldChanged(docBefore, docData);
                 }
@@ -190,10 +190,12 @@ var QueryChangeDetector = function () {
                 if (!options.skip && !options.limit && wasDocInResults && doesMatchNow) {
                     // DEBUG && this._debugMessage('U2', docData);
 
-                    results = results.filter(function (doc) {
-                        return doc[_this2.primaryKey] != docData[_this2.primaryKey];
+                    // replace but make sure its the same position
+                    var wasDoc = results.find(function (doc) {
+                        return doc[_this2.primaryKey] == docData[_this2.primaryKey];
                     });
-                    results.push(docData);
+                    var i = results.indexOf(wasDoc);
+                    results[i] = docData;
 
                     if (sortFieldChanged()) {
                         DEBUG && this._debugMessage('U2 - resort', docData);
