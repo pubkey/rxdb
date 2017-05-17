@@ -42,11 +42,11 @@
     "pouchdb-adapter-idb": "^6.2.0",
     "pouchdb-adapter-localstorage": "^6.2.0",
     "pouchdb-replication": "^6.2.0",
-    "pouchdb-server": "^2.3.6",
+    "pouchdb-server": "^2.3.7",
     "random-int": "1.0.0",
     "regenerator": "0.9.7",
-    "roboto-npm-webfont": "0.0.2",
-    "rxjs": "^5.3.0",
+    "roboto-npm-webfont": "0.0.3",
+    "rxjs": "^5.4.0",
     "zone.js": "^0.8.9"
   },
   "devDependencies": {
@@ -69,7 +69,7 @@
     "less": "2.7.2",
     "less-loader": "^4.0.3",
     "npm-run-all": "4.0.2",
-    "postcss-cli": "^3.2.0",
+    "postcss-cli": "^4.0.0",
     "raw-loader": "0.5.1",
     "rimraf": "^2.6.1",
     "style-loader": "^0.17.0",
