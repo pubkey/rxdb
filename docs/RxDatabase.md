@@ -8,7 +8,7 @@ The database is created by the asynchronous .create()-function of the main RxDB-
 
 ```javascript
 const db = await RxDB.create({
-  name: 'heroesDB',           // <- name
+  name: 'heroesdb',           // <- name
   adapter: 'websql',          // <- storage-adapter
   password: 'myPassword',     // <- password (optional)
   multiInstance: true         // <- multiInstance (default: true)
