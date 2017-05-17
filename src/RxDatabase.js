@@ -43,7 +43,7 @@ export class RxDatabase {
         // rx
         this.subject = new util.Rx.Subject();
         this.observable$ = this.subject.asObservable()
-            .filter(cEvent => cEvent.constructor.name == 'RxChangeEvent');
+            .filter(cEvent => RxChangeEvent.isInstanceOf(cEvent));
 
         // create internal collections
         // - admin-collection
@@ -202,7 +202,7 @@ export class RxDatabase {
         if (!args.schema)
             throw new Error(`collection(${args.name}): schema is missing`);
 
-        if (args.schema.constructor.name != 'RxSchema')
+        if (!RxSchema.isInstanceOf(args.schema))
             args.schema = RxSchema.create(args.schema);
 
         const internalPrimary = this._collectionNamePrimary(args.name, args.schema);

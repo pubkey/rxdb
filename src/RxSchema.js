@@ -472,3 +472,7 @@ export function create(jsonID, doCheck = true) {
     if (doCheck) checkSchema(jsonID);
     return new RxSchema(fillWithDefaults(jsonID));
 }
+
+export function isInstanceOf(obj) {
+    return obj instanceof RxSchema;
+}

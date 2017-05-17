@@ -78,3 +78,8 @@ export function create(op, database, collection, doc, value) {
     if (value) data.v = value;
     return new RxChangeEvent(data);
 }
+
+
+export function isInstanceOf(obj) {
+    return obj instanceof RxChangeEvent;
+}
