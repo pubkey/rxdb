@@ -1,3 +1,9 @@
+## 4.0.2 (May 17, 2017)
+
+Bugfixes:
+  - Ensure es6-build does not contain es7-features
+  - Ensure everything works after using UglifyJs
+
 ## 4.0.1 (May 17, 2017)
 
 Bugfixes:
