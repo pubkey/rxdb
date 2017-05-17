@@ -4,9 +4,25 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = require('babel-runtime/helpers/typeof');
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _typeof3 = _interopRequireDefault(_typeof2);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.canIUse = canIUse;
 exports.create = create;
@@ -15,11 +31,9 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS
@@ -29,7 +43,7 @@ var RxBroadcastChannel = function () {
     function RxBroadcastChannel(database, name) {
         var _this = this;
 
-        _classCallCheck(this, RxBroadcastChannel);
+        (0, _classCallCheck3['default'])(this, RxBroadcastChannel);
 
         this.name = name;
         this.database = database;
@@ -53,11 +67,11 @@ var RxBroadcastChannel = function () {
      */
 
 
-    _createClass(RxBroadcastChannel, [{
+    (0, _createClass3['default'])(RxBroadcastChannel, [{
         key: 'write',
         value: function () {
-            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(type, data) {
-                return regeneratorRuntime.wrap(function _callee$(_context) {
+            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(type, data) {
+                return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -89,7 +103,6 @@ var RxBroadcastChannel = function () {
             this.bc.close();
         }
     }]);
-
     return RxBroadcastChannel;
 }();
 
@@ -100,7 +113,7 @@ var RxBroadcastChannel = function () {
 
 
 function canIUse() {
-    if ((typeof window === 'undefined' ? 'undefined' : _typeof(window)) === 'object' && window.BroadcastChannel && typeof window.BroadcastChannel === 'function' && typeof window.BroadcastChannel.prototype.postMessage === 'function' && typeof window.BroadcastChannel.prototype.close === 'function') return true;
+    if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3['default'])(window)) === 'object' && window.BroadcastChannel && typeof window.BroadcastChannel === 'function' && typeof window.BroadcastChannel.prototype.postMessage === 'function' && typeof window.BroadcastChannel.prototype.close === 'function') return true;
     return false;
 }
 

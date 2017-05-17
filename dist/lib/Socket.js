@@ -5,12 +5,26 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PULL_TIME = exports.EVENT_TTL = exports.create = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref6 = _asyncToGenerator(regeneratorRuntime.mark(function _callee6(database) {
+    var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(database) {
         var socket;
-        return regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return _regenerator2['default'].wrap(function _callee6$(_context6) {
             while (1) {
                 switch (_context6.prev = _context6.next) {
                     case 0:
@@ -50,18 +64,16 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var EVENT_TTL = 5000; // after this age, events will be deleted
 var PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
 var Socket = function () {
     function Socket(database) {
-        _classCallCheck(this, Socket);
+        (0, _classCallCheck3['default'])(this, Socket);
 
         this.database = database;
         this.token = database.token;
@@ -76,14 +88,14 @@ var Socket = function () {
         this.messages$ = new util.Rx.Subject();
     }
 
-    _createClass(Socket, [{
+    (0, _createClass3['default'])(Socket, [{
         key: 'prepare',
         value: function () {
-            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
                 var _this = this;
 
                 var autoPull;
-                return regeneratorRuntime.wrap(function _callee$(_context) {
+                return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -135,9 +147,9 @@ var Socket = function () {
     }, {
         key: 'write',
         value: function () {
-            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(changeEvent) {
+            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(changeEvent) {
                 var socketDoc;
-                return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
@@ -187,9 +199,9 @@ var Socket = function () {
     }, {
         key: 'fetchDocs',
         value: function () {
-            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
                 var result;
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
@@ -221,8 +233,8 @@ var Socket = function () {
     }, {
         key: 'deleteDoc',
         value: function () {
-            var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(doc) {
-                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4(doc) {
+                return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
@@ -261,11 +273,11 @@ var Socket = function () {
     }, {
         key: 'pull',
         value: function () {
-            var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5() {
+            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5() {
                 var _this2 = this;
 
                 var minTime, docs, maxAge, delDocs;
-                return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
@@ -373,7 +385,6 @@ var Socket = function () {
             return this.messages$.asObservable();
         }
     }]);
-
     return Socket;
 }();
 

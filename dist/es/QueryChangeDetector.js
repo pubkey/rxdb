@@ -1,3 +1,4 @@
+import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 /**
  * if a query is observed and a changeEvent comes in,
  * the QueryChangeDetector tries to execute the changeEvent-delta on the exisiting query-results
@@ -11,12 +12,13 @@ import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
 import clone from 'clone';
 import objectPath from 'object-path';
 
-let DEBUG = false;
-let ENABLED = false;
+var DEBUG = false;
+var ENABLED = false;
 
-class QueryChangeDetector {
+var QueryChangeDetector = function () {
+    function QueryChangeDetector(query) {
+        _classCallCheck(this, QueryChangeDetector);
 
-    constructor(query) {
         this.query = query;
         this.primaryKey = this.query.collection.schema.primaryPath;
     }
@@ -25,18 +27,22 @@ class QueryChangeDetector {
      * @param {ChangeEvent[]} changeEvents
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
-    runChangeDetection(changeEvents) {
+
+
+    QueryChangeDetector.prototype.runChangeDetection = function runChangeDetection(changeEvents) {
+        var _this = this;
+
         if (changeEvents.length == 0) return false;
 
         if (!ENABLED) return true;
 
-        const options = this.query.toJSON();
-        let resultsData = this.query._resultsData;
+        var options = this.query.toJSON();
+        var resultsData = this.query._resultsData;
 
-        let changed = false;
+        var changed = false;
 
-        const found = changeEvents.find(changeEvent => {
-            const res = this.handleSingleChange(resultsData, changeEvent);
+        var found = changeEvents.find(function (changeEvent) {
+            var res = _this.handleSingleChange(resultsData, changeEvent);
             if (Array.isArray(res)) {
                 changed = true;
                 resultsData = res;
@@ -45,17 +51,20 @@ class QueryChangeDetector {
         });
         if (found) return true;
         if (!changed) return false;else return resultsData;
-    }
+    };
 
-    _debugMessage(key, changeEventData = {}, title = 'optimized') {
+    QueryChangeDetector.prototype._debugMessage = function _debugMessage(key) {
+        var changeEventData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        var title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'optimized';
+
         console.dir({
             name: 'QueryChangeDetector',
-            title,
+            title: title,
             query: this.query.toString(),
-            key,
-            changeEventData
+            key: key,
+            changeEventData: changeEventData
         });
-    }
+    };
 
     /**
      * handle a single ChangeEvent and try to calculate the new results
@@ -63,15 +72,18 @@ class QueryChangeDetector {
      * @param {ChangeEvent} changeEvent
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
-    handleSingleChange(resultsData, changeEvent) {
 
-        let results = resultsData.slice(0); // copy to stay immutable
-        const options = this.query.toJSON();
-        const docData = changeEvent.data.v;
-        const wasDocInResults = this._isDocInResultData(docData, resultsData);
-        const doesMatchNow = this.doesDocMatchQuery(docData);
-        const isFilled = !options.limit || options.limit && resultsData.length >= options.limit;
-        const limitAndFilled = options.limit && resultsData.length >= options.limit;
+
+    QueryChangeDetector.prototype.handleSingleChange = function handleSingleChange(resultsData, changeEvent) {
+        var _this2 = this;
+
+        var results = resultsData.slice(0); // copy to stay immutable
+        var options = this.query.toJSON();
+        var docData = changeEvent.data.v;
+        var wasDocInResults = this._isDocInResultData(docData, resultsData);
+        var doesMatchNow = this.doesDocMatchQuery(docData);
+        var isFilled = !options.limit || options.limit && resultsData.length >= options.limit;
+        var limitAndFilled = options.limit && resultsData.length >= options.limit;
 
         if (DEBUG) {
             console.log('!!!:!!!:   handleSingleChange()'); // TODO this should not be an error
@@ -83,23 +95,25 @@ class QueryChangeDetector {
             console.log('isFilled: ' + isFilled);
         }
 
-        let _sortAfter = null;
-        const sortAfter = () => {
-            if (_sortAfter === null) _sortAfter = this._isSortedBefore(results[results.length - 1], docData);
+        var _sortAfter = null;
+        var sortAfter = function sortAfter() {
+            if (_sortAfter === null) _sortAfter = _this2._isSortedBefore(results[results.length - 1], docData);
             return _sortAfter;
         };
 
-        let _sortBefore = null;
-        const sortBefore = () => {
-            if (_sortBefore === null) _sortBefore = this._isSortedBefore(docData, results[0]);
+        var _sortBefore = null;
+        var sortBefore = function sortBefore() {
+            if (_sortBefore === null) _sortBefore = _this2._isSortedBefore(docData, results[0]);
             return _sortBefore;
         };
 
-        let _sortFieldChanged = null;
-        const sortFieldChanged = () => {
+        var _sortFieldChanged = null;
+        var sortFieldChanged = function sortFieldChanged() {
             if (_sortFieldChanged === null) {
-                const docBefore = resultsData.find(doc => doc[this.primaryKey] == docData[this.primaryKey]);
-                _sortFieldChanged = this._sortFieldChanged(docBefore, docData);
+                var docBefore = resultsData.find(function (doc) {
+                    return doc[_this2.primaryKey] == docData[_this2.primaryKey];
+                });
+                _sortFieldChanged = _this2._sortFieldChanged(docBefore, docData);
             }
             return _sortFieldChanged;
         };
@@ -122,13 +136,17 @@ class QueryChangeDetector {
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
                 DEBUG && this._debugMessage('R3', docData);
-                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                results = results.filter(function (doc) {
+                    return doc[_this2.primaryKey] != docData[_this2.primaryKey];
+                });
                 return results;
             }
             // R3.1 was in results and got removed, no limit, no skip
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
                 DEBUG && this._debugMessage('R3.1', docData);
-                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                results = results.filter(function (doc) {
+                    return doc[_this2.primaryKey] != docData[_this2.primaryKey];
+                });
                 return results;
             }
 
@@ -150,8 +168,10 @@ class QueryChangeDetector {
                 // DEBUG && this._debugMessage('U2', docData);
 
                 // replace but make sure its the same position
-                const wasDoc = results.find(doc => doc[this.primaryKey] == docData[this.primaryKey]);
-                const i = results.indexOf(wasDoc);
+                var wasDoc = results.find(function (doc) {
+                    return doc[_this2.primaryKey] == docData[_this2.primaryKey];
+                });
+                var i = results.indexOf(wasDoc);
                 results[i] = docData;
 
                 if (sortFieldChanged()) {
@@ -171,7 +191,7 @@ class QueryChangeDetector {
                 //    console.log('U3: preSort:');
                 //    console.dir(results);
 
-                const sorted = this._resortDocData(results);
+                var sorted = this._resortDocData(results);
                 //        console.log('U3: postSort:');
                 //            console.dir(sorted);
                 return sorted;
@@ -180,35 +200,41 @@ class QueryChangeDetector {
 
         // if no optimisation-algo matches, return mustReExec:true
         return true;
-    }
+    };
 
     /**
      * check if the document matches the query
      * @param {object} docData
      * @return {boolean}
      */
-    doesDocMatchQuery(docData) {
+
+
+    QueryChangeDetector.prototype.doesDocMatchQuery = function doesDocMatchQuery(docData) {
         docData = this.query.collection.schema.swapPrimaryToId(docData);
-        const inMemoryFields = Object.keys(this.query.toJSON().selector);
-        const retDocs = filterInMemoryFields([{
+        var inMemoryFields = Object.keys(this.query.toJSON().selector);
+        var retDocs = filterInMemoryFields([{
             doc: docData
         }], {
             selector: massageSelector(this.query.toJSON().selector)
         }, inMemoryFields);
-        const ret = retDocs.length == 1;
+        var ret = retDocs.length == 1;
         return ret;
-    }
+    };
 
     /**
      * check if the document exists in the results data
      * @param {object} docData
      * @param {object[]} resultData
      */
-    _isDocInResultData(docData, resultData) {
-        const primaryPath = this.query.collection.schema.primaryPath;
-        const first = resultData.find(doc => doc[primaryPath] == docData[primaryPath]);
+
+
+    QueryChangeDetector.prototype._isDocInResultData = function _isDocInResultData(docData, resultData) {
+        var primaryPath = this.query.collection.schema.primaryPath;
+        var first = resultData.find(function (doc) {
+            return doc[primaryPath] == docData[primaryPath];
+        });
         return !!first;
-    }
+    };
 
     /**
      * checks if the sort-relevant fields have changed
@@ -216,21 +242,25 @@ class QueryChangeDetector {
      * @param  {object} docDataAfter
      * @return {boolean}
      */
-    _sortFieldChanged(docDataBefore, docDataAfter) {
-        const options = this.query.toJSON();
-        const sortFields = options.sort.map(sortObj => Object.keys(sortObj).pop());
 
-        let changed = false;
-        sortFields.find(field => {
-            const beforeData = objectPath.get(docDataBefore, field);
-            const afterData = objectPath.get(docDataAfter, field);
+
+    QueryChangeDetector.prototype._sortFieldChanged = function _sortFieldChanged(docDataBefore, docDataAfter) {
+        var options = this.query.toJSON();
+        var sortFields = options.sort.map(function (sortObj) {
+            return Object.keys(sortObj).pop();
+        });
+
+        var changed = false;
+        sortFields.find(function (field) {
+            var beforeData = objectPath.get(docDataBefore, field);
+            var afterData = objectPath.get(docDataAfter, field);
             if (beforeData != afterData) {
                 changed = true;
                 return true;
             } else return false;
         });
         return changed;
-    }
+    };
 
     /**
      * checks if the newDocLeft would be placed before docDataRight
@@ -239,55 +269,71 @@ class QueryChangeDetector {
      * @param  {Object} docDataIs
      * @return {boolean} true if before, false if after
      */
-    _isSortedBefore(docDataLeft, docDataRight) {
-        const options = this.query.toJSON();
-        const inMemoryFields = Object.keys(this.query.toJSON().selector);
-        const swapedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
-        const swapedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
-        const rows = [swapedLeft, swapedRight].map(doc => ({
-            id: doc._id,
-            doc
-        }));
+
+
+    QueryChangeDetector.prototype._isSortedBefore = function _isSortedBefore(docDataLeft, docDataRight) {
+        var options = this.query.toJSON();
+        var inMemoryFields = Object.keys(this.query.toJSON().selector);
+        var swapedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
+        var swapedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
+        var rows = [swapedLeft, swapedRight].map(function (doc) {
+            return {
+                id: doc._id,
+                doc: doc
+            };
+        });
 
         // TODO use createFieldSorter
-        const sortedRows = filterInMemoryFields(rows, {
+        var sortedRows = filterInMemoryFields(rows, {
             selector: massageSelector(this.query.toJSON().selector),
             sort: options.sort
         }, inMemoryFields);
         return sortedRows[0].id == swapedLeft._id;
-    }
+    };
 
     /**
      * reruns the sort on the given resultsData
      * @param  {object[]} resultsData
      * @return {object[]}
      */
-    _resortDocData(resultsData) {
-        const rows = resultsData.map(doc => {
+
+
+    QueryChangeDetector.prototype._resortDocData = function _resortDocData(resultsData) {
+        var _this3 = this;
+
+        var rows = resultsData.map(function (doc) {
             return {
-                doc: this.query.collection.schema.swapPrimaryToId(doc)
+                doc: _this3.query.collection.schema.swapPrimaryToId(doc)
             };
         });
-        const options = this.query.toJSON();
-        const inMemoryFields = Object.keys(this.query.toJSON().selector);
+        var options = this.query.toJSON();
+        var inMemoryFields = Object.keys(this.query.toJSON().selector);
 
         // TODO use createFieldSorter
-        const sortedRows = filterInMemoryFields(rows, {
+        var sortedRows = filterInMemoryFields(rows, {
             selector: massageSelector(this.query.toJSON().selector),
             sort: options.sort
         }, inMemoryFields);
-        const sortedDocs = sortedRows.map(row => row.doc).map(doc => this.query.collection.schema.swapIdToPrimary(doc));
+        var sortedDocs = sortedRows.map(function (row) {
+            return row.doc;
+        }).map(function (doc) {
+            return _this3.query.collection.schema.swapIdToPrimary(doc);
+        });
         return sortedDocs;
-    }
-}
+    };
+
+    return QueryChangeDetector;
+}();
 
 export function enableDebugging() {
     console.log('QueryChangeDetector.enableDebugging()');
     DEBUG = true;
 };
 
-export function enable(set = true) {
-    console.log(`QueryChangeDetector.enableDebugging(${set})`);
+export function enable() {
+    var set = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+    console.log('QueryChangeDetector.enableDebugging(' + set + ')');
     ENABLED = set;
 }
 
@@ -296,6 +342,6 @@ export function enable(set = true) {
  * @return {QueryChangeDetector}
  */
 export function create(query) {
-    const ret = new QueryChangeDetector(query);
+    var ret = new QueryChangeDetector(query);
     return ret;
 }

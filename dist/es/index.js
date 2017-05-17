@@ -1,5 +1,5 @@
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
+import _regeneratorRuntime from 'babel-runtime/regenerator';
+import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import * as RxDatabase from './RxDatabase';
 import * as RxSchema from './RxSchema';
 import * as QueryChangeDetector from './QueryChangeDetector';
@@ -14,18 +14,29 @@ import PouchDB from './PouchDB';
  * @param  {boolean} multiInstance if true, multiInstance-handling will be done
  * @return {Promise<Database>}
  */
-export let create = (() => {
-    var _ref = _asyncToGenerator(function* (args) {
-        return RxDatabase.create(args);
-    });
+export var create = function () {
+    var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee(args) {
+        return _regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+                switch (_context.prev = _context.next) {
+                    case 0:
+                        return _context.abrupt('return', RxDatabase.create(args));
+
+                    case 1:
+                    case 'end':
+                        return _context.stop();
+                }
+            }
+        }, _callee, this);
+    }));
 
     return function create(_x) {
         return _ref.apply(this, arguments);
     };
-})();
+}();
 
 export function plugin(mod) {
-    if (typeof mod === 'object' && mod.default) mod = mod.default;
+    if (typeof mod === 'object' && mod['default']) mod = mod['default'];
     PouchDB.plugin(mod);
 }
 

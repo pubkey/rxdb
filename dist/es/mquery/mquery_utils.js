@@ -14,9 +14,9 @@ import clone from 'clone';
  */
 
 export function merge(to, from) {
-    const keys = Object.keys(from);
-    let i = keys.length;
-    let key;
+    var keys = Object.keys(from);
+    var i = keys.length;
+    var key = void 0;
 
     while (i--) {
         key = keys[i];
@@ -34,9 +34,9 @@ export function merge(to, from) {
  * @api private
  */
 export function mergeClone(to, from) {
-    const keys = Object.keys(from);
-    let i = keys.length;
-    let key;
+    var keys = Object.keys(from);
+    var i = keys.length;
+    var key = void 0;
 
     while (i--) {
         key = keys[i];
@@ -62,7 +62,7 @@ export function mergeClone(to, from) {
  * Object.prototype.toString.call helper
  */
 
-const _toString = Object.prototype.toString;
+var _toString = Object.prototype.toString;
 export function toString(arg) {
     return _toString.call(arg);
 };
@@ -78,7 +78,7 @@ export function isObject(arg) {
     return '[object Object]' == toString(arg);
 };
 
-export const create = Object.create;
+export var create = Object.create;
 
 /**
  * inheritance

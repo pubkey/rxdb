@@ -5,17 +5,35 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxSchema = exports.create = exports.RxDatabase = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
+
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref9 = _asyncToGenerator(regeneratorRuntime.mark(function _callee9(_ref10) {
-        var name = _ref10.name,
-            adapter = _ref10.adapter,
-            password = _ref10.password,
-            _ref10$multiInstance = _ref10.multiInstance,
-            multiInstance = _ref10$multiInstance === undefined ? true : _ref10$multiInstance;
+    var _ref10 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee9(_ref9) {
+        var name = _ref9.name,
+            adapter = _ref9.adapter,
+            password = _ref9.password,
+            _ref9$multiInstance = _ref9.multiInstance,
+            multiInstance = _ref9$multiInstance === undefined ? true : _ref9$multiInstance;
         var db;
-        return regeneratorRuntime.wrap(function _callee9$(_context9) {
+        return _regenerator2['default'].wrap(function _callee9$(_context9) {
             while (1) {
                 switch (_context9.prev = _context9.next) {
                     case 0:
@@ -28,7 +46,7 @@ var create = exports.create = function () {
                             break;
                         }
 
-                        if (!(!_PouchDB2.default.adapters || !_PouchDB2.default.adapters[adapter])) {
+                        if (!(!_PouchDB2['default'].adapters || !_PouchDB2['default'].adapters[adapter])) {
                             _context9.next = 4;
                             break;
                         }
@@ -42,7 +60,7 @@ var create = exports.create = function () {
                     case 6:
                         util.isLevelDown(adapter);
 
-                        if (!(!_PouchDB2.default.adapters || !_PouchDB2.default.adapters.leveldb)) {
+                        if (!(!_PouchDB2['default'].adapters || !_PouchDB2['default'].adapters.leveldb)) {
                             _context9.next = 9;
                             break;
                         }
@@ -82,7 +100,7 @@ var create = exports.create = function () {
     }));
 
     return function create(_x9) {
-        return _ref9.apply(this, arguments);
+        return _ref10.apply(this, arguments);
     };
 }();
 
@@ -120,15 +138,9 @@ var _LeaderElector = require('./LeaderElector');
 
 var LeaderElector = _interopRequireWildcard(_LeaderElector);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var SETTINGS = {
     minPassLength: 8
@@ -136,14 +148,14 @@ var SETTINGS = {
 
 var RxDatabase = exports.RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance) {
-        _classCallCheck(this, RxDatabase);
+        (0, _classCallCheck3['default'])(this, RxDatabase);
 
         this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
 
-        this.token = (0, _randomToken2.default)(10);
+        this.token = (0, _randomToken2['default'])(10);
 
         this.subs = [];
         this.destroyed = false;
@@ -161,14 +173,14 @@ var RxDatabase = exports.RxDatabase = function () {
      */
 
 
-    _createClass(RxDatabase, [{
+    (0, _createClass3['default'])(RxDatabase, [{
         key: 'prepare',
         value: function () {
-            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
                 var _this = this;
 
                 var pwHashDoc;
-                return regeneratorRuntime.wrap(function _callee$(_context) {
+                return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -176,7 +188,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 // rx
                                 this.subject = new util.Rx.Subject();
                                 this.observable$ = this.subject.asObservable().filter(function (cEvent) {
-                                    return cEvent.constructor.name == 'RxChangeEvent';
+                                    return RxChangeEvent.isInstanceOf(cEvent);
                                 });
 
                                 // create internal collections
@@ -301,13 +313,13 @@ var RxDatabase = exports.RxDatabase = function () {
             var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
             var pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
-            return new _PouchDB2.default(pouchLocation, this._adapterObj, pouchSettings);
+            return new _PouchDB2['default'](pouchLocation, this._adapterObj, pouchSettings);
         }
     }, {
         key: 'waitForLeadership',
         value: function () {
-            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
-                return regeneratorRuntime.wrap(function _callee2$(_context2) {
+            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
@@ -338,8 +350,8 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'writeToSocket',
         value: function () {
-            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(changeEvent) {
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3(changeEvent) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
@@ -414,9 +426,9 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'removeCollectionDoc',
         value: function () {
-            var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(name, schema) {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4(name, schema) {
                 var docId, doc;
-                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+                return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
@@ -452,11 +464,11 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'collection',
         value: function () {
-            var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(args) {
+            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(args) {
                 var _this2 = this;
 
                 var internalPrimary, schemaHash, collectionDoc, collection, cEvent;
-                return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
@@ -487,7 +499,7 @@ var RxDatabase = exports.RxDatabase = function () {
 
                             case 7:
 
-                                if (args.schema.constructor.name != 'RxSchema') args.schema = RxSchema.create(args.schema);
+                                if (!RxSchema.isInstanceOf(args.schema)) args.schema = RxSchema.create(args.schema);
 
                                 internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
@@ -601,13 +613,13 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'dump',
         value: function () {
-            var _ref6 = _asyncToGenerator(regeneratorRuntime.mark(function _callee6() {
+            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
                 var _this3 = this;
 
                 var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
                 var collections = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
                 var json, useCollections;
-                return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
                             case 0:
@@ -664,10 +676,10 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'importDump',
         value: function () {
-            var _ref7 = _asyncToGenerator(regeneratorRuntime.mark(function _callee7(dump) {
+            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(dump) {
                 var _this4 = this;
 
-                return regeneratorRuntime.wrap(function _callee7$(_context7) {
+                return _regenerator2['default'].wrap(function _callee7$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
                             case 0:
@@ -694,10 +706,10 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref8 = _asyncToGenerator(regeneratorRuntime.mark(function _callee8() {
+            var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8() {
                 var _this5 = this;
 
-                return regeneratorRuntime.wrap(function _callee8$(_context8) {
+                return _regenerator2['default'].wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
@@ -763,7 +775,6 @@ var RxDatabase = exports.RxDatabase = function () {
             return this.observable$;
         }
     }]);
-
     return RxDatabase;
 }();
 
@@ -779,7 +790,7 @@ function properties() {
         var pseudoInstance = new RxDatabase();
         var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
         var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-        _properties = [].concat(_toConsumableArray(ownProperties), _toConsumableArray(prototypeProperties));
+        _properties = [].concat((0, _toConsumableArray3['default'])(ownProperties), (0, _toConsumableArray3['default'])(prototypeProperties));
     }
     return _properties;
 }

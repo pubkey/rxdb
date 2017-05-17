@@ -5,7 +5,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.waitUntil = exports.promiseWait = exports.assertThrowsAsync = exports.Rx = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
 /**
  * async version of assert.throws
@@ -15,11 +25,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  * @return {Promise}       [description]
  */
 var assertThrowsAsync = exports.assertThrowsAsync = function () {
-    var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(test) {
+    var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(test) {
         var error = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Error;
         var contains = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
         var shouldErrorName;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
+        return _regenerator2['default'].wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
@@ -65,7 +75,7 @@ var assertThrowsAsync = exports.assertThrowsAsync = function () {
         }, _callee, this, [[1, 6]]);
     }));
 
-    return function assertThrowsAsync(_x) {
+    return function assertThrowsAsync(_x3) {
         return _ref.apply(this, arguments);
     };
 }();
@@ -84,9 +94,9 @@ var assertThrowsAsync = exports.assertThrowsAsync = function () {
  * @return {Promise}
  */
 var promiseWait = exports.promiseWait = function () {
-    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
+    var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
         var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regenerator2['default'].wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
@@ -120,9 +130,9 @@ var promiseWait = exports.promiseWait = function () {
  * @return {Promise}
  */
 var waitUntil = exports.waitUntil = function () {
-    var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(fun) {
+    var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3(fun) {
         var ok;
-        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+        return _regenerator2['default'].wrap(function _callee3$(_context3) {
             while (1) {
                 switch (_context3.prev = _context3.next) {
                     case 0:
@@ -232,17 +242,9 @@ var _encUtf = require('crypto-js/enc-utf8');
 
 var crypto_enc = _interopRequireWildcard(_encUtf);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * this contains a mapping to basic dependencies
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            * which should be easy to change
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            */
-
-// rxjs cherry-pick
-
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var Rx = exports.Rx = {
     Observable: _Observable.Observable,
@@ -251,6 +253,14 @@ var Rx = exports.Rx = {
 };
 
 // crypto-js
+
+
+// rxjs cherry-pick
+/**
+ * this contains a mapping to basic dependencies
+ * which should be easy to change
+ */
+
 function encrypt(value, password) {
     var encrypted = crypto_AES.encrypt(value, password);
     return encrypted.toString();
@@ -300,7 +310,7 @@ function hash(obj) {
  * @return {string}
  */
 function generate_id() {
-    return (0, _randomToken2.default)(10) + ':' + new Date().getTime();
+    return (0, _randomToken2['default'])(10) + ':' + new Date().getTime();
 }function promiseWaitResolveable() {
     var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
@@ -426,14 +436,14 @@ function sortObject(obj) {
         return obj.sort(function (a, b) {
             if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
 
-            if ((typeof a === 'undefined' ? 'undefined' : _typeof(a)) === 'object') return 1;else return -1;
+            if ((typeof a === 'undefined' ? 'undefined' : (0, _typeof3['default'])(a)) === 'object') return 1;else return -1;
         }).map(function (i) {
             return sortObject(i);
         });
     }
 
     // object
-    if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
+    if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(obj)) === 'object') {
         var out = {};
         Object.keys(obj).sort(function (a, b) {
             return a.localeCompare(b);

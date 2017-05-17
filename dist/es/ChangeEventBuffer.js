@@ -1,9 +1,15 @@
+import _classCallCheck from "babel-runtime/helpers/classCallCheck";
+
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
  * TODO this could be optimized to only store the last event of one document
  */
-class ChangeEventBuffer {
-    constructor(collection) {
+var ChangeEventBuffer = function () {
+    function ChangeEventBuffer(collection) {
+        var _this = this;
+
+        _classCallCheck(this, ChangeEventBuffer);
+
         this.collection = collection;
         this.subs = [];
         this.limit = 100;
@@ -17,45 +23,47 @@ class ChangeEventBuffer {
         this.counter = 0;
         this.eventCounterMap = new WeakMap();
 
-        this.subs.push(this.collection.$.subscribe(cE => this._handleChangeEvent(cE)));
+        this.subs.push(this.collection.$.subscribe(function (cE) {
+            return _this._handleChangeEvent(cE);
+        }));
     }
 
-    _handleChangeEvent(changeEvent) {
+    ChangeEventBuffer.prototype._handleChangeEvent = function _handleChangeEvent(changeEvent) {
         this.counter++;
         this.buffer.push(changeEvent);
         this.eventCounterMap.set(changeEvent, this.counter);
-        while (this.buffer.length > this.limit) this.buffer.shift();
-    }
+        while (this.buffer.length > this.limit) {
+            this.buffer.shift();
+        }
+    };
 
-    getArrayIndexByPointer(pointer) {
-        const oldestEvent = this.buffer[0];
-        const oldestCounter = this.eventCounterMap.get(oldestEvent);
+    ChangeEventBuffer.prototype.getArrayIndexByPointer = function getArrayIndexByPointer(pointer) {
+        var oldestEvent = this.buffer[0];
+        var oldestCounter = this.eventCounterMap.get(oldestEvent);
 
         if (pointer < oldestCounter) {
-            throw new Error(`
-							pointer lower than lowest cache-pointer
-							- wanted: ${pointer}
-							- oldest: ${oldestCounter}
-							`);
+            throw new Error("\n\t\t\t\t\t\t\tpointer lower than lowest cache-pointer\n\t\t\t\t\t\t\t- wanted: " + pointer + "\n\t\t\t\t\t\t\t- oldest: " + oldestCounter + "\n\t\t\t\t\t\t\t");
         }
 
-        const rest = pointer - oldestCounter;
+        var rest = pointer - oldestCounter;
         return rest;
-    }
+    };
 
-    getFrom(pointer) {
-        let currentIndex = this.getArrayIndexByPointer(pointer);
-        const ret = [];
+    ChangeEventBuffer.prototype.getFrom = function getFrom(pointer) {
+        var currentIndex = this.getArrayIndexByPointer(pointer);
+        var ret = [];
         while (true) {
-            const nextEvent = this.buffer[currentIndex];
+            var nextEvent = this.buffer[currentIndex];
             currentIndex++;
             if (!nextEvent) return ret;else ret.push(nextEvent);
         }
-    }
+    };
 
-    runFrom(pointer, fn) {
-        this.getFrom(pointer).forEach(cE => fn(cE));
-    }
+    ChangeEventBuffer.prototype.runFrom = function runFrom(pointer, fn) {
+        this.getFrom(pointer).forEach(function (cE) {
+            return fn(cE);
+        });
+    };
 
     /**
      * no matter how many operations are done on one document,
@@ -64,18 +72,24 @@ class ChangeEventBuffer {
      * @param {ChangeEvent[]} changeEvents
      * @return {ChangeEvents[]}
      */
-    reduceByLastOfDoc(changeEvents) {
-        const docEventMap = {};
-        changeEvents.forEach(changeEvent => {
+
+
+    ChangeEventBuffer.prototype.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
+        var docEventMap = {};
+        changeEvents.forEach(function (changeEvent) {
             docEventMap[changeEvent.data.doc] = changeEvent;
         });
         return Object.values(docEventMap);
-    }
+    };
 
-    destroy() {
-        this.subs.forEach(sub => sub.unsubscribe());
-    }
-}
+    ChangeEventBuffer.prototype.destroy = function destroy() {
+        this.subs.forEach(function (sub) {
+            return sub.unsubscribe();
+        });
+    };
+
+    return ChangeEventBuffer;
+}();
 
 export function create(collection) {
     return new ChangeEventBuffer(collection);

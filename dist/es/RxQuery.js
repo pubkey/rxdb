@@ -1,5 +1,7 @@
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
+import _regeneratorRuntime from 'babel-runtime/regenerator';
+import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
+import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
+import _createClass from 'babel-runtime/helpers/createClass';
 import deepEqual from 'deep-equal';
 import MQuery from './mquery/mquery';
 import clone from 'clone';
@@ -8,13 +10,15 @@ import * as util from './util';
 import * as RxDocument from './RxDocument';
 import * as QueryChangeDetector from './QueryChangeDetector';
 
-let _queryCount = 0;
-const newQueryID = function () {
+var _queryCount = 0;
+var newQueryID = function newQueryID() {
     return ++_queryCount;
 };
 
-class RxQuery {
-    constructor(op, queryObj, collection) {
+var RxQuery = function () {
+    function RxQuery(op, queryObj, collection) {
+        _classCallCheck(this, RxQuery);
+
         this.op = op;
         this.collection = collection;
         this.id = newQueryID();
@@ -45,30 +49,34 @@ class RxQuery {
         this._execOverDatabaseCount = 0;
     }
 
-    _defaultQuery() {
-        return {
-            [this.collection.schema.primaryPath]: {}
-        };
-    }
+    RxQuery.prototype._defaultQuery = function _defaultQuery() {
+        var _ref;
+
+        return _ref = {}, _ref[this.collection.schema.primaryPath] = {}, _ref;
+    };
 
     // returns a clone of this RxQuery
-    _clone() {
-        const cloned = new RxQuery(this.op, this._defaultQuery(), this.collection);
+
+
+    RxQuery.prototype._clone = function _clone() {
+        var cloned = new RxQuery(this.op, this._defaultQuery(), this.collection);
         cloned.mquery = this.mquery.clone();
         return cloned;
-    }
+    };
 
     /**
      * run this query through the QueryCache
      * @return {RxQuery} can be this or another query with the equal state
      */
-    _tunnelQueryCache() {
-        return this.collection._queryCache.getByQuery(this);
-    }
 
-    toString() {
+
+    RxQuery.prototype._tunnelQueryCache = function _tunnelQueryCache() {
+        return this.collection._queryCache.getByQuery(this);
+    };
+
+    RxQuery.prototype.toString = function toString() {
         if (!this.stringRep) {
-            const stringObj = util.sortObject({
+            var stringObj = util.sortObject({
                 op: this.op,
                 options: this.mquery.options,
                 _conditions: this.mquery._conditions,
@@ -78,155 +86,191 @@ class RxQuery {
             this.stringRep = JSON.stringify(stringObj);
         }
         return this.stringRep;
-    }
+    };
 
     /**
      * ensures that the results of this query is equal to the results which a query over the database would give
      * @return {Promise<boolean>} true if results have changed
      */
-    _ensureEqual() {
-        var _this = this;
 
-        return _asyncToGenerator(function* () {
 
-            if (_this._latestChangeEvent >= _this.collection._changeEventBuffer.counter) return false;
+    RxQuery.prototype._ensureEqual = function () {
+        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+            var ret, resolve, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
+            return _regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                    switch (_context.prev = _context.next) {
+                        case 0:
+                            if (!(this._latestChangeEvent >= this.collection._changeEventBuffer.counter)) {
+                                _context.next = 2;
+                                break;
+                            }
 
-            let ret = false;
+                            return _context.abrupt('return', false);
 
-            // make sure it does not run in parallel
-            yield _this._runningPromise;
+                        case 2:
+                            ret = false;
 
-            // console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
+                            // make sure it does not run in parallel
 
-            let resolve;
-            _this._runningPromise = new Promise(function (res) {
-                resolve = res;
-            });
+                            _context.next = 5;
+                            return this._runningPromise;
 
-            if (!_this._mustReExec) {
-                try {
-                    const missedChangeEvents = _this.collection._changeEventBuffer.getFrom(_this._latestChangeEvent + 1);
-                    // console.dir(missedChangeEvents);
-                    _this._latestChangeEvent = _this.collection._changeEventBuffer.counter;
-                    const runChangeEvents = _this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-                    const changeResult = _this._queryChangeDetector.runChangeDetection(runChangeEvents);
-                    if (!Array.isArray(changeResult) && changeResult) _this._mustReExec = true;
-                    if (Array.isArray(changeResult) && !deepEqual(changeResult, _this._resultsData)) {
-                        ret = true;
-                        _this._setResultData(changeResult);
+                        case 5:
+
+                            // console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
+
+                            resolve = void 0;
+
+                            this._runningPromise = new Promise(function (res) {
+                                resolve = res;
+                            });
+
+                            if (!this._mustReExec) {
+                                try {
+                                    missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+                                    // console.dir(missedChangeEvents);
+
+                                    this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+                                    runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+                                    changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
+
+                                    if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
+                                    if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
+                                        ret = true;
+                                        this._setResultData(changeResult);
+                                    }
+                                } catch (e) {
+                                    console.error('RxQuery()._ensureEqual(): Unexpected Error:');
+                                    console.dir(e);
+                                    this._mustReExec = true;
+                                }
+                            }
+
+                            if (!this._mustReExec) {
+                                _context.next = 15;
+                                break;
+                            }
+
+                            // counter can change while _execOverDatabase() is running
+                            latestAfter = this.collection._changeEventBuffer.counter;
+                            _context.next = 12;
+                            return this._execOverDatabase();
+
+                        case 12:
+                            newResultData = _context.sent;
+
+                            this._latestChangeEvent = latestAfter;
+                            if (!deepEqual(newResultData, this._resultsData)) {
+                                ret = true;
+                                this._setResultData(newResultData);
+                            }
+
+                        case 15:
+
+                            // console.log('_ensureEqual DONE (' + this.toString() + ')');
+
+                            resolve(true);
+                            return _context.abrupt('return', ret);
+
+                        case 17:
+                        case 'end':
+                            return _context.stop();
                     }
-                } catch (e) {
-                    console.error('RxQuery()._ensureEqual(): Unexpected Error:');
-                    console.dir(e);
-                    _this._mustReExec = true;
                 }
-            }
+            }, _callee, this);
+        }));
 
-            if (_this._mustReExec) {
+        function _ensureEqual() {
+            return _ref2.apply(this, arguments);
+        }
 
-                // counter can change while _execOverDatabase() is running
-                const latestAfter = _this.collection._changeEventBuffer.counter;
+        return _ensureEqual;
+    }();
 
-                const newResultData = yield _this._execOverDatabase();
-                _this._latestChangeEvent = latestAfter;
-                if (!deepEqual(newResultData, _this._resultsData)) {
-                    ret = true;
-                    _this._setResultData(newResultData);
-                }
-            }
-
-            // console.log('_ensureEqual DONE (' + this.toString() + ')');
-
-            resolve(true);
-            return ret;
-        })();
-    }
-
-    _setResultData(newResultData) {
+    RxQuery.prototype._setResultData = function _setResultData(newResultData) {
         this._resultsData = newResultData;
-        const newResults = this.collection._createDocuments(this._resultsData);
+        var newResults = this.collection._createDocuments(this._resultsData);
         this._results$.next(newResults);
-    }
+    };
 
     /**
      * executes the query on the database
      * @return {Promise<{}[]>} returns new resultData
      */
-    _execOverDatabase() {
-        var _this2 = this;
 
-        return _asyncToGenerator(function* () {
-            _this2._execOverDatabaseCount++;
-            let docsData, ret;
-            switch (_this2.op) {
-                case 'find':
-                    docsData = yield _this2.collection._pouchFind(_this2);
-                    break;
-                case 'findOne':
-                    docsData = yield _this2.collection._pouchFind(_this2, 1);
-                    break;
-                default:
-                    throw new Error(`RxQuery.exec(): op (${_this2.op}) not known`);
-            }
 
-            _this2._mustReExec = false;
-            return docsData;
-        })();
-    }
+    RxQuery.prototype._execOverDatabase = function () {
+        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+            var docsData, ret;
+            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            this._execOverDatabaseCount++;
+                            docsData = void 0, ret = void 0;
+                            _context2.t0 = this.op;
+                            _context2.next = _context2.t0 === 'find' ? 5 : _context2.t0 === 'findOne' ? 9 : 13;
+                            break;
 
-    get $() {
-        var _this3 = this;
+                        case 5:
+                            _context2.next = 7;
+                            return this.collection._pouchFind(this);
 
-        if (!this._observable$) {
+                        case 7:
+                            docsData = _context2.sent;
+                            return _context2.abrupt('break', 14);
 
-            const res$ = this._results$.mergeMap((() => {
-                var _ref = _asyncToGenerator(function* (results) {
-                    const hasChanged = yield _this3._ensureEqual();
-                    if (hasChanged) return 'WAITFORNEXTEMIT';
-                    return results;
-                });
+                        case 9:
+                            _context2.next = 11;
+                            return this.collection._pouchFind(this, 1);
 
-                return function (_x) {
-                    return _ref.apply(this, arguments);
-                };
-            })()).filter(results => results != 'WAITFORNEXTEMIT').asObservable();
+                        case 11:
+                            docsData = _context2.sent;
+                            return _context2.abrupt('break', 14);
 
-            const changeEvents$ = this.collection.$.filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op)).mergeMap((() => {
-                var _ref2 = _asyncToGenerator(function* (changeEvent) {
-                    return _this3._ensureEqual();
-                });
+                        case 13:
+                            throw new Error('RxQuery.exec(): op (' + this.op + ') not known');
 
-                return function (_x2) {
-                    return _ref2.apply(this, arguments);
-                };
-            })()).filter(() => false);
+                        case 14:
 
-            this._observable$ = util.Rx.Observable.merge(res$, changeEvents$).filter(x => x != null).map(results => {
-                if (this.op != 'findOne') return results;else if (results.length == 0) return null;else return results[0];
-            });
+                            this._mustReExec = false;
+                            return _context2.abrupt('return', docsData);
+
+                        case 16:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        }));
+
+        function _execOverDatabase() {
+            return _ref3.apply(this, arguments);
         }
-        return this._observable$;
-    }
 
-    toJSON() {
+        return _execOverDatabase;
+    }();
+
+    RxQuery.prototype.toJSON = function toJSON() {
         if (this._toJSON) return this._toJSON;
 
-        const primPath = this.collection.schema.primaryPath;
+        var primPath = this.collection.schema.primaryPath;
 
-        const json = {
+        var json = {
             selector: this.mquery._conditions
         };
 
-        let options = this.mquery._optionsForExec();
+        var options = this.mquery._optionsForExec();
 
         // sort
         if (options.sort) {
-            const sortArray = [];
-            Object.keys(options.sort).map(fieldName => {
-                const dirInt = options.sort[fieldName];
-                let dir = 'asc';
+            var sortArray = [];
+            Object.keys(options.sort).map(function (fieldName) {
+                var dirInt = options.sort[fieldName];
+                var dir = 'asc';
                 if (dirInt == -1) dir = 'desc';
-                const pushMe = {};
+                var pushMe = {};
                 // TODO run primary-swap somewhere else
                 if (fieldName == primPath) fieldName = '_id';
 
@@ -258,9 +302,9 @@ class RxQuery {
         json.selector.language.$ne = 'query';
 
         // strip empty selectors
-        Object.entries(json.selector).forEach(entry => {
-            const key = entry[0];
-            const select = entry[1];
+        Object.entries(json.selector).forEach(function (entry) {
+            var key = entry[0];
+            var select = entry[1];
             if (typeof select === 'object' && Object.keys(select) == 0) delete json.selector[key];
         });
 
@@ -273,68 +317,123 @@ class RxQuery {
 
         this._toJSON = json;
         return this._toJSON;
-    }
+    };
 
     /**
      * get the key-compression version of this query
      * @return {{selector: {}, sort: []}} compressedQuery
      */
-    keyCompress() {
+    RxQuery.prototype.keyCompress = function keyCompress() {
         return this.collection._keyCompressor.compressQuery(this.toJSON());
-    }
+    };
 
     /**
      * deletes all found documents
      * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
      */
-    remove() {
-        var _this4 = this;
 
-        return _asyncToGenerator(function* () {
-            const docs = yield _this4.exec();
-            if (Array.isArray(docs)) {
-                yield Promise.all(docs.map(function (doc) {
-                    return doc.remove();
-                }));
-            } else {
-                // via findOne()
-                yield docs.remove();
-            }
-            return docs;
-        })();
-    }
 
-    exec() {
-        var _this5 = this;
+    RxQuery.prototype.remove = function () {
+        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3() {
+            var docs;
+            return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                while (1) {
+                    switch (_context3.prev = _context3.next) {
+                        case 0:
+                            _context3.next = 2;
+                            return this.exec();
 
-        return _asyncToGenerator(function* () {
-            return yield _this5.$.first().toPromise();
-        })();
-    }
+                        case 2:
+                            docs = _context3.sent;
+
+                            if (!Array.isArray(docs)) {
+                                _context3.next = 8;
+                                break;
+                            }
+
+                            _context3.next = 6;
+                            return Promise.all(docs.map(function (doc) {
+                                return doc.remove();
+                            }));
+
+                        case 6:
+                            _context3.next = 10;
+                            break;
+
+                        case 8:
+                            _context3.next = 10;
+                            return docs.remove();
+
+                        case 10:
+                            return _context3.abrupt('return', docs);
+
+                        case 11:
+                        case 'end':
+                            return _context3.stop();
+                    }
+                }
+            }, _callee3, this);
+        }));
+
+        function remove() {
+            return _ref4.apply(this, arguments);
+        }
+
+        return remove;
+    }();
+
+    RxQuery.prototype.exec = function () {
+        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4() {
+            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+                while (1) {
+                    switch (_context4.prev = _context4.next) {
+                        case 0:
+                            _context4.next = 2;
+                            return this.$.first().toPromise();
+
+                        case 2:
+                            return _context4.abrupt('return', _context4.sent);
+
+                        case 3:
+                        case 'end':
+                            return _context4.stop();
+                    }
+                }
+            }, _callee4, this);
+        }));
+
+        function exec() {
+            return _ref5.apply(this, arguments);
+        }
+
+        return exec;
+    }();
 
     /**
      * regex cannot run on primary _id
      * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
      */
-    regex(params) {
-        if (this.mquery._path == this.collection.schema.primaryPath) throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
+
+
+    RxQuery.prototype.regex = function regex(params) {
+        if (this.mquery._path == this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + this.mquery._path + '\'');
 
         this.mquery.regex(params);
         return this;
-    }
+    };
 
     /**
      * make sure it searches index because of pouchdb-find bug
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */
-    sort(params) {
-        const clonedThis = this._clone();
+    RxQuery.prototype.sort = function sort(params) {
+        var clonedThis = this._clone();
 
         // workarround because sort wont work on unused keys
         if (typeof params !== 'object') {
-            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+            var checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
             if (!clonedThis.mquery._conditions[checkParam]) {
-                const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
+                var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
                 if (schemaObj && schemaObj.type == 'integer')
                     // TODO change back to -Infinity when issue resolved
                     // @link https://github.com/pouchdb/pouchdb/issues/6454
@@ -342,8 +441,10 @@ class RxQuery {
                 else clonedThis.mquery.where(checkParam).gt(null);
             }
         } else {
-            Object.keys(params).filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt).forEach(k => {
-                const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
+            Object.keys(params).filter(function (k) {
+                return !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt;
+            }).forEach(function (k) {
+                var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
                 if (schemaObj.type == 'integer')
                     // TODO change back to -Infinity when issue resolved
                     // @link https://github.com/pouchdb/pouchdb/issues/6454
@@ -354,34 +455,122 @@ class RxQuery {
         }
         clonedThis.mquery.sort(params);
         return clonedThis._tunnelQueryCache();
-    }
+    };
 
-    limit(amount) {
+    RxQuery.prototype.limit = function limit(amount) {
         if (this.op == 'findOne') throw new Error('.limit() cannot be called on .findOne()');else {
-            const clonedThis = this._clone();
+            var clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
             return clonedThis._tunnelQueryCache();
         }
-    }
-}
+    };
+
+    _createClass(RxQuery, [{
+        key: '$',
+        get: function get() {
+            var _this = this;
+
+            if (!this._observable$) {
+
+                var res$ = this._results$.mergeMap(function () {
+                    var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5(results) {
+                        var hasChanged;
+                        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+                            while (1) {
+                                switch (_context5.prev = _context5.next) {
+                                    case 0:
+                                        _context5.next = 2;
+                                        return _this._ensureEqual();
+
+                                    case 2:
+                                        hasChanged = _context5.sent;
+
+                                        if (!hasChanged) {
+                                            _context5.next = 5;
+                                            break;
+                                        }
+
+                                        return _context5.abrupt('return', 'WAITFORNEXTEMIT');
+
+                                    case 5:
+                                        return _context5.abrupt('return', results);
+
+                                    case 6:
+                                    case 'end':
+                                        return _context5.stop();
+                                }
+                            }
+                        }, _callee5, _this);
+                    }));
+
+                    return function (_x) {
+                        return _ref6.apply(this, arguments);
+                    };
+                }()).filter(function (results) {
+                    return results != 'WAITFORNEXTEMIT';
+                }).asObservable();
+
+                var changeEvents$ = this.collection.$.filter(function (cEvent) {
+                    return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
+                }).mergeMap(function () {
+                    var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6(changeEvent) {
+                        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+                            while (1) {
+                                switch (_context6.prev = _context6.next) {
+                                    case 0:
+                                        return _context6.abrupt('return', _this._ensureEqual());
+
+                                    case 1:
+                                    case 'end':
+                                        return _context6.stop();
+                                }
+                            }
+                        }, _callee6, _this);
+                    }));
+
+                    return function (_x2) {
+                        return _ref7.apply(this, arguments);
+                    };
+                }()).filter(function () {
+                    return false;
+                });
+
+                this._observable$ = util.Rx.Observable.merge(res$, changeEvents$).filter(function (x) {
+                    return x != null;
+                }).map(function (results) {
+                    if (_this.op != 'findOne') return results;else if (results.length == 0) return null;else return results[0];
+                });
+            }
+            return this._observable$;
+        }
+    }]);
+
+    return RxQuery;
+}();
 
 // tunnel the proto-functions of mquery to RxQuery
-const protoMerge = function (rxQueryProto, mQueryProto) {
-    Object.keys(mQueryProto).filter(attrName => !attrName.startsWith('_')).filter(attrName => !rxQueryProto[attrName]).forEach(attrName => {
+
+
+var protoMerge = function protoMerge(rxQueryProto, mQueryProto) {
+    Object.keys(mQueryProto).filter(function (attrName) {
+        return !attrName.startsWith('_');
+    }).filter(function (attrName) {
+        return !rxQueryProto[attrName];
+    }).forEach(function (attrName) {
         rxQueryProto[attrName] = function (p1) {
-            const clonedThis = this._clone();
+            var clonedThis = this._clone();
             clonedThis.mquery[attrName](p1);
             return clonedThis._tunnelQueryCache();
         };
     });
 };
 
-let protoMerged = false;
+var protoMerged = false;
 export function create(op, queryObj, collection) {
     if (queryObj && typeof queryObj !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
-    const ret = new RxQuery(op, queryObj, collection);
+    var ret = new RxQuery(op, queryObj, collection);
 
     if (!protoMerged) {
         protoMerged = true;

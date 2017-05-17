@@ -17,7 +17,7 @@ import clone from 'clone';
  * @param {Object} [criteria]
  */
 function Query(criteria) {
-    const proto = this.constructor.prototype;
+    var proto = this.constructor.prototype;
     this.options = {};
     this._conditions = proto._conditions ? clone(proto._conditions) : {};
     this._fields = proto._fields ? clone(proto._fields) : undefined;
@@ -31,8 +31,8 @@ function Query(criteria) {
  * @return {Query}
  */
 Query.prototype.clone = function () {
-    const same = new Query();
-    Object.entries(this).forEach(ar => {
+    var same = new Query();
+    Object.entries(this).forEach(function (ar) {
         same[ar[0]] = ar[1];
     });
     return same;
@@ -46,7 +46,7 @@ Query.prototype.clone = function () {
  */
 Query.prototype.where = function () {
     if (!arguments.length) return this;
-    const type = typeof arguments[0];
+    var type = typeof arguments[0];
     if ('string' == type) {
         this._path = arguments[0];
         if (2 === arguments.length) this._conditions[this._path] = arguments[1];
@@ -67,7 +67,7 @@ Query.prototype.where = function () {
  */
 Query.prototype.equals = function equals(val) {
     this._ensurePath('equals');
-    const path = this._path;
+    var path = this._path;
     this._conditions[path] = val;
     return this;
 };
@@ -80,7 +80,7 @@ Query.prototype.equals = function equals(val) {
  */
 Query.prototype.eq = function eq(val) {
     this._ensurePath('eq');
-    const path = this._path;
+    var path = this._path;
     this._conditions[path] = val;
     return this;
 };
@@ -93,7 +93,7 @@ Query.prototype.eq = function eq(val) {
  * @return {Query} this
  */
 Query.prototype.or = function (array) {
-    const or = this._conditions.$or || (this._conditions.$or = []);
+    var or = this._conditions.$or || (this._conditions.$or = []);
     if (!Array.isArray(array)) array = [array];
     or.push.apply(or, array);
     return this;
@@ -107,7 +107,7 @@ Query.prototype.or = function (array) {
  * @return {Query} this
  */
 Query.prototype.nor = function (array) {
-    const nor = this._conditions.$nor || (this._conditions.$nor = []);
+    var nor = this._conditions.$nor || (this._conditions.$nor = []);
     if (!Array.isArray(array)) array = [array];
     nor.push.apply(nor, array);
     return this;
@@ -122,7 +122,7 @@ Query.prototype.nor = function (array) {
  * @return {Query} this
  */
 Query.prototype.and = function (array) {
-    const and = this._conditions.$and || (this._conditions.$and = []);
+    var and = this._conditions.$and || (this._conditions.$and = []);
     if (!Array.isArray(array)) array = [array];
     and.push.apply(and, array);
     return this;
@@ -135,8 +135,8 @@ Query.prototype.and = function (array) {
  */
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'].forEach(function ($conditional) {
     Query.prototype[$conditional] = function () {
-        let path;
-        let val;
+        var path = void 0;
+        var val = void 0;
         if (1 === arguments.length) {
             this._ensurePath($conditional);
             val = arguments[0];
@@ -146,7 +146,7 @@ Query.prototype.and = function (array) {
             path = arguments[0];
         }
 
-        const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ? this._conditions[path] : this._conditions[path] = {};
+        var conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ? this._conditions[path] : this._conditions[path] = {};
         conds['$' + $conditional] = val;
         return this;
     };
@@ -161,8 +161,8 @@ Query.prototype.and = function (array) {
  * @api public
  */
 Query.prototype.mod = function () {
-    let val;
-    let path;
+    var val = void 0;
+    var path = void 0;
 
     if (1 === arguments.length) {
         this._ensurePath('mod');
@@ -180,7 +180,7 @@ Query.prototype.mod = function () {
         path = arguments[0];
     }
 
-    const conds = this._conditions[path] || (this._conditions[path] = {});
+    var conds = this._conditions[path] || (this._conditions[path] = {});
     conds.$mod = val;
     return this;
 };
@@ -198,8 +198,8 @@ Query.prototype.mod = function () {
  * @api public
  */
 Query.prototype.exists = function () {
-    let path;
-    let val;
+    var path = void 0;
+    var val = void 0;
     if (0 === arguments.length) {
         this._ensurePath('exists');
         path = this._path;
@@ -218,7 +218,7 @@ Query.prototype.exists = function () {
         val = arguments[1];
     }
 
-    const conds = this._conditions[path] || (this._conditions[path] = {});
+    var conds = this._conditions[path] || (this._conditions[path] = {});
     conds.$exists = val;
     return this;
 };
@@ -243,9 +243,9 @@ Query.prototype.exists = function () {
 Query.prototype.elemMatch = function () {
     if (null == arguments[0]) throw new TypeError('Invalid argument');
 
-    let fn;
-    let path;
-    let criteria;
+    var fn = void 0;
+    var path = void 0;
+    var criteria = void 0;
 
     if ('function' === typeof arguments[0]) {
         this._ensurePath('elemMatch');
@@ -268,7 +268,7 @@ Query.prototype.elemMatch = function () {
         criteria = criteria._conditions;
     }
 
-    const conds = this._conditions[path] || (this._conditions[path] = {});
+    var conds = this._conditions[path] || (this._conditions[path] = {});
     conds.$elemMatch = criteria;
     return this;
 };
@@ -285,25 +285,27 @@ Query.prototype.elemMatch = function () {
  * @return {Query} this
  */
 Query.prototype.sort = function (arg) {
+    var _this = this;
+
     if (!arg) return this;
-    let len;
-    let type = typeof arg;
+    var len = void 0;
+    var type = typeof arg;
     // .sort([['field', 1], ['test', -1]])
     if (Array.isArray(arg)) {
         len = arg.length;
-        for (let i = 0; i < arg.length; ++i) _pushArr(this.options, arg[i][0], arg[i][1]);
-
-        return this;
+        for (var i = 0; i < arg.length; ++i) {
+            _pushArr(this.options, arg[i][0], arg[i][1]);
+        }return this;
     }
 
     // .sort('field -test')
     if (1 === arguments.length && 'string' == type) {
         arg = arg.split(/\s+/);
         len = arg.length;
-        for (let i = 0; i < len; ++i) {
-            let field = arg[i];
+        for (var _i = 0; _i < len; ++_i) {
+            var field = arg[_i];
             if (!field) continue;
-            let ascend = '-' == field[0] ? -1 : 1;
+            var ascend = '-' == field[0] ? -1 : 1;
             if (ascend === -1) field = field.substring(1);
             push(this.options, field, ascend);
         }
@@ -313,8 +315,10 @@ Query.prototype.sort = function (arg) {
 
     // .sort({ field: 1, test: -1 })
     if (utils.isObject(arg)) {
-        const keys = Object.keys(arg);
-        keys.forEach(field => push(this.options, field, arg[field]));
+        var keys = Object.keys(arg);
+        keys.forEach(function (field) {
+            return push(_this.options, field, arg[field]);
+        });
         return this;
     }
 
@@ -330,33 +334,30 @@ function push(opts, field, value) {
     }
 
     if (value && value.$meta) {
-        const s = opts.sort || (opts.sort = {});
-        s[field] = {
+        var _s = opts.sort || (opts.sort = {});
+        _s[field] = {
             $meta: value.$meta
         };
         return;
     }
 
-    const val = String(value || 1).toLowerCase();
+    var val = String(value || 1).toLowerCase();
     if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
         if (Array.isArray(value)) value = '[' + value + ']';
         throw new TypeError('Invalid sort value: {' + field + ': ' + value + ' }');
     }
     // store `sort` in a sane format
-    const s = opts.sort || (opts.sort = {});
-    const valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
+    var s = opts.sort || (opts.sort = {});
+    var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
 }
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
     if (!Array.isArray(opts.sort)) {
-        throw new TypeError(`
-          Can't mix sort syntaxes. Use either array or object:
-            \n- .sort([['field', 1], ['test', -1]])
-            \n- .sort({ field: 1, test: -1 })`);
+        throw new TypeError('\n          Can\'t mix sort syntaxes. Use either array or object:\n            \n- .sort([[\'field\', 1], [\'test\', -1]])\n            \n- .sort({ field: 1, test: -1 })');
     }
-    const valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
+    var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     opts.sort.push([field, value]);
 };
 
@@ -440,7 +441,7 @@ Query.prototype.find = function (criteria) {
  * @return {Object}
  */
 Query.prototype._optionsForExec = function () {
-    const options = clone(this.options);
+    var options = clone(this.options);
     return options;
 };
 
@@ -451,10 +452,7 @@ Query.prototype._optionsForExec = function () {
  */
 Query.prototype._ensurePath = function (method) {
     if (!this._path) {
-        throw new Error(`
-          ${method}() must be used after where()
-          when called with these arguments
-        `);
+        throw new Error('\n          ' + method + '() must be used after where()\n          when called with these arguments\n        ');
     }
 };
 Query.prototype._validate = function (action) {};

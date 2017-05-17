@@ -8,7 +8,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
 
 var _mquery_utils = require('./mquery_utils');
 
@@ -18,9 +20,9 @@ var _clone = require('clone');
 
 var _clone2 = _interopRequireDefault(_clone);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
  * Query constructor used for building queries.
@@ -34,8 +36,8 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function Query(criteria) {
     var proto = this.constructor.prototype;
     this.options = {};
-    this._conditions = proto._conditions ? (0, _clone2.default)(proto._conditions) : {};
-    this._fields = proto._fields ? (0, _clone2.default)(proto._fields) : undefined;
+    this._conditions = proto._conditions ? (0, _clone2['default'])(proto._conditions) : {};
+    this._fields = proto._fields ? (0, _clone2['default'])(proto._fields) : undefined;
     this._path = proto._path || undefined;
 
     if (criteria) this.find(criteria);
@@ -61,7 +63,7 @@ Query.prototype.clone = function () {
  */
 Query.prototype.where = function () {
     if (!arguments.length) return this;
-    var type = _typeof(arguments[0]);
+    var type = (0, _typeof3['default'])(arguments[0]);
     if ('string' == type) {
         this._path = arguments[0];
         if (2 === arguments.length) this._conditions[this._path] = arguments[1];
@@ -161,7 +163,7 @@ Query.prototype.and = function (array) {
             path = arguments[0];
         }
 
-        var conds = this._conditions[path] === null || _typeof(this._conditions[path]) === 'object' ? this._conditions[path] : this._conditions[path] = {};
+        var conds = this._conditions[path] === null || (0, _typeof3['default'])(this._conditions[path]) === 'object' ? this._conditions[path] : this._conditions[path] = {};
         conds['$' + $conditional] = val;
         return this;
     };
@@ -304,7 +306,7 @@ Query.prototype.sort = function (arg) {
 
     if (!arg) return this;
     var len = void 0;
-    var type = typeof arg === 'undefined' ? 'undefined' : _typeof(arg);
+    var type = typeof arg === 'undefined' ? 'undefined' : (0, _typeof3['default'])(arg);
     // .sort([['field', 1], ['test', -1]])
     if (Array.isArray(arg)) {
         len = arg.length;
@@ -456,7 +458,7 @@ Query.prototype.find = function (criteria) {
  * @return {Object}
  */
 Query.prototype._optionsForExec = function () {
-    var options = (0, _clone2.default)(this.options);
+    var options = (0, _clone2['default'])(this.options);
     return options;
 };
 
@@ -483,4 +485,4 @@ Query.canMerge = function (conds) {
 };
 
 Query.utils = utils;
-exports.default = Query;
+exports['default'] = Query;

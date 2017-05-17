@@ -4,9 +4,29 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof2 = require('babel-runtime/helpers/typeof');
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _typeof3 = _interopRequireDefault(_typeof2);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
+
+var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
 
@@ -34,15 +54,9 @@ var _QueryChangeDetector = require('./QueryChangeDetector');
 
 var QueryChangeDetector = _interopRequireWildcard(_QueryChangeDetector);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
@@ -51,7 +65,7 @@ var newQueryID = function newQueryID() {
 
 var RxQuery = function () {
     function RxQuery(op, queryObj, collection) {
-        _classCallCheck(this, RxQuery);
+        (0, _classCallCheck3['default'])(this, RxQuery);
 
         this.op = op;
         this.collection = collection;
@@ -59,7 +73,7 @@ var RxQuery = function () {
 
         if (!queryObj) queryObj = this._defaultQuery();
 
-        this.mquery = new _mquery2.default(queryObj);
+        this.mquery = new _mquery2['default'](queryObj);
 
         this._queryChangeDetector = QueryChangeDetector.create(this);
         this._resultsData = null;
@@ -83,10 +97,10 @@ var RxQuery = function () {
         this._execOverDatabaseCount = 0;
     }
 
-    _createClass(RxQuery, [{
+    (0, _createClass3['default'])(RxQuery, [{
         key: '_defaultQuery',
         value: function _defaultQuery() {
-            return _defineProperty({}, this.collection.schema.primaryPath, {});
+            return (0, _defineProperty3['default'])({}, this.collection.schema.primaryPath, {});
         }
 
         // returns a clone of this RxQuery
@@ -133,9 +147,9 @@ var RxQuery = function () {
     }, {
         key: '_ensureEqual',
         value: function () {
-            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
                 var ret, resolve, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
-                return regeneratorRuntime.wrap(function _callee$(_context) {
+                return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -174,7 +188,7 @@ var RxQuery = function () {
                                         changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
 
                                         if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
-                                        if (Array.isArray(changeResult) && !(0, _deepEqual2.default)(changeResult, this._resultsData)) {
+                                        if (Array.isArray(changeResult) && !(0, _deepEqual2['default'])(changeResult, this._resultsData)) {
                                             ret = true;
                                             this._setResultData(changeResult);
                                         }
@@ -199,7 +213,7 @@ var RxQuery = function () {
                                 newResultData = _context.sent;
 
                                 this._latestChangeEvent = latestAfter;
-                                if (!(0, _deepEqual2.default)(newResultData, this._resultsData)) {
+                                if (!(0, _deepEqual2['default'])(newResultData, this._resultsData)) {
                                     ret = true;
                                     this._setResultData(newResultData);
                                 }
@@ -241,9 +255,9 @@ var RxQuery = function () {
     }, {
         key: '_execOverDatabase',
         value: function () {
-            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
                 var docsData, ret;
-                return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
@@ -346,7 +360,7 @@ var RxQuery = function () {
             Object.entries(json.selector).forEach(function (entry) {
                 var key = entry[0];
                 var select = entry[1];
-                if ((typeof select === 'undefined' ? 'undefined' : _typeof(select)) === 'object' && Object.keys(select) == 0) delete json.selector[key];
+                if ((typeof select === 'undefined' ? 'undefined' : (0, _typeof3['default'])(select)) === 'object' && Object.keys(select) == 0) delete json.selector[key];
             });
 
             // primary swap
@@ -379,9 +393,9 @@ var RxQuery = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
                 var docs;
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
@@ -429,8 +443,8 @@ var RxQuery = function () {
     }, {
         key: 'exec',
         value: function () {
-            var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4() {
-                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+                return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
@@ -480,7 +494,7 @@ var RxQuery = function () {
             var clonedThis = this._clone();
 
             // workarround because sort wont work on unused keys
-            if ((typeof params === 'undefined' ? 'undefined' : _typeof(params)) !== 'object') {
+            if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3['default'])(params)) !== 'object') {
                 var checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
                 if (!clonedThis.mquery._conditions[checkParam]) {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
@@ -523,9 +537,9 @@ var RxQuery = function () {
             if (!this._observable$) {
 
                 var res$ = this._results$.mergeMap(function () {
-                    var _ref6 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(results) {
+                    var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(results) {
                         var hasChanged;
-                        return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                        return _regenerator2['default'].wrap(function _callee5$(_context5) {
                             while (1) {
                                 switch (_context5.prev = _context5.next) {
                                     case 0:
@@ -563,8 +577,8 @@ var RxQuery = function () {
                 var changeEvents$ = this.collection.$.filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }).mergeMap(function () {
-                    var _ref7 = _asyncToGenerator(regeneratorRuntime.mark(function _callee6(changeEvent) {
-                        return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                    var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(changeEvent) {
+                        return _regenerator2['default'].wrap(function _callee6$(_context6) {
                             while (1) {
                                 switch (_context6.prev = _context6.next) {
                                     case 0:
@@ -594,7 +608,6 @@ var RxQuery = function () {
             return this._observable$;
         }
     }]);
-
     return RxQuery;
 }();
 
@@ -617,7 +630,7 @@ var protoMerge = function protoMerge(rxQueryProto, mQueryProto) {
 
 var protoMerged = false;
 function create(op, queryObj, collection) {
-    if (queryObj && (typeof queryObj === 'undefined' ? 'undefined' : _typeof(queryObj)) !== 'object') throw new TypeError('query must be an object');
+    if (queryObj && (typeof queryObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(queryObj)) !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
     var ret = new RxQuery(op, queryObj, collection);

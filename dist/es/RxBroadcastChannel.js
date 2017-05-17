@@ -1,20 +1,32 @@
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
+import _regeneratorRuntime from 'babel-runtime/regenerator';
+import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
+import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import * as util from './util';
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
  */
-class RxBroadcastChannel {
-    constructor(database, name) {
+
+var RxBroadcastChannel = function () {
+    function RxBroadcastChannel(database, name) {
+        var _this = this;
+
+        _classCallCheck(this, RxBroadcastChannel);
+
         this.name = name;
         this.database = database;
         this.token = database.token;
 
         this.bc = new BroadcastChannel('RxDB:' + this.database.name + ':' + this.name);
 
-        this.$ = util.Rx.Observable.fromEvent(this.bc, 'message').map(msg => msg.data).map(strMsg => JSON.parse(strMsg)).filter(msg => msg.it != this.token);
+        this.$ = util.Rx.Observable.fromEvent(this.bc, 'message').map(function (msg) {
+            return msg.data;
+        }).map(function (strMsg) {
+            return JSON.parse(strMsg);
+        }).filter(function (msg) {
+            return msg.it != _this.token;
+        });
     }
 
     /**
@@ -22,28 +34,50 @@ class RxBroadcastChannel {
      * @param {string} type
      * @param {Object} data
      */
-    write(type, data) {
-        var _this = this;
 
-        return _asyncToGenerator(function* () {
-            yield _this.bc.postMessage(JSON.stringify({
-                type,
-                it: _this.token,
-                data,
-                t: new Date().getTime()
-            }));
-        })();
-    }
 
-    destroy() {
+    RxBroadcastChannel.prototype.write = function () {
+        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee(type, data) {
+            return _regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                    switch (_context.prev = _context.next) {
+                        case 0:
+                            _context.next = 2;
+                            return this.bc.postMessage(JSON.stringify({
+                                type: type,
+                                it: this.token,
+                                data: data,
+                                t: new Date().getTime()
+                            }));
+
+                        case 2:
+                        case 'end':
+                            return _context.stop();
+                    }
+                }
+            }, _callee, this);
+        }));
+
+        function write(_x, _x2) {
+            return _ref.apply(this, arguments);
+        }
+
+        return write;
+    }();
+
+    RxBroadcastChannel.prototype.destroy = function destroy() {
         this.bc.close();
-    }
-}
+    };
+
+    return RxBroadcastChannel;
+}();
 
 /**
  * Detect if client can use BroadcastChannel
  * @return {Boolean}
  */
+
+
 export function canIUse() {
     if (typeof window === 'object' && window.BroadcastChannel && typeof window.BroadcastChannel === 'function' && typeof window.BroadcastChannel.prototype.postMessage === 'function' && typeof window.BroadcastChannel.prototype.close === 'function') return true;
     return false;

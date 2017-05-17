@@ -1,5 +1,7 @@
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
+import _regeneratorRuntime from 'babel-runtime/regenerator';
+import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
+import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
+import _createClass from 'babel-runtime/helpers/createClass';
 import randomToken from 'random-token';
 import PouchDB from './PouchDB';
 
@@ -10,13 +12,14 @@ import * as RxChangeEvent from './RxChangeEvent';
 import * as Socket from './Socket';
 import * as LeaderElector from './LeaderElector';
 
-const SETTINGS = {
+var SETTINGS = {
     minPassLength: 8
 };
 
-export class RxDatabase {
+export var RxDatabase = function () {
+    function RxDatabase(name, adapter, password, multiInstance) {
+        _classCallCheck(this, RxDatabase);
 
-    constructor(name, adapter, password, multiInstance) {
         this.name = name;
         this.adapter = adapter;
         this.password = password;
@@ -38,76 +41,131 @@ export class RxDatabase {
     /**
      * make the async things for this database
      */
-    prepare() {
-        var _this = this;
 
-        return _asyncToGenerator(function* () {
 
-            // rx
-            _this.subject = new util.Rx.Subject();
-            _this.observable$ = _this.subject.asObservable().filter(function (cEvent) {
-                return cEvent.constructor.name == 'RxChangeEvent';
-            });
+    RxDatabase.prototype.prepare = function () {
+        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+            var _this = this;
 
-            // create internal collections
-            // - admin-collection
-            _this._adminPouch = _this._spawnPouchDB('_admin', 0, {
-                auto_compaction: false, // no compaction because this only stores local documents
-                revs_limit: 1
-            });
-            // - collections-collection
-            _this._collectionsPouch = _this._spawnPouchDB('_collections', 0, {
-                auto_compaction: false, // no compaction because this only stores local documents
-                revs_limit: 1
-            });
+            var pwHashDoc;
+            return _regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                    switch (_context.prev = _context.next) {
+                        case 0:
 
-            // validate/insert password-hash
-            if (_this.password) {
-                let pwHashDoc = null;
-                try {
-                    pwHashDoc = yield _this._adminPouch.get('_local/pwHash');
-                } catch (e) {}
-                if (!pwHashDoc) {
-                    try {
-                        yield _this._adminPouch.put({
-                            _id: '_local/pwHash',
-                            value: util.hash(_this.password)
-                        });
-                    } catch (e) {}
+                            // rx
+                            this.subject = new util.Rx.Subject();
+                            this.observable$ = this.subject.asObservable().filter(function (cEvent) {
+                                return RxChangeEvent.isInstanceOf(cEvent);
+                            });
+
+                            // create internal collections
+                            // - admin-collection
+                            this._adminPouch = this._spawnPouchDB('_admin', 0, {
+                                auto_compaction: false, // no compaction because this only stores local documents
+                                revs_limit: 1
+                            });
+                            // - collections-collection
+                            this._collectionsPouch = this._spawnPouchDB('_collections', 0, {
+                                auto_compaction: false, // no compaction because this only stores local documents
+                                revs_limit: 1
+                            });
+
+                            // validate/insert password-hash
+
+                            if (!this.password) {
+                                _context.next = 24;
+                                break;
+                            }
+
+                            pwHashDoc = null;
+                            _context.prev = 6;
+                            _context.next = 9;
+                            return this._adminPouch.get('_local/pwHash');
+
+                        case 9:
+                            pwHashDoc = _context.sent;
+                            _context.next = 14;
+                            break;
+
+                        case 12:
+                            _context.prev = 12;
+                            _context.t0 = _context['catch'](6);
+
+                        case 14:
+                            if (pwHashDoc) {
+                                _context.next = 22;
+                                break;
+                            }
+
+                            _context.prev = 15;
+                            _context.next = 18;
+                            return this._adminPouch.put({
+                                _id: '_local/pwHash',
+                                value: util.hash(this.password)
+                            });
+
+                        case 18:
+                            _context.next = 22;
+                            break;
+
+                        case 20:
+                            _context.prev = 20;
+                            _context.t1 = _context['catch'](15);
+
+                        case 22:
+                            if (!(pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)) {
+                                _context.next = 24;
+                                break;
+                            }
+
+                            throw new Error('another instance on this adapter has a different password');
+
+                        case 24:
+                            if (!this.multiInstance) {
+                                _context.next = 29;
+                                break;
+                            }
+
+                            _context.next = 27;
+                            return Socket.create(this);
+
+                        case 27:
+                            this.socket = _context.sent;
+
+
+                            //TODO only subscribe when sth is listening to the event-chain
+                            this.socket.messages$.subscribe(function (cE) {
+                                return _this.$emit(cE);
+                            });
+
+                        case 29:
+                            _context.next = 31;
+                            return LeaderElector.create(this);
+
+                        case 31:
+                            this.leaderElector = _context.sent;
+
+                        case 32:
+                        case 'end':
+                            return _context.stop();
+                    }
                 }
-                if (pwHashDoc && _this.password && util.hash(_this.password) != pwHashDoc.value) throw new Error('another instance on this adapter has a different password');
-            }
+            }, _callee, this, [[6, 12], [15, 20]]);
+        }));
 
-            if (_this.multiInstance) {
-                // socket
-                _this.socket = yield Socket.create(_this);
+        function prepare() {
+            return _ref.apply(this, arguments);
+        }
 
-                //TODO only subscribe when sth is listening to the event-chain
-                _this.socket.messages$.subscribe(function (cE) {
-                    return _this.$emit(cE);
-                });
-            }
-
-            // leader elector
-            _this.leaderElector = yield LeaderElector.create(_this);
-        })();
-    }
+        return prepare;
+    }();
 
     /**
      * transforms the given adapter into a pouch-compatible object
      * @return {Object} adapterObject
      */
-    get _adapterObj() {
-        let adapterObj = {
-            db: this.adapter
-        };
-        if (typeof this.adapter === 'string') {
-            adapterObj = {
-                adapter: this.adapter
-            };
-        }
-        return adapterObj;
-    }
+
 
     /**
      * spawns a new pouch-instance
@@ -116,40 +174,85 @@ export class RxDatabase {
      * @param {Object} [pouchSettings={}] pouchSettings
      * @type {Object}
      */
-    _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        const pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
+    RxDatabase.prototype._spawnPouchDB = function _spawnPouchDB(collectionName, schemaVersion) {
+        var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+        var pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
         return new PouchDB(pouchLocation, this._adapterObj, pouchSettings);
-    }
+    };
 
-    get isLeader() {
-        if (!this.multiInstance) return true;
-        return this.leaderElector.isLeader;
-    }
-    waitForLeadership() {
-        var _this2 = this;
+    RxDatabase.prototype.waitForLeadership = function () {
+        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            if (this.multiInstance) {
+                                _context2.next = 2;
+                                break;
+                            }
 
-        return _asyncToGenerator(function* () {
-            if (!_this2.multiInstance) return true;
-            return _this2.leaderElector.waitForLeadership();
-        })();
-    }
+                            return _context2.abrupt('return', true);
 
-    writeToSocket(changeEvent) {
-        var _this3 = this;
+                        case 2:
+                            return _context2.abrupt('return', this.leaderElector.waitForLeadership());
 
-        return _asyncToGenerator(function* () {
-            if (_this3.multiInstance && !changeEvent.isIntern() && _this3.socket) {
-                yield _this3.socket.write(changeEvent);
-                return true;
-            }
-            return false;
-        })();
-    }
+                        case 3:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        }));
+
+        function waitForLeadership() {
+            return _ref2.apply(this, arguments);
+        }
+
+        return waitForLeadership;
+    }();
+
+    RxDatabase.prototype.writeToSocket = function () {
+        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(changeEvent) {
+            return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                while (1) {
+                    switch (_context3.prev = _context3.next) {
+                        case 0:
+                            if (!(this.multiInstance && !changeEvent.isIntern() && this.socket)) {
+                                _context3.next = 4;
+                                break;
+                            }
+
+                            _context3.next = 3;
+                            return this.socket.write(changeEvent);
+
+                        case 3:
+                            return _context3.abrupt('return', true);
+
+                        case 4:
+                            return _context3.abrupt('return', false);
+
+                        case 5:
+                        case 'end':
+                            return _context3.stop();
+                    }
+                }
+            }, _callee3, this);
+        }));
+
+        function writeToSocket(_x2) {
+            return _ref3.apply(this, arguments);
+        }
+
+        return writeToSocket;
+    }();
 
     /**
      * throw a new event into the event-cicle
      */
-    $emit(changeEvent) {
+
+
+    RxDatabase.prototype.$emit = function $emit(changeEvent) {
         if (!changeEvent) return;
 
         // throw in own cycle
@@ -157,14 +260,12 @@ export class RxDatabase {
 
         // write to socket if event was created by self
         if (changeEvent.data.it == this.token) this.writeToSocket(changeEvent);
-    }
+    };
 
     /**
      * @return {Observable} observable
      */
-    get $() {
-        return this.observable$;
-    }
+
 
     /**
      * returns the primary for a given collection-data
@@ -172,210 +273,459 @@ export class RxDatabase {
      * @param {string} name
      * @param {RxSchema} schema
      */
-    _collectionNamePrimary(name, schema) {
+    RxDatabase.prototype._collectionNamePrimary = function _collectionNamePrimary(name, schema) {
         return name + '-' + schema.version;
-    }
+    };
 
     /**
      * removes the collection-doc from this._collectionsPouch
      * @return {Promise}
      */
-    removeCollectionDoc(name, schema) {
-        var _this4 = this;
 
-        return _asyncToGenerator(function* () {
-            const docId = _this4._collectionNamePrimary(name, schema);
-            const doc = yield _this4._collectionsPouch.get(docId);
-            return _this4._collectionsPouch.remove(doc);
-        })();
-    }
+
+    RxDatabase.prototype.removeCollectionDoc = function () {
+        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4(name, schema) {
+            var docId, doc;
+            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+                while (1) {
+                    switch (_context4.prev = _context4.next) {
+                        case 0:
+                            docId = this._collectionNamePrimary(name, schema);
+                            _context4.next = 3;
+                            return this._collectionsPouch.get(docId);
+
+                        case 3:
+                            doc = _context4.sent;
+                            return _context4.abrupt('return', this._collectionsPouch.remove(doc));
+
+                        case 5:
+                        case 'end':
+                            return _context4.stop();
+                    }
+                }
+            }, _callee4, this);
+        }));
+
+        function removeCollectionDoc(_x3, _x4) {
+            return _ref4.apply(this, arguments);
+        }
+
+        return removeCollectionDoc;
+    }();
 
     /**
      * create or fetch a collection
      * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
      * @return {Collection}
      */
-    collection(args) {
-        var _this5 = this;
 
-        return _asyncToGenerator(function* () {
-            args.database = _this5;
 
-            if (args.name.charAt(0) == '_') throw new Error(`collection(${args.name}): collection-names cannot start with underscore _`);
+    RxDatabase.prototype.collection = function () {
+        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5(args) {
+            var _this2 = this;
 
-            if (_this5.collections[args.name]) throw new Error(`collection(${args.name}) already exists. use myDatabase.${args.name} to get it`);
+            var internalPrimary, schemaHash, collectionDoc, collection, cEvent;
+            return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+                while (1) {
+                    switch (_context5.prev = _context5.next) {
+                        case 0:
+                            args.database = this;
 
-            if (!args.schema) throw new Error(`collection(${args.name}): schema is missing`);
+                            if (!(args.name.charAt(0) == '_')) {
+                                _context5.next = 3;
+                                break;
+                            }
 
-            if (args.schema.constructor.name != 'RxSchema') args.schema = RxSchema.create(args.schema);
+                            throw new Error('collection(' + args.name + '): collection-names cannot start with underscore _');
 
-            const internalPrimary = _this5._collectionNamePrimary(args.name, args.schema);
+                        case 3:
+                            if (!this.collections[args.name]) {
+                                _context5.next = 5;
+                                break;
+                            }
 
-            // check unallowed collection-names
-            if (properties().includes(args.name)) throw new Error(`Collection-name ${args.name} not allowed`);
+                            throw new Error('collection(' + args.name + ') already exists. use myDatabase.' + args.name + ' to get it');
 
-            // check schemaHash
-            const schemaHash = args.schema.hash;
-            let collectionDoc = null;
-            try {
-                collectionDoc = yield _this5._collectionsPouch.get(internalPrimary);
-            } catch (e) {}
+                        case 5:
+                            if (args.schema) {
+                                _context5.next = 7;
+                                break;
+                            }
 
-            if (collectionDoc && collectionDoc.schemaHash != schemaHash) throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
+                            throw new Error('collection(' + args.name + '): schema is missing');
 
-            const collection = yield RxCollection.create(args);
-            if (Object.keys(collection.schema.encryptedPaths).length > 0 && !_this5.password) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
+                        case 7:
 
-            if (!collectionDoc) {
-                try {
-                    yield _this5._collectionsPouch.put({
-                        _id: internalPrimary,
-                        schemaHash,
-                        schema: collection.schema.normalized,
-                        version: collection.schema.version
-                    });
-                } catch (e) {}
-            }
+                            if (!RxSchema.isInstanceOf(args.schema)) args.schema = RxSchema.create(args.schema);
 
-            const cEvent = RxChangeEvent.create('RxDatabase.collection', _this5);
-            cEvent.data.v = collection.name;
-            cEvent.data.col = '_collections';
-            _this5.$emit(cEvent);
+                            internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
-            _this5.collections[args.name] = collection;
-            _this5.__defineGetter__(args.name, function () {
-                return _this5.collections[args.name];
-            });
+                            // check unallowed collection-names
 
-            return collection;
-        })();
-    }
+                            if (!properties().includes(args.name)) {
+                                _context5.next = 11;
+                                break;
+                            }
+
+                            throw new Error('Collection-name ' + args.name + ' not allowed');
+
+                        case 11:
+
+                            // check schemaHash
+                            schemaHash = args.schema.hash;
+                            collectionDoc = null;
+                            _context5.prev = 13;
+                            _context5.next = 16;
+                            return this._collectionsPouch.get(internalPrimary);
+
+                        case 16:
+                            collectionDoc = _context5.sent;
+                            _context5.next = 21;
+                            break;
+
+                        case 19:
+                            _context5.prev = 19;
+                            _context5.t0 = _context5['catch'](13);
+
+                        case 21:
+                            if (!(collectionDoc && collectionDoc.schemaHash != schemaHash)) {
+                                _context5.next = 23;
+                                break;
+                            }
+
+                            throw new Error('collection(' + args.name + '): another instance created this collection with a different schema');
+
+                        case 23:
+                            _context5.next = 25;
+                            return RxCollection.create(args);
+
+                        case 25:
+                            collection = _context5.sent;
+
+                            if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
+                                _context5.next = 28;
+                                break;
+                            }
+
+                            throw new Error('collection(' + args.name + '): schema encrypted but no password given');
+
+                        case 28:
+                            if (collectionDoc) {
+                                _context5.next = 36;
+                                break;
+                            }
+
+                            _context5.prev = 29;
+                            _context5.next = 32;
+                            return this._collectionsPouch.put({
+                                _id: internalPrimary,
+                                schemaHash: schemaHash,
+                                schema: collection.schema.normalized,
+                                version: collection.schema.version
+                            });
+
+                        case 32:
+                            _context5.next = 36;
+                            break;
+
+                        case 34:
+                            _context5.prev = 34;
+                            _context5.t1 = _context5['catch'](29);
+
+                        case 36:
+                            cEvent = RxChangeEvent.create('RxDatabase.collection', this);
+
+                            cEvent.data.v = collection.name;
+                            cEvent.data.col = '_collections';
+                            this.$emit(cEvent);
+
+                            this.collections[args.name] = collection;
+                            this.__defineGetter__(args.name, function () {
+                                return _this2.collections[args.name];
+                            });
+
+                            return _context5.abrupt('return', collection);
+
+                        case 43:
+                        case 'end':
+                            return _context5.stop();
+                    }
+                }
+            }, _callee5, this, [[13, 19], [29, 34]]);
+        }));
+
+        function collection(_x5) {
+            return _ref5.apply(this, arguments);
+        }
+
+        return collection;
+    }();
 
     /**
      * export to json
      * @param {boolean} decrypted
      * @param {?string[]} collections array with collectionNames or null if all
      */
-    dump(decrypted = false, collections = null) {
-        var _this6 = this;
 
-        return _asyncToGenerator(function* () {
-            const json = {
-                name: _this6.name,
-                instanceToken: _this6.token,
-                encrypted: false,
-                passwordHash: null,
-                collections: []
-            };
 
-            if (_this6.password) {
-                json.passwordHash = util.hash(_this6.password);
-                if (decrypted) json.encrypted = false;else json.encrypted = true;
-            }
+    RxDatabase.prototype.dump = function () {
+        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6() {
+            var _this3 = this;
 
-            const useCollections = Object.keys(_this6.collections).filter(function (colName) {
-                return !collections || collections.includes(colName);
-            }).filter(function (colName) {
-                return colName.charAt(0) != '_';
-            }).map(function (colName) {
-                return _this6.collections[colName];
-            });
+            var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+            var collections = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+            var json, useCollections;
+            return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+                while (1) {
+                    switch (_context6.prev = _context6.next) {
+                        case 0:
+                            json = {
+                                name: this.name,
+                                instanceToken: this.token,
+                                encrypted: false,
+                                passwordHash: null,
+                                collections: []
+                            };
 
-            json.collections = yield Promise.all(useCollections.map(function (col) {
-                return col.dump(decrypted);
-            }));
 
-            return json;
-        })();
-    }
+                            if (this.password) {
+                                json.passwordHash = util.hash(this.password);
+                                if (decrypted) json.encrypted = false;else json.encrypted = true;
+                            }
+
+                            useCollections = Object.keys(this.collections).filter(function (colName) {
+                                return !collections || collections.includes(colName);
+                            }).filter(function (colName) {
+                                return colName.charAt(0) != '_';
+                            }).map(function (colName) {
+                                return _this3.collections[colName];
+                            });
+                            _context6.next = 5;
+                            return Promise.all(useCollections.map(function (col) {
+                                return col.dump(decrypted);
+                            }));
+
+                        case 5:
+                            json.collections = _context6.sent;
+                            return _context6.abrupt('return', json);
+
+                        case 7:
+                        case 'end':
+                            return _context6.stop();
+                    }
+                }
+            }, _callee6, this);
+        }));
+
+        function dump() {
+            return _ref6.apply(this, arguments);
+        }
+
+        return dump;
+    }();
 
     /**
      * import json
      * @param {Object} dump
      */
-    importDump(dump) {
-        var _this7 = this;
 
-        return _asyncToGenerator(function* () {
-            return Promise.all(dump.collections.filter(function (colDump) {
-                return _this7.collections[colDump.name];
-            }).map(function (colDump) {
-                return _this7.collections[colDump.name].importDump(colDump);
-            }));
-        })();
-    }
 
-    destroy() {
-        var _this8 = this;
+    RxDatabase.prototype.importDump = function () {
+        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7(dump) {
+            var _this4 = this;
 
-        return _asyncToGenerator(function* () {
-            if (_this8.destroyed) return;
-            _this8.destroyed = true;
-            _this8.socket && _this8.socket.destroy();
-            yield _this8.leaderElector.destroy();
-            _this8.subs.map(function (sub) {
-                return sub.unsubscribe();
-            });
-            Object.keys(_this8.collections).map(function (key) {
-                return _this8.collections[key];
-            }).map(function (col) {
-                return col.destroy();
-            });
-        })();
-    }
+            return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+                while (1) {
+                    switch (_context7.prev = _context7.next) {
+                        case 0:
+                            return _context7.abrupt('return', Promise.all(dump.collections.filter(function (colDump) {
+                                return _this4.collections[colDump.name];
+                            }).map(function (colDump) {
+                                return _this4.collections[colDump.name].importDump(colDump);
+                            })));
 
-}
+                        case 1:
+                        case 'end':
+                            return _context7.stop();
+                    }
+                }
+            }, _callee7, this);
+        }));
+
+        function importDump(_x8) {
+            return _ref7.apply(this, arguments);
+        }
+
+        return importDump;
+    }();
+
+    RxDatabase.prototype.destroy = function () {
+        var _ref8 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee8() {
+            var _this5 = this;
+
+            return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+                while (1) {
+                    switch (_context8.prev = _context8.next) {
+                        case 0:
+                            if (!this.destroyed) {
+                                _context8.next = 2;
+                                break;
+                            }
+
+                            return _context8.abrupt('return');
+
+                        case 2:
+                            this.destroyed = true;
+                            this.socket && this.socket.destroy();
+                            _context8.next = 6;
+                            return this.leaderElector.destroy();
+
+                        case 6:
+                            this.subs.map(function (sub) {
+                                return sub.unsubscribe();
+                            });
+                            Object.keys(this.collections).map(function (key) {
+                                return _this5.collections[key];
+                            }).map(function (col) {
+                                return col.destroy();
+                            });
+
+                        case 8:
+                        case 'end':
+                            return _context8.stop();
+                    }
+                }
+            }, _callee8, this);
+        }));
+
+        function destroy() {
+            return _ref8.apply(this, arguments);
+        }
+
+        return destroy;
+    }();
+
+    _createClass(RxDatabase, [{
+        key: '_adapterObj',
+        get: function get() {
+            var adapterObj = {
+                db: this.adapter
+            };
+            if (typeof this.adapter === 'string') {
+                adapterObj = {
+                    adapter: this.adapter
+                };
+            }
+            return adapterObj;
+        }
+    }, {
+        key: 'isLeader',
+        get: function get() {
+            if (!this.multiInstance) return true;
+            return this.leaderElector.isLeader;
+        }
+    }, {
+        key: '$',
+        get: function get() {
+            return this.observable$;
+        }
+    }]);
+
+    return RxDatabase;
+}();
 
 /**
  * returns all possible properties of a RxDatabase-instance
  * @return {string[]} property-names
  */
-let _properties = null;
+var _properties = null;
 export function properties() {
     if (!_properties) {
-        const pseudoInstance = new RxDatabase();
-        const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
-        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-        _properties = [...ownProperties, ...prototypeProperties];
+        var pseudoInstance = new RxDatabase();
+        var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
+        var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
+        _properties = [].concat(ownProperties, prototypeProperties);
     }
     return _properties;
 }
 
-export let create = (() => {
-    var _ref = _asyncToGenerator(function* ({
-        name,
-        adapter,
-        password,
-        multiInstance = true
-    }) {
-        util.validateCouchDBString(name);
+export var create = function () {
+    var _ref9 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee9(_ref10) {
+        var name = _ref10.name,
+            adapter = _ref10.adapter,
+            password = _ref10.password,
+            _ref10$multiInstance = _ref10.multiInstance,
+            multiInstance = _ref10$multiInstance === undefined ? true : _ref10$multiInstance;
+        var db;
+        return _regeneratorRuntime.wrap(function _callee9$(_context9) {
+            while (1) {
+                switch (_context9.prev = _context9.next) {
+                    case 0:
+                        util.validateCouchDBString(name);
 
-        // check if pouchdb-adapter
-        if (typeof adapter == 'string') {
-            if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
-                throw new Error(`Adapter ${adapter} not added.
-                 Use RxDB.plugin(require('pouchdb-adapter-${adapter}');`);
+                        // check if pouchdb-adapter
+
+                        if (!(typeof adapter == 'string')) {
+                            _context9.next = 6;
+                            break;
+                        }
+
+                        if (!(!PouchDB.adapters || !PouchDB.adapters[adapter])) {
+                            _context9.next = 4;
+                            break;
+                        }
+
+                        throw new Error('Adapter ' + adapter + ' not added.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-' + adapter + '\');');
+
+                    case 4:
+                        _context9.next = 9;
+                        break;
+
+                    case 6:
+                        util.isLevelDown(adapter);
+
+                        if (!(!PouchDB.adapters || !PouchDB.adapters.leveldb)) {
+                            _context9.next = 9;
+                            break;
+                        }
+
+                        throw new Error('To use leveldown-adapters, you have to add the leveldb-plugin.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));');
+
+                    case 9:
+                        if (!(password && typeof password !== 'string')) {
+                            _context9.next = 11;
+                            break;
+                        }
+
+                        throw new TypeError('password is no string');
+
+                    case 11:
+                        if (!(password && password.length < SETTINGS.minPassLength)) {
+                            _context9.next = 13;
+                            break;
+                        }
+
+                        throw new Error('password must have at least ' + SETTINGS.minPassLength + ' chars');
+
+                    case 13:
+                        db = new RxDatabase(name, adapter, password, multiInstance);
+                        _context9.next = 16;
+                        return db.prepare();
+
+                    case 16:
+                        return _context9.abrupt('return', db);
+
+                    case 17:
+                    case 'end':
+                        return _context9.stop();
+                }
             }
-        } else {
-            util.isLevelDown(adapter);
-            if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
-                throw new Error(`To use leveldown-adapters, you have to add the leveldb-plugin.
-                 Use RxDB.plugin(require('pouchdb-adapter-leveldb'));`);
-            }
-        }
+        }, _callee9, this);
+    }));
 
-        if (password && typeof password !== 'string') throw new TypeError('password is no string');
-        if (password && password.length < SETTINGS.minPassLength) throw new Error(`password must have at least ${SETTINGS.minPassLength} chars`);
-
-        const db = new RxDatabase(name, adapter, password, multiInstance);
-        yield db.prepare();
-
-        return db;
-    });
-
-    return function create(_x) {
-        return _ref.apply(this, arguments);
+    return function create(_x9) {
+        return _ref9.apply(this, arguments);
     };
-})();
+}();
 
 export { RxSchema };

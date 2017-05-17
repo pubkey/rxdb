@@ -4,9 +4,29 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
+
+var _typeof2 = require('babel-runtime/helpers/typeof');
+
+var _typeof3 = _interopRequireDefault(_typeof2);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
 exports.createAr = createAr;
@@ -32,27 +52,21 @@ var _RxChangeEvent = require('./RxChangeEvent');
 
 var RxChangeEvent = _interopRequireWildcard(_RxChangeEvent);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var RxDocument = function () {
     function RxDocument(collection, jsonData) {
-        _classCallCheck(this, RxDocument);
+        (0, _classCallCheck3['default'])(this, RxDocument);
 
         this.collection = collection;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new util.Rx.BehaviorSubject((0, _clone2.default)(jsonData));
+        this._dataSync$ = new util.Rx.BehaviorSubject((0, _clone2['default'])(jsonData));
 
         // current doc-data, changes when setting values etc
-        this._data = (0, _clone2.default)(jsonData);
+        this._data = (0, _clone2['default'])(jsonData);
 
         // false when _data !== _dataSync
         this._synced$ = new util.Rx.BehaviorSubject(true);
@@ -60,7 +74,7 @@ var RxDocument = function () {
         this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
 
-    _createClass(RxDocument, [{
+    (0, _createClass3['default'])(RxDocument, [{
         key: 'prepare',
         value: function prepare() {
             // set getter/setter/observable
@@ -85,7 +99,7 @@ var RxDocument = function () {
         key: 'resync',
         value: function resync() {
             if (this._synced$.getValue()) return;else {
-                this._data = (0, _clone2.default)(this._dataSync$.getValue());
+                this._data = (0, _clone2['default'])(this._dataSync$.getValue());
                 this._synced$.next(true);
             }
         }
@@ -111,12 +125,12 @@ var RxDocument = function () {
                 case 'INSERT':
                     break;
                 case 'UPDATE':
-                    var newData = (0, _clone2.default)(changeEvent.data.v);
+                    var newData = (0, _clone2['default'])(changeEvent.data.v);
                     delete newData._ext;
                     var prevSyncData = this._dataSync$.getValue();
                     var prevData = this._data;
 
-                    if ((0, _deepEqual2.default)(prevSyncData, prevData)) {
+                    if ((0, _deepEqual2['default'])(prevSyncData, prevData)) {
                         // document is in sync, overwrite _data
                         this._data = newData;
 
@@ -128,11 +142,11 @@ var RxDocument = function () {
                         // overwrite _rev of data
                         this._data._rev = newData._rev;
                     }
-                    this._dataSync$.next((0, _clone2.default)(newData));
+                    this._dataSync$.next((0, _clone2['default'])(newData));
                     break;
                 case 'REMOVE':
                     // remove from docCache to assure new upserted RxDocuments will be a new instance
-                    this.collection._docCache.delete(this.getPrimary());
+                    this.collection._docCache['delete'](this.getPrimary());
 
                     this._deleted$.next(true);
                     break;
@@ -165,15 +179,15 @@ var RxDocument = function () {
             if (!schemaObj) throw new Error('cannot observe a non-existed field (' + path + ')');
 
             return this._dataSync$.map(function (data) {
-                return _objectPath2.default.get(data, path);
+                return _objectPath2['default'].get(data, path);
             }).distinctUntilChanged().asObservable();
         }
     }, {
         key: 'populate',
         value: function () {
-            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(path, object) {
+            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(path, object) {
                 var schemaObj, value, refCollection;
-                return regeneratorRuntime.wrap(function _callee$(_context) {
+                return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
@@ -250,11 +264,11 @@ var RxDocument = function () {
 
             if (typeof objPath !== 'string') throw new TypeError('RxDocument.get(): objPath must be a string');
 
-            var valueObj = _objectPath2.default.get(this._data, objPath);
-            valueObj = (0, _clone2.default)(valueObj);
+            var valueObj = _objectPath2['default'].get(this._data, objPath);
+            valueObj = (0, _clone2['default'])(valueObj);
 
             // direct return if array or non-object
-            if ((typeof valueObj === 'undefined' ? 'undefined' : _typeof(valueObj)) != 'object' || Array.isArray(valueObj)) return valueObj;
+            if ((typeof valueObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(valueObj)) != 'object' || Array.isArray(valueObj)) return valueObj;
 
             this._defineGetterSetter(valueObj, objPath);
             return valueObj;
@@ -301,7 +315,7 @@ var RxDocument = function () {
     }, {
         key: 'toJSON',
         value: function toJSON() {
-            return (0, _clone2.default)(this._data);
+            return (0, _clone2['default'])(this._data);
         }
 
         /**
@@ -324,14 +338,14 @@ var RxDocument = function () {
             var pathEls = objPath.split('.');
             pathEls.pop();
             var rootPath = pathEls.join('.');
-            if (typeof _objectPath2.default.get(this._data, rootPath) === 'undefined') {
+            if (typeof _objectPath2['default'].get(this._data, rootPath) === 'undefined') {
                 throw new Error('cannot set childpath ' + objPath + '\n                 when rootPath ' + rootPath + ' not selected');
             }
 
             // check schema of changed field
             this.collection.schema.validate(value, objPath);
 
-            _objectPath2.default.set(this._data, objPath, value);
+            _objectPath2['default'].set(this._data, objPath, value);
 
             return this;
         }
@@ -344,9 +358,9 @@ var RxDocument = function () {
          * @return {boolean} false if nothing to save
          */
         value: function () {
-            var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
+            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
                 var ret, emitValue, changeEvent;
-                return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
@@ -358,7 +372,7 @@ var RxDocument = function () {
                                 throw new Error('RxDocument.save(): cant save deleted document');
 
                             case 2:
-                                if (!(0, _deepEqual2.default)(this._data, this._dataSync$.getValue())) {
+                                if (!(0, _deepEqual2['default'])(this._data, this._dataSync$.getValue())) {
                                     _context2.next = 5;
                                     break;
                                 }
@@ -374,7 +388,7 @@ var RxDocument = function () {
                                 this.collection.schema.validate(this._data);
 
                                 _context2.next = 10;
-                                return this.collection._pouchPut((0, _clone2.default)(this._data));
+                                return this.collection._pouchPut((0, _clone2['default'])(this._data));
 
                             case 10:
                                 ret = _context2.sent;
@@ -387,7 +401,7 @@ var RxDocument = function () {
                                 throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
 
                             case 13:
-                                emitValue = (0, _clone2.default)(this._data);
+                                emitValue = (0, _clone2['default'])(this._data);
 
                                 emitValue._rev = ret.rev;
 
@@ -400,7 +414,7 @@ var RxDocument = function () {
 
                                 // event
                                 this._synced$.next(true);
-                                this._dataSync$.next((0, _clone2.default)(emitValue));
+                                this._dataSync$.next((0, _clone2['default'])(emitValue));
 
                                 changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
@@ -424,8 +438,8 @@ var RxDocument = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
-                return regeneratorRuntime.wrap(function _callee3$(_context3) {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
@@ -501,7 +515,6 @@ var RxDocument = function () {
             return this._dataSync$.asObservable();
         }
     }]);
-
     return RxDocument;
 }();
 
@@ -532,7 +545,7 @@ function properties() {
         var pseudoRxDocument = new RxDocument();
         var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
         var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
-        _properties = [].concat(_toConsumableArray(ownProperties), _toConsumableArray(prototypeProperties), reserved);
+        _properties = [].concat((0, _toConsumableArray3['default'])(ownProperties), (0, _toConsumableArray3['default'])(prototypeProperties), reserved);
     }
     return _properties;
 }

@@ -1,22 +1,34 @@
+import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
+import _createClass from 'babel-runtime/helpers/createClass';
 import objectPath from 'object-path';
 import clone from 'clone';
 
-const validator = require('is-my-json-valid');
+var validator = require('is-my-json-valid');
 
 import * as util from './util';
 import * as RxDocument from './RxDocument';
 
-export class RxSchema {
-    constructor(jsonID) {
+export var RxSchema = function () {
+    function RxSchema(jsonID) {
+        var _this = this;
+
+        _classCallCheck(this, RxSchema);
+
         this.jsonID = jsonID;
 
         this.compoundIndexes = this.jsonID.compoundIndexes;
 
         // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.indexes.forEach(indexAr => {
-            indexAr.filter(index => !this.jsonID.required.includes(index)).filter(index => !index.includes('.')) // TODO make them sub-required
-            .forEach(index => this.jsonID.required.push(index));
+        this.indexes.forEach(function (indexAr) {
+            indexAr.filter(function (index) {
+                return !_this.jsonID.required.includes(index);
+            }).filter(function (index) {
+                return !index.includes('.');
+            }) // TODO make them sub-required
+            .forEach(function (index) {
+                return _this.jsonID.required.push(index);
+            });
         });
 
         // primary is always required
@@ -32,52 +44,14 @@ export class RxSchema {
         }
     }
 
-    get version() {
-        return this.jsonID.version;
-    }
-
-    /**
-     * @return {number[]} array with previous version-numbers
-     */
-    get previousVersions() {
-        let c = 0;
-        return new Array(this.version).fill(0).map(() => c++);
-    }
-
-    /**
-     * true if schema contains at least one encrypted path
-     * @type {boolean}
-     */
-    get crypt() {
-        if (!this._crypt) this._crypt = hasCrypt(this.jsonID);
-        return this._crypt;
-    }
-
-    get normalized() {
-        if (!this._normalized) this._normalized = normalize(this.jsonID);
-        return this._normalized;
-    }
-
-    getSchemaByObjectPath(path) {
+    RxSchema.prototype.getSchemaByObjectPath = function getSchemaByObjectPath(path) {
         path = path.replace(/\./g, '.properties.');
         path = 'properties.' + path;
         path = util.trimDots(path);
 
-        const ret = objectPath.get(this.jsonID, path);
+        var ret = objectPath.get(this.jsonID, path);
         return ret;
-    }
-
-    get topLevelFields() {
-        return Object.keys(this.normalized.properties);
-    }
-
-    /**
-     * get all encrypted paths
-     */
-    get encryptedPaths() {
-        if (!this._encryptedPaths) this._encryptedPaths = getEncryptedPaths(this.jsonID);
-        return this._encryptedPaths;
-    }
+    };
 
     /**
      * validate if the obj matches the schema
@@ -86,11 +60,13 @@ export class RxSchema {
      * @throws {Error} if not valid
      * @param {Object} obj equal to input-obj
      */
-    validate(obj, schemaPath = '') {
+    RxSchema.prototype.validate = function validate(obj) {
+        var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
         if (!this._validators) this._validators = {};
 
         if (!this._validators[schemaPath]) {
-            const schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+            var schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
 
             if (!schemaPart) {
                 throw new Error(JSON.stringify({
@@ -100,48 +76,109 @@ export class RxSchema {
             }
             this._validators[schemaPath] = validator(schemaPart);
         }
-        const useValidator = this._validators[schemaPath];
-        const isValid = useValidator(obj);
+        var useValidator = this._validators[schemaPath];
+        var isValid = useValidator(obj);
         if (isValid) return obj;else {
             throw new Error(JSON.stringify({
                 name: 'object does not match schema',
                 errors: useValidator.errors,
-                schemaPath,
-                obj,
+                schemaPath: schemaPath,
+                obj: obj,
                 schema: this.jsonID
             }));
         }
-    }
+    };
 
-    get hash() {
-        if (!this._hash) this._hash = util.hash(this.normalized);
-        return this._hash;
-    }
-
-    swapIdToPrimary(obj) {
+    RxSchema.prototype.swapIdToPrimary = function swapIdToPrimary(obj) {
         if (this.primaryPath == '_id' || obj[this.primaryPath]) return obj;
         obj[this.primaryPath] = obj._id;
         delete obj._id;
         return obj;
-    }
-    swapPrimaryToId(obj) {
+    };
+
+    RxSchema.prototype.swapPrimaryToId = function swapPrimaryToId(obj) {
+        var _this2 = this;
+
         if (this.primaryPath == '_id') return obj;
-        const ret = {};
-        Object.entries(obj).forEach(entry => {
-            const newKey = entry[0] == this.primaryPath ? '_id' : entry[0];
+        var ret = {};
+        Object.entries(obj).forEach(function (entry) {
+            var newKey = entry[0] == _this2.primaryPath ? '_id' : entry[0];
             ret[newKey] = entry[1];
         });
         return ret;
-    }
+    };
 
     /**
      * returns true if key-compression should be done
      */
-    doKeyCompression() {
-        return !!!this.jsonID.disableKeyCompression;
-    }
 
-}
+
+    RxSchema.prototype.doKeyCompression = function doKeyCompression() {
+        return !!!this.jsonID.disableKeyCompression;
+    };
+
+    _createClass(RxSchema, [{
+        key: 'version',
+        get: function get() {
+            return this.jsonID.version;
+        }
+
+        /**
+         * @return {number[]} array with previous version-numbers
+         */
+
+    }, {
+        key: 'previousVersions',
+        get: function get() {
+            var c = 0;
+            return new Array(this.version).fill(0).map(function () {
+                return c++;
+            });
+        }
+
+        /**
+         * true if schema contains at least one encrypted path
+         * @type {boolean}
+         */
+
+    }, {
+        key: 'crypt',
+        get: function get() {
+            if (!this._crypt) this._crypt = hasCrypt(this.jsonID);
+            return this._crypt;
+        }
+    }, {
+        key: 'normalized',
+        get: function get() {
+            if (!this._normalized) this._normalized = normalize(this.jsonID);
+            return this._normalized;
+        }
+    }, {
+        key: 'topLevelFields',
+        get: function get() {
+            return Object.keys(this.normalized.properties);
+        }
+
+        /**
+         * get all encrypted paths
+         */
+
+    }, {
+        key: 'encryptedPaths',
+        get: function get() {
+            if (!this._encryptedPaths) this._encryptedPaths = getEncryptedPaths(this.jsonID);
+            return this._encryptedPaths;
+        }
+    }, {
+        key: 'hash',
+        get: function get() {
+            if (!this._hash) this._hash = util.hash(this.normalized);
+            return this._hash;
+        }
+    }]);
+
+    return RxSchema;
+}();
 
 /**
  * returns all encrypted paths of the schema
@@ -149,7 +186,7 @@ export class RxSchema {
  * @return {Object} with paths as attr and schema as value
  */
 export function getEncryptedPaths(jsonSchema) {
-    const ret = {};
+    var ret = {};
 
     function traverse(currentObj, currentPath) {
         if (typeof currentObj !== 'object') return;
@@ -157,8 +194,8 @@ export function getEncryptedPaths(jsonSchema) {
             ret[currentPath.substring(1)] = currentObj;
             return;
         }
-        for (let attributeName in currentObj) {
-            let nextPath = currentPath;
+        for (var attributeName in currentObj) {
+            var nextPath = currentPath;
             if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
         }
@@ -173,31 +210,35 @@ export function getEncryptedPaths(jsonSchema) {
  * @return {boolean} isEncrypted
  */
 export function hasCrypt(jsonSchema) {
-    const paths = getEncryptedPaths(jsonSchema);
+    var paths = getEncryptedPaths(jsonSchema);
     if (Object.keys(paths).length > 0) return true;else return false;
 }
 
-export function getIndexes(jsonID, prePath = '') {
-    let indexes = [];
-    Object.entries(jsonID).forEach(entry => {
-        const key = entry[0];
-        const obj = entry[1];
-        const path = key == 'properties' ? prePath : util.trimDots(prePath + '.' + key);
+export function getIndexes(jsonID) {
+    var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+    var indexes = [];
+    Object.entries(jsonID).forEach(function (entry) {
+        var key = entry[0];
+        var obj = entry[1];
+        var path = key == 'properties' ? prePath : util.trimDots(prePath + '.' + key);
 
         if (obj.index) indexes.push([path]);
 
         if (typeof obj === 'object' && !Array.isArray(obj)) {
-            const add = getIndexes(obj, path);
+            var add = getIndexes(obj, path);
             indexes = indexes.concat(add);
         }
     });
 
     if (prePath == '') {
-        const addCompound = jsonID.compoundIndexes || [];
+        var addCompound = jsonID.compoundIndexes || [];
         indexes = indexes.concat(addCompound);
     }
 
-    indexes = indexes.filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique;
+    indexes = indexes.filter(function (elem, pos, arr) {
+        return arr.indexOf(elem) == pos;
+    }); // unique;
     return indexes;
 }
 
@@ -207,7 +248,9 @@ export function getIndexes(jsonID, prePath = '') {
  * @return {string} primaryPath which is _id if none defined
  */
 export function getPrimary(jsonID) {
-    const ret = Object.keys(jsonID.properties).filter(key => jsonID.properties[key].primary).shift();
+    var ret = Object.keys(jsonID.properties).filter(function (key) {
+        return jsonID.properties[key].primary;
+    }).shift();
     if (!ret) return '_id';else return ret;
 }
 
@@ -221,16 +264,12 @@ export function getPrimary(jsonID) {
 export function checkFieldNameRegex(fieldName) {
     if (fieldName == '') return;
 
-    if (['properties', 'language'].includes(fieldName)) throw new Error(`fieldname is not allowed: ${fieldName}`);
+    if (['properties', 'language'].includes(fieldName)) throw new Error('fieldname is not allowed: ' + fieldName);
 
-    const regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
-    const regex = new RegExp(regexStr);
+    var regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
+    var regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
-        throw new Error(`
-        fieldnames must match the regex:
-        - regex: ${regexStr}
-        - fieldName: ${fieldName}
-        `);
+        throw new Error('\n        fieldnames must match the regex:\n        - regex: ' + regexStr + '\n        - fieldName: ' + fieldName + '\n        ');
     }
 }
 
@@ -245,7 +284,7 @@ export function validateFieldsDeep(jsonSchema) {
         if (typeof fieldName == 'string' && typeof schemaObj == 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
-        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array') throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array') throw new Error('name \'item\' reserved for array-fields: ' + fieldName);
 
         // if ref given, must be type=='string' or type=='array' with string-items
         if (schemaObj.hasOwnProperty('ref')) {
@@ -253,18 +292,18 @@ export function validateFieldsDeep(jsonSchema) {
                 case 'string':
                     break;
                 case 'array':
-                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type != 'string') throw new Error(`fieldname ${fieldName} has a ref-array but items-type is not string`);
+                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type != 'string') throw new Error('fieldname ' + fieldName + ' has a ref-array but items-type is not string');
                     break;
                 default:
-                    throw new Error(`fieldname ${fieldName} has a ref but is not type string or array<string>`);
+                    throw new Error('fieldname ' + fieldName + ' has a ref but is not type string or array<string>');
                     break;
             }
         }
 
         // if primary is ref, throw
-        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) throw new Error(`fieldname ${fieldName} cannot be primary and ref at same time`);
+        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) throw new Error('fieldname ' + fieldName + ' cannot be primary and ref at same time');
 
-        const isNested = path.split('.').length >= 2;
+        var isNested = path.split('.').length >= 2;
 
         // nested only
         if (isNested) {
@@ -274,17 +313,17 @@ export function validateFieldsDeep(jsonSchema) {
         // first level
         if (!isNested) {
             // check underscore fields
-            if (fieldName.charAt(0) == '_') throw new Error(`first level-fields cannot start with underscore _ ${fieldName}`);
+            if (fieldName.charAt(0) == '_') throw new Error('first level-fields cannot start with underscore _ ' + fieldName);
         }
     }
 
     function traverse(currentObj, currentPath) {
         if (typeof currentObj !== 'object') return;
-        for (let attributeName in currentObj) {
+        for (var attributeName in currentObj) {
             if (!currentObj.properties) {
                 checkField(attributeName, currentObj[attributeName], currentPath);
             }
-            let nextPath = currentPath;
+            var nextPath = currentPath;
             if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
         }
@@ -305,13 +344,13 @@ export function checkSchema(jsonID) {
     if (jsonID.properties._rev) throw new Error('schema defines ._rev, this will be done automatically');
 
     // check version
-    if (!jsonID.hasOwnProperty('version') || typeof jsonID.version !== 'number' || jsonID.version < 0) throw new Error(`schema need an number>=0 as version; given: ${jsonID.version}`);
+    if (!jsonID.hasOwnProperty('version') || typeof jsonID.version !== 'number' || jsonID.version < 0) throw new Error('schema need an number>=0 as version; given: ' + jsonID.version);
 
     validateFieldsDeep(jsonID);
 
-    let primaryPath;
-    Object.keys(jsonID.properties).forEach(key => {
-        const value = jsonID.properties[key];
+    var primaryPath = void 0;
+    Object.keys(jsonID.properties).forEach(function (key) {
+        var value = jsonID.properties[key];
         // check primary
         if (value.primary) {
             if (primaryPath) throw new Error('primary can only be defined once');
@@ -325,36 +364,41 @@ export function checkSchema(jsonID) {
         }
 
         // check if RxDocument-property
-        if (RxDocument.properties().includes(key)) throw new Error(`top-level fieldname is not allowed: ${key}`);
+        if (RxDocument.properties().includes(key)) throw new Error('top-level fieldname is not allowed: ' + key);
     });
 
     if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath)) throw new Error('primary is always required, do not declare it as required');
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        let error = null;
+        var error = null;
         if (!Array.isArray(jsonID.compoundIndexes)) throw new Error('compoundIndexes must be an array');
-        jsonID.compoundIndexes.forEach(ar => {
+        jsonID.compoundIndexes.forEach(function (ar) {
             if (!Array.isArray(ar)) throw new Error('compoundIndexes must contain arrays');
 
-            ar.forEach(str => {
+            ar.forEach(function (str) {
                 if (typeof str !== 'string') throw new Error('compoundIndexes.array must contains strings');
             });
         });
     }
 
     // check that indexes are string
-    getIndexes(jsonID).reduce((a, b) => a.concat(b), []).filter((elem, pos, arr) => arr.indexOf(elem) == pos) // unique
-    .map(key => {
-        const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
-        if (!schemaObj || typeof schemaObj !== 'object') throw new Error(`given index(${key}) is not defined in schema`);
+    getIndexes(jsonID).reduce(function (a, b) {
+        return a.concat(b);
+    }, []).filter(function (elem, pos, arr) {
+        return arr.indexOf(elem) == pos;
+    }) // unique
+    .map(function (key) {
+        var schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
+        if (!schemaObj || typeof schemaObj !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
         return {
-            key,
-            schemaObj
+            key: key,
+            schemaObj: schemaObj
         };
-    }).filter(index => index.schemaObj.type != 'string' && index.schemaObj.type != 'integer').forEach(index => {
-        throw new Error(`given indexKey (${index.key}) is not type:string but
-                ${index.schemaObj.type}`);
+    }).filter(function (index) {
+        return index.schemaObj.type != 'string' && index.schemaObj.type != 'integer';
+    }).forEach(function (index) {
+        throw new Error('given indexKey (' + index.key + ') is not type:string but\n                ' + index.schemaObj.type);
     });
 }
 
@@ -372,7 +416,7 @@ export function normalize(jsonSchema) {
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-const fillWithDefaults = function (schemaObj) {
+var fillWithDefaults = function fillWithDefaults(schemaObj) {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
@@ -399,7 +443,13 @@ const fillWithDefaults = function (schemaObj) {
     return schemaObj;
 };
 
-export function create(jsonID, doCheck = true) {
+export function create(jsonID) {
+    var doCheck = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
     if (doCheck) checkSchema(jsonID);
     return new RxSchema(fillWithDefaults(jsonID));
+}
+
+export function isInstanceOf(obj) {
+    return obj instanceof RxSchema;
 }

@@ -4,14 +4,13 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * if a query is observed and a changeEvent comes in,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * the QueryChangeDetector tries to execute the changeEvent-delta on the exisiting query-results
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * or tells the query it should re-exec on the database if previous not possible.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * This works equal to meteors oplog-observe-driver
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * @link https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.enableDebugging = enableDebugging;
 exports.enable = enable;
@@ -27,16 +26,22 @@ var _objectPath = require('object-path');
 
 var _objectPath2 = _interopRequireDefault(_objectPath);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var DEBUG = false; /**
+                    * if a query is observed and a changeEvent comes in,
+                    * the QueryChangeDetector tries to execute the changeEvent-delta on the exisiting query-results
+                    * or tells the query it should re-exec on the database if previous not possible.
+                    *
+                    * This works equal to meteors oplog-observe-driver
+                    * @link https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md
+                    */
 
-var DEBUG = false;
 var ENABLED = false;
 
 var QueryChangeDetector = function () {
     function QueryChangeDetector(query) {
-        _classCallCheck(this, QueryChangeDetector);
+        (0, _classCallCheck3['default'])(this, QueryChangeDetector);
 
         this.query = query;
         this.primaryKey = this.query.collection.schema.primaryPath;
@@ -48,7 +53,7 @@ var QueryChangeDetector = function () {
      */
 
 
-    _createClass(QueryChangeDetector, [{
+    (0, _createClass3['default'])(QueryChangeDetector, [{
         key: 'runChangeDetection',
         value: function runChangeDetection(changeEvents) {
             var _this = this;
@@ -278,8 +283,8 @@ var QueryChangeDetector = function () {
 
             var changed = false;
             sortFields.find(function (field) {
-                var beforeData = _objectPath2.default.get(docDataBefore, field);
-                var afterData = _objectPath2.default.get(docDataAfter, field);
+                var beforeData = _objectPath2['default'].get(docDataBefore, field);
+                var afterData = _objectPath2['default'].get(docDataAfter, field);
                 if (beforeData != afterData) {
                     changed = true;
                     return true;
@@ -350,7 +355,6 @@ var QueryChangeDetector = function () {
             return sortedDocs;
         }
     }]);
-
     return QueryChangeDetector;
 }();
 

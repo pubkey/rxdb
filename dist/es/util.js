@@ -1,5 +1,5 @@
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
+import _regeneratorRuntime from 'babel-runtime/regenerator';
+import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 /**
  * this contains a mapping to basic dependencies
  * which should be easy to change
@@ -32,21 +32,21 @@ import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/distinct';
 
-export const Rx = {
-    Observable,
-    Subject,
-    BehaviorSubject
+export var Rx = {
+    Observable: Observable,
+    Subject: Subject,
+    BehaviorSubject: BehaviorSubject
 };
 
 // crypto-js
 import * as crypto_AES from 'crypto-js/aes';
 import * as crypto_enc from 'crypto-js/enc-utf8';
 export function encrypt(value, password) {
-    const encrypted = crypto_AES.encrypt(value, password);
+    var encrypted = crypto_AES.encrypt(value, password);
     return encrypted.toString();
 }
 export function decrypt(ciphertext, password) {
-    const decrypted = crypto_AES.decrypt(ciphertext, password);
+    var decrypted = crypto_AES.decrypt(ciphertext, password);
     return decrypted.toString(crypto_enc);
 }
 
@@ -65,42 +65,61 @@ export function isLevelDown(adapter) {
  * @param  {?string} [contains=''] contains
  * @return {Promise}       [description]
  */
-export let assertThrowsAsync = (() => {
-    var _ref = _asyncToGenerator(function* (test, error = Error, contains = '') {
-        const shouldErrorName = typeof error === 'string' ? error : error.name;
+export var assertThrowsAsync = function () {
+    var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee(test) {
+        var error = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Error;
+        var contains = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+        var shouldErrorName;
+        return _regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+                switch (_context.prev = _context.next) {
+                    case 0:
+                        shouldErrorName = typeof error === 'string' ? error : error.name;
+                        _context.prev = 1;
+                        _context.next = 4;
+                        return test();
 
-        try {
-            yield test();
-        } catch (e) {
+                    case 4:
+                        _context.next = 13;
+                        break;
 
-            // wrong type
-            if (e.constructor.name != shouldErrorName) {
-                throw new Error(`
-            util.assertThrowsAsync(): Wrong Error-type
-            - is    : ${e.constructor.name}
-            - should: ${shouldErrorName}
-            - error: ${e.toString()}
-            `);
+                    case 6:
+                        _context.prev = 6;
+                        _context.t0 = _context['catch'](1);
+
+                        if (!(_context.t0.constructor.name != shouldErrorName)) {
+                            _context.next = 10;
+                            break;
+                        }
+
+                        throw new Error('\n            util.assertThrowsAsync(): Wrong Error-type\n            - is    : ' + _context.t0.constructor.name + '\n            - should: ' + shouldErrorName + '\n            - error: ' + _context.t0.toString() + '\n            ');
+
+                    case 10:
+                        if (!(contains != '' && !_context.t0.toString().includes(contains))) {
+                            _context.next = 12;
+                            break;
+                        }
+
+                        throw new Error('\n              util.assertThrowsAsync(): Error does not contain\n              - should contain: ' + contains + '\n              - is string: ' + _context.t0.toString() + '\n            ');
+
+                    case 12:
+                        return _context.abrupt('return', 'util.assertThrowsAsync(): everything is fine');
+
+                    case 13:
+                        throw new Error('util.assertThrowsAsync(): Missing rejection' + (error ? ' with ' + error.name : ''));
+
+                    case 14:
+                    case 'end':
+                        return _context.stop();
+                }
             }
-
-            // check if contains
-            if (contains != '' && !e.toString().includes(contains)) {
-                throw new Error(`
-              util.assertThrowsAsync(): Error does not contain
-              - should contain: ${contains}
-              - is string: ${e.toString()}
-            `);
-            }
-            // all is ok
-            return 'util.assertThrowsAsync(): everything is fine';
-        }
-        throw new Error('util.assertThrowsAsync(): Missing rejection' + (error ? ' with ' + error.name : ''));
-    });
+        }, _callee, this, [[1, 6]]);
+    }));
 
     return function assertThrowsAsync(_x) {
         return _ref.apply(this, arguments);
     };
-})();
+}();
 
 /**
  * this is a very fast hashing but its unsecure
@@ -110,10 +129,10 @@ export let assertThrowsAsync = (() => {
  */
 export function fastUnsecureHash(obj) {
     if (typeof obj !== 'string') obj = JSON.stringify(obj);
-    let hash = 0,
-        i,
-        chr,
-        len;
+    var hash = 0,
+        i = void 0,
+        chr = void 0,
+        len = void 0;
     if (obj.length === 0) return hash;
     for (i = 0, len = obj.length; i < len; i++) {
         chr = obj.charCodeAt(i);
@@ -129,10 +148,10 @@ export function fastUnsecureHash(obj) {
  *  because pouchdb uses the same
  *  and build-size could be reduced by 9kb
  */
-const Md5 = require('spark-md5');
+var Md5 = require('spark-md5');
 export function hash(obj) {
-    const salt = 'dW8a]Qsà<<>0lW6{3Fqxp3IdößBh:Fot';
-    let msg = obj;
+    var salt = 'dW8a]Qsà<<>0lW6{3Fqxp3IdößBh:Fot';
+    var msg = obj;
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
     return Md5.hash(msg);
 }
@@ -150,27 +169,43 @@ export function generate_id() {
  * @param  {Number}  [ms=0]
  * @return {Promise}
  */
-export let promiseWait = (() => {
-    var _ref2 = _asyncToGenerator(function* (ms = 0) {
-        return new Promise(function (res) {
-            return setTimeout(res, ms);
-        });
-    });
+export var promiseWait = function () {
+    var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+        var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+            while (1) {
+                switch (_context2.prev = _context2.next) {
+                    case 0:
+                        return _context2.abrupt('return', new Promise(function (res) {
+                            return setTimeout(res, ms);
+                        }));
+
+                    case 1:
+                    case 'end':
+                        return _context2.stop();
+                }
+            }
+        }, _callee2, this);
+    }));
 
     return function promiseWait() {
         return _ref2.apply(this, arguments);
     };
-})();
+}();
 
 /**
  * this returns a promise and the resolve-function
  * which can be called to resolve before the timeout
  * @param  {Number}  [ms=0] [description]
  */
-export function promiseWaitResolveable(ms = 0) {
-    const ret = {};
-    ret.promise = new Promise(res => {
-        ret.resolve = () => res();
+export function promiseWaitResolveable() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+    var ret = {};
+    ret.promise = new Promise(function (res) {
+        ret.resolve = function () {
+            return res();
+        };
         setTimeout(res, ms);
     });
     return ret;
@@ -181,21 +216,49 @@ export function promiseWaitResolveable(ms = 0) {
  * @param  {function}  fun
  * @return {Promise}
  */
-export let waitUntil = (() => {
-    var _ref3 = _asyncToGenerator(function* (fun) {
-        let ok = false;
-        while (!ok) {
-            yield promiseWait(10);
-            ok = yield fun();
-        }
-    });
+export var waitUntil = function () {
+    var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(fun) {
+        var ok;
+        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+            while (1) {
+                switch (_context3.prev = _context3.next) {
+                    case 0:
+                        ok = false;
 
-    return function waitUntil(_x2) {
+                    case 1:
+                        if (ok) {
+                            _context3.next = 9;
+                            break;
+                        }
+
+                        _context3.next = 4;
+                        return promiseWait(10);
+
+                    case 4:
+                        _context3.next = 6;
+                        return fun();
+
+                    case 6:
+                        ok = _context3.sent;
+                        _context3.next = 1;
+                        break;
+
+                    case 9:
+                    case 'end':
+                        return _context3.stop();
+                }
+            }
+        }, _callee3, this);
+    }));
+
+    return function waitUntil(_x6) {
         return _ref3.apply(this, arguments);
     };
-})();
+}();
 
-export function filledArray(size = 0) {
+export function filledArray() {
+    var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
     return new Array(size).fill(0);
 }
 
@@ -206,7 +269,7 @@ export function filledArray(size = 0) {
  */
 export function ucfirst(str) {
     str += '';
-    const f = str.charAt(0).toUpperCase();
+    var f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
 }
 
@@ -214,8 +277,8 @@ export function ucfirst(str) {
  * @link https://de.wikipedia.org/wiki/Base58
  * this does not start with the numbers to generate valid variable-names
  */
-const base58Chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
-const base58Length = base58Chars.length;
+var base58Chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+var base58Length = base58Chars.length;
 
 /**
  * transform a number to a string by using only base58 chars
@@ -224,14 +287,16 @@ const base58Length = base58Chars.length;
  * @return {string} the string-representation of the number | '2oMX'
  */
 export function numberToLetter(nr) {
-    const digits = [];
+    var digits = [];
     do {
-        const v = nr % base58Length;
+        var v = nr % base58Length;
         digits.push(v);
         nr = Math.floor(nr / base58Length);
     } while (nr-- > 0);
 
-    return digits.reverse().map(d => base58Chars[d]).join('');
+    return digits.reverse().map(function (d) {
+        return base58Chars[d];
+    }).join('');
 }
 
 /**
@@ -241,12 +306,12 @@ export function numberToLetter(nr) {
  */
 export function trimDots(str) {
     // start
-    while (str.charAt(0) == '.') str = str.substr(1);
-
-    // end
-    while (str.slice(-1) == '.') str = str.slice(0, -1);
-
-    return str;
+    while (str.charAt(0) == '.') {
+        str = str.substr(1);
+    } // end
+    while (str.slice(-1) == '.') {
+        str = str.slice(0, -1);
+    }return str;
 }
 
 /**
@@ -262,15 +327,10 @@ export function validateCouchDBString(name) {
     // do not check, if foldername is given
     if (name.includes('/')) return true;
 
-    const regStr = '^[a-z][a-z0-9]*$';
-    const reg = new RegExp(regStr);
+    var regStr = '^[a-z][a-z0-9]*$';
+    var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new Error(`
-            collection- and database-names must match the regex:
-            - regex: ${regStr}
-            - given: ${name}
-            - info: if your database-name specifies a folder, the name must contain the slash-char '/'
-    `);
+        throw new Error('\n            collection- and database-names must match the regex:\n            - regex: ' + regStr + '\n            - given: ' + name + '\n            - info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n    ');
     }
 
     return true;
@@ -282,13 +342,15 @@ export function validateCouchDBString(name) {
  * @param {number} [length=10] length
  * @return {string}
  */
-export function randomCouchString(length = 10) {
-    let text = '';
-    const possible = 'abcdefghijklmnopqrstuvwxyz';
+export function randomCouchString() {
+    var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
 
-    for (let i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
+    var text = '';
+    var possible = 'abcdefghijklmnopqrstuvwxyz';
 
-    return text;
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }return text;
 }
 
 /**
@@ -298,22 +360,28 @@ export function randomCouchString(length = 10) {
  * @param  {?boolean} noArraysort
  * @return {Object} sorted
  */
-export function sortObject(obj, noArraySort = false) {
+export function sortObject(obj) {
+    var noArraySort = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
     if (!obj) return obj; // do not sort null, false or undefined
 
     // array
     if (!noArraySort && Array.isArray(obj)) {
-        return obj.sort((a, b) => {
+        return obj.sort(function (a, b) {
             if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
 
             if (typeof a === 'object') return 1;else return -1;
-        }).map(i => sortObject(i));
+        }).map(function (i) {
+            return sortObject(i);
+        });
     }
 
     // object
     if (typeof obj === 'object') {
-        const out = {};
-        Object.keys(obj).sort((a, b) => a.localeCompare(b)).forEach(key => {
+        var out = {};
+        Object.keys(obj).sort(function (a, b) {
+            return a.localeCompare(b);
+        }).forEach(function (key) {
             out[key] = sortObject(obj[key]);
         });
         return out;

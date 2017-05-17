@@ -4,11 +4,17 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require("babel-runtime/helpers/createClass");
+
+var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
@@ -18,7 +24,7 @@ var ChangeEventBuffer = function () {
     function ChangeEventBuffer(collection) {
         var _this = this;
 
-        _classCallCheck(this, ChangeEventBuffer);
+        (0, _classCallCheck3["default"])(this, ChangeEventBuffer);
 
         this.collection = collection;
         this.subs = [];
@@ -38,7 +44,7 @@ var ChangeEventBuffer = function () {
         }));
     }
 
-    _createClass(ChangeEventBuffer, [{
+    (0, _createClass3["default"])(ChangeEventBuffer, [{
         key: "_handleChangeEvent",
         value: function _handleChangeEvent(changeEvent) {
             this.counter++;
@@ -105,7 +111,6 @@ var ChangeEventBuffer = function () {
             });
         }
     }]);
-
     return ChangeEventBuffer;
 }();
 
