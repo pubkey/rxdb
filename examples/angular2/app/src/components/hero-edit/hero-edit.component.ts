@@ -24,6 +24,6 @@ export class HeroEditComponent {
 
     async cancel() {
         this.hero.resync();
-        this.done.emit(false)
+        this.done.emit(false);
     }
 }
