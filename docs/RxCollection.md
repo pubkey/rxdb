@@ -19,6 +19,8 @@ The name uniquely identifies the collection and should be used to refind the col
 ### schema
 The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.
 
+### pouchSettings
+You can pass settings directly to the [pouchdb database create options](https://pouchdb.com/api.html#options) through this property.
 
 ## Get a collection from the database
 To get an existing collection from the database, call the collection-name directly on the database:
