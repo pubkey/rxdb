@@ -199,7 +199,7 @@ destroy(): void;
 
 declare class PouchDB {
     constructor(name: string, options: { adapter: string });
-    info();
+    info(): any;
 }
 
 
