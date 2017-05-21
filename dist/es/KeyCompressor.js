@@ -25,7 +25,7 @@ var KeyCompressor = function () {
         var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
         var ret = {};
-        if (typeof obj !== 'object') return obj;
+        if (typeof obj !== 'object' || obj === null) return obj;
         if (Array.isArray(obj)) {
             return obj.map(function (o) {
                 return _this._compressObj(o, util.trimDots(path + '.item'));
