@@ -303,7 +303,7 @@ export function validateFieldsDeep(jsonSchema) {
         // if primary is ref, throw
         if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) throw new Error('fieldname ' + fieldName + ' cannot be primary and ref at same time');
 
-        var isNested = path.split('.').length >= 2;
+        var isNested = path.split('.').length > 2;
 
         // nested only
         if (isNested) {
