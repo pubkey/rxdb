@@ -305,24 +305,6 @@ class RxQuery {
         return docs;
     }
 
-  /**
-   * updates all found documents
-   * @param  {object} updateObj
-   * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
-   */
-    async update(updateObj) {
-        const docs = await this.exec();
-        if (Array.isArray(docs)) {
-            await Promise.all(
-                docs.map(doc => doc.update(updateObj))
-            );
-        } else {
-            // via findOne()
-            await docs.update(updateObj);
-        }
-        return docs;
-    }
-
     async exec() {
         return await this.$
             .first()
