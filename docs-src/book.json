@@ -1,0 +1,31 @@
+{
+    "gitbook": "3.2.2",
+    "root": ".",
+    "output": "./docs",
+    "title": "RxDB - Documentation",
+    "plugins": [
+        "edit-link",
+        "github",
+        "toggle-chapters",
+        "custom-favicon",
+        "-sharing"
+    ],
+    "links": {
+        "sidebar": {
+            "Follow @twitter ": "https://twitter.com/rxdbjs",
+            "Chat @gitter ": "https://gitter.im/pubkey/rxdb",
+            "Star @github ": "https://github.com/pubkey/rxdb",
+            "Support @patreon": "https://www.patreon.com/rxdb"
+        }
+    },
+    "pluginsConfig": {
+        "favicon": "./files/logo/icon.ico",
+        "edit-link": {
+            "base": "https://github.com/pubkey/rxdb/tree/master/docs-src",
+            "label": "Edit This Page"
+        },
+        "github": {
+            "url": "https://github.com/pubkey/rxdb"
+        }
+    }
+}

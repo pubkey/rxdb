@@ -3,6 +3,7 @@ examples/
 docfiles/
 .git/
 docs/
+docs-src/
 log.txt
 test/
 .transpile_state.json
