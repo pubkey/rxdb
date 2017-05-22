@@ -1,7 +1,6 @@
 import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
-import modify from 'modifyjs';
 
 import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
@@ -250,33 +249,6 @@ class RxDocument {
 
         return this;
     };
-
-    /**
-     * updates document
-     *  @param  {object} updateObj
-     */
-    async update(updateObj) {
-        const newDoc = modify(this._data, updateObj);
-
-        Object.keys(this._data).forEach((previousPropName) => {
-            if (newDoc[previousPropName]) {
-                // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
-                // which causes problems with "readonly" fields
-                if (!deepEqual(this[previousPropName], newDoc[previousPropName]))
-                    this[previousPropName] = newDoc[previousPropName];
-
-            } else
-                delete this[previousPropName];
-
-        });
-        delete newDoc._rev;
-        delete newDoc._id;
-        Object.keys(newDoc).forEach(newPropName => {
-            if (!deepEqual(this[newPropName], newDoc[newPropName]))
-                this[newPropName] = newDoc[newPropName];
-        });
-        await this.save();
-    }
 
     /**
      * save document if its data has changed
