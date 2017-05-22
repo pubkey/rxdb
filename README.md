@@ -401,7 +401,7 @@ As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.c
 
 ## Getting started
 
-Get started now by [reading the docs](./docs/README.md) or exploring the [example-projects](./examples).
+Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or exploring the [example-projects](./examples).
 
 ## Contribute
 [Check out how you can contribute to this project](./docs/Contribute.md).
