@@ -14,12 +14,12 @@ Bugfixes:
 ## 4.0.0 (May 5, 2017)
 
 Breaking:
-  - RxQuery's are now [immutable](docs/RxQuery.md#notice-rxquerys-are-immutable)
+  - RxQuery's are now [immutable](https://pubkey.github.io/rxdb/RxQuery.html#notice-rxquerys-are-immutable)
   - RxQuery.$ does not emit `null` when running
   - RxQuery will sort by primary (ASC) as default
 
 Features:
-  - Added [QueryChangeDetection](docs/QueryChangeDetection.md) (in **beta**, disabled by default)
+  - Added [QueryChangeDetection](https://pubkey.github.io/rxdb/QueryChangeDetection.html) (in **beta**, disabled by default)
 
 Other:
   - upgraded to pouchdb [v6.2.0](https://pouchdb.com/2017/04/20/pouchdb-6.2.0.html)
@@ -40,7 +40,7 @@ Bugfixes:
 ## 3.0.6 (March 29, 2017)
 
 Features:
-  - [Population](https://github.com/pubkey/rxdb/blob/master/docs/Population.md) can now be done on arrays
+  - [Population](https://pubkey.github.io/rxdb/Population.html) can now be done on arrays
 
 Other:
   - improved typings
@@ -65,8 +65,8 @@ Bugfixes:
 ## 3.0.3 (March 6, 2017)
 
 Features:
-  - Added RxDocument.[deleted](docs/RxDocument.md#get-deleted)
-  - Added RxDocument.[synced](docs/RxDocument.md#get-synced)
+  - Added RxDocument.[deleted](https://pubkey.github.io/rxdb/RxDocument.html#get-deleted)
+  - Added RxDocument.[synced](https://pubkey.github.io/rxdb/RxDocument.html#get-synced)
   - moved from [jsonschema](https://www.npmjs.com/package/jsonschema) to [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid)
 
 Bugfixes:
@@ -85,14 +85,14 @@ Bugfixes:
 ## 3.0.0 (February 27, 2017)
 
 Features:
-  - added [DataMigration](docs/DataMigration.md)
-  - added [ORM/DRM](docs/ORM.md)-capabilities
-  - added [RxQuery.remove()](docs/RxQuery.md)
-  - added [Population](docs/Population.md)
-  - added [RxDocument.deleted$](docs/RxDocument.md#deleted)
-  - added [RxDocument.synced$](docs/RxDocument.md#synced)
-  - added [RxDocument.resnyc()](docs/RxDocument.md#resync)
-  - added [RxCollection.upsert()](docs/RxDocument.md#synced)
+  - added [DataMigration](https://pubkey.github.io/rxdb/DataMigration.html)
+  - added [ORM/DRM](https://pubkey.github.io/rxdb/ORM.html)-capabilities
+  - added [RxQuery.remove()](https://pubkey.github.io/rxdb/RxQuery.html)
+  - added [Population](https://pubkey.github.io/rxdb/Population.html)
+  - added [RxDocument.deleted$](https://pubkey.github.io/rxdb/RxDocument.html#deleted)
+  - added [RxDocument.synced$](https://pubkey.github.io/rxdb/RxDocument.html#synced)
+  - added [RxDocument.resnyc()](https://pubkey.github.io/rxdb/RxDocument.html#resync)
+  - added [RxCollection.upsert()](https://pubkey.github.io/rxdb/RxDocument.html#synced)
   - non-top-level-indexes are now allowed
   - `RxQuery.sort()` now works on non-top-level-indexes
 
@@ -101,8 +101,8 @@ Bugfixes:
 
 Breaking:
   - Collection-names must match `^[a-z][a-z0-9]*$` Fixes [#45](https://github.com/pubkey/rxdb/issues/45)
-  - RxDB.create has new api with destructuring [see](docs/RxDatabase.md)
-  - RxDatabase.collection() has new api with destructuring [see](docs/RxDatabase.md)
+  - RxDB.create has new api with destructuring [see](https://pubkey.github.io/rxdb/RxDatabase.html)
+  - RxDatabase.collection() has new api with destructuring [see](https://pubkey.github.io/rxdb/RxDatabase.html)
   - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
   - `RxDatabase.collection()` only to create collection, use `myDatabase.heroes` to get existing one
   - `RxDB.create()` multiInstance is now true by default
@@ -161,12 +161,12 @@ Bugfixes:
 ## 1.7.7 (January 13, 2017)
 
 Features:
-  - add [Proxy-wrapping arround RxDocument](./docs/RxDocument.md)
+  - add [Proxy-wrapping arround RxDocument](https://pubkey.github.io/rxdb/RxDocument.html)
 
 ## 1.6.7 (January 11, 2017)
 
 Features:
-  - add [middleware-hooks](./docs/Middleware.md)
+  - add [middleware-hooks](https://pubkey.github.io/rxdb/Middleware.html)
 
 ## 1.5.6 (December 22, 2016)
 
@@ -178,7 +178,7 @@ Bugfixes:
 Features:
   - refactor socket to save db-io
   - wrap BroadcastChannel-API
-  - added [leader-election](./docs/LeaderElection.md)
+  - added [leader-election](https://pubkey.github.io/rxdb/LeaderElection.html)
   - sync() will only start if db is leader
 
 Bugfixes:
