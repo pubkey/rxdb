@@ -261,27 +261,6 @@ describe('RxDocument.test.js', () => {
             });
         });
     });
-    describe('update', () => {
-        it('a value with a mongo like query', async() => {
-            const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec();
-            await doc.update({$set: {firstName: 'new first name'}});
-            const updatedDoc = await c.findOne({firstName: 'new first name'}).exec();
-            assert.equal(updatedDoc.firstName, 'new first name');
-        });
-
-        it('unset a value', async() => {
-            const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec();
-            await doc.update({
-                $unset: {
-                    firstName: ''
-                }
-            });
-            const updatedDoc = await c.findOne().exec();
-            assert.equal(updatedDoc.firstName, undefined);
-        });
-    });
     describe('pseudo-Proxy', () => {
         describe('get', () => {
             it('top-value', async() => {
