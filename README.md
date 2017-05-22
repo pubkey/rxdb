@@ -40,7 +40,7 @@
 
 * **Omniusable** on browsers, nodejs, electron, cordova, react-native and every other javascript-runtime
 * **Reactive** data-handling based on [rxjs](https://github.com/ReactiveX/rxjs)
-* **Replication** between client and server-data, compatible with ![pouchdb](docs/files/icons/pouchdb.png)PouchDB, ![couchdb](docs/files/icons/couchdb.png)CouchDB and ![cloudant](docs/files/icons/cloudant.png)IBM Cloudant
+* **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant
 * **Schema-based** with the easy-to-learn standard of [jsonschema](http://json-schema.org/)
 * **Mango-Query** exactly like you know from mongoDB and mongoose
 * **Encryption** of single data-fields to protect your users data
@@ -55,18 +55,18 @@ RxDB is made so that you can use **exactly the same code** at
 ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
 ![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
 ![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) browsers
-- ![NodeJS](docs/files/icons/nodejs.png) NodeJS
-- ![electron](docs/files/icons/electron.png) Electron
-- ![react-native](docs/files/icons/react-native.png) React-Native
-- ![cordova](docs/files/icons/cordova.png) Cordova/Phonegap
-- ![nativescript](docs/files/icons/nativescript.png) Nativescript
+- ![NodeJS](docs-src/files/icons/nodejs.png) NodeJS
+- ![electron](docs-src/files/icons/electron.png) Electron
+- ![react-native](docs-src/files/icons/react-native.png) React-Native
+- ![cordova](docs-src/files/icons/cordova.png) Cordova/Phonegap
+- ![nativescript](docs-src/files/icons/nativescript.png) Nativescript
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
-- ![react](docs/files/icons/react.png) react
-- ![angular](docs/files/icons/angular.png) angular/ng2
-- ![ionic](docs/files/icons/ionic.png) ionic2
-- ![vuejs](docs/files/icons/vuejs.png) vuejs
+- ![react](docs-src/files/icons/react.png) react
+- ![angular](docs-src/files/icons/angular.png) angular/ng2
+- ![ionic](docs-src/files/icons/ionic.png) ionic2
+- ![vuejs](docs-src/files/icons/vuejs.png) vuejs
 
 
 ## Quickstart
@@ -161,7 +161,7 @@ db.heroes
       .join();
   });
 ```
-![reactive.gif](docs/files/reactive.gif)
+![reactive.gif](docs-src/files/reactive.gif)
 </details>
 
 <details>
@@ -174,7 +174,7 @@ This means with two browser-windows the change of window #1 will automatically a
 </p>
 </summary>
 
-![multiwindow.gif](docs/files/multiwindow.gif)
+![multiwindow.gif](docs-src/files/multiwindow.gif)
 </details>
 
 <details>
@@ -186,7 +186,7 @@ Because RxDB relies on glorious [PouchDB](https://github.com/pouchdb/pouchdb), i
 the data between devices and servers. And yes, the changeEvents are also synced.</p>
 </summary>
 
-![sync.gif](docs/files/sync.gif)
+![sync.gif](docs-src/files/sync.gif)
 </details>
 
 <details>
@@ -321,7 +321,7 @@ myRxDatabase.waitForLeadership()
 
 In this example the leader is marked with the crown &#9819;
 
-![reactive.gif](docs/files/leader-election.gif)
+![reactive.gif](docs-src/files/leader-election.gif)
 </details>
 
 <details>
@@ -404,7 +404,7 @@ As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.c
 Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or exploring the [example-projects](./examples).
 
 ## Contribute
-[Check out how you can contribute to this project](./docs/Contribute.md).
+[Check out how you can contribute to this project](./docs-src/Contribute.md).
 
 ## Follow up
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
