@@ -1,5 +1,6 @@
 import assert from 'assert';
 
+import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -320,6 +321,38 @@ describe('RxQuery.test.js', () => {
 
             const resultsAll = await queryAll.exec();
             assert.equal(resultsAll.length, 0);
+            db.destroy();
+        });
+        it('#164 Sort error, pouchdb-find/mango "unknown operator"', async() => {
+            const db = await RxDB.create({
+                adapter: 'memory',
+                name: util.randomCouchString(12),
+                password: 'password'
+            });
+            const collection = await db.collection({
+                name: 'test3',
+                schema: {
+                    title: 'test3',
+                    version: 0,
+                    properties: {
+                        name: {
+                            type: 'string',
+                            index: true
+                        }
+                    }
+                }
+            });
+            await collection.insert({
+                name: '1233'
+            });
+            await collection.insert({
+                name: '4567'
+            });
+            const results = await collection.find({
+                sort: ['name']
+            }).exec();
+            assert.equal(results[0].name, '1233');
+            assert.equal(results[1].name, '4567');
             db.destroy();
         });
     });
