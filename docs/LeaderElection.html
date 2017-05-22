@@ -1,0 +1,642 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>LeaderElection · RxDB - Documentation</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        
+        
+        
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-toggle-chapters/toggle.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="QueryChangeDetection.html" />
+    
+    
+    <link rel="prev" href="DataMigration.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://twitter.com/rxdbjs" target="_blank" class="custom-link">Follow @twitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://gitter.im/pubkey/rxdb" target="_blank" class="custom-link">Chat @gitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://www.patreon.com/rxdb" target="_blank" class="custom-link">Support @patreon</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="Install.html">
+            
+                <a href="Install.html">
+            
+                    
+                    Install
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="Install.html">
+            
+                <a href="Install.html#npm">
+            
+                    
+                    npm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="Install.html">
+            
+                <a href="Install.html#import">
+            
+                    
+                    import
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html">
+            
+                    
+                    RxDatabase
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#creation">
+            
+                    
+                    Creation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1.1" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#name">
+            
+                    
+                    name
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.2" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#adapter">
+            
+                    
+                    adapter
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.3" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#password-optional">
+            
+                    
+                    password
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.4" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#multiInstance-optional">
+            
+                    
+                    multiInstance
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.2.1" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#importDump">
+            
+                    
+                    importDump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.2" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#dump">
+            
+                    
+                    dump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.3" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#observe-with-">
+            
+                    
+                    $()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.4" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#waitforleadership">
+            
+                    
+                    waitForLeadership()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="RxSchema.html">
+            
+                <a href="RxSchema.html">
+            
+                    
+                    RxSchema
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="RxCollection.html">
+            
+                <a href="RxCollection.html">
+            
+                    
+                    RxCollection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6" data-path="RxDocument.html">
+            
+                <a href="RxDocument.html">
+            
+                    
+                    RxDocument
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7" data-path="RxQuery.html">
+            
+                <a href="RxQuery.html">
+            
+                    
+                    RxQuery
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8" data-path="Middleware.html">
+            
+                <a href="Middleware.html">
+            
+                    
+                    Middleware-hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9" data-path="ORM.html">
+            
+                <a href="ORM.html">
+            
+                    
+                    ORM/DRM
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="Population.html">
+            
+                <a href="Population.html">
+            
+                    
+                    Population
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11" data-path="DataMigration.html">
+            
+                <a href="DataMigration.html">
+            
+                    
+                    DataMigration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.12" data-path="LeaderElection.html">
+            
+                <a href="LeaderElection.html">
+            
+                    
+                    LeaderElection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.13" data-path="QueryChangeDetection.html">
+            
+                <a href="QueryChangeDetection.html">
+            
+                    
+                    QueryChangeDetection
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >LeaderElection</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="leader-election">Leader-Election</h1>
+<p>Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..</p>
+<p>So if you would now inspect the traffic that theses open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is sent with an open websocket or by polling.</p>
+<h1 id="use-case-example">Use-case-example</h1>
+<p>Imagine we have a website which displays the current temperature of the visitors location in various charts, numbers or heatmaps. To always display the live-data, the website opens a websocket to our API-Server which sends the current temperature every 10 seconds. Using the way most sites are currently build, we can now open it in 5 browser-tabs and it will open 5 websockets which send data 6*5=30 times per minute. This will not only waste the power of your clients device, but also wastes your api-servers resources by opening redundant connections.</p>
+<h1 id="solution">Solution</h1>
+<p>The solution to this redundancy is the usage of a <a href="https://en.wikipedia.org/wiki/Leader_election" target="_blank">leader-election</a>-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly <strong>one</strong> leader.
+You could now start implementing a messaging-system between your browser-tabs, hand out which one is leader, solve conflicts and reasign a new leader when the old one &apos;dies&apos;.
+Or just use RxDB which does all these things for you.</p>
+<h1 id="code-example">Code-example</h1>
+<p>To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> RxDB.create({
+  name: <span class="hljs-string">&apos;weatherDB&apos;</span>,
+  adapter: <span class="hljs-string">&apos;localstorage&apos;</span>,
+  password: <span class="hljs-string">&apos;myPassword&apos;</span>,
+  multiInstance: <span class="hljs-literal">true</span>
+});
+<span class="hljs-keyword">await</span> db.collection({
+  name: <span class="hljs-string">&apos;temperature&apos;</span>,
+  schema: mySchema
+});
+
+db.waitForLeadership()
+  .then(() =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Long lives the king!&apos;</span>); <span class="hljs-comment">// &lt;- runs when db becomes leader</span>
+    setInterval(<span class="hljs-keyword">async</span> () =&gt; {
+      <span class="hljs-keyword">const</span> temp = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">&apos;https://example.com/api/temp/&apos;</span>);
+      db.temperature.insert({
+          degrees: value,
+          time: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime()
+      });
+    }, <span class="hljs-number">1000</span> * <span class="hljs-number">10</span>);
+  });
+</code></pre>
+<h1 id="live-example">Live-Example</h1>
+<p>In this example the leader is marked with the crown &#x265B;</p>
+<p><img src="files/leader-election.gif" alt="reactive.gif"></p>
+<h1 id="try-it-out">Try it out</h1>
+<p>Run the <a href="../examples/vanilla">vanillaJS-example</a> where the leading tab is marked with a crown on the top-right-corner.</p>
+<hr>
+<p>If you are new to RxDB, you should continue <a href="QueryChangeDetection.html">here</a></p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="DataMigration.html" class="navigation navigation-prev " aria-label="Previous page: DataMigration">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="QueryChangeDetection.html" class="navigation navigation-next " aria-label="Next page: QueryChangeDetection">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.12","depth":1,"next":{"title":"QueryChangeDetection","level":"1.13","depth":1,"path":"QueryChangeDetection.md","ref":"./QueryChangeDetection.md","articles":[]},"previous":{"title":"DataMigration","level":"1.11","depth":1,"path":"DataMigration.md","ref":"./DataMigration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","toggle-chapters","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"LeaderElection.md","mtime":"2017-05-22T17:21:50.734Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-05-22T20:51:31.377Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-toggle-chapters/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

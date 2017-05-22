@@ -1,0 +1,784 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Middleware-hooks · RxDB - Documentation</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        
+        
+        
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-toggle-chapters/toggle.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="ORM.html" />
+    
+    
+    <link rel="prev" href="RxQuery.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://twitter.com/rxdbjs" target="_blank" class="custom-link">Follow @twitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://gitter.im/pubkey/rxdb" target="_blank" class="custom-link">Chat @gitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://www.patreon.com/rxdb" target="_blank" class="custom-link">Support @patreon</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="Install.html">
+            
+                <a href="Install.html">
+            
+                    
+                    Install
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="Install.html">
+            
+                <a href="Install.html#npm">
+            
+                    
+                    npm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="Install.html">
+            
+                <a href="Install.html#import">
+            
+                    
+                    import
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html">
+            
+                    
+                    RxDatabase
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#creation">
+            
+                    
+                    Creation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1.1" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#name">
+            
+                    
+                    name
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.2" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#adapter">
+            
+                    
+                    adapter
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.3" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#password-optional">
+            
+                    
+                    password
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.1.4" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#multiInstance-optional">
+            
+                    
+                    multiInstance
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.2.1" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#importDump">
+            
+                    
+                    importDump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.2" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#dump">
+            
+                    
+                    dump()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.3" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#observe-with-">
+            
+                    
+                    $()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.4" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#waitforleadership">
+            
+                    
+                    waitForLeadership()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="RxSchema.html">
+            
+                <a href="RxSchema.html">
+            
+                    
+                    RxSchema
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="RxCollection.html">
+            
+                <a href="RxCollection.html">
+            
+                    
+                    RxCollection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6" data-path="RxDocument.html">
+            
+                <a href="RxDocument.html">
+            
+                    
+                    RxDocument
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7" data-path="RxQuery.html">
+            
+                <a href="RxQuery.html">
+            
+                    
+                    RxQuery
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.8" data-path="Middleware.html">
+            
+                <a href="Middleware.html">
+            
+                    
+                    Middleware-hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9" data-path="ORM.html">
+            
+                <a href="ORM.html">
+            
+                    
+                    ORM/DRM
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="Population.html">
+            
+                <a href="Population.html">
+            
+                    
+                    Population
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11" data-path="DataMigration.html">
+            
+                <a href="DataMigration.html">
+            
+                    
+                    DataMigration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12" data-path="LeaderElection.html">
+            
+                <a href="LeaderElection.html">
+            
+                    
+                    LeaderElection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.13" data-path="QueryChangeDetection.html">
+            
+                <a href="QueryChangeDetection.html">
+            
+                    
+                    QueryChangeDetection
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Middleware-hooks</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="middleware">Middleware</h1>
+<p>RxDB supports middleware-hooks like <a href="http://mongoosejs.com/docs/middleware.html" target="_blank">mongoose</a>.
+Middleware (also called pre and post hooks) are functions which are passed control during execution of asynchronous functions.
+The hooks are specified on RxCollection-level and help to create a clear what-happens-when-structure of your code.</p>
+<p>Hooks can be defined to run parallel or as series one after another.
+Hooks can be synchronous or asynchronous when they return a Promise.
+To stop the operation at a specific hook, throw an error.</p>
+<h2 id="list">List</h2>
+<p>RxDB supports the following hooks:</p>
+<ul>
+<li>preInsert</li>
+<li>postInsert</li>
+<li>preSave</li>
+<li>postSave</li>
+<li>preRemove</li>
+<li>postRemove</li>
+</ul>
+<h3 id="why-is-there-no-validate-hook">Why is there no validate-hook?</h3>
+<p>Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
+This means if you set the value <code>lastName</code> of a RxDocument, then the validation will only run on the changed field, not the whole document.
+Therefore it is not usefull to have validate-hooks when a document is written to the database.</p>
+<h2 id="use-cases">Use Cases</h2>
+<p>Middleware are useful for atomizing model logic and avoiding nested blocks of async code.
+Here are some other ideas:</p>
+<ul>
+<li>complex validation</li>
+<li>removing dependent documents</li>
+<li>asynchronous defaults</li>
+<li>asynchronous tasks that a certain action triggers</li>
+<li>triggering custom events</li>
+<li>notifications</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<h3 id="insert">Insert</h3>
+<p>An insert-hook recieves the data-object of the new document.</p>
+<h4 id="lifecycle">lifecycle</h4>
+<ul>
+<li>RxCollection.insert is called</li>
+<li>preInsert series-hooks</li>
+<li>preInsert parallel-hooks</li>
+<li>schema validation runs</li>
+<li>new document is written to database</li>
+<li>postInsert series-hooks</li>
+<li>postInsert parallel-hooks</li>
+<li>event is emmited to RxDatabase and RxCollection</li>
+</ul>
+<h4 id="preinsert">preInsert</h4>
+<pre><code class="lang-js"><span class="hljs-comment">// series</span>
+myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// parallel</span>
+myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+
+}, <span class="hljs-literal">true</span>);
+
+<span class="hljs-comment">// async</span>
+myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// stop the insert-operation</span>
+myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
+}, <span class="hljs-literal">false</span>);
+</code></pre>
+<h4 id="postinsert">postInsert</h4>
+<pre><code class="lang-js"><span class="hljs-comment">// series</span>
+myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// parallel</span>
+myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+
+}, <span class="hljs-literal">true</span>);
+
+<span class="hljs-comment">// async</span>
+myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
+}, <span class="hljs-literal">false</span>);
+</code></pre>
+<h3 id="save">Save</h3>
+<p>A save-hook receives the document which is saved.</p>
+<h4 id="lifecycle">lifecycle</h4>
+<ul>
+<li>RxDocument.save is called</li>
+<li>preSave series-hooks</li>
+<li>preSave parallel-hooks</li>
+<li>updated document is written to database</li>
+<li>postSave series-hooks</li>
+<li>postSave parallel-hooks</li>
+<li>event is emmited to RxDatabase and RxCollection</li>
+</ul>
+<h4 id="presave">preSave</h4>
+<pre><code class="lang-js"><span class="hljs-comment">// series</span>
+myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  doc.anyField = <span class="hljs-string">&apos;anyValue&apos;</span>;
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// parallel</span>
+myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">true</span>);
+
+<span class="hljs-comment">// async</span>
+myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// stop the save-operation</span>
+myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
+}, <span class="hljs-literal">false</span>);
+</code></pre>
+<h4 id="postsave">postSave</h4>
+<pre><code class="lang-js"><span class="hljs-comment">// series</span>
+myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// parallel</span>
+myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">true</span>);
+
+<span class="hljs-comment">// async</span>
+myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
+}, <span class="hljs-literal">false</span>);
+</code></pre>
+<h3 id="remove">Remove</h3>
+<p>An remove-hook recieves the document which is removed.</p>
+<h4 id="lifecycle">lifecycle</h4>
+<ul>
+<li>RxDocument.remove is called</li>
+<li>preRemove series-hooks</li>
+<li>preRemove parallel-hooks</li>
+<li>deleted document is written to database</li>
+<li>postRemove series-hooks</li>
+<li>postRemove parallel-hooks</li>
+<li>event is emmited to RxDatabase and RxCollection</li>
+</ul>
+<h4 id="presave">preSave</h4>
+<pre><code class="lang-js"><span class="hljs-comment">// series</span>
+myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// parallel</span>
+myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">true</span>);
+
+<span class="hljs-comment">// async</span>
+myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// stop the remove-operation</span>
+myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
+}, <span class="hljs-literal">false</span>);
+</code></pre>
+<h4 id="postremove">postRemove</h4>
+<pre><code class="lang-js"><span class="hljs-comment">// series</span>
+myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">false</span>);
+
+<span class="hljs-comment">// parallel</span>
+myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+
+}, <span class="hljs-literal">true</span>);
+
+<span class="hljs-comment">// async</span>
+myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
+}, <span class="hljs-literal">false</span>);
+</code></pre>
+<hr>
+<p>If you are new to RxDB, you should continue <a href="ORM.html">here</a></p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="RxQuery.html" class="navigation navigation-prev " aria-label="Previous page: RxQuery">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="ORM.html" class="navigation navigation-next " aria-label="Next page: ORM/DRM">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"1.8","depth":1,"next":{"title":"ORM/DRM","level":"1.9","depth":1,"path":"ORM.md","ref":"./ORM.md","articles":[]},"previous":{"title":"RxQuery","level":"1.7","depth":1,"path":"RxQuery.md","ref":"./RxQuery.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","toggle-chapters","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"toggle-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"Middleware.md","mtime":"2017-05-08T16:46:04.332Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-05-22T20:51:31.377Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-toggle-chapters/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
