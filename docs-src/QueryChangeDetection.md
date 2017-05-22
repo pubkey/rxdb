@@ -42,4 +42,4 @@ Now, when one user loggs of, it will calculate the new results from the current 
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](../examples)
+If you are new to RxDB, you should continue [here](https://github.com/pubkey/rxdb/tree/master/examples)
