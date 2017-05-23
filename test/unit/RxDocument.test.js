@@ -271,15 +271,15 @@ describe('RxDocument.test.js', () => {
         });
 
         it('unset a value', async() => {
-            const c = await humansCollection.createPrimary(1);
+            const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             await doc.update({
                 $unset: {
-                    firstName: ''
+                    age: ''
                 }
             });
             const updatedDoc = await c.findOne().exec();
-            assert.equal(updatedDoc.firstName, undefined);
+            assert.equal(updatedDoc.age, undefined);
         });
     });
     describe('pseudo-Proxy', () => {
