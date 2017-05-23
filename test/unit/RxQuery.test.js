@@ -238,6 +238,8 @@ describe('RxQuery.test.js', () => {
             addObj.passportId = 'zzzzzzzz';
             await col.insert(addObj);
             assert.equal(q.collection._changeEventBuffer.counter, 3);
+
+            await util.waitUntil(() => q._latestChangeEvent == 3);
             assert.equal(q._latestChangeEvent, 3);
 
             await util.waitUntil(() => fired.length == 2);
@@ -343,16 +345,16 @@ describe('RxQuery.test.js', () => {
                 }
             });
             await collection.insert({
-                name: '1233'
+                name: 'a1233'
             });
             await collection.insert({
-                name: '4567'
+                name: 'z4567'
             });
             const results = await collection.find({
                 sort: ['name']
             }).exec();
-            assert.equal(results[0].name, '1233');
-            assert.equal(results[1].name, '4567');
+            assert.equal(results.length, 2);
+            assert.deepEqual(['a1233','z4567'], results.map(doc => doc.name));
             db.destroy();
         });
     });
