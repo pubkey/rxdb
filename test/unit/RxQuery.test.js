@@ -270,7 +270,21 @@ describe('RxQuery.test.js', () => {
         });
     });
 
-
+    describe('update', () => {
+        it('unsets a value on a query', async() => {
+            const c = await humansCollection.create(2);
+            const query = c.find();
+            await query.update({
+                $unset: {
+                    age: ''
+                }
+            });
+            const docs = await query.exec();
+            for (let doc of docs)
+                assert.equal(doc._data.age, undefined);
+            c.database.destroy();
+        });
+    });
 
     describe('issues', () => {
         it('#157 Cannot sort on field(s) "XXX" when using the default index', async() => {
