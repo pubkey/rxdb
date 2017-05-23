@@ -360,6 +360,15 @@ describe('RxCollection.test.js', () => {
                 });
             });
         });
+        describe('.update()', () => {
+            it('should update all documents matched by a query', async() => {
+                const c = await humansCollection.create();
+                await c.update({}, {$set: {firstName: 'new first name'}});
+                const docs = await c.find().exec();
+                for (let doc of docs)
+                    assert.equal(doc._data.firstName, 'new first name');
+            });
+        });
         describe('.find()', () => {
             describe('find all', () => {
                 describe('positive', () => {
@@ -796,6 +805,16 @@ describe('RxCollection.test.js', () => {
                     assert.equal(removed.deleted, true);
                     const docsAfter = await c.find().exec();
                     assert.equal(docsAfter.length, 9);
+                });
+            });
+            describe('.update()', () => {
+                it('should update all documents', async() => {
+                    const c = await humansCollection.create(10);
+                    const query = c.find();
+                    const updated = await query.update({$set: {firstName: 'new first name'}});
+                    const docsAfterUpdate = await c.find().exec();
+                    for (let doc of docsAfterUpdate)
+                        assert.equal(doc._data.firstName, 'new first name');
                 });
             });
         });
