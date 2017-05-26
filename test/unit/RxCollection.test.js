@@ -816,6 +816,14 @@ describe('RxCollection.test.js', () => {
                     for (let doc of docsAfterUpdate)
                         assert.equal(doc._data.firstName, 'new first name');
                 });
+                it('unsets fields in all documents', async() => {
+                    const c = await humansCollection.create(10);
+                    const query = c.find();
+                    await query.update({$unset: {age: ''}});
+                    const docsAfterUpdate = await c.find().exec();
+                    for (let doc of docsAfterUpdate)
+                        assert.equal(doc.age, undefined);
+                });
             });
         });
         describe('.findOne()', () => {
