@@ -262,7 +262,7 @@ describe('RxDocument.test.js', () => {
         });
     });
     describe('update', () => {
-        it('a value with a mongo like query', async() => {
+        it('sets a value with a mongo like query', async() => {
             const c = await humansCollection.createPrimary(1);
             const doc = await c.findOne().exec();
             await doc.update({$set: {firstName: 'new first name'}});
@@ -270,7 +270,7 @@ describe('RxDocument.test.js', () => {
             assert.equal(updatedDoc.firstName, 'new first name');
         });
 
-        it('unset a value', async() => {
+        it('unsets a value with a mongo like query', async() => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             await doc.update({

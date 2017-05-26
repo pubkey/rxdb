@@ -361,7 +361,7 @@ describe('RxCollection.test.js', () => {
             });
         });
         describe('.update()', () => {
-            it('should update all documents matched by a query', async() => {
+            it('updates all documents matched by a query', async() => {
                 const c = await humansCollection.create();
                 await c.update({}, {$set: {firstName: 'new first name'}});
                 const docs = await c.find().exec();
@@ -808,10 +808,10 @@ describe('RxCollection.test.js', () => {
                 });
             });
             describe('.update()', () => {
-                it('should update all documents', async() => {
+                it('sets a field in all documents', async() => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
-                    const updated = await query.update({$set: {firstName: 'new first name'}});
+                    await query.update({$set: {firstName: 'new first name'}});
                     const docsAfterUpdate = await c.find().exec();
                     for (let doc of docsAfterUpdate)
                         assert.equal(doc._data.firstName, 'new first name');
