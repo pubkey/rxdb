@@ -273,6 +273,15 @@ describe('RxQuery.test.js', () => {
     });
 
     describe('update', () => {
+        it('updates a value on a query', async() => {
+            const c = await humansCollection.create(2);
+            const query = c.find();
+            await query.update({$set: {firstName: 'new first name'}});
+            const docs = await query.exec();
+            for (let doc of docs)
+                assert.equal(doc._data.firstName, 'new first name');
+            c.database.destroy();
+        });
         it('unsets a value on a query', async() => {
             const c = await humansCollection.create(2);
             const query = c.find();
