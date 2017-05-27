@@ -1,9 +1,11 @@
 # Summary
 
 * [Introduction](README.md)
+
 * [Install](./Install.md)
     * [npm](./Install.md#npm)
     * [import](./Install.md#import)
+
 * [RxDatabase](./RxDatabase.md)
     * [Creation](./RxDatabase.md#creation)
         * [name](./RxDatabase.md#name)
@@ -15,14 +17,16 @@
         * [dump()](./RxDatabase.md#dump)
         * [$()](./RxDatabase.md#observe-with-)
         * [waitForLeadership()](./RxDatabase.md#waitforleadership)
+
 * [RxSchema](./RxSchema.md)
       * [Example](./RxSchema.md#example)
       * [Create a collection with the schema](./RxSchema.md#create-a-collection-with-the-schema)
       * [version](./RxSchema.md#version)
       * [disableKeyCompression](./RxSchema.md#disableKeyCompression)
       * [Indexes](./RxSchema.md#indexes)
+
 * [RxCollection](./RxCollection.md)
-      * [Creation](./RxCollection.md#creating-a-collection)
+    * [Creation](./RxCollection.md#creating-a-collection)
         * [name](./RxCollection.md#name)
         * [schema](./RxCollection.md#schema)
       * [Functions](./RxCollection.md#functions)
@@ -35,6 +39,7 @@
         * [dump()](./RxCollection.md#dump)
         * [importDump()](./RxCollection.md#importdump)
         * [sync()](./RxCollection.md#sync)
+
 * [RxDocument](./RxDocument.md)
       * [Insert](./RxDocument.md#insert)
       * [Find](./RxDocument.md#find)
@@ -44,10 +49,17 @@
         * [save()](./RxDocument.md#save)
         * [remove()](./RxDocument.md#remove)
         * [$()](./RxDocument.md#observe-path)
+
 * [RxQuery](./RxQuery.md)
+
 * [Middleware-hooks](./Middleware.md)
+
 * [ORM/DRM](./ORM.md)
+
 * [Population](./Population.md)
+
 * [DataMigration](./DataMigration.md)
+
 * [LeaderElection](./LeaderElection.md)
+
 * [QueryChangeDetection](./QueryChangeDetection.md)

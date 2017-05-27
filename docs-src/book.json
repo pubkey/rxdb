@@ -6,7 +6,6 @@
     "plugins": [
         "edit-link",
         "github",
-        "toggle-chapters",
         "custom-favicon",
         "-sharing"
     ],
