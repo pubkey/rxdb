@@ -344,17 +344,19 @@ describe('RxQuery.test.js', () => {
                     }
                 }
             });
-            await collection.insert({
-                name: 'a1233'
-            });
-            await collection.insert({
-                name: 'z4567'
-            });
+
+            const sortedNames = ['a123', 'b123', 'c123', 'f123', 'z123'];
+            await Promise.all(sortedNames.map(name => collection.insert({name})));
+
+            // this query is wrong because .find() does not allow sort, limit etc, only the selector
             const results = await collection.find({
                 sort: ['name']
             }).exec();
-            assert.equal(results.length, 2);
-            assert.deepEqual(['a1233','z4567'], results.map(doc => doc.name));
+            assert.equal(results.length, sortedNames.length);
+
+            const results2 = await collection.find().sort('name').exec();
+            assert.deepEqual(sortedNames, results2.map(doc => doc.name));
+
             db.destroy();
         });
     });
