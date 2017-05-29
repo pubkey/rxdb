@@ -175,4 +175,16 @@ describe('util.test.js', () => {
             );
         });
     });
+    describe('.sortObject()', () => {
+        it('should sort when regex in object', async() => {
+            const obj = {
+                _id: {},
+                color: {
+                    '$regex': /foobar/g
+                }
+            };
+            const sorted = util.sortObject(obj);
+            assert.ok(sorted.color.$regex instanceof RegExp);
+        });
+    });
 });

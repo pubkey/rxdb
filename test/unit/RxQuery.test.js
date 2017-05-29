@@ -112,6 +112,15 @@ describe('RxQuery.test.js', () => {
 
             col.database.destroy();
         });
+        it('ISSUE #190: should contain the regex', async() => {
+            const col = await humansCollection.create(0);
+            const queryWithoutRegex = col.find();
+            const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
+            const queryString = queryWithRegex.toString();
+
+            assert.ok(queryString.includes('foobar'));
+            col.database.destroy();
+        });
     });
 
     describe('immutable', () => {
@@ -346,7 +355,9 @@ describe('RxQuery.test.js', () => {
             });
 
             const sortedNames = ['a123', 'b123', 'c123', 'f123', 'z123'];
-            await Promise.all(sortedNames.map(name => collection.insert({name})));
+            await Promise.all(sortedNames.map(name => collection.insert({
+                name
+            })));
 
             // this query is wrong because .find() does not allow sort, limit etc, only the selector
             const results = await collection.find({

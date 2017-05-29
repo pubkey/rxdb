@@ -75,7 +75,8 @@ class RxQuery {
                 _path: this.mquery._path,
                 _fields: this.mquery._fields
             }, true);
-            this.stringRep = JSON.stringify(stringObj);
+
+            this.stringRep = JSON.stringify(stringObj, util.stringifyFilter);
         }
         return this.stringRep;
     }
@@ -316,11 +317,13 @@ class RxQuery {
      * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
      */
     regex(params) {
+        const clonedThis = this._clone();
+
         if (this.mquery._path == this.collection.schema.primaryPath)
             throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
 
-        this.mquery.regex(params);
-        return this;
+        clonedThis.mquery.regex(params);
+        return clonedThis._tunnelQueryCache();
     };
 
     /**

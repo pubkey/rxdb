@@ -1,3 +1,8 @@
+## 4.X.X ()
+
+Bugfixes:
+- QueryCache returns old RxQuery when `.regex()` is used [#190](https://github.com/pubkey/rxdb/issues/190)
+
 ## 4.0.2 (May 17, 2017)
 
 Bugfixes:
