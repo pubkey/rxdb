@@ -98,7 +98,8 @@ var RxDocument = function () {
     }, {
         key: 'resync',
         value: function resync() {
-            if (this._synced$.getValue()) return;else {
+            var syncedData = this._dataSync$.getValue();
+            if (this._synced$.getValue() && (0, _deepEqual2['default'])(syncedData, this._data)) return;else {
                 this._data = (0, _clone2['default'])(this._dataSync$.getValue());
                 this._synced$.next(true);
             }

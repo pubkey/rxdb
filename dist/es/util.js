@@ -378,6 +378,9 @@ export function sortObject(obj) {
 
     // object
     if (typeof obj === 'object') {
+
+        if (obj instanceof RegExp) return obj;
+
         var out = {};
         Object.keys(obj).sort(function (a, b) {
             return a.localeCompare(b);
@@ -389,4 +392,13 @@ export function sortObject(obj) {
 
     // everything else
     return obj;
+}
+
+/**
+ * used to JSON.stringify() objects that contain a regex
+ * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
+ */
+export function stringifyFilter(key, value) {
+    if (value instanceof RegExp) return value.toString();
+    return value;
 }

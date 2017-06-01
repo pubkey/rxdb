@@ -183,6 +183,7 @@ exports.trimDots = trimDots;
 exports.validateCouchDBString = validateCouchDBString;
 exports.randomCouchString = randomCouchString;
 exports.sortObject = sortObject;
+exports.stringifyFilter = stringifyFilter;
 
 var _clone = require('clone');
 
@@ -444,6 +445,9 @@ function sortObject(obj) {
 
     // object
     if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(obj)) === 'object') {
+
+        if (obj instanceof RegExp) return obj;
+
         var out = {};
         Object.keys(obj).sort(function (a, b) {
             return a.localeCompare(b);
@@ -455,4 +459,13 @@ function sortObject(obj) {
 
     // everything else
     return obj;
+}
+
+/**
+ * used to JSON.stringify() objects that contain a regex
+ * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
+ */
+function stringifyFilter(key, value) {
+    if (value instanceof RegExp) return value.toString();
+    return value;
 }

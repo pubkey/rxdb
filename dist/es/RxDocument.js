@@ -45,7 +45,8 @@ var RxDocument = function () {
     };
 
     RxDocument.prototype.resync = function resync() {
-        if (this._synced$.getValue()) return;else {
+        var syncedData = this._dataSync$.getValue();
+        if (this._synced$.getValue() && deepEqual(syncedData, this._data)) return;else {
             this._data = clone(this._dataSync$.getValue());
             this._synced$.next(true);
         }
