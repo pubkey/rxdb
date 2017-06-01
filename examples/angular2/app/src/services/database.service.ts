@@ -7,7 +7,7 @@ QueryChangeDetector.enable();
 QueryChangeDetector.enableDebugging();
 
 const adapters = {
-    localstorage: require('../../../../../plugins/adapter-localstorage/'),
+    localstorage: require('pouchdb-adapter-localstorage'),
     websql: require('pouchdb-adapter-websql'),
     idb: require('pouchdb-adapter-idb')
 };
