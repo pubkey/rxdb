@@ -194,7 +194,7 @@ describe('Reactive-Document.test.js', () => {
         });
         describe('negative', () => {});
     });
-    describe('.resync()', ()=>{
+    describe('.resync()', () => {
         it('should have the original state after resync()', async() => {
             const c = await humansCollection.create();
             const doc = await c.findOne().exec();
@@ -204,7 +204,7 @@ describe('Reactive-Document.test.js', () => {
             assert.equal(orig, doc.firstName);
             c.database.destroy();
         });
-        it('should work when resyncing two times', async()=>{
+        it('should work when resyncing two times', async() => {
             const c = await humansCollection.create();
             const doc = await c.findOne().exec();
             const orig = doc.firstName;
