@@ -50,8 +50,8 @@ class RxDocument {
     }
 
     resync() {
-        if (this._synced$.getValue())
-            return;
+        const syncedData = this._dataSync$.getValue();
+        if (this._synced$.getValue() && deepEqual(syncedData, this._data)) return;
         else {
             this._data = clone(this._dataSync$.getValue());
             this._synced$.next(true);
@@ -231,6 +231,7 @@ class RxDocument {
         }
         // check if equal
         if (Object.is(this.get(objPath), value)) return;
+
 
         // check if nested without root-object
         let pathEls = objPath.split('.');

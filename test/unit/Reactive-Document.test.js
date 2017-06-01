@@ -194,4 +194,15 @@ describe('Reactive-Document.test.js', () => {
         });
         describe('negative', () => {});
     });
+    describe('.resync()', ()=>{
+        it('should have the original state after resync()', async() => {
+            const c = await humansCollection.create();
+            const doc = await c.findOne().exec();
+            const orig = doc.firstName;
+            doc.firstName = 'foobar';
+            await doc.resync();
+            assert.equal(orig, doc.firstName);
+            c.database.destroy();
+        });
+    });
 });
