@@ -295,7 +295,7 @@ export function validateFieldsDeep(jsonSchema) {
             throw new Error(`fieldname ${fieldName} cannot be primary and ref at same time`);
 
 
-        const isNested = path.split('.').length >= 2;
+        const isNested = path.split('.').length > 2;
 
         // nested only
         if (isNested) {

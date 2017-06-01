@@ -69,7 +69,7 @@ class KeyCompressor {
 
     _compressObj(obj, path = '') {
         const ret = {};
-        if (typeof obj !== 'object') return obj;
+        if (typeof obj !== 'object' || obj === null) return obj;
         if (Array.isArray(obj)) {
             return obj
                 .map(o => this._compressObj(o, util.trimDots(path + '.item')));
@@ -101,7 +101,7 @@ class KeyCompressor {
         const reverseTable = this.reverseTable;
 
         // non-object
-        if (typeof obj !== 'object') return obj;
+        if (typeof obj !== 'object' || obj === null) return obj;
 
         // array
         if (Array.isArray(obj))
