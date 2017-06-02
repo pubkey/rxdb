@@ -3,7 +3,7 @@ node_js:
   - "7"
 addons:
   firefox: latest
-  chrome: stable
+  chrome: "37"
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
