@@ -63,6 +63,7 @@ module.exports = function(config) {
         },
         browsers: ['ChromeNoSandbox'],
         browserDisconnectTimeout: 6000,
+        processKillTimeout: 6000,
         customLaunchers: {
             ChromeNoSandbox: {
                 base: 'Chrome',
