@@ -1,8 +1,10 @@
 language: node_js
 sudo: required
+os:
+  - linux
+  - osx
 node_js:
   - "7"
-  - "6"
 addons:
   firefox: latest
 before_script:
