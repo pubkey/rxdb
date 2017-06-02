@@ -61,10 +61,14 @@ module.exports = function(config) {
                 bail: true
             }
         },
+        browsers: ['ChromeNoSandbox'],
 
-        browserDisconnectTimeout: 10000,
-        browserNoActivityTimeout: 30000,
-        captureTimeout: 150000,
+        customLaunchers: {
+            ChromeNoSandbox: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        },
         singleRun: true
     });
 };
