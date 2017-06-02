@@ -31,7 +31,7 @@
     "pretest": "npm run transpile",
     "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
     "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test",
-    "test:browser": "npm run pretest && karma start ./config/karma.conf.js",
+    "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
     "lint": "eslint --ignore-path ./config/.eslintignore src test ./config/gulpfile.js",
