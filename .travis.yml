@@ -4,6 +4,7 @@ node_js:
 addons:
   firefox: latest
   chrome: latest
+script: node_modules/karma/bin/karma start karma.conf.js --single-run
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
