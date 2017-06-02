@@ -1,4 +1,5 @@
 language: node_js
+sudo: required
 node_js:
   - "7"
 addons:
@@ -7,5 +8,4 @@ before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - "export CHROME_BIN=chromium-browser"
-  - "sudo chmod 4755 /opt/google/chrome/chrome-sandbox"
   - sleep 3
