@@ -61,6 +61,14 @@ module.exports = function(config) {
                 bail: true
             }
         },
+        browsers: ['ChromeNoSandbox'],
+
+        customLaunchers: {
+            ChromeNoSandbox: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        },
         singleRun: true
     });
 };

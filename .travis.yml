@@ -3,9 +3,8 @@ node_js:
   - "7"
 addons:
   firefox: latest
-  chrome: latest
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-  - "export CHROME_BIN=google-chrome"
+  - "export CHROME_BIN=chromium-browser"
   - sleep 3
