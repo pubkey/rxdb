@@ -2,6 +2,7 @@ language: node_js
 sudo: required
 node_js:
   - "7"
+  - "6"
 addons:
   firefox: latest
 before_script:
