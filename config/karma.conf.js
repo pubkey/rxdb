@@ -34,7 +34,7 @@ module.exports = function(config) {
                 // return ['Firefox']; // comment in to test specific browser
 
                 return availableBrowser
-                    .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly'].includes(b));
+                    .filter(b => !['PhantomJS', 'ChromeNoSandbox', 'FirefoxAurora', 'FirefoxNightly'].includes(b));
             }
         },
 
@@ -62,7 +62,12 @@ module.exports = function(config) {
             }
         },
 
-
+        customLaunchers: {
+            ChromeNoSandbox: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        },
         singleRun: true
     });
 };
