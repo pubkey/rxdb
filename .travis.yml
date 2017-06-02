@@ -1,6 +1,8 @@
 language: node_js
 node_js:
   - "7"
+addons:
+  firefox: "53.0"
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
