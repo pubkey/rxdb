@@ -63,6 +63,8 @@ module.exports = function(config) {
         },
 
         browserDisconnectTimeout: 10000,
+        browserNoActivityTimeout: 30000,
+        captureTimeout: 70000,
         singleRun: true
     });
 };
