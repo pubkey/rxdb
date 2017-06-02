@@ -3,4 +3,3 @@ node_js:
   - "7"
 addons:
   firefox: "53.0"
-  chrome: stable
