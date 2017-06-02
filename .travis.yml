@@ -3,12 +3,6 @@ node_js:
   - "7"
 addons:
   firefox: latest
-  apt:
-    sources:
-     - google-chrome
-    packages:
-     - google-chrome-stable fluxbox
-
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
