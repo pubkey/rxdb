@@ -64,7 +64,7 @@ module.exports = function(config) {
 
         browserDisconnectTimeout: 10000,
         browserNoActivityTimeout: 30000,
-        captureTimeout: 100000,
+        captureTimeout: 150000,
         singleRun: true
     });
 };
