@@ -58,7 +58,8 @@ module.exports = function(config) {
 
         client: {
             mocha: {
-                bail: true
+                bail: true,
+                timeout: 6000
             }
         },
         browsers: ['ChromeNoSandbox'],
