@@ -1,7 +1,7 @@
 ## 4.X.X ()
 
 Features:
-   -Added `postCreate`-[hook](https://pubkey.github.io/rxdb/Middleware.html#postCreate) [#165](https://github.com/pubkey/rxdb/issues/165)
+  - Added `postCreate`-[hook](https://pubkey.github.io/rxdb/Middleware.html#postCreate) [#165](https://github.com/pubkey/rxdb/issues/165)
 
 Bugfixes:
   - QueryCache returns old RxQuery when `.regex()` is used [#190](https://github.com/pubkey/rxdb/issues/190)
