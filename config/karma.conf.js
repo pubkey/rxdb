@@ -58,11 +58,19 @@ module.exports = function(config) {
 
         client: {
             mocha: {
-                bail: true
+                bail: true,
+                timeout: 6000
             }
         },
-
-
+        browsers: ['ChromeNoSandbox'],
+        browserDisconnectTimeout: 6000,
+        processKillTimeout: 6000,
+        customLaunchers: {
+            ChromeNoSandbox: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        },
         singleRun: true
     });
 };
