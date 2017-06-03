@@ -13,4 +13,5 @@ before_script:
   - sleep 10
 env:
   - TEST_DIR=vue
+  - TEST_DIR=angular2
 script: cd examples/$TEST_DIR && npm install && npm run build
