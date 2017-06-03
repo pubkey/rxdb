@@ -12,9 +12,5 @@ before_script:
   - "export CHROME_BIN=chromium-browser"
   - sleep 10
 env:
-  - TEST_DIR=angular2
-  - TEST_DIR=react-native
-  - TEST_DIR=react
   - TEST_DIR=vue
-  - TEST_DIR=ionic2
 script: cd examples/$TEST_DIR && npm install && npm run build
