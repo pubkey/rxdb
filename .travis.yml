@@ -11,3 +11,6 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - "export CHROME_BIN=chromium-browser"
   - sleep 10
+env:
+  - TEST_DIR=examples/react-native
+script: cd $TEST_DIR && npm install && npm test
