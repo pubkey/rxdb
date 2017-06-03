@@ -2,13 +2,12 @@ language: node_js
 sudo: required
 os:
   - linux
-  - osx
 node_js:
   - "7"
 addons:
   firefox: latest
 before_script:
   - "export DISPLAY=:99.0"
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sh -e /etc/init.d/xvfb start; fi
+  - "sh -e /etc/init.d/xvfb start"
   - "export CHROME_BIN=chromium-browser"
-  - sleep 3
+  - sleep 10
