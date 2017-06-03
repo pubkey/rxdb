@@ -509,7 +509,6 @@ describe('RxCollection.test.js', () => {
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age <= docs[1]._data.age);
                     });
-
                     it('sort by non-top-level-key as index (no keycompression)', async() => {
                         const db = await RxDatabase.create({
                             name: util.randomCouchString(10),
@@ -634,6 +633,18 @@ describe('RxCollection.test.js', () => {
                             .exec(),
                             Error
                         );
+                        c.database.destroy();
+                    });
+                    it('#146 throw when field not in schema', async() => {
+                        const c = await humansCollection.createAgeIndex();
+                        await util.assertThrowsAsync(
+                            () => c.find().sort({
+                                foobar: 'desc'
+                            }).exec(),
+                            Error,
+                            'foobar'
+                        );
+                        c.database.destroy();
                     });
                 });
             });

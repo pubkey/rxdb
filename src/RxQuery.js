@@ -349,6 +349,9 @@ class RxQuery {
                 .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
                 .forEach(k => {
                     const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
+                    if (!schemaObj)
+                        throw new Error(`RxQuery.sort(${k}) does not work because ${k} is not defined in the schema`);
+
                     if (schemaObj.type == 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
