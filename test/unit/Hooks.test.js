@@ -371,6 +371,31 @@ describe('Hooks.test.js', () => {
             describe('negative', () => {});
         });
     });
+    describe('postCreate', () => {
+        it('should define a getter', async() => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true
+            });
+            const collection = await db.collection({
+                name: 'myhumans',
+                schema: schemas.primaryHuman
+            });
+            collection.postCreate(function(doc) {
+                Object.defineProperty(doc, 'myField', {
+                    get: () => 'foobar',
+                });
+            }, false);
+
+            const human = schemaObjects.simpleHuman();
+            await collection.insert(human);
+            const doc = await collection.findOne().exec();
+            assert.equal('foobar', doc.myField);
+
+            db.destroy();
+        });
+    });
     describe('issues', () => {
         it('BUG #158 : Throwing error in async preInsert does not prevent insert', async() => {
             const c = await humansCollection.create(0);

@@ -127,6 +127,8 @@ declare class RxCollection {
     postInsert(fun: Function, parallel: boolean): void;
     postSave(fun: Function, parallel: boolean): void;
     postRemove(fun: Function, parallel: boolean): void;
+    postCreate(fun: Function, parallel: boolean): void;
+
 
     // migration
     migrationNeeded(): Promise<boolean>;

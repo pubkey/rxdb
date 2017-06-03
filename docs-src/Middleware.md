@@ -15,12 +15,13 @@ RxDB supports the following hooks:
 - postSave
 - preRemove
 - postRemove
+- postCreate
+
 
 ### Why is there no validate-hook?
 Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
 This means if you set the value ```lastName``` of a RxDocument, then the validation will only run on the changed field, not the whole document.
 Therefore it is not usefull to have validate-hooks when a document is written to the database.
-
 
 ## Use Cases
 Middleware are useful for atomizing model logic and avoiding nested blocks of async code.
@@ -206,6 +207,27 @@ myCollection.postRemove(function(doc){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 ```
+
+### postCreate
+This hook is called whenever a `RxDocument` is constructed.
+You can use `postCreate` to modify every RxDocument-instance of the collection.
+This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents.
+
+
+```js
+myCollection.postCreate(function(doc){
+    Object.defineProperty(doc, 'myField', {
+        get: () => 'foobar',
+    });
+}, true);
+
+const doc = await myCollection.findOne().exec();
+
+console.log(doc.myField);
+// 'foobar'
+```
+
+Notice: This hook does not run on already created or cached documents. Make sure to add `postCreate`-hooks before interacting with the collection.
 
 
 ---------

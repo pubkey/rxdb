@@ -115,7 +115,7 @@ class RxQuery {
                 if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
                 if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
                     ret = true;
-                    this._setResultData(changeResult);
+                    await this._setResultData(changeResult);
                 }
 
             } catch (e) {
@@ -135,7 +135,7 @@ class RxQuery {
             this._latestChangeEvent = latestAfter;
             if (!deepEqual(newResultData, this._resultsData)) {
                 ret = true;
-                this._setResultData(newResultData);
+                await this._setResultData(newResultData);
             }
         }
 
@@ -145,9 +145,9 @@ class RxQuery {
         return ret;
     }
 
-    _setResultData(newResultData) {
+    async _setResultData(newResultData) {
         this._resultsData = newResultData;
-        const newResults = this.collection._createDocuments(this._resultsData);
+        const newResults = await this.collection._createDocuments(this._resultsData);
         this._results$.next(newResults);
     }
 

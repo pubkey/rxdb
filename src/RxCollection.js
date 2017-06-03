@@ -16,7 +16,7 @@ import { RxSchema } from './RxSchema';
 import { RxDatabase } from './RxDatabase';
 
 const HOOKS_WHEN = ['pre', 'post'];
-const HOOKS_KEYS = ['insert', 'save', 'remove'];
+const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
 class RxCollection {
     constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
@@ -191,10 +191,9 @@ class RxCollection {
         });
     }
     /**
-     * @return {RxDocument}
+     * @return {Promise<RxDocument>}
      */
-    _createDocument(json) {
-
+    async _createDocument(json) {
         // return from cache if exsists
         const id = json[this.schema.primaryPath];
         const cacheDoc = this._docCache.get(id);
@@ -202,17 +201,17 @@ class RxCollection {
 
         const doc = RxDocument.create(this, json);
         this._assignMethodsToDocument(doc);
-
         this._docCache.set(id, doc);
+        await this._runHooks('post', 'create', doc);
 
         return doc;
     }
     /**
      * create RxDocument from the docs-array
-     * @return {RxDocument[]} documents
+     * @return {Promise<RxDocument[]>} documents
      */
-    _createDocuments(docsJSON) {
-        return docsJSON.map(json => this._createDocument(json));
+    async _createDocuments(docsJSON) {
+        return Promise.all(docsJSON.map(json => this._createDocument(json)));
     }
 
 
@@ -250,7 +249,7 @@ class RxCollection {
 
         json[this.schema.primaryPath] = insertResult.id;
         json._rev = insertResult.rev;
-        const newDoc = this._createDocument(json);
+        const newDoc = await this._createDocument(json);
 
         await this._runHooks('post', 'insert', newDoc);
 
