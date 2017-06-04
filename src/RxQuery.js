@@ -331,6 +331,9 @@ class RxQuery {
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */
     sort(params) {
+        const throwNotInSchema = (key) => {
+            throw new Error(`RxQuery.sort(${key}) does not work because ${key} is not defined in the schema`);
+        };
         const clonedThis = this._clone();
 
         // workarround because sort wont work on unused keys
@@ -338,7 +341,9 @@ class RxQuery {
             const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
             if (!clonedThis.mquery._conditions[checkParam]) {
                 const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-                if (schemaObj && schemaObj.type == 'integer')
+                if (!schemaObj) throwNotInSchema(checkParam);
+
+                if (schemaObj.type == 'integer')
                     // TODO change back to -Infinity when issue resolved
                     // @link https://github.com/pouchdb/pouchdb/issues/6454
                     clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -349,8 +354,7 @@ class RxQuery {
                 .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
                 .forEach(k => {
                     const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
-                    if (!schemaObj)
-                        throw new Error(`RxQuery.sort(${k}) does not work because ${k} is not defined in the schema`);
+                    if (!schemaObj) throwNotInSchema(k);
 
                     if (schemaObj.type == 'integer')
                         // TODO change back to -Infinity when issue resolved

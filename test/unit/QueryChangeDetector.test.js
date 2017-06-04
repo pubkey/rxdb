@@ -57,7 +57,7 @@ describe('QueryChangeDetector.test.js', () => {
         });
         it('BUG: this should match', async() => {
             const col = await humansCollection.create(0);
-            const q = col.find().sort('name');
+            const q = col.find();
 
             const docData = {
                 color: 'green',

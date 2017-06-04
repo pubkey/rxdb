@@ -635,14 +635,23 @@ describe('RxCollection.test.js', () => {
                         );
                         c.database.destroy();
                     });
-                    it('#146 throw when field not in schema', async() => {
+                    it('#146 throw when field not in schema (object)', async() => {
                         const c = await humansCollection.createAgeIndex();
                         await util.assertThrowsAsync(
                             () => c.find().sort({
                                 foobar: 'desc'
                             }).exec(),
                             Error,
-                            'foobar'
+                            'not defined in the schema'
+                        );
+                        c.database.destroy();
+                    });
+                    it('#146 throw when field not in schema (string)', async() => {
+                        const c = await humansCollection.createAgeIndex();
+                        await util.assertThrowsAsync(
+                            () => c.find().sort('foobar').exec(),
+                            Error,
+                            'not defined in the schema'
                         );
                         c.database.destroy();
                     });

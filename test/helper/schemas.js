@@ -495,6 +495,11 @@ export const primaryHuman = {
         },
         lastName: {
             type: 'string'
+        },
+        age: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 150
         }
     },
     required: ['firstName', 'lastName']
