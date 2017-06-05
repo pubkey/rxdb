@@ -8,6 +8,7 @@ node_js:
 addons:
   firefox: latest
 before_install:
+  - "sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe""
   - "sudo apt-get update"
   - "sudo apt-get install build-essentials -y"
 before_script:
