@@ -8,6 +8,7 @@ node_js:
 addons:
   firefox: latest
 before_install:
+  - "sudo apt-get update"
   - "sudo apt-get install build-essentials -y"
 before_script:
   - "export DISPLAY=:99.0"
