@@ -4,13 +4,8 @@ os:
   - linux
 node_js:
   - "7"
-  - "8"
 addons:
   firefox: latest
-before_install:
-  - "sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main universe'"
-  - "sudo apt-get update"
-  - "sudo apt-get install build-essentials -y"
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
