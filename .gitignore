@@ -9,3 +9,4 @@ log.txt
 config.json
 .config.json
 .transpile_state.json
+build/

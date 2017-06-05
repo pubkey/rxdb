@@ -11,7 +11,3 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - "export CHROME_BIN=chromium-browser"
   - sleep 10
-env:
-  - TEST_DIR=vue
-  - TEST_DIR=angular2
-script: cd examples/$TEST_DIR && npm install && npm run build
