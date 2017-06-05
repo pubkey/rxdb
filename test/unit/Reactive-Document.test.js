@@ -131,6 +131,7 @@ describe('Reactive-Document.test.js', () => {
 
                 await c1.database.socket.pull();
                 await c2.database.socket.pull();
+                await util.waitUntil(() => doc.firstName === 'foobar');
                 assert.equal(doc.firstName, 'foobar');
                 const ok2 = await doc.synced$.first().toPromise();
                 assert.ok(ok2);
