@@ -372,6 +372,54 @@ class RxCollection {
         return Promise.all(importFns);
     }
 
+    watchForChanges() {
+        if (!this.synced) {
+            /**
+             * this will grap the changes and publish them to the rx-stream
+             * this is to ensure that changes from 'synced' dbs will be published
+             */
+            const sendChanges = {};
+            const pouch$ = util.Rx.Observable.fromEvent(
+                this.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                })
+                , 'change'
+            )
+            .filter(c => c.id.charAt(0) != '_')
+            .map(c => c.doc)
+            .map(doc => {
+                doc._ext = true;
+                return doc;
+            })
+            .filter(doc => sendChanges[doc._rev] = 'YES')
+            .delay(10)
+            .map(doc => {
+                let ret = null;
+                if (sendChanges[doc._rev] == 'YES') ret = doc;
+                delete sendChanges[doc._rev];
+                return ret;
+            })
+            .filter(doc => doc != null)
+            .subscribe(doc => {
+                this.$emit(RxChangeEvent.fromPouchChange(doc, this));
+            });
+
+            this._subs.push(pouch$);
+
+            const ob2 = this.$
+                .map(cE => cE.data.v)
+                .map(doc => {
+                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                })
+                .subscribe();
+            this._subs.push(ob2);
+        }
+
+        this.synced = true;
+    }
+
 
     /**
      * because it will have document-conflicts when 2 syncs write to the same storage
@@ -388,49 +436,8 @@ class RxCollection {
         if (!alsoIfNotLeader)
             await this.database.waitForLeadership();
 
-        if (!this.synced) {
-            /**
-             * this will grap the changes and publish them to the rx-stream
-             * this is to ensure that changes from 'synced' dbs will be published
-             */
-            const sendChanges = {};
-            const pouch$ = util.Rx.Observable
-                .fromEvent(
-                    this.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: true
-                    }), 'change')
-                .filter(c => c.id.charAt(0) != '_')
-                .map(c => c.doc)
-                .map(doc => {
-                    doc._ext = true;
-                    return doc;
-                })
-                .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
-                .filter(doc => sendChanges[doc._rev] = 'YES')
-                .delay(10)
-                .map(doc => {
-                    let ret = null;
-                    if (sendChanges[doc._rev] == 'YES') ret = doc;
-                    delete sendChanges[doc._rev];
-                    return ret;
-                })
-                .filter(doc => doc != null)
-                .subscribe(doc => {
-                    this.$emit(RxChangeEvent.fromPouchChange(doc, this));
-                });
-            this._subs.push(pouch$);
+        this.watchForChanges();
 
-            const ob2 = this.$
-                .map(cE => cE.data.v)
-                .map(doc => {
-                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                })
-                .subscribe();
-            this._subs.push(ob2);
-        }
-        this.synced = true;
         const sync = this.pouch.sync(serverURL, {
             live: true,
             retry: true
