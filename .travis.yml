@@ -4,6 +4,7 @@ os:
   - linux
 node_js:
   - "7"
+  - "8"
 addons:
   firefox: latest
 before_script:
