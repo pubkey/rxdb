@@ -67,6 +67,23 @@ This removes the document from the collection.
 myDocument.remove();
 ```
 
+### update()
+Updates the document based on the [mongo-update-syntax](https://docs.mongodb.com/manual/reference/operator/update-field/), based on [modifyjs](https://github.com/lgandecki/modifyjs#implemented).
+
+```js
+myDocument.update({
+    $inc: {
+        age: 1 // increases age by 1
+    },
+    $set: {
+        fistName: 'foobar' // sets firstName to foobar
+    }
+});
+await myDocument.save();
+```
+
+
+
 ### Observe $
 Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/overview.html#observable) which emits all change-Events belonging to this document.
 

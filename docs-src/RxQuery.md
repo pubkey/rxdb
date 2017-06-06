@@ -13,6 +13,19 @@ const query = myCollection.find().where('age').lt(18);
 const removedDocs = await query.remove();
 ```
 
+
+## update()
+Runs and [update](./RxDocument.md#update) on every RxDocument of the query-result.
+
+```js
+const query = myCollection.find().where('age').gt(18);
+await query.update({
+    $inc: {
+        age: 1 // increases age of every found document by 1
+    }
+});
+```
+
 ## NOTICE: RxQuery's are immutable
 
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery's have to be immutable.
