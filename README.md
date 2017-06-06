@@ -38,7 +38,7 @@
 
 ## Features
 
-* **Omniusable** on browsers, nodejs, electron, cordova, react-native and every other javascript-runtime
+* **Multiplatform support** for browsers, nodejs, electron, cordova, react-native and every other javascript-runtime
 * **Reactive** data-handling based on [rxjs](https://github.com/ReactiveX/rxjs)
 * **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant
 * **Schema-based** with the easy-to-learn standard of [jsonschema](http://json-schema.org/)
