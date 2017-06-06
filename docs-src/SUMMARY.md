@@ -29,7 +29,7 @@
     * [Creation](./RxCollection.md#creating-a-collection)
         * [name](./RxCollection.md#name)
         * [schema](./RxCollection.md#schema)
-      * [Functions](./RxCollection.md#functions)
+    * [Functions](./RxCollection.md#functions)
         * [$()](./RxCollection.md#observe-)
         * [insert()](./RxCollection.md#insert)
         * [upsert()](./RxCollection.md#upsert)
@@ -41,16 +41,21 @@
         * [sync()](./RxCollection.md#sync)
 
 * [RxDocument](./RxDocument.md)
-      * [Insert](./RxDocument.md#insert)
-      * [Find](./RxDocument.md#find)
-      * [Functions](./RxDocument.md#functions)
+    * [Insert](./RxDocument.md#insert)
+    * [Find](./RxDocument.md#find)
+    * [Functions](./RxDocument.md#functions)
         * [get()](./RxDocument.md#get)
         * [set()](./RxDocument.md#set)
         * [save()](./RxDocument.md#save)
         * [remove()](./RxDocument.md#remove)
+        * [update()](./RxDocument.md#update)
         * [$()](./RxDocument.md#observe-path)
 
 * [RxQuery](./RxQuery.md)
+    * [remove()](./RxQuery.md#remove)
+    * [update()](./RxQuery.md#update)
+
+
 
 * [Middleware-hooks](./Middleware.md)
 
