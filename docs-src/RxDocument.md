@@ -71,7 +71,7 @@ myDocument.remove();
 Updates the document based on the [mongo-update-syntax](https://docs.mongodb.com/manual/reference/operator/update-field/), based on [modifyjs](https://github.com/lgandecki/modifyjs#implemented).
 
 ```js
-myDocument.update({
+await myDocument.update({
     $inc: {
         age: 1 // increases age by 1
     },
@@ -79,7 +79,6 @@ myDocument.update({
         fistName: 'foobar' // sets firstName to foobar
     }
 });
-await myDocument.save();
 ```
 
 
