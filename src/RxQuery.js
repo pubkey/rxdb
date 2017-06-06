@@ -306,13 +306,14 @@ class RxQuery {
         return docs;
     }
 
-  /**
-   * updates all found documents
-   * @param  {object} updateObj
-   * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
-   */
+    /**
+     * updates all found documents
+     * @param  {object} updateObj
+     * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
+     */
     async update(updateObj) {
         const docs = await this.exec();
+        if (!docs) return null;
         if (Array.isArray(docs)) {
             await Promise.all(
                 docs.map(doc => doc.update(updateObj))
