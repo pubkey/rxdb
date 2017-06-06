@@ -20,7 +20,7 @@ import { RxSchema } from './RxSchema';
 import { RxDatabase } from './RxDatabase';
 
 var HOOKS_WHEN = ['pre', 'post'];
-var HOOKS_KEYS = ['insert', 'save', 'remove'];
+var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
 var RxCollection = function () {
     function RxCollection(database, name, schema) {
@@ -376,37 +376,85 @@ var RxCollection = function () {
         });
     };
     /**
-     * @return {RxDocument}
+     * @return {Promise<RxDocument>}
      */
 
 
-    RxCollection.prototype._createDocument = function _createDocument(json) {
+    RxCollection.prototype._createDocument = function () {
+        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6(json) {
+            var id, cacheDoc, doc;
+            return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+                while (1) {
+                    switch (_context6.prev = _context6.next) {
+                        case 0:
+                            // return from cache if exsists
+                            id = json[this.schema.primaryPath];
+                            cacheDoc = this._docCache.get(id);
 
-        // return from cache if exsists
-        var id = json[this.schema.primaryPath];
-        var cacheDoc = this._docCache.get(id);
-        if (cacheDoc) return cacheDoc;
+                            if (!cacheDoc) {
+                                _context6.next = 4;
+                                break;
+                            }
 
-        var doc = RxDocument.create(this, json);
-        this._assignMethodsToDocument(doc);
+                            return _context6.abrupt('return', cacheDoc);
 
-        this._docCache.set(id, doc);
+                        case 4:
+                            doc = RxDocument.create(this, json);
 
-        return doc;
-    };
+                            this._assignMethodsToDocument(doc);
+                            this._docCache.set(id, doc);
+                            _context6.next = 9;
+                            return this._runHooks('post', 'create', doc);
+
+                        case 9:
+                            return _context6.abrupt('return', doc);
+
+                        case 10:
+                        case 'end':
+                            return _context6.stop();
+                    }
+                }
+            }, _callee6, this);
+        }));
+
+        function _createDocument(_x13) {
+            return _ref6.apply(this, arguments);
+        }
+
+        return _createDocument;
+    }();
     /**
      * create RxDocument from the docs-array
-     * @return {RxDocument[]} documents
+     * @return {Promise<RxDocument[]>} documents
      */
 
 
-    RxCollection.prototype._createDocuments = function _createDocuments(docsJSON) {
-        var _this4 = this;
+    RxCollection.prototype._createDocuments = function () {
+        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7(docsJSON) {
+            var _this4 = this;
 
-        return docsJSON.map(function (json) {
-            return _this4._createDocument(json);
-        });
-    };
+            return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+                while (1) {
+                    switch (_context7.prev = _context7.next) {
+                        case 0:
+                            return _context7.abrupt('return', Promise.all(docsJSON.map(function (json) {
+                                return _this4._createDocument(json);
+                            })));
+
+                        case 1:
+                        case 'end':
+                            return _context7.stop();
+                    }
+                }
+            }, _callee7, this);
+        }));
+
+        function _createDocuments(_x14) {
+            return _ref7.apply(this, arguments);
+        }
+
+        return _createDocuments;
+    }();
 
     /**
      * returns observable
@@ -424,16 +472,16 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.insert = function () {
-        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6(json) {
+        var _ref8 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee8(json) {
             var insertResult, newDoc, emitEvent;
-            return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+            return _regeneratorRuntime.wrap(function _callee8$(_context8) {
                 while (1) {
-                    switch (_context6.prev = _context6.next) {
+                    switch (_context8.prev = _context8.next) {
                         case 0:
                             json = clone(json);
 
                             if (!json._id) {
-                                _context6.next = 3;
+                                _context8.next = 3;
                                 break;
                             }
 
@@ -444,45 +492,49 @@ var RxCollection = function () {
                             // fill _id
                             if (this.schema.primaryPath == '_id' && !json._id) json._id = util.generate_id();
 
-                            _context6.next = 6;
+                            _context8.next = 6;
                             return this._runHooks('pre', 'insert', json);
 
                         case 6:
 
                             this.schema.validate(json);
 
-                            _context6.next = 9;
+                            _context8.next = 9;
                             return this._pouchPut(json);
 
                         case 9:
-                            insertResult = _context6.sent;
+                            insertResult = _context8.sent;
 
 
                             json[this.schema.primaryPath] = insertResult.id;
                             json._rev = insertResult.rev;
-                            newDoc = this._createDocument(json);
-                            _context6.next = 15;
+                            _context8.next = 14;
+                            return this._createDocument(json);
+
+                        case 14:
+                            newDoc = _context8.sent;
+                            _context8.next = 17;
                             return this._runHooks('post', 'insert', newDoc);
 
-                        case 15:
+                        case 17:
 
                             // event
                             emitEvent = RxChangeEvent.create('INSERT', this.database, this, newDoc, json);
 
                             this.$emit(emitEvent);
 
-                            return _context6.abrupt('return', newDoc);
+                            return _context8.abrupt('return', newDoc);
 
-                        case 18:
+                        case 20:
                         case 'end':
-                            return _context6.stop();
+                            return _context8.stop();
                     }
                 }
-            }, _callee6, this);
+            }, _callee8, this);
         }));
 
-        function insert(_x13) {
-            return _ref6.apply(this, arguments);
+        function insert(_x15) {
+            return _ref8.apply(this, arguments);
         }
 
         return insert;
@@ -494,60 +546,60 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.upsert = function () {
-        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7(json) {
+        var _ref9 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee9(json) {
             var primary, existing, newDoc;
-            return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+            return _regeneratorRuntime.wrap(function _callee9$(_context9) {
                 while (1) {
-                    switch (_context7.prev = _context7.next) {
+                    switch (_context9.prev = _context9.next) {
                         case 0:
                             json = clone(json);
                             primary = json[this.schema.primaryPath];
 
                             if (primary) {
-                                _context7.next = 4;
+                                _context9.next = 4;
                                 break;
                             }
 
                             throw new Error('RxCollection.upsert() does not work without primary');
 
                         case 4:
-                            _context7.next = 6;
+                            _context9.next = 6;
                             return this.findOne(primary).exec();
 
                         case 6:
-                            existing = _context7.sent;
+                            existing = _context9.sent;
 
                             if (!existing) {
-                                _context7.next = 15;
+                                _context9.next = 15;
                                 break;
                             }
 
                             json._rev = existing._rev;
                             existing._data = json;
-                            _context7.next = 12;
+                            _context9.next = 12;
                             return existing.save();
 
                         case 12:
-                            return _context7.abrupt('return', existing);
+                            return _context9.abrupt('return', existing);
 
                         case 15:
-                            _context7.next = 17;
+                            _context9.next = 17;
                             return this.insert(json);
 
                         case 17:
-                            newDoc = _context7.sent;
-                            return _context7.abrupt('return', newDoc);
+                            newDoc = _context9.sent;
+                            return _context9.abrupt('return', newDoc);
 
                         case 19:
                         case 'end':
-                            return _context7.stop();
+                            return _context9.stop();
                     }
                 }
-            }, _callee7, this);
+            }, _callee9, this);
         }));
 
-        function upsert(_x14) {
-            return _ref7.apply(this, arguments);
+        function upsert(_x16) {
+            return _ref9.apply(this, arguments);
         }
 
         return upsert;
@@ -588,12 +640,12 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.dump = function () {
-        var _ref8 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee8() {
+        var _ref10 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee10() {
             var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
             var encrypted, json, query, docs;
-            return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+            return _regeneratorRuntime.wrap(function _callee10$(_context10) {
                 while (1) {
-                    switch (_context8.prev = _context8.next) {
+                    switch (_context10.prev = _context10.next) {
                         case 0:
                             encrypted = !decrypted;
                             json = {
@@ -611,28 +663,28 @@ var RxCollection = function () {
                             }
 
                             query = RxQuery.create('find', {}, this);
-                            _context8.next = 6;
+                            _context10.next = 6;
                             return this._pouchFind(query, null, encrypted);
 
                         case 6:
-                            docs = _context8.sent;
+                            docs = _context10.sent;
 
                             json.docs = docs.map(function (docData) {
                                 delete docData._rev;
                                 return docData;
                             });
-                            return _context8.abrupt('return', json);
+                            return _context10.abrupt('return', json);
 
                         case 9:
                         case 'end':
-                            return _context8.stop();
+                            return _context10.stop();
                     }
                 }
-            }, _callee8, this);
+            }, _callee10, this);
         }));
 
         function dump() {
-            return _ref8.apply(this, arguments);
+            return _ref10.apply(this, arguments);
         }
 
         return dump;
@@ -645,16 +697,16 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.importDump = function () {
-        var _ref9 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee9(exportedJSON) {
+        var _ref11 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee11(exportedJSON) {
             var _this5 = this;
 
             var importFns;
-            return _regeneratorRuntime.wrap(function _callee9$(_context9) {
+            return _regeneratorRuntime.wrap(function _callee11$(_context11) {
                 while (1) {
-                    switch (_context9.prev = _context9.next) {
+                    switch (_context11.prev = _context11.next) {
                         case 0:
                             if (!(exportedJSON.schemaHash != this.schema.hash)) {
-                                _context9.next = 2;
+                                _context11.next = 2;
                                 break;
                             }
 
@@ -662,7 +714,7 @@ var RxCollection = function () {
 
                         case 2:
                             if (!(exportedJSON.encrypted && exportedJSON.passwordHash != util.hash(this.database.password))) {
-                                _context9.next = 4;
+                                _context11.next = 4;
                                 break;
                             }
 
@@ -673,31 +725,81 @@ var RxCollection = function () {
                             // decrypt
                             .map(function (doc) {
                                 return _this5._crypter.decrypt(doc);
-                            })
+                            }
                             // validate schema
-                            .map(function (doc) {
+                            ).map(function (doc) {
                                 return _this5.schema.validate(doc);
-                            })
+                            }
                             // import
-                            .map(function (doc) {
+                            ).map(function (doc) {
                                 return _this5._pouchPut(doc);
                             });
-                            return _context9.abrupt('return', Promise.all(importFns));
+                            return _context11.abrupt('return', Promise.all(importFns));
 
                         case 6:
                         case 'end':
-                            return _context9.stop();
+                            return _context11.stop();
                     }
                 }
-            }, _callee9, this);
+            }, _callee11, this);
         }));
 
-        function importDump(_x16) {
-            return _ref9.apply(this, arguments);
+        function importDump(_x18) {
+            return _ref11.apply(this, arguments);
         }
 
         return importDump;
     }();
+
+    RxCollection.prototype.watchForChanges = function watchForChanges() {
+        var _this6 = this;
+
+        if (!this.synced) {
+            /**
+             * this will grap the changes and publish them to the rx-stream
+             * this is to ensure that changes from 'synced' dbs will be published
+             */
+            var sendChanges = {};
+            var pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            }), 'change').filter(function (c) {
+                return c.id.charAt(0) != '_';
+            }).map(function (c) {
+                return c.doc;
+            }).map(function (doc) {
+                doc._ext = true;
+                return doc;
+            }).filter(function (doc) {
+                return !_this6._changeEventBuffer.buffer.map(function (cE) {
+                    return cE.data.v._rev;
+                }).includes(doc._rev);
+            }).filter(function (doc) {
+                return sendChanges[doc._rev] = 'YES';
+            }).delay(10).map(function (doc) {
+                var ret = null;
+                if (sendChanges[doc._rev] == 'YES') ret = doc;
+                delete sendChanges[doc._rev];
+                return ret;
+            }).filter(function (doc) {
+                return doc != null;
+            }).subscribe(function (doc) {
+                _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
+            });
+
+            this._subs.push(pouch$);
+
+            var ob2 = this.$.map(function (cE) {
+                return cE.data.v;
+            }).map(function (doc) {
+                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+            }).subscribe();
+            this._subs.push(ob2);
+        }
+
+        this.synced = true;
+    };
 
     /**
      * because it will have document-conflicts when 2 syncs write to the same storage
@@ -705,17 +807,15 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.sync = function () {
-        var _ref10 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee10(serverURL) {
-            var _this6 = this;
-
+        var _ref12 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee12(serverURL) {
             var alsoIfNotLeader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-            var sendChanges, pouch$, ob2, sync;
-            return _regeneratorRuntime.wrap(function _callee10$(_context10) {
+            var sync;
+            return _regeneratorRuntime.wrap(function _callee12$(_context12) {
                 while (1) {
-                    switch (_context10.prev = _context10.next) {
+                    switch (_context12.prev = _context12.next) {
                         case 0:
                             if (!(typeof this.pouch.sync !== 'function')) {
-                                _context10.next = 2;
+                                _context12.next = 2;
                                 break;
                             }
 
@@ -723,60 +823,17 @@ var RxCollection = function () {
 
                         case 2:
                             if (alsoIfNotLeader) {
-                                _context10.next = 5;
+                                _context12.next = 5;
                                 break;
                             }
 
-                            _context10.next = 5;
+                            _context12.next = 5;
                             return this.database.waitForLeadership();
 
                         case 5:
 
-                            if (!this.synced) {
-                                /**
-                                 * this will grap the changes and publish them to the rx-stream
-                                 * this is to ensure that changes from 'synced' dbs will be published
-                                 */
-                                sendChanges = {};
-                                pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
-                                    since: 'now',
-                                    live: true,
-                                    include_docs: true
-                                }), 'change').filter(function (c) {
-                                    return c.id.charAt(0) != '_';
-                                }).map(function (c) {
-                                    return c.doc;
-                                }).map(function (doc) {
-                                    doc._ext = true;
-                                    return doc;
-                                }).filter(function (doc) {
-                                    return !_this6._changeEventBuffer.buffer.map(function (cE) {
-                                        return cE.data.v._rev;
-                                    }).includes(doc._rev);
-                                }).filter(function (doc) {
-                                    return sendChanges[doc._rev] = 'YES';
-                                }).delay(10).map(function (doc) {
-                                    var ret = null;
-                                    if (sendChanges[doc._rev] == 'YES') ret = doc;
-                                    delete sendChanges[doc._rev];
-                                    return ret;
-                                }).filter(function (doc) {
-                                    return doc != null;
-                                }).subscribe(function (doc) {
-                                    _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
-                                });
+                            this.watchForChanges();
 
-                                this._subs.push(pouch$);
-
-                                ob2 = this.$.map(function (cE) {
-                                    return cE.data.v;
-                                }).map(function (doc) {
-                                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                                }).subscribe();
-
-                                this._subs.push(ob2);
-                            }
-                            this.synced = true;
                             sync = this.pouch.sync(serverURL, {
                                 live: true,
                                 retry: true
@@ -785,18 +842,18 @@ var RxCollection = function () {
                             });
 
                             this.pouchSyncs.push(sync);
-                            return _context10.abrupt('return', sync);
+                            return _context12.abrupt('return', sync);
 
-                        case 10:
+                        case 9:
                         case 'end':
-                            return _context10.stop();
+                            return _context12.stop();
                     }
                 }
-            }, _callee10, this);
+            }, _callee12, this);
         }));
 
-        function sync(_x17) {
-            return _ref10.apply(this, arguments);
+        function sync(_x19) {
+            return _ref12.apply(this, arguments);
         }
 
         return sync;
@@ -838,64 +895,64 @@ var RxCollection = function () {
     };
 
     RxCollection.prototype._runHooks = function () {
-        var _ref11 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee11(when, key, doc) {
+        var _ref13 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee13(when, key, doc) {
             var hooks, i;
-            return _regeneratorRuntime.wrap(function _callee11$(_context11) {
+            return _regeneratorRuntime.wrap(function _callee13$(_context13) {
                 while (1) {
-                    switch (_context11.prev = _context11.next) {
+                    switch (_context13.prev = _context13.next) {
                         case 0:
                             hooks = this.getHooks(when, key);
 
                             if (hooks) {
-                                _context11.next = 3;
+                                _context13.next = 3;
                                 break;
                             }
 
-                            return _context11.abrupt('return');
+                            return _context13.abrupt('return');
 
                         case 3:
                             i = 0;
 
                         case 4:
                             if (!(i < hooks.series.length)) {
-                                _context11.next = 10;
+                                _context13.next = 10;
                                 break;
                             }
 
-                            _context11.next = 7;
+                            _context13.next = 7;
                             return hooks.series[i](doc);
 
                         case 7:
                             i++;
-                            _context11.next = 4;
+                            _context13.next = 4;
                             break;
 
                         case 10:
-                            _context11.next = 12;
+                            _context13.next = 12;
                             return Promise.all(hooks.parallel.map(function (hook) {
                                 return hook(doc);
                             }));
 
                         case 12:
                         case 'end':
-                            return _context11.stop();
+                            return _context13.stop();
                     }
                 }
-            }, _callee11, this);
+            }, _callee13, this);
         }));
 
-        function _runHooks(_x20, _x21, _x22) {
-            return _ref11.apply(this, arguments);
+        function _runHooks(_x22, _x23, _x24) {
+            return _ref13.apply(this, arguments);
         }
 
         return _runHooks;
     }();
 
     RxCollection.prototype.destroy = function () {
-        var _ref12 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee12() {
-            return _regeneratorRuntime.wrap(function _callee12$(_context12) {
+        var _ref14 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee14() {
+            return _regeneratorRuntime.wrap(function _callee14$(_context14) {
                 while (1) {
-                    switch (_context12.prev = _context12.next) {
+                    switch (_context14.prev = _context14.next) {
                         case 0:
                             this._subs.forEach(function (sub) {
                                 return sub.unsubscribe();
@@ -909,14 +966,14 @@ var RxCollection = function () {
 
                         case 5:
                         case 'end':
-                            return _context12.stop();
+                            return _context14.stop();
                     }
                 }
-            }, _callee12, this);
+            }, _callee14, this);
         }));
 
         function destroy() {
-            return _ref12.apply(this, arguments);
+            return _ref14.apply(this, arguments);
         }
 
         return destroy;
@@ -1009,27 +1066,27 @@ var checkORMmethdods = function checkORMmethdods(statics) {
  * @return {Promise.<RxCollection>} promise with collection
  */
 export var create = function () {
-    var _ref13 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee13(_ref14) {
-        var database = _ref14.database,
-            name = _ref14.name,
-            schema = _ref14.schema,
-            _ref14$pouchSettings = _ref14.pouchSettings,
-            pouchSettings = _ref14$pouchSettings === undefined ? {} : _ref14$pouchSettings,
-            _ref14$migrationStrat = _ref14.migrationStrategies,
-            migrationStrategies = _ref14$migrationStrat === undefined ? {} : _ref14$migrationStrat,
-            _ref14$autoMigrate = _ref14.autoMigrate,
-            autoMigrate = _ref14$autoMigrate === undefined ? true : _ref14$autoMigrate,
-            _ref14$statics = _ref14.statics,
-            statics = _ref14$statics === undefined ? {} : _ref14$statics,
-            _ref14$methods = _ref14.methods,
-            methods = _ref14$methods === undefined ? {} : _ref14$methods;
+    var _ref15 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee15(_ref16) {
+        var database = _ref16.database,
+            name = _ref16.name,
+            schema = _ref16.schema,
+            _ref16$pouchSettings = _ref16.pouchSettings,
+            pouchSettings = _ref16$pouchSettings === undefined ? {} : _ref16$pouchSettings,
+            _ref16$migrationStrat = _ref16.migrationStrategies,
+            migrationStrategies = _ref16$migrationStrat === undefined ? {} : _ref16$migrationStrat,
+            _ref16$autoMigrate = _ref16.autoMigrate,
+            autoMigrate = _ref16$autoMigrate === undefined ? true : _ref16$autoMigrate,
+            _ref16$statics = _ref16.statics,
+            statics = _ref16$statics === undefined ? {} : _ref16$statics,
+            _ref16$methods = _ref16.methods,
+            methods = _ref16$methods === undefined ? {} : _ref16$methods;
         var collection;
-        return _regeneratorRuntime.wrap(function _callee13$(_context13) {
+        return _regeneratorRuntime.wrap(function _callee15$(_context15) {
             while (1) {
-                switch (_context13.prev = _context13.next) {
+                switch (_context15.prev = _context15.next) {
                     case 0:
                         if (!(!schema instanceof RxSchema)) {
-                            _context13.next = 2;
+                            _context15.next = 2;
                             break;
                         }
 
@@ -1037,7 +1094,7 @@ export var create = function () {
 
                     case 2:
                         if (!(!database instanceof RxDatabase)) {
-                            _context13.next = 4;
+                            _context15.next = 4;
                             break;
                         }
 
@@ -1045,7 +1102,7 @@ export var create = function () {
 
                     case 4:
                         if (!(typeof autoMigrate !== 'boolean')) {
-                            _context13.next = 6;
+                            _context15.next = 6;
                             break;
                         }
 
@@ -1066,7 +1123,7 @@ export var create = function () {
                         });
 
                         collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
-                        _context13.next = 14;
+                        _context15.next = 14;
                         return collection.prepare();
 
                     case 14:
@@ -1081,25 +1138,25 @@ export var create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context13.next = 18;
+                            _context15.next = 18;
                             break;
                         }
 
-                        _context13.next = 18;
+                        _context15.next = 18;
                         return collection.migratePromise();
 
                     case 18:
-                        return _context13.abrupt('return', collection);
+                        return _context15.abrupt('return', collection);
 
                     case 19:
                     case 'end':
-                        return _context13.stop();
+                        return _context15.stop();
                 }
             }
-        }, _callee13, this);
+        }, _callee15, this);
     }));
 
-    return function create(_x23) {
-        return _ref13.apply(this, arguments);
+    return function create(_x25) {
+        return _ref15.apply(this, arguments);
     };
 }();

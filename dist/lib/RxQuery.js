@@ -179,59 +179,80 @@ var RxQuery = function () {
                                     resolve = res;
                                 });
 
-                                if (!this._mustReExec) {
-                                    try {
-                                        missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
-                                        // console.dir(missedChangeEvents);
-
-                                        this._latestChangeEvent = this.collection._changeEventBuffer.counter;
-                                        runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-                                        changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
-
-                                        if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
-                                        if (Array.isArray(changeResult) && !(0, _deepEqual2['default'])(changeResult, this._resultsData)) {
-                                            ret = true;
-                                            this._setResultData(changeResult);
-                                        }
-                                    } catch (e) {
-                                        console.error('RxQuery()._ensureEqual(): Unexpected Error:');
-                                        console.dir(e);
-                                        this._mustReExec = true;
-                                    }
+                                if (this._mustReExec) {
+                                    _context.next = 25;
+                                    break;
                                 }
 
+                                _context.prev = 8;
+                                missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+                                // console.dir(missedChangeEvents);
+
+                                this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+                                runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+                                changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
+
+                                if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
+
+                                if (!(Array.isArray(changeResult) && !(0, _deepEqual2['default'])(changeResult, this._resultsData))) {
+                                    _context.next = 18;
+                                    break;
+                                }
+
+                                ret = true;
+                                _context.next = 18;
+                                return this._setResultData(changeResult);
+
+                            case 18:
+                                _context.next = 25;
+                                break;
+
+                            case 20:
+                                _context.prev = 20;
+                                _context.t0 = _context['catch'](8);
+
+                                console.error('RxQuery()._ensureEqual(): Unexpected Error:');
+                                console.dir(_context.t0);
+                                this._mustReExec = true;
+
+                            case 25:
                                 if (!this._mustReExec) {
-                                    _context.next = 15;
+                                    _context.next = 35;
                                     break;
                                 }
 
                                 // counter can change while _execOverDatabase() is running
                                 latestAfter = this.collection._changeEventBuffer.counter;
-                                _context.next = 12;
+                                _context.next = 29;
                                 return this._execOverDatabase();
 
-                            case 12:
+                            case 29:
                                 newResultData = _context.sent;
 
                                 this._latestChangeEvent = latestAfter;
-                                if (!(0, _deepEqual2['default'])(newResultData, this._resultsData)) {
-                                    ret = true;
-                                    this._setResultData(newResultData);
+
+                                if ((0, _deepEqual2['default'])(newResultData, this._resultsData)) {
+                                    _context.next = 35;
+                                    break;
                                 }
 
-                            case 15:
+                                ret = true;
+                                _context.next = 35;
+                                return this._setResultData(newResultData);
+
+                            case 35:
 
                                 // console.log('_ensureEqual DONE (' + this.toString() + ')');
 
                                 resolve(true);
                                 return _context.abrupt('return', ret);
 
-                            case 17:
+                            case 37:
                             case 'end':
                                 return _context.stop();
                         }
                     }
-                }, _callee, this);
+                }, _callee, this, [[8, 20]]);
             }));
 
             function _ensureEqual() {
@@ -242,11 +263,36 @@ var RxQuery = function () {
         }()
     }, {
         key: '_setResultData',
-        value: function _setResultData(newResultData) {
-            this._resultsData = newResultData;
-            var newResults = this.collection._createDocuments(this._resultsData);
-            this._results$.next(newResults);
-        }
+        value: function () {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(newResultData) {
+                var newResults;
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                this._resultsData = newResultData;
+                                _context2.next = 3;
+                                return this.collection._createDocuments(this._resultsData);
+
+                            case 3:
+                                newResults = _context2.sent;
+
+                                this._results$.next(newResults);
+
+                            case 5:
+                            case 'end':
+                                return _context2.stop();
+                        }
+                    }
+                }, _callee2, this);
+            }));
+
+            function _setResultData(_x) {
+                return _ref3.apply(this, arguments);
+            }
+
+            return _setResultData;
+        }()
 
         /**
          * executes the query on the database
@@ -256,33 +302,33 @@ var RxQuery = function () {
     }, {
         key: '_execOverDatabase',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
                 var docsData, ret;
-                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context3.prev = _context3.next) {
                             case 0:
                                 this._execOverDatabaseCount++;
                                 docsData = void 0, ret = void 0;
-                                _context2.t0 = this.op;
-                                _context2.next = _context2.t0 === 'find' ? 5 : _context2.t0 === 'findOne' ? 9 : 13;
+                                _context3.t0 = this.op;
+                                _context3.next = _context3.t0 === 'find' ? 5 : _context3.t0 === 'findOne' ? 9 : 13;
                                 break;
 
                             case 5:
-                                _context2.next = 7;
+                                _context3.next = 7;
                                 return this.collection._pouchFind(this);
 
                             case 7:
-                                docsData = _context2.sent;
-                                return _context2.abrupt('break', 14);
+                                docsData = _context3.sent;
+                                return _context3.abrupt('break', 14);
 
                             case 9:
-                                _context2.next = 11;
+                                _context3.next = 11;
                                 return this.collection._pouchFind(this, 1);
 
                             case 11:
-                                docsData = _context2.sent;
-                                return _context2.abrupt('break', 14);
+                                docsData = _context3.sent;
+                                return _context3.abrupt('break', 14);
 
                             case 13:
                                 throw new Error('RxQuery.exec(): op (' + this.op + ') not known');
@@ -290,18 +336,18 @@ var RxQuery = function () {
                             case 14:
 
                                 this._mustReExec = false;
-                                return _context2.abrupt('return', docsData);
+                                return _context3.abrupt('return', docsData);
 
                             case 16:
                             case 'end':
-                                return _context2.stop();
+                                return _context3.stop();
                         }
                     }
-                }, _callee2, this);
+                }, _callee3, this);
             }));
 
             function _execOverDatabase() {
-                return _ref3.apply(this, arguments);
+                return _ref4.apply(this, arguments);
             }
 
             return _execOverDatabase;
@@ -394,68 +440,40 @@ var RxQuery = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
-                var docs;
-                return _regenerator2['default'].wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                _context3.next = 2;
-                                return this.exec();
-
-                            case 2:
-                                docs = _context3.sent;
-
-                                if (!Array.isArray(docs)) {
-                                    _context3.next = 8;
-                                    break;
-                                }
-
-                                _context3.next = 6;
-                                return Promise.all(docs.map(function (doc) {
-                                    return doc.remove();
-                                }));
-
-                            case 6:
-                                _context3.next = 10;
-                                break;
-
-                            case 8:
-                                _context3.next = 10;
-                                return docs.remove();
-
-                            case 10:
-                                return _context3.abrupt('return', docs);
-
-                            case 11:
-                            case 'end':
-                                return _context3.stop();
-                        }
-                    }
-                }, _callee3, this);
-            }));
-
-            function remove() {
-                return _ref4.apply(this, arguments);
-            }
-
-            return remove;
-        }()
-    }, {
-        key: 'exec',
-        value: function () {
             var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+                var docs;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
                                 _context4.next = 2;
-                                return this.$.first().toPromise();
+                                return this.exec();
 
                             case 2:
-                                return _context4.abrupt('return', _context4.sent);
+                                docs = _context4.sent;
 
-                            case 3:
+                                if (!Array.isArray(docs)) {
+                                    _context4.next = 8;
+                                    break;
+                                }
+
+                                _context4.next = 6;
+                                return Promise.all(docs.map(function (doc) {
+                                    return doc.remove();
+                                }));
+
+                            case 6:
+                                _context4.next = 10;
+                                break;
+
+                            case 8:
+                                _context4.next = 10;
+                                return docs.remove();
+
+                            case 10:
+                                return _context4.abrupt('return', docs);
+
+                            case 11:
                             case 'end':
                                 return _context4.stop();
                         }
@@ -463,8 +481,101 @@ var RxQuery = function () {
                 }, _callee4, this);
             }));
 
-            function exec() {
+            function remove() {
                 return _ref5.apply(this, arguments);
+            }
+
+            return remove;
+        }()
+
+        /**
+         * updates all found documents
+         * @param  {object} updateObj
+         * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
+         */
+
+    }, {
+        key: 'update',
+        value: function () {
+            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(updateObj) {
+                var docs;
+                return _regenerator2['default'].wrap(function _callee5$(_context5) {
+                    while (1) {
+                        switch (_context5.prev = _context5.next) {
+                            case 0:
+                                _context5.next = 2;
+                                return this.exec();
+
+                            case 2:
+                                docs = _context5.sent;
+
+                                if (docs) {
+                                    _context5.next = 5;
+                                    break;
+                                }
+
+                                return _context5.abrupt('return', null);
+
+                            case 5:
+                                if (!Array.isArray(docs)) {
+                                    _context5.next = 10;
+                                    break;
+                                }
+
+                                _context5.next = 8;
+                                return Promise.all(docs.map(function (doc) {
+                                    return doc.update(updateObj);
+                                }));
+
+                            case 8:
+                                _context5.next = 12;
+                                break;
+
+                            case 10:
+                                _context5.next = 12;
+                                return docs.update(updateObj);
+
+                            case 12:
+                                return _context5.abrupt('return', docs);
+
+                            case 13:
+                            case 'end':
+                                return _context5.stop();
+                        }
+                    }
+                }, _callee5, this);
+            }));
+
+            function update(_x2) {
+                return _ref6.apply(this, arguments);
+            }
+
+            return update;
+        }()
+    }, {
+        key: 'exec',
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
+                return _regenerator2['default'].wrap(function _callee6$(_context6) {
+                    while (1) {
+                        switch (_context6.prev = _context6.next) {
+                            case 0:
+                                _context6.next = 2;
+                                return this.$.first().toPromise();
+
+                            case 2:
+                                return _context6.abrupt('return', _context6.sent);
+
+                            case 3:
+                            case 'end':
+                                return _context6.stop();
+                        }
+                    }
+                }, _callee6, this);
+            }));
+
+            function exec() {
+                return _ref7.apply(this, arguments);
             }
 
             return exec;
@@ -494,6 +605,9 @@ var RxQuery = function () {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         value: function sort(params) {
+            var throwNotInSchema = function throwNotInSchema(key) {
+                throw new Error('RxQuery.sort(' + key + ') does not work because ' + key + ' is not defined in the schema');
+            };
             var clonedThis = this._clone();
 
             // workarround because sort wont work on unused keys
@@ -501,7 +615,9 @@ var RxQuery = function () {
                 var checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
                 if (!clonedThis.mquery._conditions[checkParam]) {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-                    if (schemaObj && schemaObj.type == 'integer')
+                    if (!schemaObj) throwNotInSchema(checkParam);
+
+                    if (schemaObj.type == 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
                         clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -512,6 +628,8 @@ var RxQuery = function () {
                     return !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt;
                 }).forEach(function (k) {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
+                    if (!schemaObj) throwNotInSchema(k);
+
                     if (schemaObj.type == 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
@@ -540,38 +658,38 @@ var RxQuery = function () {
             if (!this._observable$) {
 
                 var res$ = this._results$.mergeMap(function () {
-                    var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(results) {
+                    var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(results) {
                         var hasChanged;
-                        return _regenerator2['default'].wrap(function _callee5$(_context5) {
+                        return _regenerator2['default'].wrap(function _callee7$(_context7) {
                             while (1) {
-                                switch (_context5.prev = _context5.next) {
+                                switch (_context7.prev = _context7.next) {
                                     case 0:
-                                        _context5.next = 2;
+                                        _context7.next = 2;
                                         return _this._ensureEqual();
 
                                     case 2:
-                                        hasChanged = _context5.sent;
+                                        hasChanged = _context7.sent;
 
                                         if (!hasChanged) {
-                                            _context5.next = 5;
+                                            _context7.next = 5;
                                             break;
                                         }
 
-                                        return _context5.abrupt('return', 'WAITFORNEXTEMIT');
+                                        return _context7.abrupt('return', 'WAITFORNEXTEMIT');
 
                                     case 5:
-                                        return _context5.abrupt('return', results);
+                                        return _context7.abrupt('return', results);
 
                                     case 6:
                                     case 'end':
-                                        return _context5.stop();
+                                        return _context7.stop();
                                 }
                             }
-                        }, _callee5, _this);
+                        }, _callee7, _this);
                     }));
 
-                    return function (_x) {
-                        return _ref6.apply(this, arguments);
+                    return function (_x3) {
+                        return _ref8.apply(this, arguments);
                     };
                 }()).filter(function (results) {
                     return results != 'WAITFORNEXTEMIT';
@@ -580,23 +698,23 @@ var RxQuery = function () {
                 var changeEvents$ = this.collection.$.filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }).mergeMap(function () {
-                    var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(changeEvent) {
-                        return _regenerator2['default'].wrap(function _callee6$(_context6) {
+                    var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(changeEvent) {
+                        return _regenerator2['default'].wrap(function _callee8$(_context8) {
                             while (1) {
-                                switch (_context6.prev = _context6.next) {
+                                switch (_context8.prev = _context8.next) {
                                     case 0:
-                                        return _context6.abrupt('return', _this._ensureEqual());
+                                        return _context8.abrupt('return', _this._ensureEqual());
 
                                     case 1:
                                     case 'end':
-                                        return _context6.stop();
+                                        return _context8.stop();
                                 }
                             }
-                        }, _callee6, _this);
+                        }, _callee8, _this);
                     }));
 
-                    return function (_x2) {
-                        return _ref7.apply(this, arguments);
+                    return function (_x4) {
+                        return _ref9.apply(this, arguments);
                     };
                 }()).filter(function () {
                     return false;

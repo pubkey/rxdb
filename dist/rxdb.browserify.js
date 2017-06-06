@@ -210,7 +210,7 @@ function create(password, schema) {
     return new Crypter(password, schema);
 }
 
-},{"./util":22,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"clone":39,"object-path":445}],3:[function(require,module,exports){
+},{"./util":22,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"clone":39,"object-path":446}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -303,8 +303,8 @@ var DataMigrator = function () {
                                     return fun['catch'](function (e) {
                                         return null;
                                     });
-                                }) // auto-catch so Promise.all continues
-                                );
+                                } // auto-catch so Promise.all continues
+                                ));
 
                             case 2:
                                 oldColDocs = _context.sent;
@@ -1126,8 +1126,8 @@ var KeyCompressor = function () {
                         if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
-                        !fullPath.startsWith('_') // _id/_rev etc should never be compressed
-                        ) _this4._table[fullPath] = '|' + nextKey();
+                        !fullPath.startsWith('_' // _id/_rev etc should never be compressed
+                        )) _this4._table[fullPath] = '|' + nextKey();
 
                         // primary-key is always compressed to _id
                         if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
@@ -1163,7 +1163,7 @@ function create(schema) {
     return new KeyCompressor(schema);
 }
 
-},{"./util":22,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/typeof":35,"clone":39,"object-path":445}],6:[function(require,module,exports){
+},{"./util":22,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/typeof":35,"clone":39,"object-path":446}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1791,9 +1791,9 @@ var LeaderElector = function () {
                             case 12:
                                 this.signalLeadership = this.bc.$.filter(function (m) {
                                     return !!_this2.isLeader;
-                                })
+                                }
                                 // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                                .filter(function (msg) {
+                                ).filter(function (msg) {
                                     return msg.type != 'tell';
                                 }).subscribe(function (msg) {
                                     return _this2.leaderSignal();
@@ -2049,7 +2049,7 @@ var LeaderElector = function () {
 exports.documentID = documentID;
 exports.SIGNAL_TIME = SIGNAL_TIME;
 
-},{"./RxBroadcastChannel":10,"./RxChangeEvent":11,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/regenerator":36,"unload":567}],7:[function(require,module,exports){
+},{"./RxBroadcastChannel":10,"./RxChangeEvent":11,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/regenerator":36,"unload":568}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2175,7 +2175,7 @@ _pouchdbCore2['default'].getBatch = function () {
 
 exports['default'] = _pouchdbCore2['default'];
 
-},{"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/regenerator":36,"pouchdb-core":456,"pouchdb-find":459}],8:[function(require,module,exports){
+},{"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/regenerator":36,"pouchdb-core":457,"pouchdb-find":460}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2625,7 +2625,7 @@ function create(query) {
     return ret;
 }
 
-},{"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"clone":39,"object-path":445,"pouchdb-selector-core":467}],10:[function(require,module,exports){
+},{"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"clone":39,"object-path":446,"pouchdb-selector-core":468}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2912,27 +2912,27 @@ var _createClass3 = _interopRequireDefault(_createClass2);
  * @return {Promise.<RxCollection>} promise with collection
  */
 var create = exports.create = function () {
-    var _ref14 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee13(_ref13) {
-        var database = _ref13.database,
-            name = _ref13.name,
-            schema = _ref13.schema,
-            _ref13$pouchSettings = _ref13.pouchSettings,
-            pouchSettings = _ref13$pouchSettings === undefined ? {} : _ref13$pouchSettings,
-            _ref13$migrationStrat = _ref13.migrationStrategies,
-            migrationStrategies = _ref13$migrationStrat === undefined ? {} : _ref13$migrationStrat,
-            _ref13$autoMigrate = _ref13.autoMigrate,
-            autoMigrate = _ref13$autoMigrate === undefined ? true : _ref13$autoMigrate,
-            _ref13$statics = _ref13.statics,
-            statics = _ref13$statics === undefined ? {} : _ref13$statics,
-            _ref13$methods = _ref13.methods,
-            methods = _ref13$methods === undefined ? {} : _ref13$methods;
+    var _ref16 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee15(_ref15) {
+        var database = _ref15.database,
+            name = _ref15.name,
+            schema = _ref15.schema,
+            _ref15$pouchSettings = _ref15.pouchSettings,
+            pouchSettings = _ref15$pouchSettings === undefined ? {} : _ref15$pouchSettings,
+            _ref15$migrationStrat = _ref15.migrationStrategies,
+            migrationStrategies = _ref15$migrationStrat === undefined ? {} : _ref15$migrationStrat,
+            _ref15$autoMigrate = _ref15.autoMigrate,
+            autoMigrate = _ref15$autoMigrate === undefined ? true : _ref15$autoMigrate,
+            _ref15$statics = _ref15.statics,
+            statics = _ref15$statics === undefined ? {} : _ref15$statics,
+            _ref15$methods = _ref15.methods,
+            methods = _ref15$methods === undefined ? {} : _ref15$methods;
         var collection;
-        return _regenerator2['default'].wrap(function _callee13$(_context13) {
+        return _regenerator2['default'].wrap(function _callee15$(_context15) {
             while (1) {
-                switch (_context13.prev = _context13.next) {
+                switch (_context15.prev = _context15.next) {
                     case 0:
                         if (!(!schema instanceof _RxSchema.RxSchema)) {
-                            _context13.next = 2;
+                            _context15.next = 2;
                             break;
                         }
 
@@ -2940,7 +2940,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(!database instanceof _RxDatabase.RxDatabase)) {
-                            _context13.next = 4;
+                            _context15.next = 4;
                             break;
                         }
 
@@ -2948,7 +2948,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof autoMigrate !== 'boolean')) {
-                            _context13.next = 6;
+                            _context15.next = 6;
                             break;
                         }
 
@@ -2969,7 +2969,7 @@ var create = exports.create = function () {
                         });
 
                         collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
-                        _context13.next = 14;
+                        _context15.next = 14;
                         return collection.prepare();
 
                     case 14:
@@ -2984,26 +2984,26 @@ var create = exports.create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context13.next = 18;
+                            _context15.next = 18;
                             break;
                         }
 
-                        _context13.next = 18;
+                        _context15.next = 18;
                         return collection.migratePromise();
 
                     case 18:
-                        return _context13.abrupt('return', collection);
+                        return _context15.abrupt('return', collection);
 
                     case 19:
                     case 'end':
-                        return _context13.stop();
+                        return _context15.stop();
                 }
             }
-        }, _callee13, this);
+        }, _callee15, this);
     }));
 
-    return function create(_x23) {
-        return _ref14.apply(this, arguments);
+    return function create(_x25) {
+        return _ref16.apply(this, arguments);
     };
 }();
 
@@ -3070,7 +3070,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var HOOKS_WHEN = ['pre', 'post'];
-var HOOKS_KEYS = ['insert', 'save', 'remove'];
+var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
 var RxCollection = function () {
     function RxCollection(database, name, schema) {
@@ -3436,39 +3436,87 @@ var RxCollection = function () {
             });
         }
         /**
-         * @return {RxDocument}
+         * @return {Promise<RxDocument>}
          */
 
     }, {
         key: '_createDocument',
-        value: function _createDocument(json) {
+        value: function () {
+            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(json) {
+                var id, cacheDoc, doc;
+                return _regenerator2['default'].wrap(function _callee6$(_context6) {
+                    while (1) {
+                        switch (_context6.prev = _context6.next) {
+                            case 0:
+                                // return from cache if exsists
+                                id = json[this.schema.primaryPath];
+                                cacheDoc = this._docCache.get(id);
 
-            // return from cache if exsists
-            var id = json[this.schema.primaryPath];
-            var cacheDoc = this._docCache.get(id);
-            if (cacheDoc) return cacheDoc;
+                                if (!cacheDoc) {
+                                    _context6.next = 4;
+                                    break;
+                                }
 
-            var doc = RxDocument.create(this, json);
-            this._assignMethodsToDocument(doc);
+                                return _context6.abrupt('return', cacheDoc);
 
-            this._docCache.set(id, doc);
+                            case 4:
+                                doc = RxDocument.create(this, json);
 
-            return doc;
-        }
+                                this._assignMethodsToDocument(doc);
+                                this._docCache.set(id, doc);
+                                _context6.next = 9;
+                                return this._runHooks('post', 'create', doc);
+
+                            case 9:
+                                return _context6.abrupt('return', doc);
+
+                            case 10:
+                            case 'end':
+                                return _context6.stop();
+                        }
+                    }
+                }, _callee6, this);
+            }));
+
+            function _createDocument(_x13) {
+                return _ref6.apply(this, arguments);
+            }
+
+            return _createDocument;
+        }()
         /**
          * create RxDocument from the docs-array
-         * @return {RxDocument[]} documents
+         * @return {Promise<RxDocument[]>} documents
          */
 
     }, {
         key: '_createDocuments',
-        value: function _createDocuments(docsJSON) {
-            var _this4 = this;
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(docsJSON) {
+                var _this4 = this;
 
-            return docsJSON.map(function (json) {
-                return _this4._createDocument(json);
-            });
-        }
+                return _regenerator2['default'].wrap(function _callee7$(_context7) {
+                    while (1) {
+                        switch (_context7.prev = _context7.next) {
+                            case 0:
+                                return _context7.abrupt('return', Promise.all(docsJSON.map(function (json) {
+                                    return _this4._createDocument(json);
+                                })));
+
+                            case 1:
+                            case 'end':
+                                return _context7.stop();
+                        }
+                    }
+                }, _callee7, this);
+            }));
+
+            function _createDocuments(_x14) {
+                return _ref7.apply(this, arguments);
+            }
+
+            return _createDocuments;
+        }()
 
         /**
          * returns observable
@@ -3488,16 +3536,16 @@ var RxCollection = function () {
     }, {
         key: 'insert',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(json) {
+            var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(json) {
                 var insertResult, newDoc, emitEvent;
-                return _regenerator2['default'].wrap(function _callee6$(_context6) {
+                return _regenerator2['default'].wrap(function _callee8$(_context8) {
                     while (1) {
-                        switch (_context6.prev = _context6.next) {
+                        switch (_context8.prev = _context8.next) {
                             case 0:
                                 json = (0, _clone2['default'])(json);
 
                                 if (!json._id) {
-                                    _context6.next = 3;
+                                    _context8.next = 3;
                                     break;
                                 }
 
@@ -3508,45 +3556,49 @@ var RxCollection = function () {
                                 // fill _id
                                 if (this.schema.primaryPath == '_id' && !json._id) json._id = util.generate_id();
 
-                                _context6.next = 6;
+                                _context8.next = 6;
                                 return this._runHooks('pre', 'insert', json);
 
                             case 6:
 
                                 this.schema.validate(json);
 
-                                _context6.next = 9;
+                                _context8.next = 9;
                                 return this._pouchPut(json);
 
                             case 9:
-                                insertResult = _context6.sent;
+                                insertResult = _context8.sent;
 
 
                                 json[this.schema.primaryPath] = insertResult.id;
                                 json._rev = insertResult.rev;
-                                newDoc = this._createDocument(json);
-                                _context6.next = 15;
+                                _context8.next = 14;
+                                return this._createDocument(json);
+
+                            case 14:
+                                newDoc = _context8.sent;
+                                _context8.next = 17;
                                 return this._runHooks('post', 'insert', newDoc);
 
-                            case 15:
+                            case 17:
 
                                 // event
                                 emitEvent = RxChangeEvent.create('INSERT', this.database, this, newDoc, json);
 
                                 this.$emit(emitEvent);
 
-                                return _context6.abrupt('return', newDoc);
+                                return _context8.abrupt('return', newDoc);
 
-                            case 18:
+                            case 20:
                             case 'end':
-                                return _context6.stop();
+                                return _context8.stop();
                         }
                     }
-                }, _callee6, this);
+                }, _callee8, this);
             }));
 
-            function insert(_x13) {
-                return _ref6.apply(this, arguments);
+            function insert(_x15) {
+                return _ref8.apply(this, arguments);
             }
 
             return insert;
@@ -3559,60 +3611,60 @@ var RxCollection = function () {
     }, {
         key: 'upsert',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(json) {
+            var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee9(json) {
                 var primary, existing, newDoc;
-                return _regenerator2['default'].wrap(function _callee7$(_context7) {
+                return _regenerator2['default'].wrap(function _callee9$(_context9) {
                     while (1) {
-                        switch (_context7.prev = _context7.next) {
+                        switch (_context9.prev = _context9.next) {
                             case 0:
                                 json = (0, _clone2['default'])(json);
                                 primary = json[this.schema.primaryPath];
 
                                 if (primary) {
-                                    _context7.next = 4;
+                                    _context9.next = 4;
                                     break;
                                 }
 
                                 throw new Error('RxCollection.upsert() does not work without primary');
 
                             case 4:
-                                _context7.next = 6;
+                                _context9.next = 6;
                                 return this.findOne(primary).exec();
 
                             case 6:
-                                existing = _context7.sent;
+                                existing = _context9.sent;
 
                                 if (!existing) {
-                                    _context7.next = 15;
+                                    _context9.next = 15;
                                     break;
                                 }
 
                                 json._rev = existing._rev;
                                 existing._data = json;
-                                _context7.next = 12;
+                                _context9.next = 12;
                                 return existing.save();
 
                             case 12:
-                                return _context7.abrupt('return', existing);
+                                return _context9.abrupt('return', existing);
 
                             case 15:
-                                _context7.next = 17;
+                                _context9.next = 17;
                                 return this.insert(json);
 
                             case 17:
-                                newDoc = _context7.sent;
-                                return _context7.abrupt('return', newDoc);
+                                newDoc = _context9.sent;
+                                return _context9.abrupt('return', newDoc);
 
                             case 19:
                             case 'end':
-                                return _context7.stop();
+                                return _context9.stop();
                         }
                     }
-                }, _callee7, this);
+                }, _callee9, this);
             }));
 
-            function upsert(_x14) {
-                return _ref7.apply(this, arguments);
+            function upsert(_x16) {
+                return _ref9.apply(this, arguments);
             }
 
             return upsert;
@@ -3656,12 +3708,12 @@ var RxCollection = function () {
     }, {
         key: 'dump',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8() {
+            var _ref10 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee10() {
                 var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
                 var encrypted, json, query, docs;
-                return _regenerator2['default'].wrap(function _callee8$(_context8) {
+                return _regenerator2['default'].wrap(function _callee10$(_context10) {
                     while (1) {
-                        switch (_context8.prev = _context8.next) {
+                        switch (_context10.prev = _context10.next) {
                             case 0:
                                 encrypted = !decrypted;
                                 json = {
@@ -3679,28 +3731,28 @@ var RxCollection = function () {
                                 }
 
                                 query = RxQuery.create('find', {}, this);
-                                _context8.next = 6;
+                                _context10.next = 6;
                                 return this._pouchFind(query, null, encrypted);
 
                             case 6:
-                                docs = _context8.sent;
+                                docs = _context10.sent;
 
                                 json.docs = docs.map(function (docData) {
                                     delete docData._rev;
                                     return docData;
                                 });
-                                return _context8.abrupt('return', json);
+                                return _context10.abrupt('return', json);
 
                             case 9:
                             case 'end':
-                                return _context8.stop();
+                                return _context10.stop();
                         }
                     }
-                }, _callee8, this);
+                }, _callee10, this);
             }));
 
             function dump() {
-                return _ref8.apply(this, arguments);
+                return _ref10.apply(this, arguments);
             }
 
             return dump;
@@ -3714,16 +3766,16 @@ var RxCollection = function () {
     }, {
         key: 'importDump',
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee9(exportedJSON) {
+            var _ref11 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee11(exportedJSON) {
                 var _this5 = this;
 
                 var importFns;
-                return _regenerator2['default'].wrap(function _callee9$(_context9) {
+                return _regenerator2['default'].wrap(function _callee11$(_context11) {
                     while (1) {
-                        switch (_context9.prev = _context9.next) {
+                        switch (_context11.prev = _context11.next) {
                             case 0:
                                 if (!(exportedJSON.schemaHash != this.schema.hash)) {
-                                    _context9.next = 2;
+                                    _context11.next = 2;
                                     break;
                                 }
 
@@ -3731,7 +3783,7 @@ var RxCollection = function () {
 
                             case 2:
                                 if (!(exportedJSON.encrypted && exportedJSON.passwordHash != util.hash(this.database.password))) {
-                                    _context9.next = 4;
+                                    _context11.next = 4;
                                     break;
                                 }
 
@@ -3742,31 +3794,82 @@ var RxCollection = function () {
                                 // decrypt
                                 .map(function (doc) {
                                     return _this5._crypter.decrypt(doc);
-                                })
+                                }
                                 // validate schema
-                                .map(function (doc) {
+                                ).map(function (doc) {
                                     return _this5.schema.validate(doc);
-                                })
+                                }
                                 // import
-                                .map(function (doc) {
+                                ).map(function (doc) {
                                     return _this5._pouchPut(doc);
                                 });
-                                return _context9.abrupt('return', Promise.all(importFns));
+                                return _context11.abrupt('return', Promise.all(importFns));
 
                             case 6:
                             case 'end':
-                                return _context9.stop();
+                                return _context11.stop();
                         }
                     }
-                }, _callee9, this);
+                }, _callee11, this);
             }));
 
-            function importDump(_x16) {
-                return _ref9.apply(this, arguments);
+            function importDump(_x18) {
+                return _ref11.apply(this, arguments);
             }
 
             return importDump;
         }()
+    }, {
+        key: 'watchForChanges',
+        value: function watchForChanges() {
+            var _this6 = this;
+
+            if (!this.synced) {
+                /**
+                 * this will grap the changes and publish them to the rx-stream
+                 * this is to ensure that changes from 'synced' dbs will be published
+                 */
+                var sendChanges = {};
+                var pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }), 'change').filter(function (c) {
+                    return c.id.charAt(0) != '_';
+                }).map(function (c) {
+                    return c.doc;
+                }).map(function (doc) {
+                    doc._ext = true;
+                    return doc;
+                }).filter(function (doc) {
+                    return !_this6._changeEventBuffer.buffer.map(function (cE) {
+                        return cE.data.v._rev;
+                    }).includes(doc._rev);
+                }).filter(function (doc) {
+                    return sendChanges[doc._rev] = 'YES';
+                }).delay(10).map(function (doc) {
+                    var ret = null;
+                    if (sendChanges[doc._rev] == 'YES') ret = doc;
+                    delete sendChanges[doc._rev];
+                    return ret;
+                }).filter(function (doc) {
+                    return doc != null;
+                }).subscribe(function (doc) {
+                    _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
+                });
+
+                this._subs.push(pouch$);
+
+                var ob2 = this.$.map(function (cE) {
+                    return cE.data.v;
+                }).map(function (doc) {
+                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+                }).subscribe();
+                this._subs.push(ob2);
+            }
+
+            this.synced = true;
+        }
 
         /**
          * because it will have document-conflicts when 2 syncs write to the same storage
@@ -3775,17 +3878,15 @@ var RxCollection = function () {
     }, {
         key: 'sync',
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee10(serverURL) {
-                var _this6 = this;
-
+            var _ref12 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee12(serverURL) {
                 var alsoIfNotLeader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-                var sendChanges, pouch$, ob2, sync;
-                return _regenerator2['default'].wrap(function _callee10$(_context10) {
+                var sync;
+                return _regenerator2['default'].wrap(function _callee12$(_context12) {
                     while (1) {
-                        switch (_context10.prev = _context10.next) {
+                        switch (_context12.prev = _context12.next) {
                             case 0:
                                 if (!(typeof this.pouch.sync !== 'function')) {
-                                    _context10.next = 2;
+                                    _context12.next = 2;
                                     break;
                                 }
 
@@ -3793,60 +3894,17 @@ var RxCollection = function () {
 
                             case 2:
                                 if (alsoIfNotLeader) {
-                                    _context10.next = 5;
+                                    _context12.next = 5;
                                     break;
                                 }
 
-                                _context10.next = 5;
+                                _context12.next = 5;
                                 return this.database.waitForLeadership();
 
                             case 5:
 
-                                if (!this.synced) {
-                                    /**
-                                     * this will grap the changes and publish them to the rx-stream
-                                     * this is to ensure that changes from 'synced' dbs will be published
-                                     */
-                                    sendChanges = {};
-                                    pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
-                                        since: 'now',
-                                        live: true,
-                                        include_docs: true
-                                    }), 'change').filter(function (c) {
-                                        return c.id.charAt(0) != '_';
-                                    }).map(function (c) {
-                                        return c.doc;
-                                    }).map(function (doc) {
-                                        doc._ext = true;
-                                        return doc;
-                                    }).filter(function (doc) {
-                                        return !_this6._changeEventBuffer.buffer.map(function (cE) {
-                                            return cE.data.v._rev;
-                                        }).includes(doc._rev);
-                                    }).filter(function (doc) {
-                                        return sendChanges[doc._rev] = 'YES';
-                                    }).delay(10).map(function (doc) {
-                                        var ret = null;
-                                        if (sendChanges[doc._rev] == 'YES') ret = doc;
-                                        delete sendChanges[doc._rev];
-                                        return ret;
-                                    }).filter(function (doc) {
-                                        return doc != null;
-                                    }).subscribe(function (doc) {
-                                        _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
-                                    });
+                                this.watchForChanges();
 
-                                    this._subs.push(pouch$);
-
-                                    ob2 = this.$.map(function (cE) {
-                                        return cE.data.v;
-                                    }).map(function (doc) {
-                                        if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                                    }).subscribe();
-
-                                    this._subs.push(ob2);
-                                }
-                                this.synced = true;
                                 sync = this.pouch.sync(serverURL, {
                                     live: true,
                                     retry: true
@@ -3855,18 +3913,18 @@ var RxCollection = function () {
                                 });
 
                                 this.pouchSyncs.push(sync);
-                                return _context10.abrupt('return', sync);
+                                return _context12.abrupt('return', sync);
 
-                            case 10:
+                            case 9:
                             case 'end':
-                                return _context10.stop();
+                                return _context12.stop();
                         }
                     }
-                }, _callee10, this);
+                }, _callee12, this);
             }));
 
-            function sync(_x18) {
-                return _ref10.apply(this, arguments);
+            function sync(_x20) {
+                return _ref12.apply(this, arguments);
             }
 
             return sync;
@@ -3911,54 +3969,54 @@ var RxCollection = function () {
     }, {
         key: '_runHooks',
         value: function () {
-            var _ref11 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee11(when, key, doc) {
+            var _ref13 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee13(when, key, doc) {
                 var hooks, i;
-                return _regenerator2['default'].wrap(function _callee11$(_context11) {
+                return _regenerator2['default'].wrap(function _callee13$(_context13) {
                     while (1) {
-                        switch (_context11.prev = _context11.next) {
+                        switch (_context13.prev = _context13.next) {
                             case 0:
                                 hooks = this.getHooks(when, key);
 
                                 if (hooks) {
-                                    _context11.next = 3;
+                                    _context13.next = 3;
                                     break;
                                 }
 
-                                return _context11.abrupt('return');
+                                return _context13.abrupt('return');
 
                             case 3:
                                 i = 0;
 
                             case 4:
                                 if (!(i < hooks.series.length)) {
-                                    _context11.next = 10;
+                                    _context13.next = 10;
                                     break;
                                 }
 
-                                _context11.next = 7;
+                                _context13.next = 7;
                                 return hooks.series[i](doc);
 
                             case 7:
                                 i++;
-                                _context11.next = 4;
+                                _context13.next = 4;
                                 break;
 
                             case 10:
-                                _context11.next = 12;
+                                _context13.next = 12;
                                 return Promise.all(hooks.parallel.map(function (hook) {
                                     return hook(doc);
                                 }));
 
                             case 12:
                             case 'end':
-                                return _context11.stop();
+                                return _context13.stop();
                         }
                     }
-                }, _callee11, this);
+                }, _callee13, this);
             }));
 
-            function _runHooks(_x20, _x21, _x22) {
-                return _ref11.apply(this, arguments);
+            function _runHooks(_x22, _x23, _x24) {
+                return _ref13.apply(this, arguments);
             }
 
             return _runHooks;
@@ -3966,10 +4024,10 @@ var RxCollection = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref12 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee12() {
-                return _regenerator2['default'].wrap(function _callee12$(_context12) {
+            var _ref14 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee14() {
+                return _regenerator2['default'].wrap(function _callee14$(_context14) {
                     while (1) {
-                        switch (_context12.prev = _context12.next) {
+                        switch (_context14.prev = _context14.next) {
                             case 0:
                                 this._subs.forEach(function (sub) {
                                     return sub.unsubscribe();
@@ -3983,14 +4041,14 @@ var RxCollection = function () {
 
                             case 5:
                             case 'end':
-                                return _context12.stop();
+                                return _context14.stop();
                         }
                     }
-                }, _callee12, this);
+                }, _callee14, this);
             }));
 
             function destroy() {
-                return _ref12.apply(this, arguments);
+                return _ref14.apply(this, arguments);
             }
 
             return destroy;
@@ -4071,7 +4129,7 @@ var checkORMmethdods = function checkORMmethdods(statics) {
     });
 };
 
-},{"./ChangeEventBuffer":1,"./Crypter":2,"./DataMigrator":3,"./DocCache":4,"./KeyCompressor":5,"./PouchDB":7,"./QueryCache":8,"./RxChangeEvent":11,"./RxDatabase":13,"./RxDocument":14,"./RxQuery":15,"./RxSchema":16,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/toConsumableArray":34,"babel-runtime/helpers/typeof":35,"babel-runtime/regenerator":36,"clone":39,"object-path":445}],13:[function(require,module,exports){
+},{"./ChangeEventBuffer":1,"./Crypter":2,"./DataMigrator":3,"./DocCache":4,"./KeyCompressor":5,"./PouchDB":7,"./QueryCache":8,"./RxChangeEvent":11,"./RxDatabase":13,"./RxDocument":14,"./RxQuery":15,"./RxSchema":16,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/toConsumableArray":34,"babel-runtime/helpers/typeof":35,"babel-runtime/regenerator":36,"clone":39,"object-path":446}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4871,7 +4929,7 @@ function properties() {
 
 exports.RxSchema = RxSchema;
 
-},{"./LeaderElector":6,"./PouchDB":7,"./RxChangeEvent":11,"./RxCollection":12,"./RxSchema":16,"./Socket":17,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/toConsumableArray":34,"babel-runtime/regenerator":36,"random-token":470}],14:[function(require,module,exports){
+},{"./LeaderElector":6,"./PouchDB":7,"./RxChangeEvent":11,"./RxCollection":12,"./RxSchema":16,"./Socket":17,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/toConsumableArray":34,"babel-runtime/regenerator":36,"random-token":471}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4917,6 +4975,10 @@ var _objectPath2 = _interopRequireDefault(_objectPath);
 var _deepEqual = require('deep-equal');
 
 var _deepEqual2 = _interopRequireDefault(_deepEqual);
+
+var _modifyjs = require('modifyjs');
+
+var _modifyjs2 = _interopRequireDefault(_modifyjs);
 
 var _util = require('./util');
 
@@ -5225,22 +5287,71 @@ var RxDocument = function () {
             return this;
         }
     }, {
-        key: 'save',
+        key: 'update',
 
+
+        /**
+         * updates document
+         *  @param  {object} updateObj
+         */
+        value: function () {
+            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(updateObj) {
+                var _this2 = this;
+
+                var newDoc;
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                newDoc = (0, _modifyjs2['default'])(this._data, updateObj);
+
+
+                                Object.keys(this._data).forEach(function (previousPropName) {
+                                    if (newDoc[previousPropName]) {
+                                        // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
+                                        // which causes problems with "readonly" fields
+                                        if (!(0, _deepEqual2['default'])(_this2._data[previousPropName], newDoc[previousPropName])) _this2._data[previousPropName] = newDoc[previousPropName];
+                                    } else delete _this2._data[previousPropName];
+                                });
+                                delete newDoc._rev;
+                                delete newDoc._id;
+                                Object.keys(newDoc).forEach(function (newPropName) {
+                                    if (!(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName])) _this2._data[newPropName] = newDoc[newPropName];
+                                });
+                                _context2.next = 7;
+                                return this.save();
+
+                            case 7:
+                            case 'end':
+                                return _context2.stop();
+                        }
+                    }
+                }, _callee2, this);
+            }));
+
+            function update(_x4) {
+                return _ref2.apply(this, arguments);
+            }
+
+            return update;
+        }()
 
         /**
          * save document if its data has changed
          * @return {boolean} false if nothing to save
          */
+
+    }, {
+        key: 'save',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
                 var ret, emitValue, changeEvent;
-                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context3.prev = _context3.next) {
                             case 0:
                                 if (!this._deleted$.getValue()) {
-                                    _context2.next = 2;
+                                    _context3.next = 2;
                                     break;
                                 }
 
@@ -5248,28 +5359,28 @@ var RxDocument = function () {
 
                             case 2:
                                 if (!(0, _deepEqual2['default'])(this._data, this._dataSync$.getValue())) {
-                                    _context2.next = 5;
+                                    _context3.next = 5;
                                     break;
                                 }
 
                                 this._synced$.next(true);
-                                return _context2.abrupt('return', false);
+                                return _context3.abrupt('return', false);
 
                             case 5:
-                                _context2.next = 7;
+                                _context3.next = 7;
                                 return this.collection._runHooks('pre', 'save', this);
 
                             case 7:
                                 this.collection.schema.validate(this._data);
 
-                                _context2.next = 10;
+                                _context3.next = 10;
                                 return this.collection._pouchPut((0, _clone2['default'])(this._data));
 
                             case 10:
-                                ret = _context2.sent;
+                                ret = _context3.sent;
 
                                 if (ret.ok) {
-                                    _context2.next = 13;
+                                    _context3.next = 13;
                                     break;
                                 }
 
@@ -5282,7 +5393,7 @@ var RxDocument = function () {
 
                                 this._data = emitValue;
 
-                                _context2.next = 18;
+                                _context3.next = 18;
                                 return this.collection._runHooks('post', 'save', this);
 
                             case 18:
@@ -5294,60 +5405,9 @@ var RxDocument = function () {
                                 changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
                                 this.$emit(changeEvent);
-                                return _context2.abrupt('return', true);
+                                return _context3.abrupt('return', true);
 
                             case 23:
-                            case 'end':
-                                return _context2.stop();
-                        }
-                    }
-                }, _callee2, this);
-            }));
-
-            function save() {
-                return _ref2.apply(this, arguments);
-            }
-
-            return save;
-        }()
-    }, {
-        key: 'remove',
-        value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
-                return _regenerator2['default'].wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                if (!this.deleted) {
-                                    _context3.next = 2;
-                                    break;
-                                }
-
-                                throw new Error('RxDocument.remove(): Document is already deleted');
-
-                            case 2:
-                                _context3.next = 4;
-                                return this.collection._runHooks('pre', 'remove', this);
-
-                            case 4:
-                                _context3.next = 6;
-                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
-
-                            case 6:
-
-                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
-
-                                _context3.next = 9;
-                                return this.collection._runHooks('post', 'remove', this);
-
-                            case 9:
-                                _context3.next = 11;
-                                return util.promiseWait(0);
-
-                            case 11:
-                                return _context3.abrupt('return');
-
-                            case 12:
                             case 'end':
                                 return _context3.stop();
                         }
@@ -5355,8 +5415,59 @@ var RxDocument = function () {
                 }, _callee3, this);
             }));
 
-            function remove() {
+            function save() {
                 return _ref3.apply(this, arguments);
+            }
+
+            return save;
+        }()
+    }, {
+        key: 'remove',
+        value: function () {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+                return _regenerator2['default'].wrap(function _callee4$(_context4) {
+                    while (1) {
+                        switch (_context4.prev = _context4.next) {
+                            case 0:
+                                if (!this.deleted) {
+                                    _context4.next = 2;
+                                    break;
+                                }
+
+                                throw new Error('RxDocument.remove(): Document is already deleted');
+
+                            case 2:
+                                _context4.next = 4;
+                                return this.collection._runHooks('pre', 'remove', this);
+
+                            case 4:
+                                _context4.next = 6;
+                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+
+                            case 6:
+
+                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
+
+                                _context4.next = 9;
+                                return this.collection._runHooks('post', 'remove', this);
+
+                            case 9:
+                                _context4.next = 11;
+                                return util.promiseWait(0);
+
+                            case 11:
+                                return _context4.abrupt('return');
+
+                            case 12:
+                            case 'end':
+                                return _context4.stop();
+                        }
+                    }
+                }, _callee4, this);
+            }));
+
+            function remove() {
+                return _ref4.apply(this, arguments);
             }
 
             return remove;
@@ -5425,7 +5536,7 @@ function properties() {
     return _properties;
 }
 
-},{"./RxChangeEvent":11,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/toConsumableArray":34,"babel-runtime/helpers/typeof":35,"babel-runtime/regenerator":36,"clone":39,"deep-equal":430,"object-path":445}],15:[function(require,module,exports){
+},{"./RxChangeEvent":11,"./util":22,"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/toConsumableArray":34,"babel-runtime/helpers/typeof":35,"babel-runtime/regenerator":36,"clone":39,"deep-equal":430,"modifyjs":444,"object-path":446}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5607,59 +5718,80 @@ var RxQuery = function () {
                                     resolve = res;
                                 });
 
-                                if (!this._mustReExec) {
-                                    try {
-                                        missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
-                                        // console.dir(missedChangeEvents);
-
-                                        this._latestChangeEvent = this.collection._changeEventBuffer.counter;
-                                        runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-                                        changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
-
-                                        if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
-                                        if (Array.isArray(changeResult) && !(0, _deepEqual2['default'])(changeResult, this._resultsData)) {
-                                            ret = true;
-                                            this._setResultData(changeResult);
-                                        }
-                                    } catch (e) {
-                                        console.error('RxQuery()._ensureEqual(): Unexpected Error:');
-                                        console.dir(e);
-                                        this._mustReExec = true;
-                                    }
+                                if (this._mustReExec) {
+                                    _context.next = 25;
+                                    break;
                                 }
 
+                                _context.prev = 8;
+                                missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+                                // console.dir(missedChangeEvents);
+
+                                this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+                                runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+                                changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
+
+                                if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
+
+                                if (!(Array.isArray(changeResult) && !(0, _deepEqual2['default'])(changeResult, this._resultsData))) {
+                                    _context.next = 18;
+                                    break;
+                                }
+
+                                ret = true;
+                                _context.next = 18;
+                                return this._setResultData(changeResult);
+
+                            case 18:
+                                _context.next = 25;
+                                break;
+
+                            case 20:
+                                _context.prev = 20;
+                                _context.t0 = _context['catch'](8);
+
+                                console.error('RxQuery()._ensureEqual(): Unexpected Error:');
+                                console.dir(_context.t0);
+                                this._mustReExec = true;
+
+                            case 25:
                                 if (!this._mustReExec) {
-                                    _context.next = 15;
+                                    _context.next = 35;
                                     break;
                                 }
 
                                 // counter can change while _execOverDatabase() is running
                                 latestAfter = this.collection._changeEventBuffer.counter;
-                                _context.next = 12;
+                                _context.next = 29;
                                 return this._execOverDatabase();
 
-                            case 12:
+                            case 29:
                                 newResultData = _context.sent;
 
                                 this._latestChangeEvent = latestAfter;
-                                if (!(0, _deepEqual2['default'])(newResultData, this._resultsData)) {
-                                    ret = true;
-                                    this._setResultData(newResultData);
+
+                                if ((0, _deepEqual2['default'])(newResultData, this._resultsData)) {
+                                    _context.next = 35;
+                                    break;
                                 }
 
-                            case 15:
+                                ret = true;
+                                _context.next = 35;
+                                return this._setResultData(newResultData);
+
+                            case 35:
 
                                 // console.log('_ensureEqual DONE (' + this.toString() + ')');
 
                                 resolve(true);
                                 return _context.abrupt('return', ret);
 
-                            case 17:
+                            case 37:
                             case 'end':
                                 return _context.stop();
                         }
                     }
-                }, _callee, this);
+                }, _callee, this, [[8, 20]]);
             }));
 
             function _ensureEqual() {
@@ -5670,11 +5802,36 @@ var RxQuery = function () {
         }()
     }, {
         key: '_setResultData',
-        value: function _setResultData(newResultData) {
-            this._resultsData = newResultData;
-            var newResults = this.collection._createDocuments(this._resultsData);
-            this._results$.next(newResults);
-        }
+        value: function () {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(newResultData) {
+                var newResults;
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                this._resultsData = newResultData;
+                                _context2.next = 3;
+                                return this.collection._createDocuments(this._resultsData);
+
+                            case 3:
+                                newResults = _context2.sent;
+
+                                this._results$.next(newResults);
+
+                            case 5:
+                            case 'end':
+                                return _context2.stop();
+                        }
+                    }
+                }, _callee2, this);
+            }));
+
+            function _setResultData(_x) {
+                return _ref3.apply(this, arguments);
+            }
+
+            return _setResultData;
+        }()
 
         /**
          * executes the query on the database
@@ -5684,33 +5841,33 @@ var RxQuery = function () {
     }, {
         key: '_execOverDatabase',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
                 var docsData, ret;
-                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context3.prev = _context3.next) {
                             case 0:
                                 this._execOverDatabaseCount++;
                                 docsData = void 0, ret = void 0;
-                                _context2.t0 = this.op;
-                                _context2.next = _context2.t0 === 'find' ? 5 : _context2.t0 === 'findOne' ? 9 : 13;
+                                _context3.t0 = this.op;
+                                _context3.next = _context3.t0 === 'find' ? 5 : _context3.t0 === 'findOne' ? 9 : 13;
                                 break;
 
                             case 5:
-                                _context2.next = 7;
+                                _context3.next = 7;
                                 return this.collection._pouchFind(this);
 
                             case 7:
-                                docsData = _context2.sent;
-                                return _context2.abrupt('break', 14);
+                                docsData = _context3.sent;
+                                return _context3.abrupt('break', 14);
 
                             case 9:
-                                _context2.next = 11;
+                                _context3.next = 11;
                                 return this.collection._pouchFind(this, 1);
 
                             case 11:
-                                docsData = _context2.sent;
-                                return _context2.abrupt('break', 14);
+                                docsData = _context3.sent;
+                                return _context3.abrupt('break', 14);
 
                             case 13:
                                 throw new Error('RxQuery.exec(): op (' + this.op + ') not known');
@@ -5718,18 +5875,18 @@ var RxQuery = function () {
                             case 14:
 
                                 this._mustReExec = false;
-                                return _context2.abrupt('return', docsData);
+                                return _context3.abrupt('return', docsData);
 
                             case 16:
                             case 'end':
-                                return _context2.stop();
+                                return _context3.stop();
                         }
                     }
-                }, _callee2, this);
+                }, _callee3, this);
             }));
 
             function _execOverDatabase() {
-                return _ref3.apply(this, arguments);
+                return _ref4.apply(this, arguments);
             }
 
             return _execOverDatabase;
@@ -5822,68 +5979,40 @@ var RxQuery = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
-                var docs;
-                return _regenerator2['default'].wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                _context3.next = 2;
-                                return this.exec();
-
-                            case 2:
-                                docs = _context3.sent;
-
-                                if (!Array.isArray(docs)) {
-                                    _context3.next = 8;
-                                    break;
-                                }
-
-                                _context3.next = 6;
-                                return Promise.all(docs.map(function (doc) {
-                                    return doc.remove();
-                                }));
-
-                            case 6:
-                                _context3.next = 10;
-                                break;
-
-                            case 8:
-                                _context3.next = 10;
-                                return docs.remove();
-
-                            case 10:
-                                return _context3.abrupt('return', docs);
-
-                            case 11:
-                            case 'end':
-                                return _context3.stop();
-                        }
-                    }
-                }, _callee3, this);
-            }));
-
-            function remove() {
-                return _ref4.apply(this, arguments);
-            }
-
-            return remove;
-        }()
-    }, {
-        key: 'exec',
-        value: function () {
             var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+                var docs;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
                                 _context4.next = 2;
-                                return this.$.first().toPromise();
+                                return this.exec();
 
                             case 2:
-                                return _context4.abrupt('return', _context4.sent);
+                                docs = _context4.sent;
 
-                            case 3:
+                                if (!Array.isArray(docs)) {
+                                    _context4.next = 8;
+                                    break;
+                                }
+
+                                _context4.next = 6;
+                                return Promise.all(docs.map(function (doc) {
+                                    return doc.remove();
+                                }));
+
+                            case 6:
+                                _context4.next = 10;
+                                break;
+
+                            case 8:
+                                _context4.next = 10;
+                                return docs.remove();
+
+                            case 10:
+                                return _context4.abrupt('return', docs);
+
+                            case 11:
                             case 'end':
                                 return _context4.stop();
                         }
@@ -5891,8 +6020,101 @@ var RxQuery = function () {
                 }, _callee4, this);
             }));
 
-            function exec() {
+            function remove() {
                 return _ref5.apply(this, arguments);
+            }
+
+            return remove;
+        }()
+
+        /**
+         * updates all found documents
+         * @param  {object} updateObj
+         * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
+         */
+
+    }, {
+        key: 'update',
+        value: function () {
+            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(updateObj) {
+                var docs;
+                return _regenerator2['default'].wrap(function _callee5$(_context5) {
+                    while (1) {
+                        switch (_context5.prev = _context5.next) {
+                            case 0:
+                                _context5.next = 2;
+                                return this.exec();
+
+                            case 2:
+                                docs = _context5.sent;
+
+                                if (docs) {
+                                    _context5.next = 5;
+                                    break;
+                                }
+
+                                return _context5.abrupt('return', null);
+
+                            case 5:
+                                if (!Array.isArray(docs)) {
+                                    _context5.next = 10;
+                                    break;
+                                }
+
+                                _context5.next = 8;
+                                return Promise.all(docs.map(function (doc) {
+                                    return doc.update(updateObj);
+                                }));
+
+                            case 8:
+                                _context5.next = 12;
+                                break;
+
+                            case 10:
+                                _context5.next = 12;
+                                return docs.update(updateObj);
+
+                            case 12:
+                                return _context5.abrupt('return', docs);
+
+                            case 13:
+                            case 'end':
+                                return _context5.stop();
+                        }
+                    }
+                }, _callee5, this);
+            }));
+
+            function update(_x2) {
+                return _ref6.apply(this, arguments);
+            }
+
+            return update;
+        }()
+    }, {
+        key: 'exec',
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
+                return _regenerator2['default'].wrap(function _callee6$(_context6) {
+                    while (1) {
+                        switch (_context6.prev = _context6.next) {
+                            case 0:
+                                _context6.next = 2;
+                                return this.$.first().toPromise();
+
+                            case 2:
+                                return _context6.abrupt('return', _context6.sent);
+
+                            case 3:
+                            case 'end':
+                                return _context6.stop();
+                        }
+                    }
+                }, _callee6, this);
+            }));
+
+            function exec() {
+                return _ref7.apply(this, arguments);
             }
 
             return exec;
@@ -5922,6 +6144,9 @@ var RxQuery = function () {
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
         value: function sort(params) {
+            var throwNotInSchema = function throwNotInSchema(key) {
+                throw new Error('RxQuery.sort(' + key + ') does not work because ' + key + ' is not defined in the schema');
+            };
             var clonedThis = this._clone();
 
             // workarround because sort wont work on unused keys
@@ -5929,7 +6154,9 @@ var RxQuery = function () {
                 var checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
                 if (!clonedThis.mquery._conditions[checkParam]) {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-                    if (schemaObj && schemaObj.type == 'integer')
+                    if (!schemaObj) throwNotInSchema(checkParam);
+
+                    if (schemaObj.type == 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
                         clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -5940,6 +6167,8 @@ var RxQuery = function () {
                     return !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt;
                 }).forEach(function (k) {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
+                    if (!schemaObj) throwNotInSchema(k);
+
                     if (schemaObj.type == 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
@@ -5968,38 +6197,38 @@ var RxQuery = function () {
             if (!this._observable$) {
 
                 var res$ = this._results$.mergeMap(function () {
-                    var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(results) {
+                    var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(results) {
                         var hasChanged;
-                        return _regenerator2['default'].wrap(function _callee5$(_context5) {
+                        return _regenerator2['default'].wrap(function _callee7$(_context7) {
                             while (1) {
-                                switch (_context5.prev = _context5.next) {
+                                switch (_context7.prev = _context7.next) {
                                     case 0:
-                                        _context5.next = 2;
+                                        _context7.next = 2;
                                         return _this._ensureEqual();
 
                                     case 2:
-                                        hasChanged = _context5.sent;
+                                        hasChanged = _context7.sent;
 
                                         if (!hasChanged) {
-                                            _context5.next = 5;
+                                            _context7.next = 5;
                                             break;
                                         }
 
-                                        return _context5.abrupt('return', 'WAITFORNEXTEMIT');
+                                        return _context7.abrupt('return', 'WAITFORNEXTEMIT');
 
                                     case 5:
-                                        return _context5.abrupt('return', results);
+                                        return _context7.abrupt('return', results);
 
                                     case 6:
                                     case 'end':
-                                        return _context5.stop();
+                                        return _context7.stop();
                                 }
                             }
-                        }, _callee5, _this);
+                        }, _callee7, _this);
                     }));
 
-                    return function (_x) {
-                        return _ref6.apply(this, arguments);
+                    return function (_x3) {
+                        return _ref8.apply(this, arguments);
                     };
                 }()).filter(function (results) {
                     return results != 'WAITFORNEXTEMIT';
@@ -6008,23 +6237,23 @@ var RxQuery = function () {
                 var changeEvents$ = this.collection.$.filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }).mergeMap(function () {
-                    var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(changeEvent) {
-                        return _regenerator2['default'].wrap(function _callee6$(_context6) {
+                    var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(changeEvent) {
+                        return _regenerator2['default'].wrap(function _callee8$(_context8) {
                             while (1) {
-                                switch (_context6.prev = _context6.next) {
+                                switch (_context8.prev = _context8.next) {
                                     case 0:
-                                        return _context6.abrupt('return', _this._ensureEqual());
+                                        return _context8.abrupt('return', _this._ensureEqual());
 
                                     case 1:
                                     case 'end':
-                                        return _context6.stop();
+                                        return _context8.stop();
                                 }
                             }
-                        }, _callee6, _this);
+                        }, _callee8, _this);
                     }));
 
-                    return function (_x2) {
-                        return _ref7.apply(this, arguments);
+                    return function (_x4) {
+                        return _ref9.apply(this, arguments);
                     };
                 }()).filter(function () {
                     return false;
@@ -6144,8 +6373,8 @@ var RxSchema = exports.RxSchema = function () {
                 return !_this.jsonID.required.includes(index);
             }).filter(function (index) {
                 return !index.includes('.');
-            }) // TODO make them sub-required
-            .forEach(function (index) {
+            } // TODO make them sub-required
+            ).forEach(function (index) {
                 return _this.jsonID.required.push(index);
             });
         });
@@ -6514,8 +6743,8 @@ function checkSchema(jsonID) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
         return arr.indexOf(elem) == pos;
-    }) // unique
-    .map(function (key) {
+    } // unique
+    ).map(function (key) {
         var schemaObj = _objectPath2['default'].get(jsonID, 'properties.' + key.replace('.', '.properties.'));
         if (!schemaObj || (typeof schemaObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(schemaObj)) !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
         return {
@@ -6581,7 +6810,7 @@ function isInstanceOf(obj) {
     return obj instanceof RxSchema;
 }
 
-},{"./RxDocument":14,"./util":22,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/typeof":35,"clone":39,"is-my-json-valid":440,"object-path":445}],17:[function(require,module,exports){
+},{"./RxDocument":14,"./util":22,"babel-runtime/helpers/classCallCheck":31,"babel-runtime/helpers/createClass":32,"babel-runtime/helpers/typeof":35,"clone":39,"is-my-json-valid":440,"object-path":446}],17:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6887,31 +7116,31 @@ var Socket = function () {
 
                                 docs.filter(function (doc) {
                                     return doc.it != _this2.token;
-                                }) // do not get events emitted by self
+                                } // do not get events emitted by self
                                 // do not get events older than minTime
-                                .filter(function (doc) {
+                                ).filter(function (doc) {
                                     return doc.t > minTime;
-                                })
+                                }
                                 // sort timestamp
-                                .sort(function (a, b) {
+                                ).sort(function (a, b) {
                                     if (a.t > b.t) return 1;
                                     return -1;
                                 }).map(function (doc) {
                                     return RxChangeEvent.fromJSON(doc);
-                                })
+                                }
                                 // make sure the same event is not emitted twice
-                                .filter(function (cE) {
+                                ).filter(function (cE) {
                                     if (_this2.recievedEvents[cE.hash]) return false;
                                     return _this2.recievedEvents[cE.hash] = new Date().getTime();
-                                })
+                                }
                                 // prevent memory leak of this.recievedEvents
-                                .filter(function (cE) {
+                                ).filter(function (cE) {
                                     return setTimeout(function () {
                                         return delete _this2.recievedEvents[cE.hash];
                                     }, EVENT_TTL * 3);
-                                })
+                                }
                                 // emit to messages
-                                .forEach(function (cE) {
+                                ).forEach(function (cE) {
                                     return _this2.messages$.next(cE);
                                 });
 
@@ -6992,7 +7221,7 @@ RxDB.plugin(require('pouchdb-replication'));
 
 window['RxDB'] = RxDB;
 
-},{"./index.js":19,"babel-polyfill":24,"pouchdb-adapter-http":447,"pouchdb-adapter-idb":448,"pouchdb-replication":466}],19:[function(require,module,exports){
+},{"./index.js":19,"babel-polyfill":24,"pouchdb-adapter-http":448,"pouchdb-adapter-idb":449,"pouchdb-replication":467}],19:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -8155,7 +8384,7 @@ function stringifyFilter(key, value) {
     return value;
 }
 
-},{"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/typeof":35,"babel-runtime/regenerator":36,"clone":39,"crypto-js/aes":419,"crypto-js/enc-utf8":423,"random-token":470,"rxjs/BehaviorSubject":473,"rxjs/Observable":476,"rxjs/Subject":481,"rxjs/add/observable/defer":485,"rxjs/add/observable/from":486,"rxjs/add/observable/fromEvent":487,"rxjs/add/observable/interval":488,"rxjs/add/observable/merge":489,"rxjs/add/operator/delay":490,"rxjs/add/operator/distinct":491,"rxjs/add/operator/distinctUntilChanged":492,"rxjs/add/operator/do":493,"rxjs/add/operator/filter":494,"rxjs/add/operator/first":495,"rxjs/add/operator/map":496,"rxjs/add/operator/mergeMap":497,"rxjs/add/operator/publish":498,"rxjs/add/operator/publishReplay":499,"rxjs/add/operator/startWith":500,"rxjs/add/operator/timeout":501,"rxjs/add/operator/toPromise":502,"spark-md5":565}],23:[function(require,module,exports){
+},{"babel-runtime/helpers/asyncToGenerator":30,"babel-runtime/helpers/typeof":35,"babel-runtime/regenerator":36,"clone":39,"crypto-js/aes":419,"crypto-js/enc-utf8":423,"random-token":471,"rxjs/BehaviorSubject":474,"rxjs/Observable":477,"rxjs/Subject":482,"rxjs/add/observable/defer":486,"rxjs/add/observable/from":487,"rxjs/add/observable/fromEvent":488,"rxjs/add/observable/interval":489,"rxjs/add/observable/merge":490,"rxjs/add/operator/delay":491,"rxjs/add/operator/distinct":492,"rxjs/add/operator/distinctUntilChanged":493,"rxjs/add/operator/do":494,"rxjs/add/operator/filter":495,"rxjs/add/operator/first":496,"rxjs/add/operator/map":497,"rxjs/add/operator/mergeMap":498,"rxjs/add/operator/publish":499,"rxjs/add/operator/publishReplay":500,"rxjs/add/operator/startWith":501,"rxjs/add/operator/timeout":502,"rxjs/add/operator/toPromise":503,"spark-md5":566}],23:[function(require,module,exports){
 'use strict';
 
 module.exports = argsArray;
@@ -8206,7 +8435,7 @@ define(String.prototype, "padRight", "".padEnd);
   [][key] && define(Array, key, Function.call.bind([][key]));
 });
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"core-js/fn/regexp/escape":40,"core-js/shim":418,"regenerator-runtime/runtime":472}],25:[function(require,module,exports){
+},{"core-js/fn/regexp/escape":40,"core-js/shim":418,"regenerator-runtime/runtime":473}],25:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/array/from"), __esModule: true };
 },{"core-js/library/fn/array/from":41}],26:[function(require,module,exports){
 module.exports = { "default": require("core-js/library/fn/object/define-property"), __esModule: true };
@@ -8365,7 +8594,7 @@ exports.default = typeof _symbol2.default === "function" && _typeof(_iterator2.d
 },{"../core-js/symbol":28,"../core-js/symbol/iterator":29}],36:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":471}],37:[function(require,module,exports){
+},{"regenerator-runtime":472}],37:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -19683,7 +19912,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":429,"_process":469}],429:[function(require,module,exports){
+},{"./debug":429,"_process":470}],429:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -19887,7 +20116,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":444}],430:[function(require,module,exports){
+},{"ms":445}],430:[function(require,module,exports){
 var pSlice = Array.prototype.slice;
 var objectKeys = require('./lib/keys.js');
 var isArguments = require('./lib/is_arguments.js');
@@ -20383,7 +20612,7 @@ module.exports = function() {
   return line
 }
 
-},{"util":571}],435:[function(require,module,exports){
+},{"util":572}],435:[function(require,module,exports){
 var isProperty = require('is-property')
 
 var gen = function(obj, prop) {
@@ -21189,7 +21418,7 @@ module.exports.filter = function(schema, opts) {
   }
 }
 
-},{"./formats":439,"generate-function":434,"generate-object-property":435,"jsonpointer":442,"xtend":573}],441:[function(require,module,exports){
+},{"./formats":439,"generate-function":434,"generate-object-property":435,"jsonpointer":442,"xtend":574}],441:[function(require,module,exports){
 "use strict"
 function isProperty(str) {
   return /^[$A-Z\_a-z\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0\u08a2-\u08ac\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097f\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c33\u0c35-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f0\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191c\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua697\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua793\ua7a0-\ua7aa\ua7f8-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa80-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc][$A-Z\_a-z\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0\u08a2-\u08ac\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097f\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c33\u0c35-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f0\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191c\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua697\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua793\ua7a0-\ua7aa\ua7f8-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa80-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc0-9\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1\u05c2\u05c4\u05c5\u05c7\u0610-\u061a\u064b-\u0669\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7\u06e8\u06ea-\u06ed\u06f0-\u06f9\u0711\u0730-\u074a\u07a6-\u07b0\u07c0-\u07c9\u07eb-\u07f3\u0816-\u0819\u081b-\u0823\u0825-\u0827\u0829-\u082d\u0859-\u085b\u08e4-\u08fe\u0900-\u0903\u093a-\u093c\u093e-\u094f\u0951-\u0957\u0962\u0963\u0966-\u096f\u0981-\u0983\u09bc\u09be-\u09c4\u09c7\u09c8\u09cb-\u09cd\u09d7\u09e2\u09e3\u09e6-\u09ef\u0a01-\u0a03\u0a3c\u0a3e-\u0a42\u0a47\u0a48\u0a4b-\u0a4d\u0a51\u0a66-\u0a71\u0a75\u0a81-\u0a83\u0abc\u0abe-\u0ac5\u0ac7-\u0ac9\u0acb-\u0acd\u0ae2\u0ae3\u0ae6-\u0aef\u0b01-\u0b03\u0b3c\u0b3e-\u0b44\u0b47\u0b48\u0b4b-\u0b4d\u0b56\u0b57\u0b62\u0b63\u0b66-\u0b6f\u0b82\u0bbe-\u0bc2\u0bc6-\u0bc8\u0bca-\u0bcd\u0bd7\u0be6-\u0bef\u0c01-\u0c03\u0c3e-\u0c44\u0c46-\u0c48\u0c4a-\u0c4d\u0c55\u0c56\u0c62\u0c63\u0c66-\u0c6f\u0c82\u0c83\u0cbc\u0cbe-\u0cc4\u0cc6-\u0cc8\u0cca-\u0ccd\u0cd5\u0cd6\u0ce2\u0ce3\u0ce6-\u0cef\u0d02\u0d03\u0d3e-\u0d44\u0d46-\u0d48\u0d4a-\u0d4d\u0d57\u0d62\u0d63\u0d66-\u0d6f\u0d82\u0d83\u0dca\u0dcf-\u0dd4\u0dd6\u0dd8-\u0ddf\u0df2\u0df3\u0e31\u0e34-\u0e3a\u0e47-\u0e4e\u0e50-\u0e59\u0eb1\u0eb4-\u0eb9\u0ebb\u0ebc\u0ec8-\u0ecd\u0ed0-\u0ed9\u0f18\u0f19\u0f20-\u0f29\u0f35\u0f37\u0f39\u0f3e\u0f3f\u0f71-\u0f84\u0f86\u0f87\u0f8d-\u0f97\u0f99-\u0fbc\u0fc6\u102b-\u103e\u1040-\u1049\u1056-\u1059\u105e-\u1060\u1062-\u1064\u1067-\u106d\u1071-\u1074\u1082-\u108d\u108f-\u109d\u135d-\u135f\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17b4-\u17d3\u17dd\u17e0-\u17e9\u180b-\u180d\u1810-\u1819\u18a9\u1920-\u192b\u1930-\u193b\u1946-\u194f\u19b0-\u19c0\u19c8\u19c9\u19d0-\u19d9\u1a17-\u1a1b\u1a55-\u1a5e\u1a60-\u1a7c\u1a7f-\u1a89\u1a90-\u1a99\u1b00-\u1b04\u1b34-\u1b44\u1b50-\u1b59\u1b6b-\u1b73\u1b80-\u1b82\u1ba1-\u1bad\u1bb0-\u1bb9\u1be6-\u1bf3\u1c24-\u1c37\u1c40-\u1c49\u1c50-\u1c59\u1cd0-\u1cd2\u1cd4-\u1ce8\u1ced\u1cf2-\u1cf4\u1dc0-\u1de6\u1dfc-\u1dff\u200c\u200d\u203f\u2040\u2054\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2cef-\u2cf1\u2d7f\u2de0-\u2dff\u302a-\u302f\u3099\u309a\ua620-\ua629\ua66f\ua674-\ua67d\ua69f\ua6f0\ua6f1\ua802\ua806\ua80b\ua823-\ua827\ua880\ua881\ua8b4-\ua8c4\ua8d0-\ua8d9\ua8e0-\ua8f1\ua900-\ua909\ua926-\ua92d\ua947-\ua953\ua980-\ua983\ua9b3-\ua9c0\ua9d0-\ua9d9\uaa29-\uaa36\uaa43\uaa4c\uaa4d\uaa50-\uaa59\uaa7b\uaab0\uaab2-\uaab4\uaab7\uaab8\uaabe\uaabf\uaac1\uaaeb-\uaaef\uaaf5\uaaf6\uabe3-\uabea\uabec\uabed\uabf0-\uabf9\ufb1e\ufe00-\ufe0f\ufe20-\ufe26\ufe33\ufe34\ufe4d-\ufe4f\uff10-\uff19\uff3f]*$/.test(str)
@@ -21546,6 +21775,562 @@ function race(iterable) {
 }
 
 },{"immediate":437}],444:[function(require,module,exports){
+'use strict';
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var clone = _interopDefault(require('clone'));
+var equal = _interopDefault(require('deep-equal'));
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+var isObject = (function (variableToCheck) {
+  return (typeof variableToCheck === "undefined" ? "undefined" : _typeof(variableToCheck)) === "object" && variableToCheck !== null;
+});
+
+var every = (function (arrayToIterate, cb) {
+  return arrayToIterate.every(function (elem) {
+    return cb && cb(elem) || elem;
+  });
+});
+
+var has = (function (objectWithKeys, key) {
+  return objectWithKeys.hasOwnProperty(key);
+});
+
+var keys = (function (objectWithKeys) {
+  return Object.keys(objectWithKeys);
+});
+
+var each = (function (objectToIterate, cb) {
+  Object.keys(objectToIterate).forEach(function (key) {
+    cb(objectToIterate[key], key);
+  });
+});
+
+var libIsArray = (function (variableToCheck) {
+  return Array.isArray(variableToCheck);
+});
+
+var isBinary = (function (variableToCheck) {
+  return !!(typeof Uint8Array !== 'undefined' && variableToCheck instanceof Uint8Array || variableToCheck && variableToCheck.$Uint8ArrayPolyfill);
+});
+
+var _$1 = { isArray: libIsArray, each: each };
+// Like _.isArray, but doesn't regard polyfilled Uint8Arrays on old browsers as
+// arrays.
+// XXX maybe this should be EJSON.isArray
+var isArray = function isArray(x) {
+  return _$1.isArray(x) && !isBinary(x);
+};
+
+var isIndexable = function isIndexable(x) {
+  return isArray(x) || isPlainObject(x);
+};
+
+// Returns true if this is an object with at least one key and all keys begin
+// with $.  Unless inconsistentOK is set, throws if some keys begin with $ and
+// others don't.
+var isOperatorObject = function isOperatorObject(valueSelector, inconsistentOK) {
+  if (!isPlainObject(valueSelector)) return false;
+
+  var theseAreOperators = undefined;
+  _$1.each(valueSelector, function (value, selKey) {
+    var thisIsOperator = selKey.substr(0, 1) === '$';
+    if (theseAreOperators === undefined) {
+      theseAreOperators = thisIsOperator;
+    } else if (theseAreOperators !== thisIsOperator) {
+      if (!inconsistentOK) throw new Error("Inconsistent operator: " + JSON.stringify(valueSelector));
+      theseAreOperators = false;
+    }
+  });
+  return !!theseAreOperators; // {} has no operators
+};
+
+// string can be converted to integer
+var isNumericKey = function isNumericKey(s) {
+  return (/^[0-9]+$/.test(s)
+  );
+};
+
+var isPlainObject = (function (variableToCheck) {
+  if (!variableToCheck) return false;
+  if (typeof variableToCheck === "number") return false;
+  if (typeof variableToCheck === "string") return false;
+  if (typeof variableToCheck === "boolean") return false;
+  if (isArray(variableToCheck)) return false;
+  if (variableToCheck === null) return false;
+  if (variableToCheck instanceof RegExp)
+    // note that typeof(/x/) === "object"
+    return false;
+  if (typeof variableToCheck === "function") return false;
+  if (variableToCheck instanceof Date) return false;
+  if (isBinary(variableToCheck)) return false;
+
+  return true; // object
+});
+
+var ModifyJsError = function (message) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  if (typeof message === "string" && options.field) {
+    message += " for field '" + options.field + "'";
+  }
+
+  var e = new Error(message);
+  e.name = "ModifyJsError";
+  return e;
+};
+
+var _ = { all: every, each: each, keys: keys, has: has, isObject: isObject };
+// XXX need a strategy for passing the binding of $ into this
+// function, from the compiled selector
+//
+// maybe just {key.up.to.just.before.dollarsign: array_index}
+//
+// XXX atomicity: if one modification fails, do we roll back the whole
+// change?
+//
+// options:
+//   - isInsert is set when _modify is being called to compute the document to
+//     insert as part of an upsert operation. We use this primarily to figure
+//     out when to set the fields in $setOnInsert, if present.
+var modify = function (doc, mod, options) {
+  if (options && options.each) {
+    return;
+  }
+  return _modify(doc, mod, _extends({}, options, { returnInsteadOfReplacing: true }));
+};
+
+var _modify = function _modify(doc, mod, options) {
+  options = options || {};
+  if (!isPlainObject(mod)) throw ModifyJsError("Modifier must be an object");
+
+  // Make sure the caller can't mutate our data structures.
+  mod = clone(mod);
+
+  var isModifier = isOperatorObject(mod);
+
+  var newDoc;
+
+  if (!isModifier) {
+    // replace the whole document
+    newDoc = mod;
+  } else {
+    // apply modifiers to the doc.
+    newDoc = clone(doc);
+    _.each(mod, function (operand, op) {
+      var modFunc = MODIFIERS[op];
+      // Treat $setOnInsert as $set if this is an insert.
+      if (!modFunc) throw ModifyJsError("Invalid modifier specified " + op);
+      _.each(operand, function (arg, keypath) {
+        if (keypath === '') {
+          throw ModifyJsError("An empty update path is not valid.");
+        }
+
+        var keyparts = keypath.split('.');
+        if (!_.all(keyparts)) {
+          throw ModifyJsError("The update path '" + keypath + "' contains an empty field name, which is not allowed.");
+        }
+
+        var target = findModTarget(newDoc, keyparts, {
+          noCreate: NO_CREATE_MODIFIERS[op],
+          forbidArray: op === "$rename",
+          arrayIndices: options.arrayIndices
+        });
+        var field = keyparts.pop();
+        modFunc(target, field, arg, keypath, newDoc);
+      });
+    });
+  }
+
+  if (options.returnInsteadOfReplacing) {
+    return newDoc;
+  } else {
+    // move new document into place.
+    _.each(_.keys(doc), function (k) {
+      // Note: this used to be for (var k in doc) however, this does not
+      // work right in Opera. Deleting from a doc while iterating over it
+      // would sometimes cause opera to skip some keys.
+      if (k !== '_id') delete doc[k];
+    });
+    _.each(newDoc, function (v, k) {
+      doc[k] = v;
+    });
+  }
+};
+
+// for a.b.c.2.d.e, keyparts should be ['a', 'b', 'c', '2', 'd', 'e'],
+// and then you would operate on the 'e' property of the returned
+// object.
+//
+// if options.noCreate is falsey, creates intermediate levels of
+// structure as necessary, like mkdir -p (and raises an exception if
+// that would mean giving a non-numeric property to an array.) if
+// options.noCreate is true, return undefined instead.
+//
+// may modify the last element of keyparts to signal to the caller that it needs
+// to use a different value to index into the returned object (for example,
+// ['a', '01'] -> ['a', 1]).
+//
+// if forbidArray is true, return null if the keypath goes through an array.
+//
+// if options.arrayIndices is set, use its first element for the (first) '$' in
+// the path.
+var findModTarget = function findModTarget(doc, keyparts, options) {
+  options = options || {};
+  var usedArrayIndex = false;
+  for (var i = 0; i < keyparts.length; i++) {
+    var last = i === keyparts.length - 1;
+    var keypart = keyparts[i];
+    var indexable = isIndexable(doc);
+    if (!indexable) {
+      if (options.noCreate) return undefined;
+      var e = ModifyJsError("cannot use the part '" + keypart + "' to traverse " + doc);
+      e.setPropertyError = true;
+      throw e;
+    }
+    if (doc instanceof Array) {
+      if (options.forbidArray) return null;
+      if (keypart === '$') {
+        if (usedArrayIndex) throw ModifyJsError("Too many positional (i.e. '$') elements");
+        if (!options.arrayIndices || !options.arrayIndices.length) {
+          throw ModifyJsError("The positional operator did not find the " + "match needed from the query");
+        }
+        keypart = options.arrayIndices[0];
+        usedArrayIndex = true;
+      } else if (isNumericKey(keypart)) {
+        keypart = parseInt(keypart);
+      } else {
+        if (options.noCreate) return undefined;
+        throw ModifyJsError("can't append to array using string field name [" + keypart + "]");
+      }
+      if (last)
+        // handle 'a.01'
+        keyparts[i] = keypart;
+      if (options.noCreate && keypart >= doc.length) return undefined;
+      while (doc.length < keypart) {
+        doc.push(null);
+      }if (!last) {
+        if (doc.length === keypart) doc.push({});else if (_typeof(doc[keypart]) !== "object") throw ModifyJsError("can't modify field '" + keyparts[i + 1] + "' of list value " + JSON.stringify(doc[keypart]));
+      }
+    } else {
+      if (!(keypart in doc)) {
+        if (options.noCreate) return undefined;
+        if (!last) doc[keypart] = {};
+      }
+    }
+
+    if (last) return doc;
+    doc = doc[keypart];
+  }
+};
+
+var NO_CREATE_MODIFIERS = {
+  $unset: true,
+  $pop: true,
+  $rename: true,
+  $pull: true,
+  $pullAll: true
+};
+
+var MODIFIERS = {
+  $currentDate: function $currentDate(target, field, arg) {
+    if ((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === "object" && arg.hasOwnProperty("$type")) {
+      if (arg.$type !== "date") {
+        throw ModifyJsError("Minimongo does currently only support the date type " + "in $currentDate modifiers", { field: field });
+      }
+    } else if (arg !== true) {
+      throw ModifyJsError("Invalid $currentDate modifier", { field: field });
+    }
+    target[field] = new Date();
+  },
+  $min: function $min(target, field, arg) {
+    if (typeof arg !== "number") {
+      throw ModifyJsError("Modifier $min allowed for numbers only", { field: field });
+    }
+    if (field in target) {
+      if (typeof target[field] !== "number") {
+        throw ModifyJsError("Cannot apply $min modifier to non-number", { field: field });
+      }
+      if (target[field] > arg) {
+        target[field] = arg;
+      }
+    } else {
+      target[field] = arg;
+    }
+  },
+  $max: function $max(target, field, arg) {
+    if (typeof arg !== "number") {
+      throw ModifyJsError("Modifier $max allowed for numbers only", { field: field });
+    }
+    if (field in target) {
+      if (typeof target[field] !== "number") {
+        throw ModifyJsError("Cannot apply $max modifier to non-number", { field: field });
+      }
+      if (target[field] < arg) {
+        target[field] = arg;
+      }
+    } else {
+      target[field] = arg;
+    }
+  },
+  $inc: function $inc(target, field, arg) {
+    if (typeof arg !== "number") throw ModifyJsError("Modifier $inc allowed for numbers only", { field: field });
+    if (field in target) {
+      if (typeof target[field] !== "number") throw ModifyJsError("Cannot apply $inc modifier to non-number", { field: field });
+      target[field] += arg;
+    } else {
+      target[field] = arg;
+    }
+  },
+  $set: function $set(target, field, arg) {
+    if (!_.isObject(target)) {
+      // not an array or an object
+      var e = ModifyJsError("Cannot set property on non-object field", { field: field });
+      e.setPropertyError = true;
+      throw e;
+    }
+    if (target === null) {
+      var e = ModifyJsError("Cannot set property on null", { field: field });
+      e.setPropertyError = true;
+      throw e;
+    }
+    target[field] = arg;
+  },
+  $setOnInsert: function $setOnInsert(target, field, arg) {
+    // converted to `$set` in `_modify`
+  },
+  $unset: function $unset(target, field, arg) {
+    if (target !== undefined) {
+      if (target instanceof Array) {
+        if (field in target) target[field] = null;
+      } else delete target[field];
+    }
+  },
+  $push: function $push(target, field, arg) {
+    if (target[field] === undefined) target[field] = [];
+    if (!(target[field] instanceof Array)) throw ModifyJsError("Cannot apply $push modifier to non-array", { field: field });
+
+    if (!(arg && arg.$each)) {
+      // Simple mode: not $each
+      target[field].push(arg);
+      return;
+    }
+
+    // Fancy mode: $each (and maybe $slice and $sort and $position)
+    var toPush = arg.$each;
+    if (!(toPush instanceof Array)) throw ModifyJsError("$each must be an array", { field: field });
+
+    // Parse $position
+    var position = undefined;
+    if ('$position' in arg) {
+      if (typeof arg.$position !== "number") throw ModifyJsError("$position must be a numeric value", { field: field });
+      // XXX should check to make sure integer
+      if (arg.$position < 0) throw ModifyJsError("$position in $push must be zero or positive", { field: field });
+      position = arg.$position;
+    }
+
+    // Parse $slice.
+    var slice = undefined;
+    if ('$slice' in arg) {
+      if (typeof arg.$slice !== "number") throw ModifyJsError("$slice must be a numeric value", { field: field });
+      // XXX should check to make sure integer
+      if (arg.$slice > 0) throw ModifyJsError("$slice in $push must be zero or negative", { field: field });
+      slice = arg.$slice;
+    }
+
+    // Parse $sort.
+    var sortFunction = undefined;
+    if (arg.$sort) {
+      throw ModifyJsError("$sort in $push not implemented yet");
+      // if (slice === undefined)
+      //   throw ModifyJsError("$sort requires $slice to be present", { field });
+      // // XXX this allows us to use a $sort whose value is an array, but that's
+      // // actually an extension of the Node driver, so it won't work
+      // // server-side. Could be confusing!
+      // // XXX is it correct that we don't do geo-stuff here?
+      // sortFunction = new Minimongo.Sorter(arg.$sort).getComparator();
+      // for (var i = 0; i < toPush.length; i++) {
+      //   if (_f._type(toPush[i]) !== 3) {
+      //     throw ModifyJsError("$push like modifiers using $sort " +
+      //                 "require all elements to be objects", { field });
+      //   }
+      // }
+    }
+
+    // Actually push.
+    if (position === undefined) {
+      for (var j = 0; j < toPush.length; j++) {
+        target[field].push(toPush[j]);
+      }
+    } else {
+      var spliceArguments = [position, 0];
+      for (var j = 0; j < toPush.length; j++) {
+        spliceArguments.push(toPush[j]);
+      }Array.prototype.splice.apply(target[field], spliceArguments);
+    }
+
+    // Actually sort.
+    if (sortFunction) target[field].sort(sortFunction);
+
+    // Actually slice.
+    if (slice !== undefined) {
+      if (slice === 0) target[field] = []; // differs from Array.slice!
+      else target[field] = target[field].slice(slice);
+    }
+  },
+  $pushAll: function $pushAll(target, field, arg) {
+    if (!((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === "object" && arg instanceof Array)) throw ModifyJsError("Modifier $pushAll/pullAll allowed for arrays only");
+    var x = target[field];
+    if (x === undefined) target[field] = arg;else if (!(x instanceof Array)) throw ModifyJsError("Cannot apply $pushAll modifier to non-array", { field: field });else {
+      for (var i = 0; i < arg.length; i++) {
+        x.push(arg[i]);
+      }
+    }
+  },
+  $addToSet: function $addToSet(target, field, arg) {
+    var isEach = false;
+    if ((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === "object") {
+      //check if first key is '$each'
+      var _keys = Object.keys(arg);
+      if (_keys[0] === "$each") {
+        isEach = true;
+      }
+    }
+    var values = isEach ? arg["$each"] : [arg];
+    var x = target[field];
+    if (x === undefined) target[field] = values;else if (!(x instanceof Array)) throw ModifyJsError("Cannot apply $addToSet modifier to non-array", { field: field });else {
+      _.each(values, function (value) {
+        for (var i = 0; i < x.length; i++) {
+          if (equal(value, x[i])) return;
+        }x.push(value);
+      });
+    }
+  },
+  $pop: function $pop(target, field, arg) {
+    if (target === undefined) return;
+    var x = target[field];
+    if (x === undefined) return;else if (!(x instanceof Array)) throw ModifyJsError("Cannot apply $pop modifier to non-array", { field: field });else {
+      if (typeof arg === 'number' && arg < 0) x.splice(0, 1);else x.pop();
+    }
+  },
+  $pull: function $pull(target, field, arg) {
+    if (target === undefined) return;
+    var x = target[field];
+    if (x === undefined) return;else if (!(x instanceof Array)) throw ModifyJsError("Cannot apply $pull/pullAll modifier to non-array", { field: field });else {
+      throw ModifyJsError("$pull not implemented yet");
+      // var out = [];
+      // if (arg != null && typeof arg === "object" && !(arg instanceof Array)) {
+      //   // XXX would be much nicer to compile this once, rather than
+      //   // for each document we modify.. but usually we're not
+      //   // modifying that many documents, so we'll let it slide for
+      //   // now
+      //
+      //   // XXX Minimongo.Matcher isn't up for the job, because we need
+      //   // to permit stuff like {$pull: {a: {$gt: 4}}}.. something
+      //   // like {$gt: 4} is not normally a complete selector.
+      //   // same issue as $elemMatch possibly?
+      //   var matcher = new Minimongo.Matcher(arg);
+      //   for (var i = 0; i < x.length; i++)
+      //     if (!matcher.documentMatches(x[i]).result)
+      //       out.push(x[i]);
+      // } else {
+      //   for (var i = 0; i < x.length; i++)
+      //     if (!_f._equal(x[i], arg))
+      //       out.push(x[i]);
+      // }
+      // target[field] = out;
+    }
+  },
+  $pullAll: function $pullAll(target, field, arg) {
+    if (!((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === "object" && arg instanceof Array)) throw ModifyJsError("Modifier $pushAll/pullAll allowed for arrays only", { field: field });
+    if (target === undefined) return;
+    var x = target[field];
+    if (x === undefined) return;else if (!(x instanceof Array)) throw ModifyJsError("Cannot apply $pull/pullAll modifier to non-array", { field: field });else {
+      var out = [];
+      for (var i = 0; i < x.length; i++) {
+        var exclude = false;
+        for (var j = 0; j < arg.length; j++) {
+          if (equal(x[i], arg[j])) {
+            exclude = true;
+            break;
+          }
+        }
+        if (!exclude) out.push(x[i]);
+      }
+      target[field] = out;
+    }
+  },
+  $rename: function $rename(target, field, arg, keypath, doc) {
+    if (keypath === arg)
+      // no idea why mongo has this restriction..
+      throw ModifyJsError("$rename source must differ from target", { field: field });
+    if (target === null) throw ModifyJsError("$rename source field invalid", { field: field });
+    if (typeof arg !== "string") throw ModifyJsError("$rename target must be a string", { field: field });
+    if (arg.indexOf('\0') > -1) {
+      // Null bytes are not allowed in Mongo field names
+      // https://docs.mongodb.com/manual/reference/limits/#Restrictions-on-Field-Names
+      throw ModifyJsError("The 'to' field for $rename cannot contain an embedded null byte", { field: field });
+    }
+    if (target === undefined) return;
+    var v = target[field];
+    delete target[field];
+
+    var keyparts = arg.split('.');
+    var target2 = findModTarget(doc, keyparts, { forbidArray: true });
+    if (target2 === null) throw ModifyJsError("$rename target field invalid", { field: field });
+    var field2 = keyparts.pop();
+    target2[field2] = v;
+  },
+  $bit: function $bit(target, field, arg) {
+    // XXX mongo only supports $bit on integers, and we only support
+    // native javascript numbers (doubles) so far, so we can't support $bit
+    throw ModifyJsError("$bit is not supported", { field: field });
+  }
+};
+
+module.exports = modify;
+
+},{"clone":39,"deep-equal":430}],445:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -21696,7 +22481,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's'
 }
 
-},{}],445:[function(require,module,exports){
+},{}],446:[function(require,module,exports){
 (function (root, factory){
   'use strict';
 
@@ -21990,7 +22775,7 @@ function plural(ms, n, name) {
   return mod;
 });
 
-},{}],446:[function(require,module,exports){
+},{}],447:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -23011,7 +23796,7 @@ function createAbstractMapReduce(localDocName, mapper, reducer, ddocValidator) {
 
 module.exports = createAbstractMapReduce;
 
-},{"pouchdb-binary-utils":451,"pouchdb-collate":454,"pouchdb-collections":455,"pouchdb-mapreduce-utils":462,"pouchdb-md5":463,"pouchdb-promise":465,"pouchdb-utils":468}],447:[function(require,module,exports){
+},{"pouchdb-binary-utils":452,"pouchdb-collate":455,"pouchdb-collections":456,"pouchdb-mapreduce-utils":463,"pouchdb-md5":464,"pouchdb-promise":466,"pouchdb-utils":469}],448:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -24065,7 +24850,7 @@ var index = function (PouchDB) {
 
 module.exports = index;
 
-},{"argsarray":23,"pouchdb-ajax":450,"pouchdb-binary-utils":451,"pouchdb-errors":458,"pouchdb-promise":465,"pouchdb-utils":468}],448:[function(require,module,exports){
+},{"argsarray":23,"pouchdb-ajax":451,"pouchdb-binary-utils":452,"pouchdb-errors":459,"pouchdb-promise":466,"pouchdb-utils":469}],449:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -26018,7 +26803,7 @@ var index = function (PouchDB) {
 
 module.exports = index;
 
-},{"pouchdb-adapter-utils":449,"pouchdb-binary-utils":451,"pouchdb-collections":455,"pouchdb-errors":458,"pouchdb-json":461,"pouchdb-merge":464,"pouchdb-promise":465,"pouchdb-utils":468}],449:[function(require,module,exports){
+},{"pouchdb-adapter-utils":450,"pouchdb-binary-utils":452,"pouchdb-collections":456,"pouchdb-errors":459,"pouchdb-json":462,"pouchdb-merge":465,"pouchdb-promise":466,"pouchdb-utils":469}],450:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -26457,7 +27242,7 @@ exports.preprocessAttachments = preprocessAttachments;
 exports.processDocs = processDocs;
 exports.updateDoc = updateDoc;
 
-},{"pouchdb-binary-utils":451,"pouchdb-collections":455,"pouchdb-errors":458,"pouchdb-md5":463,"pouchdb-merge":464,"pouchdb-utils":468}],450:[function(require,module,exports){
+},{"pouchdb-binary-utils":452,"pouchdb-collections":456,"pouchdb-errors":459,"pouchdb-md5":464,"pouchdb-merge":465,"pouchdb-utils":469}],451:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -26847,7 +27632,7 @@ function ajax(opts, callback) {
 
 module.exports = ajax;
 
-},{"pouchdb-binary-utils":451,"pouchdb-errors":458,"pouchdb-promise":465,"pouchdb-utils":468}],451:[function(require,module,exports){
+},{"pouchdb-binary-utils":452,"pouchdb-errors":459,"pouchdb-promise":466,"pouchdb-utils":469}],452:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -26987,7 +27772,7 @@ exports.readAsArrayBuffer = readAsArrayBuffer;
 exports.readAsBinaryString = readAsBinaryString;
 exports.typedBuffer = typedBuffer;
 
-},{}],452:[function(require,module,exports){
+},{}],453:[function(require,module,exports){
 'use strict';
 
 var pouchdbErrors = require('pouchdb-errors');
@@ -27120,7 +27905,7 @@ function applyChangesFilterPlugin(PouchDB) {
 
 module.exports = applyChangesFilterPlugin;
 
-},{"pouchdb-errors":458,"pouchdb-selector-core":467,"pouchdb-utils":468}],453:[function(require,module,exports){
+},{"pouchdb-errors":459,"pouchdb-selector-core":468,"pouchdb-utils":469}],454:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -27373,7 +28158,7 @@ function isForbiddenError(err) {
 
 module.exports = Checkpointer;
 
-},{"pouchdb-collate":454,"pouchdb-promise":465,"pouchdb-utils":468}],454:[function(require,module,exports){
+},{"pouchdb-collate":455,"pouchdb-promise":466,"pouchdb-utils":469}],455:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -27756,7 +28541,7 @@ exports.normalizeKey = normalizeKey;
 exports.toIndexableString = toIndexableString;
 exports.parseIndexableString = parseIndexableString;
 
-},{}],455:[function(require,module,exports){
+},{}],456:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -27856,7 +28641,7 @@ function supportsMapAndSet() {
   }
 }
 
-},{}],456:[function(require,module,exports){
+},{}],457:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -29240,7 +30025,7 @@ PouchDB$2.version = version;
 
 module.exports = PouchDB$2;
 
-},{"argsarray":23,"events":433,"inherits":438,"pouchdb-changes-filter":452,"pouchdb-collections":455,"pouchdb-debug":457,"pouchdb-errors":458,"pouchdb-merge":464,"pouchdb-promise":465,"pouchdb-utils":468}],457:[function(require,module,exports){
+},{"argsarray":23,"events":433,"inherits":438,"pouchdb-changes-filter":453,"pouchdb-collections":456,"pouchdb-debug":458,"pouchdb-errors":459,"pouchdb-merge":465,"pouchdb-promise":466,"pouchdb-utils":469}],458:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -29265,7 +30050,7 @@ function debugPouch(PouchDB) {
 
 module.exports = debugPouch;
 
-},{"debug":428}],458:[function(require,module,exports){
+},{"debug":428}],459:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -29392,7 +30177,7 @@ exports.INVALID_URL = INVALID_URL;
 exports.createError = createError;
 exports.generateErrorFromResponse = generateErrorFromResponse;
 
-},{"inherits":438}],459:[function(require,module,exports){
+},{"inherits":438}],460:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -30685,7 +31470,7 @@ plugin.deleteIndex = pouchdbUtils.toPromise(function (indexDef, callback) {
 module.exports = plugin;
 
 }).call(this,require('_process'))
-},{"_process":469,"pouchdb-abstract-mapreduce":446,"pouchdb-collate":454,"pouchdb-md5":463,"pouchdb-promise":465,"pouchdb-selector-core":467,"pouchdb-utils":468}],460:[function(require,module,exports){
+},{"_process":470,"pouchdb-abstract-mapreduce":447,"pouchdb-collate":455,"pouchdb-md5":464,"pouchdb-promise":466,"pouchdb-selector-core":468,"pouchdb-utils":469}],461:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -30742,7 +31527,7 @@ function generateReplicationId(src, target, opts) {
 
 module.exports = generateReplicationId;
 
-},{"pouchdb-collate":454,"pouchdb-md5":463,"pouchdb-promise":465}],461:[function(require,module,exports){
+},{"pouchdb-collate":455,"pouchdb-md5":464,"pouchdb-promise":466}],462:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -30775,7 +31560,7 @@ function safeJsonStringify(json) {
 exports.safeJsonParse = safeJsonParse;
 exports.safeJsonStringify = safeJsonStringify;
 
-},{"vuvuzela":572}],462:[function(require,module,exports){
+},{"vuvuzela":573}],463:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -30903,7 +31688,7 @@ exports.QueryParseError = QueryParseError;
 exports.NotFoundError = NotFoundError;
 exports.BuiltInError = BuiltInError;
 
-},{"argsarray":23,"inherits":438,"pouchdb-collections":455,"pouchdb-utils":468}],463:[function(require,module,exports){
+},{"argsarray":23,"inherits":438,"pouchdb-collections":456,"pouchdb-utils":469}],464:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -30990,7 +31775,7 @@ exports.binaryMd5 = binaryMd5;
 exports.stringMd5 = stringMd5;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"pouchdb-binary-utils":451,"spark-md5":565}],464:[function(require,module,exports){
+},{"pouchdb-binary-utils":452,"spark-md5":566}],465:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -31467,7 +32252,7 @@ exports.traverseRevTree = traverseRevTree;
 exports.winningRev = winningRev;
 exports.latest = latest;
 
-},{}],465:[function(require,module,exports){
+},{}],466:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -31479,7 +32264,7 @@ var PouchPromise = typeof Promise === 'function' ? Promise : lie;
 
 module.exports = PouchPromise;
 
-},{"lie":443}],466:[function(require,module,exports){
+},{"lie":443}],467:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -32479,7 +33264,7 @@ function replication(PouchDB) {
 
 module.exports = replication;
 
-},{"events":433,"inherits":438,"pouchdb-checkpointer":453,"pouchdb-errors":458,"pouchdb-generate-replication-id":460,"pouchdb-promise":465,"pouchdb-utils":468}],467:[function(require,module,exports){
+},{"events":433,"inherits":438,"pouchdb-checkpointer":454,"pouchdb-errors":459,"pouchdb-generate-replication-id":461,"pouchdb-promise":466,"pouchdb-utils":469}],468:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -33039,7 +33824,7 @@ exports.setFieldInDoc = setFieldInDoc;
 exports.compare = compare;
 exports.parseField = parseField;
 
-},{"pouchdb-collate":454,"pouchdb-utils":468}],468:[function(require,module,exports){
+},{"pouchdb-collate":455,"pouchdb-utils":469}],469:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -33951,7 +34736,7 @@ exports.toPromise = toPromise;
 exports.upsert = upsert;
 exports.uuid = uuid;
 
-},{"argsarray":23,"events":433,"immediate":437,"inherits":438,"pouchdb-collections":455,"pouchdb-errors":458,"pouchdb-promise":465}],469:[function(require,module,exports){
+},{"argsarray":23,"events":433,"immediate":437,"inherits":438,"pouchdb-collections":456,"pouchdb-errors":459,"pouchdb-promise":466}],470:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -34137,7 +34922,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],470:[function(require,module,exports){
+},{}],471:[function(require,module,exports){
 void function(root){
 
     // return a number between 0 and max-1
@@ -34174,7 +34959,7 @@ void function(root){
 
 }(this)
 
-},{}],471:[function(require,module,exports){
+},{}],472:[function(require,module,exports){
 (function (global){
 // This method of obtaining a reference to the global object needs to be
 // kept identical to the way it is obtained in runtime.js
@@ -34209,7 +34994,7 @@ if (hadRuntime) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./runtime":472}],472:[function(require,module,exports){
+},{"./runtime":473}],473:[function(require,module,exports){
 (function (global){
 /**
  * Copyright (c) 2014, Facebook, Inc.
@@ -34949,7 +35734,7 @@ if (hadRuntime) {
 );
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],473:[function(require,module,exports){
+},{}],474:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -34999,7 +35784,7 @@ var BehaviorSubject = (function (_super) {
 }(Subject_1.Subject));
 exports.BehaviorSubject = BehaviorSubject;
 
-},{"./Subject":481,"./util/ObjectUnsubscribedError":548}],474:[function(require,module,exports){
+},{"./Subject":482,"./util/ObjectUnsubscribedError":549}],475:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -35036,7 +35821,7 @@ var InnerSubscriber = (function (_super) {
 }(Subscriber_1.Subscriber));
 exports.InnerSubscriber = InnerSubscriber;
 
-},{"./Subscriber":483}],475:[function(require,module,exports){
+},{"./Subscriber":484}],476:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('./Observable');
 /**
@@ -35164,7 +35949,7 @@ var Notification = (function () {
 }());
 exports.Notification = Notification;
 
-},{"./Observable":476}],476:[function(require,module,exports){
+},{"./Observable":477}],477:[function(require,module,exports){
 "use strict";
 var root_1 = require('./util/root');
 var toSubscriber_1 = require('./util/toSubscriber');
@@ -35307,7 +36092,7 @@ var Observable = (function () {
 }());
 exports.Observable = Observable;
 
-},{"./symbol/observable":545,"./util/root":561,"./util/toSubscriber":563}],477:[function(require,module,exports){
+},{"./symbol/observable":546,"./util/root":562,"./util/toSubscriber":564}],478:[function(require,module,exports){
 "use strict";
 exports.empty = {
     closed: true,
@@ -35316,7 +36101,7 @@ exports.empty = {
     complete: function () { }
 };
 
-},{}],478:[function(require,module,exports){
+},{}],479:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -35347,7 +36132,7 @@ var OuterSubscriber = (function (_super) {
 }(Subscriber_1.Subscriber));
 exports.OuterSubscriber = OuterSubscriber;
 
-},{"./Subscriber":483}],479:[function(require,module,exports){
+},{"./Subscriber":484}],480:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -35450,7 +36235,7 @@ var ReplayEvent = (function () {
     return ReplayEvent;
 }());
 
-},{"./Subject":481,"./SubjectSubscription":482,"./Subscription":484,"./operator/observeOn":531,"./scheduler/queue":543,"./util/ObjectUnsubscribedError":548}],480:[function(require,module,exports){
+},{"./Subject":482,"./SubjectSubscription":483,"./Subscription":485,"./operator/observeOn":532,"./scheduler/queue":544,"./util/ObjectUnsubscribedError":549}],481:[function(require,module,exports){
 "use strict";
 /**
  * An execution context and a data structure to order tasks and schedule their
@@ -35500,7 +36285,7 @@ var Scheduler = (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{}],481:[function(require,module,exports){
+},{}],482:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -35669,7 +36454,7 @@ var AnonymousSubject = (function (_super) {
 }(Subject));
 exports.AnonymousSubject = AnonymousSubject;
 
-},{"./Observable":476,"./SubjectSubscription":482,"./Subscriber":483,"./Subscription":484,"./symbol/rxSubscriber":546,"./util/ObjectUnsubscribedError":548}],482:[function(require,module,exports){
+},{"./Observable":477,"./SubjectSubscription":483,"./Subscriber":484,"./Subscription":485,"./symbol/rxSubscriber":547,"./util/ObjectUnsubscribedError":549}],483:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -35710,7 +36495,7 @@ var SubjectSubscription = (function (_super) {
 }(Subscription_1.Subscription));
 exports.SubjectSubscription = SubjectSubscription;
 
-},{"./Subscription":484}],483:[function(require,module,exports){
+},{"./Subscription":485}],484:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -35975,7 +36760,7 @@ var SafeSubscriber = (function (_super) {
     return SafeSubscriber;
 }(Subscriber));
 
-},{"./Observer":477,"./Subscription":484,"./symbol/rxSubscriber":546,"./util/isFunction":556}],484:[function(require,module,exports){
+},{"./Observer":478,"./Subscription":485,"./symbol/rxSubscriber":547,"./util/isFunction":557}],485:[function(require,module,exports){
 "use strict";
 var isArray_1 = require('./util/isArray');
 var isObject_1 = require('./util/isObject');
@@ -36169,117 +36954,117 @@ function flattenUnsubscriptionErrors(errors) {
     return errors.reduce(function (errs, err) { return errs.concat((err instanceof UnsubscriptionError_1.UnsubscriptionError) ? err.errors : err); }, []);
 }
 
-},{"./util/UnsubscriptionError":551,"./util/errorObject":552,"./util/isArray":553,"./util/isFunction":556,"./util/isObject":558,"./util/tryCatch":564}],485:[function(require,module,exports){
+},{"./util/UnsubscriptionError":552,"./util/errorObject":553,"./util/isArray":554,"./util/isFunction":557,"./util/isObject":559,"./util/tryCatch":565}],486:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var defer_1 = require('../../observable/defer');
 Observable_1.Observable.defer = defer_1.defer;
 
-},{"../../Observable":476,"../../observable/defer":514}],486:[function(require,module,exports){
+},{"../../Observable":477,"../../observable/defer":515}],487:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var from_1 = require('../../observable/from');
 Observable_1.Observable.from = from_1.from;
 
-},{"../../Observable":476,"../../observable/from":515}],487:[function(require,module,exports){
+},{"../../Observable":477,"../../observable/from":516}],488:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var fromEvent_1 = require('../../observable/fromEvent');
 Observable_1.Observable.fromEvent = fromEvent_1.fromEvent;
 
-},{"../../Observable":476,"../../observable/fromEvent":516}],488:[function(require,module,exports){
+},{"../../Observable":477,"../../observable/fromEvent":517}],489:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var interval_1 = require('../../observable/interval');
 Observable_1.Observable.interval = interval_1.interval;
 
-},{"../../Observable":476,"../../observable/interval":517}],489:[function(require,module,exports){
+},{"../../Observable":477,"../../observable/interval":518}],490:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var merge_1 = require('../../observable/merge');
 Observable_1.Observable.merge = merge_1.merge;
 
-},{"../../Observable":476,"../../observable/merge":518}],490:[function(require,module,exports){
+},{"../../Observable":477,"../../observable/merge":519}],491:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var delay_1 = require('../../operator/delay');
 Observable_1.Observable.prototype.delay = delay_1.delay;
 
-},{"../../Observable":476,"../../operator/delay":520}],491:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/delay":521}],492:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var distinct_1 = require('../../operator/distinct');
 Observable_1.Observable.prototype.distinct = distinct_1.distinct;
 
-},{"../../Observable":476,"../../operator/distinct":521}],492:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/distinct":522}],493:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var distinctUntilChanged_1 = require('../../operator/distinctUntilChanged');
 Observable_1.Observable.prototype.distinctUntilChanged = distinctUntilChanged_1.distinctUntilChanged;
 
-},{"../../Observable":476,"../../operator/distinctUntilChanged":522}],493:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/distinctUntilChanged":523}],494:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var do_1 = require('../../operator/do');
 Observable_1.Observable.prototype.do = do_1._do;
 Observable_1.Observable.prototype._do = do_1._do;
 
-},{"../../Observable":476,"../../operator/do":523}],494:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/do":524}],495:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var filter_1 = require('../../operator/filter');
 Observable_1.Observable.prototype.filter = filter_1.filter;
 
-},{"../../Observable":476,"../../operator/filter":524}],495:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/filter":525}],496:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var first_1 = require('../../operator/first');
 Observable_1.Observable.prototype.first = first_1.first;
 
-},{"../../Observable":476,"../../operator/first":525}],496:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/first":526}],497:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var map_1 = require('../../operator/map');
 Observable_1.Observable.prototype.map = map_1.map;
 
-},{"../../Observable":476,"../../operator/map":526}],497:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/map":527}],498:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var mergeMap_1 = require('../../operator/mergeMap');
 Observable_1.Observable.prototype.mergeMap = mergeMap_1.mergeMap;
 Observable_1.Observable.prototype.flatMap = mergeMap_1.mergeMap;
 
-},{"../../Observable":476,"../../operator/mergeMap":529}],498:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/mergeMap":530}],499:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var publish_1 = require('../../operator/publish');
 Observable_1.Observable.prototype.publish = publish_1.publish;
 
-},{"../../Observable":476,"../../operator/publish":532}],499:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/publish":533}],500:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var publishReplay_1 = require('../../operator/publishReplay');
 Observable_1.Observable.prototype.publishReplay = publishReplay_1.publishReplay;
 
-},{"../../Observable":476,"../../operator/publishReplay":533}],500:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/publishReplay":534}],501:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var startWith_1 = require('../../operator/startWith');
 Observable_1.Observable.prototype.startWith = startWith_1.startWith;
 
-},{"../../Observable":476,"../../operator/startWith":534}],501:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/startWith":535}],502:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var timeout_1 = require('../../operator/timeout');
 Observable_1.Observable.prototype.timeout = timeout_1.timeout;
 
-},{"../../Observable":476,"../../operator/timeout":535}],502:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/timeout":536}],503:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../../Observable');
 var toPromise_1 = require('../../operator/toPromise');
 Observable_1.Observable.prototype.toPromise = toPromise_1.toPromise;
 
-},{"../../Observable":476,"../../operator/toPromise":536}],503:[function(require,module,exports){
+},{"../../Observable":477,"../../operator/toPromise":537}],504:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -36350,7 +37135,7 @@ var ArrayLikeObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ArrayLikeObservable = ArrayLikeObservable;
 
-},{"../Observable":476,"./EmptyObservable":507,"./ScalarObservable":513}],504:[function(require,module,exports){
+},{"../Observable":477,"./EmptyObservable":508,"./ScalarObservable":514}],505:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -36473,7 +37258,7 @@ var ArrayObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ArrayObservable = ArrayObservable;
 
-},{"../Observable":476,"../util/isScheduler":560,"./EmptyObservable":507,"./ScalarObservable":513}],505:[function(require,module,exports){
+},{"../Observable":477,"../util/isScheduler":561,"./EmptyObservable":508,"./ScalarObservable":514}],506:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -36643,7 +37428,7 @@ var RefCountSubscriber = (function (_super) {
     return RefCountSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Observable":476,"../Subject":481,"../Subscriber":483,"../Subscription":484}],506:[function(require,module,exports){
+},{"../Observable":477,"../Subject":482,"../Subscriber":484,"../Subscription":485}],507:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -36743,7 +37528,7 @@ var DeferSubscriber = (function (_super) {
     return DeferSubscriber;
 }(OuterSubscriber_1.OuterSubscriber));
 
-},{"../Observable":476,"../OuterSubscriber":478,"../util/subscribeToResult":562}],507:[function(require,module,exports){
+},{"../Observable":477,"../OuterSubscriber":479,"../util/subscribeToResult":563}],508:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -36825,7 +37610,7 @@ var EmptyObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.EmptyObservable = EmptyObservable;
 
-},{"../Observable":476}],508:[function(require,module,exports){
+},{"../Observable":477}],509:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -36966,7 +37751,7 @@ var FromEventObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.FromEventObservable = FromEventObservable;
 
-},{"../Observable":476,"../Subscription":484,"../util/errorObject":552,"../util/isFunction":556,"../util/tryCatch":564}],509:[function(require,module,exports){
+},{"../Observable":477,"../Subscription":485,"../util/errorObject":553,"../util/isFunction":557,"../util/tryCatch":565}],510:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37089,7 +37874,7 @@ var FromObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.FromObservable = FromObservable;
 
-},{"../Observable":476,"../operator/observeOn":531,"../symbol/iterator":544,"../symbol/observable":545,"../util/isArray":553,"../util/isArrayLike":554,"../util/isPromise":559,"./ArrayLikeObservable":503,"./ArrayObservable":504,"./IteratorObservable":511,"./PromiseObservable":512}],510:[function(require,module,exports){
+},{"../Observable":477,"../operator/observeOn":532,"../symbol/iterator":545,"../symbol/observable":546,"../util/isArray":554,"../util/isArrayLike":555,"../util/isPromise":560,"./ArrayLikeObservable":504,"./ArrayObservable":505,"./IteratorObservable":512,"./PromiseObservable":513}],511:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37178,7 +37963,7 @@ var IntervalObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.IntervalObservable = IntervalObservable;
 
-},{"../Observable":476,"../scheduler/async":542,"../util/isNumeric":557}],511:[function(require,module,exports){
+},{"../Observable":477,"../scheduler/async":543,"../util/isNumeric":558}],512:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37342,7 +38127,7 @@ function sign(value) {
     return valueAsNumber < 0 ? -1 : 1;
 }
 
-},{"../Observable":476,"../symbol/iterator":544,"../util/root":561}],512:[function(require,module,exports){
+},{"../Observable":477,"../symbol/iterator":545,"../util/root":562}],513:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37464,7 +38249,7 @@ function dispatchError(arg) {
     }
 }
 
-},{"../Observable":476,"../util/root":561}],513:[function(require,module,exports){
+},{"../Observable":477,"../util/root":562}],514:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37523,32 +38308,32 @@ var ScalarObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ScalarObservable = ScalarObservable;
 
-},{"../Observable":476}],514:[function(require,module,exports){
+},{"../Observable":477}],515:[function(require,module,exports){
 "use strict";
 var DeferObservable_1 = require('./DeferObservable');
 exports.defer = DeferObservable_1.DeferObservable.create;
 
-},{"./DeferObservable":506}],515:[function(require,module,exports){
+},{"./DeferObservable":507}],516:[function(require,module,exports){
 "use strict";
 var FromObservable_1 = require('./FromObservable');
 exports.from = FromObservable_1.FromObservable.create;
 
-},{"./FromObservable":509}],516:[function(require,module,exports){
+},{"./FromObservable":510}],517:[function(require,module,exports){
 "use strict";
 var FromEventObservable_1 = require('./FromEventObservable');
 exports.fromEvent = FromEventObservable_1.FromEventObservable.create;
 
-},{"./FromEventObservable":508}],517:[function(require,module,exports){
+},{"./FromEventObservable":509}],518:[function(require,module,exports){
 "use strict";
 var IntervalObservable_1 = require('./IntervalObservable');
 exports.interval = IntervalObservable_1.IntervalObservable.create;
 
-},{"./IntervalObservable":510}],518:[function(require,module,exports){
+},{"./IntervalObservable":511}],519:[function(require,module,exports){
 "use strict";
 var merge_1 = require('../operator/merge');
 exports.merge = merge_1.mergeStatic;
 
-},{"../operator/merge":527}],519:[function(require,module,exports){
+},{"../operator/merge":528}],520:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../Observable');
 var isScheduler_1 = require('../util/isScheduler');
@@ -37723,7 +38508,7 @@ function concatStatic() {
 }
 exports.concatStatic = concatStatic;
 
-},{"../Observable":476,"../observable/ArrayObservable":504,"../util/isScheduler":560,"./mergeAll":528}],520:[function(require,module,exports){
+},{"../Observable":477,"../observable/ArrayObservable":505,"../util/isScheduler":561,"./mergeAll":529}],521:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37859,7 +38644,7 @@ var DelayMessage = (function () {
     return DelayMessage;
 }());
 
-},{"../Notification":475,"../Subscriber":483,"../scheduler/async":542,"../util/isDate":555}],521:[function(require,module,exports){
+},{"../Notification":476,"../Subscriber":484,"../scheduler/async":543,"../util/isDate":556}],522:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -37980,7 +38765,7 @@ var DistinctSubscriber = (function (_super) {
 }(OuterSubscriber_1.OuterSubscriber));
 exports.DistinctSubscriber = DistinctSubscriber;
 
-},{"../OuterSubscriber":478,"../util/Set":549,"../util/subscribeToResult":562}],522:[function(require,module,exports){
+},{"../OuterSubscriber":479,"../util/Set":550,"../util/subscribeToResult":563}],523:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38089,7 +38874,7 @@ var DistinctUntilChangedSubscriber = (function (_super) {
     return DistinctUntilChangedSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":483,"../util/errorObject":552,"../util/tryCatch":564}],523:[function(require,module,exports){
+},{"../Subscriber":484,"../util/errorObject":553,"../util/tryCatch":565}],524:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38203,7 +38988,7 @@ var DoSubscriber = (function (_super) {
     return DoSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":483}],524:[function(require,module,exports){
+},{"../Subscriber":484}],525:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38297,7 +39082,7 @@ var FilterSubscriber = (function (_super) {
     return FilterSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":483}],525:[function(require,module,exports){
+},{"../Subscriber":484}],526:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38450,7 +39235,7 @@ var FirstSubscriber = (function (_super) {
     return FirstSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":483,"../util/EmptyError":547}],526:[function(require,module,exports){
+},{"../Subscriber":484,"../util/EmptyError":548}],527:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38538,7 +39323,7 @@ var MapSubscriber = (function (_super) {
     return MapSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":483}],527:[function(require,module,exports){
+},{"../Subscriber":484}],528:[function(require,module,exports){
 "use strict";
 var Observable_1 = require('../Observable');
 var ArrayObservable_1 = require('../observable/ArrayObservable');
@@ -38684,7 +39469,7 @@ function mergeStatic() {
 }
 exports.mergeStatic = mergeStatic;
 
-},{"../Observable":476,"../observable/ArrayObservable":504,"../util/isScheduler":560,"./mergeAll":528}],528:[function(require,module,exports){
+},{"../Observable":477,"../observable/ArrayObservable":505,"../util/isScheduler":561,"./mergeAll":529}],529:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38796,7 +39581,7 @@ var MergeAllSubscriber = (function (_super) {
 }(OuterSubscriber_1.OuterSubscriber));
 exports.MergeAllSubscriber = MergeAllSubscriber;
 
-},{"../OuterSubscriber":478,"../util/subscribeToResult":562}],529:[function(require,module,exports){
+},{"../OuterSubscriber":479,"../util/subscribeToResult":563}],530:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -38968,7 +39753,7 @@ var MergeMapSubscriber = (function (_super) {
 }(OuterSubscriber_1.OuterSubscriber));
 exports.MergeMapSubscriber = MergeMapSubscriber;
 
-},{"../OuterSubscriber":478,"../util/subscribeToResult":562}],530:[function(require,module,exports){
+},{"../OuterSubscriber":479,"../util/subscribeToResult":563}],531:[function(require,module,exports){
 "use strict";
 var ConnectableObservable_1 = require('../observable/ConnectableObservable');
 /* tslint:enable:max-line-length */
@@ -39026,7 +39811,7 @@ var MulticastOperator = (function () {
 }());
 exports.MulticastOperator = MulticastOperator;
 
-},{"../observable/ConnectableObservable":505}],531:[function(require,module,exports){
+},{"../observable/ConnectableObservable":506}],532:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39140,7 +39925,7 @@ var ObserveOnMessage = (function () {
 }());
 exports.ObserveOnMessage = ObserveOnMessage;
 
-},{"../Notification":475,"../Subscriber":483}],532:[function(require,module,exports){
+},{"../Notification":476,"../Subscriber":484}],533:[function(require,module,exports){
 "use strict";
 var Subject_1 = require('../Subject');
 var multicast_1 = require('./multicast');
@@ -39164,7 +39949,7 @@ function publish(selector) {
 }
 exports.publish = publish;
 
-},{"../Subject":481,"./multicast":530}],533:[function(require,module,exports){
+},{"../Subject":482,"./multicast":531}],534:[function(require,module,exports){
 "use strict";
 var ReplaySubject_1 = require('../ReplaySubject');
 var multicast_1 = require('./multicast');
@@ -39183,7 +39968,7 @@ function publishReplay(bufferSize, windowTime, scheduler) {
 }
 exports.publishReplay = publishReplay;
 
-},{"../ReplaySubject":479,"./multicast":530}],534:[function(require,module,exports){
+},{"../ReplaySubject":480,"./multicast":531}],535:[function(require,module,exports){
 "use strict";
 var ArrayObservable_1 = require('../observable/ArrayObservable');
 var ScalarObservable_1 = require('../observable/ScalarObservable');
@@ -39230,7 +40015,7 @@ function startWith() {
 }
 exports.startWith = startWith;
 
-},{"../observable/ArrayObservable":504,"../observable/EmptyObservable":507,"../observable/ScalarObservable":513,"../util/isScheduler":560,"./concat":519}],535:[function(require,module,exports){
+},{"../observable/ArrayObservable":505,"../observable/EmptyObservable":508,"../observable/ScalarObservable":514,"../util/isScheduler":561,"./concat":520}],536:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39314,7 +40099,7 @@ var TimeoutSubscriber = (function (_super) {
     return TimeoutSubscriber;
 }(Subscriber_1.Subscriber));
 
-},{"../Subscriber":483,"../scheduler/async":542,"../util/TimeoutError":550,"../util/isDate":555}],536:[function(require,module,exports){
+},{"../Subscriber":484,"../scheduler/async":543,"../util/TimeoutError":551,"../util/isDate":556}],537:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 /* tslint:enable:max-line-length */
@@ -39387,7 +40172,7 @@ function toPromise(PromiseCtor) {
 }
 exports.toPromise = toPromise;
 
-},{"../util/root":561}],537:[function(require,module,exports){
+},{"../util/root":562}],538:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39432,7 +40217,7 @@ var Action = (function (_super) {
 }(Subscription_1.Subscription));
 exports.Action = Action;
 
-},{"../Subscription":484}],538:[function(require,module,exports){
+},{"../Subscription":485}],539:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39575,7 +40360,7 @@ var AsyncAction = (function (_super) {
 }(Action_1.Action));
 exports.AsyncAction = AsyncAction;
 
-},{"../util/root":561,"./Action":537}],539:[function(require,module,exports){
+},{"../util/root":562,"./Action":538}],540:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39627,7 +40412,7 @@ var AsyncScheduler = (function (_super) {
 }(Scheduler_1.Scheduler));
 exports.AsyncScheduler = AsyncScheduler;
 
-},{"../Scheduler":480}],540:[function(require,module,exports){
+},{"../Scheduler":481}],541:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39677,7 +40462,7 @@ var QueueAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.QueueAction = QueueAction;
 
-},{"./AsyncAction":538}],541:[function(require,module,exports){
+},{"./AsyncAction":539}],542:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39694,7 +40479,7 @@ var QueueScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.QueueScheduler = QueueScheduler;
 
-},{"./AsyncScheduler":539}],542:[function(require,module,exports){
+},{"./AsyncScheduler":540}],543:[function(require,module,exports){
 "use strict";
 var AsyncAction_1 = require('./AsyncAction');
 var AsyncScheduler_1 = require('./AsyncScheduler');
@@ -39742,7 +40527,7 @@ var AsyncScheduler_1 = require('./AsyncScheduler');
  */
 exports.async = new AsyncScheduler_1.AsyncScheduler(AsyncAction_1.AsyncAction);
 
-},{"./AsyncAction":538,"./AsyncScheduler":539}],543:[function(require,module,exports){
+},{"./AsyncAction":539,"./AsyncScheduler":540}],544:[function(require,module,exports){
 "use strict";
 var QueueAction_1 = require('./QueueAction');
 var QueueScheduler_1 = require('./QueueScheduler');
@@ -39809,7 +40594,7 @@ var QueueScheduler_1 = require('./QueueScheduler');
  */
 exports.queue = new QueueScheduler_1.QueueScheduler(QueueAction_1.QueueAction);
 
-},{"./QueueAction":540,"./QueueScheduler":541}],544:[function(require,module,exports){
+},{"./QueueAction":541,"./QueueScheduler":542}],545:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 function symbolIteratorPonyfill(root) {
@@ -39848,7 +40633,7 @@ exports.iterator = symbolIteratorPonyfill(root_1.root);
  */
 exports.$$iterator = exports.iterator;
 
-},{"../util/root":561}],545:[function(require,module,exports){
+},{"../util/root":562}],546:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 function getSymbolObservable(context) {
@@ -39875,7 +40660,7 @@ exports.observable = getSymbolObservable(root_1.root);
  */
 exports.$$observable = exports.observable;
 
-},{"../util/root":561}],546:[function(require,module,exports){
+},{"../util/root":562}],547:[function(require,module,exports){
 "use strict";
 var root_1 = require('../util/root');
 var Symbol = root_1.root.Symbol;
@@ -39886,7 +40671,7 @@ exports.rxSubscriber = (typeof Symbol === 'function' && typeof Symbol.for === 'f
  */
 exports.$$rxSubscriber = exports.rxSubscriber;
 
-},{"../util/root":561}],547:[function(require,module,exports){
+},{"../util/root":562}],548:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39915,7 +40700,7 @@ var EmptyError = (function (_super) {
 }(Error));
 exports.EmptyError = EmptyError;
 
-},{}],548:[function(require,module,exports){
+},{}],549:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -39943,7 +40728,7 @@ var ObjectUnsubscribedError = (function (_super) {
 }(Error));
 exports.ObjectUnsubscribedError = ObjectUnsubscribedError;
 
-},{}],549:[function(require,module,exports){
+},{}],550:[function(require,module,exports){
 "use strict";
 var root_1 = require('./root');
 function minimalSetImpl() {
@@ -39977,7 +40762,7 @@ function minimalSetImpl() {
 exports.minimalSetImpl = minimalSetImpl;
 exports.Set = root_1.root.Set || minimalSetImpl();
 
-},{"./root":561}],550:[function(require,module,exports){
+},{"./root":562}],551:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40003,7 +40788,7 @@ var TimeoutError = (function (_super) {
 }(Error));
 exports.TimeoutError = TimeoutError;
 
-},{}],551:[function(require,module,exports){
+},{}],552:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40029,34 +40814,34 @@ var UnsubscriptionError = (function (_super) {
 }(Error));
 exports.UnsubscriptionError = UnsubscriptionError;
 
-},{}],552:[function(require,module,exports){
+},{}],553:[function(require,module,exports){
 "use strict";
 // typeof any so that it we don't have to cast when comparing a result to the error object
 exports.errorObject = { e: {} };
 
-},{}],553:[function(require,module,exports){
+},{}],554:[function(require,module,exports){
 "use strict";
 exports.isArray = Array.isArray || (function (x) { return x && typeof x.length === 'number'; });
 
-},{}],554:[function(require,module,exports){
+},{}],555:[function(require,module,exports){
 "use strict";
 exports.isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
 
-},{}],555:[function(require,module,exports){
+},{}],556:[function(require,module,exports){
 "use strict";
 function isDate(value) {
     return value instanceof Date && !isNaN(+value);
 }
 exports.isDate = isDate;
 
-},{}],556:[function(require,module,exports){
+},{}],557:[function(require,module,exports){
 "use strict";
 function isFunction(x) {
     return typeof x === 'function';
 }
 exports.isFunction = isFunction;
 
-},{}],557:[function(require,module,exports){
+},{}],558:[function(require,module,exports){
 "use strict";
 var isArray_1 = require('../util/isArray');
 function isNumeric(val) {
@@ -40069,28 +40854,28 @@ function isNumeric(val) {
 exports.isNumeric = isNumeric;
 ;
 
-},{"../util/isArray":553}],558:[function(require,module,exports){
+},{"../util/isArray":554}],559:[function(require,module,exports){
 "use strict";
 function isObject(x) {
     return x != null && typeof x === 'object';
 }
 exports.isObject = isObject;
 
-},{}],559:[function(require,module,exports){
+},{}],560:[function(require,module,exports){
 "use strict";
 function isPromise(value) {
     return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
 }
 exports.isPromise = isPromise;
 
-},{}],560:[function(require,module,exports){
+},{}],561:[function(require,module,exports){
 "use strict";
 function isScheduler(value) {
     return value && typeof value.schedule === 'function';
 }
 exports.isScheduler = isScheduler;
 
-},{}],561:[function(require,module,exports){
+},{}],562:[function(require,module,exports){
 (function (global){
 "use strict";
 // CommonJS / Node have global context exposed as "global" variable.
@@ -40112,7 +40897,7 @@ exports.root = _root;
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],562:[function(require,module,exports){
+},{}],563:[function(require,module,exports){
 "use strict";
 var root_1 = require('./root');
 var isArrayLike_1 = require('./isArrayLike');
@@ -40191,7 +40976,7 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
 }
 exports.subscribeToResult = subscribeToResult;
 
-},{"../InnerSubscriber":474,"../Observable":476,"../symbol/iterator":544,"../symbol/observable":545,"./isArrayLike":554,"./isObject":558,"./isPromise":559,"./root":561}],563:[function(require,module,exports){
+},{"../InnerSubscriber":475,"../Observable":477,"../symbol/iterator":545,"../symbol/observable":546,"./isArrayLike":555,"./isObject":559,"./isPromise":560,"./root":562}],564:[function(require,module,exports){
 "use strict";
 var Subscriber_1 = require('../Subscriber');
 var rxSubscriber_1 = require('../symbol/rxSubscriber');
@@ -40212,7 +40997,7 @@ function toSubscriber(nextOrObserver, error, complete) {
 }
 exports.toSubscriber = toSubscriber;
 
-},{"../Observer":477,"../Subscriber":483,"../symbol/rxSubscriber":546}],564:[function(require,module,exports){
+},{"../Observer":478,"../Subscriber":484,"../symbol/rxSubscriber":547}],565:[function(require,module,exports){
 "use strict";
 var errorObject_1 = require('./errorObject');
 var tryCatchTarget;
@@ -40232,7 +41017,7 @@ function tryCatch(fn) {
 exports.tryCatch = tryCatch;
 ;
 
-},{"./errorObject":552}],565:[function(require,module,exports){
+},{"./errorObject":553}],566:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -40985,7 +41770,7 @@ exports.tryCatch = tryCatch;
     return SparkMD5;
 }));
 
-},{}],566:[function(require,module,exports){
+},{}],567:[function(require,module,exports){
 module.exports = (function() {
     var exports = {};
 
@@ -41024,7 +41809,7 @@ module.exports = (function() {
     return exports;
 })();
 
-},{}],567:[function(require,module,exports){
+},{}],568:[function(require,module,exports){
 module.exports = (function(
     envs
 ) {
@@ -41102,7 +41887,7 @@ module.exports = (function(
     browser: require('./browser.js')
 });
 
-},{"./browser.js":566,"./nodeJS.js":568}],568:[function(require,module,exports){
+},{"./browser.js":567,"./nodeJS.js":569}],569:[function(require,module,exports){
 (function (process){
 module.exports = (function() {
     var exports = {};
@@ -41173,16 +41958,16 @@ module.exports = (function() {
 })();
 
 }).call(this,require('_process'))
-},{"_process":469}],569:[function(require,module,exports){
+},{"_process":470}],570:[function(require,module,exports){
 arguments[4][438][0].apply(exports,arguments)
-},{"dup":438}],570:[function(require,module,exports){
+},{"dup":438}],571:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],571:[function(require,module,exports){
+},{}],572:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -41772,7 +42557,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":570,"_process":469,"inherits":569}],572:[function(require,module,exports){
+},{"./support/isBuffer":571,"_process":470,"inherits":570}],573:[function(require,module,exports){
 'use strict';
 
 /**
@@ -41947,7 +42732,7 @@ exports.parse = function (str) {
   }
 };
 
-},{}],573:[function(require,module,exports){
+},{}],574:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;

@@ -44,6 +44,10 @@ var _deepEqual = require('deep-equal');
 
 var _deepEqual2 = _interopRequireDefault(_deepEqual);
 
+var _modifyjs = require('modifyjs');
+
+var _modifyjs2 = _interopRequireDefault(_modifyjs);
+
 var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
@@ -351,22 +355,71 @@ var RxDocument = function () {
             return this;
         }
     }, {
-        key: 'save',
+        key: 'update',
 
+
+        /**
+         * updates document
+         *  @param  {object} updateObj
+         */
+        value: function () {
+            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(updateObj) {
+                var _this2 = this;
+
+                var newDoc;
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                newDoc = (0, _modifyjs2['default'])(this._data, updateObj);
+
+
+                                Object.keys(this._data).forEach(function (previousPropName) {
+                                    if (newDoc[previousPropName]) {
+                                        // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
+                                        // which causes problems with "readonly" fields
+                                        if (!(0, _deepEqual2['default'])(_this2._data[previousPropName], newDoc[previousPropName])) _this2._data[previousPropName] = newDoc[previousPropName];
+                                    } else delete _this2._data[previousPropName];
+                                });
+                                delete newDoc._rev;
+                                delete newDoc._id;
+                                Object.keys(newDoc).forEach(function (newPropName) {
+                                    if (!(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName])) _this2._data[newPropName] = newDoc[newPropName];
+                                });
+                                _context2.next = 7;
+                                return this.save();
+
+                            case 7:
+                            case 'end':
+                                return _context2.stop();
+                        }
+                    }
+                }, _callee2, this);
+            }));
+
+            function update(_x4) {
+                return _ref2.apply(this, arguments);
+            }
+
+            return update;
+        }()
 
         /**
          * save document if its data has changed
          * @return {boolean} false if nothing to save
          */
+
+    }, {
+        key: 'save',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
                 var ret, emitValue, changeEvent;
-                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context3.prev = _context3.next) {
                             case 0:
                                 if (!this._deleted$.getValue()) {
-                                    _context2.next = 2;
+                                    _context3.next = 2;
                                     break;
                                 }
 
@@ -374,28 +427,28 @@ var RxDocument = function () {
 
                             case 2:
                                 if (!(0, _deepEqual2['default'])(this._data, this._dataSync$.getValue())) {
-                                    _context2.next = 5;
+                                    _context3.next = 5;
                                     break;
                                 }
 
                                 this._synced$.next(true);
-                                return _context2.abrupt('return', false);
+                                return _context3.abrupt('return', false);
 
                             case 5:
-                                _context2.next = 7;
+                                _context3.next = 7;
                                 return this.collection._runHooks('pre', 'save', this);
 
                             case 7:
                                 this.collection.schema.validate(this._data);
 
-                                _context2.next = 10;
+                                _context3.next = 10;
                                 return this.collection._pouchPut((0, _clone2['default'])(this._data));
 
                             case 10:
-                                ret = _context2.sent;
+                                ret = _context3.sent;
 
                                 if (ret.ok) {
-                                    _context2.next = 13;
+                                    _context3.next = 13;
                                     break;
                                 }
 
@@ -408,7 +461,7 @@ var RxDocument = function () {
 
                                 this._data = emitValue;
 
-                                _context2.next = 18;
+                                _context3.next = 18;
                                 return this.collection._runHooks('post', 'save', this);
 
                             case 18:
@@ -420,60 +473,9 @@ var RxDocument = function () {
                                 changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
                                 this.$emit(changeEvent);
-                                return _context2.abrupt('return', true);
+                                return _context3.abrupt('return', true);
 
                             case 23:
-                            case 'end':
-                                return _context2.stop();
-                        }
-                    }
-                }, _callee2, this);
-            }));
-
-            function save() {
-                return _ref2.apply(this, arguments);
-            }
-
-            return save;
-        }()
-    }, {
-        key: 'remove',
-        value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
-                return _regenerator2['default'].wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                if (!this.deleted) {
-                                    _context3.next = 2;
-                                    break;
-                                }
-
-                                throw new Error('RxDocument.remove(): Document is already deleted');
-
-                            case 2:
-                                _context3.next = 4;
-                                return this.collection._runHooks('pre', 'remove', this);
-
-                            case 4:
-                                _context3.next = 6;
-                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
-
-                            case 6:
-
-                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
-
-                                _context3.next = 9;
-                                return this.collection._runHooks('post', 'remove', this);
-
-                            case 9:
-                                _context3.next = 11;
-                                return util.promiseWait(0);
-
-                            case 11:
-                                return _context3.abrupt('return');
-
-                            case 12:
                             case 'end':
                                 return _context3.stop();
                         }
@@ -481,8 +483,59 @@ var RxDocument = function () {
                 }, _callee3, this);
             }));
 
-            function remove() {
+            function save() {
                 return _ref3.apply(this, arguments);
+            }
+
+            return save;
+        }()
+    }, {
+        key: 'remove',
+        value: function () {
+            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+                return _regenerator2['default'].wrap(function _callee4$(_context4) {
+                    while (1) {
+                        switch (_context4.prev = _context4.next) {
+                            case 0:
+                                if (!this.deleted) {
+                                    _context4.next = 2;
+                                    break;
+                                }
+
+                                throw new Error('RxDocument.remove(): Document is already deleted');
+
+                            case 2:
+                                _context4.next = 4;
+                                return this.collection._runHooks('pre', 'remove', this);
+
+                            case 4:
+                                _context4.next = 6;
+                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+
+                            case 6:
+
+                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
+
+                                _context4.next = 9;
+                                return this.collection._runHooks('post', 'remove', this);
+
+                            case 9:
+                                _context4.next = 11;
+                                return util.promiseWait(0);
+
+                            case 11:
+                                return _context4.abrupt('return');
+
+                            case 12:
+                            case 'end':
+                                return _context4.stop();
+                        }
+                    }
+                }, _callee4, this);
+            }));
+
+            function remove() {
+                return _ref4.apply(this, arguments);
             }
 
             return remove;

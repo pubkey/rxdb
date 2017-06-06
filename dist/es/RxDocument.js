@@ -5,6 +5,7 @@ import _createClass from 'babel-runtime/helpers/createClass';
 import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
+import modify from 'modifyjs';
 
 import * as util from './util';
 import * as RxChangeEvent from './RxChangeEvent';
@@ -289,18 +290,66 @@ var RxDocument = function () {
     };
 
     /**
-     * save document if its data has changed
-     * @return {boolean} false if nothing to save
+     * updates document
+     *  @param  {object} updateObj
      */
-    RxDocument.prototype.save = function () {
-        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
-            var ret, emitValue, changeEvent;
+    RxDocument.prototype.update = function () {
+        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2(updateObj) {
+            var _this2 = this;
+
+            var newDoc;
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
                     switch (_context2.prev = _context2.next) {
                         case 0:
+                            newDoc = modify(this._data, updateObj);
+
+
+                            Object.keys(this._data).forEach(function (previousPropName) {
+                                if (newDoc[previousPropName]) {
+                                    // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
+                                    // which causes problems with "readonly" fields
+                                    if (!deepEqual(_this2._data[previousPropName], newDoc[previousPropName])) _this2._data[previousPropName] = newDoc[previousPropName];
+                                } else delete _this2._data[previousPropName];
+                            });
+                            delete newDoc._rev;
+                            delete newDoc._id;
+                            Object.keys(newDoc).forEach(function (newPropName) {
+                                if (!deepEqual(_this2._data[newPropName], newDoc[newPropName])) _this2._data[newPropName] = newDoc[newPropName];
+                            });
+                            _context2.next = 7;
+                            return this.save();
+
+                        case 7:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        }));
+
+        function update(_x4) {
+            return _ref2.apply(this, arguments);
+        }
+
+        return update;
+    }();
+
+    /**
+     * save document if its data has changed
+     * @return {boolean} false if nothing to save
+     */
+
+
+    RxDocument.prototype.save = function () {
+        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3() {
+            var ret, emitValue, changeEvent;
+            return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                while (1) {
+                    switch (_context3.prev = _context3.next) {
+                        case 0:
                             if (!this._deleted$.getValue()) {
-                                _context2.next = 2;
+                                _context3.next = 2;
                                 break;
                             }
 
@@ -308,28 +357,28 @@ var RxDocument = function () {
 
                         case 2:
                             if (!deepEqual(this._data, this._dataSync$.getValue())) {
-                                _context2.next = 5;
+                                _context3.next = 5;
                                 break;
                             }
 
                             this._synced$.next(true);
-                            return _context2.abrupt('return', false);
+                            return _context3.abrupt('return', false);
 
                         case 5:
-                            _context2.next = 7;
+                            _context3.next = 7;
                             return this.collection._runHooks('pre', 'save', this);
 
                         case 7:
                             this.collection.schema.validate(this._data);
 
-                            _context2.next = 10;
+                            _context3.next = 10;
                             return this.collection._pouchPut(clone(this._data));
 
                         case 10:
-                            ret = _context2.sent;
+                            ret = _context3.sent;
 
                             if (ret.ok) {
-                                _context2.next = 13;
+                                _context3.next = 13;
                                 break;
                             }
 
@@ -342,7 +391,7 @@ var RxDocument = function () {
 
                             this._data = emitValue;
 
-                            _context2.next = 18;
+                            _context3.next = 18;
                             return this.collection._runHooks('post', 'save', this);
 
                         case 18:
@@ -354,59 +403,9 @@ var RxDocument = function () {
                             changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
                             this.$emit(changeEvent);
-                            return _context2.abrupt('return', true);
+                            return _context3.abrupt('return', true);
 
                         case 23:
-                        case 'end':
-                            return _context2.stop();
-                    }
-                }
-            }, _callee2, this);
-        }));
-
-        function save() {
-            return _ref2.apply(this, arguments);
-        }
-
-        return save;
-    }();
-
-    RxDocument.prototype.remove = function () {
-        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3() {
-            return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-                while (1) {
-                    switch (_context3.prev = _context3.next) {
-                        case 0:
-                            if (!this.deleted) {
-                                _context3.next = 2;
-                                break;
-                            }
-
-                            throw new Error('RxDocument.remove(): Document is already deleted');
-
-                        case 2:
-                            _context3.next = 4;
-                            return this.collection._runHooks('pre', 'remove', this);
-
-                        case 4:
-                            _context3.next = 6;
-                            return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
-
-                        case 6:
-
-                            this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
-
-                            _context3.next = 9;
-                            return this.collection._runHooks('post', 'remove', this);
-
-                        case 9:
-                            _context3.next = 11;
-                            return util.promiseWait(0);
-
-                        case 11:
-                            return _context3.abrupt('return');
-
-                        case 12:
                         case 'end':
                             return _context3.stop();
                     }
@@ -414,8 +413,58 @@ var RxDocument = function () {
             }, _callee3, this);
         }));
 
-        function remove() {
+        function save() {
             return _ref3.apply(this, arguments);
+        }
+
+        return save;
+    }();
+
+    RxDocument.prototype.remove = function () {
+        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4() {
+            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+                while (1) {
+                    switch (_context4.prev = _context4.next) {
+                        case 0:
+                            if (!this.deleted) {
+                                _context4.next = 2;
+                                break;
+                            }
+
+                            throw new Error('RxDocument.remove(): Document is already deleted');
+
+                        case 2:
+                            _context4.next = 4;
+                            return this.collection._runHooks('pre', 'remove', this);
+
+                        case 4:
+                            _context4.next = 6;
+                            return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+
+                        case 6:
+
+                            this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
+
+                            _context4.next = 9;
+                            return this.collection._runHooks('post', 'remove', this);
+
+                        case 9:
+                            _context4.next = 11;
+                            return util.promiseWait(0);
+
+                        case 11:
+                            return _context4.abrupt('return');
+
+                        case 12:
+                        case 'end':
+                            return _context4.stop();
+                    }
+                }
+            }, _callee4, this);
+        }));
+
+        function remove() {
+            return _ref4.apply(this, arguments);
         }
 
         return remove;

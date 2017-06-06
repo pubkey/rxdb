@@ -67,8 +67,8 @@ var RxSchema = exports.RxSchema = function () {
                 return !_this.jsonID.required.includes(index);
             }).filter(function (index) {
                 return !index.includes('.');
-            }) // TODO make them sub-required
-            .forEach(function (index) {
+            } // TODO make them sub-required
+            ).forEach(function (index) {
                 return _this.jsonID.required.push(index);
             });
         });
@@ -437,8 +437,8 @@ function checkSchema(jsonID) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
         return arr.indexOf(elem) == pos;
-    }) // unique
-    .map(function (key) {
+    } // unique
+    ).map(function (key) {
         var schemaObj = _objectPath2['default'].get(jsonID, 'properties.' + key.replace('.', '.properties.'));
         if (!schemaObj || (typeof schemaObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(schemaObj)) !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
         return {
