@@ -360,15 +360,6 @@ describe('RxCollection.test.js', () => {
                 });
             });
         });
-        describe('.update()', () => {
-            it('updates all documents matched by a query', async() => {
-                const c = await humansCollection.create();
-                await c.update({}, {$set: {firstName: 'new first name'}});
-                const docs = await c.find().exec();
-                for (let doc of docs)
-                    assert.equal(doc._data.firstName, 'new first name');
-            });
-        });
         describe('.find()', () => {
             describe('find all', () => {
                 describe('positive', () => {

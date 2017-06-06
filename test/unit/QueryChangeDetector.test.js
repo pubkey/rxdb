@@ -404,7 +404,7 @@ describe('QueryChangeDetector.test.js', () => {
             const col = await humansCollection.createPrimary(5);
             col.sync(serverURL, {
                 live: true
-            });
+            }); 
 
             const results = [];
             const q = col.find().sort('passportId');

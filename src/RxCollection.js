@@ -286,18 +286,6 @@ class RxCollection {
         }
     }
 
-  /**
-   * updates an object with a mongolike syntax
-   * @param  {object} queryObj
-   * @param  {object} updateObj
-   */
-
-    async update(queryObj, updateObj) {
-        const docs = await this.find(queryObj).exec();
-        for (let doc of docs)
-            await doc.update(updateObj);
-    }
-
     /**
      * takes a mongoDB-query-object and returns the documents
      * @param  {object} queryObj

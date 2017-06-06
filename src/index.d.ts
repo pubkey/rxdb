@@ -115,7 +115,6 @@ declare class RxCollection {
     upsert(json: any): Promise<RxDocument>;
     find(queryObj?: any): RxQuery;
     findOne(queryObj?: any): RxQuery;
-    update(queryObj: any, updateObj: any): Promise<any>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
