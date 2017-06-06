@@ -2,16 +2,7 @@ language: node_js
 sudo: required
 os:
   - linux
+  - osx
 node_js:
   - "7"
-addons:
-  firefox: latest
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - "export CHROME_BIN=chromium-browser"
-  - sleep 10
-env:
-  - TEST_DIR=vue
-  - TEST_DIR=angular2
-script: cd examples/$TEST_DIR && npm install && npm run build
+script: npm install && npm run test:node
