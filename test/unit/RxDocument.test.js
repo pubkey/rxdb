@@ -262,15 +262,14 @@ describe('RxDocument.test.js', () => {
         });
     });
     describe('update', () => {
-        it('sets a value with a mongo like query', async() => {
+        it('$set a value with a mongo like query', async() => {
             const c = await humansCollection.createPrimary(1);
             const doc = await c.findOne().exec();
             await doc.update({$set: {firstName: 'new first name'}});
             const updatedDoc = await c.findOne({firstName: 'new first name'}).exec();
             assert.equal(updatedDoc.firstName, 'new first name');
         });
-
-        it('unsets a value with a mongo like query', async() => {
+        it('$unset a value with a mongo like query', async() => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             await doc.update({
@@ -280,6 +279,20 @@ describe('RxDocument.test.js', () => {
             });
             const updatedDoc = await c.findOne().exec();
             assert.equal(updatedDoc.age, undefined);
+        });
+        it('$inc a value with a mongo like query', async() => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec();
+            const agePrev = doc.age;
+            await doc.update({
+                $inc: {
+                    age: 1
+                }
+            });
+            assert.equal(doc.age, agePrev + 1);
+            await doc.save;
+            const updatedDoc = await c.findOne().exec();
+            assert.equal(updatedDoc.age, agePrev + 1);
         });
     });
     describe('pseudo-Proxy', () => {
