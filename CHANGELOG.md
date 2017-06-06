@@ -1,4 +1,4 @@
-## 4.X.X ()
+## 4.X.X (coming soon)
 
 Features:
   - Added `postCreate`-[hook](https://pubkey.github.io/rxdb/Middleware.html#postCreate) [#165](https://github.com/pubkey/rxdb/issues/165)
