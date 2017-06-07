@@ -124,7 +124,7 @@ RxDB.create({
   <b>Mango-Query</b>
   <p>
 
-To find data in your collection, you can use chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
+To find data in your collection, [use the mquery api](https://github.com/aheckmann/mquery) to use chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
   </p>
 </summary>
 
