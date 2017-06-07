@@ -1,4 +1,4 @@
-## 4.X.X (coming soon)
+## 4.1.0 (June 7, 2017)
 
 Features:
   - Added `postCreate`-[hook](https://pubkey.github.io/rxdb/Middleware.html#postCreate) [#165](https://github.com/pubkey/rxdb/issues/165)
@@ -11,7 +11,7 @@ Bugfixes:
 Other:
   - Throw error if `RxQuery.sort()` runs on field which is not in the schema [#146](https://github.com/pubkey/rxdb/issues/146)
   - extract `watchForChanges` to allow custom sync-operations [#197](https://github.com/pubkey/rxdb/pull/197)
-
+  - Added [travis-ci](https://travis-ci.org/)
 
 ## 4.0.2 (May 17, 2017)
 
