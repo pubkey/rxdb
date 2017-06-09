@@ -16,6 +16,11 @@ class RxDocument {
         // current doc-data, changes when setting values etc
         this._data = clone(jsonData);
 
+        // atomic-update-functions that have not run yes
+        this._atomicUpdates = [];
+        // resolve-functions to resolve the promises of atomicUpdate
+        this._atomicUpdatesResolveFunctions = new WeakMap();
+
         // false when _data !== _dataSync
         this._synced$ = new util.Rx.BehaviorSubject(true);
 
@@ -277,6 +282,28 @@ class RxDocument {
                 this._data[newPropName] = newDoc[newPropName];
         });
         await this.save();
+    }
+
+    async atomicUpdate(fun) {
+        this._atomicUpdates.push(fun);
+        const retPromise = new Promise(res => {
+            this._atomicUpdatesResolveFunctions.set(fun, res);
+        });
+        this._runAtomicUpdates();
+        return retPromise;
+    }
+    async _runAtomicUpdates() {
+        if(this.__runAtomicUpdates_running) return;
+        else this.__runAtomicUpdates_running = true;
+
+        if (this._atomicUpdates.length === 0) return;
+        const fun = this._atomicUpdates.shift();
+
+        await fun(this); // run atomic
+        this._atomicUpdatesResolveFunctions.get(fun)(); // resolve promise
+
+        this.__runAtomicUpdates_running = false;
+        this._runAtomicUpdates();
     }
 
     /**

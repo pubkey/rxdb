@@ -177,7 +177,7 @@ declare class RxQuery {
     exec(): Promise<RxDocument[]>;
     $: Observable<RxDocument[]>;
     remove(): Promise<RxDocument | RxDocument[]>;
-    update(updateObj: any): Promise<RxDocument|RxDocument[]>;
+    update(updateObj: any): Promise<RxDocument | RxDocument[]>;
 }
 
 declare class RxDocument {
@@ -195,8 +195,9 @@ declare class RxDocument {
     set(objPath: string, value: any): RxDocument;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument |null>;
+    populate(objPath: string): Promise<RxDocument | any>;
     update(updateObj: any): Promise<any>;
+    atomicUpdate(fun: Function): Promise<any>;
 
     toJSON(): Object;
     destroy(): void;

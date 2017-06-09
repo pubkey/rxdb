@@ -49,7 +49,8 @@
         * [save()](./RxDocument.md#save)
         * [remove()](./RxDocument.md#remove)
         * [update()](./RxDocument.md#update)
-        * [$()](./RxDocument.md#observe-path)
+        * [atomicUpdate()](./RxDocument.md#atomicUpdate)
+        * [$()](./RxDocument.md#observe)
 
 * [RxQuery](./RxQuery.md)
     * [remove()](./RxQuery.md#remove)

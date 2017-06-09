@@ -261,12 +261,18 @@ describe('RxDocument.test.js', () => {
             });
         });
     });
-    describe('update', () => {
+    describe('.update()', () => {
         it('$set a value with a mongo like query', async() => {
             const c = await humansCollection.createPrimary(1);
             const doc = await c.findOne().exec();
-            await doc.update({$set: {firstName: 'new first name'}});
-            const updatedDoc = await c.findOne({firstName: 'new first name'}).exec();
+            await doc.update({
+                $set: {
+                    firstName: 'new first name'
+                }
+            });
+            const updatedDoc = await c.findOne({
+                firstName: 'new first name'
+            }).exec();
             assert.equal(updatedDoc.firstName, 'new first name');
         });
         it('$unset a value with a mongo like query', async() => {
@@ -293,6 +299,68 @@ describe('RxDocument.test.js', () => {
             await doc.save;
             const updatedDoc = await c.findOne().exec();
             assert.equal(updatedDoc.age, agePrev + 1);
+        });
+    });
+    describe('.atomicUpdate()', () => {
+        describe('positive', () => {
+            it('run one update', async() => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec();
+
+                await doc.atomicUpdate((innerDoc) => {
+                    innerDoc.firstName = 'foobar';
+                });
+                assert.equal('foobar', doc.firstName);
+                c.database.destroy();
+            });
+            it('run two updates (last write wins)', async() => {
+                const c = await humansCollection.createNested(1);
+                const doc = await c.findOne().exec();
+
+                doc.atomicUpdate((innerDoc) => {
+                    innerDoc.firstName = 'foobar';
+                });
+                await doc.atomicUpdate((innerDoc) => {
+                    innerDoc.firstName = 'foobar2';
+                });
+                assert.equal('foobar2', doc.firstName);
+                c.database.destroy();
+            });
+            it('do many updates (last write wins)', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                let lastPromise;
+                let t = 0;
+                new Array(10).fill(0)
+                    .map(() => {
+                        t++;
+                        return t;
+                    })
+                    .forEach(x => lastPromise = doc.atomicUpdate(innerDoc => {
+                        innerDoc.age = x;
+                    }));
+                await lastPromise;
+                assert.equal(t, doc.age);
+                c.database.destroy();
+            });
+            it('run async functions', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                let lastPromise;
+                let t = 0;
+                new Array(10).fill(0)
+                    .map(() => {
+                        t++;
+                        return t;
+                    })
+                    .forEach(x => lastPromise = doc.atomicUpdate(async(innerDoc) => {
+                        await util.promiseWait(1);
+                        innerDoc.age = x;
+                    }));
+                await lastPromise;
+                assert.equal(t, doc.age);
+                c.database.destroy();
+            });
         });
     });
     describe('pseudo-Proxy', () => {

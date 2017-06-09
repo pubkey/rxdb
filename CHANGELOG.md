@@ -1,3 +1,10 @@
+# Changelog
+
+## (4.X.X) (coming soon)
+
+Features:
+  - Added `RxDocument.atomicUpdate()` [docs](https://pubkey.github.io/rxdb/RxDocument.html#atomicUpdate)
+
 ## 4.1.0 (June 7, 2017)
 
 Features:
