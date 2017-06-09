@@ -6,6 +6,7 @@ coverage/
 core
 docs/files
 log.txt
+package-lock.json
 config.json
 .config.json
 .transpile_state.json
