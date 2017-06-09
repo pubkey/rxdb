@@ -12,8 +12,12 @@ import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
 import * as QueryCache from './QueryCache';
 import * as ChangeEventBuffer from './ChangeEventBuffer';
-import { RxSchema } from './RxSchema';
-import { RxDatabase } from './RxDatabase';
+import {
+    RxSchema
+} from './RxSchema';
+import {
+    RxDatabase
+} from './RxDatabase';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -380,32 +384,31 @@ class RxCollection {
              */
             const sendChanges = {};
             const pouch$ = util.Rx.Observable.fromEvent(
-                this.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
+                    this.pouch.changes({
+                        since: 'now',
+                        live: true,
+                        include_docs: true
+                    }), 'change'
+                )
+                .filter(c => c.id.charAt(0) != '_')
+                .map(c => c.doc)
+                .map(doc => {
+                    doc._ext = true;
+                    return doc;
                 })
-                , 'change'
-            )
-            .filter(c => c.id.charAt(0) != '_')
-            .map(c => c.doc)
-            .map(doc => {
-                doc._ext = true;
-                return doc;
-            })
-             .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
-            .filter(doc => sendChanges[doc._rev] = 'YES')
-            .delay(10)
-            .map(doc => {
-                let ret = null;
-                if (sendChanges[doc._rev] == 'YES') ret = doc;
-                delete sendChanges[doc._rev];
-                return ret;
-            })
-            .filter(doc => doc != null)
-            .subscribe(doc => {
-                this.$emit(RxChangeEvent.fromPouchChange(doc, this));
-            });
+                .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
+                .filter(doc => sendChanges[doc._rev] = 'YES')
+                .delay(10)
+                .map(doc => {
+                    let ret = null;
+                    if (sendChanges[doc._rev] == 'YES') ret = doc;
+                    delete sendChanges[doc._rev];
+                    return ret;
+                })
+                .filter(doc => doc != null)
+                .subscribe(doc => {
+                    this.$emit(RxChangeEvent.fromPouchChange(doc, this));
+                });
 
             this._subs.push(pouch$);
 
@@ -500,6 +503,14 @@ class RxCollection {
         this._queryCache.destroy();
         this.pouchSyncs.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
+    }
+
+    /**
+     * remove all data
+     * @return {Promise}
+     */
+    async clear() {
+        await this.database.clearCollection(this.name);
     }
 
 }

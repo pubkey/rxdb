@@ -184,6 +184,27 @@ export class RxDatabase {
         return this._collectionsPouch.remove(doc);
     }
 
+    /**
+     * removes all internal docs of a given collection
+     * @param  {string}  collectionName
+     * @return {Promise<string[]>} resolves all known collection-versions
+     */
+    async _removeAllOfCollection(collectionName) {
+        const data = await this._collectionsPouch.allDocs({
+            include_docs: true
+        });
+        const relevantDocs = data.rows
+            .map(row => row.doc)
+            .filter(doc => {
+                const name = doc._id.split('-')[0];
+                return name == collectionName;
+            });
+        await Promise.all(
+            relevantDocs
+            .map(doc => this._collectionsPouch.remove(doc))
+        );
+        return relevantDocs.map(doc => doc.version);
+    }
 
     /**
      * create or fetch a collection
@@ -250,6 +271,26 @@ export class RxDatabase {
         this.__defineGetter__(args.name, () => this.collections[args.name]);
 
         return collection;
+    }
+
+    /**
+     * delete all data of the collection and its previous versions
+     * @param  {string}  collectionName
+     * @return {Promise}
+     */
+    async clearCollection(collectionName) {
+        if (this.collections[collectionName])
+            await this.collections[collectionName].destroy();
+
+        // remove schemas from internal db
+        const knownVersions = await this._removeAllOfCollection(collectionName);
+        // get all relevant pouchdb-instances
+        const pouches = knownVersions
+            .map(v => this._spawnPouchDB(collectionName, v));
+
+        // remove documents
+        await Promise.all(pouches.map(pouch => pouch.destroy()));
+
     }
 
     /**

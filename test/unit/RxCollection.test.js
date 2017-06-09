@@ -822,7 +822,11 @@ describe('RxCollection.test.js', () => {
                 it('sets a field in all documents', async() => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
-                    await query.update({$set: {firstName: 'new first name'}});
+                    await query.update({
+                        $set: {
+                            firstName: 'new first name'
+                        }
+                    });
                     const docsAfterUpdate = await c.find().exec();
                     for (let doc of docsAfterUpdate)
                         assert.equal(doc._data.firstName, 'new first name');
@@ -830,7 +834,11 @@ describe('RxCollection.test.js', () => {
                 it('unsets fields in all documents', async() => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
-                    await query.update({$unset: {age: ''}});
+                    await query.update({
+                        $unset: {
+                            age: ''
+                        }
+                    });
                     const docsAfterUpdate = await c.find().exec();
                     for (let doc of docsAfterUpdate)
                         assert.equal(doc.age, undefined);
@@ -1014,6 +1022,125 @@ describe('RxCollection.test.js', () => {
                         Error
                     );
                     db.destroy();
+                });
+            });
+        });
+        describe('.clear()', () => {
+            describe('positive', () => {
+                it('should not crash', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    await c.clear();
+                    c.database.destroy();
+                });
+                it('should be possible to re-create the collection with different schema', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    await collection.clear();
+                    const otherSchema = clone(schemas.primaryHuman);
+                    otherSchema.properties.foobar = {
+                        type: 'string'
+                    };
+                    const collection2 = await db.collection({
+                        name: 'human',
+                        schema: otherSchema
+                    });
+                    db.destroy();
+                });
+                it('should not contain document when re-creating', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    await Promise.all(
+                        new Array(5).fill(0)
+                        .map(() => collection.insert(schemaObjects.human()))
+                    );
+                    const allDocs = await collection.find().exec();
+                    assert.equal(5, allDocs.length);
+                    await collection.clear();
+
+                    const collection2 = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const noDocs = await collection2.find().exec();
+                    assert.equal(0, noDocs.length);
+                    db.destroy();
+                });
+                it('should delete when older versions exist', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    await Promise.all(
+                        new Array(5).fill(0)
+                        .map(() => collection.insert(schemaObjects.human()))
+                    );
+                    await collection.clear();
+
+                    const otherSchema = clone(schemas.primaryHuman);
+                    otherSchema.version = 1;
+                    const collection2 = await db.collection({
+                        name: 'human',
+                        schema: otherSchema,
+                        migrationStrategies: {
+                            1: function(doc) {
+                                return doc;
+                            }
+                        }
+                    });
+                    const noDocs = await collection2.find().exec();
+                    assert.equal(noDocs.length, 0);
+                    await Promise.all(
+                        new Array(5).fill(0)
+                        .map(() => collection2.insert(schemaObjects.human()))
+                    );
+                    const fiveDocs = await collection2.find().exec();
+                    assert.equal(fiveDocs.length, 5);
+                    await collection2.clear();
+
+
+                    const collection0Again = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const noDocs2 = await collection0Again.find().exec();
+                    assert.equal(noDocs2.length, 0);
+
+                    db.destroy();
+                });
+            });
+            describe('negative', () => {
+                it('should not be possible to use the cleared collection', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    await c.clear();
+                    await util.assertThrowsAsync(
+                        () => c.find().exec(),
+                        Error
+                    );
+                    c.database.destroy();
+                });
+                it('should not have the collection in the collections-list', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const db = c.database;
+                    const name = c.name;
+                    await c.clear();
+                    assert.equal(undefined, db[name]);
+                    c.database.destroy();
                 });
             });
         });

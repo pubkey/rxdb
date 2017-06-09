@@ -39,6 +39,7 @@
         * [dump()](./RxCollection.md#dump)
         * [importDump()](./RxCollection.md#importdump)
         * [sync()](./RxCollection.md#sync)
+        * [clear()](./RxCollection.md#clear)
 
 * [RxDocument](./RxDocument.md)
     * [Insert](./RxDocument.md#insert)
