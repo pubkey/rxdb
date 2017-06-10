@@ -35,7 +35,7 @@ Bugfixes:
   - Sort on primary fails without non-id primary [commit](https://github.com/pubkey/rxdb/commit/59143a61530069f6e90ae203019d494d507330e9)
   - QueryChangeDetection breaks on no-resort-optimisation [commit](https://github.com/pubkey/rxdb/commit/c7f9b3e601d0bfbbde3ee410f00b017b4490dded)
 
-## 4.0.0 (May 5, 2017)
+## 4.0.0 (May 5, 2017) BREAKING
 
 Breaking:
   - RxQuery's are now [immutable](https://pubkey.github.io/rxdb/RxQuery.html#notice-rxquerys-are-immutable)
@@ -106,7 +106,7 @@ Bugfixes:
 Bugfixes:
   - new document does not get new state on remove-reinsert [#66](https://github.com/pubkey/rxdb/issues/66)
 
-## 3.0.0 (February 27, 2017)
+## 3.0.0 (February 27, 2017) BREAKING
 
 Features:
   - added [DataMigration](https://pubkey.github.io/rxdb/DataMigration.html)
@@ -168,10 +168,10 @@ Bugfixes:
   - Fixed tests for IE11
 
 
-## 2.0.0 (January 23, 2017)
+## 2.0.0 (January 23, 2017) BREAKING
 
 Features:
-  - key-compression for better space-usage (awesome!)
+  - key-compression for better space-usage
 
 Breaking:
   - schema-objects are now normalized (order alphabetic) before hashing
