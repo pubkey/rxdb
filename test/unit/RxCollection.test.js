@@ -1025,11 +1025,11 @@ describe('RxCollection.test.js', () => {
                 });
             });
         });
-        describe('.clear()', () => {
+        describe('.remove()', () => {
             describe('positive', () => {
                 it('should not crash', async() => {
                     const c = await humansCollection.createPrimary(0);
-                    await c.clear();
+                    await c.remove();
                     c.database.destroy();
                 });
                 it('should be possible to re-create the collection with different schema', async() => {
@@ -1041,7 +1041,7 @@ describe('RxCollection.test.js', () => {
                         name: 'human',
                         schema: schemas.primaryHuman
                     });
-                    await collection.clear();
+                    await collection.remove();
                     const otherSchema = clone(schemas.primaryHuman);
                     otherSchema.properties.foobar = {
                         type: 'string'
@@ -1067,7 +1067,7 @@ describe('RxCollection.test.js', () => {
                     );
                     const allDocs = await collection.find().exec();
                     assert.equal(5, allDocs.length);
-                    await collection.clear();
+                    await collection.remove();
 
                     const collection2 = await db.collection({
                         name: 'human',
@@ -1090,7 +1090,7 @@ describe('RxCollection.test.js', () => {
                         new Array(5).fill(0)
                         .map(() => collection.insert(schemaObjects.human()))
                     );
-                    await collection.clear();
+                    await collection.remove();
 
                     const otherSchema = clone(schemas.primaryHuman);
                     otherSchema.version = 1;
@@ -1111,7 +1111,7 @@ describe('RxCollection.test.js', () => {
                     );
                     const fiveDocs = await collection2.find().exec();
                     assert.equal(fiveDocs.length, 5);
-                    await collection2.clear();
+                    await collection2.remove();
 
 
                     const collection0Again = await db.collection({
@@ -1127,7 +1127,7 @@ describe('RxCollection.test.js', () => {
             describe('negative', () => {
                 it('should not be possible to use the cleared collection', async() => {
                     const c = await humansCollection.createPrimary(0);
-                    await c.clear();
+                    await c.remove();
                     await util.assertThrowsAsync(
                         () => c.find().exec(),
                         Error
@@ -1138,7 +1138,7 @@ describe('RxCollection.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const db = c.database;
                     const name = c.name;
-                    await c.clear();
+                    await c.remove();
                     assert.equal(undefined, db[name]);
                     c.database.destroy();
                 });

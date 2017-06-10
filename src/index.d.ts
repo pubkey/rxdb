@@ -145,7 +145,7 @@ declare class RxCollection {
 
     sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
     destroy(): Promise<boolean>;
-    clear(): Promise<any>;
+    remove(): Promise<any>;
 }
 
 declare class RxQuery {

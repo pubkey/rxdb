@@ -509,7 +509,7 @@ class RxCollection {
      * remove all data
      * @return {Promise}
      */
-    async clear() {
+    async remove() {
         await this.database.clearCollection(this.name);
     }
 

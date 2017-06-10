@@ -114,13 +114,13 @@ To replicate the collection with another server, use this function. It basically
 mycollection.sync('http://localhost:10102/db/');
 ```
 
-### clear()
+### remove()
 
 Removes all known data of the collection and its previous versions.
 This removes the documents, the schemas, older schemaVersions.
 
 ```js
-await myCollection.clear();
+await myCollection.remove();
 // collection is no removed and can be re-created
 ```
 
