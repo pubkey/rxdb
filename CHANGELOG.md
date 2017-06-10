@@ -5,6 +5,7 @@
 Features:
   - Added `RxDocument.atomicUpdate()` [docs](https://pubkey.github.io/rxdb/RxDocument.html#atomicUpdate)
   - Added `RxCollection.remove()` [docs](https://pubkey.github.io/rxdb/RxCollection.html#clear)
+  - Added `RxDatabase.remove()` [docs](https://pubkey.github.io/rxdb/RxDatabase.html#remove)
 
 ## 4.1.0 (June 7, 2017)
 

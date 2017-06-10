@@ -510,7 +510,7 @@ class RxCollection {
      * @return {Promise}
      */
     async remove() {
-        await this.database.clearCollection(this.name);
+        await this.database.removeCollection(this.name);
     }
 
 }

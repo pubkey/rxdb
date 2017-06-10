@@ -95,6 +95,7 @@ declare class RxDatabase {
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
+    remove(): Promise<any>;
 
     isLeader: boolean;
 
@@ -228,6 +229,8 @@ export interface DatabaseCreator {
 }
 
 export function create(creator: DatabaseCreator): Promise<RxDatabase>;
+export function removeDatabase(databaseName: string, adapter: any): Promise<any>;
+
 export const QueryChangeDetector: {
     enable(): void;
     enableDebugging(set?: boolean): void;

@@ -17,6 +17,7 @@ import * as RxDatabase from '../../dist/lib/index';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
+import * as humansCollection from '../helper/humans-collection';
 
 describe('RxDatabase.test.js', () => {
     describe('.create()', () => {
@@ -388,7 +389,6 @@ describe('RxDatabase.test.js', () => {
             });
         });
     });
-
     describe('.destroy()', () => {
         describe('positive', () => {
             it('should not crash on destroy', async() => {
@@ -417,6 +417,27 @@ describe('RxDatabase.test.js', () => {
                 db.destroy();
                 assert.equal(db.destroyed, true);
             });
+        });
+    });
+    describe('.remove()', () => {
+        it('should not crash', async() => {
+            const c = await humansCollection.create(10);
+            await c.database.remove();
+        });
+        it('should be possible to recreate the database with other password', async() => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                password: 'fo222222obar'
+            });
+            await db.remove();
+
+            const db2 = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                password: 'foo2222333333bar2'
+            });
+            await db2.remove();
         });
     });
 

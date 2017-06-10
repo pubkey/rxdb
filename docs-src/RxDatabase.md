@@ -76,5 +76,18 @@ emptyDatabase.importDump(json)
 ```
 
 
+### remove()
+Removes the database and all data attached to it.
+
+```js
+await myDatabase.remove();
+// database is now gone
+
+// NOTICE: You can also remove a database without its instance
+RxDB.removeDatabase('mydatabasename', 'localstorage');
+```
+
+
+
 -----------
 If you are new to RxDB, you should continue [here](./RxSchema.md)

@@ -17,6 +17,7 @@
         * [dump()](./RxDatabase.md#dump)
         * [$()](./RxDatabase.md#observe-with-)
         * [waitForLeadership()](./RxDatabase.md#waitforleadership)
+        * [remove()](./RxDatabase.md#remove)
 
 * [RxSchema](./RxSchema.md)
       * [Example](./RxSchema.md#example)

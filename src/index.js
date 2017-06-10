@@ -16,6 +16,16 @@ export async function create(args) {
     return RxDatabase.create(args);
 }
 
+/**
+ * removes the database and all its known data
+ * @param  {string} databaseName
+ * @param  {Object} adapter
+ * @return {Promise}
+ */
+export async function removeDatabase(databaseName, adapter) {
+    return RxDatabase.removeDatabase(databaseName, adapter);
+}
+
 export function plugin(mod) {
     if (typeof mod === 'object' && mod.default) mod = mod.default;
     PouchDB.plugin(mod);

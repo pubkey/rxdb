@@ -46,16 +46,9 @@ export class RxDatabase {
             .filter(cEvent => RxChangeEvent.isInstanceOf(cEvent));
 
         // create internal collections
-        // - admin-collection
-        this._adminPouch = this._spawnPouchDB('_admin', 0, {
-            auto_compaction: false, // no compaction because this only stores local documents
-            revs_limit: 1
-        });
-        // - collections-collection
-        this._collectionsPouch = this._spawnPouchDB('_collections', 0, {
-            auto_compaction: false, // no compaction because this only stores local documents
-            revs_limit: 1
-        });
+        const internalPouch = _internalPouchDbs(this.name, this.adapter);
+        this._adminPouch = internalPouch._adminPouch;
+        this._collectionsPouch = internalPouch._collectionsPouch;
 
         // validate/insert password-hash
         if (this.password) {
@@ -87,23 +80,6 @@ export class RxDatabase {
         this.leaderElector = await LeaderElector.create(this);
     }
 
-
-    /**
-     * transforms the given adapter into a pouch-compatible object
-     * @return {Object} adapterObject
-     */
-    get _adapterObj() {
-        let adapterObj = {
-            db: this.adapter
-        };
-        if (typeof this.adapter === 'string') {
-            adapterObj = {
-                adapter: this.adapter
-            };
-        }
-        return adapterObj;
-    }
-
     /**
      * spawns a new pouch-instance
      * @param {string} collectionName
@@ -112,12 +88,7 @@ export class RxDatabase {
      * @type {Object}
      */
     _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        const pouchLocation = this.name + '-rxdb-' + schemaVersion + '-' + collectionName;
-        return new PouchDB(
-            pouchLocation,
-            this._adapterObj,
-            pouchSettings
-        );
+        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings = {});
     }
 
     get isLeader() {
@@ -278,7 +249,7 @@ export class RxDatabase {
      * @param  {string}  collectionName
      * @return {Promise}
      */
-    async clearCollection(collectionName) {
+    async removeCollection(collectionName) {
         if (this.collections[collectionName])
             await this.collections[collectionName].destroy();
 
@@ -290,8 +261,8 @@ export class RxDatabase {
 
         // remove documents
         await Promise.all(pouches.map(pouch => pouch.destroy()));
-
     }
+
 
     /**
      * export to json
@@ -350,6 +321,11 @@ export class RxDatabase {
             .map(col => col.destroy());
     }
 
+    async remove() {
+        await this.destroy();
+        await removeDatabase(this.name, this.adapter);
+    }
+
 }
 
 
@@ -402,6 +378,74 @@ export async function create({
     await db.prepare();
 
     return db;
+}
+
+/**
+ * transforms the given adapter into a pouch-compatible object
+ * @return {Object} adapterObject
+ */
+function _adapterObject(adapter) {
+    let adapterObj = {
+        db: adapter
+    };
+    if (typeof adapter === 'string') {
+        adapterObj = {
+            adapter: adapter
+        };
+    }
+    return adapterObj;
+}
+
+function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}) {
+    const pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
+    return new PouchDB(
+        pouchLocation,
+        _adapterObject(adapter),
+        pouchSettings
+    );
+}
+
+function _internalPouchDbs(dbName, adapter) {
+    const ret = {};
+    // create internal collections
+    // - admin-collection
+    ret._adminPouch = _spawnPouchDB(dbName, adapter, '_admin', 0, {
+        auto_compaction: false, // no compaction because this only stores local documents
+        revs_limit: 1
+    });
+    // - collections-collection
+    ret._collectionsPouch = _spawnPouchDB(dbName, adapter, '_collections', 0, {
+        auto_compaction: false, // no compaction because this only stores local documents
+        revs_limit: 1
+    });
+    return ret;
+}
+
+export async function removeDatabase(databaseName, adapter) {
+    const internalPouch = _internalPouchDbs(databaseName, adapter);
+    const collectionsPouch = internalPouch._collectionsPouch;
+    const collectionsData = await collectionsPouch.allDocs({
+        include_docs: true
+    });
+
+    // remove collections
+    Promise.all(
+        collectionsData.rows
+        .map(colDoc => colDoc.id)
+        .map(id => {
+            const split = id.split('-');
+            const name = split[0];
+            const version = parseInt(split[1], 10);
+            const pouch = _spawnPouchDB(databaseName, adapter, name, version);
+            return pouch.destroy();
+        })
+    );
+
+    // remove internals
+    await Promise.all(
+        Object.values(internalPouch)
+        .map(pouch => pouch.destroy())
+    );
 }
 
 export {
