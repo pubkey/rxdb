@@ -20,9 +20,9 @@ if (platform.isNode()) {
     SpawnServer = require('../helper/spawnServer');
     request = require('request-promise');
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
-    try{
-        RxDB.PouchDB.plugin(require('pouchdb-replication'));        
-    }catch(e){}
+    try {
+        RxDB.PouchDB.plugin(require('pouchdb-replication'));
+    } catch (e) {}
 }
 
 describe('Replication.test.js', () => {
@@ -127,9 +127,8 @@ describe('Replication.test.js', () => {
             const obj = schemaObjects.human();
             await c.insert(obj);
             await pw8.promise;
-            await util.promiseWait(10);
 
-            assert.equal(e1.length, 1);
+            await util.waitUntil(() => e1.length == 1);
             assert.equal(e1.length, e2.length);
 
             c.database.destroy();
