@@ -333,7 +333,7 @@ export function sortObject(obj, noArraySort = false) {
     // object
     if (typeof obj === 'object') {
 
-        if(obj instanceof RegExp)
+        if (obj instanceof RegExp)
             return obj;
 
         const out = {};
@@ -354,8 +354,25 @@ export function sortObject(obj, noArraySort = false) {
  * used to JSON.stringify() objects that contain a regex
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
-export function stringifyFilter(key,value) {
+export function stringifyFilter(key, value) {
     if (value instanceof RegExp)
         return value.toString();
     return value;
+}
+
+
+/**
+ * get the correct function-name for pouchdb-replication
+ * @param {object} pouch - instance of pouchdb
+ * @return {function}
+ */
+export function pouchReplicationFunction(pouch, {
+    pull = true,
+    push = true
+}) {
+    if (pull && push) return pouch.sync.bind(pouch);
+    if (!pull && push) return pouch.replicate.to.bind(pouch);
+    if (pull && !push) return pouch.replicate.from.bind(pouch);
+    if (!pull && !push)
+        throw new Error('replication-direction must either be push or pull or both. But not none.');
 }

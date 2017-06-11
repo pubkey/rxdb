@@ -54,92 +54,155 @@ describe('Replication.test.js', () => {
 
 
     describe('sync', () => {
-        it('sync two collections over server', async function() {
-            const serverURL = await SpawnServer.spawn();
-            const c = await humansCollection.create(0);
-            const c2 = await humansCollection.create(0);
+        describe('positive', () => {
+            it('sync two collections over server', async function() {
+                const serverURL = await SpawnServer.spawn();
+                const c = await humansCollection.create(0);
+                const c2 = await humansCollection.create(0);
 
-            const pw8 = util.promiseWaitResolveable(1000);
-            c.pouch.sync(serverURL, {
-                live: true
-            }).on('error', function(err) {
-                console.log('error:');
-                console.log(JSON.stringify(err));
-                throw new Error(err);
-            });
-            c2.pouch.sync(serverURL, {
-                live: true
-            });
-            let count = 0;
-            c2.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }).on('change', function(change) {
-                count++;
-                if (count == 2) pw8.resolve();
-            });
+                const pw8 = util.promiseWaitResolveable(1000);
+                c.pouch.sync(serverURL, {
+                    live: true
+                }).on('error', function(err) {
+                    console.log('error:');
+                    console.log(JSON.stringify(err));
+                    throw new Error(err);
+                });
+                c2.pouch.sync(serverURL, {
+                    live: true
+                });
+                let count = 0;
+                c2.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }).on('change', function(change) {
+                    count++;
+                    if (count == 2) pw8.resolve();
+                });
 
-            const obj = schemaObjects.human();
-            await c.insert(obj);
-            await pw8.promise;
+                const obj = schemaObjects.human();
+                await c.insert(obj);
+                await pw8.promise;
 
-            await util.waitUntil(async() => {
+                await util.waitUntil(async() => {
+                    const docs = await c2.find().exec();
+                    return docs.length == 1;
+                });
                 const docs = await c2.find().exec();
-                return docs.length == 1;
+                assert.equal(docs.length, 1);
+
+                assert.equal(docs[0].get('firstName'), obj.firstName);
+
+                c.database.destroy();
+                c2.database.destroy();
             });
-            const docs = await c2.find().exec();
-            assert.equal(docs.length, 1);
+            it('Observable.fromEvent should fire on sync-change', async() => {
+                const serverURL = await SpawnServer.spawn();
+                const c = await humansCollection.create(0, null, false);
+                const c2 = await humansCollection.create(0, null, false);
+                const pw8 = util.promiseWaitResolveable(1400);
+                c.pouch.sync(serverURL, {
+                    live: true
+                });
+                c2.pouch.sync(serverURL, {
+                    live: true
+                });
 
-            assert.equal(docs[0].get('firstName'), obj.firstName);
+                let e1 = [];
+                const pouch$ = util.Rx.Observable
+                    .fromEvent(c.pouch.changes({
+                        since: 'now',
+                        live: true,
+                        include_docs: true
+                    }), 'change')
+                    .filter(e => !e.id.startsWith('_'))
+                    .subscribe(e => e1.push(e));
+                let e2 = [];
+                const pouch2$ = util.Rx.Observable
+                    .fromEvent(c2.pouch.changes({
+                        since: 'now',
+                        live: true,
+                        include_docs: true
+                    }), 'change')
+                    .filter(e => !e.id.startsWith('_'))
+                    .subscribe(e => e2.push(e));
 
-            c.database.destroy();
-            c2.database.destroy();
+                const obj = schemaObjects.human();
+                await c.insert(obj);
+                await pw8.promise;
+
+                await util.waitUntil(() => e1.length == 1);
+                assert.equal(e1.length, e2.length);
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
         });
+    });
+    describe('sync-directions', () => {
+        describe('positive', () => {
+            it('push-only-sync', async() => {
+                const serverURL = await SpawnServer.spawn();
+                const c = await humansCollection.create(10, null, false);
+                const c2 = await humansCollection.create(10, null, false);
 
-        it('Observable.fromEvent should fire on sync-change', async() => {
-            const serverURL = await SpawnServer.spawn();
-            const c = await humansCollection.create(0);
-            const c2 = await humansCollection.create(0);
-            const pw8 = util.promiseWaitResolveable(1400);
-            c.pouch.sync(serverURL, {
-                live: true
+                c.sync(c2.pouch, true, {
+                    pull: false,
+                    push: true
+                });
+
+                await util.waitUntil(async() => {
+                    const docs = await c2.find().exec();
+                    return docs.length == 20;
+                });
+                await util.promiseWait(10);
+                const nonSyncedDocs = await c.find().exec();
+                assert.equal(nonSyncedDocs.length, 10);
+
+                c.database.destroy();
+                c2.database.destroy();
             });
-            c2.pouch.sync(serverURL, {
-                live: true
+            it('pull-only-sync', async() => {
+                const serverURL = await SpawnServer.spawn();
+                const c = await humansCollection.create(10, null, false);
+                const c2 = await humansCollection.create(10, null, false);
+
+                c.sync(c2.pouch, true, {
+                    pull: true,
+                    push: false
+                });
+
+                await util.waitUntil(async() => {
+                    const docs = await c.find().exec();
+                    return docs.length == 20;
+                });
+                await util.promiseWait(10);
+                const nonSyncedDocs = await c2.find().exec();
+                assert.equal(nonSyncedDocs.length, 10);
+
+                c.database.destroy();
+                c2.database.destroy();
             });
-
-            let e1 = [];
-            const pouch$ = util.Rx.Observable
-                .fromEvent(c.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
-                }), 'change')
-                .filter(e => !e.id.startsWith('_'))
-                .subscribe(e => e1.push(e));
-            let e2 = [];
-            const pouch2$ = util.Rx.Observable
-                .fromEvent(c2.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
-                }), 'change')
-                .filter(e => !e.id.startsWith('_'))
-                .subscribe(e => e2.push(e));
-
-            const obj = schemaObjects.human();
-            await c.insert(obj);
-            await pw8.promise;
-
-            await util.waitUntil(() => e1.length == 1);
-            assert.equal(e1.length, e2.length);
-
-            c.database.destroy();
-            c2.database.destroy();
         });
-
-
+        describe('negative', () => {
+            it('should not allow non-way-sync', async() => {
+                const serverURL = await SpawnServer.spawn();
+                const c = await humansCollection.create(0);
+                await util.assertThrowsAsync(
+                    () => c.sync(
+                        serverURL,
+                        undefined, {
+                            push: false,
+                            pull: false
+                        }
+                    ),
+                    Error,
+                    'direction'
+                );
+                c.database.destroy();
+            });
+        });
     });
 
     describe('events', () => {
@@ -148,12 +211,8 @@ describe('Replication.test.js', () => {
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(serverURL, {
-                    live: true
-                });
-                c2.sync(serverURL, {
-                    live: true
-                });
+                c.sync(serverURL);
+                c2.sync(serverURL);
 
                 const pw8 = util.promiseWaitResolveable(1700);
                 let events = [];
@@ -245,14 +304,7 @@ describe('Replication.test.js', () => {
                 c.database.destroy();
                 c2.database.destroy();
             });
-
-
-            it('E', () => {
-                //                process.exit();
-            });
         });
         describe('negative', () => {});
-
     });
-
 });

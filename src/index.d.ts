@@ -106,6 +106,33 @@ declare class RxDatabase {
     waitForLeadership(): Promise<boolean>;
 }
 
+
+interface RxReplicationState {
+    change$: Observable<any>,
+    paused$: Observable<any>,
+    active$: Observable<any>,
+    denied$: Observable<any>,
+    complete$: Observable<any>,
+    error$: Observable<any>,
+
+    cancel: Function
+}
+
+interface PouchReplicationOptions {
+    live?: boolean,
+    retry?: boolean,
+    filter?: Function,
+    doc_ids?: string[],
+    query_params?: any,
+    view?: any,
+    since?: number,
+    heartbeat?: number,
+    timeout?: number,
+    batch_size?: number,
+    batches_limit?: number,
+    back_off_function?: Function
+}
+
 declare class RxCollection {
     database: RxDatabase;
     name: string;
@@ -143,11 +170,23 @@ declare class RxCollection {
     }>;
     migratePromise(batchSize: number): Promise<any>;
 
+    sync(
+        serverURL: string,
+        alsoIfNotLeader?: boolean,
+        direction?: {
+            push?: boolean,
+            pull?: boolean
+        },
+        // for options see https://pouchdb.com/api.html#replication
+        options?: PouchReplicationOptions
+    ): Promise<any>;
 
-    sync(serverURL: string, alsoIfNotLeader?: boolean): Promise<any>;
     destroy(): Promise<boolean>;
     remove(): Promise<any>;
 }
+
+
+
 
 declare class RxQuery {
     collection: RxCollection;

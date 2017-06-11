@@ -31,8 +31,6 @@ class RxCollection {
         this._pouchSettings = pouchSettings;
         this._methods = methods;
 
-        // contains a weak link to all used RxDocuments of this collection
-        // TODO weak links are a joke!
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
 
@@ -93,7 +91,6 @@ class RxCollection {
         );
     }
 
-
     /**
      * checks if a migration is needed
      * @return {boolean}
@@ -121,7 +118,6 @@ class RxCollection {
         return this._dataMigrator.migratePromise(batchSize);
     }
 
-
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
      */
@@ -138,7 +134,6 @@ class RxCollection {
         const decrypted = this._crypter.decrypt(decompressed);
         return decrypted;
     }
-
 
     /**
      * [overwrite description]
@@ -182,7 +177,6 @@ class RxCollection {
         return docs;
     }
 
-
     /**
      * assigns the ORM-methods to the RxDocument
      * @param {RxDocument} doc
@@ -217,7 +211,6 @@ class RxCollection {
     async _createDocuments(docsJSON) {
         return Promise.all(docsJSON.map(json => this._createDocument(json)));
     }
-
 
     /**
      * returns observable
@@ -424,33 +417,44 @@ class RxCollection {
         this.synced = true;
     }
 
-
     /**
-     * because it will have document-conflicts when 2 syncs write to the same storage
+     * sync with another database
      */
-    async sync(serverURL, alsoIfNotLeader = false) {
-
+    async sync(
+        serverURL,
+        alsoIfNotLeader = false,
+        direction = {
+            pull: true,
+            push: true
+        },
+        options = {
+            live: true,
+            retry: true
+        }
+    ) {
+        options = clone(options);
         if (typeof this.pouch.sync !== 'function') {
             throw new Error(
                 `RxCollection.sync needs 'pouchdb-replication'. Code:
                  RxDB.plugin(require('pouchdb-replication')); `
             );
         }
+        const syncFun = util.pouchReplicationFunction(this.pouch, direction);
 
         if (!alsoIfNotLeader)
             await this.database.waitForLeadership();
 
         this.watchForChanges();
 
-        const sync = this.pouch.sync(serverURL, {
-            live: true,
-            retry: true
-        }).on('error', function(err) {
+        const sync = syncFun(serverURL, options).on('error', function(err) {
             throw new Error(err);
         });
         this.pouchSyncs.push(sync);
         return sync;
     }
+
+
+
 
     /**
      * HOOKS

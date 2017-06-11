@@ -16,13 +16,15 @@ import * as RxDB from '../../dist/lib/index';
 
 const dbLifetime = 1000 * 2; // db.destroy() will be called after this time
 
-export async function create(size = 20, name = 'human') {
+export async function create(size = 20, name = 'human', multiInstance = true) {
+    if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
-        adapter: 'memory'
+        adapter: 'memory',
+        multiInstance
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+
     const collection = await db.collection({
         name,
         schema: schemas.human
