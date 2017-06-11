@@ -83,10 +83,14 @@ describe('Replication.test.js', () => {
             const obj = schemaObjects.human();
             await c.insert(obj);
             await pw8.promise;
-            await util.promiseWait(10);
 
+            await util.waitUntil(async() => {
+                const docs = await c2.find().exec();
+                return docs.length == 1;
+            });
             const docs = await c2.find().exec();
             assert.equal(docs.length, 1);
+
             assert.equal(docs[0].get('firstName'), obj.firstName);
 
             c.database.destroy();
