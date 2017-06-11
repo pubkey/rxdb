@@ -1,32 +1,46 @@
 # Contribution
-RxDB is a very new project and as such relies on **your contribution** to be successful.
 
-## Run the tests
-To make sure that RxDB runs as expected in every environment, it is important that many different developers run the tests.
+We are open to, and grateful for, any contributions made by the community.
 
-- clone this repository
-- ```npm install```
-- ```npm test```
+# Developing
 
-If the tests don't succeed, run node and browser-tests seperat:
+## Requirements
 
-- ```npm run test:node```
-- ```npm run test:browser```
+Before you can start developing, do the following:
 
-Now you can submit a ticket with a description what has gone wrong, or even better, you can fix the issue by yourself.
+1. Make shoud you have install nodejs with version 7 or higher.
+2. Clone the repository `git clone https://github.com/pubkey/rxdb.git`
+3. Install the dependencies `cd rxdb && npm install`
+4. Make sure that the tests work for you `npm run test`
 
-## Extend the example-projects
-Feel free to add and extend the [example-projects](../examples). This is very helpful for finding bugs when combining RxDB with different technologies.
+## Flow
 
-## Check out the pending features
-[Help here](https://github.com/pubkey/rxdb/projects)
+While developing you should run `npm run dev` and leave it open in the console. This will run the unit-tests on every file-change. If you have a slow device, you can also manually run `npm run test:node` everytime you want to check if the tests work.
+
+## Adding tests
+
+Before you start creating a bugfix or a feature, you should create a test to reprocue it. Tests are in the `test/unit`-folder. If you don't know where to put your test into, just put it anywhere The maintainer will later move it to the correct position.
+
+## Making a PR
+
+If you make a pull-request, ensure the following:
+
+1. Every feature or bugfix must be commited together with a unit-test which ensures everything works as expected.
+2. Do not commit build-files (anything in the `dist`-folder)
+3. Before you add non-trivial changes, create an issue to discuss if this will be merged and you don't waste your time.
+4. To run the unit and integration-tests, do `npm run test` and ensure everything works as expected
+
+## Getting help
+
+If you need help with your contribution, ask at [gitter](https://gitter.im/pubkey/rxdb).
 
 
-## Optimize the build-size
-The builded javascript-file is very big. You can help by finding the big dependencies and optimizing how they get bundled.
+# Docs
 
-Run ```npm run disc``` to find how big each dependency is.
+The source of the documentation is at the `docs-src`-folder.
+To read the docs locallly, run `npm run docs docs:install && npm run docs:serve` and open [http://localhost:4000/](http://localhost:4000/)
 
-## Add features
-You have a useful feature in mind that RxDB is missing?
-Create an issue to let other people implement it, or even implement it by yourself.
+
+
+
+# Thank you for contributing!
