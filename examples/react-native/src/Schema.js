@@ -1,4 +1,5 @@
 const heroSchema = {
+    'version': 0,
     'title': 'hero schema',
     'description': 'describes a simple hero',
     'type': 'object',
