@@ -7,3 +7,4 @@ docs-src/
 log.txt
 test/
 .transpile_state.json
+.babelrc
