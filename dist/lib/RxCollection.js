@@ -39,27 +39,27 @@ var _createClass3 = _interopRequireDefault(_createClass2);
  * @return {Promise.<RxCollection>} promise with collection
  */
 var create = exports.create = function () {
-    var _ref16 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee15(_ref15) {
-        var database = _ref15.database,
-            name = _ref15.name,
-            schema = _ref15.schema,
-            _ref15$pouchSettings = _ref15.pouchSettings,
-            pouchSettings = _ref15$pouchSettings === undefined ? {} : _ref15$pouchSettings,
-            _ref15$migrationStrat = _ref15.migrationStrategies,
-            migrationStrategies = _ref15$migrationStrat === undefined ? {} : _ref15$migrationStrat,
-            _ref15$autoMigrate = _ref15.autoMigrate,
-            autoMigrate = _ref15$autoMigrate === undefined ? true : _ref15$autoMigrate,
-            _ref15$statics = _ref15.statics,
-            statics = _ref15$statics === undefined ? {} : _ref15$statics,
-            _ref15$methods = _ref15.methods,
-            methods = _ref15$methods === undefined ? {} : _ref15$methods;
+    var _ref17 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee16(_ref16) {
+        var database = _ref16.database,
+            name = _ref16.name,
+            schema = _ref16.schema,
+            _ref16$pouchSettings = _ref16.pouchSettings,
+            pouchSettings = _ref16$pouchSettings === undefined ? {} : _ref16$pouchSettings,
+            _ref16$migrationStrat = _ref16.migrationStrategies,
+            migrationStrategies = _ref16$migrationStrat === undefined ? {} : _ref16$migrationStrat,
+            _ref16$autoMigrate = _ref16.autoMigrate,
+            autoMigrate = _ref16$autoMigrate === undefined ? true : _ref16$autoMigrate,
+            _ref16$statics = _ref16.statics,
+            statics = _ref16$statics === undefined ? {} : _ref16$statics,
+            _ref16$methods = _ref16.methods,
+            methods = _ref16$methods === undefined ? {} : _ref16$methods;
         var collection;
-        return _regenerator2['default'].wrap(function _callee15$(_context15) {
+        return _regenerator2['default'].wrap(function _callee16$(_context16) {
             while (1) {
-                switch (_context15.prev = _context15.next) {
+                switch (_context16.prev = _context16.next) {
                     case 0:
                         if (!(!schema instanceof _RxSchema.RxSchema)) {
-                            _context15.next = 2;
+                            _context16.next = 2;
                             break;
                         }
 
@@ -67,7 +67,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(!database instanceof _RxDatabase.RxDatabase)) {
-                            _context15.next = 4;
+                            _context16.next = 4;
                             break;
                         }
 
@@ -75,7 +75,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof autoMigrate !== 'boolean')) {
-                            _context15.next = 6;
+                            _context16.next = 6;
                             break;
                         }
 
@@ -96,7 +96,7 @@ var create = exports.create = function () {
                         });
 
                         collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
-                        _context15.next = 14;
+                        _context16.next = 14;
                         return collection.prepare();
 
                     case 14:
@@ -111,26 +111,26 @@ var create = exports.create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context15.next = 18;
+                            _context16.next = 18;
                             break;
                         }
 
-                        _context15.next = 18;
+                        _context16.next = 18;
                         return collection.migratePromise();
 
                     case 18:
-                        return _context15.abrupt('return', collection);
+                        return _context16.abrupt('return', collection);
 
                     case 19:
                     case 'end':
-                        return _context15.stop();
+                        return _context16.stop();
                 }
             }
-        }, _callee15, this);
+        }, _callee16, this);
     }));
 
-    return function create(_x25) {
-        return _ref16.apply(this, arguments);
+    return function create(_x27) {
+        return _ref17.apply(this, arguments);
     };
 }();
 
@@ -216,8 +216,6 @@ var RxCollection = function () {
         this._pouchSettings = pouchSettings;
         this._methods = methods;
 
-        // contains a weak link to all used RxDocuments of this collection
-        // TODO weak links are a joke!
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
 
@@ -999,7 +997,7 @@ var RxCollection = function () {
         }
 
         /**
-         * because it will have document-conflicts when 2 syncs write to the same storage
+         * sync with another database
          */
 
     }, {
@@ -1007,7 +1005,16 @@ var RxCollection = function () {
         value: function () {
             var _ref12 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee12(serverURL) {
                 var alsoIfNotLeader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-                var sync;
+                var direction = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {
+                    pull: true,
+                    push: true
+                };
+                var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
+                    live: true,
+                    retry: true
+                };
+                var query = arguments[4];
+                var syncFun, sync;
                 return _regenerator2['default'].wrap(function _callee12$(_context12) {
                     while (1) {
                         switch (_context12.prev = _context12.next) {
@@ -1020,29 +1027,32 @@ var RxCollection = function () {
                                 throw new Error('RxCollection.sync needs \'pouchdb-replication\'. Code:\n                 RxDB.plugin(require(\'pouchdb-replication\')); ');
 
                             case 2:
+
+                                options = (0, _clone2['default'])(options);
+                                syncFun = util.pouchReplicationFunction(this.pouch, direction);
+
+                                if (query) options.selector = query.keyCompress().selector;
+
                                 if (alsoIfNotLeader) {
-                                    _context12.next = 5;
+                                    _context12.next = 8;
                                     break;
                                 }
 
-                                _context12.next = 5;
+                                _context12.next = 8;
                                 return this.database.waitForLeadership();
 
-                            case 5:
+                            case 8:
 
                                 this.watchForChanges();
 
-                                sync = this.pouch.sync(serverURL, {
-                                    live: true,
-                                    retry: true
-                                }).on('error', function (err) {
+                                sync = syncFun(serverURL, options).on('error', function (err) {
                                     throw new Error(err);
                                 });
 
                                 this.pouchSyncs.push(sync);
                                 return _context12.abrupt('return', sync);
 
-                            case 9:
+                            case 12:
                             case 'end':
                                 return _context12.stop();
                         }
@@ -1050,7 +1060,7 @@ var RxCollection = function () {
                 }, _callee12, this);
             }));
 
-            function sync(_x20) {
+            function sync(_x22) {
                 return _ref12.apply(this, arguments);
             }
 
@@ -1142,7 +1152,7 @@ var RxCollection = function () {
                 }, _callee13, this);
             }));
 
-            function _runHooks(_x22, _x23, _x24) {
+            function _runHooks(_x24, _x25, _x26) {
                 return _ref13.apply(this, arguments);
             }
 
@@ -1179,6 +1189,37 @@ var RxCollection = function () {
             }
 
             return destroy;
+        }()
+
+        /**
+         * remove all data
+         * @return {Promise}
+         */
+
+    }, {
+        key: 'remove',
+        value: function () {
+            var _ref15 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee15() {
+                return _regenerator2['default'].wrap(function _callee15$(_context15) {
+                    while (1) {
+                        switch (_context15.prev = _context15.next) {
+                            case 0:
+                                _context15.next = 2;
+                                return this.database.removeCollection(this.name);
+
+                            case 2:
+                            case 'end':
+                                return _context15.stop();
+                        }
+                    }
+                }, _callee15, this);
+            }));
+
+            function remove() {
+                return _ref15.apply(this, arguments);
+            }
+
+            return remove;
         }()
     }, {
         key: '$',

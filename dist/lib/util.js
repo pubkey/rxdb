@@ -184,6 +184,7 @@ exports.validateCouchDBString = validateCouchDBString;
 exports.randomCouchString = randomCouchString;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
+exports.pouchReplicationFunction = pouchReplicationFunction;
 
 var _clone = require('clone');
 
@@ -468,4 +469,21 @@ function sortObject(obj) {
 function stringifyFilter(key, value) {
     if (value instanceof RegExp) return value.toString();
     return value;
+}
+
+/**
+ * get the correct function-name for pouchdb-replication
+ * @param {object} pouch - instance of pouchdb
+ * @return {function}
+ */
+function pouchReplicationFunction(pouch, _ref4) {
+    var _ref4$pull = _ref4.pull,
+        pull = _ref4$pull === undefined ? true : _ref4$pull,
+        _ref4$push = _ref4.push,
+        push = _ref4$push === undefined ? true : _ref4$push;
+
+    if (pull && push) return pouch.sync.bind(pouch);
+    if (!pull && push) return pouch.replicate.to.bind(pouch);
+    if (pull && !push) return pouch.replicate.from.bind(pouch);
+    if (!pull && !push) throw new Error('replication-direction must either be push or pull or both. But not none.');
 }

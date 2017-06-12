@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.create = undefined;
+exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.removeDatabase = exports.create = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
@@ -43,6 +43,35 @@ var create = exports.create = function () {
 
     return function create(_x) {
         return _ref.apply(this, arguments);
+    };
+}();
+
+/**
+ * removes the database and all its known data
+ * @param  {string} databaseName
+ * @param  {Object} adapter
+ * @return {Promise}
+ */
+
+
+var removeDatabase = exports.removeDatabase = function () {
+    var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(databaseName, adapter) {
+        return _regenerator2['default'].wrap(function _callee2$(_context2) {
+            while (1) {
+                switch (_context2.prev = _context2.next) {
+                    case 0:
+                        return _context2.abrupt('return', RxDatabase.removeDatabase(databaseName, adapter));
+
+                    case 1:
+                    case 'end':
+                        return _context2.stop();
+                }
+            }
+        }, _callee2, this);
+    }));
+
+    return function removeDatabase(_x2, _x3) {
+        return _ref2.apply(this, arguments);
     };
 }();
 

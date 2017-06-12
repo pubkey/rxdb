@@ -35,6 +35,33 @@ export var create = function () {
     };
 }();
 
+/**
+ * removes the database and all its known data
+ * @param  {string} databaseName
+ * @param  {Object} adapter
+ * @return {Promise}
+ */
+export var removeDatabase = function () {
+    var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2(databaseName, adapter) {
+        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+            while (1) {
+                switch (_context2.prev = _context2.next) {
+                    case 0:
+                        return _context2.abrupt('return', RxDatabase.removeDatabase(databaseName, adapter));
+
+                    case 1:
+                    case 'end':
+                        return _context2.stop();
+                }
+            }
+        }, _callee2, this);
+    }));
+
+    return function removeDatabase(_x2, _x3) {
+        return _ref2.apply(this, arguments);
+    };
+}();
+
 export function plugin(mod) {
     if (typeof mod === 'object' && mod['default']) mod = mod['default'];
     PouchDB.plugin(mod);
