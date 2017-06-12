@@ -59,9 +59,9 @@ export default class App extends React.Component {
 
         testRxJS();
 
-        RxDB.create('heroesReactDataBase1', 'asyncstorage', 'myLongAndStupidPassword', true).then((db) => {
+        RxDB.create({name: 'heroesreactdatabase1', adapter: 'asyncstorage', password: 'myLongAndStupidPassword', multiInstance: true}).then((db) => {
             window.db = db;
-            return db.collection('heroes', schema);
+            return db.collection({name: 'heroes', schema});
         }).then(col => {
             console.log('created collection:');
             this.col = col;
