@@ -9,6 +9,9 @@ Features:
   - Added options for `RxCollection.sync()`: direction and pouchdb-replication-settings [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
   - Added query-param for `RxCollection.sync()` to allow selector-based replication [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
 
+Other:
+  - Added .babelrc to .npmignore
+
 ## 4.1.0 (June 7, 2017)
 
 Features:
