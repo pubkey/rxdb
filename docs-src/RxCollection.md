@@ -111,8 +111,8 @@ myCollection.importDump(json)
 ### sync()
 To replicate the collection with another server, use this function. It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replication.html) but also adds event-handles to make sure that change-events will be recognized.
 ```js
-mycollection.sync(
-    'http://localhost:10102/db/', // serverUrl
+myCollection.sync(
+    'http://localhost:10102/db/', // serverUrl or any pouchdb-instance. You can also use myOtherCollection.pouch
     false,                        // alsoIfNotLeader if true, this starts even if instance is not the elected leader (default:false)
     {                             // direction (optional) to specify sync-directions
         pull: true,
@@ -121,7 +121,8 @@ mycollection.sync(
     {                             // sync-options (optional) from https://pouchdb.com/api.html#replication
         live: true,
         retry: true
-    }
+    },
+    myCollection.find().where('age').gt(18) // query (optional) only documents that match that query will be synchronised
 );
 ```
 

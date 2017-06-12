@@ -178,7 +178,8 @@ declare class RxCollection {
             pull?: boolean
         },
         // for options see https://pouchdb.com/api.html#replication
-        options?: PouchReplicationOptions
+        options?: PouchReplicationOptions,
+        query?: RxQuery
     ): Promise<any>;
 
     destroy(): Promise<boolean>;

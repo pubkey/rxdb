@@ -143,7 +143,6 @@ describe('Replication.test.js', () => {
     describe('sync-directions', () => {
         describe('positive', () => {
             it('push-only-sync', async() => {
-                const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
 
@@ -164,7 +163,6 @@ describe('Replication.test.js', () => {
                 c2.database.destroy();
             });
             it('pull-only-sync', async() => {
-                const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
 
@@ -187,11 +185,11 @@ describe('Replication.test.js', () => {
         });
         describe('negative', () => {
             it('should not allow non-way-sync', async() => {
-                const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0);
+                const c2 = await humansCollection.create(10, null, false);
                 await util.assertThrowsAsync(
                     () => c.sync(
-                        serverURL,
+                        c2.pouch,
                         undefined, {
                             push: false,
                             pull: false
@@ -201,6 +199,33 @@ describe('Replication.test.js', () => {
                     'direction'
                 );
                 c.database.destroy();
+            });
+        });
+    });
+    describe('query-based sync', () => {
+        describe('positive', () => {
+            it('should only sync documents that match the query', async() => {
+                const c = await humansCollection.create(0, null, false);
+                const c2 = await humansCollection.create(10, null, false);
+                const query = c.find().where('firstName').eq('foobar');
+
+                const matchingDoc = schemaObjects.human();
+                matchingDoc.firstName = 'foobar';
+                await c2.insert(matchingDoc);
+
+                c.sync(c2.pouch, true, undefined, undefined, query);
+
+                await util.waitUntil(async() => {
+                    const docs = await c.find().exec();
+                    return docs.length == 1;
+                });
+                await util.promiseWait(10);
+                const docs = await c.find().exec();
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0].firstName, 'foobar');
+
+                c.database.destroy();
+                c2.database.destroy();
             });
         });
     });

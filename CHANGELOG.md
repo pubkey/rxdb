@@ -7,6 +7,7 @@ Features:
   - Added `RxCollection.remove()` [docs](https://pubkey.github.io/rxdb/RxCollection.html#clear)
   - Added `RxDatabase.remove()` [docs](https://pubkey.github.io/rxdb/RxDatabase.html#remove)
   - Added options for `RxCollection.sync()`: direction and pouchdb-replication-settings [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
+  - Added query-param for `RxCollection.sync()` to allow selector-based replication [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
 
 ## 4.1.0 (June 7, 2017)
 

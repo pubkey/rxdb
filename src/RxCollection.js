@@ -430,16 +430,19 @@ class RxCollection {
         options = {
             live: true,
             retry: true
-        }
+        },
+        query
     ) {
-        options = clone(options);
         if (typeof this.pouch.sync !== 'function') {
             throw new Error(
                 `RxCollection.sync needs 'pouchdb-replication'. Code:
                  RxDB.plugin(require('pouchdb-replication')); `
             );
         }
+
+        options = clone(options);
         const syncFun = util.pouchReplicationFunction(this.pouch, direction);
+        if(query) options.selector = query.keyCompress().selector;
 
         if (!alsoIfNotLeader)
             await this.database.waitForLeadership();
