@@ -233,11 +233,13 @@ describe('Replication.test.js', () => {
     describe('events', () => {
         describe('positive', () => {
             it('collection: should get an event when a doc syncs', async() => {
-                const serverURL = await SpawnServer.spawn();
+                const syncC = await humansCollection.create(0);
+                const syncPouch = syncC.pouch;
+
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(serverURL);
-                c2.sync(serverURL);
+                c.sync(syncPouch);
+                c2.sync(syncPouch);
 
                 const pw8 = util.promiseWaitResolveable(1700);
                 let events = [];
@@ -252,20 +254,19 @@ describe('Replication.test.js', () => {
                 await util.waitUntil(() => events.length == 1);
                 assert.equal(events[0].constructor.name, 'RxChangeEvent');
 
+                syncC.database.destroy();
                 c.database.destroy();
                 c2.database.destroy();
             });
 
             it('query: should re-find when a docs syncs', async() => {
-                const serverURL = await SpawnServer.spawn();
+                const syncC = await humansCollection.create(0);
+                const syncPouch = syncC.pouch;
+
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(serverURL, {
-                    live: true
-                });
-                c2.sync(serverURL, {
-                    live: true
-                });
+                c.sync(syncPouch);
+                c2.sync(syncPouch);
 
                 const pw8 = util.promiseWaitResolveable(10000);
                 const results = [];
@@ -283,19 +284,18 @@ describe('Replication.test.js', () => {
 
                 assert.equal(results.length, 2);
 
+                syncC.database.destroy();
                 c.database.destroy();
                 c2.database.destroy();
             });
             it('document: should change field when doc saves', async() => {
-                const serverURL = await SpawnServer.spawn();
+                const syncC = await humansCollection.create(0);
+                const syncPouch = syncC.pouch;
+
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(serverURL, {
-                    live: true
-                });
-                c2.sync(serverURL, {
-                    live: true
-                });
+                c.sync(syncPouch);
+                c2.sync(syncPouch);
 
                 // insert and w8 for sync
                 let pw8 = util.promiseWaitResolveable(1400);
@@ -326,6 +326,7 @@ describe('Replication.test.js', () => {
                 await pw8.promise;
                 assert.equal(lastValue, 'foobar');
 
+                syncC.database.destroy();
                 c.database.destroy();
                 c2.database.destroy();
             });
