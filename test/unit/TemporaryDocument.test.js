@@ -33,6 +33,13 @@ describe('TemporaryDocument.test.js', () => {
             assert.equal(newDoc.firstName, 'foobar');
             c.database.destroy();
         });
+        it('should be possible to set the primary', async()=>{
+            const c = await humansCollection.createPrimary(0);
+            const newDoc = await c.newDocument();
+            newDoc.passportId = 'foobar';
+            assert.equal(newDoc.passportId, 'foobar');
+            c.database.destroy();
+        });
     });
     describe('.save()', () => {
         describe('positive', () => {

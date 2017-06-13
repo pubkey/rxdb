@@ -233,7 +233,7 @@ class RxDocument {
     set(objPath, value) {
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.set(): objPath must be a string');
-        if (objPath == this.getPrimaryPath()) {
+        if (!this._isTemporary && objPath == this.getPrimaryPath()) {
             throw new Error(
                 `RxDocument.set(): primary-key (${this.getPrimaryPath()})
                 cannot be modified`);
