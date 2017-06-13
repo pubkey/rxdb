@@ -31,6 +31,7 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 exports.create = create;
 exports.createAr = createAr;
 exports.properties = properties;
+exports.isInstanceOf = isInstanceOf;
 
 var _clone = require('clone');
 
@@ -65,6 +66,9 @@ var RxDocument = function () {
         (0, _classCallCheck3['default'])(this, RxDocument);
 
         this.collection = collection;
+
+        // if true, this is a temporary document
+        this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new util.Rx.BehaviorSubject((0, _clone2['default'])(jsonData));
@@ -338,7 +342,7 @@ var RxDocument = function () {
         key: 'set',
         value: function set(objPath, value) {
             if (typeof objPath !== 'string') throw new TypeError('RxDocument.set(): objPath must be a string');
-            if (objPath == this.getPrimaryPath()) {
+            if (!this._isTemporary && objPath == this.getPrimaryPath()) {
                 throw new Error('RxDocument.set(): primary-key (' + this.getPrimaryPath() + ')\n                cannot be modified');
             }
             // check if equal
@@ -353,7 +357,7 @@ var RxDocument = function () {
             }
 
             // check schema of changed field
-            this.collection.schema.validate(value, objPath);
+            if (!this._isTemporary) this.collection.schema.validate(value, objPath);
 
             _objectPath2['default'].set(this._data, objPath, value);
 
@@ -509,53 +513,61 @@ var RxDocument = function () {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
-                                if (!this._deleted$.getValue()) {
+                                if (!this._isTemporary) {
                                     _context5.next = 2;
+                                    break;
+                                }
+
+                                return _context5.abrupt('return', this._saveTemporary());
+
+                            case 2:
+                                if (!this._deleted$.getValue()) {
+                                    _context5.next = 4;
                                     break;
                                 }
 
                                 throw new Error('RxDocument.save(): cant save deleted document');
 
-                            case 2:
+                            case 4:
                                 if (!(0, _deepEqual2['default'])(this._data, this._dataSync$.getValue())) {
-                                    _context5.next = 5;
+                                    _context5.next = 7;
                                     break;
                                 }
 
                                 this._synced$.next(true);
                                 return _context5.abrupt('return', false);
 
-                            case 5:
-                                _context5.next = 7;
+                            case 7:
+                                _context5.next = 9;
                                 return this.collection._runHooks('pre', 'save', this);
 
-                            case 7:
+                            case 9:
                                 this.collection.schema.validate(this._data);
 
-                                _context5.next = 10;
+                                _context5.next = 12;
                                 return this.collection._pouchPut((0, _clone2['default'])(this._data));
 
-                            case 10:
+                            case 12:
                                 ret = _context5.sent;
 
                                 if (ret.ok) {
-                                    _context5.next = 13;
+                                    _context5.next = 15;
                                     break;
                                 }
 
                                 throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
 
-                            case 13:
+                            case 15:
                                 emitValue = (0, _clone2['default'])(this._data);
 
                                 emitValue._rev = ret.rev;
 
                                 this._data = emitValue;
 
-                                _context5.next = 18;
+                                _context5.next = 20;
                                 return this.collection._runHooks('post', 'save', this);
 
-                            case 18:
+                            case 20:
 
                                 // event
                                 this._synced$.next(true);
@@ -566,7 +578,7 @@ var RxDocument = function () {
                                 this.$emit(changeEvent);
                                 return _context5.abrupt('return', true);
 
-                            case 23:
+                            case 25:
                             case 'end':
                                 return _context5.stop();
                         }
@@ -580,44 +592,35 @@ var RxDocument = function () {
 
             return save;
         }()
+
+        /**
+         * does the same as .save() but for temporary documents
+         * Saving a temporary doc is basically the same as RxCollection.insert()
+         * @return {Promise}
+         */
+
     }, {
-        key: 'remove',
+        key: '_saveTemporary',
         value: function () {
             var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
                             case 0:
-                                if (!this.deleted) {
-                                    _context6.next = 2;
-                                    break;
-                                }
-
-                                throw new Error('RxDocument.remove(): Document is already deleted');
+                                _context6.next = 2;
+                                return this.collection.insert(this);
 
                             case 2:
-                                _context6.next = 4;
-                                return this.collection._runHooks('pre', 'remove', this);
+                                this._isTemporary = false;
+                                this.collection._docCache.set(this.getPrimary(), this);
 
-                            case 4:
-                                _context6.next = 6;
-                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+                                // internal events
+                                this._synced$.next(true);
+                                this._dataSync$.next((0, _clone2['default'])(this._data));
 
-                            case 6:
+                                return _context6.abrupt('return', true);
 
-                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
-
-                                _context6.next = 9;
-                                return this.collection._runHooks('post', 'remove', this);
-
-                            case 9:
-                                _context6.next = 11;
-                                return util.promiseWait(0);
-
-                            case 11:
-                                return _context6.abrupt('return');
-
-                            case 12:
+                            case 7:
                             case 'end':
                                 return _context6.stop();
                         }
@@ -625,8 +628,59 @@ var RxDocument = function () {
                 }, _callee6, this);
             }));
 
-            function remove() {
+            function _saveTemporary() {
                 return _ref6.apply(this, arguments);
+            }
+
+            return _saveTemporary;
+        }()
+    }, {
+        key: 'remove',
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7() {
+                return _regenerator2['default'].wrap(function _callee7$(_context7) {
+                    while (1) {
+                        switch (_context7.prev = _context7.next) {
+                            case 0:
+                                if (!this.deleted) {
+                                    _context7.next = 2;
+                                    break;
+                                }
+
+                                throw new Error('RxDocument.remove(): Document is already deleted');
+
+                            case 2:
+                                _context7.next = 4;
+                                return this.collection._runHooks('pre', 'remove', this);
+
+                            case 4:
+                                _context7.next = 6;
+                                return this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+
+                            case 6:
+
+                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
+
+                                _context7.next = 9;
+                                return this.collection._runHooks('post', 'remove', this);
+
+                            case 9:
+                                _context7.next = 11;
+                                return util.promiseWait(0);
+
+                            case 11:
+                                return _context7.abrupt('return');
+
+                            case 12:
+                            case 'end':
+                                return _context7.stop();
+                        }
+                    }
+                }, _callee7, this);
+            }));
+
+            function remove() {
+                return _ref7.apply(this, arguments);
             }
 
             return remove;
@@ -664,7 +718,7 @@ var RxDocument = function () {
 }();
 
 function create(collection, jsonData) {
-    if (jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
+    if (jsonData[collection.schema.primaryPath] && jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
 
     var doc = new RxDocument(collection, jsonData);
     doc.prepare();
@@ -693,4 +747,8 @@ function properties() {
         _properties = [].concat((0, _toConsumableArray3['default'])(ownProperties), (0, _toConsumableArray3['default'])(prototypeProperties), reserved);
     }
     return _properties;
+}
+
+function isInstanceOf(obj) {
+    return obj instanceof RxDocument;
 }

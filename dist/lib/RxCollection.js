@@ -39,27 +39,27 @@ var _createClass3 = _interopRequireDefault(_createClass2);
  * @return {Promise.<RxCollection>} promise with collection
  */
 var create = exports.create = function () {
-    var _ref17 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee16(_ref16) {
-        var database = _ref16.database,
-            name = _ref16.name,
-            schema = _ref16.schema,
-            _ref16$pouchSettings = _ref16.pouchSettings,
-            pouchSettings = _ref16$pouchSettings === undefined ? {} : _ref16$pouchSettings,
-            _ref16$migrationStrat = _ref16.migrationStrategies,
-            migrationStrategies = _ref16$migrationStrat === undefined ? {} : _ref16$migrationStrat,
-            _ref16$autoMigrate = _ref16.autoMigrate,
-            autoMigrate = _ref16$autoMigrate === undefined ? true : _ref16$autoMigrate,
-            _ref16$statics = _ref16.statics,
-            statics = _ref16$statics === undefined ? {} : _ref16$statics,
-            _ref16$methods = _ref16.methods,
-            methods = _ref16$methods === undefined ? {} : _ref16$methods;
+    var _ref18 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee17(_ref17) {
+        var database = _ref17.database,
+            name = _ref17.name,
+            schema = _ref17.schema,
+            _ref17$pouchSettings = _ref17.pouchSettings,
+            pouchSettings = _ref17$pouchSettings === undefined ? {} : _ref17$pouchSettings,
+            _ref17$migrationStrat = _ref17.migrationStrategies,
+            migrationStrategies = _ref17$migrationStrat === undefined ? {} : _ref17$migrationStrat,
+            _ref17$autoMigrate = _ref17.autoMigrate,
+            autoMigrate = _ref17$autoMigrate === undefined ? true : _ref17$autoMigrate,
+            _ref17$statics = _ref17.statics,
+            statics = _ref17$statics === undefined ? {} : _ref17$statics,
+            _ref17$methods = _ref17.methods,
+            methods = _ref17$methods === undefined ? {} : _ref17$methods;
         var collection;
-        return _regenerator2['default'].wrap(function _callee16$(_context16) {
+        return _regenerator2['default'].wrap(function _callee17$(_context17) {
             while (1) {
-                switch (_context16.prev = _context16.next) {
+                switch (_context17.prev = _context17.next) {
                     case 0:
                         if (!(!schema instanceof _RxSchema.RxSchema)) {
-                            _context16.next = 2;
+                            _context17.next = 2;
                             break;
                         }
 
@@ -67,7 +67,7 @@ var create = exports.create = function () {
 
                     case 2:
                         if (!(!database instanceof _RxDatabase.RxDatabase)) {
-                            _context16.next = 4;
+                            _context17.next = 4;
                             break;
                         }
 
@@ -75,7 +75,7 @@ var create = exports.create = function () {
 
                     case 4:
                         if (!(typeof autoMigrate !== 'boolean')) {
-                            _context16.next = 6;
+                            _context17.next = 6;
                             break;
                         }
 
@@ -96,7 +96,7 @@ var create = exports.create = function () {
                         });
 
                         collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
-                        _context16.next = 14;
+                        _context17.next = 14;
                         return collection.prepare();
 
                     case 14:
@@ -111,30 +111,31 @@ var create = exports.create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context16.next = 18;
+                            _context17.next = 18;
                             break;
                         }
 
-                        _context16.next = 18;
+                        _context17.next = 18;
                         return collection.migratePromise();
 
                     case 18:
-                        return _context16.abrupt('return', collection);
+                        return _context17.abrupt('return', collection);
 
                     case 19:
                     case 'end':
-                        return _context16.stop();
+                        return _context17.stop();
                 }
             }
-        }, _callee16, this);
+        }, _callee17, this);
     }));
 
-    return function create(_x27) {
-        return _ref17.apply(this, arguments);
+    return function create(_x28) {
+        return _ref18.apply(this, arguments);
     };
 }();
 
 exports.properties = properties;
+exports.isInstanceOf = isInstanceOf;
 
 var _PouchDB = require('./PouchDB');
 
@@ -560,7 +561,10 @@ var RxCollection = function () {
                 });
             });
         }
+
         /**
+         * create a RxDocument-instance from the jsonData
+         * @param {Object} json documentData
          * @return {Promise<RxDocument>}
          */
 
@@ -654,58 +658,97 @@ var RxCollection = function () {
         }
 
         /**
-         * @param {Object} json data
+         * @param {Object|RxDocument} json data or RxDocument if temporary
          * @param {RxDocument} doc which was created
+         * @return {Promise<RxDocument>}
          */
 
     }, {
         key: 'insert',
         value: function () {
             var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(json) {
-                var insertResult, newDoc, emitEvent;
+                var tempDoc, insertResult, newDoc, emitEvent;
                 return _regenerator2['default'].wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
+
+                                // inserting a temporary-document
+                                tempDoc = null;
+
+                                if (!RxDocument.isInstanceOf(json)) {
+                                    _context8.next = 6;
+                                    break;
+                                }
+
+                                tempDoc = json;
+
+                                if (json._isTemporary) {
+                                    _context8.next = 5;
+                                    break;
+                                }
+
+                                throw new Error('You cannot insert an existing document');
+
+                            case 5:
+                                json = json.toJSON();
+
+                            case 6:
+
                                 json = (0, _clone2['default'])(json);
 
                                 if (!json._id) {
-                                    _context8.next = 3;
+                                    _context8.next = 9;
                                     break;
                                 }
 
                                 throw new Error('do not provide ._id, it will be generated');
 
-                            case 3:
+                            case 9:
 
                                 // fill _id
                                 if (this.schema.primaryPath == '_id' && !json._id) json._id = util.generate_id();
 
-                                _context8.next = 6;
+                                _context8.next = 12;
                                 return this._runHooks('pre', 'insert', json);
 
-                            case 6:
+                            case 12:
 
                                 this.schema.validate(json);
 
-                                _context8.next = 9;
+                                _context8.next = 15;
                                 return this._pouchPut(json);
 
-                            case 9:
+                            case 15:
                                 insertResult = _context8.sent;
 
 
                                 json[this.schema.primaryPath] = insertResult.id;
                                 json._rev = insertResult.rev;
-                                _context8.next = 14;
+
+                                newDoc = tempDoc;
+
+                                if (!tempDoc) {
+                                    _context8.next = 23;
+                                    break;
+                                }
+
+                                tempDoc._data = json;
+                                _context8.next = 26;
+                                break;
+
+                            case 23:
+                                _context8.next = 25;
                                 return this._createDocument(json);
 
-                            case 14:
+                            case 25:
                                 newDoc = _context8.sent;
-                                _context8.next = 17;
+
+                            case 26:
+                                _context8.next = 28;
                                 return this._runHooks('post', 'insert', newDoc);
 
-                            case 17:
+                            case 28:
 
                                 // event
                                 emitEvent = RxChangeEvent.create('INSERT', this.database, this, newDoc, json);
@@ -714,7 +757,7 @@ var RxCollection = function () {
 
                                 return _context8.abrupt('return', newDoc);
 
-                            case 20:
+                            case 31:
                             case 'end':
                                 return _context8.stop();
                         }
@@ -1158,13 +1201,54 @@ var RxCollection = function () {
 
             return _runHooks;
         }()
+
+        /**
+         * creates a temporaryDocument which can be saved later
+         * @param {Object} docData
+         * @return {Promise<RxDocument>}
+         */
+
     }, {
-        key: 'destroy',
+        key: 'newDocument',
         value: function () {
             var _ref14 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee14() {
+                var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                var doc;
                 return _regenerator2['default'].wrap(function _callee14$(_context14) {
                     while (1) {
                         switch (_context14.prev = _context14.next) {
+                            case 0:
+                                doc = RxDocument.create(this, docData);
+
+                                doc._isTemporary = true;
+                                this._assignMethodsToDocument(doc);
+                                _context14.next = 5;
+                                return this._runHooks('post', 'create', doc);
+
+                            case 5:
+                                return _context14.abrupt('return', doc);
+
+                            case 6:
+                            case 'end':
+                                return _context14.stop();
+                        }
+                    }
+                }, _callee14, this);
+            }));
+
+            function newDocument() {
+                return _ref14.apply(this, arguments);
+            }
+
+            return newDocument;
+        }()
+    }, {
+        key: 'destroy',
+        value: function () {
+            var _ref15 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee15() {
+                return _regenerator2['default'].wrap(function _callee15$(_context15) {
+                    while (1) {
+                        switch (_context15.prev = _context15.next) {
                             case 0:
                                 this._subs.forEach(function (sub) {
                                     return sub.unsubscribe();
@@ -1178,14 +1262,14 @@ var RxCollection = function () {
 
                             case 5:
                             case 'end':
-                                return _context14.stop();
+                                return _context15.stop();
                         }
                     }
-                }, _callee14, this);
+                }, _callee15, this);
             }));
 
             function destroy() {
-                return _ref14.apply(this, arguments);
+                return _ref15.apply(this, arguments);
             }
 
             return destroy;
@@ -1199,24 +1283,24 @@ var RxCollection = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref15 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee15() {
-                return _regenerator2['default'].wrap(function _callee15$(_context15) {
+            var _ref16 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee16() {
+                return _regenerator2['default'].wrap(function _callee16$(_context16) {
                     while (1) {
-                        switch (_context15.prev = _context15.next) {
+                        switch (_context16.prev = _context16.next) {
                             case 0:
-                                _context15.next = 2;
+                                _context16.next = 2;
                                 return this.database.removeCollection(this.name);
 
                             case 2:
                             case 'end':
-                                return _context15.stop();
+                                return _context16.stop();
                         }
                     }
-                }, _callee15, this);
+                }, _callee16, this);
             }));
 
             function remove() {
-                return _ref15.apply(this, arguments);
+                return _ref16.apply(this, arguments);
             }
 
             return remove;
@@ -1295,4 +1379,6 @@ var checkORMmethdods = function checkORMmethdods(statics) {
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
     });
-};
+};function isInstanceOf(obj) {
+    return obj instanceof RxCollection;
+}

@@ -93,7 +93,7 @@ var KeyCompressor = function () {
             var reverseTable = this.reverseTable;
 
             // non-object
-            if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(obj)) !== 'object') return obj;
+            if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(obj)) !== 'object' || obj === null) return obj;
 
             // array
             if (Array.isArray(obj)) return obj.map(function (item) {
