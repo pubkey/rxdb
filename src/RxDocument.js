@@ -10,6 +10,9 @@ class RxDocument {
     constructor(collection, jsonData) {
         this.collection = collection;
 
+        // if true, this is a temporary document
+        this._isTemporary = false;
+
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new util.Rx.BehaviorSubject(clone(jsonData));
 
@@ -250,7 +253,8 @@ class RxDocument {
         }
 
         // check schema of changed field
-        this.collection.schema.validate(value, objPath);
+        if (!this._isTemporary)
+            this.collection.schema.validate(value, objPath);
 
         objectPath.set(this._data, objPath, value);
 
@@ -270,10 +274,8 @@ class RxDocument {
                 // which causes problems with "readonly" fields
                 if (!deepEqual(this._data[previousPropName], newDoc[previousPropName]))
                     this._data[previousPropName] = newDoc[previousPropName];
-
             } else
                 delete this._data[previousPropName];
-
         });
         delete newDoc._rev;
         delete newDoc._id;
@@ -293,7 +295,7 @@ class RxDocument {
         return retPromise;
     }
     async _runAtomicUpdates() {
-        if(this.__runAtomicUpdates_running) return;
+        if (this.__runAtomicUpdates_running) return;
         else this.__runAtomicUpdates_running = true;
 
         if (this._atomicUpdates.length === 0) return;
@@ -311,6 +313,8 @@ class RxDocument {
      * @return {boolean} false if nothing to save
      */
     async save() {
+        if (this._isTemporary) return this._saveTemporary();
+
         if (this._deleted$.getValue())
             throw new Error('RxDocument.save(): cant save deleted document');
 
@@ -350,6 +354,23 @@ class RxDocument {
         return true;
     }
 
+    /**
+     * does the same as .save() but for temporary documents
+     * Saving a temporary doc is basically the same as RxCollection.insert()
+     * @return {Promise}
+     */
+    async _saveTemporary() {
+        await this.collection.insert(this);
+        this._isTemporary = false;
+        this.collection._docCache.set(this.getPrimary(), this);
+
+        // internal events
+        this._synced$.next(true);
+        this._dataSync$.next(clone(this._data));
+
+        return true;
+    }
+
     async remove() {
         if (this.deleted)
             throw new Error('RxDocument.remove(): Document is already deleted');
@@ -375,8 +396,10 @@ class RxDocument {
 }
 
 export function create(collection, jsonData) {
-    if (jsonData[collection.schema.primaryPath].startsWith('_design'))
-        return null;
+    if (
+        jsonData[collection.schema.primaryPath] &&
+        jsonData[collection.schema.primaryPath].startsWith('_design')
+    ) return null;
 
     const doc = new RxDocument(collection, jsonData);
     doc.prepare();
@@ -403,4 +426,8 @@ export function properties() {
         _properties = [...ownProperties, ...prototypeProperties, ...reserved];
     }
     return _properties;
+}
+
+export function isInstanceOf(obj) {
+    return obj instanceof RxDocument;
 }

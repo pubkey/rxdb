@@ -9,6 +9,7 @@ module.exports = [
     '../test_tmp/unit/RxDatabase.test.js',
     '../test_tmp/unit/RxCollection.test.js',
     '../test_tmp/unit/RxDocument.test.js',
+    '../test_tmp/unit/TemporaryDocument.test.js',
     '../test_tmp/unit/ChangeEventBuffer.test.js',
     '../test_tmp/unit/RxQuery.test.js',
     '../test_tmp/unit/QueryChangeDetector.test.js',

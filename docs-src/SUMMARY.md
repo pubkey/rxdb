@@ -33,6 +33,7 @@
     * [Functions](./RxCollection.md#functions)
         * [$()](./RxCollection.md#observe-)
         * [insert()](./RxCollection.md#insert)
+        * [newDocument()](./RxCollection.md#newDocument)
         * [upsert()](./RxCollection.md#upsert)
         * [find()](./RxCollection.md#find)
         * [findOne()](./RxCollection.md#findone)

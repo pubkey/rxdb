@@ -188,7 +188,10 @@ class RxCollection {
             doc.__defineGetter__(funName, () => fun.bind(doc));
         });
     }
+
     /**
+     * create a RxDocument-instance from the jsonData
+     * @param {Object} json documentData
      * @return {Promise<RxDocument>}
      */
     async _createDocument(json) {
@@ -223,10 +226,21 @@ class RxCollection {
     }
 
     /**
-     * @param {Object} json data
+     * @param {Object|RxDocument} json data or RxDocument if temporary
      * @param {RxDocument} doc which was created
+     * @return {Promise<RxDocument>}
      */
     async insert(json) {
+
+        // inserting a temporary-document
+        let tempDoc = null;
+        if (RxDocument.isInstanceOf(json)) {
+            tempDoc = json;
+            if (!json._isTemporary)
+                throw new Error('You cannot insert an existing document');
+            json = json.toJSON();
+        }
+
         json = clone(json);
 
         if (json._id)
@@ -246,7 +260,10 @@ class RxCollection {
 
         json[this.schema.primaryPath] = insertResult.id;
         json._rev = insertResult.rev;
-        const newDoc = await this._createDocument(json);
+
+        let newDoc = tempDoc;
+        if (tempDoc) tempDoc._data = json;
+        else newDoc = await this._createDocument(json);
 
         await this._runHooks('post', 'insert', newDoc);
 
@@ -442,7 +459,7 @@ class RxCollection {
 
         options = clone(options);
         const syncFun = util.pouchReplicationFunction(this.pouch, direction);
-        if(query) options.selector = query.keyCompress().selector;
+        if (query) options.selector = query.keyCompress().selector;
 
         if (!alsoIfNotLeader)
             await this.database.waitForLeadership();
@@ -502,6 +519,19 @@ class RxCollection {
             hooks.parallel
             .map(hook => hook(doc))
         );
+    }
+
+    /**
+     * creates a temporaryDocument which can be saved later
+     * @param {Object} docData
+     * @return {Promise<RxDocument>}
+     */
+    async newDocument(docData = {}) {
+        const doc = RxDocument.create(this, docData);
+        doc._isTemporary = true;
+        this._assignMethodsToDocument(doc);
+        await this._runHooks('post', 'create', doc);
+        return doc;
     }
 
     async destroy() {
@@ -652,4 +682,8 @@ export async function create({
         await collection.migratePromise();
 
     return collection;
+}
+
+export function isInstanceOf(obj) {
+    return obj instanceof RxCollection;
 }

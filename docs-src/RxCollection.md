@@ -53,6 +53,25 @@ const doc = await myCollection.insert({
 });
 ```
 
+### newDocument()
+Sometimes it can be helpfull to spawn and use documents before saving them into the database.
+This is usefull especially when you want to use the ORM-methods or prefill values from form-data.
+You can create temporary documents by calling `RxCollection.newDocument(initalData)`.
+
+```js
+const tempDoc = await myCollection.newDocument({
+    firstName: 'Bob'
+});
+
+// fill in data later
+tempDoc.lastName = 'Kelso';
+tempDoc.age = 77;
+
+// saving a temporary document will transform it to a standard RxDocument
+await tempDoc.save();
+```
+
+
 ### upsert()
 Insert's the document if it does not exist within the collection, else it will overwrite it. Returns the new or overwritten RxDocument.
 ```js
@@ -62,7 +81,7 @@ const doc = await myCollection.upsert({
 });
 ```
 
-### .find()
+### find()
 To find documents in your collection, use this method.
 This will return a RxQuery-Object with the exec-function.
 
