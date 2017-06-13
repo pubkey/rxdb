@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
 import * as randomInt from 'random-int';
 
@@ -8,35 +8,39 @@ import * as randomInt from 'random-int';
     styles: [String(require('./hero-insert.component.less'))],
     providers: [DatabaseService]
 })
-export class HeroInsertComponent {
+export class HeroInsertComponent implements OnInit {
 
     @ViewChild('input') inputfield;
 
-    name = '';
-    color = '';
+    tempDoc: any;
 
     constructor(
         private databaseService: DatabaseService
     ) { }
 
+    async ngOnInit() {
+        await this.reset();
+    }
 
+    async reset() {
+        const db = await this.databaseService.get();
+        this.tempDoc = await db['hero'].newDocument({
+            name: '',
+            color: '',
+            maxHP: randomInt(100, 1000),
+            hp: 100
+        });
+    }
 
     async submit() {
         console.log('HeroInsertComponent.submit():');
-        if (this.name == '' || this.color == '') return;
 
-        const addDoc = {
-            name: this.name,
-            color: this.color,
-            maxHP: randomInt(100, 1000),
-            hp: 100
-        };
-
-        this.name = '';
-        this.color = '';
-
-        const db = await this.databaseService.get();
-        db['hero'].insert(addDoc);
+        try {
+            await this.tempDoc.save();
+            await this.reset();
+        } catch (e) {
+            alert('Error: Please check console');
+        }
 
         this.inputfield.nativeElement.focus();
     }
