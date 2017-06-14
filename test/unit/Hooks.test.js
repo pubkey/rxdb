@@ -372,28 +372,52 @@ describe('Hooks.test.js', () => {
         });
     });
     describe('postCreate', () => {
-        it('should define a getter', async() => {
-            const db = await RxDatabase.create({
-                name: util.randomCouchString(10),
-                adapter: 'memory',
-                multiInstance: true
-            });
-            const collection = await db.collection({
-                name: 'myhumans',
-                schema: schemas.primaryHuman
-            });
-            collection.postCreate(function(doc) {
-                Object.defineProperty(doc, 'myField', {
-                    get: () => 'foobar',
+        describe('positive', () => {
+            it('should define a getter', async() => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory',
+                    multiInstance: true
                 });
-            }, false);
+                const collection = await db.collection({
+                    name: 'myhumans',
+                    schema: schemas.primaryHuman
+                });
+                collection.postCreate(function(doc) {
+                    Object.defineProperty(doc, 'myField', {
+                        get: () => 'foobar',
+                    });
+                }, false);
 
-            const human = schemaObjects.simpleHuman();
-            await collection.insert(human);
-            const doc = await collection.findOne().exec();
-            assert.equal('foobar', doc.myField);
+                const human = schemaObjects.simpleHuman();
+                await collection.insert(human);
+                const doc = await collection.findOne().exec();
+                assert.equal('foobar', doc.myField);
 
-            db.destroy();
+                db.destroy();
+            });
+        });
+        describe('negative', () => {
+            it('should throw when adding an async-hook', async() => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory',
+                    multiInstance: true
+                });
+                const collection = await db.collection({
+                    name: 'myhumans',
+                    schema: schemas.primaryHuman
+                });
+
+                const hookFun = function(doc) {
+                    Object.defineProperty(doc, 'myField', {
+                        get: () => 'foobar',
+                    });
+                };
+
+                assert.throws(() => collection.postCreate(hookFun, true));
+                db.destroy();
+            });
         });
     });
     describe('issues', () => {

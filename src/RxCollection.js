@@ -489,6 +489,9 @@ class RxCollection {
         if (!HOOKS_KEYS.includes(key))
             throw new Error('hook-name ' + key + 'not known');
 
+        if (when == 'post' && key == 'create' && parallel == true)
+            throw new Error('.postCreate-hooks cannot be async');
+
         const runName = parallel ? 'parallel' : 'series';
 
         this.hooks[key] = this.hooks[key] || {};
@@ -524,7 +527,7 @@ class RxCollection {
     /**
      * does the same as ._runHooks() but with non-async-functions
      */
-    _runHooksSync(when, key, doc){
+    _runHooksSync(when, key, doc) {
         const hooks = this.getHooks(when, key);
         if (!hooks) return;
         hooks.series.forEach(hook => hook(doc));
