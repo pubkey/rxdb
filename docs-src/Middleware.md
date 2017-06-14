@@ -211,7 +211,7 @@ myCollection.postRemove(function(doc){
 ### postCreate
 This hook is called whenever a `RxDocument` is constructed.
 You can use `postCreate` to modify every RxDocument-instance of the collection.
-This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents.
+This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be **asynchronous**.
 
 
 ```js
@@ -219,7 +219,7 @@ myCollection.postCreate(function(doc){
     Object.defineProperty(doc, 'myField', {
         get: () => 'foobar',
     });
-}, true);
+});
 
 const doc = await myCollection.findOne().exec();
 

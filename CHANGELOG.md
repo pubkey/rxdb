@@ -1,6 +1,6 @@
 # Changelog
 
-## (4.X.X) (coming soon)
+## (5.X.X) (coming soon) BREAKING
 
 Features:
   - Added `RxDocument.atomicUpdate()` [docs](https://pubkey.github.io/rxdb/RxDocument.html#atomicUpdate)
@@ -9,6 +9,9 @@ Features:
   - Added options for `RxCollection.sync()`: direction and pouchdb-replication-settings [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
   - Added query-param for `RxCollection.sync()` to allow selector-based replication [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
   - Added TemporaryDocuments `RxCollection.newDocument()` [docs](https://pubkey.github.io/rxdb/RxCollection.html#newDocument)
+
+Breaking:
+  - `postCreate`-hooks can no longer be async.
 
 Other:
   - Added .babelrc to .npmignore

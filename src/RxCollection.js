@@ -203,7 +203,7 @@ class RxCollection {
         const doc = RxDocument.create(this, json);
         this._assignMethodsToDocument(doc);
         this._docCache.set(id, doc);
-        await this._runHooks('post', 'create', doc);
+        this._runHooksSync('post', 'create', doc);
 
         return doc;
     }
@@ -522,15 +522,24 @@ class RxCollection {
     }
 
     /**
+     * does the same as ._runHooks() but with non-async-functions
+     */
+    _runHooksSync(when, key, doc){
+        const hooks = this.getHooks(when, key);
+        if (!hooks) return;
+        hooks.series.forEach(hook => hook(doc));
+    }
+
+    /**
      * creates a temporaryDocument which can be saved later
      * @param {Object} docData
-     * @return {Promise<RxDocument>}
+     * @return {RxDocument}
      */
-    async newDocument(docData = {}) {
+    newDocument(docData = {}) {
         const doc = RxDocument.create(this, docData);
         doc._isTemporary = true;
         this._assignMethodsToDocument(doc);
-        await this._runHooks('post', 'create', doc);
+        this._runHooksSync('post', 'create', doc);
         return doc;
     }
 

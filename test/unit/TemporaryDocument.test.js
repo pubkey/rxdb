@@ -13,12 +13,12 @@ describe('TemporaryDocument.test.js', () => {
     describe('RxCollection.newDocument()', () => {
         it('should create a new document', async() => {
             const c = await humansCollection.create(0);
-            const newDoc = await c.newDocument();
+            const newDoc = c.newDocument();
             c.database.destroy();
         });
         it('should have initial data', async() => {
             const c = await humansCollection.create(0);
-            const newDoc = await c.newDocument({
+            const newDoc = c.newDocument({
                 firstName: 'foobar'
             });
             assert.equal(newDoc.firstName, 'foobar');
@@ -26,7 +26,7 @@ describe('TemporaryDocument.test.js', () => {
         });
         it('should not check the schema on changing values', async() => {
             const c = await humansCollection.create(0);
-            const newDoc = await c.newDocument({
+            const newDoc = c.newDocument({
                 firstName: 'foobar'
             });
             newDoc.lastName = 1337;
@@ -35,7 +35,7 @@ describe('TemporaryDocument.test.js', () => {
         });
         it('should be possible to set the primary', async()=>{
             const c = await humansCollection.createPrimary(0);
-            const newDoc = await c.newDocument();
+            const newDoc = c.newDocument();
             newDoc.passportId = 'foobar';
             assert.equal(newDoc.passportId, 'foobar');
             c.database.destroy();
@@ -45,13 +45,13 @@ describe('TemporaryDocument.test.js', () => {
         describe('positive', () => {
             it('should save the document', async() => {
                 const c = await humansCollection.create(0);
-                const newDoc = await c.newDocument(schemaObjects.human());
+                const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
                 c.database.destroy();
             });
             it('should have cached the new doc', async() => {
                 const c = await humansCollection.create(0);
-                const newDoc = await c.newDocument(schemaObjects.human());
+                const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
                 const sameDoc = await c.findOne().exec();
                 assert.ok(newDoc == sameDoc);
@@ -59,7 +59,7 @@ describe('TemporaryDocument.test.js', () => {
             });
             it('should be able to save again', async() => {
                 const c = await humansCollection.create(0);
-                const newDoc = await c.newDocument(schemaObjects.human());
+                const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
                 newDoc.firstName = 'foobar';
                 await newDoc.save();
@@ -74,7 +74,7 @@ describe('TemporaryDocument.test.js', () => {
                 const c = await humansCollection.create(0);
                 const docData = schemaObjects.human();
                 docData.foo = 'bar';
-                const newDoc = await c.newDocument(docData);
+                const newDoc = c.newDocument(docData);
                 await util.assertThrowsAsync(
                     () => newDoc.save(),
                     Error
@@ -98,7 +98,7 @@ describe('TemporaryDocument.test.js', () => {
                     }
                 }
             });
-            const newDoc = await c.newDocument(schemaObjects.human());
+            const newDoc = c.newDocument(schemaObjects.human());
             assert.equal(newDoc.foobar(), 'test');
             db.destroy();
         });
@@ -106,7 +106,7 @@ describe('TemporaryDocument.test.js', () => {
     describe('reactive', () => {
         it('should be emit the correct values', async() => {
             const c = await humansCollection.create(0);
-            const newDoc = await c.newDocument(schemaObjects.human());
+            const newDoc = c.newDocument(schemaObjects.human());
             await newDoc.save();
             const emitted = [];
             const sub = newDoc.firstName$.subscribe(val => emitted.push(val));

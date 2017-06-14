@@ -59,7 +59,7 @@ This is usefull especially when you want to use the ORM-methods or prefill value
 You can create temporary documents by calling `RxCollection.newDocument(initalData)`.
 
 ```js
-const tempDoc = await myCollection.newDocument({
+const tempDoc = myCollection.newDocument({
     firstName: 'Bob'
 });
 

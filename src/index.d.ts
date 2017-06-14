@@ -140,7 +140,7 @@ declare class RxCollection {
 
     $: Observable<RxChangeEvent>;
     insert(json: any): Promise<RxDocument>;
-    newDocument(): Promise<RxDocument>;
+    newDocument(): RxDocument;
     upsert(json: any): Promise<RxDocument>;
     find(queryObj?: any): RxQuery;
     findOne(queryObj?: any): RxQuery;
@@ -156,7 +156,7 @@ declare class RxCollection {
     postInsert(fun: Function, parallel: boolean): void;
     postSave(fun: Function, parallel: boolean): void;
     postRemove(fun: Function, parallel: boolean): void;
-    postCreate(fun: Function, parallel: boolean): void;
+    postCreate(fun: Function): void;
 
 
     // migration
