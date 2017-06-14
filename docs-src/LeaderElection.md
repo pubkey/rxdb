@@ -36,7 +36,7 @@ db.waitForLeadership()
     setInterval(async () => {
       const temp = await fetch('https://example.com/api/temp/');
       db.temperature.insert({
-          degrees: value,
+          degrees: temp,
           time: new Date().getTime()
       });
     }, 1000 * 10);
