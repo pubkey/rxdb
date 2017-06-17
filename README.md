@@ -17,6 +17,10 @@
 </p>
 
 <p align="center">
+  <b><a href="https://pubkey.github.io/rxdb/">Documentation</a> | <a href="./examples">Code Examples</a> | <a href="https://www.webpackbin.com/bins/-Kl_UJwIRc7wysOY96PZ">Live Demo</a></b>
+</p>
+
+<p align="center">
   <a href="https://gitter.im/pubkey/rxdb">
     <img src="https://camo.githubusercontent.com/55e37350129c6b1e6410f3f985e295a101361439/68747470733a2f2f696d672e736869656c64732e696f2f6769747465722f726f6f6d2f616d61726b2f67756e2e6a732e737667" />
   </a>
@@ -27,7 +31,6 @@
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
   </a>
 -->
-
 </p>
 
 
@@ -403,6 +406,8 @@ As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.c
 ## Getting started
 
 Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or exploring the [example-projects](./examples).
+
+You can test out RxDB in the browser with [WebpackBin](https://www.webpackbin.com/bins/-Kl_UJwIRc7wysOY96PZ).
 
 ## Contribute
 [Check out how you can contribute to this project](./docs-src/Contribute.md).
