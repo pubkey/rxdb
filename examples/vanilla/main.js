@@ -55,7 +55,9 @@ window.RxDB
     })
     .then(function(col) {
         console.log('DatabaseService: sync');
-        col.sync(syncURL + 'hero/');
+        col.sync({
+            remote: syncURL + 'hero/'
+        });
         return col;
     })
     .then(function(col) {

@@ -402,9 +402,12 @@ describe('QueryChangeDetector.test.js', () => {
             if (!platform.isNode()) return;
             const serverURL = await SpawnServer.spawn();
             const col = await humansCollection.createPrimary(5);
-            col.sync(serverURL, {
-                live: true
-            }); 
+            col.sync({
+                remote: serverURL,
+                options: {
+                    live: true
+                }
+            });
 
             const results = [];
             const q = col.find().sort('passportId');

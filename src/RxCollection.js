@@ -12,6 +12,8 @@ import * as Crypter from './Crypter';
 import * as DocCache from './DocCache';
 import * as QueryCache from './QueryCache';
 import * as ChangeEventBuffer from './ChangeEventBuffer';
+import * as RxReplicationState from './RxReplicationState';
+
 import {
     RxSchema
 } from './RxSchema';
@@ -38,7 +40,7 @@ class RxCollection {
         this.synced = false;
         this.hooks = {};
         this._subs = [];
-        this.pouchSyncs = [];
+        this._repStates = [];
         this.pouch = null; // this is needed to preserve this name
 
         // set HOOKS-functions dynamically
@@ -386,6 +388,11 @@ class RxCollection {
         return Promise.all(importFns);
     }
 
+    /**
+     * waits for external changes to the database
+     * and ensures they are emitted to the internal RxChangeEvent-Stream
+     * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
+     */
     watchForChanges() {
         if (!this.synced) {
             /**
@@ -434,12 +441,16 @@ class RxCollection {
         this.synced = true;
     }
 
+    createRxReplicationState() {
+        return RxReplicationState.create(this);
+    }
+
     /**
      * sync with another database
      */
-    async sync(
-        serverURL,
-        alsoIfNotLeader = false,
+    sync({
+        remote,
+        waitForLeadership = true,
         direction = {
             pull: true,
             push: true
@@ -449,7 +460,8 @@ class RxCollection {
             retry: true
         },
         query
-    ) {
+    }) {
+        options = clone(options);
         if (typeof this.pouch.sync !== 'function') {
             throw new Error(
                 `RxCollection.sync needs 'pouchdb-replication'. Code:
@@ -457,23 +469,30 @@ class RxCollection {
             );
         }
 
-        options = clone(options);
+        // if remote is RxCollection, get internal pouchdb
+        if (isInstanceOf(remote))
+            remote = remote.pouch;
+
         const syncFun = util.pouchReplicationFunction(this.pouch, direction);
         if (query) options.selector = query.keyCompress().selector;
 
-        if (!alsoIfNotLeader)
-            await this.database.waitForLeadership();
+        const repState = RxReplicationState.create(this);
 
-        this.watchForChanges();
+        // run internal so .sync() does not have to be async
+        (async() => {
+            if (waitForLeadership)
+                await this.database.waitForLeadership();
+            else // ensure next-tick
+                await util.promiseWait(0);
 
-        const sync = syncFun(serverURL, options).on('error', function(err) {
-            throw new Error(err);
-        });
-        this.pouchSyncs.push(sync);
-        return sync;
+            const pouchSync = syncFun(remote, options);
+            this.watchForChanges();
+            repState.setPouchEventEmitter(pouchSync);
+            this._repStates.push(repState);
+        })();
+
+        return repState;
     }
-
-
 
 
     /**
@@ -550,7 +569,7 @@ class RxCollection {
         this._subs.forEach(sub => sub.unsubscribe());
         this._changeEventBuffer && this._changeEventBuffer.destroy();
         this._queryCache.destroy();
-        this.pouchSyncs.forEach(sync => sync.cancel());
+        this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
     }
 

@@ -55,4 +55,4 @@ Run the [vanillaJS-example](../examples/vanilla/) where the leading tab is marke
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./QueryChangeDetection.md)
+If you are new to RxDB, you should continue [here](./Replication.md)

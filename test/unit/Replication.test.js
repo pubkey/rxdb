@@ -51,9 +51,7 @@ describe('Replication.test.js', () => {
             assert.equal(typeof json.uuid, 'string');
         });
     });
-
-
-    describe('sync', () => {
+    describe('test pouch-sync to ensure nothing broke', () => {
         describe('positive', () => {
             it('sync two collections over server', async function() {
                 const serverURL = await SpawnServer.spawn();
@@ -133,6 +131,7 @@ describe('Replication.test.js', () => {
                 await pw8.promise;
 
                 await util.waitUntil(() => e1.length == 1);
+                await util.waitUntil(() => e2.length == 1);
                 assert.equal(e1.length, e2.length);
 
                 c.database.destroy();
@@ -146,9 +145,13 @@ describe('Replication.test.js', () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
 
-                c.sync(c2.pouch, true, {
-                    pull: false,
-                    push: true
+                c.sync({
+                    remote: c2.pouch,
+                    waitForLeadership: false,
+                    direction: {
+                        pull: false,
+                        push: true
+                    }
                 });
 
                 await util.waitUntil(async() => {
@@ -166,9 +169,13 @@ describe('Replication.test.js', () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
 
-                c.sync(c2.pouch, true, {
-                    pull: true,
-                    push: false
+                c.sync({
+                    remote: c2.pouch,
+                    waitForLeadership: false,
+                    direction: {
+                        pull: true,
+                        push: false
+                    }
                 });
 
                 await util.waitUntil(async() => {
@@ -188,13 +195,13 @@ describe('Replication.test.js', () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10, null, false);
                 await util.assertThrowsAsync(
-                    () => c.sync(
-                        c2.pouch,
-                        undefined, {
+                    () => c.sync({
+                        remote: c2.pouch,
+                        direction: {
                             push: false,
                             pull: false
                         }
-                    ),
+                    }),
                     Error,
                     'direction'
                 );
@@ -213,7 +220,11 @@ describe('Replication.test.js', () => {
                 matchingDoc.firstName = 'foobar';
                 await c2.insert(matchingDoc);
 
-                c.sync(c2.pouch, true, undefined, undefined, query);
+                c.sync({
+                    remote: c2.pouch,
+                    waitForLeadership: false,
+                    query: query
+                });
 
                 await util.waitUntil(async() => {
                     const docs = await c.find().exec();
@@ -230,6 +241,76 @@ describe('Replication.test.js', () => {
         });
     });
 
+    describe('RxReplicationState', () => {
+        describe('change$', () => {
+            it('should emit change-events', async() => {
+                const c = await humansCollection.create(0);
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: false
+                });
+                const emited = [];
+                repState.change$.subscribe(cE => emited.push(cE));
+                await util.waitUntil(() => emited.length >= 2);
+                await c2.insert(schemaObjects.human());
+                await util.waitUntil(() => emited.length >= 3);
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
+        });
+        describe('active$', () => {
+            it('should be active', async() => {
+                const c = await humansCollection.create();
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: false
+                });
+                const emited = [];
+                repState.active$.subscribe(cE => emited.push(cE));
+                await util.waitUntil(() => emited.pop() == true);
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
+        });
+        describe('complete$', () => {
+            it('should always be false on live-replication', async() => {
+                const c = await humansCollection.create();
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: false
+                });
+                const beFalse = await repState.complete$.first().toPromise();
+                assert.equal(beFalse, false);
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
+        });
+        describe('docs$', () => {
+            it('should emit one event per doc', async() => {
+                const c = await humansCollection.create(0);
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: false
+                });
+                const emitedDocs = [];
+                repState.docs$.subscribe(doc => emitedDocs.push(doc));
+
+                await util.waitUntil(() => emitedDocs.length == 10);
+                emitedDocs.forEach(doc => assert.ok(doc.firstName));
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
+        });
+    });
+
     describe('events', () => {
         describe('positive', () => {
             it('collection: should get an event when a doc syncs', async() => {
@@ -238,8 +319,12 @@ describe('Replication.test.js', () => {
 
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(syncPouch);
-                c2.sync(syncPouch);
+                c.sync({
+                    remote: syncPouch
+                });
+                c2.sync({
+                    remote: syncPouch
+                });
 
                 const pw8 = util.promiseWaitResolveable(1700);
                 let events = [];
@@ -265,8 +350,12 @@ describe('Replication.test.js', () => {
 
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(syncPouch);
-                c2.sync(syncPouch);
+                c.sync({
+                    remote: syncPouch
+                });
+                c2.sync({
+                    remote: syncPouch
+                });
 
                 const pw8 = util.promiseWaitResolveable(10000);
                 const results = [];
@@ -294,8 +383,12 @@ describe('Replication.test.js', () => {
 
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
-                c.sync(syncPouch);
-                c2.sync(syncPouch);
+                c.sync({
+                    remote: syncPouch
+                });
+                c2.sync({
+                    remote: syncPouch
+                });
 
                 // insert and w8 for sync
                 let pw8 = util.promiseWaitResolveable(1400);

@@ -45,7 +45,9 @@ const create = async() => {
             }
         }
     });
-    database.collections.heroes.sync(SYNC_URL + 'hero/');
+    database.collections.heroes.sync({
+        remote: SYNC_URL + 'hero/'
+    });
     return database;
 };
 

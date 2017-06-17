@@ -107,15 +107,16 @@ declare class RxDatabase {
 }
 
 
-interface RxReplicationState {
-    change$: Observable<any>,
-    paused$: Observable<any>,
-    active$: Observable<any>,
-    denied$: Observable<any>,
-    complete$: Observable<any>,
-    error$: Observable<any>,
+declare class RxReplicationState {
+    change$: Observable<any>;
+    docs$: Observable<any>;
+    active$: Observable<any>;
+    complete$: Observable<any>;
+    error$: Observable<any>;
+    cancel(): Promise<any>;
 
-    cancel: Function
+    // if you do a custom sync, put the thing you get back from pouch here
+    setPouchEventEmitter(pouchSyncState: any): void;
 }
 
 interface PouchReplicationOptions {
@@ -131,6 +132,18 @@ interface PouchReplicationOptions {
     batch_size?: number,
     batches_limit?: number,
     back_off_function?: Function
+}
+
+interface SyncOptions {
+    remote: string | any,
+    waitForLeadership?: boolean,
+    direction?: {
+        push?: boolean,
+        pull?: boolean
+    },
+    // for options see https://pouchdb.com/api.html#replication
+    options?: PouchReplicationOptions,
+    query?: RxQuery
 }
 
 declare class RxCollection {
@@ -171,17 +184,9 @@ declare class RxCollection {
     }>;
     migratePromise(batchSize: number): Promise<any>;
 
-    sync(
-        serverURL: string,
-        alsoIfNotLeader?: boolean,
-        direction?: {
-            push?: boolean,
-            pull?: boolean
-        },
-        // for options see https://pouchdb.com/api.html#replication
-        options?: PouchReplicationOptions,
-        query?: RxQuery
-    ): Promise<any>;
+    sync(SyncOptions): RxReplicationState;
+    // if you do custom-sync, use this
+    createRxReplicationState(): RxReplicationState;
 
     destroy(): Promise<boolean>;
     remove(): Promise<any>;

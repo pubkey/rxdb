@@ -1,5 +1,5 @@
 import * as RxDB from '../../../';
-import { RxDatabase, QueryChangeDetector } from '../../../';
+import {RxDatabase, QueryChangeDetector} from '../../../';
 
 QueryChangeDetector.enable();
 QueryChangeDetector.enableDebugging();
@@ -58,7 +58,9 @@ const _create = async function() {
 
     // sync
     console.log('DatabaseService: sync');
-    collections.filter(col => col.sync).map(col => col.name).map(colName => db[colName].sync(syncURL + colName + '/'));
+    collections.filter(col => col.sync).map(col => col.name).map(colName => db[colName].sync({
+        remote: syncURL + colName + '/'
+    }));
 
     return db;
 };

@@ -49,7 +49,9 @@ RxDB
 
         // sync
         console.log('starting sync');
-        database.heroes.sync(syncURL + 'hero/');
+        database.heroes.sync({
+            remote: syncURL + 'hero/'
+        });
 
         col.find()
             .sort({

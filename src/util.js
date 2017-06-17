@@ -23,7 +23,6 @@ import 'rxjs/add/observable/from';
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/observable/defer';
 
-
 import 'rxjs/add/operator/publishReplay';
 import 'rxjs/add/operator/publish';
 import 'rxjs/add/operator/timeout';

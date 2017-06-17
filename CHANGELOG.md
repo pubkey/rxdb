@@ -11,7 +11,8 @@ Features:
   - Added TemporaryDocuments `RxCollection.newDocument()` [docs](https://pubkey.github.io/rxdb/RxCollection.html#newDocument)
 
 Breaking:
-  - `postCreate`-hooks can no longer be async.
+  - `postCreate`-hooks can no longer be async
+  - `RxCollection.sync()` completely changed [docs](https://pubkey.github.io/rxdb/Replication.html)
 
 Other:
   - Added .babelrc to .npmignore

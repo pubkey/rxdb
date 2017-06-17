@@ -71,6 +71,8 @@
 
 * [LeaderElection](./LeaderElection.md)
 
+* [Replication](./Replication.md)
+
 * [QueryChangeDetection](./QueryChangeDetection.md)
 
 * [Contribute](./Contribute.md)

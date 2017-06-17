@@ -43,7 +43,7 @@ export class DatabaseService {
 
   private async _create(): Promise<RxDatabase> {
     console.log('DatabaseService: creating database..');
-    const db = await RxDB.create({name: 'heroesdb', adapter: useAdapter, password: 'myLongAndStupidPassword'});
+    const db = await RxDB.create({ name: 'heroesdb', adapter: useAdapter, password: 'myLongAndStupidPassword' });
     console.log('DatabaseService: created database');
     window['db'] = db; // write to window for debugging
 
@@ -60,9 +60,9 @@ export class DatabaseService {
 
     // hooks
     console.log('DatabaseService: add hooks');
-    db.collections.hero.preInsert(function (docObj) {
+    db.collections.hero.preInsert(function(docObj) {
       const color = docObj.color;
-      return db.collections.hero.findOne({color}).exec()
+      return db.collections.hero.findOne({ color }).exec()
         .then(has => {
           if (has != null) {
             alert('another hero already has the color ' + color);
@@ -77,7 +77,7 @@ export class DatabaseService {
     collections
       .filter(col => col.sync)
       .map(col => col.name)
-      .forEach(colName => db[colName].sync(syncURL + colName + '/'));
+      .forEach(colName => db[colName].sync({ remote: syncURL + colName + '/' }));
 
     return db;
   }
