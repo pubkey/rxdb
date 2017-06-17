@@ -291,5 +291,6 @@ RxQuery as RxQuery,
 RxSchema as RxSchema,
 RxDocument as RxDocument,
 RxChangeEvent as RxChangeEvent,
-PouchDB as PouchDB
+PouchDB as PouchDB,
+CollectionCreator as CollectionCreator
 };
