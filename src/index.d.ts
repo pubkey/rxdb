@@ -67,7 +67,7 @@ interface SchemaJSON {
     disableKeyCompression?: boolean;
 }
 
-interface CollectionCreator {
+interface RxCollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: any;
@@ -93,7 +93,7 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection(args: CollectionCreator): Promise<RxCollection>;
+    collection(args: RxCollectionCreator): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -294,5 +294,5 @@ RxSchema as RxSchema,
 RxDocument as RxDocument,
 RxChangeEvent as RxChangeEvent,
 PouchDB as PouchDB,
-CollectionCreator as RxCollectionConfig,
+RxCollectionCreator as RxCollectionCreator,
 };
