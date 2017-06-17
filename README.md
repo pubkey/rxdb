@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <b><a href="https://pubkey.github.io/rxdb/">Documentation</a> | <a href="./examples">Code Examples</a> | <a href="https://www.webpackbin.com/bins/-KmqQQGp7zNavlnwuU0A">Live Demo</a></b>
+  <b><a href="https://pubkey.github.io/rxdb/">Documentation</a> | <a href="./examples">Code Examples</a> | <a href="https://www.webpackbin.com/bins/-KmqQee22Trs1bs1ZFsW">Live Demo</a></b>
 </p>
 
 <p align="center">
