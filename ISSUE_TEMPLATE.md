@@ -19,6 +19,6 @@ If you have a common question which cannot be solved with a PR, ask it here http
   IF YOU HAVE A BUG, WRITE CODE HERE TO REPRODUCE IT.
   BUGS WONT BE TOUCHED BY THE MAINTAINER UNTIL THERE IS SOME CODE!
   
-  HERE IS A PLAYGROUND TO DEMONSTRATE: https://www.webpackbin.com/bins/-Kl_UJwIRc7wysOY96PZ
+  HERE IS A PLAYGROUND TO DEMONSTRATE: https://www.webpackbin.com/bins/-KmohXU1kyX9xuOSWIO2
   OR WITHOUT ES6, THIS FIDDLE: https://jsfiddle.net/h8n0awfc/
 -->
