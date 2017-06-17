@@ -52,6 +52,8 @@ interface JsonSchema {
         [key: string]: JsonSchema;
     };
     format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
+    ref?: string;
+    primary?: boolean;
 }
 
 interface SchemaJSON {
@@ -292,5 +294,5 @@ RxSchema as RxSchema,
 RxDocument as RxDocument,
 RxChangeEvent as RxChangeEvent,
 PouchDB as PouchDB,
-CollectionCreator as CollectionCreator
+CollectionCreator as RxCollectionConfig,
 };
