@@ -6,3 +6,14 @@ os:
 node_js:
   - "7"
 script: npm install && npm run build && npm run test:node && cd examples/angular2 && npm install && npm run build
+
+jobs:
+  include:
+    - stage: install
+      script: npm install
+    - stage: test
+      script: npm test:node
+    - stage: build
+      script: npm run build
+    - stage: angular2
+      script: (cd ./examples/angular2 && npm install && npm run build)
