@@ -12,7 +12,7 @@ jobs:
     - stage: install
       script: npm install
     - stage: test
-      script: npm test:node
+      script: npm run test:node
     - stage: build
       script: npm run build
     - stage: angular2
