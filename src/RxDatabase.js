@@ -446,6 +446,10 @@ export async function removeDatabase(databaseName, adapter) {
         Object.values(internalPouch)
         .map(pouch => pouch.destroy())
     );
+
+    // remove _socket-pouch
+    const socketPouch = _spawnPouchDB(databaseName, adapter, '_socket', 0);
+    await socketPouch.destroy();
 }
 
 export {
