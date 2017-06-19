@@ -52,6 +52,8 @@ interface JsonSchema {
         [key: string]: JsonSchema;
     };
     format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
+    ref?: string;
+    primary?: boolean;
 }
 
 interface SchemaJSON {
@@ -65,7 +67,7 @@ interface SchemaJSON {
     disableKeyCompression?: boolean;
 }
 
-interface CollectionCreator {
+interface RxCollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: any;
@@ -91,7 +93,7 @@ declare class RxDatabase {
     $: Observable<RxChangeEvent>;
     $pull(): Promise<boolean>;
 
-    collection(args: CollectionCreator): Promise<RxCollection>;
+    collection(args: RxCollectionCreator): Promise<RxCollection>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -291,5 +293,6 @@ RxQuery as RxQuery,
 RxSchema as RxSchema,
 RxDocument as RxDocument,
 RxChangeEvent as RxChangeEvent,
-PouchDB as PouchDB
+PouchDB as PouchDB,
+RxCollectionCreator as RxCollectionCreator,
 };
