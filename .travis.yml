@@ -5,4 +5,4 @@ os:
   - osx
 node_js:
   - "7"
-script: npm install && npm run test:node
+script: npm install && npm run build && npm run test:node && cd examples/angular2 && npm install && npm run build
