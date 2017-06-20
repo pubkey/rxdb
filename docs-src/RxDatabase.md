@@ -75,9 +75,14 @@ emptyDatabase.importDump(json)
   .then(() => console.log('done'));
 ```
 
+### destroy()
+Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
+```js
+myDatabase.destroy();
+```
 
 ### remove()
-Removes the database and all data attached to it.
+Removes the database and all data of it from the storage.
 
 ```js
 await myDatabase.remove();
