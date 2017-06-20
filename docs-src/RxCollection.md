@@ -127,6 +127,12 @@ myCollection.importDump(json)
   .then(() => console.log('done'));
 ```
 
+### destroy()
+Destroys the collections object-instance. This is to free up memory and stop all observings and replications.
+```js
+myDatabase.destroy();
+```
+
 ### remove()
 
 Removes all known data of the collection and its previous versions.
