@@ -1,6 +1,6 @@
 # Changelog
 
-## (5.X.X) (coming soon) BREAKING
+## 5.0.0 (June 20, 2017) BREAKING
 
 Features:
   - Added `RxDocument.atomicUpdate()` [docs](https://pubkey.github.io/rxdb/RxDocument.html#atomicUpdate)
@@ -16,6 +16,7 @@ Breaking:
 
 Other:
   - Added .babelrc to .npmignore
+  - Added build-tests to travis
 
 ## 4.1.0 (June 7, 2017)
 

@@ -322,6 +322,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.3.2.5" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -446,6 +459,19 @@
     
         <li class="chapter " data-level="1.5.2.3" data-path="RxCollection.html">
             
+                <a href="RxCollection.html#newDocument">
+            
+                    
+                    newDocument()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.4" data-path="RxCollection.html">
+            
                 <a href="RxCollection.html#upsert">
             
                     
@@ -457,7 +483,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.4" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.5" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#find">
             
@@ -470,7 +496,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.5" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.6" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#findone">
             
@@ -483,7 +509,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.6" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.7" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#query">
             
@@ -496,7 +522,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.7" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.8" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#dump">
             
@@ -509,7 +535,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.8" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.9" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#importdump">
             
@@ -522,12 +548,25 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.9" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.10" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#sync">
             
                     
                     sync()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.11" data-path="RxCollection.html">
+            
+                <a href="RxCollection.html#clear">
+            
+                    
+                    remove()
             
                 </a>
             
@@ -666,7 +705,20 @@
     
         <li class="chapter " data-level="1.6.3.6" data-path="RxDocument.html">
             
-                <a href="RxDocument.html#observe-path">
+                <a href="RxDocument.html#atomicUpdate">
+            
+                    
+                    atomicUpdate()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.7" data-path="RxDocument.html">
+            
+                <a href="RxDocument.html#observe">
             
                     
                     $()
@@ -804,12 +856,38 @@
             
         </li>
     
-        <li class="chapter " data-level="2.6" data-path="QueryChangeDetection.html">
+        <li class="chapter " data-level="2.6" data-path="Replication.html">
+            
+                <a href="Replication.html">
+            
+                    
+                    Replication
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.7" data-path="QueryChangeDetection.html">
             
                 <a href="QueryChangeDetection.html">
             
                     
                     QueryChangeDetection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.8" data-path="Contribute.html">
+            
+                <a href="Contribute.html">
+            
+                    
+                    Contribute
             
                 </a>
             
@@ -1047,12 +1125,12 @@ myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">f
 <h3 id="postcreate">postCreate</h3>
 <p>This hook is called whenever a <code>RxDocument</code> is constructed.
 You can use <code>postCreate</code> to modify every RxDocument-instance of the collection.
-This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents.</p>
+This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be <strong>asynchronous</strong>.</p>
 <pre><code class="lang-js">myCollection.postCreate(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
     <span class="hljs-built_in">Object</span>.defineProperty(doc, <span class="hljs-string">&apos;myField&apos;</span>, {
         get: () =&gt; <span class="hljs-string">&apos;foobar&apos;</span>,
     });
-}, <span class="hljs-literal">true</span>);
+});
 
 <span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.findOne().exec();
 
@@ -1105,7 +1183,7 @@ This adds a flexible way to add specifiy behavior to every document. You can als
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"2.1","depth":1,"next":{"title":"ORM/DRM","level":"2.2","depth":1,"path":"ORM.md","ref":"./ORM.md","articles":[]},"previous":{"title":"update()","level":"1.7.2","depth":2,"anchor":"#update","path":"RxQuery.md","ref":"./RxQuery.md#update","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"Middleware.md","mtime":"2017-06-03T23:09:35.808Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-07T18:12:27.071Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"2.1","depth":1,"next":{"title":"ORM/DRM","level":"2.2","depth":1,"path":"ORM.md","ref":"./ORM.md","articles":[]},"previous":{"title":"update()","level":"1.7.2","depth":2,"anchor":"#update","path":"RxQuery.md","ref":"./RxQuery.md#update","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"Middleware.md","mtime":"2017-06-14T16:39:02.472Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-20T18:23:17.717Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

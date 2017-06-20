@@ -885,7 +885,7 @@ function _internalPouchDbs(dbName, adapter) {
 
 export var removeDatabase = function () {
     var _ref14 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee13(databaseName, adapter) {
-        var internalPouch, collectionsPouch, collectionsData;
+        var internalPouch, collectionsPouch, collectionsData, socketPouch;
         return _regeneratorRuntime.wrap(function _callee13$(_context13) {
             while (1) {
                 switch (_context13.prev = _context13.next) {
@@ -919,6 +919,13 @@ export var removeDatabase = function () {
                         }));
 
                     case 8:
+
+                        // remove _socket-pouch
+                        socketPouch = _spawnPouchDB2(databaseName, adapter, '_socket', 0);
+                        _context13.next = 11;
+                        return socketPouch.destroy();
+
+                    case 11:
                     case 'end':
                         return _context13.stop();
                 }

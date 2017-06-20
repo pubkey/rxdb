@@ -322,6 +322,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.3.2.5" data-path="RxDatabase.html">
+            
+                <a href="RxDatabase.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -446,6 +459,19 @@
     
         <li class="chapter " data-level="1.5.2.3" data-path="RxCollection.html">
             
+                <a href="RxCollection.html#newDocument">
+            
+                    
+                    newDocument()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.4" data-path="RxCollection.html">
+            
                 <a href="RxCollection.html#upsert">
             
                     
@@ -457,7 +483,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.4" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.5" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#find">
             
@@ -470,7 +496,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.5" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.6" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#findone">
             
@@ -483,7 +509,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.6" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.7" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#query">
             
@@ -496,7 +522,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.7" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.8" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#dump">
             
@@ -509,7 +535,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.8" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.9" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#importdump">
             
@@ -522,12 +548,25 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.9" data-path="RxCollection.html">
+        <li class="chapter " data-level="1.5.2.10" data-path="RxCollection.html">
             
                 <a href="RxCollection.html#sync">
             
                     
                     sync()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.11" data-path="RxCollection.html">
+            
+                <a href="RxCollection.html#clear">
+            
+                    
+                    remove()
             
                 </a>
             
@@ -666,7 +705,20 @@
     
         <li class="chapter " data-level="1.6.3.6" data-path="RxDocument.html">
             
-                <a href="RxDocument.html#observe-path">
+                <a href="RxDocument.html#atomicUpdate">
+            
+                    
+                    atomicUpdate()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.7" data-path="RxDocument.html">
+            
+                <a href="RxDocument.html#observe">
             
                     
                     $()
@@ -804,12 +856,38 @@
             
         </li>
     
-        <li class="chapter " data-level="2.6" data-path="QueryChangeDetection.html">
+        <li class="chapter " data-level="2.6" data-path="Replication.html">
+            
+                <a href="Replication.html">
+            
+                    
+                    Replication
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.7" data-path="QueryChangeDetection.html">
             
                 <a href="QueryChangeDetection.html">
             
                     
                     QueryChangeDetection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.8" data-path="Contribute.html">
+            
+                <a href="Contribute.html">
+            
+                    
+                    Contribute
             
                 </a>
             
@@ -911,6 +989,14 @@ myDatabase.dump(<span class="hljs-literal">true</span>)
 emptyDatabase.importDump(json)
   .then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;done&apos;</span>));
 </code></pre>
+<h3 id="remove">remove()</h3>
+<p>Removes the database and all data attached to it.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> myDatabase.remove();
+<span class="hljs-comment">// database is now gone</span>
+
+<span class="hljs-comment">// NOTICE: You can also remove a database without its instance</span>
+RxDB.removeDatabase(<span class="hljs-string">&apos;mydatabasename&apos;</span>, <span class="hljs-string">&apos;localstorage&apos;</span>);
+</code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="RxSchema.html">here</a></p>
 
@@ -956,7 +1042,7 @@ emptyDatabase.importDump(json)
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.3","depth":1,"next":{"title":"Creation","level":"1.3.1","depth":2,"anchor":"#creation","path":"RxDatabase.md","ref":"./RxDatabase.md#creation","articles":[{"title":"name","level":"1.3.1.1","depth":3,"anchor":"#name","path":"RxDatabase.md","ref":"./RxDatabase.md#name","articles":[]},{"title":"adapter","level":"1.3.1.2","depth":3,"anchor":"#adapter","path":"RxDatabase.md","ref":"./RxDatabase.md#adapter","articles":[]},{"title":"password","level":"1.3.1.3","depth":3,"anchor":"#password-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#password-optional","articles":[]},{"title":"multiInstance","level":"1.3.1.4","depth":3,"anchor":"#multiInstance-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#multiInstance-optional","articles":[]}]},"previous":{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"Install.md","ref":"./Install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"RxDatabase.md","mtime":"2017-05-22T22:24:29.915Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-07T18:12:27.071Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.3","depth":1,"next":{"title":"Creation","level":"1.3.1","depth":2,"anchor":"#creation","path":"RxDatabase.md","ref":"./RxDatabase.md#creation","articles":[{"title":"name","level":"1.3.1.1","depth":3,"anchor":"#name","path":"RxDatabase.md","ref":"./RxDatabase.md#name","articles":[]},{"title":"adapter","level":"1.3.1.2","depth":3,"anchor":"#adapter","path":"RxDatabase.md","ref":"./RxDatabase.md#adapter","articles":[]},{"title":"password","level":"1.3.1.3","depth":3,"anchor":"#password-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#password-optional","articles":[]},{"title":"multiInstance","level":"1.3.1.4","depth":3,"anchor":"#multiInstance-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#multiInstance-optional","articles":[]}]},"previous":{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"Install.md","ref":"./Install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"RxDatabase.md","mtime":"2017-06-12T06:02:08.576Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-20T18:23:17.717Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

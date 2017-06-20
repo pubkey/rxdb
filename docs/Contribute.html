@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxDocument · RxDB - Documentation</title>
+        <title>Contribute · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="RxDocument.html" />
     
-    
-    <link rel="prev" href="RxCollection.html" />
+    <link rel="prev" href="QueryChangeDetection.html" />
     
 
     </head>
@@ -584,7 +582,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.6" data-path="RxDocument.html">
+        <li class="chapter " data-level="1.6" data-path="RxDocument.html">
             
                 <a href="RxDocument.html">
             
@@ -882,7 +880,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.8" data-path="Contribute.html">
+        <li class="chapter active" data-level="2.8" data-path="Contribute.html">
             
                 <a href="Contribute.html">
             
@@ -925,7 +923,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxDocument</a>
+        <a href="." >Contribute</a>
     </h1>
 </div>
 
@@ -940,219 +938,35 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdocument">RxDocument</h1>
-<p>A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table.</p>
-<h2 id="insert">insert</h2>
-<p>To insert a document into a collection, you have to call the collection&apos;s .insert()-function.</p>
-<pre><code class="lang-js">myCollection.insert({
-  name: <span class="hljs-string">&apos;foo&apos;</span>,
-  lastname: <span class="hljs-string">&apos;bar&apos;</span>
-});
-</code></pre>
-<h2 id="find">find</h2>
-<p>To find documents in a collection, you have to call the collection&apos;s .find()-function.</p>
-<pre><code class="lang-js">myCollection.find().exec() <span class="hljs-comment">// &lt;- find all documents</span>
-  .then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
-</code></pre>
-<h2 id="functions">Functions</h2>
-<h3 id="get">get()</h3>
-<p>This will get a single field of the document. If the field is encrypted, it will be automatically decrypted before returning.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">var</span> name = myDocument.get(<span class="hljs-string">&apos;name&apos;</span>); <span class="hljs-comment">// returns the name</span>
-</code></pre>
-<h3 id="proxy-get">proxy-get</h3>
-<p>As RxDocument is wrapped into a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank">Proxy-object</a>, you can also directly access values instead of using the get()-function.</p>
-<pre><code class="lang-js">  <span class="hljs-comment">// Identical to myDocument.get(&apos;name&apos;);</span>
-  <span class="hljs-keyword">var</span> name = myDocument.name;
-  <span class="hljs-comment">// Can also get nested values.</span>
-  <span class="hljs-keyword">var</span> nestedValue = myDocument.whatever.nestedfield;
-</code></pre>
-<h3 id="set">set()</h3>
-<p>To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.</p>
-<pre><code class="lang-js">myDocument.set(<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;foobar&apos;</span>);
-<span class="hljs-built_in">console</span>.log(myDocument.get(<span class="hljs-string">&apos;firstName&apos;</span>)); <span class="hljs-comment">// &lt;- is &apos;foobar&apos;</span>
-</code></pre>
-<h3 id="proxy-set">proxy-set</h3>
-<p>As RxDocument is wrapped into a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank">Proxy-object</a>, you can also directly set values instead of using the set()-function.</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
-</code></pre>
-<h3 id="save">save()</h3>
-<p>This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).</p>
-<pre><code class="lang-js">myDocument.name = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save(); <span class="hljs-comment">// submit the changes to the storage</span>
-</code></pre>
-<h3 id="remove">remove()</h3>
-<p>This removes the document from the collection.</p>
-<pre><code class="lang-js">myDocument.remove();
-</code></pre>
-<h3 id="update">update()</h3>
-<p>Updates the document based on the <a href="https://docs.mongodb.com/manual/reference/operator/update-field/" target="_blank">mongo-update-syntax</a>, based on <a href="https://github.com/lgandecki/modifyjs#implemented" target="_blank">modifyjs</a>.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">await</span> myDocument.update({
-    $inc: {
-        age: <span class="hljs-number">1</span> <span class="hljs-comment">// increases age by 1</span>
-    },
-    $set: {
-        fistName: <span class="hljs-string">&apos;foobar&apos;</span> <span class="hljs-comment">// sets firstName to foobar</span>
-    }
-});
-</code></pre>
-<h3 id="atomicupdate">atomicUpdate()</h3>
-<p>When you run many save-operations on the same RxDocument in a very short timespan, it can happen that you get a <code>409 Conflict</code>-Error.
-This means that you have run a <code>.save()</code> on the document, while the previous save-operation was still running.
-To prevent these types of errors, you can run atomic update-operations.
-<code>atomicUpdate()</code> has a function as argument, which transforms the document and then automatically runs a <code>save()</code>.
-It returns a promise to notify you when the given atomic-update has finished.</p>
-<p>Example to reproduce the 409-error:</p>
-<pre><code class="lang-js">[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>].forEach(nr =&gt; {
-    myDocument.age = nr;
-    myDocument.save();
-});
-<span class="hljs-comment">// throws</span>
-</code></pre>
-<p>Usage of atomicUpdate:</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastPromise;
-[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>].forEach(nr =&gt; {
-    lastPromise = myDocument.atomicUpdate(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-        doc.age = nr;
-    });
-});
-<span class="hljs-keyword">await</span> lastPromise;
-<span class="hljs-built_in">console</span>.dir(myDocument.age); <span class="hljs-comment">// 4</span>
-</code></pre>
-<h3 id="observe-">Observe $</h3>
-<p>Calling this will return an <a href="http://reactivex.io/rxjs/manual/overview.html#observable" target="_blank">rxjs-Observable</a> which emits all change-Events belonging to this document.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get all changeEvents</span>
-myDocument.$()
-  .subscribe(changeEvent =&gt; <span class="hljs-built_in">console</span>.dir(changeEvent));
-</code></pre>
-<h3 id="get">get$()</h3>
-<p>This function returns an observable of the given paths-value.
-The current value of this path will be emitted each time the document changes.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get the life-updating value of &apos;name&apos;</span>
-<span class="hljs-keyword">var</span> isName;
-myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
-  .subscribe(newName =&gt; {
-    isName = newName;
-  });
-
-myDocument.set(<span class="hljs-string">&apos;name&apos;</span>, <span class="hljs-string">&apos;foobar2&apos;</span>);
-<span class="hljs-keyword">await</span> myDocument.save();
-
-<span class="hljs-built_in">console</span>.dir(isName); <span class="hljs-comment">// isName is now &apos;foobar2&apos;</span>
-</code></pre>
-<h3 id="proxy-get">proxy-get$</h3>
-<p>You can directly get value-observables for a fieldName by adding the dollarSign ($) to its name.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// top-level</span>
-<span class="hljs-keyword">var</span> currentName;
-myDocument.firstName$
-  .subscribe(newName =&gt; {
-    currentName = newName;
-  });
-myDocument.firstName = <span class="hljs-string">&apos;foobar2&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-<span class="hljs-built_in">console</span>.dir(currentName); <span class="hljs-comment">// currentName is now &apos;foobar2&apos;</span>
-
-<span class="hljs-comment">// nested</span>
-<span class="hljs-keyword">var</span> currentNestedValue;
-myDocument.whatever.nestedfield$
-  .subscribe(newName =&gt; {
-    currentNestedValue = newName;
-  });
-myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-<span class="hljs-built_in">console</span>.dir(currentNestedValue); <span class="hljs-comment">// currentNestedValue is now &apos;foobar2&apos;</span>
-</code></pre>
-<h3 id="deleted">deleted$</h3>
-<p>Emits a boolean value, depending on whether the RxDocument is deleted or not.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastState = <span class="hljs-literal">null</span>;
-myDocument.deleted$.subscribe(state =&gt; lastState = state);
-
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// false</span>
-
-<span class="hljs-keyword">await</span> myDocument.remove();
-
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<h3 id="get-deleted">get deleted</h3>
-<p>A getter to get the current value of <code>deleted$</code>.</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.deleted);
-<span class="hljs-comment">// false</span>
-
-<span class="hljs-keyword">await</span> myDocument.remove();
-
-<span class="hljs-built_in">console</span>.log(myDocument.deleted);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<h3 id="synced">synced$</h3>
-<p>Emits a boolean value of whether the RxDocument is in the same state as its value stored in the database.
-This is useful to show warnings when two or more users edit a document at the same time.</p>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastState = <span class="hljs-literal">null</span>;
-myDocument.synced$.subscribe(state =&gt; lastState = state);
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
-
-myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<p>Browser tab B</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;barfoo&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-</code></pre>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// false</span>
-</code></pre>
-<details>
-<summary>
-  <b>Example with Angular 2</b>
-</summary>
-
-```html
-<div *ngif="!(hero.synced$ | async)">
-    <h4 id="warning">Warning:</h4>
-    <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
-    <button md-raised-button="" color="primary" (click)="hero.resync()">resync</button>
-</div>
-```
-
-![synced.gif](files/synced.gif)
-</details>
-
-<h3 id="get-synced">get synced</h3>
-<p>A getter to get the current value of <code>synced$</code>.</p>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.synced);
-<span class="hljs-comment">// true</span>
-
-myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-built_in">console</span>.log(myDocument.synced);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<p>Browser tab B</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;barfoo&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-</code></pre>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.synced);
-<span class="hljs-comment">// false</span>
-</code></pre>
-<h3 id="resync">resync()</h3>
-<p>If the RxDocument is not in sync (synced$ fires <code>false</code>), you can run <code>resync()</code> to overwrite own changes with the new state from the database.</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-
-<span class="hljs-comment">// now someone else overwrites firstName with &apos;Alice&apos;</span>
-
-myDocument.resync();
-
-<span class="hljs-built_in">console</span>.log(myDocument.firstName);
-<span class="hljs-comment">// Alice</span>
-</code></pre>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="RxQuery.html">here</a></p>
+                                <h1 id="contribution">Contribution</h1>
+<p>We are open to, and grateful for, any contributions made by the community.</p>
+<h1 id="developing">Developing</h1>
+<h2 id="requirements">Requirements</h2>
+<p>Before you can start developing, do the following:</p>
+<ol>
+<li>Make shoud you have install nodejs with version 7 or higher.</li>
+<li>Clone the repository <code>git clone https://github.com/pubkey/rxdb.git</code></li>
+<li>Install the dependencies <code>cd rxdb &amp;&amp; npm install</code></li>
+<li>Make sure that the tests work for you <code>npm run test</code></li>
+</ol>
+<h2 id="flow">Flow</h2>
+<p>While developing you should run <code>npm run dev</code> and leave it open in the console. This will run the unit-tests on every file-change. If you have a slow device, you can also manually run <code>npm run test:node</code> everytime you want to check if the tests work.</p>
+<h2 id="adding-tests">Adding tests</h2>
+<p>Before you start creating a bugfix or a feature, you should create a test to reprocue it. Tests are in the <code>test/unit</code>-folder. If you don&apos;t know where to put your test into, just put it anywhere The maintainer will later move it to the correct position.</p>
+<h2 id="making-a-pr">Making a PR</h2>
+<p>If you make a pull-request, ensure the following:</p>
+<ol>
+<li>Every feature or bugfix must be commited together with a unit-test which ensures everything works as expected.</li>
+<li>Do not commit build-files (anything in the <code>dist</code>-folder)</li>
+<li>Before you add non-trivial changes, create an issue to discuss if this will be merged and you don&apos;t waste your time.</li>
+<li>To run the unit and integration-tests, do <code>npm run test</code> and ensure everything works as expected</li>
+</ol>
+<h2 id="getting-help">Getting help</h2>
+<p>If you need help with your contribution, ask at <a href="https://gitter.im/pubkey/rxdb" target="_blank">gitter</a>.</p>
+<h1 id="docs">Docs</h1>
+<p>The source of the documentation is at the <code>docs-src</code>-folder.
+To read the docs locallly, run <code>npm run docs docs:install &amp;&amp; npm run docs:serve</code> and open <a href="http://localhost:4000/" target="_blank">http://localhost:4000/</a></p>
+<h1 id="thank-you-for-contributing">Thank you for contributing!</h1>
 
                                 
                                 </section>
@@ -1180,14 +994,10 @@ myDocument.resync();
 
             
                 
-                <a href="RxCollection.html#clear" class="navigation navigation-prev " aria-label="Previous page: remove()">
+                <a href="QueryChangeDetection.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: QueryChangeDetection">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="RxDocument.html#insert" class="navigation navigation-next " aria-label="Next page: Insert">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -1196,7 +1006,7 @@ myDocument.resync();
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"RxDocument.md","ref":"./RxDocument.md#insert","articles":[]},"previous":{"title":"remove()","level":"1.5.2.11","depth":3,"anchor":"#clear","path":"RxCollection.md","ref":"./RxCollection.md#clear","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"RxDocument.md","mtime":"2017-06-12T06:02:08.576Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-20T18:23:17.717Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Contribute","level":"2.8","depth":1,"previous":{"title":"QueryChangeDetection","level":"2.7","depth":1,"path":"QueryChangeDetection.md","ref":"./QueryChangeDetection.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"Contribute.md","mtime":"2017-06-12T06:02:08.576Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-20T18:23:17.717Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

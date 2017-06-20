@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxDocument · RxDB - Documentation</title>
+        <title>Replication · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="RxDocument.html" />
+    <link rel="next" href="QueryChangeDetection.html" />
     
     
-    <link rel="prev" href="RxCollection.html" />
+    <link rel="prev" href="LeaderElection.html" />
     
 
     </head>
@@ -584,7 +584,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.6" data-path="RxDocument.html">
+        <li class="chapter " data-level="1.6" data-path="RxDocument.html">
             
                 <a href="RxDocument.html">
             
@@ -856,7 +856,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.6" data-path="Replication.html">
+        <li class="chapter active" data-level="2.6" data-path="Replication.html">
             
                 <a href="Replication.html">
             
@@ -925,7 +925,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxDocument</a>
+        <a href="." >Replication</a>
     </h1>
 </div>
 
@@ -940,219 +940,61 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdocument">RxDocument</h1>
-<p>A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table.</p>
-<h2 id="insert">insert</h2>
-<p>To insert a document into a collection, you have to call the collection&apos;s .insert()-function.</p>
-<pre><code class="lang-js">myCollection.insert({
-  name: <span class="hljs-string">&apos;foo&apos;</span>,
-  lastname: <span class="hljs-string">&apos;bar&apos;</span>
-});
-</code></pre>
-<h2 id="find">find</h2>
-<p>To find documents in a collection, you have to call the collection&apos;s .find()-function.</p>
-<pre><code class="lang-js">myCollection.find().exec() <span class="hljs-comment">// &lt;- find all documents</span>
-  .then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
-</code></pre>
-<h2 id="functions">Functions</h2>
-<h3 id="get">get()</h3>
-<p>This will get a single field of the document. If the field is encrypted, it will be automatically decrypted before returning.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">var</span> name = myDocument.get(<span class="hljs-string">&apos;name&apos;</span>); <span class="hljs-comment">// returns the name</span>
-</code></pre>
-<h3 id="proxy-get">proxy-get</h3>
-<p>As RxDocument is wrapped into a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank">Proxy-object</a>, you can also directly access values instead of using the get()-function.</p>
-<pre><code class="lang-js">  <span class="hljs-comment">// Identical to myDocument.get(&apos;name&apos;);</span>
-  <span class="hljs-keyword">var</span> name = myDocument.name;
-  <span class="hljs-comment">// Can also get nested values.</span>
-  <span class="hljs-keyword">var</span> nestedValue = myDocument.whatever.nestedfield;
-</code></pre>
-<h3 id="set">set()</h3>
-<p>To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.</p>
-<pre><code class="lang-js">myDocument.set(<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;foobar&apos;</span>);
-<span class="hljs-built_in">console</span>.log(myDocument.get(<span class="hljs-string">&apos;firstName&apos;</span>)); <span class="hljs-comment">// &lt;- is &apos;foobar&apos;</span>
-</code></pre>
-<h3 id="proxy-set">proxy-set</h3>
-<p>As RxDocument is wrapped into a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank">Proxy-object</a>, you can also directly set values instead of using the set()-function.</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
-</code></pre>
-<h3 id="save">save()</h3>
-<p>This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).</p>
-<pre><code class="lang-js">myDocument.name = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save(); <span class="hljs-comment">// submit the changes to the storage</span>
-</code></pre>
-<h3 id="remove">remove()</h3>
-<p>This removes the document from the collection.</p>
-<pre><code class="lang-js">myDocument.remove();
-</code></pre>
-<h3 id="update">update()</h3>
-<p>Updates the document based on the <a href="https://docs.mongodb.com/manual/reference/operator/update-field/" target="_blank">mongo-update-syntax</a>, based on <a href="https://github.com/lgandecki/modifyjs#implemented" target="_blank">modifyjs</a>.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">await</span> myDocument.update({
-    $inc: {
-        age: <span class="hljs-number">1</span> <span class="hljs-comment">// increases age by 1</span>
+                                <h1 id="replication">Replication</h1>
+<p>One of the most powerfull features with CouchDB, PouchDB and RxDB is <strong>sync</strong>.
+You can sync every RxCollection with another RxCollection, a PouchDB-instance or a remote pouch/couch-DB.</p>
+<h2 id="rxcollectionsync">Rx.Collection.sync()</h2>
+<p>To replicate the collection with another instance, use <code>RxCollection.sync()</code>.
+It basically does the same as <a href="https://pouchdb.com/guides/replication.html" target="_blank">pouchdb-sync</a> but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.</p>
+<pre><code class="lang-js">
+<span class="hljs-comment">// you need these plugins to sync</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-replication&apos;</span>)); <span class="hljs-comment">// enable syncing</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>)); <span class="hljs-comment">// enable syncing over http (remote database)</span>
+
+<span class="hljs-keyword">const</span> replicationState = myCollection.sync(
+    remote: <span class="hljs-string">&apos;http://localhost:10102/db/&apos;</span>, <span class="hljs-comment">// remote database. This can be the serverURL, another RxCollection or a PouchDB-instance</span>
+    waitForLeadership: <span class="hljs-literal">true</span>,              <span class="hljs-comment">// (optional) [default=true] to save performance, the sync starts on leader-instance only</span>
+    direction: {                          <span class="hljs-comment">// direction (optional) to specify sync-directions</span>
+        pull: <span class="hljs-literal">true</span>, <span class="hljs-comment">// default=true</span>
+        push: <span class="hljs-literal">true</span>  <span class="hljs-comment">// default=true</span>
     },
-    $set: {
-        fistName: <span class="hljs-string">&apos;foobar&apos;</span> <span class="hljs-comment">// sets firstName to foobar</span>
-    }
-});
+    options: {                             <span class="hljs-comment">// sync-options (optional) from https://pouchdb.com/api.html#replication</span>
+        live: <span class="hljs-literal">true</span>,
+        retry: <span class="hljs-literal">true</span>
+    },
+    query: myCollection.find().where(<span class="hljs-string">&apos;age&apos;</span>).gt(<span class="hljs-number">18</span>) <span class="hljs-comment">// query (optional) only documents that match that query will be synchronised</span>
+);
 </code></pre>
-<h3 id="atomicupdate">atomicUpdate()</h3>
-<p>When you run many save-operations on the same RxDocument in a very short timespan, it can happen that you get a <code>409 Conflict</code>-Error.
-This means that you have run a <code>.save()</code> on the document, while the previous save-operation was still running.
-To prevent these types of errors, you can run atomic update-operations.
-<code>atomicUpdate()</code> has a function as argument, which transforms the document and then automatically runs a <code>save()</code>.
-It returns a promise to notify you when the given atomic-update has finished.</p>
-<p>Example to reproduce the 409-error:</p>
-<pre><code class="lang-js">[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>].forEach(nr =&gt; {
-    myDocument.age = nr;
-    myDocument.save();
-});
-<span class="hljs-comment">// throws</span>
+<h2 id="rxreplicationstate">RxReplicationState</h2>
+<p>The method <code>RxCollection.sync()</code> returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.</p>
+<h3 id="change">change$</h3>
+<p>Emits the change-events everytime some documents get replicated.</p>
+<pre><code class="lang-js">replicationState.change$.subscribe(change =&gt; <span class="hljs-built_in">console</span>.dir(change));
 </code></pre>
-<p>Usage of atomicUpdate:</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastPromise;
-[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>].forEach(nr =&gt; {
-    lastPromise = myDocument.atomicUpdate(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-        doc.age = nr;
-    });
-});
-<span class="hljs-keyword">await</span> lastPromise;
-<span class="hljs-built_in">console</span>.dir(myDocument.age); <span class="hljs-comment">// 4</span>
+<h3 id="docs">docs$</h3>
+<p>Emits each replicated document-data.</p>
+<pre><code class="lang-js">replicationState.docs$.subscribe(docData =&gt; <span class="hljs-built_in">console</span>.dir(docData));
 </code></pre>
-<h3 id="observe-">Observe $</h3>
-<p>Calling this will return an <a href="http://reactivex.io/rxjs/manual/overview.html#observable" target="_blank">rxjs-Observable</a> which emits all change-Events belonging to this document.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get all changeEvents</span>
-myDocument.$()
-  .subscribe(changeEvent =&gt; <span class="hljs-built_in">console</span>.dir(changeEvent));
+<h3 id="active">active$</h3>
+<p>Emits <code>true</code> or <code>false</code> depending if the replication is running. For example if you sync with a remote server and the connection dies, this is <code>false</code> until the connection can be reestablished.</p>
+<pre><code class="lang-js">replicationState.active$.subscribe(active =&gt; <span class="hljs-built_in">console</span>.dir(active));
 </code></pre>
-<h3 id="get">get$()</h3>
-<p>This function returns an observable of the given paths-value.
-The current value of this path will be emitted each time the document changes.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get the life-updating value of &apos;name&apos;</span>
-<span class="hljs-keyword">var</span> isName;
-myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
-  .subscribe(newName =&gt; {
-    isName = newName;
-  });
-
-myDocument.set(<span class="hljs-string">&apos;name&apos;</span>, <span class="hljs-string">&apos;foobar2&apos;</span>);
-<span class="hljs-keyword">await</span> myDocument.save();
-
-<span class="hljs-built_in">console</span>.dir(isName); <span class="hljs-comment">// isName is now &apos;foobar2&apos;</span>
+<h3 id="complete">complete$</h3>
+<p>Emits <code>true</code> or <code>false</code> depending if the replication is completed.
+If you do a <code>live: true</code>-sync (default) the replication never completes.
+Only one-time-replications will complete.</p>
+<pre><code class="lang-js">replicationState.complete$.subscribe(completed =&gt; <span class="hljs-built_in">console</span>.dir(completed));
 </code></pre>
-<h3 id="proxy-get">proxy-get$</h3>
-<p>You can directly get value-observables for a fieldName by adding the dollarSign ($) to its name.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// top-level</span>
-<span class="hljs-keyword">var</span> currentName;
-myDocument.firstName$
-  .subscribe(newName =&gt; {
-    currentName = newName;
-  });
-myDocument.firstName = <span class="hljs-string">&apos;foobar2&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-<span class="hljs-built_in">console</span>.dir(currentName); <span class="hljs-comment">// currentName is now &apos;foobar2&apos;</span>
-
-<span class="hljs-comment">// nested</span>
-<span class="hljs-keyword">var</span> currentNestedValue;
-myDocument.whatever.nestedfield$
-  .subscribe(newName =&gt; {
-    currentNestedValue = newName;
-  });
-myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-<span class="hljs-built_in">console</span>.dir(currentNestedValue); <span class="hljs-comment">// currentNestedValue is now &apos;foobar2&apos;</span>
+<h3 id="error">error$</h3>
+<p>If errors occur during the replication, they will get emited here.</p>
+<pre><code class="lang-js">replicationState.error$.subscribe(error =&gt; <span class="hljs-built_in">console</span>.dir(error));
 </code></pre>
-<h3 id="deleted">deleted$</h3>
-<p>Emits a boolean value, depending on whether the RxDocument is deleted or not.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastState = <span class="hljs-literal">null</span>;
-myDocument.deleted$.subscribe(state =&gt; lastState = state);
-
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// false</span>
-
-<span class="hljs-keyword">await</span> myDocument.remove();
-
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<h3 id="get-deleted">get deleted</h3>
-<p>A getter to get the current value of <code>deleted$</code>.</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.deleted);
-<span class="hljs-comment">// false</span>
-
-<span class="hljs-keyword">await</span> myDocument.remove();
-
-<span class="hljs-built_in">console</span>.log(myDocument.deleted);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<h3 id="synced">synced$</h3>
-<p>Emits a boolean value of whether the RxDocument is in the same state as its value stored in the database.
-This is useful to show warnings when two or more users edit a document at the same time.</p>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastState = <span class="hljs-literal">null</span>;
-myDocument.synced$.subscribe(state =&gt; lastState = state);
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
-
-myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<p>Browser tab B</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;barfoo&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-</code></pre>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// false</span>
-</code></pre>
-<details>
-<summary>
-  <b>Example with Angular 2</b>
-</summary>
-
-```html
-<div *ngif="!(hero.synced$ | async)">
-    <h4 id="warning">Warning:</h4>
-    <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
-    <button md-raised-button="" color="primary" (click)="hero.resync()">resync</button>
-</div>
-```
-
-![synced.gif](files/synced.gif)
-</details>
-
-<h3 id="get-synced">get synced</h3>
-<p>A getter to get the current value of <code>synced$</code>.</p>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.synced);
-<span class="hljs-comment">// true</span>
-
-myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-built_in">console</span>.log(myDocument.synced);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<p>Browser tab B</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;barfoo&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save();
-</code></pre>
-<p>Browser tab A</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.synced);
-<span class="hljs-comment">// false</span>
-</code></pre>
-<h3 id="resync">resync()</h3>
-<p>If the RxDocument is not in sync (synced$ fires <code>false</code>), you can run <code>resync()</code> to overwrite own changes with the new state from the database.</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-
-<span class="hljs-comment">// now someone else overwrites firstName with &apos;Alice&apos;</span>
-
-myDocument.resync();
-
-<span class="hljs-built_in">console</span>.log(myDocument.firstName);
-<span class="hljs-comment">// Alice</span>
+<h3 id="cancel">cancel()</h3>
+<p>Calling this method will cancel the replication.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.cancel(); <span class="hljs-comment">// cancel() is async</span>
 </code></pre>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="RxQuery.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="QueryChangeDetection.html">here</a></p>
 
                                 
                                 </section>
@@ -1180,12 +1022,12 @@ myDocument.resync();
 
             
                 
-                <a href="RxCollection.html#clear" class="navigation navigation-prev " aria-label="Previous page: remove()">
+                <a href="LeaderElection.html" class="navigation navigation-prev " aria-label="Previous page: LeaderElection">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="RxDocument.html#insert" class="navigation navigation-next " aria-label="Next page: Insert">
+                <a href="QueryChangeDetection.html" class="navigation navigation-next " aria-label="Next page: QueryChangeDetection">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1196,7 +1038,7 @@ myDocument.resync();
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"RxDocument.md","ref":"./RxDocument.md#insert","articles":[]},"previous":{"title":"remove()","level":"1.5.2.11","depth":3,"anchor":"#clear","path":"RxCollection.md","ref":"./RxCollection.md#clear","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"RxDocument.md","mtime":"2017-06-12T06:02:08.576Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-20T18:23:17.717Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication","level":"2.6","depth":1,"next":{"title":"QueryChangeDetection","level":"2.7","depth":1,"path":"QueryChangeDetection.md","ref":"./QueryChangeDetection.md","articles":[]},"previous":{"title":"LeaderElection","level":"2.5","depth":1,"path":"LeaderElection.md","ref":"./LeaderElection.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"Replication.md","mtime":"2017-06-17T07:10:08.513Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-06-20T18:23:17.717Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
