@@ -239,6 +239,27 @@ describe('Replication.test.js', () => {
                 c2.database.destroy();
             });
         });
+        describe('negative', () => {
+            it('should not allow queries from other collection', async() => {
+                const c = await humansCollection.create(0, null, false);
+                const c2 = await humansCollection.create(10, null, false);
+                const otherCollection = await humansCollection.create(0, null, false);
+
+                const query = otherCollection.find().where('firstName').eq('foobar');
+                await util.assertThrowsAsync(
+                    () => c.sync({
+                        remote: c2.pouch,
+                        query
+                    }),
+                    Error,
+                    'same'
+                );
+
+                c.database.destroy();
+                c2.database.destroy();
+                otherCollection.database.destroy();
+            });
+        });
     });
 
     describe('RxReplicationState', () => {

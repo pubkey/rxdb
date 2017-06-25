@@ -473,6 +473,9 @@ class RxCollection {
         if (isInstanceOf(remote))
             remote = remote.pouch;
 
+        if (query && this !== query.collection)
+            throw new Error('RxCollection.sync() query must be from the same RxCollection');
+
         const syncFun = util.pouchReplicationFunction(this.pouch, direction);
         if (query) options.selector = query.keyCompress().selector;
 
