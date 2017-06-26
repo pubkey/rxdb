@@ -286,6 +286,12 @@ export const QueryChangeDetector: {
 
 export function plugin(mod: any): void;
 
+export function isRxDatabase(obj: any): boolean;
+export function isRxCollection(obj: any): boolean;
+export function isRxDocument(obj: any): boolean;
+export function isRxQuery(obj: any): boolean;
+export function isRxSchema(obj: any): boolean;
+
 export {
 RxDatabase as RxDatabase,
 RxCollection as RxCollection,

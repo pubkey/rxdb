@@ -1,5 +1,9 @@
 import * as RxDatabase from './RxDatabase';
 import * as RxSchema from './RxSchema';
+import * as RxDocument from './RxDocument';
+import * as RxQuery from './RxQuery';
+import * as RxCollection from './RxCollection';
+
 import * as QueryChangeDetector from './QueryChangeDetector';
 
 import PouchDB from './PouchDB';
@@ -31,9 +35,27 @@ export function plugin(mod) {
     PouchDB.plugin(mod);
 }
 
+export function isRxDatabase(obj) {
+    return RxDatabase.isInstanceOf(obj);
+}
+export function isRxCollection(obj) {
+    return RxCollection.isInstanceOf(obj);
+}
+export function isRxDocument(obj) {
+    return RxDocument.isInstanceOf(obj);
+}
+export function isRxQuery(obj) {
+    return RxQuery.isInstanceOf(obj);
+}
+export function isRxSchema(obj) {
+    return RxSchema.isInstanceOf(obj);
+}
+
+
+
 export {
     RxSchema as RxSchema,
     PouchDB as PouchDB,
     QueryChangeDetector as QueryChangeDetector,
-    RxDatabase as RxDatabase
+    RxDatabase as RxDatabase,
 };

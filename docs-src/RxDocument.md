@@ -276,5 +276,11 @@ console.log(myDocument.firstName);
 // Alice
 ```
 
+### isRxDocument
+Returns true if the given object is an instance of RxDocument. Returns false if not.
+```js
+const is = RxDB.isRxDocument(myObj);
+```
+
 ---------
 If you are new to RxDB, you should continue [here](./RxQuery.md)

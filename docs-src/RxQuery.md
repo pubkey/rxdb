@@ -45,6 +45,11 @@ const results = await queryObjectSort.exec();
 console.dir(results); // result-documents are now sorted
 ```
 
+### isRxQuery
+Returns true if the given object is an instance of RxQuery. Returns false if not.
+```js
+const is = RxDB.isRxQuery(myObj);
+```
 
 ---------
 If you are new to RxDB, you should continue [here](./Middleware.md)

@@ -3,6 +3,7 @@ module.exports = [
     '../test_tmp/unit/util.test.js',
     '../test_tmp/unit/PouchDB-integration.test.js',
     '../test_tmp/unit/RxBroadcastChannel.test.js',
+    '../test_tmp/unit/InstanceOfCheck.test.js',
     '../test_tmp/unit/RxSchema.test.js',
     '../test_tmp/unit/KeyCompression.test.js',
     '../test_tmp/unit/Socket.test.js',

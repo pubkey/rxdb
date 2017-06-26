@@ -452,6 +452,10 @@ export async function removeDatabase(databaseName, adapter) {
     await socketPouch.destroy();
 }
 
+export function isInstanceOf(obj) {
+    return obj instanceof RxDatabase;
+}
+
 export {
     RxSchema as RxSchema
 };

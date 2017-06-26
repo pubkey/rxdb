@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.X.X (coming soon)
+
+Features:
+  - Added instanceOf-checks
+
 ## 5.0.0 (June 20, 2017) BREAKING
 
 Features:

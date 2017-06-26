@@ -143,5 +143,11 @@ await myCollection.remove();
 // collection is no removed and can be re-created
 ```
 
+### isRxCollection
+Returns true if the given object is an instance of RxCollection. Returns false if not.
+```js
+const is = RxDB.isRxCollection(myObj);
+```
+
 ---------
 If you are new to RxDB, you should continue [here](./RxDocument.md)

@@ -92,6 +92,11 @@ await myDatabase.remove();
 RxDB.removeDatabase('mydatabasename', 'localstorage');
 ```
 
+### isRxDatabase
+Returns true if the given object is an instance of RxDatabase. Returns false if not.
+```js
+const is = RxDB.isRxDatabase(myObj);
+```
 
 
 -----------
