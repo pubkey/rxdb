@@ -1,0 +1,46 @@
+<html>
+
+<head>
+    <script src="node_modules/d3/build/d3.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="js.build.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #logo {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-left: 50%;
+            left: -100px;
+            margin-top: 100px;
+            overflow: hidden;
+        }
+
+        #text {
+            position: relative;
+            width: 275px;
+            height: 200px;
+            margin-left: 50%;
+            left: -136px;
+            margin-top: 100px;
+            overflow: hidden;
+            border-style: solid;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="text"></div>
+    <div id="logo"></div>
+</body>
+<script>
+    renderLogo('#logo', false);
+    renderLogo('#text', true);
+</script>
+
+
+</html>

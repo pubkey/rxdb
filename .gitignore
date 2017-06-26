@@ -4,7 +4,6 @@ test_tmp/
 psrqlbn-db/
 coverage/
 core
-docs/files
 log.txt
 package-lock.json
 config.json

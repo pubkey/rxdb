@@ -1,0 +1,53 @@
+<svg
+    width="275"
+    height="200"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:cc="http://creativecommons.org/ns#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+    viewBox="25 25 380 380">
+    <rect x="0" y="112" width="190" height="60" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="28" y="70" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="0" y="84" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="28" y="84" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="42" y="84" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="70" y="84" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="0" y="98" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="14" y="98" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="28" y="98" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="42" y="98" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="70" y="98" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="98" y="98" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(230, 0, 141);"></rect>
+    <rect x="0" y="186" width="190" height="60" shape-rendering="crispEdges" style="fill: rgb(141, 32, 137);"></rect>
+    <rect x="0" y="260" width="190" height="60" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="148" y="348" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="176" y="334" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="148" y="334" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="134" y="334" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="106" y="334" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="176" y="320" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="162" y="320" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="148" y="320" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="134" y="320" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="106" y="320" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <rect x="78" y="320" width="14" height="14" shape-rendering="crispEdges" style="fill: rgb(95, 38, 136);"></rect>
+    <path
+        d="M203.55500 158.42400L230.02000 158.42400Q239.02600 158.42400 243.60800 163.32200Q248.19000 168.22000 248.19000 176.51500Q248.19000 181.57100 245.66200 185.48150Q243.13400 189.39200 238.78900 191.52500Q239.65800 192.23600 240.29000 193.18400Q240.92200 194.13200 241.71200 195.94900L247.55800 209.30000L232.07400 209.30000L226.70200 197.05500Q226.07000 195.63300 225.16150 195.04050Q224.25300 194.44800 222.59400 194.44800L218.40700 194.44800L218.40700 209.30000L203.55500 209.30000L203.55500 158.42400M226.22800 183.07200Q229.46700 183.07200 231.24450 181.37350Q233.02200 179.67500 233.02200 176.51500Q233.02200 169.80000 226.70200 169.80000L218.40700 169.80000L218.40700 183.07200L226.22800 183.07200Z"
+        transform="scale(1,1.1755)"
+        style="fill: rgb(141, 32, 137);"></path>
+    <path
+        d="M266.59700 190.26100L252.69300 171.85400L268.80900 171.85400L274.65500 179.75400L280.58000 171.85400L296.61700 171.85400L282.79200 190.26100L297.24900 209.30000L280.97500 209.30000L274.65500 200.92600L268.33500 209.30000L252.14000 209.30000L266.59700 190.26100Z"
+        transform="scale(1,1.1755)"
+        style="fill: rgb(141, 32, 137);"></path>
+    <path
+        d="M302.77900 158.42400L325.53100 158.42400Q337.69700 158.42400 343.97750 164.54650Q350.25800 170.66900 350.25800 184.17800Q350.25800 197.05500 343.97750 203.17750Q337.69700 209.30000 325.53100 209.30000L302.77900 209.30000L302.77900 158.42400M323.63500 197.92400Q327.58500 197.92400 330.03400 196.77850Q332.48300 195.63300 333.78650 192.67050Q335.09000 189.70800 335.09000 184.17800Q335.09000 178.56900 333.90500 175.44850Q332.72000 172.32800 330.23150 171.06400Q327.74300 169.80000 323.63500 169.80000L317.63100 169.80000L317.63100 197.92400L323.63500 197.92400Z"
+        transform="scale(1,1.1755)"
+        style="fill: rgb(141, 32, 137);"></path>
+    <path
+        d="M355.78800 158.42400L383.75400 158.42400Q391.41700 158.42400 395.48550 162.05800Q399.55400 165.69200 399.55400 172.48600Q399.55400 176.27800 398.13200 179.04300Q396.71000 181.80800 394.26100 183.38800Q397.81600 184.81000 399.59350 187.25900Q401.37100 189.70800 401.37100 194.21100Q401.37100 201.40000 396.94700 205.35000Q392.52300 209.30000 384.38600 209.30000L355.78800 209.30000L355.78800 158.42400M379.72500 178.72700Q385.17600 178.72700 385.17600 173.82900Q385.17600 171.30100 383.79350 170.07650Q382.41100 168.85200 379.33000 168.85200L370.08700 168.85200L370.08700 178.72700L379.72500 178.72700M380.35700 198.95100Q383.35900 198.95100 384.78100 197.68700Q386.20300 196.42300 386.20300 193.50000Q386.20300 190.97200 384.74150 189.74750Q383.28000 188.52300 380.04100 188.52300L370.08700 188.52300L370.08700 198.95100L380.35700 198.95100Z"
+        transform="scale(1,1.1755)"
+        style="fill: rgb(141, 32, 137);"></path>
+</svg>

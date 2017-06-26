@@ -1,0 +1,22 @@
+{
+  "name": "logo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "browserify js.js > js.build.js",
+    "watch": "watchify js.js -o js.build.js -dv",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "14.0.0",
+    "catw": "1.0.1",
+    "d3": "4.5.0",
+    "opentype.js": "0.6.9",
+    "text-to-svg": "3.1.0",
+    "vectorize-text": "3.0.2",
+    "watchify": "3.9.0"
+  }
+}
