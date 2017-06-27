@@ -1,4 +1,3 @@
-import {Promise} from "es6-promise";
 import {Observable} from "rxjs";
 
 declare class RxSchema {
@@ -186,7 +185,7 @@ declare class RxCollection {
     }>;
     migratePromise(batchSize: number): Promise<any>;
 
-    sync(SyncOptions): RxReplicationState;
+    sync(syncOptions: SyncOptions): RxReplicationState;
     // if you do custom-sync, use this
     createRxReplicationState(): RxReplicationState;
 
