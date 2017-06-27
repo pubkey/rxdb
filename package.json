@@ -59,7 +59,7 @@
     "rxjs": "^5.2.0"
   },
   "dependencies": {
-    "@types/core-js": "^0.9.41",
+    "@types/core-js": "^0.9.42",
     "babel-runtime": "^6.23.0",
     "clone": "^2.1.1",
     "crypto-js": "3.1.8",
@@ -157,7 +157,7 @@
     "rollup-plugin-uglify": "^2.0.1",
     "rxjs": "^5.4.1",
     "shelljs": "^0.7.8",
-    "typescript": "^2.2.2",
+    "typescript": "^2.4.1",
     "uglify-js": "^3.0.20",
     "walk-sync": "^0.3.1",
     "watch": "^1.0.2",
