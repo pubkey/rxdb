@@ -38,6 +38,8 @@
 
 ---
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/pubkey/rxdb.svg)](https://greenkeeper.io/)
+
 
 
 ## Features
