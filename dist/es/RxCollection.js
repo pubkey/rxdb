@@ -883,6 +883,8 @@ var RxCollection = function () {
         // if remote is RxCollection, get internal pouchdb
         if (isInstanceOf(remote)) remote = remote.pouch;
 
+        if (query && this !== query.collection) throw new Error('RxCollection.sync() query must be from the same RxCollection');
+
         var syncFun = util.pouchReplicationFunction(this.pouch, direction);
         if (query) options.selector = query.keyCompress().selector;
 

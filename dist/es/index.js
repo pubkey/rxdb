@@ -2,6 +2,10 @@ import _regeneratorRuntime from 'babel-runtime/regenerator';
 import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import * as RxDatabase from './RxDatabase';
 import * as RxSchema from './RxSchema';
+import * as RxDocument from './RxDocument';
+import * as RxQuery from './RxQuery';
+import * as RxCollection from './RxCollection';
+
 import * as QueryChangeDetector from './QueryChangeDetector';
 
 import PouchDB from './PouchDB';
@@ -65,6 +69,22 @@ export var removeDatabase = function () {
 export function plugin(mod) {
     if (typeof mod === 'object' && mod['default']) mod = mod['default'];
     PouchDB.plugin(mod);
+}
+
+export function isRxDatabase(obj) {
+    return RxDatabase.isInstanceOf(obj);
+}
+export function isRxCollection(obj) {
+    return RxCollection.isInstanceOf(obj);
+}
+export function isRxDocument(obj) {
+    return RxDocument.isInstanceOf(obj);
+}
+export function isRxQuery(obj) {
+    return RxQuery.isInstanceOf(obj);
+}
+export function isRxSchema(obj) {
+    return RxSchema.isInstanceOf(obj);
 }
 
 export { RxSchema, PouchDB, QueryChangeDetector, RxDatabase };

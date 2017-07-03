@@ -699,3 +699,7 @@ export function create(op, queryObj, collection) {
 
     return ret;
 }
+
+export function isInstanceOf(obj) {
+    return obj instanceof RxQuery;
+}

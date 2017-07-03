@@ -29,6 +29,7 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
+exports.isInstanceOf = isInstanceOf;
 
 var _deepEqual = require('deep-equal');
 
@@ -762,4 +763,8 @@ function create(op, queryObj, collection) {
     }
 
     return ret;
+}
+
+function isInstanceOf(obj) {
+    return obj instanceof RxQuery;
 }

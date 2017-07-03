@@ -938,4 +938,8 @@ export var removeDatabase = function () {
     };
 }();
 
+export function isInstanceOf(obj) {
+    return obj instanceof RxDatabase;
+}
+
 export { RxSchema };

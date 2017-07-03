@@ -76,6 +76,11 @@ var removeDatabase = exports.removeDatabase = function () {
 }();
 
 exports.plugin = plugin;
+exports.isRxDatabase = isRxDatabase;
+exports.isRxCollection = isRxCollection;
+exports.isRxDocument = isRxDocument;
+exports.isRxQuery = isRxQuery;
+exports.isRxSchema = isRxSchema;
 
 var _RxDatabase = require('./RxDatabase');
 
@@ -84,6 +89,18 @@ var RxDatabase = _interopRequireWildcard(_RxDatabase);
 var _RxSchema = require('./RxSchema');
 
 var RxSchema = _interopRequireWildcard(_RxSchema);
+
+var _RxDocument = require('./RxDocument');
+
+var RxDocument = _interopRequireWildcard(_RxDocument);
+
+var _RxQuery = require('./RxQuery');
+
+var RxQuery = _interopRequireWildcard(_RxQuery);
+
+var _RxCollection = require('./RxCollection');
+
+var RxCollection = _interopRequireWildcard(_RxCollection);
 
 var _QueryChangeDetector = require('./QueryChangeDetector');
 
@@ -100,6 +117,22 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 function plugin(mod) {
     if ((typeof mod === 'undefined' ? 'undefined' : (0, _typeof3['default'])(mod)) === 'object' && mod['default']) mod = mod['default'];
     _PouchDB2['default'].plugin(mod);
+}
+
+function isRxDatabase(obj) {
+    return RxDatabase.isInstanceOf(obj);
+}
+function isRxCollection(obj) {
+    return RxCollection.isInstanceOf(obj);
+}
+function isRxDocument(obj) {
+    return RxDocument.isInstanceOf(obj);
+}
+function isRxQuery(obj) {
+    return RxQuery.isInstanceOf(obj);
+}
+function isRxSchema(obj) {
+    return RxSchema.isInstanceOf(obj);
 }
 
 exports.RxSchema = RxSchema;

@@ -166,6 +166,7 @@ var removeDatabase = exports.removeDatabase = function () {
 }();
 
 exports.properties = properties;
+exports.isInstanceOf = isInstanceOf;
 
 var _randomToken = require('random-token');
 
@@ -1006,6 +1007,10 @@ function _internalPouchDbs(dbName, adapter) {
         revs_limit: 1
     });
     return ret;
+}
+
+function isInstanceOf(obj) {
+    return obj instanceof RxDatabase;
 }
 
 exports.RxSchema = RxSchema;
