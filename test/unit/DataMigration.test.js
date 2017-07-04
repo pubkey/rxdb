@@ -677,6 +677,12 @@ describe('DataMigration.test.js', () => {
                         }
                     }
                 });
+
+                const docs = await col2.find().exec();
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0].level, 'ss');
+                assert.equal(docs[0].name, 'Niven');
+                assert.equal(docs[0].color, 'black');
                 db2.destroy();
             });
         });
