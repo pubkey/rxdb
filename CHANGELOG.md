@@ -5,6 +5,9 @@
 Features:
   - Added instanceOf-checks
 
+Bugfixes:
+  - AutoMigrated caused infinity-loop [#212](https://github.com/pubkey/rxdb/issues/212)
+
 ## 5.0.0 (June 20, 2017) BREAKING
 
 Features:
