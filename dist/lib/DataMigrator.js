@@ -335,6 +335,18 @@ var OldCollection = function () {
             var decrypted = this.crypter.decrypt(decompressed);
             return decrypted;
         }
+        /**
+         * wrappers for Pouch.put/get to handle keycompression etc
+         */
+
+    }, {
+        key: '_handleToPouch',
+        value: function _handleToPouch(docData) {
+            var encrypted = this.crypter.encrypt(docData);
+            var swapped = this.schema.swapPrimaryToId(encrypted);
+            var compressed = this.keyCompressor.compress(swapped);
+            return compressed;
+        }
 
         /**
          * runs the doc-data through all following migrationStrategies
@@ -460,7 +472,7 @@ var OldCollection = function () {
                             case 12:
                                 _context7.prev = 12;
                                 _context7.next = 15;
-                                return this.pouchdb.remove(doc);
+                                return this.pouchdb.remove(this._handleToPouch(doc));
 
                             case 15:
                                 _context7.next = 19;
