@@ -170,6 +170,15 @@ class OldCollection {
         const decrypted = this.crypter.decrypt(decompressed);
         return decrypted;
     }
+    /**
+     * wrappers for Pouch.put/get to handle keycompression etc
+     */
+    _handleToPouch(docData) {
+        const encrypted = this.crypter.encrypt(docData);
+        const swapped = this.schema.swapPrimaryToId(encrypted);
+        const compressed = this.keyCompressor.compress(swapped);
+        return compressed;
+    }
 
     /**
      * runs the doc-data through all following migrationStrategies
@@ -230,7 +239,7 @@ class OldCollection {
 
         // remove from old collection
         try {
-            await this.pouchdb.remove(doc);
+            await this.pouchdb.remove(this._handleToPouch(doc));
         } catch (e) {}
 
         return action;

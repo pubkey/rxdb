@@ -161,7 +161,6 @@ describe('DataMigration.test.js', () => {
             });
         });
     });
-
     describe('DataMigrator.js', () => {
         describe('._getOldCollections()', () => {
             it('should NOT get an older version', async() => {
@@ -543,7 +542,6 @@ describe('DataMigration.test.js', () => {
             });
         });
     });
-
     describe('integration into collection', () => {
         describe('run', () => {
             it('should auto-run on creation', async() => {
@@ -608,6 +606,78 @@ describe('DataMigration.test.js', () => {
                 const needed = await col.migrationNeeded();
                 assert.equal(needed, true);
                 col.database.destroy();
+            });
+        });
+    });
+    describe('issues', () => {
+        describe('#212 migration runs into infinity-loop', () => {
+            it('reproduce and fix', async() => {
+                const dbName = util.randomCouchString(10);
+                const schema0 = {
+                    title: 'hero schema',
+                    description: 'describes a simple hero',
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        name: {
+                            type: 'string',
+                            primary: true
+                        },
+                        color: {
+                            type: 'string'
+                        }
+                    },
+                    required: ['color']
+                };
+                const schema1 = {
+                    title: 'hero schema',
+                    description: 'describes a simple hero',
+                    version: 1,
+                    type: 'object',
+                    properties: {
+                        name: {
+                            type: 'string',
+                            primary: true
+                        },
+                        color: {
+                            type: 'string'
+                        },
+                        level: {
+                            type: 'string'
+                        }
+                    },
+                    required: ['color']
+                };
+                const db = await RxDatabase.create({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'heroes',
+                    schema: schema0
+                });
+                await col.insert({
+                    name: 'Niven',
+                    color: 'black'
+                });
+                await db.destroy();
+
+                const db2 = await RxDatabase.create({
+                    name: dbName,
+                    adapter: 'memory'
+                });
+                const col2 = await db2.collection({
+                    name: 'heroes',
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc) => {
+                            // console.log('migrate from 0 to 1...' + oldDoc.name);
+                            oldDoc.level = 'ss';
+                            return oldDoc;
+                        }
+                    }
+                });
+                db2.destroy();
             });
         });
     });
