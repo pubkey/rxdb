@@ -117,6 +117,7 @@ Bugfixes:
 
 Other:
   - Use [setImmediate](https://developer.mozilla.org/de/docs/Web/API/Window/setImmediate) on non-prio-tasks for better performance on IE
+  - Optimise socket-pull intervall to not waste resources on slow devices
 
 ## 3.0.2 (March 2, 2017)
 

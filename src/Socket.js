@@ -9,6 +9,7 @@ const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 class Socket {
 
     constructor(database) {
+        this._destroyed = false;
         this.database = database;
         this.token = database.token;
         this.subs = [];
@@ -42,11 +43,13 @@ class Socket {
         }
 
         // pull on intervall
-        const autoPull = util.Rx.Observable
-            .interval(PULL_TIME)
-            .filter(c => this.messages$.observers.length > 0)
-            .subscribe(x => this.pull());
-        this.subs.push(autoPull);
+        (async() => {
+            while (!this._destroyed) {
+                await util.promiseWait(PULL_TIME);
+                if (this.messages$.observers.length > 0)
+                    await this.pull();
+            }
+        })();
 
         return;
     }
@@ -101,9 +104,11 @@ class Socket {
 
         // w8 for idle-time because this is a non-prio-task
         await util.requestIdlePromise();
+        if (this._destroyed) return;
 
         const minTime = this.lastPull - 100; // TODO evaluate this value (100)
         const docs = await this.fetchDocs();
+        if (this._destroyed) return;
         docs
             .filter(doc => doc.it != this.token) // do not get events emitted by self
             // do not get events older than minTime
@@ -124,6 +129,7 @@ class Socket {
             // emit to messages
             .forEach(cE => this.messages$.next(cE));
 
+        if (this._destroyed) return;
 
         // delete old documents
         const maxAge = new Date().getTime() - EVENT_TTL;
@@ -146,6 +152,7 @@ class Socket {
 
 
     destroy() {
+        this._destroyed = true;
         this.subs.map(sub => sub.unsubscribe());
         if (this.bc) this.bc.destroy();
     }
