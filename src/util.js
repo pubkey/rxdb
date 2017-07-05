@@ -165,6 +165,14 @@ export async function promiseWait(ms = 0) {
     return new Promise(res => setTimeout(res, ms));
 }
 
+export async function requestIdlePromise() {
+    if (
+        typeof window === 'object' &&
+        window.requestIdleCallback
+    ) return new Promise(res => requestIdleCallback(res));
+    else
+        return new Promise(res => setTimeout(res, 0));
+}
 
 /**
  * this returns a promise and the resolve-function
@@ -188,7 +196,7 @@ export function promiseWaitResolveable(ms = 0) {
 export async function waitUntil(fun) {
     let ok = false;
     while (!ok) {
-        await promiseWait(10);
+        await promiseWait(1);
         ok = await fun();
     }
 }

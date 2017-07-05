@@ -58,8 +58,10 @@ describe('CrossInstance.test.js', () => {
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
-                await db2.socket.pull();
-                assert.ok(recieved > 0);
+                await util.waitUntil(async() => {
+                    await db2.socket.pull();
+                    return recieved > 0;
+                });
 
                 db1.destroy();
                 db2.destroy();
@@ -78,9 +80,13 @@ describe('CrossInstance.test.js', () => {
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
-                await db2.socket.pull();
-                await db2.socket.pull();
-                assert.equal(recieved, 1);
+
+                await util.waitUntil(async() => {
+                    await db2.socket.pull();
+                    await db2.socket.pull();
+                    return recieved == 1;
+                });
+
                 db1.destroy();
                 db2.destroy();
             });
@@ -97,8 +103,11 @@ describe('CrossInstance.test.js', () => {
                 assert.equal(cEvent.constructor.name, 'RxChangeEvent');
             });
             await c1.insert(schemaObjects.human());
-            await c2.database.socket.pull();
-            assert.ok(recieved > 0);
+
+            await util.waitUntil(async() => {
+                await c2.database.socket.pull();
+                return recieved > 0;
+            });
 
             c1.database.destroy();
             c2.database.destroy();

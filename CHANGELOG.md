@@ -115,6 +115,9 @@ Features:
 Bugfixes:
   - No error on sync when remote document is deleted [680f75bfcbda3f71b6ba0a95ceecdc6b6f30ba58](https://github.com/pubkey/rxdb/commit/680f75bfcbda3f71b6ba0a95ceecdc6b6f30ba58)
 
+Other:
+  - Use [setImmediate](https://developer.mozilla.org/de/docs/Web/API/Window/setImmediate) on non-prio-tasks for better performance on IE
+
 ## 3.0.2 (March 2, 2017)
 
 Bugfixes:

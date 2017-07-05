@@ -56,6 +56,9 @@ class Socket {
      * write the given event to the socket
      */
     async write(changeEvent) {
+        // w8 for idle-time because this is a non-prio-task
+        await util.requestIdlePromise();
+
         const socketDoc = changeEvent.toJSON();
         delete socketDoc.db;
 
@@ -95,6 +98,9 @@ class Socket {
         }
         this.isPulling = true;
         this.pullCount++;
+
+        // w8 for idle-time because this is a non-prio-task
+        await util.requestIdlePromise();
 
         const minTime = this.lastPull - 100; // TODO evaluate this value (100)
         const docs = await this.fetchDocs();

@@ -129,9 +129,13 @@ describe('Reactive-Document.test.js', () => {
                 doc2.firstName = 'foobar';
                 await doc2.save();
 
-                await c1.database.socket.pull();
-                await c2.database.socket.pull();
+                await util.waitUntil(async() => {
+                    await c1.database.socket.pull();
+                    await c2.database.socket.pull();
+                    return doc.firstName === 'foobar';
+                });
                 assert.equal(doc.firstName, 'foobar');
+
                 const ok2 = await doc.synced$.first().toPromise();
                 assert.ok(ok2);
 
@@ -152,9 +156,17 @@ describe('Reactive-Document.test.js', () => {
                 doc2.firstName = 'foobar2';
                 await doc2.save();
 
-                await c1.database.socket.pull();
-                await c2.database.socket.pull();
+                await util.waitUntil(async() => {
+                    await c1.database.socket.pull();
+                    await c2.database.socket.pull();
+                    return doc.firstName === 'foobar1';
+                });
                 assert.equal(doc.firstName, 'foobar1');
+
+                await util.waitUntil(async() => {
+                    const notOk = await doc.synced$.first().toPromise();
+                    return !notOk;
+                });
                 const notOk = await doc.synced$.first().toPromise();
                 assert.ok(!notOk);
 
@@ -175,18 +187,23 @@ describe('Reactive-Document.test.js', () => {
                 // unsyc
                 doc2.firstName = 'foobar2';
                 await doc2.save();
-                await c1.database.socket.pull();
-                await c2.database.socket.pull();
-                const notOk = await doc.synced$.first().toPromise();
-                assert.ok(!notOk);
+
+                await util.waitUntil(async() => {
+                    await c1.database.socket.pull();
+                    await c2.database.socket.pull();
+                    const notOk = await doc.synced$.first().toPromise();
+                    return !notOk;
+                });
 
                 // resync
                 await doc.save();
-                await c1.database.socket.pull();
-                await c2.database.socket.pull();
 
-                const ok = await doc.synced$.first().toPromise();
-                assert.ok(ok);
+                await util.waitUntil(async() => {
+                    await c1.database.socket.pull();
+                    await c2.database.socket.pull();
+                    const ok = await doc.synced$.first().toPromise();
+                    return ok;
+                });
 
                 c1.database.destroy();
                 c2.database.destroy();
