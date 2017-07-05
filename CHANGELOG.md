@@ -8,6 +8,11 @@ Features:
 Bugfixes:
   - AutoMigrated caused infinity-loop [#212](https://github.com/pubkey/rxdb/issues/212)
 
+
+  Other:
+    - Use [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) on non-prio-tasks for better performance on browsers
+    - Optimise socket-pull intervall to not waste resources on slow devices
+
 ## 5.0.0 (June 20, 2017) BREAKING
 
 Features:
@@ -114,10 +119,6 @@ Features:
 
 Bugfixes:
   - No error on sync when remote document is deleted [680f75bfcbda3f71b6ba0a95ceecdc6b6f30ba58](https://github.com/pubkey/rxdb/commit/680f75bfcbda3f71b6ba0a95ceecdc6b6f30ba58)
-
-Other:
-  - Use [setImmediate](https://developer.mozilla.org/de/docs/Web/API/Window/setImmediate) on non-prio-tasks for better performance on IE
-  - Optimise socket-pull intervall to not waste resources on slow devices
 
 ## 3.0.2 (March 2, 2017)
 
