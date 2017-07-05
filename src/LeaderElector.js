@@ -309,16 +309,12 @@ class LeaderElector {
                     break;
             }
         }
-        return new Promise(res => {
-            const sub = this.becomeLeader$
-                .asObservable()
-                .filter(i => i.isLeader == true)
-                .first()
-                .subscribe(i => {
-                    sub.unsubscribe();
-                    res();
-                });
-        });
+
+        return this.becomeLeader$
+            .asObservable()
+            .filter(i => i.isLeader == true)
+            .first()
+            .toPromise();
     }
 
     async destroy() {
