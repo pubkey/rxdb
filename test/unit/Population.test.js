@@ -8,6 +8,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 
 describe('Population.test.js', () => {
@@ -128,7 +129,7 @@ describe('Population.test.js', () => {
             });
             it('populate string-array', async() => {
                 const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({

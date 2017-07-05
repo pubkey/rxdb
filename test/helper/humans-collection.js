@@ -9,6 +9,7 @@ import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
 import * as util from '../../dist/lib/util';
+import * as testUtil from './test-util';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 
@@ -20,7 +21,7 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter: 'memory',
         multiInstance
     });
@@ -43,7 +44,7 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
 export async function createNoCompression(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter: 'memory'
     });
     const schemaJSON = clone(schemas.human);
@@ -67,7 +68,7 @@ export async function createNoCompression(size = 20, name = 'human') {
 export async function createAgeIndex(amount = 20) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter: 'memory'
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -89,7 +90,7 @@ export async function createAgeIndex(amount = 20) {
 export async function multipleOnSameDB() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter: 'memory'
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -118,7 +119,7 @@ export async function multipleOnSameDB() {
 export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -140,7 +141,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
 export async function createDeepNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -162,9 +163,9 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
 
 export async function createEncrypted(amount = 10) {
     const db = await RxDatabase.create({
-        name: util.randomCouchString(10),
+        name: testUtil.randomCouchString(10),
         adapter: 'memory',
-        password: util.randomCouchString(10)
+        password: testUtil.randomCouchString(10)
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -204,7 +205,7 @@ export async function createMultiInstance(name, amount = 0, password = null) {
 }
 
 
-export async function createPrimary(amount = 10, name = util.randomCouchString(10)) {
+export async function createPrimary(amount = 10, name = testUtil.randomCouchString(10)) {
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
@@ -229,7 +230,7 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
 export async function createMigrationCollection(
     amount = 0,
     addMigrationStrategies = {},
-    name = util.randomCouchString(10),
+    name = testUtil.randomCouchString(10),
     autoMigrate = false
 ) {
     const migrationStrategies = {
@@ -283,7 +284,7 @@ export async function createMigrationCollection(
 
 
 
-export async function createRelated(name = util.randomCouchString(10)) {
+export async function createRelated(name = testUtil.randomCouchString(10)) {
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
@@ -306,7 +307,7 @@ export async function createRelated(name = util.randomCouchString(10)) {
 }
 
 
-export async function createRelatedNested(name = util.randomCouchString(10)) {
+export async function createRelatedNested(name = testUtil.randomCouchString(10)) {
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',

@@ -14,6 +14,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 
 describe('Reactive-Database.test.js', () => {
@@ -21,7 +22,7 @@ describe('Reactive-Database.test.js', () => {
         describe('positive', () => {
             it('emit when collection is created', async() => {
                 const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 db.collection({

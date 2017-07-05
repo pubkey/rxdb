@@ -5,7 +5,6 @@ import assert from 'assert';
 import {
     default as clone
 } from 'clone';
-import * as _ from 'lodash';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
@@ -14,6 +13,7 @@ import * as humansCollection from './../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 import * as KeyCompressor from '../../dist/lib/KeyCompressor';
 

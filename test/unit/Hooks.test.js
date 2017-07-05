@@ -1,5 +1,4 @@
 import assert from 'assert';
-import * as _ from 'lodash';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -8,6 +7,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 
 describe('Hooks.test.js', () => {
@@ -114,7 +114,7 @@ describe('Hooks.test.js', () => {
                         doc.lastName = 1337;
                     }, false);
 
-                    await util.assertThrowsAsync(
+                    await testUtil.assertThrowsAsync(
                         () => c.insert(human),
                         Error
                     );
@@ -245,7 +245,7 @@ describe('Hooks.test.js', () => {
 
                     doc.set('firstName', 'foobar');
 
-                    await util.assertThrowsAsync(
+                    await testUtil.assertThrowsAsync(
                         () => doc.save(),
                         Error
                     );
@@ -375,7 +375,7 @@ describe('Hooks.test.js', () => {
         describe('positive', () => {
             it('should define a getter', async() => {
                 const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true
                 });
@@ -400,7 +400,7 @@ describe('Hooks.test.js', () => {
         describe('negative', () => {
             it('should throw when adding an async-hook', async() => {
                 const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true
                 });

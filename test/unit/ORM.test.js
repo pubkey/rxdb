@@ -1,7 +1,7 @@
 import assert from 'assert';
-import * as _ from 'lodash';
 
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as RxDB from '../../dist/lib/index';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -14,7 +14,7 @@ describe('ORM.test.js', () => {
             describe('positive', () => {
                 it('create a collection with static-methods', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const collection = await db.collection({
@@ -32,10 +32,10 @@ describe('ORM.test.js', () => {
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
-                    await util.assertThrowsAsync(
+                    await testUtil.assertThrowsAsync(
                         () => db.collection({
                             name: 'humans',
                             schema: schemas.human,
@@ -51,7 +51,7 @@ describe('ORM.test.js', () => {
                 });
                 it('crash when name not allowed (name reserved)', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const reserved = [
@@ -66,7 +66,7 @@ describe('ORM.test.js', () => {
                     while (t < reserved.length) {
                         const statics = {};
                         statics[reserved[t]] = function() {};
-                        await util.assertThrowsAsync(
+                        await testUtil.assertThrowsAsync(
                             () => db.collection({
                                 name: 'humans',
                                 schema: schemas.human,
@@ -86,7 +86,7 @@ describe('ORM.test.js', () => {
         describe('run', () => {
             it('should be able to run the method', async() => {
                 const db = await RxDB.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const collection = await db.collection({
@@ -104,7 +104,7 @@ describe('ORM.test.js', () => {
             });
             it('should have the right this-context', async() => {
                 const db = await RxDB.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const collection = await db.collection({
@@ -122,7 +122,7 @@ describe('ORM.test.js', () => {
             });
             it('should be able to use this.insert()', async() => {
                 const db = await RxDB.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const collection = await db.collection({
@@ -146,7 +146,7 @@ describe('ORM.test.js', () => {
             describe('positive', () => {
                 it('create a collection with instance-methods', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const collection = await db.collection({
@@ -164,10 +164,10 @@ describe('ORM.test.js', () => {
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
-                    await util.assertThrowsAsync(
+                    await testUtil.assertThrowsAsync(
                         () => db.collection({
                             name: 'humans',
                             schema: schemas.human,
@@ -183,7 +183,7 @@ describe('ORM.test.js', () => {
                 });
                 it('crash when name not allowed (name reserved)', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const reserved = [
@@ -195,7 +195,7 @@ describe('ORM.test.js', () => {
                     while (t < reserved.length) {
                         const methods = {};
                         methods[reserved[t]] = function() {};
-                        await util.assertThrowsAsync(
+                        await testUtil.assertThrowsAsync(
                             () => db.collection({
                                 name: 'humans',
                                 schema: schemas.human,
@@ -210,7 +210,7 @@ describe('ORM.test.js', () => {
                 });
                 it('crash when name not allowed (name is top-level field in schema)', async() => {
                     const db = await RxDB.create({
-                        name: util.randomCouchString(10),
+                        name: testUtil.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const reserved = [
@@ -223,7 +223,7 @@ describe('ORM.test.js', () => {
                     while (t < reserved.length) {
                         const methods = {};
                         methods[reserved[t]] = function() {};
-                        await util.assertThrowsAsync(
+                        await testUtil.assertThrowsAsync(
                             () => db.collection({
                                 name: 'humans',
                                 schema: schemas.human,
@@ -242,7 +242,7 @@ describe('ORM.test.js', () => {
         describe('run', () => {
             it('should be able to run the method', async() => {
                 const db = await RxDB.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const collection = await db.collection({
@@ -262,7 +262,7 @@ describe('ORM.test.js', () => {
             });
             it('should have the right this-context', async() => {
                 const db = await RxDB.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const collection = await db.collection({

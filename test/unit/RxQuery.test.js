@@ -5,6 +5,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import {
     default as MQuery
@@ -239,7 +240,7 @@ describe('RxQuery.test.js', () => {
             const fired = [];
             q.$.subscribe(res => fired.push(res));
 
-            await util.waitUntil(() => fired.length == 1);
+            await testUtil.waitUntil(() => fired.length == 1);
             assert.equal(q._execOverDatabaseCount, 1);
             assert.equal(q._latestChangeEvent, 2);
 
@@ -248,10 +249,10 @@ describe('RxQuery.test.js', () => {
             await col.insert(addObj);
             assert.equal(q.collection._changeEventBuffer.counter, 3);
 
-            await util.waitUntil(() => q._latestChangeEvent == 3);
+            await testUtil.waitUntil(() => q._latestChangeEvent == 3);
             assert.equal(q._latestChangeEvent, 3);
 
-            await util.waitUntil(() => fired.length == 2);
+            await testUtil.waitUntil(() => fired.length == 2);
             assert.equal(fired[1].pop().passportId, addObj.passportId);
         });
         it('reusing exec should execOverDatabase when change happened', async() => {
@@ -347,12 +348,12 @@ describe('RxQuery.test.js', () => {
                 'required': ['user_pwd', 'last_login', 'status']
             };
             const db = await RxDatabase.create({
-                name: util.randomCouchString(10),
+                name: testUtil.randomCouchString(10),
                 adapter: 'memory',
-                password: util.randomCouchString(20)
+                password: testUtil.randomCouchString(20)
             });
             const collection = await db.collection({
-                name: util.randomCouchString(10),
+                name: testUtil.randomCouchString(10),
                 schema
             });
 
@@ -376,7 +377,7 @@ describe('RxQuery.test.js', () => {
         it('#164 Sort error, pouchdb-find/mango "unknown operator"', async() => {
             const db = await RxDB.create({
                 adapter: 'memory',
-                name: util.randomCouchString(12),
+                name: testUtil.randomCouchString(12),
                 password: 'password'
             });
             const collection = await db.collection({

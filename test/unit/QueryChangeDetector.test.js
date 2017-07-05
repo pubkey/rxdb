@@ -6,6 +6,7 @@ import request from 'request-promise';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as RxDB from '../../dist/lib/index';
 
 import * as QueryChangeDetector from '../../dist/lib/QueryChangeDetector';
@@ -195,7 +196,7 @@ describe('QueryChangeDetector.test.js', () => {
                 await col.insert(docData);
                 col.$.first().toPromise().then(cE => changeEvents.push(cE));
                 await col.findOne('foobar').remove();
-                await util.waitUntil(() => changeEvents.length == 1);
+                await testUtil.waitUntil(() => changeEvents.length == 1);
                 const res = q._queryChangeDetector.handleSingleChange([], changeEvents[0]);
                 assert.equal(res, false);
             });
@@ -412,7 +413,7 @@ describe('QueryChangeDetector.test.js', () => {
             const results = [];
             const q = col.find().sort('passportId');
             const sub = q.$.subscribe(res => results.push(res));
-            await util.waitUntil(() => results.length == 1);
+            await testUtil.waitUntil(() => results.length == 1);
             assert.equal(results[0].length, 5);
             assert.equal(q._execOverDatabaseCount, 1);
 
@@ -421,7 +422,7 @@ describe('QueryChangeDetector.test.js', () => {
             first.passportId = '000aaa'; // to make sure it sorts at start
             await col.insert(first);
 
-            await util.waitUntil(() => results.length == 2);
+            await testUtil.waitUntil(() => results.length == 2);
             await util.promiseWait(100);
 
             // here is the error -> this must be 6
@@ -431,7 +432,7 @@ describe('QueryChangeDetector.test.js', () => {
             last.passportId = 'zzzzzz'; // to make sure it sorts at last
             await col.insert(last);
 
-            await util.waitUntil(() => results.length == 3);
+            await testUtil.waitUntil(() => results.length == 3);
 
             assert.equal(results[2].length, 7);
             assert.equal(q._execOverDatabaseCount, 1);

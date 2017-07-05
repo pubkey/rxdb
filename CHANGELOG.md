@@ -8,10 +8,11 @@ Features:
 Bugfixes:
   - AutoMigrated caused infinity-loop [#212](https://github.com/pubkey/rxdb/issues/212)
 
-
-  Other:
-    - Use [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) on non-prio-tasks for better performance on browsers
-    - Optimise socket-pull intervall to not waste resources on slow devices
+Other:
+  - Use [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) on non-prio-tasks for better performance on browsers
+  - Optimise socket-pull-intervall to not waste resources on slow devices
+  - split out test-util from util to optimize build-size
+  - remove lodash completely
 
 ## 5.0.0 (June 20, 2017) BREAKING
 

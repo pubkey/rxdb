@@ -1,11 +1,10 @@
 import assert from 'assert';
-import * as _ from 'lodash';
-
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import * as RxDatabase from '../../dist/lib/index';
 
@@ -44,7 +43,7 @@ describe('RxDocument.test.js', () => {
                 const path = {
                     foo: 'bar'
                 };
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.get(path),
                     TypeError
                 );
@@ -94,7 +93,7 @@ describe('RxDocument.test.js', () => {
                 const path = {
                     foo: 'bar'
                 };
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.set(path, 'foo'),
                     TypeError
                 );
@@ -106,7 +105,7 @@ describe('RxDocument.test.js', () => {
                 const val = {
                     foo: 'bar'
                 };
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.set('passportId', val),
                     Error
                 );
@@ -116,7 +115,7 @@ describe('RxDocument.test.js', () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.set('newone', val),
                     Error
                 );
@@ -126,7 +125,7 @@ describe('RxDocument.test.js', () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.set('_id', val),
                     Error
                 );
@@ -150,7 +149,7 @@ describe('RxDocument.test.js', () => {
                 const c = await humansCollection.createNested(10);
                 const doc = await c.findOne().exec();
                 const val = {
-                    name: util.randomCouchString(20),
+                    name: testUtil.randomCouchString(20),
                     level: 5
                 };
                 doc.set('mainSkill', val);
@@ -186,7 +185,7 @@ describe('RxDocument.test.js', () => {
             it('.save() returns true data changed', async() => {
                 const c = await humansCollection.create(10);
                 const doc = await c.findOne().exec();
-                doc.passportId = util.randomCouchString(20);
+                doc.passportId = testUtil.randomCouchString(20);
                 const r = await doc.save();
                 assert.equal(r, true);
             });
@@ -197,7 +196,7 @@ describe('RxDocument.test.js', () => {
                 const doc = await c.findOne().exec();
                 await doc.remove();
                 doc.set('passportId', 'any');
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.save(),
                     Error
                 );
@@ -253,7 +252,7 @@ describe('RxDocument.test.js', () => {
                 const c = await humansCollection.create(5);
                 const doc = await c.findOne().exec();
                 await doc.remove();
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => doc.remove(),
                     Error
                 );
@@ -524,7 +523,7 @@ describe('RxDocument.test.js', () => {
         });
         it('BUG #76 - deepEqual does not work correctly for Arrays', async() => {
             const db = await RxDatabase.create({
-                name: util.randomCouchString(10),
+                name: testUtil.randomCouchString(10),
                 adapter: 'memory'
             });
             const col = await await db.collection({

@@ -12,6 +12,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as RxDB from '../../dist/lib/index';
 
 let request;
@@ -58,7 +59,7 @@ describe('Replication.test.js', () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(0);
 
-                const pw8 = util.promiseWaitResolveable(1000);
+                const pw8 = testUtil.promiseWaitResolveable(1000);
                 c.pouch.sync(serverURL, {
                     live: true
                 }).on('error', function(err) {
@@ -83,7 +84,7 @@ describe('Replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                await util.waitUntil(async() => {
+                await testUtil.waitUntil(async() => {
                     const docs = await c2.find().exec();
                     return docs.length == 1;
                 });
@@ -99,7 +100,7 @@ describe('Replication.test.js', () => {
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, null, false);
                 const c2 = await humansCollection.create(0, null, false);
-                const pw8 = util.promiseWaitResolveable(1400);
+                const pw8 = testUtil.promiseWaitResolveable(1400);
                 c.pouch.sync(serverURL, {
                     live: true
                 });
@@ -130,8 +131,8 @@ describe('Replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                await util.waitUntil(() => e1.length == 1);
-                await util.waitUntil(() => e2.length == 1);
+                await testUtil.waitUntil(() => e1.length == 1);
+                await testUtil.waitUntil(() => e2.length == 1);
                 assert.equal(e1.length, e2.length);
 
                 c.database.destroy();
@@ -154,7 +155,7 @@ describe('Replication.test.js', () => {
                     }
                 });
 
-                await util.waitUntil(async() => {
+                await testUtil.waitUntil(async() => {
                     const docs = await c2.find().exec();
                     return docs.length == 20;
                 });
@@ -178,7 +179,7 @@ describe('Replication.test.js', () => {
                     }
                 });
 
-                await util.waitUntil(async() => {
+                await testUtil.waitUntil(async() => {
                     const docs = await c.find().exec();
                     return docs.length == 20;
                 });
@@ -194,7 +195,7 @@ describe('Replication.test.js', () => {
             it('should not allow non-way-sync', async() => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10, null, false);
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => c.sync({
                         remote: c2.pouch,
                         direction: {
@@ -226,7 +227,7 @@ describe('Replication.test.js', () => {
                     query: query
                 });
 
-                await util.waitUntil(async() => {
+                await testUtil.waitUntil(async() => {
                     const docs = await c.find().exec();
                     return docs.length == 1;
                 });
@@ -246,7 +247,7 @@ describe('Replication.test.js', () => {
                 const otherCollection = await humansCollection.create(0, null, false);
 
                 const query = otherCollection.find().where('firstName').eq('foobar');
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     () => c.sync({
                         remote: c2.pouch,
                         query
@@ -273,9 +274,9 @@ describe('Replication.test.js', () => {
                 });
                 const emited = [];
                 repState.change$.subscribe(cE => emited.push(cE));
-                await util.waitUntil(() => emited.length >= 2);
+                await testUtil.waitUntil(() => emited.length >= 2);
                 await c2.insert(schemaObjects.human());
-                await util.waitUntil(() => emited.length >= 3);
+                await testUtil.waitUntil(() => emited.length >= 3);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -291,7 +292,7 @@ describe('Replication.test.js', () => {
                 });
                 const emited = [];
                 repState.active$.subscribe(cE => emited.push(cE));
-                await util.waitUntil(() => emited.pop() == true);
+                await testUtil.waitUntil(() => emited.pop() == true);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -323,7 +324,7 @@ describe('Replication.test.js', () => {
                 const emitedDocs = [];
                 repState.docs$.subscribe(doc => emitedDocs.push(doc));
 
-                await util.waitUntil(() => emitedDocs.length == 10);
+                await testUtil.waitUntil(() => emitedDocs.length == 10);
                 emitedDocs.forEach(doc => assert.ok(doc.firstName));
 
                 c.database.destroy();
@@ -338,8 +339,8 @@ describe('Replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC.pouch;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + testUtil.randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + testUtil.randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -347,7 +348,7 @@ describe('Replication.test.js', () => {
                     remote: syncPouch
                 });
 
-                const pw8 = util.promiseWaitResolveable(1700);
+                const pw8 = testUtil.promiseWaitResolveable(1700);
                 let events = [];
                 c2.$.subscribe(e => {
                     events.push(e);
@@ -357,7 +358,7 @@ describe('Replication.test.js', () => {
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
-                await util.waitUntil(() => events.length == 1);
+                await testUtil.waitUntil(() => events.length == 1);
                 assert.equal(events[0].constructor.name, 'RxChangeEvent');
 
                 syncC.database.destroy();
@@ -369,8 +370,8 @@ describe('Replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC.pouch;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + testUtil.randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + testUtil.randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -378,7 +379,7 @@ describe('Replication.test.js', () => {
                     remote: syncPouch
                 });
 
-                const pw8 = util.promiseWaitResolveable(10000);
+                const pw8 = testUtil.promiseWaitResolveable(10000);
                 const results = [];
                 c2.find().$.subscribe(res => {
                     results.push(res);
@@ -402,8 +403,8 @@ describe('Replication.test.js', () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC.pouch;
 
-                const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
-                const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
+                const c = await humansCollection.create(0, 'colsource' + testUtil.randomCouchString(5));
+                const c2 = await humansCollection.create(0, 'colsync' + testUtil.randomCouchString(5));
                 c.sync({
                     remote: syncPouch
                 });
@@ -412,7 +413,7 @@ describe('Replication.test.js', () => {
                 });
 
                 // insert and w8 for sync
-                let pw8 = util.promiseWaitResolveable(1400);
+                let pw8 = testUtil.promiseWaitResolveable(1400);
                 let results = null;
                 c2.find().$.subscribe(res => {
                     results = res;
@@ -427,7 +428,7 @@ describe('Replication.test.js', () => {
 
                 // update and w8 for sync
                 let lastValue = null;
-                pw8 = util.promiseWaitResolveable(1400);
+                pw8 = testUtil.promiseWaitResolveable(1400);
                 doc2
                     .get$('firstName')
                     .subscribe(newValue => {

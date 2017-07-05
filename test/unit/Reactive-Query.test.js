@@ -14,6 +14,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 describe('Reactive-Query.test.js', () => {
     describe('positive', () => {
@@ -26,7 +27,7 @@ describe('Reactive-Query.test.js', () => {
                 count++;
                 lastValue = newResults;
             });
-            await util.waitUntil(() => count == 1);
+            await testUtil.waitUntil(() => count == 1);
             assert.ok(lastValue);
             assert.equal(lastValue.length, 1);
             assert.equal(count, 1);
@@ -36,7 +37,7 @@ describe('Reactive-Query.test.js', () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = [];
-            let pw8 = util.promiseWaitResolveable(500);
+            let pw8 = testUtil.promiseWaitResolveable(500);
             query.$.subscribe(newResults => {
                 lastValue = newResults;
                 if (!!newResults) pw8.resolve();
@@ -45,7 +46,7 @@ describe('Reactive-Query.test.js', () => {
             assert.equal(lastValue.length, 1);
 
             const addHuman = schemaObjects.human();
-            pw8 = util.promiseWaitResolveable(500);
+            pw8 = testUtil.promiseWaitResolveable(500);
             await c.insert(addHuman);
             await pw8.promise;
             assert.equal(lastValue.length, 2);
@@ -71,7 +72,7 @@ describe('Reactive-Query.test.js', () => {
             });
             await util.promiseWait(100);
 
-            await util.waitUntil(() => lastValue2 && lastValue2.length == 1);
+            await testUtil.waitUntil(() => lastValue2 && lastValue2.length == 1);
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();
         });
@@ -82,12 +83,12 @@ describe('Reactive-Query.test.js', () => {
             query.$.subscribe(newResults => {
                 lastValue = newResults;
             });
-            await util.waitUntil(() => lastValue.length > 0);
+            await testUtil.waitUntil(() => lastValue.length > 0);
             let lastValue2 = [];
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
-            await util.waitUntil(() => lastValue2.length > 0);
+            await testUtil.waitUntil(() => lastValue2.length > 0);
             await util.promiseWait(10);
             assert.equal(lastValue2.length, 1);
             assert.deepEqual(lastValue, lastValue2);
@@ -96,7 +97,7 @@ describe('Reactive-Query.test.js', () => {
         it('get new values on Document.save', async() => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
-            let pw8 = util.promiseWaitResolveable(500);
+            let pw8 = testUtil.promiseWaitResolveable(500);
 
             let values;
             const query = c.find({
@@ -111,7 +112,7 @@ describe('Reactive-Query.test.js', () => {
 
             // change doc so query does not match
             doc.set('firstName', 'foobar');
-            pw8 = util.promiseWaitResolveable(500);
+            pw8 = testUtil.promiseWaitResolveable(500);
             await doc.save();
             await pw8.promise;
             assert.equal(values.length, 0);
@@ -126,7 +127,7 @@ describe('Reactive-Query.test.js', () => {
             const c = await humansCollection.createAgeIndex(10);
             // take only 9 of 10
             let valuesAr = [];
-            let pw8 = util.promiseWaitResolveable(300);
+            let pw8 = testUtil.promiseWaitResolveable(300);
             const query = c.find()
                 .limit(9)
                 .sort('age')
@@ -146,7 +147,7 @@ describe('Reactive-Query.test.js', () => {
             assert.equal(valuesAr.length, 1);
 
             // edit+save doc
-            pw8 = util.promiseWaitResolveable(300);
+            pw8 = testUtil.promiseWaitResolveable(300);
             doc.firstName = 'foobar';
             await doc.save();
             await pw8.promise;
@@ -156,7 +157,7 @@ describe('Reactive-Query.test.js', () => {
         });
 
         it('BUG: should have the document in DocCache when getting it from observe', async() => {
-            const name = util.randomCouchString(10);
+            const name = testUtil.randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
             const doc = await c.findOne().exec();
@@ -166,7 +167,7 @@ describe('Reactive-Query.test.js', () => {
 
             const results = [];
             const sub = c2.find().$.subscribe(docs => results.push(docs));
-            await util.waitUntil(() => results.length >= 1);
+            await testUtil.waitUntil(() => results.length >= 1);
 
             assert.equal(c2._docCache.get(docId).getPrimary(), docId);
 
@@ -189,7 +190,7 @@ describe('Reactive-Query.test.js', () => {
                     streamed.push(doc);
                 })
             );
-            await util.waitUntil(() => streamed.length == 1);
+            await testUtil.waitUntil(() => streamed.length == 1);
             assert.equal(streamed[0].constructor.name, 'RxDocument');
             assert.equal(streamed[0]._id, _id);
 
@@ -201,7 +202,7 @@ describe('Reactive-Query.test.js', () => {
                     streamed2.push(doc);
                 })
             );
-            await util.waitUntil(() => streamed2.length == 1);
+            await testUtil.waitUntil(() => streamed2.length == 1);
             assert.equal(streamed2.length, 1);
             assert.equal(streamed2[0].constructor.name, 'RxDocument');
             assert.equal(streamed2[0]._id, _id);
@@ -218,7 +219,7 @@ describe('Reactive-Query.test.js', () => {
                 .subscribe(doc => {
                     streamed.push(doc);
                 });
-            await util.waitUntil(() => streamed.length == 1);
+            await testUtil.waitUntil(() => streamed.length == 1);
             assert.equal(streamed.length, 1);
             assert.equal(streamed[0].constructor.name, 'RxDocument');
             sub.unsubscribe();
@@ -233,7 +234,7 @@ describe('Reactive-Query.test.js', () => {
             query.$.subscribe(newResults => {
                 recieved++;
             });
-            await util.waitUntil(() => recieved == 1);
+            await testUtil.waitUntil(() => recieved == 1);
             c.database.destroy();
         });
     });

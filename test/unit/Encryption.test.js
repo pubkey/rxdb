@@ -8,6 +8,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 describe('Encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {
@@ -142,9 +143,9 @@ describe('Encryption.test.js', () => {
             });
             it('should insert one encrypted value (object)', async() => {
                 const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(10)
+                    password: testUtil.randomCouchString(10)
                 });
                 const c = await db.collection({
                     name: 'enchuman',
@@ -170,7 +171,7 @@ describe('Encryption.test.js', () => {
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
                 assert.equal(agent.secret, secret);
-                const newSecret = util.randomCouchString(10);
+                const newSecret = testUtil.randomCouchString(10);
                 doc.set('secret', newSecret);
                 await doc.save();
                 const docNew = await c.findOne().exec();
@@ -179,9 +180,9 @@ describe('Encryption.test.js', () => {
             });
             it('should save one encrypted value (object)', async() => {
                 const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
+                    name: testUtil.randomCouchString(10),
                     adapter: 'memory',
-                    password: util.randomCouchString(10)
+                    password: testUtil.randomCouchString(10)
                 });
                 const c = await db.collection({
                     name: 'enchuman',
@@ -190,8 +191,8 @@ describe('Encryption.test.js', () => {
                 const agent = schemaObjects.encryptedObjectHuman();
                 await c.insert(agent);
                 const newSecret = {
-                    name: util.randomCouchString(10),
-                    subname: util.randomCouchString(10)
+                    name: testUtil.randomCouchString(10),
+                    subname: testUtil.randomCouchString(10)
                 };
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');

@@ -5,6 +5,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import * as ChangeEventBuffer from '../../dist/lib/ChangeEventBuffer';
+import * as testUtil from '../helper/test-util';
 
 describe('ChangeEventBuffer.test.js', () => {
     describe('basic', () => {
@@ -52,7 +53,7 @@ describe('ChangeEventBuffer.test.js', () => {
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            await util.assertThrowsAsync(
+            await testUtil.assertThrowsAsync(
                 () => col._changeEventBuffer.getArrayIndexByPointer(0),
                 Error,
                 'lowest'
@@ -62,7 +63,7 @@ describe('ChangeEventBuffer.test.js', () => {
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            await util.assertThrowsAsync(
+            await testUtil.assertThrowsAsync(
                 () => col._changeEventBuffer.getArrayIndexByPointer(10),
                 Error,
                 'lowest'
@@ -79,7 +80,7 @@ describe('ChangeEventBuffer.test.js', () => {
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            await util.assertThrowsAsync(
+            await testUtil.assertThrowsAsync(
                 () => col._changeEventBuffer.getArrayIndexByPointer(0),
                 Error,
                 'lowest'
@@ -177,7 +178,7 @@ describe('ChangeEventBuffer.test.js', () => {
             // remove the doc
             const doc = await col.findOne().exec();
             await doc.remove();
-            await util.waitUntil(() => col._changeEventBuffer.counter == 2);
+            await testUtil.waitUntil(() => col._changeEventBuffer.counter == 2);
 
             const evs = col._changeEventBuffer.getFrom(q._latestChangeEvent + 1);
             assert.equal(evs.length, 1);

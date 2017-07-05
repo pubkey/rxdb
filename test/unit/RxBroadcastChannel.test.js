@@ -3,6 +3,7 @@ const platform = require('platform');
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as RxBroadcastChannel from '../../dist/lib/RxBroadcastChannel';
 
 import * as schemas from '../helper/schemas';
@@ -18,7 +19,7 @@ describe('RxBroadcastChannel.test.js', () => {
     };
 
     it('init', async() => {
-        const name = util.randomCouchString(10);
+        const name = testUtil.randomCouchString(10);
 
         state.dbs = await Promise.all([
             RxDB.create({
@@ -31,7 +32,7 @@ describe('RxBroadcastChannel.test.js', () => {
             })
         ]);
         state.otherDB = await RxDB.create({
-            name: util.randomCouchString(10),
+            name: testUtil.randomCouchString(10),
             adapter: 'memory'
         });
         util.promiseWait(10);
@@ -50,7 +51,7 @@ describe('RxBroadcastChannel.test.js', () => {
         const msgs = [];
         const sub = bc2.$.subscribe(msg => msgs.push(msg));
         await bc1.write('test');
-        await util.waitUntil(() => msgs.length == 1);
+        await testUtil.waitUntil(() => msgs.length == 1);
         assert.equal(msgs[0].type, 'test');
         sub.unsubscribe();
         bc1.destroy();
@@ -80,9 +81,9 @@ describe('RxBroadcastChannel.test.js', () => {
         const sub3 = bc3.$.subscribe(msg => msgs3.push(msg));
 
         await bc1.write('test');
-        await util.waitUntil(() => msgs2.length == 1);
+        await testUtil.waitUntil(() => msgs2.length == 1);
         assert.equal(msgs2[0].type, 'test');
-        await util.waitUntil(() => msgs3.length == 1);
+        await testUtil.waitUntil(() => msgs3.length == 1);
         assert.equal(msgs3[0].type, 'test');
 
         sub2.unsubscribe();

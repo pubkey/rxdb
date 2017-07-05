@@ -1,8 +1,8 @@
 import assert from 'assert';
-import * as _ from 'lodash';
 
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
@@ -429,7 +429,7 @@ describe('RxSchema.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generate_id();
-                    obj.token = util.randomCouchString(5);
+                    obj.token = testUtil.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {
@@ -468,7 +468,7 @@ describe('RxSchema.test.js', () => {
             return; // comment out to run speed-test
             const schema = RxSchema.create(schemas.human);
             const obj = schemaObjects.human();
-            obj._id = util.randomCouchString(10);
+            obj._id = testUtil.randomCouchString(10);
 
             console.dir(obj);
             console.time('t1');

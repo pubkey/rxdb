@@ -3,6 +3,7 @@
  */
 import assert from 'assert';
 import * as util from '../../dist/lib/util';
+import * as testUtil from '../helper/test-util';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -19,13 +20,13 @@ describe('util.test.js', () => {
             assert.ok(hash > 0);
         });
         it('should get the same hash twice', async() => {
-            const str = util.randomCouchString(10);
+            const str = testUtil.randomCouchString(10);
             const hash = util.fastUnsecureHash(str);
             const hash2 = util.fastUnsecureHash(str);
             assert.equal(hash, hash2);
         });
         it('should work with a very large string', async() => {
-            const str = util.randomCouchString(5000);
+            const str = testUtil.randomCouchString(5000);
             const hash = util.fastUnsecureHash(str);
             assert.equal(typeof hash, 'number');
             assert.ok(hash > 0);
@@ -49,7 +50,7 @@ describe('util.test.js', () => {
             assert.equal(value, decrypted);
         });
         it('should encrypt and decrypt an extremly long string', () => {
-            const value = util.randomCouchString(5000);
+            const value = testUtil.randomCouchString(5000);
             const pwd = 'pwd';
             const encrypted = util.encrypt(value, pwd);
             const decrypted = util.decrypt(encrypted, pwd);
@@ -60,7 +61,7 @@ describe('util.test.js', () => {
         });
         it('should encrypt and decrypt an extremly long password', () => {
             const value = 'foobar';
-            const pwd = util.randomCouchString(5000);
+            const pwd = testUtil.randomCouchString(5000);
             const encrypted = util.encrypt(value, pwd);
             const decrypted = util.decrypt(encrypted, pwd);
             assert.notEqual(value, encrypted);
@@ -93,7 +94,7 @@ describe('util.test.js', () => {
                 await util.promiseWait(1);
                 throw new Error('foo');
             };
-            await util.assertThrowsAsync(
+            await testUtil.assertThrowsAsync(
                 test,
                 Error
             );
@@ -105,7 +106,7 @@ describe('util.test.js', () => {
             };
             let thrown = false;
             try {
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     test,
                     Error
                 );
@@ -121,7 +122,7 @@ describe('util.test.js', () => {
             };
             let thrown = false;
             try {
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     test,
                     TypeError
                 );
@@ -137,7 +138,7 @@ describe('util.test.js', () => {
             };
             let thrown = false;
             try {
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     test,
                     Error
                 );
@@ -153,7 +154,7 @@ describe('util.test.js', () => {
             };
             let thrown = false;
             try {
-                await util.assertThrowsAsync(
+                await testUtil.assertThrowsAsync(
                     test,
                     TypeError,
                     'bar'
@@ -168,7 +169,7 @@ describe('util.test.js', () => {
                 await util.promiseWait(1);
                 throw new Error('foobar');
             };
-            await util.assertThrowsAsync(
+            await testUtil.assertThrowsAsync(
                 test,
                 Error,
                 'oba'
