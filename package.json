@@ -153,7 +153,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-sizes": "^0.4.0",
     "rollup-plugin-uglify": "^2.0.1",
-    "rxjs": "^5.4.1",
+    "rxjs": "^5.4.2",
     "shelljs": "^0.7.8",
     "typescript": "^2.4.1",
     "uglify-js": "^3.0.23",
