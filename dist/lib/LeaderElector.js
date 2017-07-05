@@ -819,14 +819,9 @@ var LeaderElector = function () {
                                 return _context11.abrupt('break', 14);
 
                             case 14:
-                                return _context11.abrupt('return', new Promise(function (res) {
-                                    var sub = _this3.becomeLeader$.asObservable().filter(function (i) {
-                                        return i.isLeader == true;
-                                    }).first().subscribe(function (i) {
-                                        sub.unsubscribe();
-                                        res();
-                                    });
-                                }));
+                                return _context11.abrupt('return', this.becomeLeader$.asObservable().filter(function (i) {
+                                    return i.isLeader == true;
+                                }).first().toPromise());
 
                             case 15:
                             case 'end':
