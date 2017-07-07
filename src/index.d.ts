@@ -32,7 +32,7 @@ interface JsonSchema {
     uniqueItems?: boolean;
     maxProperties?: number;
     minProperties?: number;
-    required?: string[];
+    required?: string[] | boolean;
     properties?: {
         [key: string]: JsonSchema;
     };
@@ -59,7 +59,7 @@ interface SchemaJSON {
     title?: string;
     description?: string;
     version: number;
-    type: string;
+    type: 'object';
     properties: { [key: string]: JsonSchema };
     required?: Array<string>;
     compoundIndexes?: Array<string | Array<string>>;
@@ -90,7 +90,6 @@ declare class RxDatabase {
     collections: any;
 
     $: Observable<RxChangeEvent>;
-    $pull(): Promise<boolean>;
 
     collection(args: RxCollectionCreator): Promise<RxCollection>;
     destroy(): Promise<boolean>;
@@ -195,7 +194,6 @@ declare class RxCollection {
 
 
 
-
 declare class RxQuery {
     collection: RxCollection;
 
@@ -223,8 +221,8 @@ declare class RxQuery {
     // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery;
 
-    exec(): Promise<RxDocument[]>;
-    $: Observable<RxDocument[]>;
+    exec(): Promise<RxDocument[] | RxDocument>;
+    $: Observable<RxDocument[] | RxDocument>;
     remove(): Promise<RxDocument | RxDocument[]>;
     update(updateObj: any): Promise<RxDocument | RxDocument[]>;
 }
@@ -248,7 +246,7 @@ declare class RxDocument {
     update(updateObj: any): Promise<any>;
     atomicUpdate(fun: Function): Promise<any>;
 
-    toJSON(): Object;
+    toJSON(): any;
     destroy(): void;
 }
 
@@ -257,16 +255,12 @@ declare class PouchDB {
     info(): any;
 }
 
-
-interface RxChangeEventData {
-    type: "INSERT" | "UPDATE" | "REMOVE";
-}
-
 declare class RxChangeEvent {
-    data: RxChangeEventData;
+    data: {
+        type: "INSERT" | "UPDATE" | "REMOVE";
+    };
     toJSON(): any;
 }
-
 
 export interface DatabaseCreator {
     name: string;
