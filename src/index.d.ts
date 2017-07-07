@@ -154,7 +154,7 @@ declare class RxCollection {
 
     $: Observable<RxChangeEvent>;
     insert(json: any): Promise<RxDocument>;
-    newDocument(): RxDocument;
+    newDocument(json: any): RxDocument;
     upsert(json: any): Promise<RxDocument>;
     find(queryObj?: any): RxQuery;
     findOne(queryObj?: any): RxQuery;
