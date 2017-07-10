@@ -1,5 +1,10 @@
 # Changelog
 
+## (5.X.X) (coming soon)
+
+Other:
+  - Split out test-util into its own npm-module [async-test-util](https://github.com/pubkey/async-test-util)
+
 ## 5.1.0 (July 10, 2017)
 
 Features:
