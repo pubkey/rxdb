@@ -9,7 +9,6 @@ import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
 import * as util from '../../dist/lib/util';
-import * as testUtil from './test-util';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 
