@@ -11,14 +11,14 @@ import * as RxCollection from '../../dist/lib/RxCollection';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as Crypter from '../../dist/lib/Crypter';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 
 describe('DataMigration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
@@ -36,7 +36,7 @@ describe('DataMigration.test.js', () => {
             });
             it('create same collection with different schema-versions', async() => {
                 const colName = 'human';
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
                     adapter: 'memory'
@@ -68,11 +68,11 @@ describe('DataMigration.test.js', () => {
         describe('negative', () => {
             it('should throw when array', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
@@ -85,11 +85,11 @@ describe('DataMigration.test.js', () => {
             });
             it('should throw when property no number', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
@@ -104,11 +104,11 @@ describe('DataMigration.test.js', () => {
             });
             it('should throw when property no non-float-number', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
@@ -123,11 +123,11 @@ describe('DataMigration.test.js', () => {
             });
             it('should throw when property-value no function', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
@@ -142,11 +142,11 @@ describe('DataMigration.test.js', () => {
             });
             it('throw when strategy missing', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.simpleHumanV3);
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
@@ -167,7 +167,7 @@ describe('DataMigration.test.js', () => {
             it('should NOT get an older version', async() => {
                 const colName = 'human';
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const col = await db.collection({
@@ -184,7 +184,7 @@ describe('DataMigration.test.js', () => {
                 assert.deepEqual(old, []);
             });
             it('should get an older version', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const colName = 'human';
                 const db = await RxDatabase.create({
                     name,
@@ -272,7 +272,7 @@ describe('DataMigration.test.js', () => {
             });
             describe('.delete()', () => {
                 it('should delete the pouchdb with all its content', async() => {
-                    const dbName = testUtil.randomCouchString(10);
+                    const dbName = util.randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
                     const migrator = col._dataMigrator;
                     const olds = await col._dataMigrator._getOldCollections();
@@ -385,7 +385,7 @@ describe('DataMigration.test.js', () => {
                     const olds = await col._dataMigrator._getOldCollections();
                     const oldCol = olds.pop();
 
-                    const pw8 = testUtil.promiseWaitResolveable(1000);
+                    const pw8 = AsyncTestUtil.waitResolveable(1000);
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
                     const state$ = oldCol.migrate(5);
@@ -411,7 +411,7 @@ describe('DataMigration.test.js', () => {
                     const olds = await col._dataMigrator._getOldCollections();
                     const oldCol = olds.pop();
 
-                    const pw8 = testUtil.promiseWaitResolveable(1000);
+                    const pw8 = AsyncTestUtil.waitResolveable(1000);
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
                     const state$ = oldCol.migrate(5);
@@ -432,7 +432,7 @@ describe('DataMigration.test.js', () => {
                     });
                     const olds = await col._dataMigrator._getOldCollections();
                     const oldCol = olds.pop();
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => oldCol.migratePromise(),
                         Error
                     );
@@ -444,7 +444,7 @@ describe('DataMigration.test.js', () => {
             describe('positive', () => {
                 it('should not crash when nothing to migrate', async() => {
                     const col = await humansCollection.createMigrationCollection(0, {});
-                    const pw8 = testUtil.promiseWaitResolveable(5000); // higher than test-timeout
+                    const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const states = [];
                     const state$ = col.migrate();
                     state$.subscribe(s => {
@@ -468,7 +468,7 @@ describe('DataMigration.test.js', () => {
                             return doc;
                         }
                     });
-                    const pw8 = testUtil.promiseWaitResolveable(5000); // higher than test-timeout
+                    const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const states = [];
                     const state$ = col.migrate();
                     state$.subscribe(s => {
@@ -503,7 +503,7 @@ describe('DataMigration.test.js', () => {
                             throw new Error('foobar');
                         }
                     });
-                    const pw8 = testUtil.promiseWaitResolveable(5000); // higher than test-timeout
+                    const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     let error = null;
                     const state$ = col.migrate();
                     state$.subscribe(null, pw8.resolve, null);
@@ -553,7 +553,7 @@ describe('DataMigration.test.js', () => {
                             return doc;
                         }
                     },
-                    testUtil.randomCouchString(10),
+                    util.randomCouchString(10),
                     true
                 );
                 const docs = await col.find().exec();
@@ -569,7 +569,7 @@ describe('DataMigration.test.js', () => {
                             return doc;
                         }
                     },
-                    testUtil.randomCouchString(10),
+                    util.randomCouchString(10),
                     true
                 );
                 const docs = await col.find().exec();
@@ -613,7 +613,7 @@ describe('DataMigration.test.js', () => {
     describe('issues', () => {
         describe('#212 migration runs into infinity-loop', () => {
             it('reproduce and fix', async() => {
-                const dbName = testUtil.randomCouchString(10);
+                const dbName = util.randomCouchString(10);
                 const schema0 = {
                     title: 'hero schema',
                     description: 'describes a simple hero',

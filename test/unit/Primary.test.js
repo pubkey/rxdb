@@ -14,7 +14,7 @@ import clone from 'clone';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -78,8 +78,8 @@ describe('Primary.test.js', () => {
                 it('should not validate the human without primary', () => {
                     const schema = RxSchema.create(schemas.primaryHuman);
                     const obj = {
-                        firstName: testUtil.randomCouchString(10),
-                        lastName: testUtil.randomCouchString(10)
+                        firstName: util.randomCouchString(10),
+                        lastName: util.randomCouchString(10)
                     };
                     assert.throws(() => schema.validate(obj), Error);
                 });
@@ -87,8 +87,8 @@ describe('Primary.test.js', () => {
                     const schema = RxSchema.create(schemas.primaryHuman);
                     const obj = {
                         passportId: {},
-                        firstName: testUtil.randomCouchString(10),
-                        lastName: testUtil.randomCouchString(10)
+                        firstName: util.randomCouchString(10),
+                        lastName: util.randomCouchString(10)
                     };
                     assert.throws(() => schema.validate(obj), Error);
                 });
@@ -117,7 +117,7 @@ describe('Primary.test.js', () => {
                     await c.insert(obj);
                     const obj2 = schemaObjects.simpleHuman();
                     obj2.passportId = obj.passportId;
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => c.insert(obj2),
                         'PouchError'
                     );
@@ -127,7 +127,7 @@ describe('Primary.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     obj.passportId = null;
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => c.insert(obj),
                         Error
                     );
@@ -244,7 +244,7 @@ describe('Primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => doc.set('passportId', 'foobar'),
                         Error
                     );
@@ -290,23 +290,23 @@ describe('Primary.test.js', () => {
                     let docs;
                     c.find().$.subscribe(newDocs => docs = newDocs);
                     await c.insert(schemaObjects.simpleHuman());
-                    await testUtil.waitUntil(() => docs && docs.length == 1);
+                    await AsyncTestUtil.waitUntil(() => docs && docs.length == 1);
                     c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async() => {
-                    const name = testUtil.randomCouchString(10);
+                    const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     let docs;
                     c2.find().$.subscribe(newDocs => docs = newDocs);
                     await c1.insert(schemaObjects.simpleHuman());
-                    await testUtil.waitUntil(() => docs && docs.length == 1);
+                    await AsyncTestUtil.waitUntil(() => docs && docs.length == 1);
 
                     c1.database.destroy();
                     c2.database.destroy();
                 });
                 it('get new field-value when other db changes', async() => {
-                    const name = testUtil.randomCouchString(10);
+                    const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
                     const obj = schemaObjects.simpleHuman();
@@ -314,7 +314,7 @@ describe('Primary.test.js', () => {
                     const doc = await c1.findOne().exec();
                     let value;
                     let count = 0;
-                    const pW8 = testUtil.promiseWaitResolveable(1000);
+                    const pW8 = AsyncTestUtil.waitResolveable(1000);
                     doc.firstName$.subscribe(newVal => {
                         value = newVal;
                         count++;

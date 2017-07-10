@@ -14,7 +14,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 
 
 describe('Reactive-Collection.test.js', () => {
@@ -22,7 +22,7 @@ describe('Reactive-Collection.test.js', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const colName = 'foobar';
@@ -43,7 +43,7 @@ describe('Reactive-Collection.test.js', () => {
         describe('negative', () => {
             it('should get no event on non-succes-insert', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 const c = await db.collection({
@@ -54,7 +54,7 @@ describe('Reactive-Collection.test.js', () => {
                 db.$.subscribe(e => {
                     calls++;
                 });
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => c.insert({
                         foo: 'baar'
                     }),
@@ -80,16 +80,16 @@ describe('Reactive-Collection.test.js', () => {
                 assert.equal(ar.length, 0);
 
                 // empty array since no documents
-                await testUtil.waitUntil(() => ar.length == 1);
+                await AsyncTestUtil.waitUntil(() => ar.length == 1);
 
                 assert.deepEqual(ar[0], []);
 
                 await c.insert(schemaObjects.human());
-                await testUtil.waitUntil(() => ar.length == 2);
+                await AsyncTestUtil.waitUntil(() => ar.length == 2);
 
                 const doc = await c.findOne().exec();
                 await doc.remove();
-                await testUtil.waitUntil(() => ar.length == 3);
+                await AsyncTestUtil.waitUntil(() => ar.length == 3);
                 sub.unsubscribe();
                 c.database.destroy();
             });

@@ -4,7 +4,7 @@ import * as RxDatabase from '../../dist/lib/index';
 import * as Socket from '../../dist/lib/Socket';
 import * as RxChangeEvent from '../../dist/lib/RxChangeEvent';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -13,7 +13,7 @@ describe('Socket.test.js', () => {
 
     it('socket should be able to fetch self-inserted event', async() => {
         const db = await RxDatabase.create({
-            name: testUtil.randomCouchString(10),
+            name: util.randomCouchString(10),
             adapter: 'memory',
             multiInstance: true
         });
@@ -29,7 +29,7 @@ describe('Socket.test.js', () => {
     });
 
     it('socket2 should be able to get docs inserted from socket1', async() => {
-        const name = testUtil.randomCouchString(10);
+        const name = util.randomCouchString(10);
         const db = await RxDatabase.create({
             name,
             adapter: 'memory',
@@ -50,7 +50,7 @@ describe('Socket.test.js', () => {
     });
 
     it('socket-observable should emit changeEvent on pull', async() => {
-        const name = testUtil.randomCouchString(10);
+        const name = util.randomCouchString(10);
         const db = await RxDatabase.create({
             name,
             adapter: 'memory',
@@ -85,7 +85,7 @@ describe('Socket.test.js', () => {
         return true; // commented out because this takes soo long
         this.timeout(10 * 1000);
         const db = await RxDatabase.create({
-            name: testUtil.randomCouchString(10),
+            name: util.randomCouchString(10),
             adapter: 'memory',
             multiInstance: true
         });
@@ -95,7 +95,7 @@ describe('Socket.test.js', () => {
         await Promise.all(
             util.filledArray(10)
             .map(() => RxChangeEvent
-                .create('test' + testUtil.randomCouchString(10), db))
+                .create('test' + util.randomCouchString(10), db))
             .map(cE => socket.write(cE))
         );
 

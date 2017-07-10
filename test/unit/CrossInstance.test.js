@@ -13,13 +13,13 @@ import * as util from '../../dist/lib/util';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 
 describe('CrossInstance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async() => {
             const db = await RxDatabase.create({
-                name: testUtil.randomCouchString(10),
+                name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true
             });
@@ -27,7 +27,7 @@ describe('CrossInstance.test.js', () => {
             db.destroy();
         });
         it('create a 2 multiInstance databases', async() => {
-            const name = testUtil.randomCouchString(10);
+            const name = util.randomCouchString(10);
             const db = await RxDatabase.create({
                 name,
                 adapter: 'memory',
@@ -47,7 +47,7 @@ describe('CrossInstance.test.js', () => {
     describe('RxDatabase.$', () => {
         describe('positive', () => {
             it('get event on db2 when db1 fires', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
@@ -59,7 +59,7 @@ describe('CrossInstance.test.js', () => {
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     await db2.socket.pull();
                     return recieved > 0;
                 });
@@ -70,7 +70,7 @@ describe('CrossInstance.test.js', () => {
         });
         describe('negative', () => {
             it('should not get the same events twice', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1 = c1.database;
@@ -82,7 +82,7 @@ describe('CrossInstance.test.js', () => {
                 });
                 await c1.insert(schemaObjects.human());
 
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     await db2.socket.pull();
                     await db2.socket.pull();
                     return recieved == 1;
@@ -95,7 +95,7 @@ describe('CrossInstance.test.js', () => {
     });
     describe('Collection.$', () => {
         it('get event on db2 when db1 fires', async() => {
-            const name = testUtil.randomCouchString(10);
+            const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             let recieved = 0;
@@ -105,7 +105,7 @@ describe('CrossInstance.test.js', () => {
             });
             await c1.insert(schemaObjects.human());
 
-            await testUtil.waitUntil(async() => {
+            await AsyncTestUtil.waitUntil(async() => {
                 await c2.database.socket.pull();
                 return recieved > 0;
             });
@@ -114,7 +114,7 @@ describe('CrossInstance.test.js', () => {
             c2.database.destroy();
         });
         it('get no changes via pouchdb on different dbs', async() => {
-            const name = testUtil.randomCouchString(10);
+            const name = util.randomCouchString(10);
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
             let got;
@@ -137,7 +137,7 @@ describe('CrossInstance.test.js', () => {
 
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async() => {
-            const name = testUtil.randomCouchString(10);
+            const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             await c1.insert(schemaObjects.human());
@@ -160,15 +160,15 @@ describe('CrossInstance.test.js', () => {
             await c2.database.socket.pull();
 
             await util.promiseWait(10);
-            await testUtil.waitUntil(() => firstNameAfter == 'foobar');
+            await AsyncTestUtil.waitUntil(() => firstNameAfter == 'foobar');
 
             assert.equal(firstNameAfter, 'foobar');
             c1.database.destroy();
             c2.database.destroy();
         });
         it('should work with encrypted fields', async() => {
-            const name = testUtil.randomCouchString(10);
-            const password = testUtil.randomCouchString(10);
+            const name = util.randomCouchString(10);
+            const password = util.randomCouchString(10);
             const db1 = await RxDatabase.create({
                 name,
                 adapter: 'memory',
@@ -213,15 +213,15 @@ describe('CrossInstance.test.js', () => {
             await doc1.save();
             await c2.database.socket.pull();
 
-            await testUtil.waitUntil(() => secretAfter == 'foobar');
+            await AsyncTestUtil.waitUntil(() => secretAfter == 'foobar');
             assert.equal(secretAfter, 'foobar');
 
             db1.destroy();
             db2.destroy();
         });
         it('should work with nested encrypted fields', async() => {
-            const name = testUtil.randomCouchString(10);
-            const password = testUtil.randomCouchString(10);
+            const name = util.randomCouchString(10);
+            const password = util.randomCouchString(10);
             const db1 = await RxDatabase.create({
                 name,
                 adapter: 'memory',
@@ -269,7 +269,7 @@ describe('CrossInstance.test.js', () => {
             await doc1.save();
             await c2.database.socket.pull();
 
-            await testUtil.waitUntil(() => secretAfter.name == 'foo');
+            await AsyncTestUtil.waitUntil(() => secretAfter.name == 'foo');
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'
@@ -282,10 +282,10 @@ describe('CrossInstance.test.js', () => {
     describe('AutoPull', () => {
         describe('positive', () => {
             it('should recieve events without calling .socket.pull()', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
-                const waitPromise = testUtil.promiseWaitResolveable(500);
+                const waitPromise = AsyncTestUtil.waitResolveable(500);
 
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
@@ -301,7 +301,7 @@ describe('CrossInstance.test.js', () => {
                 c2.database.destroy();
             });
             it('should recieve 2 events', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 let recieved = 0;
@@ -313,7 +313,7 @@ describe('CrossInstance.test.js', () => {
                 await c1.insert(schemaObjects.human());
                 await c1.insert(schemaObjects.human());
 
-                await testUtil.waitUntil(() => recieved == 2);
+                await AsyncTestUtil.waitUntil(() => recieved == 2);
                 assert.equal(recieved, 2);
                 c1.database.destroy();
                 c2.database.destroy();

@@ -18,7 +18,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
 
 describe('Reactive-Document.test.js', () => {
@@ -27,7 +27,7 @@ describe('Reactive-Document.test.js', () => {
             it('should fire on save', async() => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
-                doc.set('firstName', testUtil.randomCouchString(8));
+                doc.set('firstName', util.randomCouchString(8));
                 doc.save();
                 const changeEvent = await doc.$.first().toPromise();
                 assert.equal(changeEvent._id, doc.getPrimary());
@@ -42,7 +42,7 @@ describe('Reactive-Document.test.js', () => {
                 doc.get$('firstName').subscribe(newVal => {
                     valueObj.v = newVal;
                 });
-                const setName = testUtil.randomCouchString(10);
+                const setName = util.randomCouchString(10);
                 doc.set('firstName', setName);
                 await doc.save();
                 await util.promiseWait(5);
@@ -58,7 +58,7 @@ describe('Reactive-Document.test.js', () => {
                 doc.get$('mainSkill.name').subscribe(newVal => {
                     valueObj.v = newVal;
                 });
-                const setName = testUtil.randomCouchString(10);
+                const setName = util.randomCouchString(10);
                 doc.set('mainSkill.name', setName);
                 await doc.save();
                 util.promiseWait(5);
@@ -88,7 +88,7 @@ describe('Reactive-Document.test.js', () => {
             it('cannot observe non-existend field', async() => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => doc.get$('foobar').subscribe(newVal => newVal),
                     Error
                 );
@@ -116,7 +116,7 @@ describe('Reactive-Document.test.js', () => {
     describe('synced$', () => {
         describe('positive', () => {
             it('should be in sync when unchanged document gets changed by other instance', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name, 1);
                 const c2 = await humansCollection.createMultiInstance(name, 0);
                 const doc = await c1.findOne().exec();
@@ -130,7 +130,7 @@ describe('Reactive-Document.test.js', () => {
                 doc2.firstName = 'foobar';
                 await doc2.save();
 
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     return doc.firstName === 'foobar';
@@ -145,7 +145,7 @@ describe('Reactive-Document.test.js', () => {
 
             });
             it('should not be in sync when changed document gets changed by other instance', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name, 1);
                 const c2 = await humansCollection.createMultiInstance(name, 0);
                 const doc = await c1.findOne().exec();
@@ -157,14 +157,14 @@ describe('Reactive-Document.test.js', () => {
                 doc2.firstName = 'foobar2';
                 await doc2.save();
 
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     return doc.firstName === 'foobar1';
                 });
                 assert.equal(doc.firstName, 'foobar1');
 
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     const notOk = await doc.synced$.first().toPromise();
                     return !notOk;
                 });
@@ -175,7 +175,7 @@ describe('Reactive-Document.test.js', () => {
                 c2.database.destroy();
             });
             it('should be in sync again when unsync doc saves', async() => {
-                const name = testUtil.randomCouchString(10);
+                const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name, 1);
                 const c2 = await humansCollection.createMultiInstance(name, 0);
                 const doc = await c1.findOne().exec();
@@ -189,7 +189,7 @@ describe('Reactive-Document.test.js', () => {
                 doc2.firstName = 'foobar2';
                 await doc2.save();
 
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     const notOk = await doc.synced$.first().toPromise();
@@ -199,7 +199,7 @@ describe('Reactive-Document.test.js', () => {
                 // resync
                 await doc.save();
 
-                await testUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async() => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     const ok = await doc.synced$.first().toPromise();

@@ -13,7 +13,7 @@ import * as humansCollection from './../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 
 import * as KeyCompressor from '../../dist/lib/KeyCompressor';
 

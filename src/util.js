@@ -293,3 +293,28 @@ export function pouchReplicationFunction(pouch, {
     if (!pull && !push)
         throw new Error('replication-direction must either be push or pull or both. But not none.');
 }
+
+/**
+ * get a random string which can be used with couchdb
+ * @link http://stackoverflow.com/a/1349426/3443137
+ * @param {number} [length=10] length
+ * @return {string}
+ */
+export function randomCouchString(length = 10) {
+    let text = '';
+    const possible = 'abcdefghijklmnopqrstuvwxyz';
+
+    for (let i = 0; i < length; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+/**
+ * shuffle the given array
+ * @param  {Array<any>} arr
+ * @return {Array<any>}
+ */
+export function shuffleArray(arr) {
+    return arr.sort(() => (Math.random() - 0.5));
+};

@@ -3,7 +3,7 @@ const platform = require('platform');
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as RxBroadcastChannel from '../../dist/lib/RxBroadcastChannel';
 
 import * as schemas from '../helper/schemas';
@@ -76,7 +76,7 @@ describe('TemporaryDocument.test.js', () => {
                 const docData = schemaObjects.human();
                 docData.foo = 'bar';
                 const newDoc = c.newDocument(docData);
-                await testUtil.assertThrowsAsync(
+                await AsyncTestUtil.assertThrows(
                     () => newDoc.save(),
                     Error
                 );
@@ -87,7 +87,7 @@ describe('TemporaryDocument.test.js', () => {
     describe('ORM', () => {
         it('should be able to use ORM-functions', async() => {
             const db = await RxDB.create({
-                name: testUtil.randomCouchString(10),
+                name: util.randomCouchString(10),
                 adapter: 'memory'
             });
             const c = await db.collection({
@@ -115,7 +115,7 @@ describe('TemporaryDocument.test.js', () => {
             await newDoc.save();
             newDoc.firstName = 'foobar2';
             await newDoc.save();
-            await testUtil.waitUntil(() => emitted.length == 3);
+            await AsyncTestUtil.waitUntil(() => emitted.length == 3);
             assert.equal('foobar2', emitted.pop());
             c.database.destroy();
         });

@@ -11,7 +11,7 @@ import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 
 describe('ImportExport.test.js', () => {
     describe('Collection', () => {
@@ -29,9 +29,9 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as encrypted', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -55,9 +55,9 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as decrypted', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -82,9 +82,9 @@ describe('ImportExport.test.js', () => {
             });
             it('decrypt a single value from an encrypted export', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -123,9 +123,9 @@ describe('ImportExport.test.js', () => {
                     col.destroy();
                 });
                 it('import encrypted', async() => {
-                    const password = testUtil.randomCouchString(10);
+                    const password = util.randomCouchString(10);
                     const db = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
@@ -142,7 +142,7 @@ describe('ImportExport.test.js', () => {
                     const json = await col.dump();
 
                     const db2 = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
@@ -175,7 +175,7 @@ describe('ImportExport.test.js', () => {
                     const col = await humansCollection.createMultiInstance('pref1', 5);
                     const json = await col.dump();
                     const differentSchemaCol = await humansCollection.createNested();
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => differentSchemaCol.importDump(json),
                         Error
                     );
@@ -183,9 +183,9 @@ describe('ImportExport.test.js', () => {
                 });
                 it('should not import encrypted if password is different', async() => {
                     const db = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
-                        password: testUtil.randomCouchString(10)
+                        password: util.randomCouchString(10)
                     });
                     const col = await db.collection({
                         name: 'enchuman',
@@ -193,9 +193,9 @@ describe('ImportExport.test.js', () => {
                     });
 
                     const db2 = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
-                        password: testUtil.randomCouchString(10)
+                        password: util.randomCouchString(10)
                     });
                     const col2 = await db2.collection({
                         name: 'enchuman',
@@ -208,7 +208,7 @@ describe('ImportExport.test.js', () => {
                     await Promise.all(fns);
 
                     const json = await col.dump();
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => col2.importDump(json),
                         Error
                     );
@@ -217,9 +217,9 @@ describe('ImportExport.test.js', () => {
                 });
                 it('should not import when schema not matching', async() => {
                     const db = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
-                        password: testUtil.randomCouchString(10)
+                        password: util.randomCouchString(10)
                     });
                     const col = await db.collection({
                         name: 'enchuman',
@@ -242,7 +242,7 @@ describe('ImportExport.test.js', () => {
                         foo: 'bar',
                         _id: '0fg89sm5ui:1478730736884'
                     });
-                    await testUtil.assertThrowsAsync(
+                    await AsyncTestUtil.assertThrows(
                         () => col2.importDump(json),
                         TypeError
                     );
@@ -255,7 +255,7 @@ describe('ImportExport.test.js', () => {
     describe('Database', () => {
         describe('.dump()', () => {
             it('should export a valid dump', async() => {
-                const col = await humansCollection.createMultiInstance(testUtil.randomCouchString(10), 5);
+                const col = await humansCollection.createMultiInstance(util.randomCouchString(10), 5);
                 const json = await col.database.dump();
 
                 assert.equal(typeof json.name, 'string');
@@ -276,9 +276,9 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as encrypted', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -299,9 +299,9 @@ describe('ImportExport.test.js', () => {
             });
             it('export encrypted as decrypted', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -328,9 +328,9 @@ describe('ImportExport.test.js', () => {
             });
             it('export with multiple collections', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -356,9 +356,9 @@ describe('ImportExport.test.js', () => {
             });
             it('export 1 of 2 collections', async() => {
                 const db = await RxDatabase.create({
-                    name: testUtil.randomCouchString(10),
+                    name: util.randomCouchString(10),
                     adapter: 'memory',
-                    password: testUtil.randomCouchString(10)
+                    password: util.randomCouchString(10)
                 });
                 const col = await db.collection({
                     name: 'enchuman',
@@ -399,9 +399,9 @@ describe('ImportExport.test.js', () => {
                     db.destroy();
                 });
                 it('import encrypted', async() => {
-                    const password = testUtil.randomCouchString(10);
+                    const password = util.randomCouchString(10);
                     const db = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });
@@ -410,7 +410,7 @@ describe('ImportExport.test.js', () => {
                         schema: schemas.encryptedObjectHuman
                     });
                     const db2 = await RxDatabase.create({
-                        name: testUtil.randomCouchString(10),
+                        name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
                     });

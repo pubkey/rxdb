@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import * as humansCollection from '../helper/humans-collection';
-import * as testUtil from '../helper/test-util';
+import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
 
 
