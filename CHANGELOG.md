@@ -1,12 +1,13 @@
 # Changelog
 
-## 5.X.X (coming soon)
+## 5.1.0 (July 10, 2017)
 
 Features:
   - Added instanceOf-checks
 
 Bugfixes:
   - AutoMigrated caused infinity-loop [#212](https://github.com/pubkey/rxdb/issues/212)
+  - Minor bugs on the typings
 
 Other:
   - Use [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) on non-prio-tasks for better performance on browsers
