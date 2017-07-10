@@ -147,7 +147,7 @@
     "request-promise": "^4.2.0",
     "request-promise-native": "^1.0.4",
     "rimraf": "^2.6.0",
-    "rollup": "^0.43.0",
+    "rollup": "^0.45.0",
     "rollup-plugin-babel": "2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",
@@ -156,11 +156,11 @@
     "rxjs": "^5.4.2",
     "shelljs": "^0.7.8",
     "typescript": "^2.4.1",
-    "uglify-js": "^3.0.23",
+    "uglify-js": "^3.0.24",
     "walk-sync": "^0.3.1",
     "watch": "^1.0.2",
     "watchify": "3.9.0",
-    "webpack": "^3.0.0",
-    "webpack-dev-server": "^2.5.0"
+    "webpack": "^3.1.0",
+    "webpack-dev-server": "^2.5.1"
   }
 }
