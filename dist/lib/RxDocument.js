@@ -294,6 +294,8 @@ var RxDocument = function () {
 
             var objPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
+            if (valueObj === null) return;
+
             var pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
             if (pathProperties.properties) pathProperties = pathProperties.properties;
 

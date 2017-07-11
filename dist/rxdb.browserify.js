@@ -5594,6 +5594,8 @@ var RxDocument = function () {
 
             var objPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
+            if (valueObj === null) return;
+
             var pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
             if (pathProperties.properties) pathProperties = pathProperties.properties;
 
@@ -8805,6 +8807,8 @@ exports.validateCouchDBString = validateCouchDBString;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.pouchReplicationFunction = pouchReplicationFunction;
+exports.randomCouchString = randomCouchString;
+exports.shuffleArray = shuffleArray;
 
 var _clone = require('clone');
 
@@ -9076,6 +9080,34 @@ function pouchReplicationFunction(pouch, _ref3) {
     if (pull && !push) return pouch.replicate.from.bind(pouch);
     if (!pull && !push) throw new Error('replication-direction must either be push or pull or both. But not none.');
 }
+
+/**
+ * get a random string which can be used with couchdb
+ * @link http://stackoverflow.com/a/1349426/3443137
+ * @param {number} [length=10] length
+ * @return {string}
+ */
+function randomCouchString() {
+    var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+
+    var text = '';
+    var possible = 'abcdefghijklmnopqrstuvwxyz';
+
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }return text;
+}
+
+/**
+ * shuffle the given array
+ * @param  {Array<any>} arr
+ * @return {Array<any>}
+ */
+function shuffleArray(arr) {
+    return arr.sort(function () {
+        return Math.random() - 0.5;
+    });
+};
 
 },{"babel-runtime/helpers/asyncToGenerator":31,"babel-runtime/helpers/typeof":36,"babel-runtime/regenerator":37,"clone":40,"crypto-js/aes":420,"crypto-js/enc-utf8":424,"random-token":472,"rxjs/BehaviorSubject":475,"rxjs/Observable":478,"rxjs/Subject":483,"rxjs/add/observable/defer":487,"rxjs/add/observable/from":488,"rxjs/add/observable/fromEvent":489,"rxjs/add/observable/interval":490,"rxjs/add/observable/merge":491,"rxjs/add/operator/delay":492,"rxjs/add/operator/distinct":493,"rxjs/add/operator/distinctUntilChanged":494,"rxjs/add/operator/do":495,"rxjs/add/operator/filter":496,"rxjs/add/operator/first":497,"rxjs/add/operator/map":498,"rxjs/add/operator/mergeMap":499,"rxjs/add/operator/publish":500,"rxjs/add/operator/publishReplay":501,"rxjs/add/operator/startWith":502,"rxjs/add/operator/timeout":503,"rxjs/add/operator/toPromise":504,"spark-md5":567}],24:[function(require,module,exports){
 'use strict';
@@ -36617,7 +36649,7 @@ var Notification = (function () {
         if (typeof value !== 'undefined') {
             return new Notification('N', value);
         }
-        return this.undefinedValueNotification;
+        return Notification.undefinedValueNotification;
     };
     /**
      * A shortcut to create a Notification instance of the type `error` from a
@@ -36634,7 +36666,7 @@ var Notification = (function () {
      * @return {Notification<any>} The valueless "complete" Notification.
      */
     Notification.createComplete = function () {
-        return this.completeNotification;
+        return Notification.completeNotification;
     };
     Notification.completeNotification = new Notification('C');
     Notification.undefinedValueNotification = new Notification('N', undefined);
@@ -36680,6 +36712,120 @@ var Observable = (function () {
         observable.operator = operator;
         return observable;
     };
+    /**
+     * Invokes an execution of an Observable and registers Observer handlers for notifications it will emit.
+     *
+     * <span class="informal">Use it when you have all these Observables, but still nothing is happening.</span>
+     *
+     * `subscribe` is not a regular operator, but a method that calls Observables internal `subscribe` function. It
+     * might be for example a function that you passed to a {@link create} static factory, but most of the time it is
+     * a library implementation, which defines what and when will be emitted by an Observable. This means that calling
+     * `subscribe` is actually the moment when Observable starts its work, not when it is created, as it is often
+     * thought.
+     *
+     * Apart from starting the execution of an Observable, this method allows you to listen for values
+     * that an Observable emits, as well as for when it completes or errors. You can achieve this in two
+     * following ways.
+     *
+     * The first way is creating an object that implements {@link Observer} interface. It should have methods
+     * defined by that interface, but note that it should be just a regular JavaScript object, which you can create
+     * yourself in any way you want (ES6 class, classic function constructor, object literal etc.). In particular do
+     * not attempt to use any RxJS implementation details to create Observers - you don't need them. Remember also
+     * that your object does not have to implement all methods. If you find yourself creating a method that doesn't
+     * do anything, you can simply omit it. Note however, that if `error` method is not provided, all errors will
+     * be left uncaught.
+     *
+     * The second way is to give up on Observer object altogether and simply provide callback functions in place of its methods.
+     * This means you can provide three functions as arguments to `subscribe`, where first function is equivalent
+     * of a `next` method, second of an `error` method and third of a `complete` method. Just as in case of Observer,
+     * if you do not need to listen for something, you can omit a function, preferably by passing `undefined` or `null`,
+     * since `subscribe` recognizes these functions by where they were placed in function call. When it comes
+     * to `error` function, just as before, if not provided, errors emitted by an Observable will be thrown.
+     *
+     * Whatever style of calling `subscribe` you use, in both cases it returns a Subscription object.
+     * This object allows you to call `unsubscribe` on it, which in turn will stop work that an Observable does and will clean
+     * up all resources that an Observable used. Note that cancelling a subscription will not call `complete` callback
+     * provided to `subscribe` function, which is reserved for a regular completion signal that comes from an Observable.
+     *
+     * Remember that callbacks provided to `subscribe` are not guaranteed to be called asynchronously.
+     * It is an Observable itself that decides when these functions will be called. For example {@link of}
+     * by default emits all its values synchronously. Always check documentation for how given Observable
+     * will behave when subscribed and if its default behavior can be modified with a {@link Scheduler}.
+     *
+     * @example <caption>Subscribe with an Observer</caption>
+     * const sumObserver = {
+     *   sum: 0,
+     *   next(value) {
+     *     console.log('Adding: ' + value);
+     *     this.sum = this.sum + value;
+     *   },
+     *   error() { // We actually could just remote this method,
+     *   },        // since we do not really care about errors right now.
+     *   complete() {
+     *     console.log('Sum equals: ' + this.sum);
+     *   }
+     * };
+     *
+     * Rx.Observable.of(1, 2, 3) // Synchronously emits 1, 2, 3 and then completes.
+     * .subscribe(sumObserver);
+     *
+     * // Logs:
+     * // "Adding: 1"
+     * // "Adding: 2"
+     * // "Adding: 3"
+     * // "Sum equals: 6"
+     *
+     *
+     * @example <caption>Subscribe with functions</caption>
+     * let sum = 0;
+     *
+     * Rx.Observable.of(1, 2, 3)
+     * .subscribe(
+     *   function(value) {
+     *     console.log('Adding: ' + value);
+     *     sum = sum + value;
+     *   },
+     *   undefined,
+     *   function() {
+     *     console.log('Sum equals: ' + sum);
+     *   }
+     * );
+     *
+     * // Logs:
+     * // "Adding: 1"
+     * // "Adding: 2"
+     * // "Adding: 3"
+     * // "Sum equals: 6"
+     *
+     *
+     * @example <caption>Cancel a subscription</caption>
+     * const subscription = Rx.Observable.interval(1000).subscribe(
+     *   num => console.log(num),
+     *   undefined,
+     *   () => console.log('completed!') // Will not be called, even
+     * );                                // when cancelling subscription
+     *
+     *
+     * setTimeout(() => {
+     *   subscription.unsubscribe();
+     *   console.log('unsubscribed!');
+     * }, 2500);
+     *
+     * // Logs:
+     * // 0 after 1s
+     * // 1 after 2s
+     * // "unsubscribed!" after 2,5s
+     *
+     *
+     * @param {Observer|Function} observerOrNext (optional) Either an observer with methods to be called,
+     *  or the first of three possible handlers, which is the handler for each value emitted from the subscribed
+     *  Observable.
+     * @param {Function} error (optional) A handler for a terminal event resulting from an error. If no error handler is provided,
+     *  the error will be thrown as unhandled.
+     * @param {Function} complete (optional) A handler for a terminal event resulting from successful completion.
+     * @return {ISubscription} a subscription reference to the registered handlers
+     * @method subscribe
+     */
     Observable.prototype.subscribe = function (observerOrNext, error, complete) {
         var operator = this.operator;
         var sink = toSubscriber_1.toSubscriber(observerOrNext, error, complete);
@@ -36687,7 +36833,7 @@ var Observable = (function () {
             operator.call(sink, this.source);
         }
         else {
-            sink.add(this._trySubscribe(sink));
+            sink.add(this.source ? this._subscribe(sink) : this._trySubscribe(sink));
         }
         if (sink.syncErrorThrowable) {
             sink.syncErrorThrowable = false;
@@ -39599,7 +39745,7 @@ var Subscriber_1 = require('../Subscriber');
  * Observer will never happen. `do` therefore simply spies on existing
  * execution, it does not trigger an execution to happen like `subscribe` does.
  *
- * @example <caption>Map every every click to the clientX position of that click, while also logging the click event</caption>
+ * @example <caption>Map every click to the clientX position of that click, while also logging the click event</caption>
  * var clicks = Rx.Observable.fromEvent(document, 'click');
  * var positions = clicks
  *   .do(ev => console.log(ev))
@@ -40837,7 +40983,7 @@ var root_1 = require('../util/root');
  * source.then((value) => console.log('Value: %s', value));
  * // => Value: 42
  *
- * @param PromiseCtor promise The constructor of the promise. If not provided,
+ * @param {PromiseConstructor} [PromiseCtor] The constructor of the promise. If not provided,
  * it will look for a constructor first in Rx.config.Promise then fall back to
  * the native Promise constructor if available.
  * @return {Promise<T>} An ES2015 compatible promise with the last value from
@@ -41038,7 +41184,6 @@ var AsyncAction = (function (_super) {
         var actions = scheduler.actions;
         var index = actions.indexOf(this);
         this.work = null;
-        this.delay = null;
         this.state = null;
         this.pending = false;
         this.scheduler = null;
@@ -41048,6 +41193,7 @@ var AsyncAction = (function (_super) {
         if (id != null) {
             this.id = this.recycleAsyncId(scheduler, id, null);
         }
+        this.delay = null;
     };
     return AsyncAction;
 }(Action_1.Action));

@@ -99,6 +99,8 @@ exports.validateCouchDBString = validateCouchDBString;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
 exports.pouchReplicationFunction = pouchReplicationFunction;
+exports.randomCouchString = randomCouchString;
+exports.shuffleArray = shuffleArray;
 
 var _clone = require('clone');
 
@@ -370,3 +372,31 @@ function pouchReplicationFunction(pouch, _ref3) {
     if (pull && !push) return pouch.replicate.from.bind(pouch);
     if (!pull && !push) throw new Error('replication-direction must either be push or pull or both. But not none.');
 }
+
+/**
+ * get a random string which can be used with couchdb
+ * @link http://stackoverflow.com/a/1349426/3443137
+ * @param {number} [length=10] length
+ * @return {string}
+ */
+function randomCouchString() {
+    var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+
+    var text = '';
+    var possible = 'abcdefghijklmnopqrstuvwxyz';
+
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }return text;
+}
+
+/**
+ * shuffle the given array
+ * @param  {Array<any>} arr
+ * @return {Array<any>}
+ */
+function shuffleArray(arr) {
+    return arr.sort(function () {
+        return Math.random() - 0.5;
+    });
+};
