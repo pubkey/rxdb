@@ -273,7 +273,7 @@ const db = await RxDB.create('heroesDB', 'localstorage');
 
 Some adapters you can use:
 - [indexedDB](https://www.npmjs.com/package/pouchdb-adapter-idb)
-- [localstorage](./plugins/adapter-localstorage/)
+- [localstorage](https://www.npmjs.com/package/pouchdb-adapter-localstorage)
 - [fruitdown](https://www.npmjs.com/package/pouchdb-adapter-fruitdown)
 - [memory](https://www.npmjs.com/package/pouchdb-adapter-memory)
 - [websql](https://www.npmjs.com/package/pouchdb-adapter-websql)
