@@ -5,6 +5,9 @@
 Other:
   - Split out test-util into its own npm-module [async-test-util](https://github.com/pubkey/async-test-util)
 
+Bugfixes:
+  - Settings values to `null` did not work on temporaryDocuments [#215](https://github.com/pubkey/rxdb/issues/215)
+
 ## 5.1.0 (July 10, 2017)
 
 Features:
