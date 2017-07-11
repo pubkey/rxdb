@@ -34,7 +34,7 @@ describe('TemporaryDocument.test.js', () => {
             assert.equal(newDoc.firstName, 'foobar');
             c.database.destroy();
         });
-        it('should be possible to set the primary', async()=>{
+        it('should be possible to set the primary', async() => {
             const c = await humansCollection.createPrimary(0);
             const newDoc = c.newDocument();
             newDoc.passportId = 'foobar';
@@ -118,6 +118,18 @@ describe('TemporaryDocument.test.js', () => {
             await AsyncTestUtil.waitUntil(() => emitted.length == 3);
             assert.equal('foobar2', emitted.pop());
             c.database.destroy();
+        });
+    });
+    describe('ISSUES', () => {
+        describe('#215 setting field to null throws', () => {
+            it('reproduce', async() => {
+                const c = await humansCollection.create(0);
+                const newDoc = c.newDocument();
+                newDoc.age = null;
+                newDoc.age = 10;
+                assert.equal(newDoc.age, 10);
+                c.database.destroy();
+            });
         });
     });
 });

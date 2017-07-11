@@ -187,6 +187,8 @@ class RxDocument {
     }
 
     _defineGetterSetter(valueObj, objPath = '') {
+        if (valueObj === null) return;
+        
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
         if (pathProperties.properties) pathProperties = pathProperties.properties;
 
