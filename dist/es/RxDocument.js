@@ -345,6 +345,13 @@ var RxDocument = function () {
         return update;
     }();
 
+    /**
+     * [atomicUpdate description]
+     * @param  {[type]}  fun [description]
+     * @return {Promise<RxDocument>}     [description]
+     */
+
+
     RxDocument.prototype.atomicUpdate = function () {
         var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(fun) {
             var _this3 = this;
@@ -355,8 +362,11 @@ var RxDocument = function () {
                     switch (_context3.prev = _context3.next) {
                         case 0:
                             this._atomicUpdates.push(fun);
-                            retPromise = new Promise(function (res) {
-                                _this3._atomicUpdatesResolveFunctions.set(fun, res);
+                            retPromise = new Promise(function (resolve, reject) {
+                                _this3._atomicUpdatesResolveFunctions.set(fun, {
+                                    resolve: resolve,
+                                    reject: reject
+                                });
                             });
 
                             this._runAtomicUpdates();
@@ -396,30 +406,45 @@ var RxDocument = function () {
 
                         case 5:
                             if (!(this._atomicUpdates.length === 0)) {
-                                _context4.next = 7;
+                                _context4.next = 8;
                                 break;
                             }
 
+                            this.__runAtomicUpdates_running = false;
                             return _context4.abrupt('return');
 
-                        case 7:
+                        case 8:
+                            ;
                             fun = this._atomicUpdates.shift();
-                            _context4.next = 10;
+                            _context4.prev = 10;
+                            _context4.next = 13;
                             return fun(this);
 
-                        case 10:
-                            // run atomic
-                            this._atomicUpdatesResolveFunctions.get(fun)(); // resolve promise
+                        case 13:
+                            _context4.next = 15;
+                            return this.save();
 
+                        case 15:
+                            _context4.next = 20;
+                            break;
+
+                        case 17:
+                            _context4.prev = 17;
+                            _context4.t0 = _context4['catch'](10);
+
+                            this._atomicUpdatesResolveFunctions.get(fun).reject(_context4.t0);
+
+                        case 20:
+                            this._atomicUpdatesResolveFunctions.get(fun).resolve(this); // resolve promise
                             this.__runAtomicUpdates_running = false;
                             this._runAtomicUpdates();
 
-                        case 13:
+                        case 23:
                         case 'end':
                             return _context4.stop();
                     }
                 }
-            }, _callee4, this);
+            }, _callee4, this, [[10, 17]]);
         }));
 
         function _runAtomicUpdates() {
@@ -471,6 +496,7 @@ var RxDocument = function () {
                             return this.collection._runHooks('pre', 'save', this);
 
                         case 9:
+
                             this.collection.schema.validate(this._data);
 
                             _context5.next = 12;
