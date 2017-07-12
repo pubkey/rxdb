@@ -1,23 +1,20 @@
 import assert from 'assert';
-import {
-    default as memdown
-} from 'memdown';
-import {
-    default as randomInt
-} from 'random-int';
-import {
-    default as clone
-} from 'clone';
+import memdown from 'memdown';
+import randomInt from 'random-int';
+import clone from 'clone';
+import platform from 'platform';
+import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
+import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as RxDocument from '../../dist/lib/RxDocument';
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 
 
 describe('RxCollection.test.js', () => {
@@ -1022,6 +1019,109 @@ describe('RxCollection.test.js', () => {
                         Error
                     );
                     db.destroy();
+                });
+            });
+        });
+        describe('.atomicUpsert()', () => {
+            describe('positive', () => {
+                it('should not crash when upserting the same doc in parallel', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHuman();
+                    const docs = await Promise.all([
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData)
+                    ]);
+                    assert.ok(docs[0] == docs[1]);
+                    assert.ok(RxDocument.isInstanceOf(docs[0]));
+                    c.database.destroy();
+                });
+                it('should update the value', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHuman();
+                    await Promise.all([
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData)
+                    ]);
+
+                    const docData2 = clone(docData);
+                    docData2.firstName = 'foobar';
+                    await c.atomicUpsert(docData2);
+                    const doc = await c.findOne().exec();
+                    assert.equal(doc.firstName, 'foobar');
+
+                    c.database.destroy();
+                });
+                it('should work when upserting to existing document', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHuman();
+                    await c.insert(docData);
+                    const docs = await Promise.all([
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData)
+                    ]);
+                    assert.ok(docs[0] == docs[1]);
+                    assert.ok(RxDocument.isInstanceOf(docs[0]));
+                    c.database.destroy();
+                });
+                it('should process in the given order', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHuman();
+                    const order = [];
+                    c.atomicUpsert(docData).then(() => order.push(0));
+                    c.atomicUpsert(docData).then(() => order.push(1));
+                    c.atomicUpsert(docData).then(() => order.push(2));
+                    await AsyncTestUtil.waitUntil(() => order.length === 3);
+                    assert.deepEqual(order, [0, 1, 2]);
+
+                    c.database.destroy();
+                });
+                it('should work when inserting on a slow storage', async() => {
+                    if (!platform.isNode()) return;
+                    // use a 'slow' adapter because memory might be to fast
+                    RxDB.plugin(require('pouchdb-adapter-node-websql'));
+                    const db = await RxDB.create({
+                        name: '../test_tmp/' + util.randomCouchString(10),
+                        adapter: 'websql'
+                    });
+                    const c = await db.collection({
+                        name: 'humans',
+                        schema: schemas.primaryHuman
+                    });
+
+                    const docData = schemaObjects.simpleHuman();
+                    await c.atomicUpsert(docData);
+                    await c.atomicUpsert(docData);
+                    const docData2 = clone(docData);
+                    docData2.firstName = 'foobar1';
+                    await c.atomicUpsert(docData2);
+                    const docs = await c.find().exec();
+                    assert.equal(docs.length, 1);
+                    const doc = await c.findOne().exec();
+                    assert.equal(doc.firstName, 'foobar1');
+
+                    db.destroy();
+                });
+            });
+            describe('negative', () => {
+                it('should throw when not matching schema', async() => {
+                    const c = await humansCollection.createPrimary(0);
+                    const docData = schemaObjects.simpleHuman();
+                    const docs = await Promise.all([
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData)
+                    ]);
+                    const docData2 = clone(docData);
+                    docData2.firstName = 1337;
+                    AsyncTestUtil.assertThrows(
+                        () => c.atomicUpsert(docData2),
+                        Error,
+                        'schema'
+                    );
+                    c.database.destroy();
                 });
             });
         });

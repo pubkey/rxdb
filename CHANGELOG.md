@@ -2,6 +2,9 @@
 
 ## (5.X.X) (coming soon)
 
+Features:
+  - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicUpsert)
+
 Other:
   - Split out test-util into its own npm-module [async-test-util](https://github.com/pubkey/async-test-util)
 

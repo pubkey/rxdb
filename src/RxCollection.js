@@ -32,6 +32,7 @@ class RxCollection {
         this._migrationStrategies = migrationStrategies;
         this._pouchSettings = pouchSettings;
         this._methods = methods;
+        this._atomicUpsertLocks = {};
 
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
@@ -300,6 +301,35 @@ class RxCollection {
             const newDoc = await this.insert(json);
             return newDoc;
         }
+    }
+
+
+    async _atomicUpsertEnsureRxDocumentExists(primary, json) {
+        const doc = await this.findOne(primary).exec();
+        if (doc) return; // doc exists, continue
+        return this.insert(json);
+    }
+
+    /**
+     * upserts to a RxDocument, uses atomicUpdate if document already exists
+     * @param  {object}  json
+     * @return {Promise}
+     */
+    async atomicUpsert(json) {
+        json = clone(json);
+        const primary = json[this.schema.primaryPath];
+        if (!primary) throw new Error('RxCollection.atomicUpsert() does not work without primary');
+
+        // ensure that it wont try 2 parallel inserts
+        if (!this._atomicUpsertLocks[primary])
+            this._atomicUpsertLocks[primary] = this._atomicUpsertEnsureRxDocumentExists(primary, json);
+        await this._atomicUpsertLocks[primary];
+
+        const doc = await this.findOne(primary).exec();
+        return doc.atomicUpdate(innerDoc => {
+            json._rev = innerDoc._rev;
+            innerDoc._data = json;
+        });
     }
 
     /**

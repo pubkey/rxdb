@@ -155,6 +155,7 @@ declare class RxCollection {
     insert(json: any): Promise<RxDocument>;
     newDocument(json: any): RxDocument;
     upsert(json: any): Promise<RxDocument>;
+    atomicUpsert(json: any): Promise<RxDocument>;
     find(queryObj?: any): RxQuery;
     findOne(queryObj?: any): RxQuery;
 

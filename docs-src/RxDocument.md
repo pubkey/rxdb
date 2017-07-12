@@ -83,7 +83,7 @@ await myDocument.update({
 
 ### atomicUpdate()
 When you run many save-operations on the same RxDocument in a very short timespan, it can happen that you get a `409 Conflict`-Error.
-This means that you have run a `.save()` on the document, while the previous save-operation was still running.
+This means that you did run a `.save()` on the document, while the previous save-operation was still running.
 To prevent these types of errors, you can run atomic update-operations.
 `atomicUpdate()` has a function as argument, which transforms the document and then automatically runs a `save()`.
 It returns a promise to notify you when the given atomic-update has finished.

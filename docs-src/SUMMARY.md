@@ -35,6 +35,7 @@
         * [insert()](./RxCollection.md#insert)
         * [newDocument()](./RxCollection.md#newDocument)
         * [upsert()](./RxCollection.md#upsert)
+        * [atomicUpsert()](./RxCollection.md#atomicUpsert)
         * [find()](./RxCollection.md#find)
         * [findOne()](./RxCollection.md#findone)
         * [query()](./RxCollection.md#query)

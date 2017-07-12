@@ -81,6 +81,32 @@ const doc = await myCollection.upsert({
 });
 ```
 
+### atomicUpsert()
+
+When you run many upsert-operations on the same RxDocument in a very short timespan, it can happen that you get a `409 Conflict`-Error.
+This means that you did run a `.upsert()` on the document, while the previous upsert-operation was still running.
+To prevent these types of errors, you can run atomic upsert-operations.
+The behavior is similar to [RxDocument.atomicUpdate](./RxDocument.md#atomicUpdate).
+
+```js
+const docData = {
+    name: 'Bob', // primary
+    lastName: 'Kelso'
+};
+
+myCollection.upsert(docData);
+myCollection.upsert(docData);
+// -> throws because of parrallel update to the same document
+
+myCollection.atomicUpsert(docData);
+myCollection.atomicUpsert(docData);
+myCollection.atomicUpsert(docData);
+
+// wait until last upsert finished
+await myCollection.atomicUpsert(docData);
+// -> works
+```
+
 ### find()
 To find documents in your collection, use this method.
 This will return a RxQuery-Object with the exec-function.
