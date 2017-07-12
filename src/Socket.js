@@ -103,7 +103,7 @@ class Socket {
         this.pullCount++;
 
         // w8 for idle-time because this is a non-prio-task
-        await util.requestIdlePromise();
+        await util.requestIdlePromise(EVENT_TTL / 2);
         if (this._destroyed) return;
 
         const minTime = this.lastPull - 100; // TODO evaluate this value (100)

@@ -124,12 +124,17 @@ export async function promiseWait(ms = 0) {
     return new Promise(res => setTimeout(res, ms));
 }
 
-export async function requestIdlePromise() {
+export async function requestIdlePromise(timeout = null) {
     if (
         typeof window === 'object' &&
         window.requestIdleCallback
-    ) return new Promise(res => requestIdleCallback(res));
-    else
+    ) {
+        return new Promise(
+            res => window.requestIdleCallback(res, {
+                timeout
+            })
+        );
+    } else
         return new Promise(res => setTimeout(res, 0));
 }
 
