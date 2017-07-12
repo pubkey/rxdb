@@ -296,8 +296,11 @@ class RxDocument {
      */
     async atomicUpdate(fun) {
         this._atomicUpdates.push(fun);
-        const retPromise = new Promise(res => {
-            this._atomicUpdatesResolveFunctions.set(fun, res);
+        const retPromise = new Promise((resolve, reject) => {
+            this._atomicUpdatesResolveFunctions.set(fun, {
+                resolve,
+                reject
+            });
         });
         this._runAtomicUpdates();
         return retPromise;
@@ -313,9 +316,13 @@ class RxDocument {
         };
         const fun = this._atomicUpdates.shift();
 
-        await fun(this); // run atomic
-        this._atomicUpdatesResolveFunctions.get(fun)(this); // resolve promise
-
+        try{
+            await fun(this); // run atomic
+            await this.save();
+        }catch(err){
+            this._atomicUpdatesResolveFunctions.get(fun).reject(err);
+        }
+        this._atomicUpdatesResolveFunctions.get(fun).resolve(this); // resolve promise
         this.__runAtomicUpdates_running = false;
         this._runAtomicUpdates();
     }
@@ -337,6 +344,7 @@ class RxDocument {
         }
 
         await this.collection._runHooks('pre', 'save', this);
+
         this.collection.schema.validate(this._data);
 
         const ret = await this.collection._pouchPut(clone(this._data));

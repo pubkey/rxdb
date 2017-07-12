@@ -392,6 +392,61 @@ describe('RxDocument.test.js', () => {
 
                 db.destroy();
             });
+            it('should be persistent when re-creating the database', async() => {
+                if (!platform.isNode()) return;
+                // use a 'slow' adapter because memory might be to fast
+                RxDB.plugin(require('pouchdb-adapter-node-websql'));
+
+                const dbName = '../test_tmp/' + util.randomCouchString(10);
+                const db = await RxDB.create({
+                    name: dbName,
+                    adapter: 'websql'
+                });
+                const c = await db.collection({
+                    name: 'humans',
+                    schema: schemas.primaryHuman
+                });
+                await c.insert(schemaObjects.simpleHuman());
+                const doc = await c.findOne().exec();
+                const docData = doc.toJSON();
+                await doc.atomicUpdate(innerDoc => innerDoc.firstName = 'foobar');
+                assert.equal(doc.firstName, 'foobar');
+                await db.destroy();
+
+                // same again
+                const db2 = await RxDB.create({
+                    name: dbName,
+                    adapter: 'websql'
+                });
+                const c2 = await db2.collection({
+                    name: 'humans',
+                    schema: schemas.primaryHuman
+                });
+                const doc2 = await c2.findOne().exec();
+                assert.equal(doc.passportId, doc2.passportId);
+                const docData2 = doc2.toJSON();
+                assert.equal(doc2.firstName, 'foobar');
+                db2.destroy();
+            });
+        });
+        describe('negative', () => {
+            it('should throw when not matching schema', async() => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                await doc.atomicUpdate(innerDoc => {
+                    assert.ok(RxDocument.isInstanceOf(innerDoc));
+                    innerDoc.age = 50;
+                });
+                assert.equal(doc.age, 50);
+                await AsyncTestUtil.assertThrows(
+                    () => doc.atomicUpdate(innerDoc => {
+                        innerDoc.age = 'foobar';
+                    }),
+                    Error,
+                    'schema'
+                );
+                c.database.destroy();
+            });
         });
     });
     describe('pseudo-Proxy', () => {

@@ -244,7 +244,7 @@ declare class RxDocument {
     remove(): Promise<boolean>;
     populate(objPath: string): Promise<RxDocument | any>;
     update(updateObj: any): Promise<any>;
-    atomicUpdate(fun: Function): Promise<any>;
+    atomicUpdate(fun: Function): Promise<RxDocument>;
 
     toJSON(): any;
     destroy(): void;
