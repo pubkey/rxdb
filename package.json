@@ -112,7 +112,7 @@
     "express": "^4.15.3",
     "express-pouchdb": "^2.3.7",
     "faker": "^4.1.0",
-    "gitbook-cli": "^2.3.0",
+    "gitbook-cli": "^2.3.1",
     "gulp": "3.9.1",
     "gulp-mocha": "^4.3.0",
     "http-server": "^0.10.0",
@@ -140,6 +140,7 @@
     "pouchdb-adapter-leveldb": "^6.2.0",
     "pouchdb-adapter-localstorage": "^6.2.0",
     "pouchdb-adapter-memory": "^6.2.0",
+    "pouchdb-adapter-node-websql": "^6.2.0",
     "pouchdb-adapter-websql": "^6.2.0",
     "pouchdb-replication": "^6.2.0",
     "pre-commit": "1.2.2",
@@ -148,7 +149,7 @@
     "request-promise": "^4.2.0",
     "request-promise-native": "^1.0.4",
     "rimraf": "^2.6.0",
-    "rollup": "^0.45.0",
+    "rollup": "^0.45.1",
     "rollup-plugin-babel": "2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",
@@ -161,7 +162,7 @@
     "walk-sync": "^0.3.1",
     "watch": "^1.0.2",
     "watchify": "3.9.0",
-    "webpack": "^3.1.0",
+    "webpack": "^3.2.0",
     "webpack-dev-server": "^2.5.1"
   }
 }

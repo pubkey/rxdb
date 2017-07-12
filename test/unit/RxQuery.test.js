@@ -1,15 +1,15 @@
 import assert from 'assert';
+import platform from 'platform';
 
 import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as RxDocument from '../../dist/lib/RxDocument';
-import {
-    default as MQuery
-} from '../../dist/lib/mquery/mquery';
+import mquery from '../../dist/lib/mquery/mquery';
 
 describe('RxQuery.test.js', () => {
     describe('mquery', () => {
@@ -279,6 +279,30 @@ describe('RxQuery.test.js', () => {
             assert.equal(q._execOverDatabaseCount, 2);
 
             col.database.destroy();
+        });
+        it('querying fast should still return the same RxDocument', async() => {
+            if (!platform.isNode()) return;
+            // use a 'slow' adapter because memory might be to fast
+            RxDB.plugin(require('pouchdb-adapter-node-websql'));
+            const db = await RxDB.create({
+                name: '../test_tmp/'+util.randomCouchString(10),
+                adapter: 'websql'
+            });
+            const c = await db.collection({
+                name: 'humans',
+                schema: schemas.human
+            });
+            await c.insert(schemaObjects.human());
+
+            const query1 = c.findOne().where('age').gt(0);
+            const query2 = c.findOne().where('age').gt(1);
+            const docs = await Promise.all([
+                query1.exec(),
+                query2.exec()
+            ]);
+            assert.ok(docs[0] == docs[1]);
+
+            db.destroy();
         });
     });
 

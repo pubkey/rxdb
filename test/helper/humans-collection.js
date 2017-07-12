@@ -1,10 +1,4 @@
-import {
-    default as clone
-} from 'clone';
-import {
-    default as memdown
-} from 'memdown';
-
+import clone from 'clone';
 import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
