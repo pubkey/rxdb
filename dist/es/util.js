@@ -132,6 +132,7 @@ export var promiseWait = function () {
 
 export var requestIdlePromise = function () {
     var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+        var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
         return _regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
@@ -142,7 +143,9 @@ export var requestIdlePromise = function () {
                         }
 
                         return _context2.abrupt('return', new Promise(function (res) {
-                            return requestIdleCallback(res);
+                            return window.requestIdleCallback(res, {
+                                timeout: timeout
+                            });
                         }));
 
                     case 4:

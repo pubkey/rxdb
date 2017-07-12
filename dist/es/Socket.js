@@ -258,7 +258,7 @@ var Socket = function () {
 
                             // w8 for idle-time because this is a non-prio-task
                             _context6.next = 7;
-                            return util.requestIdlePromise();
+                            return util.requestIdlePromise(EVENT_TTL / 2);
 
                         case 7:
                             if (!this._destroyed) {
