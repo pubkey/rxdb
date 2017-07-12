@@ -7,6 +7,7 @@ Other:
 
 Bugfixes:
   - Settings values to `null` did not work on temporaryDocuments [#215](https://github.com/pubkey/rxdb/issues/215)
+  - `RxDocument.atomicUpdate()` did not run when reusing after a while
 
 ## 5.1.0 (July 10, 2017)
 

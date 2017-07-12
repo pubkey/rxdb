@@ -1,10 +1,13 @@
 import assert from 'assert';
+import platform from 'platform';
+import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
+
+import * as RxDB from '../../dist/lib/index';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import * as RxDatabase from '../../dist/lib/index';
 
@@ -306,10 +309,11 @@ describe('RxDocument.test.js', () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
 
-                await doc.atomicUpdate((innerDoc) => {
+                const returnedDoc = await doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar';
                 });
                 assert.equal('foobar', doc.firstName);
+                assert.ok(doc == returnedDoc);
                 c.database.destroy();
             });
             it('run two updates (last write wins)', async() => {
@@ -359,6 +363,34 @@ describe('RxDocument.test.js', () => {
                 await lastPromise;
                 assert.equal(t, doc.age);
                 c.database.destroy();
+            });
+            it('should work when inserting on a slow storage', async() => {
+                if (!platform.isNode()) return;
+                // use a 'slow' adapter because memory might be to fast
+                RxDB.plugin(require('pouchdb-adapter-node-websql'));
+                const db = await RxDB.create({
+                    name: '../test_tmp/' + util.randomCouchString(10),
+                    adapter: 'websql'
+                });
+                const c = await db.collection({
+                    name: 'humans',
+                    schema: schemas.primaryHuman
+                });
+                await c.insert(schemaObjects.simpleHuman());
+                const doc = await c.findOne().exec();
+                doc.atomicUpdate((innerDoc) => {
+                    innerDoc.firstName = 'foobar';
+                });
+                await doc.atomicUpdate((innerDoc) => {
+                    innerDoc.firstName = 'foobar2';
+                });
+                await AsyncTestUtil.wait(50);
+                await doc.atomicUpdate((innerDoc) => {
+                    innerDoc.firstName = 'foobar3';
+                });
+                assert.equal('foobar3', doc.firstName);
+
+                db.destroy();
             });
         });
     });

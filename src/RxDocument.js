@@ -188,7 +188,7 @@ class RxDocument {
 
     _defineGetterSetter(valueObj, objPath = '') {
         if (valueObj === null) return;
-        
+
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
         if (pathProperties.properties) pathProperties = pathProperties.properties;
 
@@ -288,6 +288,12 @@ class RxDocument {
         await this.save();
     }
 
+
+    /**
+     * [atomicUpdate description]
+     * @param  {[type]}  fun [description]
+     * @return {Promise<RxDocument>}     [description]
+     */
     async atomicUpdate(fun) {
         this._atomicUpdates.push(fun);
         const retPromise = new Promise(res => {
@@ -296,15 +302,19 @@ class RxDocument {
         this._runAtomicUpdates();
         return retPromise;
     }
+
     async _runAtomicUpdates() {
         if (this.__runAtomicUpdates_running) return;
         else this.__runAtomicUpdates_running = true;
 
-        if (this._atomicUpdates.length === 0) return;
+        if (this._atomicUpdates.length === 0) {
+            this.__runAtomicUpdates_running = false;
+            return;
+        };
         const fun = this._atomicUpdates.shift();
 
         await fun(this); // run atomic
-        this._atomicUpdatesResolveFunctions.get(fun)(); // resolve promise
+        this._atomicUpdatesResolveFunctions.get(fun)(this); // resolve promise
 
         this.__runAtomicUpdates_running = false;
         this._runAtomicUpdates();
