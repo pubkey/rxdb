@@ -7,6 +7,7 @@ Features:
 
 Other:
   - Split out test-util into its own npm-module [async-test-util](https://github.com/pubkey/async-test-util)
+  - Upgrade to pouchdb version [6.3.2](https://github.com/pouchdb/pouchdb/releases/tag/6.3.2)
 
 Bugfixes:
   - Settings values to `null` did not work on temporaryDocuments [#215](https://github.com/pubkey/rxdb/issues/215)
