@@ -131,7 +131,8 @@ interface PouchReplicationOptions {
     timeout?: number,
     batch_size?: number,
     batches_limit?: number,
-    back_off_function?: Function
+    back_off_function?: Function,
+    checkpoint?: false | 'source' | 'target'
 }
 
 interface SyncOptions {
