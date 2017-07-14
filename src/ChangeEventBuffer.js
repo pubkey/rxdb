@@ -18,8 +18,7 @@ class ChangeEventBuffer {
         this.eventCounterMap = new WeakMap();
 
         this.subs.push(
-            this.collection.$
-            .subscribe(cE => this._handleChangeEvent(cE))
+            this.collection.$.subscribe(cE => this._handleChangeEvent(cE))
         );
     }
 

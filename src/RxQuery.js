@@ -190,7 +190,8 @@ class RxQuery {
                 .mergeMap(async(changeEvent) => this._ensureEqual())
                 .filter(() => false);
 
-            this._observable$ = util.Rx.Observable.merge(
+            this._observable$ = util.Rx.Observable
+                .merge(
                     res$,
                     changeEvents$
                 )

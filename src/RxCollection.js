@@ -430,7 +430,8 @@ class RxCollection {
              * this is to ensure that changes from 'synced' dbs will be published
              */
             const sendChanges = {};
-            const pouch$ = util.Rx.Observable.fromEvent(
+            const pouch$ = util.Rx.Observable
+                .fromEvent(
                     this.pouch.changes({
                         since: 'now',
                         live: true,

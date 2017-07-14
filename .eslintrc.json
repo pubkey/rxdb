@@ -1,6 +1,4 @@
 {
-    "esversion": 6,
-    "esnext": true,
     "parser": "babel-eslint",
     "env": {
         "browser": true,
@@ -14,6 +12,7 @@
         "indent": [
             "error",
             4, {
+				"MemberExpression": "off",
                 "SwitchCase": 1
             }
         ],

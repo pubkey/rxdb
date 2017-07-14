@@ -62,8 +62,7 @@ describe('Population.test.js', () => {
         describe('negative', () => {
             it('throw if primary is ref', () => {
                 assert.throws(
-                    () =>
-                    RxSchema.create({
+                    () => RxSchema.create({
                         version: 0,
                         properties: {
                             bestFriend: {
@@ -78,8 +77,7 @@ describe('Population.test.js', () => {
             });
             it('throw if ref-type is no string', () => {
                 assert.throws(
-                    () =>
-                    RxSchema.create({
+                    () => RxSchema.create({
                         version: 0,
                         properties: {
                             bestFriend: {
@@ -92,8 +90,7 @@ describe('Population.test.js', () => {
             });
             it('throw if ref-type is no string (array)', () => {
                 assert.throws(
-                    () =>
-                    RxSchema.create({
+                    () => RxSchema.create({
                         version: 0,
                         properties: {
                             friends: {
