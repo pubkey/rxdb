@@ -1,6 +1,6 @@
 # Changelog
 
-## (5.X.X) (coming soon)
+## (5.2.X) (coming soon)
 
 Features:
   - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicUpsert)

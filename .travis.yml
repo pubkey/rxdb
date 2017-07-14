@@ -15,5 +15,7 @@ jobs:
       script: npm run test:node
     - stage: build
       script: npm run build
+    - stage: lint
+      script: npm run lint
     - stage: angular2
       script: (cd ./examples/angular2 && npm install && npm run build)
