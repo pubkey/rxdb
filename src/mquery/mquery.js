@@ -32,9 +32,10 @@ function Query(criteria) {
  */
 Query.prototype.clone = function() {
     const same = new Query();
-    Object.entries(this).forEach(ar => {
-        same[ar[0]] = ar[1];
-    });
+    Object.entries(this)
+        .forEach(entry => {
+            same[entry[0]] = clone(entry[1]);
+        });
     return same;
 };
 

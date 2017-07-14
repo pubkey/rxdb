@@ -122,6 +122,56 @@ describe('RxQuery.test.js', () => {
             assert.ok(queryString.includes('foobar'));
             col.database.destroy();
         });
+        it('same queries should return the same string', async() => {
+            const col1 = await humansCollection.create(0);
+            const col2 = await humansCollection.create(0);
+
+            const query1 = col1.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId').toString();
+
+            const query2 = col2.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId').toString();
+
+            assert.equal(query1, query2);
+            col1.database.destroy();
+            col2.database.destroy();
+        });
+        it('same queries should return the same string even if on same collection', async() => {
+            const col = await humansCollection.create(0);
+
+            const query1 = col.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId').toString();
+
+            const query2 = col.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId').toString();
+
+            assert.equal(query1, query2);
+            col.database.destroy();
+        });
+        it('same queries should have same string even when in different-selector-order', async() => {
+            const col = await humansCollection.create(0);
+
+            const query1 = col.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId').toString();
+
+            const query2 = col.find()
+                .where('name').ne('foobar')
+                .where('age').gt(10)
+                .sort('passportId').toString();
+
+            assert.equal(query1, query2);
+            col.database.destroy();
+        });
     });
 
     describe('immutable', () => {
@@ -187,6 +237,39 @@ describe('RxQuery.test.js', () => {
             assert.notEqual(q.id, q2.id);
             col.database.destroy();
         });
+        it('ISSUE: ensure its the same query', async() => {
+            const col = await humansCollection.create(0);
+
+            const query1 = col.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId');
+
+            const query2 = col.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId');
+
+            assert.ok(query1 === query2);
+            col.database.destroy();
+        });
+        it('ensure its the same query when selector-order is different', async() => {
+            const col = await humansCollection.create(0);
+
+            const query1 = col.find()
+                .where('age').gt(10)
+                .where('name').ne('foobar')
+                .sort('passportId');
+
+            const query2 = col.find()
+                .where('name').ne('foobar')
+                .where('age').gt(10)
+                .sort('passportId');
+
+            assert.ok(query1 === query2);
+            col.database.destroy();
+        });
+
         it('TODO should distinguish between different sort-orders', async() => {
             // TODO I don't know if this is defined in the couchdb-spec
             return;
@@ -285,7 +368,7 @@ describe('RxQuery.test.js', () => {
             // use a 'slow' adapter because memory might be to fast
             RxDB.plugin(require('pouchdb-adapter-node-websql'));
             const db = await RxDB.create({
-                name: '../test_tmp/'+util.randomCouchString(10),
+                name: '../test_tmp/' + util.randomCouchString(10),
                 adapter: 'websql'
             });
             const c = await db.collection({
