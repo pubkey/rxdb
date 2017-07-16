@@ -24,7 +24,9 @@
       * [Create a collection with the schema](./RxSchema.md#create-a-collection-with-the-schema)
       * [version](./RxSchema.md#version)
       * [disableKeyCompression](./RxSchema.md#disableKeyCompression)
-      * [Indexes](./RxSchema.md#indexes)
+      * [indexes](./RxSchema.md#indexes)
+      * [default](./RxSchema.md#default)
+
 
 * [RxCollection](./RxCollection.md)
     * [Creation](./RxCollection.md#creating-a-collection)

@@ -1,12 +1,11 @@
 import assert from 'assert';
+import clone from 'clone';
 
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
-
-const g = {};
 
 describe('RxSchema.test.js', () => {
     describe('static', () => {
@@ -54,7 +53,9 @@ describe('RxSchema.test.js', () => {
                 it('validate empty', () => {
                     RxSchema.checkSchema(schemas.empty);
                 });
-
+                it('validate with defaults', () => {
+                    RxSchema.checkSchema(schemas.humanDefault);
+                });
             });
             describe('negative', () => {
                 it('break when index is no string', () => {
@@ -136,7 +137,6 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error);
                 });
-
                 it('should not allow ending lodash _ in fieldnames (reserved for populate)', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
@@ -165,7 +165,6 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error, 'underscore');
                 });
-
                 it('should not allow RxDocument-properties as top-fieldnames (own)', () => {
                     assert.throws(() => RxSchema.checkSchema({
                         title: 'schema',
@@ -225,7 +224,27 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error);
                 });
-
+                it('throw when defaults on non-first-level field', async() => {
+                    assert.throws(() => RxSchema.checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        description: 'save as fieldname',
+                        properties: {
+                            foobar: {
+                                type: 'string'
+                            },
+                            deeper: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string',
+                                        default: 'foobar'
+                                    }
+                                }
+                            }
+                        }
+                    }), Error);
+                });
             });
         });
         describe('.normalize()', () => {
@@ -363,7 +382,6 @@ describe('RxSchema.test.js', () => {
                 assert.deepEqual(schema.previousVersions, [0, 1, 2, 3, 4]);
             });
         });
-
         describe('.hash', () => {
             describe('positive', () => {
                 it('should hash', () => {
@@ -461,7 +479,35 @@ describe('RxSchema.test.js', () => {
             });
             describe('negative', () => {});
         });
-
+        describe('.fillObjectWithDefaults()', () => {
+            describe('positive', () => {
+                it('should fill all unset fields', () => {
+                    const schema = RxSchema.create(schemas.humanDefault);
+                    const data = {
+                        foo: 'bar'
+                    };
+                    const filled = schema.fillObjectWithDefaults(data);
+                    assert.ok(data != filled);
+                    assert.equal(filled.foo, 'bar');
+                    assert.equal(filled.age, 20);
+                });
+                it('should not overwrite given values', () => {
+                    const schema = RxSchema.create(schemas.humanDefault);
+                    const data = {
+                        foo: 'bar',
+                        age: 40
+                    };
+                    const data2 = clone(data);
+                    const filled = schema.fillObjectWithDefaults(data);
+                    const filled2 = schema.fillObjectWithDefaults(data2);
+                    assert.ok(data != filled);
+                    assert.equal(filled.foo, 'bar');
+                    assert.equal(filled.age, 40);
+                    assert.equal(filled2.foo, 'bar');
+                    assert.equal(filled2.age, 40);
+                });
+            });
+        });
     });
     describe('performance', () => {
         it('validate object often', async() => {
@@ -479,10 +525,9 @@ describe('RxSchema.test.js', () => {
             process.exit();
         });
     });
-
     describe('wait a bit', () => {
-        it('w8 a bit', (done) => {
-            setTimeout(done, 1);
+        it('w8 a bit', async() => {
+            await AsyncTestUtil.wait(0);
         });
     });
 });

@@ -242,6 +242,7 @@ class RxCollection {
         }
 
         json = clone(json);
+        json = this.schema.fillObjectWithDefaults(json);
 
         if (json._id)
             throw new Error('do not provide ._id, it will be generated');
@@ -589,6 +590,7 @@ class RxCollection {
      * @return {RxDocument}
      */
     newDocument(docData = {}) {
+        docData = this.schema.fillObjectWithDefaults(docData);
         const doc = RxDocument.create(this, docData);
         doc._isTemporary = true;
         this._assignMethodsToDocument(doc);

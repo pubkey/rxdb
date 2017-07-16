@@ -78,6 +78,16 @@ export class RxSchema {
         return Object.keys(this.normalized.properties);
     }
 
+    get defaultValues() {
+        if (!this._defaultValues) {
+            this._defaultValues = {};
+            Object.entries(this.normalized.properties)
+                .filter(entry => entry[1].default)
+                .forEach(entry => this._defaultValues[entry[0]] = entry[1].default);
+        }
+        return this._defaultValues;
+    }
+
     /**
      * get all encrypted paths
      */
@@ -128,6 +138,24 @@ export class RxSchema {
         if (!this._hash)
             this._hash = util.hash(this.normalized);
         return this._hash;
+    }
+
+    /**
+     * fills all unset fields with default-values if set
+     * @param  {object} obj
+     * @return {object}
+     */
+    fillObjectWithDefaults(obj) {
+        obj = clone(obj);
+        Object
+            .entries(this.defaultValues)
+            .filter(entry => !obj.hasOwnProperty(entry[0]))
+            .forEach(entry => {
+                const fieldName = entry[0];
+                const value = entry[0];
+                obj[entry[0]] = entry[1];
+            });
+        return obj;
     }
 
     swapIdToPrimary(obj) {
@@ -301,6 +329,9 @@ export function validateFieldsDeep(jsonSchema) {
         if (isNested) {
             if (schemaObj.primary)
                 throw new Error('primary can only be defined at top-level');
+
+            if (schemaObj.default)
+                throw new Error('default-values can only be defined at top-level');
         }
 
         // first level
@@ -435,11 +466,11 @@ export function normalize(jsonSchema) {
 }
 
 /**
- * fills the schema-json with default-values
+ * fills the schema-json with default-settings
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-const fillWithDefaults = function(schemaObj) {
+const fillWithDefaultSettings = function(schemaObj) {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
@@ -470,7 +501,7 @@ const fillWithDefaults = function(schemaObj) {
 
 export function create(jsonID, doCheck = true) {
     if (doCheck) checkSchema(jsonID);
-    return new RxSchema(fillWithDefaults(jsonID));
+    return new RxSchema(fillWithDefaultSettings(jsonID));
 }
 
 export function isInstanceOf(obj) {

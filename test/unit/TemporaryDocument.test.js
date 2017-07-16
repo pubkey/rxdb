@@ -41,6 +41,20 @@ describe('TemporaryDocument.test.js', () => {
             assert.equal(newDoc.passportId, 'foobar');
             c.database.destroy();
         });
+        it('should have default-values', async() => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const c = await db.collection({
+                name: 'nestedhuman',
+                schema: schemas.humanDefault
+            });
+            const newDoc = c.newDocument();
+            assert.equal(newDoc.age, 20);
+
+            db.destroy();
+        });
     });
     describe('.save()', () => {
         describe('positive', () => {

@@ -6,10 +6,12 @@
     "properties": {
         "name": {
             "type": "string",
-            "primary": true
+            "primary": true,
+            "default": ""
         },
         "color": {
-            "type": "string"
+            "type": "string",
+            "default": ""
         },
         "maxHP": {
           "type": "number",
@@ -19,7 +21,8 @@
         "hp": {
             "type": "number",
             "min": 0,
-            "max": 100
+            "max": 100,
+            "default": 100
         },
         "team": {
             "description": "color of the team this hero belongs to",

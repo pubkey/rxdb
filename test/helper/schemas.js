@@ -24,6 +24,32 @@ export const human = {
     required: ['firstName', 'lastName']
 };
 
+export const humanDefault = {
+    title: 'human schema',
+    version: 0,
+    description: 'describes a human being',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        firstName: {
+            type: 'string'
+        },
+        lastName: {
+            type: 'string'
+        },
+        age: {
+            description: 'age in years',
+            type: 'integer',
+            minimum: 0,
+            maximum: 150,
+            default: 20
+        }
+    },
+    required: ['passportId']
+};
 
 export const simpleHuman = {
     title: 'human schema',

@@ -15,37 +15,38 @@ declare class RxSchema {
  */
 type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
 interface JsonSchema {
-    type?: JsonSchemaTypes | JsonSchemaTypes[];
-    description?: string;
-    multipleOf?: number;
-    maximum?: number;
-    exclusiveMaximum?: boolean;
-    minimum?: number;
-    exclusiveMinimum?: boolean;
-    maxLength?: number;
-    minLength?: number;
-    pattern?: string;
-    additionalItems?: boolean | JsonSchema;
-    items?: JsonSchema | JsonSchema[];
-    maxItems?: number;
-    minItems?: number;
-    uniqueItems?: boolean;
-    maxProperties?: number;
-    minProperties?: number;
-    required?: string[] | boolean;
-    properties?: {
-        [key: string]: JsonSchema;
-    };
-    patternProperties?: {
-        [key: string]: JsonSchema;
-    };
-    dependencies?: {
-        [key: string]: JsonSchema | string[];
-    };
-    enum?: any[];
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
+    additionalItems?: boolean | JsonSchema;
+    type?: JsonSchemaTypes | JsonSchemaTypes[];
+    default?: any;
+    description?: string;
+    dependencies?: {
+        [key: string]: JsonSchema | string[];
+    };
+    exclusiveMinimum?: boolean;
+    exclusiveMaximum?: boolean;
+    items?: JsonSchema | JsonSchema[];
+    multipleOf?: number;
+    maxProperties?: number;
+    maximum?: number;
+    minimum?: number;
+    maxLength?: number;
+    minLength?: number;
+    maxItems?: number;
+    minItems?: number;
+    minProperties?: number;
+    pattern?: string;
+    patternProperties?: {
+        [key: string]: JsonSchema;
+    };
+    properties?: {
+        [key: string]: JsonSchema;
+    };
+    required?: string[] | boolean;
+    uniqueItems?: boolean;
+    enum?: any[];
     not?: JsonSchema;
     definitions?: {
         [key: string]: JsonSchema;

@@ -129,6 +129,30 @@ const schemaWithIndexes = {
 ```
 
 
+## default
+Default values can only be defined for first-level fields.
+Whenever you insert a document or create a temporary-document, unset fields will be filled with default-values.
+
+```js
+const schemaWithDefaultAge = {
+  version: 0,
+  type: 'object',
+  properties: {
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      },
+      age: {
+          type: 'integer',
+          default: 20       // <- default will be used
+      }
+  },
+};
+```
+
+
 ## NOTICE: Not everything within the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.

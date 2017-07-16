@@ -4,10 +4,11 @@
 
 Features:
   - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicUpsert)
+  - Added [defaul values](https://pubkey.github.io/rxdb/RxSchema.html#default)
 
 Other:
   - Split out test-util into its own npm-module [async-test-util](https://github.com/pubkey/async-test-util)
-  - Upgrade to pouchdb version [6.3.2](https://github.com/pouchdb/pouchdb/releases/tag/6.3.2)
+  - Upgrade to pouchdb version [6.3.4](https://github.com/pouchdb/pouchdb/releases/tag/6.3.4)
 
 Bugfixes:
   - Settings values to `null` did not work on temporaryDocuments [#215](https://github.com/pubkey/rxdb/issues/215)

@@ -287,6 +287,25 @@ describe('RxCollection.test.js', () => {
                         await collection.insert(schemaObjects.nestedHuman());
                     db.destroy();
                 });
+                it('should set default values', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'nestedhuman',
+                        schema: schemas.humanDefault
+                    });
+
+                    const data = {
+                        passportId: 'foobar',
+                    };
+                    await collection.insert(data);
+                    const doc = await collection.findOne().exec();
+                    assert.equal(doc.age, 20);
+
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('should not insert broken human (required missing)', async() => {
@@ -1246,8 +1265,8 @@ describe('RxCollection.test.js', () => {
         });
     });
     describe('wait a bit', () => {
-        it('w8 a bit', (done) => {
-            setTimeout(done, 20);
+        it('w8 a bit', async() => {
+            AsyncTestUtil.wait(20);
         });
     });
 });
