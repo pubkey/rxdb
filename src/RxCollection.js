@@ -58,12 +58,9 @@ class RxCollection {
         this._crypter = Crypter.create(this.database.password, this.schema);
         this._keyCompressor = KeyCompressor.create(this.schema);
 
-
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
-
         this._observable$ = this.database.$
             .filter(event => event.data.col == this.name);
-
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
         // INDEXES
@@ -424,50 +421,50 @@ class RxCollection {
      * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
      */
     watchForChanges() {
-        if (!this.synced) {
-            /**
-             * this will grap the changes and publish them to the rx-stream
-             * this is to ensure that changes from 'synced' dbs will be published
-             */
-            const sendChanges = {};
-            const pouch$ = util.Rx.Observable
-                .fromEvent(
-                    this.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: true
-                    }), 'change'
-                )
-                .filter(c => c.id.charAt(0) != '_')
-                .map(c => c.doc)
-                .map(doc => {
-                    doc._ext = true;
-                    return doc;
-                })
-                .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
-                .filter(doc => sendChanges[doc._rev] = 'YES')
-                .delay(10)
-                .map(doc => {
-                    let ret = null;
-                    if (sendChanges[doc._rev] == 'YES') ret = doc;
-                    delete sendChanges[doc._rev];
-                    return ret;
-                })
-                .filter(doc => doc != null)
-                .subscribe(doc => {
-                    this.$emit(RxChangeEvent.fromPouchChange(doc, this));
-                });
+        if (this.synced) return;
 
-            this._subs.push(pouch$);
+        /**
+         * this will grap the changes and publish them to the rx-stream
+         * this is to ensure that changes from 'synced' dbs will be published
+         */
+        const sendChanges = {};
+        const pouch$ = util.Rx.Observable
+            .fromEvent(
+                this.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }), 'change'
+            )
+            .filter(c => c.id.charAt(0) != '_')
+            .map(c => c.doc)
+            .map(doc => {
+                doc._ext = true;
+                return doc;
+            })
+            .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
+            .filter(doc => sendChanges[doc._rev] = 'YES')
+            .delay(10)
+            .map(doc => {
+                let ret = null;
+                if (sendChanges[doc._rev] == 'YES') ret = doc;
+                delete sendChanges[doc._rev];
+                return ret;
+            })
+            .filter(doc => doc != null)
+            .subscribe(doc => {
+                this.$emit(RxChangeEvent.fromPouchChange(doc, this));
+            });
 
-            const ob2 = this.$
-                .map(cE => cE.data.v)
-                .map(doc => {
-                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                })
-                .subscribe();
-            this._subs.push(ob2);
-        }
+        this._subs.push(pouch$);
+
+        const ob2 = this.$
+            .map(cE => cE.data.v)
+            .map(doc => {
+                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+            })
+            .subscribe();
+        this._subs.push(ob2);
 
         this.synced = true;
     }
@@ -642,12 +639,10 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
 
     // every strategy must have number as property and be a function
     schema.previousVersions
-        .map(vNr => {
-            return {
-                v: vNr,
-                s: migrationStrategies[(vNr + 1) + '']
-            };
-        })
+        .map(vNr => ({
+            v: vNr,
+            s: migrationStrategies[(vNr + 1) + '']
+        }))
         .filter(strat => typeof strat.s !== 'function')
         .forEach(strat => {
             throw new TypeError(`migrationStrategy(v${strat.v}) must be a function; is : ${typeof strat}`);

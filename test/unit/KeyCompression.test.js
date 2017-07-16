@@ -10,8 +10,10 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/RxDatabase';
+
 import * as RxSchema from '../../dist/lib/RxSchema';
+import * as RxDatabase from '../../dist/lib/RxDatabase';
+import * as RxDocument from '../../dist/lib/RxDocument';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -472,7 +474,7 @@ describe('KeyCompressor.test.js', () => {
             };
             await collection.insert(docData);
             const doc = await collection.findOne().exec();
-            assert.equal(doc.constructor.name, 'RxDocument');
+            assert.ok(RxDocument.isInstanceOf(doc));
             assert.deepEqual(doc.likes, docData.likes);
         });
     });

@@ -37,14 +37,12 @@ class RxDocument {
     getPrimaryPath() {
         return this.collection.schema.primaryPath;
     }
-
     getPrimary() {
         return this._data[this.getPrimaryPath()];
     }
     getRevision() {
         return this._data._rev;
     }
-
     get deleted$() {
         return this._deleted$.asObservable();
     }
@@ -57,7 +55,6 @@ class RxDocument {
     get synced() {
         return this._synced$.getValue();
     }
-
     resync() {
         const syncedData = this._dataSync$.getValue();
         if (this._synced$.getValue() && deepEqual(syncedData, this._data)) return;
@@ -112,7 +109,6 @@ class RxDocument {
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
                 this.collection._docCache.delete(this.getPrimary());
-
                 this._deleted$.next(true);
                 break;
         }
@@ -197,22 +193,19 @@ class RxDocument {
                 const fullPath = util.trimDots(objPath + '.' + key);
 
                 // getter - value
-                valueObj.__defineGetter__(key, () => {
-                    return this.get(fullPath);
-                });
+                valueObj.__defineGetter__(
+                    key,
+                    () => this.get(fullPath)
+                );
                 // getter - observable$
                 Object.defineProperty(valueObj, key + '$', {
-                    get: () => {
-                        return this.get$(fullPath);
-                    },
+                    get: () => this.get$(fullPath),
                     enumerable: false,
                     configurable: false
                 });
                 // getter - populate_
                 Object.defineProperty(valueObj, key + '_', {
-                    get: () => {
-                        return this.populate(fullPath);
-                    },
+                    get: () => this.populate(fullPath),
                     enumerable: false,
                     configurable: false
                 });
@@ -243,7 +236,6 @@ class RxDocument {
         // check if equal
         if (Object.is(this.get(objPath), value)) return;
 
-
         // check if nested without root-object
         let pathEls = objPath.split('.');
         pathEls.pop();
@@ -259,7 +251,6 @@ class RxDocument {
             this.collection.schema.validate(value, objPath);
 
         objectPath.set(this._data, objPath, value);
-
         return this;
     };
 
@@ -281,10 +272,9 @@ class RxDocument {
         });
         delete newDoc._rev;
         delete newDoc._id;
-        Object.keys(newDoc).forEach(newPropName => {
-            if (!deepEqual(this._data[newPropName], newDoc[newPropName]))
-                this._data[newPropName] = newDoc[newPropName];
-        });
+        Object.keys(newDoc)
+            .filter(newPropName => !deepEqual(this._data[newPropName], newDoc[newPropName]))
+            .forEach(newPropName => this._data[newPropName] = newDoc[newPropName]);
         await this.save();
     }
 
@@ -316,10 +306,10 @@ class RxDocument {
         };
         const fun = this._atomicUpdates.shift();
 
-        try{
+        try {
             await fun(this); // run atomic
             await this.save();
-        }catch(err){
+        } catch (err) {
             this._atomicUpdatesResolveFunctions.get(fun).reject(err);
         }
         this._atomicUpdatesResolveFunctions.get(fun).resolve(this); // resolve promise

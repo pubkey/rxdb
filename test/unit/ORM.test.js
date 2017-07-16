@@ -7,7 +7,6 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-
 describe('ORM.test.js', () => {
     describe('statics', () => {
         describe('create', () => {
@@ -279,6 +278,35 @@ describe('ORM.test.js', () => {
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
                 assert.equal(res, obj.passportId);
+                db.destroy();
+            });
+            it('should not be confused with many collections', async() => {
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const collection = await db.collection({
+                    name: 'humans',
+                    schema: schemas.human,
+                    methods: {
+                        foobar: () => '1'
+                    }
+                });
+                const collection2 = await db.collection({
+                    name: 'humans2',
+                    schema: schemas.human,
+                    methods: {
+                        foobar: () => '2'
+                    }
+                });
+
+                const docData = schemaObjects.human();
+                const doc1 = await collection.insert(docData);
+                const doc2 = await collection2.insert(docData);
+
+                assert.equal('1', doc1.foobar());
+                assert.equal('2', doc2.foobar());
+
                 db.destroy();
             });
         });
