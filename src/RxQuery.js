@@ -32,7 +32,7 @@ class RxQuery {
 
         /**
          * if this is true, the results-state is not equal to the database
-         * which means that the query must run agains the database again
+         * which means that the query must run against the database again
          * @type {Boolean}
          */
         this._mustReExec = true;

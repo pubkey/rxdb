@@ -2,7 +2,6 @@
  * this is copied from
  * @link https://github.com/aheckmann/mquery/blob/master/lib/utils.js
  */
-
 import clone from 'clone';
 
 /**
@@ -62,15 +61,6 @@ export function mergeClone(to, from) {
     }
 };
 
-
-/**
- * Object.prototype.toString.call helper
- */
-const _toString = Object.prototype.toString;
-export function toString(arg) {
-    return _toString.call(arg);
-};
-
 /**
  * Determines if `arg` is an object.
  *
@@ -78,28 +68,5 @@ export function toString(arg) {
  * @return {Boolean}
  */
 export function isObject(arg) {
-    return '[object Object]' == toString(arg);
-};
-
-
-export const create = Object.create;
-
-
-/**
- * inheritance
- */
-export function inherits(ctor, superCtor) {
-    ctor.prototype = create(superCtor.prototype);
-    ctor.prototype.constructor = ctor;
-};
-
-
-/**
- * Check if this object is an arguments object
- *
- * @param {any} v
- * @return {boolean}
- */
-export function isArgumentsObject(v) {
-    return Object.prototype.toString.call(v) === '[object Arguments]';
+    return '[object Object]' == arg.toString();
 };
