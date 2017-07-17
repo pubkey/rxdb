@@ -67,10 +67,25 @@ interface SchemaJSON {
     disableKeyCompression?: boolean;
 }
 
+
+/**
+ * possible pouch-settings
+ * @link https://pouchdb.com/api.html#create_database
+ */
+interface PouchSettings {
+    auto_compaction?: boolean,
+    revs_limit?: number,
+    ajax?: any,
+    auth?: any,
+    skip_setup?: boolean,
+    storage?: any,
+    size?: number
+}
+
 interface RxCollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
-    pouchSettings?: any;
+    pouchSettings?: PouchSettings;
     migrationStrategies?: {
         [key: number]: Function
     };
