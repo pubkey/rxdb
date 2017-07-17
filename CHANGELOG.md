@@ -1,6 +1,6 @@
 # Changelog
 
-## (5.2.0) (July 17, 2017)
+## 5.2.0 (July 17, 2017)
 
 Features:
   - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicUpsert)
