@@ -354,31 +354,31 @@ var Socket = function () {
                             case 15:
                                 docs.filter(function (doc) {
                                     return doc.it != _this2.token;
-                                } // do not get events emitted by self
+                                }) // do not get events emitted by self
                                 // do not get events older than minTime
-                                ).filter(function (doc) {
+                                .filter(function (doc) {
                                     return doc.t > minTime;
-                                }
+                                })
                                 // sort timestamp
-                                ).sort(function (a, b) {
+                                .sort(function (a, b) {
                                     if (a.t > b.t) return 1;
                                     return -1;
                                 }).map(function (doc) {
                                     return RxChangeEvent.fromJSON(doc);
-                                }
+                                })
                                 // make sure the same event is not emitted twice
-                                ).filter(function (cE) {
+                                .filter(function (cE) {
                                     if (_this2.recievedEvents[cE.hash]) return false;
                                     return _this2.recievedEvents[cE.hash] = new Date().getTime();
-                                }
+                                })
                                 // prevent memory leak of this.recievedEvents
-                                ).filter(function (cE) {
+                                .filter(function (cE) {
                                     return setTimeout(function () {
                                         return delete _this2.recievedEvents[cE.hash];
                                     }, EVENT_TTL * 3);
-                                }
+                                })
                                 // emit to messages
-                                ).forEach(function (cE) {
+                                .forEach(function (cE) {
                                     return _this2.messages$.next(cE);
                                 });
 

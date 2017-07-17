@@ -25,8 +25,8 @@ export var RxSchema = function () {
                 return !_this.jsonID.required.includes(index);
             }).filter(function (index) {
                 return !index.includes('.');
-            } // TODO make them sub-required
-            ).forEach(function (index) {
+            }) // TODO make them sub-required
+            .forEach(function (index) {
                 return _this.jsonID.required.push(index);
             });
         });
@@ -87,6 +87,23 @@ export var RxSchema = function () {
                 schema: this.jsonID
             }));
         }
+    };
+
+    /**
+     * fills all unset fields with default-values if set
+     * @param  {object} obj
+     * @return {object}
+     */
+    RxSchema.prototype.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
+        obj = clone(obj);
+        Object.entries(this.defaultValues).filter(function (entry) {
+            return !obj.hasOwnProperty(entry[0]);
+        }).forEach(function (entry) {
+            var fieldName = entry[0];
+            var value = entry[0];
+            obj[entry[0]] = entry[1];
+        });
+        return obj;
     };
 
     RxSchema.prototype.swapIdToPrimary = function swapIdToPrimary(obj) {
@@ -157,6 +174,21 @@ export var RxSchema = function () {
         key: 'topLevelFields',
         get: function get() {
             return Object.keys(this.normalized.properties);
+        }
+    }, {
+        key: 'defaultValues',
+        get: function get() {
+            var _this3 = this;
+
+            if (!this._defaultValues) {
+                this._defaultValues = {};
+                Object.entries(this.normalized.properties).filter(function (entry) {
+                    return entry[1]['default'];
+                }).forEach(function (entry) {
+                    return _this3._defaultValues[entry[0]] = entry[1]['default'];
+                });
+            }
+            return this._defaultValues;
         }
 
         /**
@@ -308,6 +340,8 @@ export function validateFieldsDeep(jsonSchema) {
         // nested only
         if (isNested) {
             if (schemaObj.primary) throw new Error('primary can only be defined at top-level');
+
+            if (schemaObj['default']) throw new Error('default-values can only be defined at top-level');
         }
 
         // first level
@@ -387,8 +421,8 @@ export function checkSchema(jsonID) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
         return arr.indexOf(elem) == pos;
-    } // unique
-    ).map(function (key) {
+    }) // unique
+    .map(function (key) {
         var schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
         if (!schemaObj || typeof schemaObj !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
         return {
@@ -412,11 +446,11 @@ export function normalize(jsonSchema) {
 }
 
 /**
- * fills the schema-json with default-values
+ * fills the schema-json with default-settings
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-var fillWithDefaults = function fillWithDefaults(schemaObj) {
+var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
@@ -447,7 +481,7 @@ export function create(jsonID) {
     var doCheck = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
     if (doCheck) checkSchema(jsonID);
-    return new RxSchema(fillWithDefaults(jsonID));
+    return new RxSchema(fillWithDefaultSettings(jsonID));
 }
 
 export function isInstanceOf(obj) {

@@ -303,8 +303,8 @@ var DataMigrator = function () {
                                     return fun['catch'](function (e) {
                                         return null;
                                     });
-                                } // auto-catch so Promise.all continues
-                                ));
+                                }) // auto-catch so Promise.all continues
+                                );
 
                             case 2:
                                 oldColDocs = _context.sent;
@@ -1138,8 +1138,8 @@ var KeyCompressor = function () {
                         if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
-                        !fullPath.startsWith('_' // _id/_rev etc should never be compressed
-                        )) _this4._table[fullPath] = '|' + nextKey();
+                        !fullPath.startsWith('_') // _id/_rev etc should never be compressed
+                        ) _this4._table[fullPath] = '|' + nextKey();
 
                         // primary-key is always compressed to _id
                         if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
@@ -1803,9 +1803,9 @@ var LeaderElector = function () {
                             case 12:
                                 this.signalLeadership = this.bc.$.filter(function (m) {
                                     return !!_this2.isLeader;
-                                }
+                                })
                                 // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                                ).filter(function (msg) {
+                                .filter(function (msg) {
                                     return msg.type != 'tell';
                                 }).subscribe(function (msg) {
                                     return _this2.leaderSignal();
@@ -3138,11 +3138,9 @@ var RxCollection = function () {
                                 this._keyCompressor = KeyCompressor.create(this.schema);
 
                                 this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
-
                                 this._observable$ = this.database.$.filter(function (event) {
                                     return event.data.col == _this2.name;
                                 });
-
                                 this._changeEventBuffer = ChangeEventBuffer.create(this);
 
                                 // INDEXES
@@ -3579,30 +3577,31 @@ var RxCollection = function () {
                             case 6:
 
                                 json = (0, _clone2['default'])(json);
+                                json = this.schema.fillObjectWithDefaults(json);
 
                                 if (!json._id) {
-                                    _context8.next = 9;
+                                    _context8.next = 10;
                                     break;
                                 }
 
                                 throw new Error('do not provide ._id, it will be generated');
 
-                            case 9:
+                            case 10:
 
                                 // fill _id
                                 if (this.schema.primaryPath == '_id' && !json._id) json._id = util.generate_id();
 
-                                _context8.next = 12;
+                                _context8.next = 13;
                                 return this._runHooks('pre', 'insert', json);
 
-                            case 12:
+                            case 13:
 
                                 this.schema.validate(json);
 
-                                _context8.next = 15;
+                                _context8.next = 16;
                                 return this._pouchPut(json);
 
-                            case 15:
+                            case 16:
                                 insertResult = _context8.sent;
 
 
@@ -3612,26 +3611,26 @@ var RxCollection = function () {
                                 newDoc = tempDoc;
 
                                 if (!tempDoc) {
-                                    _context8.next = 23;
+                                    _context8.next = 24;
                                     break;
                                 }
 
                                 tempDoc._data = json;
-                                _context8.next = 26;
+                                _context8.next = 27;
                                 break;
 
-                            case 23:
-                                _context8.next = 25;
+                            case 24:
+                                _context8.next = 26;
                                 return this._createDocument(json);
 
-                            case 25:
+                            case 26:
                                 newDoc = _context8.sent;
 
-                            case 26:
-                                _context8.next = 28;
+                            case 27:
+                                _context8.next = 29;
                                 return this._runHooks('post', 'insert', newDoc);
 
-                            case 28:
+                            case 29:
 
                                 // event
                                 emitEvent = RxChangeEvent.create('INSERT', this.database, this, newDoc, json);
@@ -3640,7 +3639,7 @@ var RxCollection = function () {
 
                                 return _context8.abrupt('return', newDoc);
 
-                            case 31:
+                            case 32:
                             case 'end':
                                 return _context8.stop();
                         }
@@ -3942,13 +3941,13 @@ var RxCollection = function () {
                                 // decrypt
                                 .map(function (doc) {
                                     return _this5._crypter.decrypt(doc);
-                                }
+                                })
                                 // validate schema
-                                ).map(function (doc) {
+                                .map(function (doc) {
                                     return _this5.schema.validate(doc);
-                                }
+                                })
                                 // import
-                                ).map(function (doc) {
+                                .map(function (doc) {
                                     return _this5._pouchPut(doc);
                                 });
                                 return _context13.abrupt('return', Promise.all(importFns));
@@ -3979,49 +3978,49 @@ var RxCollection = function () {
         value: function watchForChanges() {
             var _this6 = this;
 
-            if (!this.synced) {
-                /**
-                 * this will grap the changes and publish them to the rx-stream
-                 * this is to ensure that changes from 'synced' dbs will be published
-                 */
-                var sendChanges = {};
-                var pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
-                }), 'change').filter(function (c) {
-                    return c.id.charAt(0) != '_';
-                }).map(function (c) {
-                    return c.doc;
-                }).map(function (doc) {
-                    doc._ext = true;
-                    return doc;
-                }).filter(function (doc) {
-                    return !_this6._changeEventBuffer.buffer.map(function (cE) {
-                        return cE.data.v._rev;
-                    }).includes(doc._rev);
-                }).filter(function (doc) {
-                    return sendChanges[doc._rev] = 'YES';
-                }).delay(10).map(function (doc) {
-                    var ret = null;
-                    if (sendChanges[doc._rev] == 'YES') ret = doc;
-                    delete sendChanges[doc._rev];
-                    return ret;
-                }).filter(function (doc) {
-                    return doc != null;
-                }).subscribe(function (doc) {
-                    _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
-                });
+            if (this.synced) return;
 
-                this._subs.push(pouch$);
+            /**
+             * this will grap the changes and publish them to the rx-stream
+             * this is to ensure that changes from 'synced' dbs will be published
+             */
+            var sendChanges = {};
+            var pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            }), 'change').filter(function (c) {
+                return c.id.charAt(0) != '_';
+            }).map(function (c) {
+                return c.doc;
+            }).map(function (doc) {
+                doc._ext = true;
+                return doc;
+            }).filter(function (doc) {
+                return !_this6._changeEventBuffer.buffer.map(function (cE) {
+                    return cE.data.v._rev;
+                }).includes(doc._rev);
+            }).filter(function (doc) {
+                return sendChanges[doc._rev] = 'YES';
+            }).delay(10).map(function (doc) {
+                var ret = null;
+                if (sendChanges[doc._rev] == 'YES') ret = doc;
+                delete sendChanges[doc._rev];
+                return ret;
+            }).filter(function (doc) {
+                return doc != null;
+            }).subscribe(function (doc) {
+                _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
+            });
 
-                var ob2 = this.$.map(function (cE) {
-                    return cE.data.v;
-                }).map(function (doc) {
-                    if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-                }).subscribe();
-                this._subs.push(ob2);
-            }
+            this._subs.push(pouch$);
+
+            var ob2 = this.$.map(function (cE) {
+                return cE.data.v;
+            }).map(function (doc) {
+                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+            }).subscribe();
+            this._subs.push(ob2);
 
             this.synced = true;
         }
@@ -4230,6 +4229,7 @@ var RxCollection = function () {
         value: function newDocument() {
             var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+            docData = this.schema.fillObjectWithDefaults(docData);
             var doc = RxDocument.create(this, docData);
             doc._isTemporary = true;
             this._assignMethodsToDocument(doc);
@@ -5559,7 +5559,6 @@ var RxDocument = function () {
                 case 'REMOVE':
                     // remove from docCache to assure new upserted RxDocuments will be a new instance
                     this.collection._docCache['delete'](this.getPrimary());
-
                     this._deleted$.next(true);
                     break;
             }
@@ -5760,7 +5759,6 @@ var RxDocument = function () {
             if (!this._isTemporary) this.collection.schema.validate(value, objPath);
 
             _objectPath2['default'].set(this._data, objPath, value);
-
             return this;
         }
     }, {
@@ -5792,8 +5790,10 @@ var RxDocument = function () {
                                 });
                                 delete newDoc._rev;
                                 delete newDoc._id;
-                                Object.keys(newDoc).forEach(function (newPropName) {
-                                    if (!(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName])) _this2._data[newPropName] = newDoc[newPropName];
+                                Object.keys(newDoc).filter(function (newPropName) {
+                                    return !(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName]);
+                                }).forEach(function (newPropName) {
+                                    return _this2._data[newPropName] = newDoc[newPropName];
                                 });
                                 _context2.next = 7;
                                 return this.save();
@@ -6267,7 +6267,7 @@ var RxQuery = function () {
 
         /**
          * if this is true, the results-state is not equal to the database
-         * which means that the query must run agains the database again
+         * which means that the query must run against the database again
          * @type {Boolean}
          */
         this._mustReExec = true;
@@ -6915,11 +6915,16 @@ var RxQuery = function () {
     return RxQuery;
 }();
 
-// tunnel the proto-functions of mquery to RxQuery
+/**
+ * tunnel the proto-functions of mquery to RxQuery
+ * @param  {any} rxQueryProto    [description]
+ * @param  {string[]} mQueryProtoKeys [description]
+ * @return {void}                 [description]
+ */
 
 
-var protoMerge = function protoMerge(rxQueryProto, mQueryProto) {
-    Object.keys(mQueryProto).filter(function (attrName) {
+var protoMerge = function protoMerge(rxQueryProto, mQueryProtoKeys) {
+    mQueryProtoKeys.filter(function (attrName) {
         return !attrName.startsWith('_');
     }).filter(function (attrName) {
         return !rxQueryProto[attrName];
@@ -6941,7 +6946,7 @@ function create(op, queryObj, collection) {
 
     if (!protoMerged) {
         protoMerged = true;
-        protoMerge(Object.getPrototypeOf(ret), Object.getPrototypeOf(ret.mquery));
+        protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
     }
 
     return ret;
@@ -7030,11 +7035,11 @@ var RxReplicationState = function () {
 
                 var docs = ev.change.docs.filter(function (doc) {
                     return doc.language !== 'query';
-                } // remove internal docs
-                ).map(function (doc) {
+                }) // remove internal docs
+                .map(function (doc) {
                     return _this2.collection._handleFromPouch(doc);
-                } // do primary-swap and keycompression
-                ).forEach(function (doc) {
+                }) // do primary-swap and keycompression
+                .forEach(function (doc) {
                     return _this2._subjects.docs.next(doc);
                 });
             }));
@@ -7168,8 +7173,8 @@ var RxSchema = exports.RxSchema = function () {
                 return !_this.jsonID.required.includes(index);
             }).filter(function (index) {
                 return !index.includes('.');
-            } // TODO make them sub-required
-            ).forEach(function (index) {
+            }) // TODO make them sub-required
+            .forEach(function (index) {
                 return _this.jsonID.required.push(index);
             });
         });
@@ -7235,6 +7240,26 @@ var RxSchema = exports.RxSchema = function () {
                     schema: this.jsonID
                 }));
             }
+        }
+    }, {
+        key: 'fillObjectWithDefaults',
+
+
+        /**
+         * fills all unset fields with default-values if set
+         * @param  {object} obj
+         * @return {object}
+         */
+        value: function fillObjectWithDefaults(obj) {
+            obj = (0, _clone2['default'])(obj);
+            Object.entries(this.defaultValues).filter(function (entry) {
+                return !obj.hasOwnProperty(entry[0]);
+            }).forEach(function (entry) {
+                var fieldName = entry[0];
+                var value = entry[0];
+                obj[entry[0]] = entry[1];
+            });
+            return obj;
         }
     }, {
         key: 'swapIdToPrimary',
@@ -7307,6 +7332,21 @@ var RxSchema = exports.RxSchema = function () {
         key: 'topLevelFields',
         get: function get() {
             return Object.keys(this.normalized.properties);
+        }
+    }, {
+        key: 'defaultValues',
+        get: function get() {
+            var _this3 = this;
+
+            if (!this._defaultValues) {
+                this._defaultValues = {};
+                Object.entries(this.normalized.properties).filter(function (entry) {
+                    return entry[1]['default'];
+                }).forEach(function (entry) {
+                    return _this3._defaultValues[entry[0]] = entry[1]['default'];
+                });
+            }
+            return this._defaultValues;
         }
 
         /**
@@ -7459,6 +7499,8 @@ function validateFieldsDeep(jsonSchema) {
         // nested only
         if (isNested) {
             if (schemaObj.primary) throw new Error('primary can only be defined at top-level');
+
+            if (schemaObj['default']) throw new Error('default-values can only be defined at top-level');
         }
 
         // first level
@@ -7538,8 +7580,8 @@ function checkSchema(jsonID) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
         return arr.indexOf(elem) == pos;
-    } // unique
-    ).map(function (key) {
+    }) // unique
+    .map(function (key) {
         var schemaObj = _objectPath2['default'].get(jsonID, 'properties.' + key.replace('.', '.properties.'));
         if (!schemaObj || (typeof schemaObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(schemaObj)) !== 'object') throw new Error('given index(' + key + ') is not defined in schema');
         return {
@@ -7563,11 +7605,11 @@ function normalize(jsonSchema) {
 }
 
 /**
- * fills the schema-json with default-values
+ * fills the schema-json with default-settings
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-var fillWithDefaults = function fillWithDefaults(schemaObj) {
+var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
     schemaObj = (0, _clone2['default'])(schemaObj);
 
     // additionalProperties is always false
@@ -7598,7 +7640,7 @@ function create(jsonID) {
     var doCheck = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
     if (doCheck) checkSchema(jsonID);
-    return new RxSchema(fillWithDefaults(jsonID));
+    return new RxSchema(fillWithDefaultSettings(jsonID));
 }
 
 function isInstanceOf(obj) {
@@ -7962,31 +8004,31 @@ var Socket = function () {
                             case 15:
                                 docs.filter(function (doc) {
                                     return doc.it != _this2.token;
-                                } // do not get events emitted by self
+                                }) // do not get events emitted by self
                                 // do not get events older than minTime
-                                ).filter(function (doc) {
+                                .filter(function (doc) {
                                     return doc.t > minTime;
-                                }
+                                })
                                 // sort timestamp
-                                ).sort(function (a, b) {
+                                .sort(function (a, b) {
                                     if (a.t > b.t) return 1;
                                     return -1;
                                 }).map(function (doc) {
                                     return RxChangeEvent.fromJSON(doc);
-                                }
+                                })
                                 // make sure the same event is not emitted twice
-                                ).filter(function (cE) {
+                                .filter(function (cE) {
                                     if (_this2.recievedEvents[cE.hash]) return false;
                                     return _this2.recievedEvents[cE.hash] = new Date().getTime();
-                                }
+                                })
                                 // prevent memory leak of this.recievedEvents
-                                ).filter(function (cE) {
+                                .filter(function (cE) {
                                     return setTimeout(function () {
                                         return delete _this2.recievedEvents[cE.hash];
                                     }, EVENT_TTL * 3);
-                                }
+                                })
                                 // emit to messages
-                                ).forEach(function (cE) {
+                                .forEach(function (cE) {
                                     return _this2.messages$.next(cE);
                                 });
 
@@ -8221,10 +8263,6 @@ exports.QueryChangeDetector = QueryChangeDetector;
 exports.RxDatabase = RxDatabase;
 
 },{"./PouchDB":7,"./QueryChangeDetector":9,"./RxCollection":12,"./RxDatabase":13,"./RxDocument":14,"./RxQuery":15,"./RxSchema":17,"babel-runtime/helpers/asyncToGenerator":31,"babel-runtime/helpers/typeof":36,"babel-runtime/regenerator":37}],21:[function(require,module,exports){
-/**
- * this is based on
- * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
- */
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -8235,146 +8273,463 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
 var _mquery_utils = require('./mquery_utils');
 
 var utils = _interopRequireWildcard(_mquery_utils);
 
-var _clone = require('clone');
+var _clone2 = require('clone');
 
-var _clone2 = _interopRequireDefault(_clone);
+var _clone3 = _interopRequireDefault(_clone2);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
- * Query constructor used for building queries.
- *
- * ####Example:
- *     var query = new Query({ name: 'mquery' });
- *     query.where('age').gte(21).exec(callback);
- *
- * @param {Object} [criteria]
+ * this is based on
+ * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-function Query(criteria) {
-    var proto = this.constructor.prototype;
-    this.options = {};
-    this._conditions = proto._conditions ? (0, _clone2['default'])(proto._conditions) : {};
-    this._fields = proto._fields ? (0, _clone2['default'])(proto._fields) : undefined;
-    this._path = proto._path || undefined;
+var MQuery = function () {
+    /**
+     * MQuery constructor used for building queries.
+     *
+     * ####Example:
+     *     var query = new MQuery({ name: 'mquery' });
+     *     query.where('age').gte(21).exec(callback);
+     *
+     * @param {Object} [criteria]
+     */
+    function MQuery(criteria) {
+        (0, _classCallCheck3['default'])(this, MQuery);
 
-    if (criteria) this.find(criteria);
-}
+        var proto = this.constructor.prototype;
+        this.options = {};
+        this._conditions = proto._conditions ? (0, _clone3['default'])(proto._conditions) : {};
+        this._fields = proto._fields ? (0, _clone3['default'])(proto._fields) : undefined;
+        this._path = proto._path || undefined;
 
-/**
- * returns a cloned version of the query
- * @return {Query}
- */
-Query.prototype.clone = function () {
-    var same = new Query();
-    Object.entries(this).forEach(function (ar) {
-        same[ar[0]] = ar[1];
-    });
-    return same;
-};
-
-/**
- * Specifies a `path` for use with chaining.
- * @param {String} [path]
- * @param {Object} [val]
- * @return {Query} this
- */
-Query.prototype.where = function () {
-    if (!arguments.length) return this;
-    var type = (0, _typeof3['default'])(arguments[0]);
-    if ('string' == type) {
-        this._path = arguments[0];
-        if (2 === arguments.length) this._conditions[this._path] = arguments[1];
-        return this;
+        if (criteria) this.find(criteria);
     }
 
-    if ('object' == type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
+    /**
+     * returns a cloned version of the query
+     * @return {MQuery}
+     */
 
-    throw new TypeError('path must be a string or object');
-};
 
-/**
- * Specifies the complementary comparison value for paths specified with `where()`
- * ####Example
- *     User.where('age').equals(49);
- * @param {Object} val
- * @return {Query} this
- */
-Query.prototype.equals = function equals(val) {
-    this._ensurePath('equals');
-    var path = this._path;
-    this._conditions[path] = val;
-    return this;
-};
+    (0, _createClass3['default'])(MQuery, [{
+        key: 'clone',
+        value: function clone() {
+            var same = new MQuery();
+            Object.entries(this).forEach(function (entry) {
+                same[entry[0]] = (0, _clone3['default'])(entry[1]);
+            });
+            return same;
+        }
 
-/**
- * Specifies the complementary comparison value for paths specified with `where()`
- * This is alias of `equals`
- * @param {Object} val
- * @return {Query} this
- */
-Query.prototype.eq = function eq(val) {
-    this._ensurePath('eq');
-    var path = this._path;
-    this._conditions[path] = val;
-    return this;
-};
+        /**
+         * Specifies a `path` for use with chaining.
+         * @param {String} [path]
+         * @param {Object} [val]
+         * @return {MQuery} this
+         */
 
-/**
- * Specifies arguments for an `$or` condition.
- * ####Example
- *     query.or([{ color: 'red' }, { status: 'emergency' }])
- * @param {Array} array array of conditions
- * @return {Query} this
- */
-Query.prototype.or = function (array) {
-    var or = this._conditions.$or || (this._conditions.$or = []);
-    if (!Array.isArray(array)) array = [array];
-    or.push.apply(or, array);
-    return this;
-};
+    }, {
+        key: 'where',
+        value: function where() {
+            if (!arguments.length) return this;
+            var type = (0, _typeof3['default'])(arguments[0]);
+            if ('string' == type) {
+                this._path = arguments[0];
+                if (2 === arguments.length) this._conditions[this._path] = arguments[1];
+                return this;
+            }
 
-/**
- * Specifies arguments for a `$nor` condition.
- * ####Example
- *     query.nor([{ color: 'green' }, { status: 'ok' }])
- * @param {Array} array array of conditions
- * @return {Query} this
- */
-Query.prototype.nor = function (array) {
-    var nor = this._conditions.$nor || (this._conditions.$nor = []);
-    if (!Array.isArray(array)) array = [array];
-    nor.push.apply(nor, array);
-    return this;
-};
+            if ('object' == type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
 
-/**
- * Specifies arguments for a `$and` condition.
- * ####Example
- *     query.and([{ color: 'green' }, { status: 'ok' }])
- * @see $and http://docs.mongodb.org/manual/reference/operator/and/
- * @param {Array} array array of conditions
- * @return {Query} this
- */
-Query.prototype.and = function (array) {
-    var and = this._conditions.$and || (this._conditions.$and = []);
-    if (!Array.isArray(array)) array = [array];
-    and.push.apply(and, array);
-    return this;
-};
+            throw new TypeError('path must be a string or object');
+        }
+
+        /**
+         * Specifies the complementary comparison value for paths specified with `where()`
+         * ####Example
+         *     User.where('age').equals(49);
+         * @param {Object} val
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'equals',
+        value: function equals(val) {
+            this._ensurePath('equals');
+            var path = this._path;
+            this._conditions[path] = val;
+            return this;
+        }
+
+        /**
+         * Specifies the complementary comparison value for paths specified with `where()`
+         * This is alias of `equals`
+         * @param {Object} val
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'eq',
+        value: function eq(val) {
+            this._ensurePath('eq');
+            var path = this._path;
+            this._conditions[path] = val;
+            return this;
+        }
+
+        /**
+         * Specifies arguments for an `$or` condition.
+         * ####Example
+         *     query.or([{ color: 'red' }, { status: 'emergency' }])
+         * @param {Array} array array of conditions
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'or',
+        value: function or(array) {
+            var or = this._conditions.$or || (this._conditions.$or = []);
+            if (!Array.isArray(array)) array = [array];
+            or.push.apply(or, array);
+            return this;
+        }
+
+        /**
+         * Specifies arguments for a `$nor` condition.
+         * ####Example
+         *     query.nor([{ color: 'green' }, { status: 'ok' }])
+         * @param {Array} array array of conditions
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'nor',
+        value: function nor(array) {
+            var nor = this._conditions.$nor || (this._conditions.$nor = []);
+            if (!Array.isArray(array)) array = [array];
+            nor.push.apply(nor, array);
+            return this;
+        }
+
+        /**
+         * Specifies arguments for a `$and` condition.
+         * ####Example
+         *     query.and([{ color: 'green' }, { status: 'ok' }])
+         * @see $and http://docs.mongodb.org/manual/reference/operator/and/
+         * @param {Array} array array of conditions
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'and',
+        value: function and(array) {
+            var and = this._conditions.$and || (this._conditions.$and = []);
+            if (!Array.isArray(array)) array = [array];
+            and.push.apply(and, array);
+            return this;
+        }
+
+        /**
+         * Specifies a `$mod` condition
+         *
+         * @param {String} [path]
+         * @param {Number} val
+         * @return {MQuery} this
+         * @api public
+         */
+
+    }, {
+        key: 'mod',
+        value: function mod() {
+            var val = void 0;
+            var path = void 0;
+
+            if (1 === arguments.length) {
+                this._ensurePath('mod');
+                val = arguments[0];
+                path = this._path;
+            } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
+                this._ensurePath('mod');
+                val = arguments.slice();
+                path = this._path;
+            } else if (3 === arguments.length) {
+                val = arguments.slice(1);
+                path = arguments[0];
+            } else {
+                val = arguments[1];
+                path = arguments[0];
+            }
+
+            var conds = this._conditions[path] || (this._conditions[path] = {});
+            conds.$mod = val;
+            return this;
+        }
+
+        /**
+         * Specifies an `$exists` condition
+         * ####Example
+         *     // { name: { $exists: true }}
+         *     Thing.where('name').exists()
+         *     Thing.where('name').exists(true)
+         *     Thing.find().exists('name')
+         * @param {String} [path]
+         * @param {Number} val
+         * @return {MQuery} this
+         * @api public
+         */
+
+    }, {
+        key: 'exists',
+        value: function exists() {
+            var path = void 0;
+            var val = void 0;
+            if (0 === arguments.length) {
+                this._ensurePath('exists');
+                path = this._path;
+                val = true;
+            } else if (1 === arguments.length) {
+                if ('boolean' === typeof arguments[0]) {
+                    this._ensurePath('exists');
+                    path = this._path;
+                    val = arguments[0];
+                } else {
+                    path = arguments[0];
+                    val = true;
+                }
+            } else if (2 === arguments.length) {
+                path = arguments[0];
+                val = arguments[1];
+            }
+
+            var conds = this._conditions[path] || (this._conditions[path] = {});
+            conds.$exists = val;
+            return this;
+        }
+
+        /**
+         * Specifies an `$elemMatch` condition
+         * ####Example
+         *     query.elemMatch('comment', { author: 'autobot', votes: {$gte: 5}})
+         *     query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
+         *     query.elemMatch('comment', function (elem) {
+         *       elem.where('author').equals('autobot');
+         *       elem.where('votes').gte(5);
+         *     })
+         *     query.where('comment').elemMatch(function (elem) {
+         *       elem.where({ author: 'autobot' });
+         *       elem.where('votes').gte(5);
+         *     })
+         * @param {String|Object|Function} path
+         * @param {Object|Function} criteria
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'elemMatch',
+        value: function elemMatch() {
+            if (null == arguments[0]) throw new TypeError('Invalid argument');
+
+            var fn = void 0;
+            var path = void 0;
+            var criteria = void 0;
+
+            if ('function' === typeof arguments[0]) {
+                this._ensurePath('elemMatch');
+                path = this._path;
+                fn = arguments[0];
+            } else if (utils.isObject(arguments[0])) {
+                this._ensurePath('elemMatch');
+                path = this._path;
+                criteria = arguments[0];
+            } else if ('function' === typeof arguments[1]) {
+                path = arguments[0];
+                fn = arguments[1];
+            } else if (arguments[1] && utils.isObject(arguments[1])) {
+                path = arguments[0];
+                criteria = arguments[1];
+            } else throw new TypeError('Invalid argument');
+            if (fn) {
+                criteria = new MQuery();
+                fn(criteria);
+                criteria = criteria._conditions;
+            }
+
+            var conds = this._conditions[path] || (this._conditions[path] = {});
+            conds.$elemMatch = criteria;
+            return this;
+        }
+
+        /**
+         * Sets the sort order
+         * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
+         * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
+         * ####Example
+         *     query.sort({ field: 'asc', test: -1 });
+         *     query.sort('field -test');
+         *     query.sort([['field', 1], ['test', -1]]);
+         * @param {Object|String|Array} arg
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'sort',
+        value: function sort(arg) {
+            var _this = this;
+
+            if (!arg) return this;
+            var len = void 0;
+            var type = typeof arg === 'undefined' ? 'undefined' : (0, _typeof3['default'])(arg);
+            // .sort([['field', 1], ['test', -1]])
+            if (Array.isArray(arg)) {
+                len = arg.length;
+                for (var i = 0; i < arg.length; ++i) {
+                    _pushArr(this.options, arg[i][0], arg[i][1]);
+                }return this;
+            }
+
+            // .sort('field -test')
+            if (1 === arguments.length && 'string' == type) {
+                arg = arg.split(/\s+/);
+                len = arg.length;
+                for (var _i = 0; _i < len; ++_i) {
+                    var field = arg[_i];
+                    if (!field) continue;
+                    var ascend = '-' == field[0] ? -1 : 1;
+                    if (ascend === -1) field = field.substring(1);
+                    push(this.options, field, ascend);
+                }
+
+                return this;
+            }
+
+            // .sort({ field: 1, test: -1 })
+            if (utils.isObject(arg)) {
+                var keys = Object.keys(arg);
+                keys.forEach(function (field) {
+                    return push(_this.options, field, arg[field]);
+                });
+                return this;
+            }
+
+            throw new TypeError('Invalid sort() argument. Must be a string, object, or array.');
+        }
+
+        /**
+         * Merges another MQuery or conditions object into this one.
+         *
+         * When a MQuery is passed, conditions, field selection and options are merged.
+         *
+         * @param {MQuery|Object} source
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'merge',
+        value: function merge(source) {
+            if (!source) return this;
+
+            if (!MQuery.canMerge(source)) throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
+
+            if (source instanceof MQuery) {
+                // if source has a feature, apply it to ourselves
+
+                if (source._conditions) utils.merge(this._conditions, source._conditions);
+
+                if (source._fields) {
+                    this._fields || (this._fields = {});
+                    utils.merge(this._fields, source._fields);
+                }
+
+                if (source.options) {
+                    this.options || (this.options = {});
+                    utils.merge(this.options, source.options);
+                }
+
+                if (source._update) {
+                    this._update || (this._update = {});
+                    utils.mergeClone(this._update, source._update);
+                }
+
+                if (source._distinct) this._distinct = source._distinct;
+
+                return this;
+            }
+
+            // plain object
+            utils.merge(this._conditions, source);
+
+            return this;
+        }
+
+        /**
+         * Finds documents.
+         * ####Example
+         *     query.find()
+         *     query.find({ name: 'Burning Lights' })
+         * @param {Object} [criteria] mongodb selector
+         * @return {MQuery} this
+         */
+
+    }, {
+        key: 'find',
+        value: function find(criteria) {
+            if (MQuery.canMerge(criteria)) this.merge(criteria);
+
+            return this;
+        }
+
+        /**
+         * Returns default options.
+         * @return {Object}
+         */
+
+    }, {
+        key: '_optionsForExec',
+        value: function _optionsForExec() {
+            var options = (0, _clone3['default'])(this.options);
+            return options;
+        }
+
+        /**
+         * Make sure _path is set.
+         *
+         * @parmam {String} method
+         */
+
+    }, {
+        key: '_ensurePath',
+        value: function _ensurePath(method) {
+            if (!this._path) {
+                throw new Error('\n              ' + method + '() must be used after where()\n              when called with these arguments\n            ');
+            }
+        }
+    }]);
+    return MQuery;
+}();
 
 /**
  * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
  *
  *     Thing.where('type').nin(array)
  */
+
+
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'].forEach(function ($conditional) {
-    Query.prototype[$conditional] = function () {
+    MQuery.prototype[$conditional] = function () {
         var path = void 0;
         var val = void 0;
         if (1 === arguments.length) {
@@ -8391,179 +8746,6 @@ Query.prototype.and = function (array) {
         return this;
     };
 });
-
-/**
- * Specifies a `$mod` condition
- *
- * @param {String} [path]
- * @param {Number} val
- * @return {Query} this
- * @api public
- */
-Query.prototype.mod = function () {
-    var val = void 0;
-    var path = void 0;
-
-    if (1 === arguments.length) {
-        this._ensurePath('mod');
-        val = arguments[0];
-        path = this._path;
-    } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
-        this._ensurePath('mod');
-        val = arguments.slice();
-        path = this._path;
-    } else if (3 === arguments.length) {
-        val = arguments.slice(1);
-        path = arguments[0];
-    } else {
-        val = arguments[1];
-        path = arguments[0];
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-    conds.$mod = val;
-    return this;
-};
-
-/**
- * Specifies an `$exists` condition
- * ####Example
- *     // { name: { $exists: true }}
- *     Thing.where('name').exists()
- *     Thing.where('name').exists(true)
- *     Thing.find().exists('name')
- * @param {String} [path]
- * @param {Number} val
- * @return {Query} this
- * @api public
- */
-Query.prototype.exists = function () {
-    var path = void 0;
-    var val = void 0;
-    if (0 === arguments.length) {
-        this._ensurePath('exists');
-        path = this._path;
-        val = true;
-    } else if (1 === arguments.length) {
-        if ('boolean' === typeof arguments[0]) {
-            this._ensurePath('exists');
-            path = this._path;
-            val = arguments[0];
-        } else {
-            path = arguments[0];
-            val = true;
-        }
-    } else if (2 === arguments.length) {
-        path = arguments[0];
-        val = arguments[1];
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-    conds.$exists = val;
-    return this;
-};
-
-/**
- * Specifies an `$elemMatch` condition
- * ####Example
- *     query.elemMatch('comment', { author: 'autobot', votes: {$gte: 5}})
- *     query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
- *     query.elemMatch('comment', function (elem) {
- *       elem.where('author').equals('autobot');
- *       elem.where('votes').gte(5);
- *     })
- *     query.where('comment').elemMatch(function (elem) {
- *       elem.where({ author: 'autobot' });
- *       elem.where('votes').gte(5);
- *     })
- * @param {String|Object|Function} path
- * @param {Object|Function} criteria
- * @return {Query} this
- */
-Query.prototype.elemMatch = function () {
-    if (null == arguments[0]) throw new TypeError('Invalid argument');
-
-    var fn = void 0;
-    var path = void 0;
-    var criteria = void 0;
-
-    if ('function' === typeof arguments[0]) {
-        this._ensurePath('elemMatch');
-        path = this._path;
-        fn = arguments[0];
-    } else if (utils.isObject(arguments[0])) {
-        this._ensurePath('elemMatch');
-        path = this._path;
-        criteria = arguments[0];
-    } else if ('function' === typeof arguments[1]) {
-        path = arguments[0];
-        fn = arguments[1];
-    } else if (arguments[1] && utils.isObject(arguments[1])) {
-        path = arguments[0];
-        criteria = arguments[1];
-    } else throw new TypeError('Invalid argument');
-    if (fn) {
-        criteria = new Query();
-        fn(criteria);
-        criteria = criteria._conditions;
-    }
-
-    var conds = this._conditions[path] || (this._conditions[path] = {});
-    conds.$elemMatch = criteria;
-    return this;
-};
-
-/**
- * Sets the sort order
- * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
- * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
- * ####Example
- *     query.sort({ field: 'asc', test: -1 });
- *     query.sort('field -test');
- *     query.sort([['field', 1], ['test', -1]]);
- * @param {Object|String|Array} arg
- * @return {Query} this
- */
-Query.prototype.sort = function (arg) {
-    var _this = this;
-
-    if (!arg) return this;
-    var len = void 0;
-    var type = typeof arg === 'undefined' ? 'undefined' : (0, _typeof3['default'])(arg);
-    // .sort([['field', 1], ['test', -1]])
-    if (Array.isArray(arg)) {
-        len = arg.length;
-        for (var i = 0; i < arg.length; ++i) {
-            _pushArr(this.options, arg[i][0], arg[i][1]);
-        }return this;
-    }
-
-    // .sort('field -test')
-    if (1 === arguments.length && 'string' == type) {
-        arg = arg.split(/\s+/);
-        len = arg.length;
-        for (var _i = 0; _i < len; ++_i) {
-            var field = arg[_i];
-            if (!field) continue;
-            var ascend = '-' == field[0] ? -1 : 1;
-            if (ascend === -1) field = field.substring(1);
-            push(this.options, field, ascend);
-        }
-
-        return this;
-    }
-
-    // .sort({ field: 1, test: -1 })
-    if (utils.isObject(arg)) {
-        var keys = Object.keys(arg);
-        keys.forEach(function (field) {
-            return push(_this.options, field, arg[field]);
-        });
-        return this;
-    }
-
-    throw new TypeError('Invalid sort() argument. Must be a string, object, or array.');
-};
 
 /*!
  * @ignore
@@ -8590,7 +8772,7 @@ function push(opts, field, value) {
     var s = opts.sort || (opts.sort = {});
     var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
-}
+};
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
@@ -8602,6 +8784,16 @@ function _pushArr(opts, field, value) {
 };
 
 /**
+ * Determines if `conds` can be merged using `mquery().merge()`
+ *
+ * @param {Object} conds
+ * @return {Boolean}
+ */
+MQuery.canMerge = function (conds) {
+    return conds instanceof MQuery || utils.isObject(conds);
+};
+
+/**
  * limit, skip, maxScan, batchSize, comment
  *
  * Sets these associated options.
@@ -8609,120 +8801,24 @@ function _pushArr(opts, field, value) {
  *     query.comment('feed query');
  */
 ['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
-    Query.prototype[method] = function (v) {
+    MQuery.prototype[method] = function (v) {
         this.options[method] = v;
         return this;
     };
 });
 
-/**
- * Merges another Query or conditions object into this one.
- *
- * When a Query is passed, conditions, field selection and options are merged.
- *
- * @param {Query|Object} source
- * @return {Query} this
- */
-Query.prototype.merge = function (source) {
-    if (!source) return this;
+MQuery.utils = utils;
+exports['default'] = MQuery;
 
-    if (!Query.canMerge(source)) throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
-
-    if (source instanceof Query) {
-        // if source has a feature, apply it to ourselves
-
-        if (source._conditions) utils.merge(this._conditions, source._conditions);
-
-        if (source._fields) {
-            this._fields || (this._fields = {});
-            utils.merge(this._fields, source._fields);
-        }
-
-        if (source.options) {
-            this.options || (this.options = {});
-            utils.merge(this.options, source.options);
-        }
-
-        if (source._update) {
-            this._update || (this._update = {});
-            utils.mergeClone(this._update, source._update);
-        }
-
-        if (source._distinct) this._distinct = source._distinct;
-
-        return this;
-    }
-
-    // plain object
-    utils.merge(this._conditions, source);
-
-    return this;
-};
-
-/**
- * Finds documents.
- * ####Example
- *     query.find()
- *     query.find({ name: 'Burning Lights' })
- * @param {Object} [criteria] mongodb selector
- * @return {Query} this
- */
-Query.prototype.find = function (criteria) {
-    if ('function' === typeof criteria) {
-        callback = criteria;
-        criteria = undefined;
-    } else if (Query.canMerge(criteria)) this.merge(criteria);
-
-    return this;
-};
-
-/**
- * Returns default options.
- * @return {Object}
- */
-Query.prototype._optionsForExec = function () {
-    var options = (0, _clone2['default'])(this.options);
-    return options;
-};
-
-/**
- * Make sure _path is set.
- *
- * @parmam {String} method
- */
-Query.prototype._ensurePath = function (method) {
-    if (!this._path) {
-        throw new Error('\n          ' + method + '() must be used after where()\n          when called with these arguments\n        ');
-    }
-};
-Query.prototype._validate = function (action) {};
-
-/**
- * Determines if `conds` can be merged using `mquery().merge()`
- *
- * @param {Object} conds
- * @return {Boolean}
- */
-Query.canMerge = function (conds) {
-    return conds instanceof Query || utils.isObject(conds);
-};
-
-Query.utils = utils;
-exports['default'] = Query;
-
-},{"./mquery_utils":22,"babel-runtime/helpers/typeof":36,"clone":40}],22:[function(require,module,exports){
+},{"./mquery_utils":22,"babel-runtime/helpers/classCallCheck":32,"babel-runtime/helpers/createClass":33,"babel-runtime/helpers/typeof":36,"clone":40}],22:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.create = undefined;
 exports.merge = merge;
 exports.mergeClone = mergeClone;
-exports.toString = toString;
 exports.isObject = isObject;
-exports.inherits = inherits;
-exports.isArgumentsObject = isArgumentsObject;
 
 var _clone = require('clone');
 
@@ -8733,11 +8829,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 /**
  * Merges `from` into `to` without overwriting existing properties.
  *
- * @param {Object} to
- * @param {Object} from
- * @api private
+ * @param {object} to
+ * @param {object} from
  */
-
 function merge(to, from) {
     var keys = Object.keys(from);
     var i = keys.length;
@@ -8753,15 +8847,13 @@ function merge(to, from) {
    * this is copied from
    * @link https://github.com/aheckmann/mquery/blob/master/lib/utils.js
    */
-
 ;
 
 /**
  * Same as merge but clones the assigned values.
  *
- * @param {Object} to
- * @param {Object} from
- * @api private
+ * @param {object} to
+ * @param {object} from
  */
 function mergeClone(to, from) {
     var keys = Object.keys(from);
@@ -8789,44 +8881,13 @@ function mergeClone(to, from) {
 };
 
 /**
- * Object.prototype.toString.call helper
- */
-
-var _toString = Object.prototype.toString;
-function toString(arg) {
-    return _toString.call(arg);
-};
-
-/**
  * Determines if `arg` is an object.
  *
  * @param {Object|Array|String|Function|RegExp|any} arg
  * @return {Boolean}
  */
-
 function isObject(arg) {
-    return '[object Object]' == toString(arg);
-};
-
-var create = exports.create = Object.create;
-
-/**
- * inheritance
- */
-function inherits(ctor, superCtor) {
-    ctor.prototype = create(superCtor.prototype);
-    ctor.prototype.constructor = ctor;
-};
-
-/**
- * Check if this object is an arguments object
- *
- * @param {Any} v
- * @return {Boolean}
- */
-
-function isArgumentsObject(v) {
-    return Object.prototype.toString.call(v) === '[object Arguments]';
+    return '[object Object]' == arg.toString();
 };
 
 },{"clone":40}],23:[function(require,module,exports){
@@ -9482,22 +9543,22 @@ function placeHoldersCount (b64) {
 
 function byteLength (b64) {
   // base64 is 4/3 + up to two characters of the original data
-  return b64.length * 3 / 4 - placeHoldersCount(b64)
+  return (b64.length * 3 / 4) - placeHoldersCount(b64)
 }
 
 function toByteArray (b64) {
-  var i, j, l, tmp, placeHolders, arr
+  var i, l, tmp, placeHolders, arr
   var len = b64.length
   placeHolders = placeHoldersCount(b64)
 
-  arr = new Arr(len * 3 / 4 - placeHolders)
+  arr = new Arr((len * 3 / 4) - placeHolders)
 
   // if there are placeholders, only get up to the last complete 4 chars
   l = placeHolders > 0 ? len - 4 : len
 
   var L = 0
 
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+  for (i = 0; i < l; i += 4) {
     tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
     arr[L++] = (tmp >> 16) & 0xFF
     arr[L++] = (tmp >> 8) & 0xFF
@@ -20730,14 +20791,17 @@ function save(namespaces) {
  */
 
 function load() {
+  var r;
   try {
-    return exports.storage.debug;
+    r = exports.storage.debug;
   } catch(e) {}
 
   // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-  if (typeof process !== 'undefined' && 'env' in process) {
-    return process.env.DEBUG;
+  if (!r && typeof process !== 'undefined' && 'env' in process) {
+    r = process.env.DEBUG;
   }
+
+  return r;
 }
 
 /**
@@ -20908,7 +20972,7 @@ function enable(namespaces) {
   exports.names = [];
   exports.skips = [];
 
-  var split = (namespaces || '').split(/[\s,]+/);
+  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
   var len = split.length;
 
   for (var i = 0; i < len; i++) {
@@ -22270,7 +22334,7 @@ module.exports.filter = function(schema, opts) {
   }
 }
 
-},{"./formats":440,"generate-function":435,"generate-object-property":436,"jsonpointer":443,"xtend":575}],442:[function(require,module,exports){
+},{"./formats":440,"generate-function":435,"generate-object-property":436,"jsonpointer":443,"xtend":580}],442:[function(require,module,exports){
 "use strict"
 function isProperty(str) {
   return /^[$A-Z\_a-z\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0\u08a2-\u08ac\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097f\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c33\u0c35-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f0\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191c\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua697\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua793\ua7a0-\ua7aa\ua7f8-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa80-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc][$A-Z\_a-z\xaa\xb5\xba\xc0-\xd6\xd8-\xf6\xf8-\u02c1\u02c6-\u02d1\u02e0-\u02e4\u02ec\u02ee\u0370-\u0374\u0376\u0377\u037a-\u037d\u0386\u0388-\u038a\u038c\u038e-\u03a1\u03a3-\u03f5\u03f7-\u0481\u048a-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05d0-\u05ea\u05f0-\u05f2\u0620-\u064a\u066e\u066f\u0671-\u06d3\u06d5\u06e5\u06e6\u06ee\u06ef\u06fa-\u06fc\u06ff\u0710\u0712-\u072f\u074d-\u07a5\u07b1\u07ca-\u07ea\u07f4\u07f5\u07fa\u0800-\u0815\u081a\u0824\u0828\u0840-\u0858\u08a0\u08a2-\u08ac\u0904-\u0939\u093d\u0950\u0958-\u0961\u0971-\u0977\u0979-\u097f\u0985-\u098c\u098f\u0990\u0993-\u09a8\u09aa-\u09b0\u09b2\u09b6-\u09b9\u09bd\u09ce\u09dc\u09dd\u09df-\u09e1\u09f0\u09f1\u0a05-\u0a0a\u0a0f\u0a10\u0a13-\u0a28\u0a2a-\u0a30\u0a32\u0a33\u0a35\u0a36\u0a38\u0a39\u0a59-\u0a5c\u0a5e\u0a72-\u0a74\u0a85-\u0a8d\u0a8f-\u0a91\u0a93-\u0aa8\u0aaa-\u0ab0\u0ab2\u0ab3\u0ab5-\u0ab9\u0abd\u0ad0\u0ae0\u0ae1\u0b05-\u0b0c\u0b0f\u0b10\u0b13-\u0b28\u0b2a-\u0b30\u0b32\u0b33\u0b35-\u0b39\u0b3d\u0b5c\u0b5d\u0b5f-\u0b61\u0b71\u0b83\u0b85-\u0b8a\u0b8e-\u0b90\u0b92-\u0b95\u0b99\u0b9a\u0b9c\u0b9e\u0b9f\u0ba3\u0ba4\u0ba8-\u0baa\u0bae-\u0bb9\u0bd0\u0c05-\u0c0c\u0c0e-\u0c10\u0c12-\u0c28\u0c2a-\u0c33\u0c35-\u0c39\u0c3d\u0c58\u0c59\u0c60\u0c61\u0c85-\u0c8c\u0c8e-\u0c90\u0c92-\u0ca8\u0caa-\u0cb3\u0cb5-\u0cb9\u0cbd\u0cde\u0ce0\u0ce1\u0cf1\u0cf2\u0d05-\u0d0c\u0d0e-\u0d10\u0d12-\u0d3a\u0d3d\u0d4e\u0d60\u0d61\u0d7a-\u0d7f\u0d85-\u0d96\u0d9a-\u0db1\u0db3-\u0dbb\u0dbd\u0dc0-\u0dc6\u0e01-\u0e30\u0e32\u0e33\u0e40-\u0e46\u0e81\u0e82\u0e84\u0e87\u0e88\u0e8a\u0e8d\u0e94-\u0e97\u0e99-\u0e9f\u0ea1-\u0ea3\u0ea5\u0ea7\u0eaa\u0eab\u0ead-\u0eb0\u0eb2\u0eb3\u0ebd\u0ec0-\u0ec4\u0ec6\u0edc-\u0edf\u0f00\u0f40-\u0f47\u0f49-\u0f6c\u0f88-\u0f8c\u1000-\u102a\u103f\u1050-\u1055\u105a-\u105d\u1061\u1065\u1066\u106e-\u1070\u1075-\u1081\u108e\u10a0-\u10c5\u10c7\u10cd\u10d0-\u10fa\u10fc-\u1248\u124a-\u124d\u1250-\u1256\u1258\u125a-\u125d\u1260-\u1288\u128a-\u128d\u1290-\u12b0\u12b2-\u12b5\u12b8-\u12be\u12c0\u12c2-\u12c5\u12c8-\u12d6\u12d8-\u1310\u1312-\u1315\u1318-\u135a\u1380-\u138f\u13a0-\u13f4\u1401-\u166c\u166f-\u167f\u1681-\u169a\u16a0-\u16ea\u16ee-\u16f0\u1700-\u170c\u170e-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176c\u176e-\u1770\u1780-\u17b3\u17d7\u17dc\u1820-\u1877\u1880-\u18a8\u18aa\u18b0-\u18f5\u1900-\u191c\u1950-\u196d\u1970-\u1974\u1980-\u19ab\u19c1-\u19c7\u1a00-\u1a16\u1a20-\u1a54\u1aa7\u1b05-\u1b33\u1b45-\u1b4b\u1b83-\u1ba0\u1bae\u1baf\u1bba-\u1be5\u1c00-\u1c23\u1c4d-\u1c4f\u1c5a-\u1c7d\u1ce9-\u1cec\u1cee-\u1cf1\u1cf5\u1cf6\u1d00-\u1dbf\u1e00-\u1f15\u1f18-\u1f1d\u1f20-\u1f45\u1f48-\u1f4d\u1f50-\u1f57\u1f59\u1f5b\u1f5d\u1f5f-\u1f7d\u1f80-\u1fb4\u1fb6-\u1fbc\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ff4\u1ff6-\u1ffc\u2071\u207f\u2090-\u209c\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2139\u213c-\u213f\u2145-\u2149\u214e\u2160-\u2188\u2c00-\u2c2e\u2c30-\u2c5e\u2c60-\u2ce4\u2ceb-\u2cee\u2cf2\u2cf3\u2d00-\u2d25\u2d27\u2d2d\u2d30-\u2d67\u2d6f\u2d80-\u2d96\u2da0-\u2da6\u2da8-\u2dae\u2db0-\u2db6\u2db8-\u2dbe\u2dc0-\u2dc6\u2dc8-\u2dce\u2dd0-\u2dd6\u2dd8-\u2dde\u2e2f\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303c\u3041-\u3096\u309d-\u309f\u30a1-\u30fa\u30fc-\u30ff\u3105-\u312d\u3131-\u318e\u31a0-\u31ba\u31f0-\u31ff\u3400-\u4db5\u4e00-\u9fcc\ua000-\ua48c\ua4d0-\ua4fd\ua500-\ua60c\ua610-\ua61f\ua62a\ua62b\ua640-\ua66e\ua67f-\ua697\ua6a0-\ua6ef\ua717-\ua71f\ua722-\ua788\ua78b-\ua78e\ua790-\ua793\ua7a0-\ua7aa\ua7f8-\ua801\ua803-\ua805\ua807-\ua80a\ua80c-\ua822\ua840-\ua873\ua882-\ua8b3\ua8f2-\ua8f7\ua8fb\ua90a-\ua925\ua930-\ua946\ua960-\ua97c\ua984-\ua9b2\ua9cf\uaa00-\uaa28\uaa40-\uaa42\uaa44-\uaa4b\uaa60-\uaa76\uaa7a\uaa80-\uaaaf\uaab1\uaab5\uaab6\uaab9-\uaabd\uaac0\uaac2\uaadb-\uaadd\uaae0-\uaaea\uaaf2-\uaaf4\uab01-\uab06\uab09-\uab0e\uab11-\uab16\uab20-\uab26\uab28-\uab2e\uabc0-\uabe2\uac00-\ud7a3\ud7b0-\ud7c6\ud7cb-\ud7fb\uf900-\ufa6d\ufa70-\ufad9\ufb00-\ufb06\ufb13-\ufb17\ufb1d\ufb1f-\ufb28\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40\ufb41\ufb43\ufb44\ufb46-\ufbb1\ufbd3-\ufd3d\ufd50-\ufd8f\ufd92-\ufdc7\ufdf0-\ufdfb\ufe70-\ufe74\ufe76-\ufefc\uff21-\uff3a\uff41-\uff5a\uff66-\uffbe\uffc2-\uffc7\uffca-\uffcf\uffd2-\uffd7\uffda-\uffdc0-9\u0300-\u036f\u0483-\u0487\u0591-\u05bd\u05bf\u05c1\u05c2\u05c4\u05c5\u05c7\u0610-\u061a\u064b-\u0669\u0670\u06d6-\u06dc\u06df-\u06e4\u06e7\u06e8\u06ea-\u06ed\u06f0-\u06f9\u0711\u0730-\u074a\u07a6-\u07b0\u07c0-\u07c9\u07eb-\u07f3\u0816-\u0819\u081b-\u0823\u0825-\u0827\u0829-\u082d\u0859-\u085b\u08e4-\u08fe\u0900-\u0903\u093a-\u093c\u093e-\u094f\u0951-\u0957\u0962\u0963\u0966-\u096f\u0981-\u0983\u09bc\u09be-\u09c4\u09c7\u09c8\u09cb-\u09cd\u09d7\u09e2\u09e3\u09e6-\u09ef\u0a01-\u0a03\u0a3c\u0a3e-\u0a42\u0a47\u0a48\u0a4b-\u0a4d\u0a51\u0a66-\u0a71\u0a75\u0a81-\u0a83\u0abc\u0abe-\u0ac5\u0ac7-\u0ac9\u0acb-\u0acd\u0ae2\u0ae3\u0ae6-\u0aef\u0b01-\u0b03\u0b3c\u0b3e-\u0b44\u0b47\u0b48\u0b4b-\u0b4d\u0b56\u0b57\u0b62\u0b63\u0b66-\u0b6f\u0b82\u0bbe-\u0bc2\u0bc6-\u0bc8\u0bca-\u0bcd\u0bd7\u0be6-\u0bef\u0c01-\u0c03\u0c3e-\u0c44\u0c46-\u0c48\u0c4a-\u0c4d\u0c55\u0c56\u0c62\u0c63\u0c66-\u0c6f\u0c82\u0c83\u0cbc\u0cbe-\u0cc4\u0cc6-\u0cc8\u0cca-\u0ccd\u0cd5\u0cd6\u0ce2\u0ce3\u0ce6-\u0cef\u0d02\u0d03\u0d3e-\u0d44\u0d46-\u0d48\u0d4a-\u0d4d\u0d57\u0d62\u0d63\u0d66-\u0d6f\u0d82\u0d83\u0dca\u0dcf-\u0dd4\u0dd6\u0dd8-\u0ddf\u0df2\u0df3\u0e31\u0e34-\u0e3a\u0e47-\u0e4e\u0e50-\u0e59\u0eb1\u0eb4-\u0eb9\u0ebb\u0ebc\u0ec8-\u0ecd\u0ed0-\u0ed9\u0f18\u0f19\u0f20-\u0f29\u0f35\u0f37\u0f39\u0f3e\u0f3f\u0f71-\u0f84\u0f86\u0f87\u0f8d-\u0f97\u0f99-\u0fbc\u0fc6\u102b-\u103e\u1040-\u1049\u1056-\u1059\u105e-\u1060\u1062-\u1064\u1067-\u106d\u1071-\u1074\u1082-\u108d\u108f-\u109d\u135d-\u135f\u1712-\u1714\u1732-\u1734\u1752\u1753\u1772\u1773\u17b4-\u17d3\u17dd\u17e0-\u17e9\u180b-\u180d\u1810-\u1819\u18a9\u1920-\u192b\u1930-\u193b\u1946-\u194f\u19b0-\u19c0\u19c8\u19c9\u19d0-\u19d9\u1a17-\u1a1b\u1a55-\u1a5e\u1a60-\u1a7c\u1a7f-\u1a89\u1a90-\u1a99\u1b00-\u1b04\u1b34-\u1b44\u1b50-\u1b59\u1b6b-\u1b73\u1b80-\u1b82\u1ba1-\u1bad\u1bb0-\u1bb9\u1be6-\u1bf3\u1c24-\u1c37\u1c40-\u1c49\u1c50-\u1c59\u1cd0-\u1cd2\u1cd4-\u1ce8\u1ced\u1cf2-\u1cf4\u1dc0-\u1de6\u1dfc-\u1dff\u200c\u200d\u203f\u2040\u2054\u20d0-\u20dc\u20e1\u20e5-\u20f0\u2cef-\u2cf1\u2d7f\u2de0-\u2dff\u302a-\u302f\u3099\u309a\ua620-\ua629\ua66f\ua674-\ua67d\ua69f\ua6f0\ua6f1\ua802\ua806\ua80b\ua823-\ua827\ua880\ua881\ua8b4-\ua8c4\ua8d0-\ua8d9\ua8e0-\ua8f1\ua900-\ua909\ua926-\ua92d\ua947-\ua953\ua980-\ua983\ua9b3-\ua9c0\ua9d0-\ua9d9\uaa29-\uaa36\uaa43\uaa4c\uaa4d\uaa50-\uaa59\uaa7b\uaab0\uaab2-\uaab4\uaab7\uaab8\uaabe\uaabf\uaac1\uaaeb-\uaaef\uaaf5\uaaf6\uabe3-\uabea\uabec\uabed\uabf0-\uabf9\ufb1e\ufe00-\ufe0f\ufe20-\ufe26\ufe33\ufe34\ufe4d-\ufe4f\uff10-\uff19\uff3f]*$/.test(str)
@@ -23201,7 +23265,7 @@ var y = d * 365.25
  *  - `long` verbose formatting [false]
  *
  * @param {String|Number} val
- * @param {Object} options
+ * @param {Object} [options]
  * @throws {Error} throw an error if val is not a non-empty string or a number
  * @return {String|Number}
  * @api public
@@ -24010,7 +24074,19 @@ function createAbstractMapReduce(localDocName, mapper, reducer, ddocValidator) {
         method: method,
         url: '_design/' + parts[0] + '/_view/' + parts[1] + params,
         body: body
-      }).then(postprocessAttachments(opts));
+      }).then(
+        /* istanbul ignore next */
+        function (result) {
+          // fail the entire request if the result contains an error
+          result.rows.forEach(function (row) {
+            if (row.value && row.value.error && row.value.error === "builtin_reduce_error") {
+              throw new Error(row.reason);
+            }
+          });
+
+          return result;
+      })
+      .then(postprocessAttachments(opts));
     }
 
     // We are using a temporary view, terrible for performance, good for testing
@@ -24714,6 +24790,8 @@ function pool(promiseFactories, limit) {
 
 var CHANGES_BATCH_SIZE = 25;
 var MAX_SIMULTANEOUS_REVS = 50;
+var CHANGES_TIMEOUT_BUFFER = 5000;
+var DEFAULT_HEARTBEAT = 10000;
 
 var supportsBulkGetMap = {};
 
@@ -25186,7 +25264,10 @@ function HttpPouch(opts, callback) {
       }).then(function () {
         callback(null, res);
       });
-    }).catch(callback);
+    }).catch(function (e) {
+      e.docId = id;
+      callback(e);
+    });
   });
 
   // Delete the document given by doc from the database given by host.
@@ -25344,6 +25425,7 @@ function HttpPouch(opts, callback) {
         body: doc
       }, function (err, result) {
         if (err) {
+          err.docId = doc && doc._id;
           return callback(err);
         }
         callback(null, result);
@@ -25447,13 +25529,31 @@ function HttpPouch(opts, callback) {
     var batchSize = 'batch_size' in opts ? opts.batch_size : CHANGES_BATCH_SIZE;
 
     opts = pouchdbUtils.clone(opts);
-    opts.timeout = ('timeout' in opts) ? opts.timeout :
+
+    if (opts.continuous && !('heartbeat' in opts)) {
+      opts.heartbeat = DEFAULT_HEARTBEAT;
+    }
+
+    var requestTimeout = ('timeout' in opts) ? opts.timeout :
       ('timeout' in ajaxOpts) ? ajaxOpts.timeout :
       30 * 1000;
 
-    // We give a 5 second buffer for CouchDB changes to respond with
-    // an ok timeout (if a timeout it set)
-    var params = opts.timeout ? {timeout: opts.timeout - (5 * 1000)} : {};
+    // ensure CHANGES_TIMEOUT_BUFFER applies
+    if ('timeout' in opts && opts.timeout &&
+      (requestTimeout - opts.timeout) < CHANGES_TIMEOUT_BUFFER) {
+        requestTimeout = opts.timeout + CHANGES_TIMEOUT_BUFFER;
+    }
+
+    if ('heartbeat' in opts && opts.heartbeat &&
+       (requestTimeout - opts.heartbeat) < CHANGES_TIMEOUT_BUFFER) {
+        requestTimeout = opts.heartbeat + CHANGES_TIMEOUT_BUFFER;
+    }
+
+    var params = {};
+    if ('timeout' in opts && opts.timeout) {
+      params.timeout = opts.timeout;
+    }
+
     var limit = (typeof opts.limit !== 'undefined') ? opts.limit : false;
     var returnDocs;
     if ('return_docs' in opts) {
@@ -25496,9 +25596,6 @@ function HttpPouch(opts, callback) {
       if (opts.heartbeat) {
         params.heartbeat = opts.heartbeat;
       }
-    } else if (opts.continuous) {
-      // Default heartbeat to 10 seconds
-      params.heartbeat = 10000;
     }
 
     if (opts.filter && typeof opts.filter === 'string') {
@@ -25568,7 +25665,7 @@ function HttpPouch(opts, callback) {
       var xhrOpts = {
         method: method,
         url: genDBUrl(host, '_changes' + paramsToStr(params)),
-        timeout: opts.timeout,
+        timeout: requestTimeout,
         body: body
       };
       lastFetchedSeq = since;
@@ -27243,7 +27340,7 @@ function init(api, opts, callback) {
   };
 
   api._changes = function idbChanges(opts) {
-    changes(opts, api, dbName, idb);
+    return changes(opts, api, dbName, idb);
   };
 
   api._close = function (callback) {
@@ -27706,13 +27803,13 @@ var dataWords = toObject([
   '_replication_stats'
 ]);
 
-function parseRevisionInfo(rev) {
-  if (!/^\d+\-./.test(rev)) {
+function parseRevisionInfo(rev$$1) {
+  if (!/^\d+-./.test(rev$$1)) {
     return pouchdbErrors.createError(pouchdbErrors.INVALID_REV);
   }
-  var idx = rev.indexOf('-');
-  var left = rev.substring(0, idx);
-  var right = rev.substring(idx + 1);
+  var idx = rev$$1.indexOf('-');
+  var left = rev$$1.substring(0, idx);
+  var right = rev$$1.substring(idx + 1);
   return {
     prefix: parseInt(left, 10),
     id: right
@@ -27751,7 +27848,7 @@ function parseDoc(doc, newEdits) {
     if (!doc._id) {
       doc._id = pouchdbUtils.uuid();
     }
-    newRevId = pouchdbUtils.uuid(32, 16).toLowerCase();
+    newRevId = pouchdbUtils.rev();
     if (doc._rev) {
       revInfo = parseRevisionInfo(doc._rev);
       if (revInfo.error) {
@@ -28837,11 +28934,12 @@ function updateCheckpoint(db, id, checkpoint, session, returnValue) {
   });
 }
 
-function Checkpointer(src, target, id, returnValue) {
+function Checkpointer(src, target, id, returnValue, opts) {
   this.src = src;
   this.target = target;
   this.id = id;
   this.returnValue = returnValue;
+  this.opts = opts;
 }
 
 Checkpointer.prototype.writeCheckpoint = function (checkpoint, session) {
@@ -28852,24 +28950,32 @@ Checkpointer.prototype.writeCheckpoint = function (checkpoint, session) {
 };
 
 Checkpointer.prototype.updateTarget = function (checkpoint, session) {
-  return updateCheckpoint(this.target, this.id, checkpoint,
-    session, this.returnValue);
+  if (this.opts.writeTargetCheckpoint) {
+    return updateCheckpoint(this.target, this.id, checkpoint,
+      session, this.returnValue);
+  } else {
+    return Promise.resolve(true);
+  }
 };
 
 Checkpointer.prototype.updateSource = function (checkpoint, session) {
-  var self = this;
-  if (this.readOnlySource) {
+  if (this.opts.writeSourceCheckpoint) {
+    var self = this;
+    if (this.readOnlySource) {
+      return Promise.resolve(true);
+    }
+    return updateCheckpoint(this.src, this.id, checkpoint,
+      session, this.returnValue)
+      .catch(function (err) {
+        if (isForbiddenError(err)) {
+          self.readOnlySource = true;
+          return true;
+        }
+        throw err;
+      });
+  } else {
     return Promise.resolve(true);
   }
-  return updateCheckpoint(this.src, this.id, checkpoint,
-    session, this.returnValue)
-    .catch(function (err) {
-      if (isForbiddenError(err)) {
-        self.readOnlySource = true;
-        return true;
-      }
-      throw err;
-    });
 };
 
 var comparisons = {
@@ -29712,10 +29818,12 @@ function compare(left, right) {
 
 // Wrapper for functions that call the bulkdocs api with a single doc,
 // if the first result is an error, return an error
-function yankError(callback) {
+function yankError(callback, docId) {
   return function (err, results) {
     if (err || (results[0] && results[0].error)) {
-      callback(err || results[0]);
+      err = err || results[0];
+      err.docId = docId;
+      callback(err);
     } else {
       callback(null, results.length ? results[0]  : results);
     }
@@ -29757,14 +29865,14 @@ function computeHeight(revs) {
   var height = {};
   var edges = [];
   pouchdbMerge.traverseRevTree(revs, function (isLeaf, pos, id, prnt) {
-    var rev = pos + "-" + id;
+    var rev$$1 = pos + "-" + id;
     if (isLeaf) {
-      height[rev] = 0;
+      height[rev$$1] = 0;
     }
     if (prnt !== undefined) {
-      edges.push({from: prnt, to: rev});
+      edges.push({from: prnt, to: rev$$1});
     }
-    return rev;
+    return rev$$1;
   });
 
   edges.reverse();
@@ -29864,7 +29972,7 @@ AbstractPouchDB.prototype.post =
   if (typeof doc !== 'object' || Array.isArray(doc)) {
     return callback(pouchdbErrors.createError(pouchdbErrors.NOT_AN_OBJECT));
   }
-  this.bulkDocs({docs: [doc]}, opts, yankError(callback));
+  this.bulkDocs({docs: [doc]}, opts, yankError(callback, doc._id));
 });
 
 AbstractPouchDB.prototype.put = pouchdbUtils.adapterFun('put', function (doc, opts, cb) {
@@ -29883,28 +29991,56 @@ AbstractPouchDB.prototype.put = pouchdbUtils.adapterFun('put', function (doc, op
       return this._putLocal(doc, cb);
     }
   }
-  if (typeof this._put === 'function' && opts.new_edits !== false) {
-    this._put(doc, opts, cb);
+  var self = this;
+  if (opts.force && doc._rev) {
+    transformForceOptionToNewEditsOption();
+    putDoc(function (err) {
+      var result = err ? null : {ok: true, id: doc._id, rev: doc._rev};
+      cb(err, result);
+    });
   } else {
-    this.bulkDocs({docs: [doc]}, opts, yankError(cb));
+    putDoc(cb);
+  }
+
+  function transformForceOptionToNewEditsOption() {
+    var parts = doc._rev.split('-');
+    var oldRevId = parts[1];
+    var oldRevNum = parseInt(parts[0], 10);
+
+    var newRevNum = oldRevNum + 1;
+    var newRevId = pouchdbUtils.rev();
+
+    doc._revisions = {
+      start: newRevNum,
+      ids: [newRevId, oldRevId]
+    };
+    doc._rev = newRevNum + '-' + newRevId;
+    opts.new_edits = false;
+  }
+  function putDoc(next) {
+    if (typeof self._put === 'function' && opts.new_edits !== false) {
+      self._put(doc, opts, next);
+    } else {
+      self.bulkDocs({docs: [doc]}, opts, yankError(next, doc._id));
+    }
   }
 });
 
 AbstractPouchDB.prototype.putAttachment =
-  pouchdbUtils.adapterFun('putAttachment', function (docId, attachmentId, rev,
+  pouchdbUtils.adapterFun('putAttachment', function (docId, attachmentId, rev$$1,
                                               blob, type) {
   var api = this;
   if (typeof type === 'function') {
     type = blob;
-    blob = rev;
-    rev = null;
+    blob = rev$$1;
+    rev$$1 = null;
   }
   // Lets fix in https://github.com/pouchdb/pouchdb/issues/3267
   /* istanbul ignore if */
   if (typeof type === 'undefined') {
     type = blob;
-    blob = rev;
-    rev = null;
+    blob = rev$$1;
+    rev$$1 = null;
   }
   if (!type) {
     pouchdbUtils.guardedConsole('warn', 'Attachment', attachmentId, 'on document', docId, 'is missing content_type');
@@ -29922,7 +30058,7 @@ AbstractPouchDB.prototype.putAttachment =
   }
 
   return api.get(docId).then(function (doc) {
-    if (doc._rev !== rev) {
+    if (doc._rev !== rev$$1) {
       throw pouchdbErrors.createError(pouchdbErrors.REV_CONFLICT);
     }
 
@@ -29939,7 +30075,7 @@ AbstractPouchDB.prototype.putAttachment =
 });
 
 AbstractPouchDB.prototype.removeAttachment =
-  pouchdbUtils.adapterFun('removeAttachment', function (docId, attachmentId, rev,
+  pouchdbUtils.adapterFun('removeAttachment', function (docId, attachmentId, rev$$1,
                                                  callback) {
   var self = this;
   self.get(docId, function (err, obj) {
@@ -29948,7 +30084,7 @@ AbstractPouchDB.prototype.removeAttachment =
       callback(err);
       return;
     }
-    if (obj._rev !== rev) {
+    if (obj._rev !== rev$$1) {
       callback(pouchdbErrors.createError(pouchdbErrors.REV_CONFLICT));
       return;
     }
@@ -29995,7 +30131,7 @@ AbstractPouchDB.prototype.remove =
   if (pouchdbMerge.isLocalId(newDoc._id) && typeof this._removeLocal === 'function') {
     return this._removeLocal(doc, callback);
   }
-  this.bulkDocs({docs: [newDoc]}, opts, yankError(callback));
+  this.bulkDocs({docs: [newDoc]}, opts, yankError(callback, newDoc._id));
 });
 
 AbstractPouchDB.prototype.revsDiff =
@@ -30025,8 +30161,8 @@ AbstractPouchDB.prototype.revsDiff =
     var missingForId = req[id].slice(0);
     pouchdbMerge.traverseRevTree(rev_tree, function (isLeaf, pos, revHash, ctx,
       opts) {
-        var rev = pos + '-' + revHash;
-        var idx = missingForId.indexOf(rev);
+        var rev$$1 = pos + '-' + revHash;
+        var idx = missingForId.indexOf(rev$$1);
         if (idx === -1) {
           return;
         }
@@ -30034,14 +30170,14 @@ AbstractPouchDB.prototype.revsDiff =
         missingForId.splice(idx, 1);
         /* istanbul ignore if */
         if (opts.status !== 'available') {
-          addToMissing(id, rev);
+          addToMissing(id, rev$$1);
         }
       });
 
     // Traversing the tree is synchronous, so now `missingForId` contains
     // revisions that were not found in the tree
-    missingForId.forEach(function (rev) {
-      addToMissing(id, rev);
+    missingForId.forEach(function (rev$$1) {
+      addToMissing(id, rev$$1);
     });
   }
 
@@ -30094,16 +30230,16 @@ AbstractPouchDB.prototype.compactDocument =
     var height = computeHeight(revTree);
     var candidates = [];
     var revs = [];
-    Object.keys(height).forEach(function (rev) {
-      if (height[rev] > maxHeight) {
-        candidates.push(rev);
+    Object.keys(height).forEach(function (rev$$1) {
+      if (height[rev$$1] > maxHeight) {
+        candidates.push(rev$$1);
       }
     });
 
     pouchdbMerge.traverseRevTree(revTree, function (isLeaf, pos, revHash, ctx, opts) {
-      var rev = pos + '-' + revHash;
-      if (opts.status === 'available' && candidates.indexOf(rev) !== -1) {
-        revs.push(rev);
+      var rev$$1 = pos + '-' + revHash;
+      if (opts.status === 'available' && candidates.indexOf(rev$$1) !== -1) {
+        revs.push(rev$$1);
       }
     });
     self._doCompaction(docId, revs, callback);
@@ -30244,6 +30380,7 @@ AbstractPouchDB.prototype.get = pouchdbUtils.adapterFun('get', function (id, opt
 
   return this._get(id, opts, function (err, result) {
     if (err) {
+      err.docId = id;
       return cb(err);
     }
 
@@ -30290,18 +30427,18 @@ AbstractPouchDB.prototype.get = pouchdbUtils.adapterFun('get', function (id, opt
       if (opts.revs) {
         doc._revisions = {
           start: (path.pos + path.ids.length) - 1,
-          ids: path.ids.map(function (rev) {
-            return rev.id;
+          ids: path.ids.map(function (rev$$1) {
+            return rev$$1.id;
           })
         };
       }
       if (opts.revs_info) {
         var pos =  path.pos + path.ids.length;
-        doc._revs_info = path.ids.map(function (rev) {
+        doc._revs_info = path.ids.map(function (rev$$1) {
           pos--;
           return {
-            rev: pos + '-' + rev.id,
-            status: rev.opts.status
+            rev: pos + '-' + rev$$1.id,
+            status: rev$$1.opts.status
           };
         });
       }
@@ -30636,7 +30773,7 @@ TaskQueue$1.prototype.addTask = function (fun) {
 };
 
 function parseAdapter(name, opts) {
-  var match = name.match(/([a-z\-]*):\/\/(.*)/);
+  var match = name.match(/([a-z-]*):\/\/(.*)/);
   if (match) {
     // the http adapter expects the fully qualified name
     return {
@@ -30690,32 +30827,21 @@ function parseAdapter(name, opts) {
 // that may have been created with the same name.
 function prepareForDestruction(self) {
 
-  var destructionListeners = self.constructor._destructionListeners;
-
-  function onDestroyed() {
+  function onDestroyed(from_constructor) {
     self.removeListener('closed', onClosed);
-    self.constructor.emit('destroyed', self.name);
-  }
-
-  function onConstructorDestroyed() {
-    self.removeListener('destroyed', onDestroyed);
-    self.removeListener('closed', onClosed);
-    self.emit('destroyed');
+    if (!from_constructor) {
+      self.constructor.emit('destroyed', self.name);
+    }
   }
 
   function onClosed() {
     self.removeListener('destroyed', onDestroyed);
-    destructionListeners.delete(self.name);
+    self.constructor.emit('unref', self);
   }
 
   self.once('destroyed', onDestroyed);
   self.once('closed', onClosed);
-
-  // in setup.js, the constructor is primed to listen for destroy events
-  if (!destructionListeners.has(self.name)) {
-    destructionListeners.set(self.name, []);
-  }
-  destructionListeners.get(self.name).push(onConstructorDestroyed);
+  self.constructor.emit('ref', self);
 }
 
 inherits(PouchDB$2, AbstractPouchDB);
@@ -30794,11 +30920,42 @@ function setUpEventEmitter(Pouch) {
   // these are created in constructor.js, and allow us to notify each DB with
   // the same name that it was destroyed, via the constructor object
   var destructListeners = Pouch._destructionListeners = new pouchdbCollections.Map();
+
+  Pouch.on('ref', function onConstructorRef(db) {
+    if (!destructListeners.has(db.name)) {
+      destructListeners.set(db.name, []);
+    }
+    destructListeners.get(db.name).push(db);
+  });
+
+  Pouch.on('unref', function onConstructorUnref(db) {
+    if (!destructListeners.has(db.name)) {
+      return;
+    }
+    var dbList = destructListeners.get(db.name);
+    var pos = dbList.indexOf(db);
+    if (pos < 0) {
+      /* istanbul ignore next */
+      return;
+    }
+    dbList.splice(pos, 1);
+    if (dbList.length > 1) {
+      /* istanbul ignore next */
+      destructListeners.set(db.name, dbList);
+    } else {
+      destructListeners.delete(db.name);
+    }
+  });
+
   Pouch.on('destroyed', function onConstructorDestroyed(name) {
-    destructListeners.get(name).forEach(function (callback) {
-      callback();
-    });
+    if (!destructListeners.has(name)) {
+      return;
+    }
+    var dbList = destructListeners.get(name);
     destructListeners.delete(name);
+    dbList.forEach(function (db) {
+      db.emit('destroyed',true);
+    });
   });
 }
 
@@ -30818,7 +30975,7 @@ PouchDB$2.plugin = function (obj) {
   if (typeof obj === 'function') { // function style for plugins
     obj(PouchDB$2);
   } else if (typeof obj !== 'object' || Object.keys(obj).length === 0) {
-    throw new Error('Invalid plugin: got \"' + obj + '\", expected an object or a function');
+    throw new Error('Invalid plugin: got "' + obj + '", expected an object or a function');
   } else {
     Object.keys(obj).forEach(function (id) { // object style for plugins
       PouchDB$2.prototype[id] = obj[id];
@@ -30865,7 +31022,7 @@ PouchDB$2.defaults = function (defaultOpts) {
 };
 
 // managed automatically by set-version.js
-var version = "6.2.0";
+var version = "6.3.4";
 
 // TODO: remove from pouchdb-core (breaking)
 PouchDB$2.plugin(pouchDebug);
@@ -31085,6 +31242,14 @@ function find(db, requestDef, callback) {
   db.request({
     method: 'POST',
     url: '_find',
+    body: requestDef
+  }, callback);
+}
+
+function explain(db, requestDef, callback) {
+  db.request({
+    method: 'POST',
+    url: '_explain',
     body: requestDef
   }, callback);
 }
@@ -31412,6 +31577,19 @@ function massageSort(sort) {
   });
 }
 
+function massageUseIndex(useIndex) {
+  var cleanedUseIndex = [];
+  if (typeof useIndex === 'string') {
+    cleanedUseIndex.push(useIndex);
+  } else {
+    cleanedUseIndex = useIndex;
+  }
+
+  return cleanedUseIndex.map(function (name) {
+    return name.replace('_design/', '');
+  });
+}
+
 function massageIndexDef(indexDef) {
   indexDef.fields = indexDef.fields.map(function (field) {
     if (typeof field === 'string') {
@@ -31578,11 +31756,16 @@ function createIndex$1(db, requestDef) {
 
   validateIndex(requestDef.index);
 
-  var md5 = pouchdbMd5.stringMd5(JSON.stringify(requestDef));
+  // calculating md5 is expensive - memoize and only
+  // run if required
+  var md5;
+  function getMd5() {
+    return md5 || (md5 = pouchdbMd5.stringMd5(JSON.stringify(requestDef)));
+  }
 
-  var viewName = requestDef.name || ('idx-' + md5);
+  var viewName = requestDef.name || ('idx-' + getMd5());
 
-  var ddocName = requestDef.ddoc || ('idx-' + md5);
+  var ddocName = requestDef.ddoc || ('idx-' + getMd5());
   var ddocId = '_design/' + ddocName;
 
   var hasInvalidLanguage = false;
@@ -31860,18 +32043,24 @@ function findMatchingIndexes(selector, userFields, sortOrder, indexes) {
 
 // find the best index, i.e. the one that matches the most fields
 // in the user's query
-function findBestMatchingIndex(selector, userFields, sortOrder, indexes) {
+function findBestMatchingIndex(selector, userFields, sortOrder, indexes, useIndex) {
 
   var matchingIndexes = findMatchingIndexes(selector, userFields, sortOrder, indexes);
 
   if (matchingIndexes.length === 0) {
+    if (useIndex) {
+      throw {
+        error: "no_usable_index",
+        message: "There is no index available for this selector."
+      };
+    }
     //return `all_docs` as a default index;
     //I'm assuming that _all_docs is always first
     var defaultIndex = indexes[0];
     defaultIndex.defaultUsed = true;
     return defaultIndex;
   }
-  if (matchingIndexes.length === 1) {
+  if (matchingIndexes.length === 1 && !useIndex) {
     return matchingIndexes[0];
   }
 
@@ -31887,6 +32076,30 @@ function findBestMatchingIndex(selector, userFields, sortOrder, indexes) {
       }
     }
     return score;
+  }
+
+  if (useIndex) {
+    var useIndexDdoc = '_design/' + useIndex[0];
+    var useIndexName = useIndex.length === 2 ? useIndex[1] : false;
+    var index = matchingIndexes.find(function (index) {
+      if (useIndexName && index.ddoc === useIndexDdoc && useIndexName === index.name) {
+        return true;
+      }
+
+      if (index.ddoc === useIndexDdoc) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (!index) {
+      throw {
+        error: "unknown_error",
+        message: "Could not find that index or could not use that index for the query"
+      };
+    }
+    return index;
   }
 
   return max(matchingIndexes, scoreIndex);
@@ -32009,7 +32222,7 @@ function getMultiFieldQueryOpts(selector, index) {
       finish(i);
       break;
     } else if (i > 0) {
-      if (Object.keys(matcher).some(isNonLogicalMatcher)) { // non-logical are ignored 
+      if (Object.keys(matcher).some(isNonLogicalMatcher)) { // non-logical are ignored
         finish(i);
         break;
       }
@@ -32101,7 +32314,7 @@ function planQuery(request, indexes) {
 
   var userFields = userFieldsRes.fields;
   var sortOrder = userFieldsRes.sortOrder;
-  var index = findBestMatchingIndex(selector, userFields, sortOrder, indexes);
+  var index = findBestMatchingIndex(selector, userFields, sortOrder, indexes, request.use_index);
 
   var coreQueryPlan = getCoreQueryPlan(selector, index);
   var queryOpts = coreQueryPlan.queryOpts;
@@ -32147,15 +32360,27 @@ function doAllDocs(db, originalOpts) {
     opts.limit = 0;
   }
 
-  return db.allDocs(opts);
+  return db.allDocs(opts)
+  .then(function (res) {
+    // filter out any design docs that _all_docs might return
+    res.rows = res.rows.filter(function (row) {
+      return !/^_design\//.test(row.id);
+    });
+    return res;
+  });
 }
 
-function find$1(db, requestDef) {
+function find$1(db, requestDef, explain) {
   if (requestDef.selector) {
     requestDef.selector = pouchdbSelectorCore.massageSelector(requestDef.selector);
   }
+
   if (requestDef.sort) {
     requestDef.sort = massageSort(requestDef.sort);
+  }
+
+  if (requestDef.use_index) {
+    requestDef.use_index = massageUseIndex(requestDef.use_index);
   }
 
   validateFindRequest(requestDef);
@@ -32201,7 +32426,11 @@ function find$1(db, requestDef) {
         opts.skip = requestDef.skip;
       }
     }
-    
+
+    if (explain) {
+      return Promise.resolve(queryPlan, opts);
+    }
+
     return Promise.resolve().then(function () {
       if (indexToUse.name === '_all_docs') {
         return doAllDocs(db, opts);
@@ -32240,6 +32469,34 @@ function find$1(db, requestDef) {
   });
 }
 
+function explain$1(db, requestDef) {
+  return find$1(db, requestDef, true)
+  .then(function (queryPlan) {
+    return {
+      dbname: db.name,
+      index: queryPlan.index,
+      selector: requestDef.selector,
+      range: {
+        start_key: queryPlan.queryOpts.startkey,
+        end_key: queryPlan.queryOpts.endkey,
+      },
+      opts: {
+        use_index: requestDef.use_index || [],
+        bookmark: "nil", //hardcoded to match CouchDB since its not supported,
+        limit: requestDef.limit,
+        skip: requestDef.skip,
+        sort: requestDef.sort || {},
+        fields: requestDef.fields,
+        conflicts: false, //hardcoded to match CouchDB since its not supported,
+        r: [49], // hardcoded to match CouchDB since its not support
+      },
+      limit: requestDef.limit,
+      skip: requestDef.skip || 0,
+      fields: requestDef.fields,
+    };
+  });
+}
+
 function deleteIndex$1(db, index) {
 
   if (!index.ddoc) {
@@ -32272,6 +32529,7 @@ function deleteIndex$1(db, index) {
 
 var createIndexAsCallback = callbackify(createIndex$1);
 var findAsCallback = callbackify(find$1);
+var explainAsCallback = callbackify(explain$1);
 var getIndexesAsCallback = callbackify(getIndexes$1);
 var deleteIndexAsCallback = callbackify(deleteIndex$1);
 
@@ -32299,6 +32557,21 @@ plugin.find = pouchdbUtils.toPromise(function (requestDef, callback) {
   }
 
   var find$$1 = pouchdbUtils.isRemote(this) ? find : findAsCallback;
+  find$$1(this, requestDef, callback);
+});
+
+plugin.explain = pouchdbUtils.toPromise(function (requestDef, callback) {
+
+  if (typeof callback === 'undefined') {
+    callback = requestDef;
+    requestDef = undefined;
+  }
+
+  if (typeof requestDef !== 'object') {
+    return callback(new Error('you must provide search parameters to explain()'));
+  }
+
+  var find$$1 = pouchdbUtils.isRemote(this) ? explain : explainAsCallback;
   find$$1(this, requestDef, callback);
 });
 
@@ -32412,7 +32685,7 @@ function safeJsonStringify(json) {
 exports.safeJsonParse = safeJsonParse;
 exports.safeJsonStringify = safeJsonStringify;
 
-},{"vuvuzela":574}],464:[function(require,module,exports){
+},{"vuvuzela":579}],464:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -33385,7 +33658,19 @@ function replicate(src, target, opts, returnValue, result) {
     }
     return generateReplicationId(src, target, opts).then(function (res) {
       repId = res;
-      checkpointer = new Checkpointer(src, target, repId, returnValue);
+
+      var checkpointOpts = {};
+      if (opts.checkpoint === false) {
+        checkpointOpts = { writeSourceCheckpoint: false, writeTargetCheckpoint: false };
+      } else if (opts.checkpoint === 'source') {
+        checkpointOpts = { writeSourceCheckpoint: true, writeTargetCheckpoint: false };
+      } else if (opts.checkpoint === 'target') {
+        checkpointOpts = { writeSourceCheckpoint: false, writeTargetCheckpoint: true };
+      } else {
+        checkpointOpts = { writeSourceCheckpoint: true, writeTargetCheckpoint: true };
+      }
+
+      checkpointer = new Checkpointer(src, target, repId, returnValue, checkpointOpts);
     });
   }
 
@@ -34424,10 +34709,6 @@ function filterInMemoryFields(rows, requestDef, inMemoryFields) {
 
 function rowFilter(doc, selector, inMemoryFields) {
   return inMemoryFields.every(function (field) {
-    if (isDesignDoc(doc)) {
-      return false;
-    }
-
     var matcher = selector[field];
     var parsedField = parseField(field);
     var docFieldValue = getFieldFromDoc(doc, parsedField);
@@ -34437,10 +34718,6 @@ function rowFilter(doc, selector, inMemoryFields) {
 
     return matchSelector(matcher, doc, parsedField, docFieldValue);
   });
-}
-
-function isDesignDoc(doc) {
-  return /^_design\//.test(doc._id);
 }
 
 function matchSelector(matcher, doc, parsedField, docFieldValue) {
@@ -34478,7 +34755,7 @@ function match(userOperator, doc, userValue, parsedField, docFieldValue) {
   if (!matchers[userOperator]) {
     throw new Error('unknown operator "' + userOperator +
       '" - should be one of $eq, $lte, $lt, $gt, $gte, $exists, $ne, $in, ' +
-      '$nin, $size, $mod, $regex, $elemMatch, $type or $all');
+      '$nin, $size, $mod, $regex, $elemMatch, $type, $allMatch or $all');
   }
   return matchers[userOperator](doc, userValue, parsedField, docFieldValue);
 }
@@ -34583,6 +34860,27 @@ var matchers = {
     });
   },
 
+  '$allMatch': function (doc, userValue, parsedField, docFieldValue) {
+    if (!Array.isArray(docFieldValue)) {
+      return false;
+    }
+
+    /* istanbul ignore next */
+    if (docFieldValue.length === 0) {
+      return false;
+    }
+
+    if (typeof docFieldValue[0] === 'object') {
+      return docFieldValue.every(function (val) {
+        return rowFilter(val, userValue, Object.keys(userValue));
+      });
+    }
+
+    return docFieldValue.every(function (val) {
+      return matchSelector(userValue, doc, parsedField, val);
+    });
+  },
+
   '$eq': function (doc, userValue, parsedField, docFieldValue) {
     return fieldIsNotUndefined(docFieldValue) && pouchdbCollate.collate(docFieldValue, userValue) === 0;
   },
@@ -34651,7 +34949,7 @@ function matchesSelector(doc, selector) {
   /* istanbul ignore if */
   if (typeof selector !== 'object') {
     // match the CouchDB error message
-    throw 'Selector error: expected a JSON object';
+    throw new Error('Selector error: expected a JSON object');
   }
 
   selector = massageSelector(selector);
@@ -34683,6 +34981,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var uuidV4 = _interopDefault(require('uuid'));
 var Promise = _interopDefault(require('pouchdb-promise'));
 var getArguments = _interopDefault(require('argsarray'));
 var pouchdbCollections = require('pouchdb-collections');
@@ -35393,7 +35692,7 @@ var qName ="queryKey";
 var qParser = /(?:^|&)([^&=]*)=?([^&]*)/g;
 
 // use the "loose" parser
-/* jshint maxlen: false */
+/* eslint maxlen: 0, no-useless-escape: 0 */
 var parser = /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
 
 function parseUri(str) {
@@ -35483,90 +35782,19 @@ function tryAndPut(db, doc, diffFun) {
   });
 }
 
-// BEGIN Math.uuid.js
-
-/*!
-Math.uuid.js (v1.4)
-http://www.broofa.com
-mailto:robert@broofa.com
-
-Copyright (c) 2010 Robert Kieffer
-Dual licensed under the MIT and GPL licenses.
-*/
-
-/*
- * Generate a random uuid.
- *
- * USAGE: Math.uuid(length, radix)
- *   length - the desired number of characters
- *   radix  - the number of allowable values for each character.
- *
- * EXAMPLES:
- *   // No arguments  - returns RFC4122, version 4 ID
- *   >>> Math.uuid()
- *   "92329D39-6F5C-4520-ABFC-AAB64544E172"
- *
- *   // One argument - returns ID of the specified length
- *   >>> Math.uuid(15)     // 15 character ID (default base=62)
- *   "VcydxgltxrVZSTV"
- *
- *   // Two arguments - returns ID of the specified length, and radix. 
- *   // (Radix must be <= 62)
- *   >>> Math.uuid(8, 2)  // 8 character ID (base=2)
- *   "01001010"
- *   >>> Math.uuid(8, 10) // 8 character ID (base=10)
- *   "47473046"
- *   >>> Math.uuid(8, 16) // 8 character ID (base=16)
- *   "098F4D35"
- */
-var chars = (
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-  'abcdefghijklmnopqrstuvwxyz'
-).split('');
-function getValue(radix) {
-  return 0 | Math.random() * radix;
+function rev() {
+  return uuidV4.v4().replace(/-/g, '').toLowerCase();
 }
-function uuid(len, radix) {
-  radix = radix || chars.length;
-  var out = '';
-  var i = -1;
 
-  if (len) {
-    // Compact form
-    while (++i < len) {
-      out += chars[getValue(radix)];
-    }
-    return out;
-  }
-    // rfc4122, version 4 form
-    // Fill in random data.  At i==19 set the high bits of clock sequence as
-    // per rfc4122, sec. 4.1.5
-  while (++i < 36) {
-    switch (i) {
-      case 8:
-      case 13:
-      case 18:
-      case 23:
-        out += '-';
-        break;
-      case 19:
-        out += chars[(getValue(16) & 0x3) | 0x8];
-        break;
-      default:
-        out += chars[getValue(16)];
-    }
-  }
-
-  return out;
-}
+var uuid = uuidV4.v4;
 
 exports.adapterFun = adapterFun;
+exports.assign = assign$1;
 exports.bulkGetShim = bulkGet;
 exports.changesHandler = Changes;
 exports.clone = clone;
 exports.defaultBackOff = defaultBackOff;
 exports.explainError = explainError;
-exports.assign = assign$1;
 exports.filterChange = filterChange;
 exports.flatten = flatten;
 exports.functionName = res$1;
@@ -35583,12 +35811,13 @@ exports.once = once;
 exports.parseDdocFunctionName = parseDesignDocFunctionName;
 exports.parseUri = parseUri;
 exports.pick = pick;
+exports.rev = rev;
 exports.scopeEval = scopeEval;
 exports.toPromise = toPromise;
 exports.upsert = upsert;
 exports.uuid = uuid;
 
-},{"argsarray":24,"events":434,"immediate":438,"inherits":439,"pouchdb-collections":457,"pouchdb-errors":460,"pouchdb-promise":467}],471:[function(require,module,exports){
+},{"argsarray":24,"events":434,"immediate":438,"inherits":439,"pouchdb-collections":457,"pouchdb-errors":460,"pouchdb-promise":467,"uuid":574}],471:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -43524,6 +43753,211 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./support/isBuffer":572,"_process":471,"inherits":571}],574:[function(require,module,exports){
+var v1 = require('./v1');
+var v4 = require('./v4');
+
+var uuid = v4;
+uuid.v1 = v1;
+uuid.v4 = v4;
+
+module.exports = uuid;
+
+},{"./v1":577,"./v4":578}],575:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+module.exports = bytesToUuid;
+
+},{}],576:[function(require,module,exports){
+(function (global){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = global.crypto || global.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+module.exports = rng;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],577:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+
+// random #'s we need to init node and clockseq
+var _seedBytes = rng();
+
+// Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+var _nodeId = [
+  _seedBytes[0] | 0x01,
+  _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
+];
+
+// Per 4.2.2, randomize (14 bit) clockseq
+var _clockseq = (_seedBytes[6] << 8 | _seedBytes[7]) & 0x3fff;
+
+// Previous uuid creation time
+var _lastMSecs = 0, _lastNSecs = 0;
+
+// See https://github.com/broofa/node-uuid for API details
+function v1(options, buf, offset) {
+  var i = buf && offset || 0;
+  var b = buf || [];
+
+  options = options || {};
+
+  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq;
+
+  // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime();
+
+  // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1;
+
+  // Time since last uuid creation (in msecs)
+  var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
+
+  // Per 4.2.1.2, Bump clockseq on clock regression
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  }
+
+  // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  }
+
+  // Per 4.2.1.2 Throw error if too many uuids are requested
+  if (nsecs >= 10000) {
+    throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq;
+
+  // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+  msecs += 12219292800000;
+
+  // `time_low`
+  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff;
+
+  // `time_mid`
+  var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff;
+
+  // `time_high_and_version`
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+  b[i++] = tmh >>> 16 & 0xff;
+
+  // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+  b[i++] = clockseq >>> 8 | 0x80;
+
+  // `clock_seq_low`
+  b[i++] = clockseq & 0xff;
+
+  // `node`
+  var node = options.node || _nodeId;
+  for (var n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf ? buf : bytesToUuid(b);
+}
+
+module.exports = v1;
+
+},{"./lib/bytesToUuid":575,"./lib/rng":576}],578:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/bytesToUuid":575,"./lib/rng":576}],579:[function(require,module,exports){
 'use strict';
 
 /**
@@ -43698,7 +44132,7 @@ exports.parse = function (str) {
   }
 };
 
-},{}],575:[function(require,module,exports){
+},{}],580:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;

@@ -3,13 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.create = undefined;
 exports.merge = merge;
 exports.mergeClone = mergeClone;
-exports.toString = toString;
 exports.isObject = isObject;
-exports.inherits = inherits;
-exports.isArgumentsObject = isArgumentsObject;
 
 var _clone = require('clone');
 
@@ -20,11 +16,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 /**
  * Merges `from` into `to` without overwriting existing properties.
  *
- * @param {Object} to
- * @param {Object} from
- * @api private
+ * @param {object} to
+ * @param {object} from
  */
-
 function merge(to, from) {
     var keys = Object.keys(from);
     var i = keys.length;
@@ -40,15 +34,13 @@ function merge(to, from) {
    * this is copied from
    * @link https://github.com/aheckmann/mquery/blob/master/lib/utils.js
    */
-
 ;
 
 /**
  * Same as merge but clones the assigned values.
  *
- * @param {Object} to
- * @param {Object} from
- * @api private
+ * @param {object} to
+ * @param {object} from
  */
 function mergeClone(to, from) {
     var keys = Object.keys(from);
@@ -76,42 +68,11 @@ function mergeClone(to, from) {
 };
 
 /**
- * Object.prototype.toString.call helper
- */
-
-var _toString = Object.prototype.toString;
-function toString(arg) {
-    return _toString.call(arg);
-};
-
-/**
  * Determines if `arg` is an object.
  *
  * @param {Object|Array|String|Function|RegExp|any} arg
  * @return {Boolean}
  */
-
 function isObject(arg) {
-    return '[object Object]' == toString(arg);
-};
-
-var create = exports.create = Object.create;
-
-/**
- * inheritance
- */
-function inherits(ctor, superCtor) {
-    ctor.prototype = create(superCtor.prototype);
-    ctor.prototype.constructor = ctor;
-};
-
-/**
- * Check if this object is an arguments object
- *
- * @param {Any} v
- * @return {Boolean}
- */
-
-function isArgumentsObject(v) {
-    return Object.prototype.toString.call(v) === '[object Arguments]';
+    return '[object Object]' == arg.toString();
 };

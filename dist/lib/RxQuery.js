@@ -85,7 +85,7 @@ var RxQuery = function () {
 
         /**
          * if this is true, the results-state is not equal to the database
-         * which means that the query must run agains the database again
+         * which means that the query must run against the database again
          * @type {Boolean}
          */
         this._mustReExec = true;
@@ -733,11 +733,16 @@ var RxQuery = function () {
     return RxQuery;
 }();
 
-// tunnel the proto-functions of mquery to RxQuery
+/**
+ * tunnel the proto-functions of mquery to RxQuery
+ * @param  {any} rxQueryProto    [description]
+ * @param  {string[]} mQueryProtoKeys [description]
+ * @return {void}                 [description]
+ */
 
 
-var protoMerge = function protoMerge(rxQueryProto, mQueryProto) {
-    Object.keys(mQueryProto).filter(function (attrName) {
+var protoMerge = function protoMerge(rxQueryProto, mQueryProtoKeys) {
+    mQueryProtoKeys.filter(function (attrName) {
         return !attrName.startsWith('_');
     }).filter(function (attrName) {
         return !rxQueryProto[attrName];
@@ -759,7 +764,7 @@ function create(op, queryObj, collection) {
 
     if (!protoMerged) {
         protoMerged = true;
-        protoMerge(Object.getPrototypeOf(ret), Object.getPrototypeOf(ret.mquery));
+        protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
     }
 
     return ret;

@@ -55,11 +55,11 @@ var RxReplicationState = function () {
 
             var docs = ev.change.docs.filter(function (doc) {
                 return doc.language !== 'query';
-            } // remove internal docs
-            ).map(function (doc) {
+            }) // remove internal docs
+            .map(function (doc) {
                 return _this2.collection._handleFromPouch(doc);
-            } // do primary-swap and keycompression
-            ).forEach(function (doc) {
+            }) // do primary-swap and keycompression
+            .forEach(function (doc) {
                 return _this2._subjects.docs.next(doc);
             });
         }));

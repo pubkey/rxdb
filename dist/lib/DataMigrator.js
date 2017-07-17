@@ -90,8 +90,8 @@ var DataMigrator = function () {
                                     return fun['catch'](function (e) {
                                         return null;
                                     });
-                                } // auto-catch so Promise.all continues
-                                ));
+                                }) // auto-catch so Promise.all continues
+                                );
 
                             case 2:
                                 oldColDocs = _context.sent;

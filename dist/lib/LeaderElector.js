@@ -625,9 +625,9 @@ var LeaderElector = function () {
                             case 12:
                                 this.signalLeadership = this.bc.$.filter(function (m) {
                                     return !!_this2.isLeader;
-                                }
+                                })
                                 // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                                ).filter(function (msg) {
+                                .filter(function (msg) {
                                     return msg.type != 'tell';
                                 }).subscribe(function (msg) {
                                     return _this2.leaderSignal();

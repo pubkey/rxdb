@@ -161,7 +161,6 @@ var RxDocument = function () {
                 case 'REMOVE':
                     // remove from docCache to assure new upserted RxDocuments will be a new instance
                     this.collection._docCache['delete'](this.getPrimary());
-
                     this._deleted$.next(true);
                     break;
             }
@@ -362,7 +361,6 @@ var RxDocument = function () {
             if (!this._isTemporary) this.collection.schema.validate(value, objPath);
 
             _objectPath2['default'].set(this._data, objPath, value);
-
             return this;
         }
     }, {
@@ -394,8 +392,10 @@ var RxDocument = function () {
                                 });
                                 delete newDoc._rev;
                                 delete newDoc._id;
-                                Object.keys(newDoc).forEach(function (newPropName) {
-                                    if (!(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName])) _this2._data[newPropName] = newDoc[newPropName];
+                                Object.keys(newDoc).filter(function (newPropName) {
+                                    return !(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName]);
+                                }).forEach(function (newPropName) {
+                                    return _this2._data[newPropName] = newDoc[newPropName];
                                 });
                                 _context2.next = 7;
                                 return this.save();

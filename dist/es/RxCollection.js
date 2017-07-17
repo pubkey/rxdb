@@ -77,11 +77,9 @@ var RxCollection = function () {
                             this._keyCompressor = KeyCompressor.create(this.schema);
 
                             this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
-
                             this._observable$ = this.database.$.filter(function (event) {
                                 return event.data.col == _this2.name;
                             });
-
                             this._changeEventBuffer = ChangeEventBuffer.create(this);
 
                             // INDEXES
@@ -505,30 +503,31 @@ var RxCollection = function () {
                         case 6:
 
                             json = clone(json);
+                            json = this.schema.fillObjectWithDefaults(json);
 
                             if (!json._id) {
-                                _context8.next = 9;
+                                _context8.next = 10;
                                 break;
                             }
 
                             throw new Error('do not provide ._id, it will be generated');
 
-                        case 9:
+                        case 10:
 
                             // fill _id
                             if (this.schema.primaryPath == '_id' && !json._id) json._id = util.generate_id();
 
-                            _context8.next = 12;
+                            _context8.next = 13;
                             return this._runHooks('pre', 'insert', json);
 
-                        case 12:
+                        case 13:
 
                             this.schema.validate(json);
 
-                            _context8.next = 15;
+                            _context8.next = 16;
                             return this._pouchPut(json);
 
-                        case 15:
+                        case 16:
                             insertResult = _context8.sent;
 
 
@@ -538,26 +537,26 @@ var RxCollection = function () {
                             newDoc = tempDoc;
 
                             if (!tempDoc) {
-                                _context8.next = 23;
+                                _context8.next = 24;
                                 break;
                             }
 
                             tempDoc._data = json;
-                            _context8.next = 26;
+                            _context8.next = 27;
                             break;
 
-                        case 23:
-                            _context8.next = 25;
+                        case 24:
+                            _context8.next = 26;
                             return this._createDocument(json);
 
-                        case 25:
+                        case 26:
                             newDoc = _context8.sent;
 
-                        case 26:
-                            _context8.next = 28;
+                        case 27:
+                            _context8.next = 29;
                             return this._runHooks('post', 'insert', newDoc);
 
-                        case 28:
+                        case 29:
 
                             // event
                             emitEvent = RxChangeEvent.create('INSERT', this.database, this, newDoc, json);
@@ -566,7 +565,7 @@ var RxCollection = function () {
 
                             return _context8.abrupt('return', newDoc);
 
-                        case 31:
+                        case 32:
                         case 'end':
                             return _context8.stop();
                     }
@@ -861,13 +860,13 @@ var RxCollection = function () {
                             // decrypt
                             .map(function (doc) {
                                 return _this5._crypter.decrypt(doc);
-                            }
+                            })
                             // validate schema
-                            ).map(function (doc) {
+                            .map(function (doc) {
                                 return _this5.schema.validate(doc);
-                            }
+                            })
                             // import
-                            ).map(function (doc) {
+                            .map(function (doc) {
                                 return _this5._pouchPut(doc);
                             });
                             return _context13.abrupt('return', Promise.all(importFns));
@@ -897,49 +896,49 @@ var RxCollection = function () {
     RxCollection.prototype.watchForChanges = function watchForChanges() {
         var _this6 = this;
 
-        if (!this.synced) {
-            /**
-             * this will grap the changes and publish them to the rx-stream
-             * this is to ensure that changes from 'synced' dbs will be published
-             */
-            var sendChanges = {};
-            var pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }), 'change').filter(function (c) {
-                return c.id.charAt(0) != '_';
-            }).map(function (c) {
-                return c.doc;
-            }).map(function (doc) {
-                doc._ext = true;
-                return doc;
-            }).filter(function (doc) {
-                return !_this6._changeEventBuffer.buffer.map(function (cE) {
-                    return cE.data.v._rev;
-                }).includes(doc._rev);
-            }).filter(function (doc) {
-                return sendChanges[doc._rev] = 'YES';
-            }).delay(10).map(function (doc) {
-                var ret = null;
-                if (sendChanges[doc._rev] == 'YES') ret = doc;
-                delete sendChanges[doc._rev];
-                return ret;
-            }).filter(function (doc) {
-                return doc != null;
-            }).subscribe(function (doc) {
-                _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
-            });
+        if (this.synced) return;
 
-            this._subs.push(pouch$);
+        /**
+         * this will grap the changes and publish them to the rx-stream
+         * this is to ensure that changes from 'synced' dbs will be published
+         */
+        var sendChanges = {};
+        var pouch$ = util.Rx.Observable.fromEvent(this.pouch.changes({
+            since: 'now',
+            live: true,
+            include_docs: true
+        }), 'change').filter(function (c) {
+            return c.id.charAt(0) != '_';
+        }).map(function (c) {
+            return c.doc;
+        }).map(function (doc) {
+            doc._ext = true;
+            return doc;
+        }).filter(function (doc) {
+            return !_this6._changeEventBuffer.buffer.map(function (cE) {
+                return cE.data.v._rev;
+            }).includes(doc._rev);
+        }).filter(function (doc) {
+            return sendChanges[doc._rev] = 'YES';
+        }).delay(10).map(function (doc) {
+            var ret = null;
+            if (sendChanges[doc._rev] == 'YES') ret = doc;
+            delete sendChanges[doc._rev];
+            return ret;
+        }).filter(function (doc) {
+            return doc != null;
+        }).subscribe(function (doc) {
+            _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
+        });
 
-            var ob2 = this.$.map(function (cE) {
-                return cE.data.v;
-            }).map(function (doc) {
-                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-            }).subscribe();
-            this._subs.push(ob2);
-        }
+        this._subs.push(pouch$);
+
+        var ob2 = this.$.map(function (cE) {
+            return cE.data.v;
+        }).map(function (doc) {
+            if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+        }).subscribe();
+        this._subs.push(ob2);
 
         this.synced = true;
     };
@@ -1141,6 +1140,7 @@ var RxCollection = function () {
     RxCollection.prototype.newDocument = function newDocument() {
         var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+        docData = this.schema.fillObjectWithDefaults(docData);
         var doc = RxDocument.create(this, docData);
         doc._isTemporary = true;
         this._assignMethodsToDocument(doc);

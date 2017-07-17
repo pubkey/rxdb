@@ -203,8 +203,8 @@ var KeyCompressor = function () {
                         if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
-                        !fullPath.startsWith('_' // _id/_rev etc should never be compressed
-                        )) _this4._table[fullPath] = '|' + nextKey();
+                        !fullPath.startsWith('_') // _id/_rev etc should never be compressed
+                        ) _this4._table[fullPath] = '|' + nextKey();
 
                         // primary-key is always compressed to _id
                         if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
