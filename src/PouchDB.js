@@ -7,7 +7,7 @@
 import PouchDB from 'pouchdb-core';
 
 // pouchdb-find
-import * as PouchDBFind from 'pouchdb-find';
+import PouchDBFind from 'pouchdb-find';
 PouchDB.plugin(PouchDBFind);
 
 
