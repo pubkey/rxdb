@@ -28,6 +28,9 @@ declare class RxHeroDocument extends RxDB.RxDocument {
         name?: string,
         damage?: string
     }>;
+
+    // ORM methods
+    hpPercent(): number;
 }
 
 declare class RxHeroCollection extends RxDB.RxCollection<RxHeroDocument> {
