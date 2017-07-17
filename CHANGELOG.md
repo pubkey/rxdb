@@ -3,7 +3,7 @@
 ## 5.2.0 (July 17, 2017)
 
 Features:
-  - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicUpsert)
+  - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicupsert)
   - Added [defaul values](https://pubkey.github.io/rxdb/RxSchema.html#default)
   - Added generic typings so it's easier to be extended [see](https://github.com/pubkey/rxdb/blob/master/examples/angular2/app/src/RxDB.d.ts)
 
