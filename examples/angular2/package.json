@@ -12,7 +12,7 @@
     "build:lint": "tslint app/src/**/*.ts",
     "build:clean": "rimraf dist",
     "build:serve": "ws -p 8000 -d dist/",
-    "build": "npm run build:clean && npm run build:webpack",
+    "build": "npm run build:clean && npm run build:webpack && echo \"BUILD SUCESS\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docker": "docker run -it -v $(pwd):/app -p 0.0.0.0:8888:8888 -p 0.0.0.0:10101:10101 node:6.9.1 /bin/bash /app/entrypoint.bash"
   },
@@ -46,7 +46,7 @@
     "random-int": "1.0.0",
     "regenerator": "0.9.7",
     "roboto-npm-webfont": "0.0.4",
-    "rxdb": "^5.1.0",
+    "rxdb": "../../",
     "rxjs": "5.4.2",
     "zone.js": "0.8.13"
   },

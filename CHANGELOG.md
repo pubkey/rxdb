@@ -5,6 +5,7 @@
 Features:
   - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicUpsert)
   - Added [defaul values](https://pubkey.github.io/rxdb/RxSchema.html#default)
+  - Added generic typings so it's easier to be extended [see](https://github.com/pubkey/rxdb/blob/master/examples/angular2/app/src/RxDB.d.ts)
 
 Other:
   - Split out test-util into its own npm-module [async-test-util](https://github.com/pubkey/async-test-util)

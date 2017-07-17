@@ -107,7 +107,7 @@ declare class RxDatabase {
 
     $: Observable<RxChangeEvent>;
 
-    collection(args: RxCollectionCreator): Promise<RxCollection>;
+    collection(args: RxCollectionCreator): Promise<RxCollection<any>>;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -160,10 +160,10 @@ interface SyncOptions {
     },
     // for options see https://pouchdb.com/api.html#replication
     options?: PouchReplicationOptions,
-    query?: RxQuery
+    query?: RxQuery<any>
 }
 
-declare class RxCollection {
+declare class RxCollection<RxDocumentType> {
     database: RxDatabase;
     name: string;
     schema: RxSchema;
@@ -173,8 +173,8 @@ declare class RxCollection {
     newDocument(json: any): RxDocument;
     upsert(json: any): Promise<RxDocument>;
     atomicUpsert(json: any): Promise<RxDocument>;
-    find(queryObj?: any): RxQuery;
-    findOne(queryObj?: any): RxQuery;
+    find(queryObj?: any): RxQuery<RxDocumentType>;
+    findOne(queryObj?: any): RxQuery<RxDocumentType>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
@@ -212,41 +212,41 @@ declare class RxCollection {
 
 
 
-declare class RxQuery {
-    collection: RxCollection;
+declare class RxQuery<RxDocumentType>{
+    collection: RxCollection<RxDocumentType>;
 
-    where(queryObj: any): RxQuery;
-    equals(queryObj: any): RxQuery;
-    eq(queryObj: any): RxQuery;
-    or(queryObj: any): RxQuery;
-    nor(queryObj: any): RxQuery;
-    and(queryObj: any): RxQuery;
-    gt(queryObj: any): RxQuery;
-    gte(queryObj: any): RxQuery;
-    lt(queryObj: any): RxQuery;
-    lte(queryObj: any): RxQuery;
-    ne(queryObj: any): RxQuery;
-    in(queryObj: any): RxQuery;
-    nin(queryObj: any): RxQuery;
-    all(queryObj: any): RxQuery;
-    regex(queryObj: any): RxQuery;
-    exists(queryObj: any): RxQuery;
-    elemMatch(queryObj: any): RxQuery;
-    sort(params: any): RxQuery;
-    limit(amount: number): RxQuery;
-    skip(amount: number): RxQuery;
+    where(queryObj: any): RxQuery<RxDocumentType>;
+    equals(queryObj: any): RxQuery<RxDocumentType>;
+    eq(queryObj: any): RxQuery<RxDocumentType>;
+    or(queryObj: any): RxQuery<RxDocumentType>;
+    nor(queryObj: any): RxQuery<RxDocumentType>;
+    and(queryObj: any): RxQuery<RxDocumentType>;
+    gt(queryObj: any): RxQuery<RxDocumentType>;
+    gte(queryObj: any): RxQuery<RxDocumentType>;
+    lt(queryObj: any): RxQuery<RxDocumentType>;
+    lte(queryObj: any): RxQuery<RxDocumentType>;
+    ne(queryObj: any): RxQuery<RxDocumentType>;
+    in(queryObj: any): RxQuery<RxDocumentType>;
+    nin(queryObj: any): RxQuery<RxDocumentType>;
+    all(queryObj: any): RxQuery<RxDocumentType>;
+    regex(queryObj: any): RxQuery<RxDocumentType>;
+    exists(queryObj: any): RxQuery<RxDocumentType>;
+    elemMatch(queryObj: any): RxQuery<RxDocumentType>;
+    sort(params: any): RxQuery<RxDocumentType>;
+    limit(amount: number): RxQuery<RxDocumentType>;
+    skip(amount: number): RxQuery<RxDocumentType>;
 
     // TODO fix attribute-types of this function
-    mod(p1: any, p2: any, p3: any): RxQuery;
+    mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType>;
 
-    exec(): Promise<RxDocument[] | RxDocument>;
-    $: Observable<RxDocument[] | RxDocument>;
-    remove(): Promise<RxDocument | RxDocument[]>;
-    update(updateObj: any): Promise<RxDocument | RxDocument[]>;
+    exec(): Promise<RxDocumentType[] | RxDocumentType>;
+    $: Observable<RxDocumentType[] | RxDocumentType>;
+    remove(): Promise<RxDocumentType | RxDocumentType[]>;
+    update(updateObj: any): Promise<RxDocumentType | RxDocumentType[]>;
 }
 
 declare class RxDocument {
-    collection: RxCollection;
+    collection: RxCollection<RxDocument>;
     deleted: boolean;
 
     $: Observable<any>;

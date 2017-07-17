@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import * as RxDB from '../../../../../';
+import * as RxDB from 'rxdb';
 import * as RxDBTypes from './../RxDB.d';
 
 // if something does not work, try the published rxdb-module
@@ -47,7 +47,7 @@ export class DatabaseService {
     static dbPromise: Promise<RxDBTypes.RxHeroesDatabase> = null;
     private async _create(): Promise<RxDBTypes.RxHeroesDatabase> {
         console.log('DatabaseService: creating database..');
-        const db: any = await RxDB.create({
+        const db: RxDBTypes.RxHeroesDatabase = await RxDB.create({
             name: 'heroes',
             adapter: useAdapter,
             password: 'myLongAndStupidPassword'
