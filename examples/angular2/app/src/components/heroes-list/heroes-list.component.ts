@@ -1,8 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone, Output, EventEmitter } from '@angular/core';
-import { RxDocument } from '../../../../../../';
-
 import { DatabaseService } from '../../services/database.service';
-
+import * as RxDBTypes from '../../RxDB.d';
 
 @Component({
     selector: 'heroes-list',
@@ -13,10 +11,10 @@ import { DatabaseService } from '../../services/database.service';
 export class HeroesListComponent implements OnInit, OnDestroy {
 
 
-    heroes: RxDocument[];
+    heroes: RxDBTypes.RxHeroDocument[] | RxDBTypes.RxHeroDocument;
     sub;
 
-    @Output('edit') editChange: EventEmitter<RxDocument> = new EventEmitter();
+    @Output('edit') editChange: EventEmitter<RxDBTypes.RxHeroDocument> = new EventEmitter();
     set edit(hero) {
         console.log('editHero: ' + hero.name);
         this.editChange.emit(hero);
@@ -38,7 +36,7 @@ export class HeroesListComponent implements OnInit, OnDestroy {
 
     private async _show() {
         const db = await this.databaseService.get();
-        const heroes$ = db['hero']
+        const heroes$ = db.hero
             .find()
             .sort({ name: 1 })
             .$;

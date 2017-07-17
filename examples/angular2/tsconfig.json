@@ -29,7 +29,8 @@
     ],
     "include": [
         "./app/**/*.ts",
-        "./app/**/*.less"
+        "./app/**/*.less",
+        "./node_modules/rxdb/*.ts"
     ],
     "filesGlob": [
         "**/*.ts",

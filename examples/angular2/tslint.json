@@ -34,7 +34,7 @@
         "variable-declaration": "nospace"
       }
     ],
-    "no-internal-module": true,
+    "no-internal-module": false,
     "no-trailing-whitespace": true,
     "no-inferrable-types": true,
     "no-unused-variable": true

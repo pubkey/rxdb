@@ -24,7 +24,7 @@ export class HeroInsertComponent implements OnInit {
 
     async reset() {
         const db = await this.databaseService.get();
-        this.tempDoc = db['hero'].newDocument({
+        this.tempDoc = db.hero.newDocument({
             maxHP: randomInt(100, 1000)
         });
     }

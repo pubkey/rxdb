@@ -1,10 +1,14 @@
 import { Injectable } from '@angular/core';
 
 import * as RxDB from '../../../../../';
-import { RxDatabase, QueryChangeDetector } from '../../../../../';
+import * as RxDBTypes from './../RxDB.d';
 
-QueryChangeDetector.enable();
-QueryChangeDetector.enableDebugging();
+// if something does not work, try the published rxdb-module
+// import * as RxDB from 'rxdb';
+
+
+RxDB.QueryChangeDetector.enable();
+RxDB.QueryChangeDetector.enableDebugging();
 
 const adapters = {
     localstorage: require('pouchdb-adapter-localstorage'),
@@ -40,10 +44,14 @@ if (window.location.hash == '#nosync') doSync = false;
 
 @Injectable()
 export class DatabaseService {
-    static dbPromise: Promise<RxDatabase> = null;
-    private async _create(): Promise<RxDatabase> {
+    static dbPromise: Promise<RxDBTypes.RxHeroesDatabase> = null;
+    private async _create(): Promise<RxDBTypes.RxHeroesDatabase> {
         console.log('DatabaseService: creating database..');
-        const db = await RxDB.create({ name: 'heroesdb', adapter: useAdapter, password: 'myLongAndStupidPassword' });
+        const db: any = await RxDB.create({
+            name: 'heroes',
+            adapter: useAdapter,
+            password: 'myLongAndStupidPassword'
+        });
         console.log('DatabaseService: created database');
         window['db'] = db; // write to window for debugging
 
@@ -82,7 +90,7 @@ export class DatabaseService {
         return db;
     }
 
-    get(): Promise<RxDatabase> {
+    get(): Promise<RxDBTypes.RxHeroesDatabase> {
         if (DatabaseService.dbPromise)
             return DatabaseService.dbPromise;
 
