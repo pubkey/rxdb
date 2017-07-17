@@ -5,12 +5,12 @@
 import * as utils from './mquery_utils';
 import clone from 'clone';
 
-class Query {
+class MQuery {
     /**
-     * Query constructor used for building queries.
+     * MQuery constructor used for building queries.
      *
      * ####Example:
-     *     var query = new Query({ name: 'mquery' });
+     *     var query = new MQuery({ name: 'mquery' });
      *     query.where('age').gte(21).exec(callback);
      *
      * @param {Object} [criteria]
@@ -28,10 +28,10 @@ class Query {
 
     /**
      * returns a cloned version of the query
-     * @return {Query}
+     * @return {MQuery}
      */
     clone() {
-        const same = new Query();
+        const same = new MQuery();
         Object.entries(this)
             .forEach(entry => {
                 same[entry[0]] = clone(entry[1]);
@@ -44,7 +44,7 @@ class Query {
      * Specifies a `path` for use with chaining.
      * @param {String} [path]
      * @param {Object} [val]
-     * @return {Query} this
+     * @return {MQuery} this
      */
     where() {
         if (!arguments.length) return this;
@@ -67,7 +67,7 @@ class Query {
      * ####Example
      *     User.where('age').equals(49);
      * @param {Object} val
-     * @return {Query} this
+     * @return {MQuery} this
      */
     equals(val) {
         this._ensurePath('equals');
@@ -80,7 +80,7 @@ class Query {
      * Specifies the complementary comparison value for paths specified with `where()`
      * This is alias of `equals`
      * @param {Object} val
-     * @return {Query} this
+     * @return {MQuery} this
      */
     eq(val) {
         this._ensurePath('eq');
@@ -94,7 +94,7 @@ class Query {
      * ####Example
      *     query.or([{ color: 'red' }, { status: 'emergency' }])
      * @param {Array} array array of conditions
-     * @return {Query} this
+     * @return {MQuery} this
      */
     or(array) {
         const or = this._conditions.$or || (this._conditions.$or = []);
@@ -108,7 +108,7 @@ class Query {
      * ####Example
      *     query.nor([{ color: 'green' }, { status: 'ok' }])
      * @param {Array} array array of conditions
-     * @return {Query} this
+     * @return {MQuery} this
      */
     nor(array) {
         const nor = this._conditions.$nor || (this._conditions.$nor = []);
@@ -123,7 +123,7 @@ class Query {
      *     query.and([{ color: 'green' }, { status: 'ok' }])
      * @see $and http://docs.mongodb.org/manual/reference/operator/and/
      * @param {Array} array array of conditions
-     * @return {Query} this
+     * @return {MQuery} this
      */
     and(array) {
         const and = this._conditions.$and || (this._conditions.$and = []);
@@ -137,7 +137,7 @@ class Query {
      *
      * @param {String} [path]
      * @param {Number} val
-     * @return {Query} this
+     * @return {MQuery} this
      * @api public
      */
     mod() {
@@ -174,7 +174,7 @@ class Query {
      *     Thing.find().exists('name')
      * @param {String} [path]
      * @param {Number} val
-     * @return {Query} this
+     * @return {MQuery} this
      * @api public
      */
     exists() {
@@ -218,7 +218,7 @@ class Query {
      *     })
      * @param {String|Object|Function} path
      * @param {Object|Function} criteria
-     * @return {Query} this
+     * @return {MQuery} this
      */
     elemMatch() {
         if (null == arguments[0])
@@ -245,7 +245,7 @@ class Query {
         } else
             throw new TypeError('Invalid argument');
         if (fn) {
-            criteria = new Query;
+            criteria = new MQuery;
             fn(criteria);
             criteria = criteria._conditions;
         }
@@ -264,7 +264,7 @@ class Query {
      *     query.sort('field -test');
      *     query.sort([['field', 1], ['test', -1]]);
      * @param {Object|String|Array} arg
-     * @return {Query} this
+     * @return {MQuery} this
      */
     sort(arg) {
         if (!arg) return this;
@@ -305,21 +305,21 @@ class Query {
     }
 
     /**
-     * Merges another Query or conditions object into this one.
+     * Merges another MQuery or conditions object into this one.
      *
-     * When a Query is passed, conditions, field selection and options are merged.
+     * When a MQuery is passed, conditions, field selection and options are merged.
      *
-     * @param {Query|Object} source
-     * @return {Query} this
+     * @param {MQuery|Object} source
+     * @return {MQuery} this
      */
     merge(source) {
         if (!source)
             return this;
 
-        if (!Query.canMerge(source))
+        if (!MQuery.canMerge(source))
             throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
 
-        if (source instanceof Query) {
+        if (source instanceof MQuery) {
             // if source has a feature, apply it to ourselves
 
             if (source._conditions)
@@ -358,10 +358,10 @@ class Query {
      *     query.find()
      *     query.find({ name: 'Burning Lights' })
      * @param {Object} [criteria] mongodb selector
-     * @return {Query} this
+     * @return {MQuery} this
      */
     find(criteria) {
-        if (Query.canMerge(criteria))
+        if (MQuery.canMerge(criteria))
             this.merge(criteria);
 
         return this;
@@ -398,7 +398,7 @@ class Query {
  */
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size']
 .forEach(function($conditional) {
-    Query.prototype[$conditional] = function() {
+    MQuery.prototype[$conditional] = function() {
         let path;
         let val;
         if (1 === arguments.length) {
@@ -473,8 +473,8 @@ function _pushArr(opts, field, value) {
  * @param {Object} conds
  * @return {Boolean}
  */
-Query.canMerge = function(conds) {
-    return conds instanceof Query || utils.isObject(conds);
+MQuery.canMerge = function(conds) {
+    return conds instanceof MQuery || utils.isObject(conds);
 };
 
 /**
@@ -485,11 +485,11 @@ Query.canMerge = function(conds) {
  *     query.comment('feed query');
  */
 ['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function(method) {
-    Query.prototype[method] = function(v) {
+    MQuery.prototype[method] = function(v) {
         this.options[method] = v;
         return this;
     };
 });
 
-Query.utils = utils;
-export default Query;
+MQuery.utils = utils;
+export default MQuery;
