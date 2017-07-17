@@ -10,27 +10,27 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "babel-plugin-transform-runtime": "6.15.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-polyfill": "^6.20.0",
     "babel-preset-es2015-native-modules": "6.9.4",
-    "babel-runtime": "6.20.0",
-    "es6-symbol": "3.1.0",
+    "babel-runtime": "^6.23.0",
+    "es6-symbol": "^3.1.1",
     "fbjs": "^0.8.8",
-    "pouchdb-adapter-asyncstorage": "6.1.23",
+    "pouchdb-adapter-asyncstorage": "^6.2.6",
     "random-token": "0.0.8",
-    "react": "15.4.1",
-    "react-native": "0.39.2",
+    "react": "^15.6.1",
+    "react-native": "^0.46.3",
     "rxdb": "*",
     "rxjs": "^5.2.1-smooth"
   },
   "devDependencies": {
-    "babel-jest": "18.0.0",
-    "babel-preset-react-native": "1.9.1",
-    "eslint": "3.12.2",
-    "eslint-plugin-react": "6.8.0",
-    "eslint-plugin-react-native": "2.2.1",
-    "jest": "18.0.0",
-    "react-test-renderer": "15.4.1"
+    "babel-jest": "^20.0.3",
+    "babel-preset-react-native": "^2.1.0",
+    "eslint": "^4.2.0",
+    "eslint-plugin-react": "^7.1.0",
+    "eslint-plugin-react-native": "^2.3.2",
+    "jest": "^20.0.4",
+    "react-test-renderer": "^15.6.1"
   },
   "jest": {
     "preset": "react-native"
