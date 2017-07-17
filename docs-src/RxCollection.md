@@ -121,7 +121,7 @@ myCollection.find().where('name').eq('foo')
   .exec().then(documents => console.dir(documents));
 ```
 
-### .findOne()
+### findOne()
 This does basically what find() does, but it returns only a single document. You can pass a primary-value to esier find a single document.
 
 ```js
