@@ -48,7 +48,7 @@
     "roboto-npm-webfont": "0.0.4",
     "rxdb": "../../",
     "rxjs": "5.4.2",
-    "zone.js": "0.8.13"
+    "zone.js": "0.8.12"
   },
   "devDependencies": {
     "@types/chai": "4.0.1",
