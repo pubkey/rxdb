@@ -5,16 +5,12 @@
 
 import clone from 'clone';
 
-
-
 /**
  * Merges `from` into `to` without overwriting existing properties.
  *
- * @param {Object} to
- * @param {Object} from
- * @api private
+ * @param {object} to
+ * @param {object} from
  */
-
 export function merge(to, from) {
     const keys = Object.keys(from);
     let i = keys.length;
@@ -36,9 +32,8 @@ export function merge(to, from) {
 /**
  * Same as merge but clones the assigned values.
  *
- * @param {Object} to
- * @param {Object} from
- * @api private
+ * @param {object} to
+ * @param {object} from
  */
 export function mergeClone(to, from) {
     const keys = Object.keys(from);
@@ -71,7 +66,6 @@ export function mergeClone(to, from) {
 /**
  * Object.prototype.toString.call helper
  */
-
 const _toString = Object.prototype.toString;
 export function toString(arg) {
     return _toString.call(arg);
@@ -83,7 +77,6 @@ export function toString(arg) {
  * @param {Object|Array|String|Function|RegExp|any} arg
  * @return {Boolean}
  */
-
 export function isObject(arg) {
     return '[object Object]' == toString(arg);
 };
@@ -104,10 +97,9 @@ export function inherits(ctor, superCtor) {
 /**
  * Check if this object is an arguments object
  *
- * @param {Any} v
- * @return {Boolean}
+ * @param {any} v
+ * @return {boolean}
  */
-
 export function isArgumentsObject(v) {
     return Object.prototype.toString.call(v) === '[object Arguments]';
 };

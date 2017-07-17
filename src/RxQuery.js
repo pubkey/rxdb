@@ -399,9 +399,14 @@ class RxQuery {
     }
 }
 
-// tunnel the proto-functions of mquery to RxQuery
-const protoMerge = function(rxQueryProto, mQueryProto) {
-    Object.keys(mQueryProto)
+/**
+ * tunnel the proto-functions of mquery to RxQuery
+ * @param  {any} rxQueryProto    [description]
+ * @param  {string[]} mQueryProtoKeys [description]
+ * @return {void}                 [description]
+ */
+const protoMerge = function(rxQueryProto, mQueryProtoKeys) {
+    mQueryProtoKeys
         .filter(attrName => !attrName.startsWith('_'))
         .filter(attrName => !rxQueryProto[attrName])
         .forEach(attrName => {
@@ -424,7 +429,7 @@ export function create(op, queryObj, collection) {
 
     if (!protoMerged) {
         protoMerged = true;
-        protoMerge(Object.getPrototypeOf(ret), Object.getPrototypeOf(ret.mquery));
+        protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
     }
 
     return ret;

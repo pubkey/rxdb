@@ -2,136 +2,394 @@
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-'use strict';
 import * as utils from './mquery_utils';
 import clone from 'clone';
 
-/**
- * Query constructor used for building queries.
- *
- * ####Example:
- *     var query = new Query({ name: 'mquery' });
- *     query.where('age').gte(21).exec(callback);
- *
- * @param {Object} [criteria]
- */
-function Query(criteria) {
-    const proto = this.constructor.prototype;
-    this.options = {};
-    this._conditions = proto._conditions ? clone(proto._conditions) : {};
-    this._fields = proto._fields ? clone(proto._fields) : undefined;
-    this._path = proto._path || undefined;
+class Query {
+    /**
+     * Query constructor used for building queries.
+     *
+     * ####Example:
+     *     var query = new Query({ name: 'mquery' });
+     *     query.where('age').gte(21).exec(callback);
+     *
+     * @param {Object} [criteria]
+     */
+    constructor(criteria) {
+        const proto = this.constructor.prototype;
+        this.options = {};
+        this._conditions = proto._conditions ? clone(proto._conditions) : {};
+        this._fields = proto._fields ? clone(proto._fields) : undefined;
+        this._path = proto._path || undefined;
 
-    if (criteria)
-        this.find(criteria);
-}
+        if (criteria)
+            this.find(criteria);
+    }
 
-/**
- * returns a cloned version of the query
- * @return {Query}
- */
-Query.prototype.clone = function() {
-    const same = new Query();
-    Object.entries(this)
-        .forEach(entry => {
-            same[entry[0]] = clone(entry[1]);
-        });
-    return same;
-};
+    /**
+     * returns a cloned version of the query
+     * @return {Query}
+     */
+    clone() {
+        const same = new Query();
+        Object.entries(this)
+            .forEach(entry => {
+                same[entry[0]] = clone(entry[1]);
+            });
+        return same;
+    }
 
-/**
- * Specifies a `path` for use with chaining.
- * @param {String} [path]
- * @param {Object} [val]
- * @return {Query} this
- */
-Query.prototype.where = function() {
-    if (!arguments.length) return this;
-    const type = typeof arguments[0];
-    if ('string' == type) {
-        this._path = arguments[0];
-        if (2 === arguments.length)
-            this._conditions[this._path] = arguments[1];
+
+    /**
+     * Specifies a `path` for use with chaining.
+     * @param {String} [path]
+     * @param {Object} [val]
+     * @return {Query} this
+     */
+    where() {
+        if (!arguments.length) return this;
+        const type = typeof arguments[0];
+        if ('string' == type) {
+            this._path = arguments[0];
+            if (2 === arguments.length)
+                this._conditions[this._path] = arguments[1];
+            return this;
+        }
+
+        if ('object' == type && !Array.isArray(arguments[0]))
+            return this.merge(arguments[0]);
+
+        throw new TypeError('path must be a string or object');
+    }
+
+    /**
+     * Specifies the complementary comparison value for paths specified with `where()`
+     * ####Example
+     *     User.where('age').equals(49);
+     * @param {Object} val
+     * @return {Query} this
+     */
+    equals(val) {
+        this._ensurePath('equals');
+        const path = this._path;
+        this._conditions[path] = val;
         return this;
     }
 
-    if ('object' == type && !Array.isArray(arguments[0]))
-        return this.merge(arguments[0]);
+    /**
+     * Specifies the complementary comparison value for paths specified with `where()`
+     * This is alias of `equals`
+     * @param {Object} val
+     * @return {Query} this
+     */
+    eq(val) {
+        this._ensurePath('eq');
+        const path = this._path;
+        this._conditions[path] = val;
+        return this;
+    }
 
-    throw new TypeError('path must be a string or object');
-};
+    /**
+     * Specifies arguments for an `$or` condition.
+     * ####Example
+     *     query.or([{ color: 'red' }, { status: 'emergency' }])
+     * @param {Array} array array of conditions
+     * @return {Query} this
+     */
+    or(array) {
+        const or = this._conditions.$or || (this._conditions.$or = []);
+        if (!Array.isArray(array)) array = [array];
+        or.push.apply(or, array);
+        return this;
+    }
 
-/**
- * Specifies the complementary comparison value for paths specified with `where()`
- * ####Example
- *     User.where('age').equals(49);
- * @param {Object} val
- * @return {Query} this
- */
-Query.prototype.equals = function equals(val) {
-    this._ensurePath('equals');
-    const path = this._path;
-    this._conditions[path] = val;
-    return this;
-};
+    /**
+     * Specifies arguments for a `$nor` condition.
+     * ####Example
+     *     query.nor([{ color: 'green' }, { status: 'ok' }])
+     * @param {Array} array array of conditions
+     * @return {Query} this
+     */
+    nor(array) {
+        const nor = this._conditions.$nor || (this._conditions.$nor = []);
+        if (!Array.isArray(array)) array = [array];
+        nor.push.apply(nor, array);
+        return this;
+    }
 
-/**
- * Specifies the complementary comparison value for paths specified with `where()`
- * This is alias of `equals`
- * @param {Object} val
- * @return {Query} this
- */
-Query.prototype.eq = function eq(val) {
-    this._ensurePath('eq');
-    const path = this._path;
-    this._conditions[path] = val;
-    return this;
-};
+    /**
+     * Specifies arguments for a `$and` condition.
+     * ####Example
+     *     query.and([{ color: 'green' }, { status: 'ok' }])
+     * @see $and http://docs.mongodb.org/manual/reference/operator/and/
+     * @param {Array} array array of conditions
+     * @return {Query} this
+     */
+    and(array) {
+        const and = this._conditions.$and || (this._conditions.$and = []);
+        if (!Array.isArray(array)) array = [array];
+        and.push.apply(and, array);
+        return this;
+    }
 
-/**
- * Specifies arguments for an `$or` condition.
- * ####Example
- *     query.or([{ color: 'red' }, { status: 'emergency' }])
- * @param {Array} array array of conditions
- * @return {Query} this
- */
-Query.prototype.or = function(array) {
-    const or = this._conditions.$or || (this._conditions.$or = []);
-    if (!Array.isArray(array)) array = [array];
-    or.push.apply(or, array);
-    return this;
-};
+    /**
+     * Specifies a `$mod` condition
+     *
+     * @param {String} [path]
+     * @param {Number} val
+     * @return {Query} this
+     * @api public
+     */
+    mod() {
+        let val;
+        let path;
 
-/**
- * Specifies arguments for a `$nor` condition.
- * ####Example
- *     query.nor([{ color: 'green' }, { status: 'ok' }])
- * @param {Array} array array of conditions
- * @return {Query} this
- */
-Query.prototype.nor = function(array) {
-    const nor = this._conditions.$nor || (this._conditions.$nor = []);
-    if (!Array.isArray(array)) array = [array];
-    nor.push.apply(nor, array);
-    return this;
-};
+        if (1 === arguments.length) {
+            this._ensurePath('mod');
+            val = arguments[0];
+            path = this._path;
+        } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
+            this._ensurePath('mod');
+            val = arguments.slice();
+            path = this._path;
+        } else if (3 === arguments.length) {
+            val = arguments.slice(1);
+            path = arguments[0];
+        } else {
+            val = arguments[1];
+            path = arguments[0];
+        }
 
-/**
- * Specifies arguments for a `$and` condition.
- * ####Example
- *     query.and([{ color: 'green' }, { status: 'ok' }])
- * @see $and http://docs.mongodb.org/manual/reference/operator/and/
- * @param {Array} array array of conditions
- * @return {Query} this
- */
-Query.prototype.and = function(array) {
-    const and = this._conditions.$and || (this._conditions.$and = []);
-    if (!Array.isArray(array)) array = [array];
-    and.push.apply(and, array);
-    return this;
-};
+        const conds = this._conditions[path] || (this._conditions[path] = {});
+        conds.$mod = val;
+        return this;
+    }
 
+    /**
+     * Specifies an `$exists` condition
+     * ####Example
+     *     // { name: { $exists: true }}
+     *     Thing.where('name').exists()
+     *     Thing.where('name').exists(true)
+     *     Thing.find().exists('name')
+     * @param {String} [path]
+     * @param {Number} val
+     * @return {Query} this
+     * @api public
+     */
+    exists() {
+        let path;
+        let val;
+        if (0 === arguments.length) {
+            this._ensurePath('exists');
+            path = this._path;
+            val = true;
+        } else if (1 === arguments.length) {
+            if ('boolean' === typeof arguments[0]) {
+                this._ensurePath('exists');
+                path = this._path;
+                val = arguments[0];
+            } else {
+                path = arguments[0];
+                val = true;
+            }
+        } else if (2 === arguments.length) {
+            path = arguments[0];
+            val = arguments[1];
+        }
 
+        const conds = this._conditions[path] || (this._conditions[path] = {});
+        conds.$exists = val;
+        return this;
+    }
+
+    /**
+     * Specifies an `$elemMatch` condition
+     * ####Example
+     *     query.elemMatch('comment', { author: 'autobot', votes: {$gte: 5}})
+     *     query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
+     *     query.elemMatch('comment', function (elem) {
+     *       elem.where('author').equals('autobot');
+     *       elem.where('votes').gte(5);
+     *     })
+     *     query.where('comment').elemMatch(function (elem) {
+     *       elem.where({ author: 'autobot' });
+     *       elem.where('votes').gte(5);
+     *     })
+     * @param {String|Object|Function} path
+     * @param {Object|Function} criteria
+     * @return {Query} this
+     */
+    elemMatch() {
+        if (null == arguments[0])
+            throw new TypeError('Invalid argument');
+
+        let fn;
+        let path;
+        let criteria;
+
+        if ('function' === typeof arguments[0]) {
+            this._ensurePath('elemMatch');
+            path = this._path;
+            fn = arguments[0];
+        } else if (utils.isObject(arguments[0])) {
+            this._ensurePath('elemMatch');
+            path = this._path;
+            criteria = arguments[0];
+        } else if ('function' === typeof arguments[1]) {
+            path = arguments[0];
+            fn = arguments[1];
+        } else if (arguments[1] && utils.isObject(arguments[1])) {
+            path = arguments[0];
+            criteria = arguments[1];
+        } else
+            throw new TypeError('Invalid argument');
+        if (fn) {
+            criteria = new Query;
+            fn(criteria);
+            criteria = criteria._conditions;
+        }
+
+        const conds = this._conditions[path] || (this._conditions[path] = {});
+        conds.$elemMatch = criteria;
+        return this;
+    }
+
+    /**
+     * Sets the sort order
+     * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
+     * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
+     * ####Example
+     *     query.sort({ field: 'asc', test: -1 });
+     *     query.sort('field -test');
+     *     query.sort([['field', 1], ['test', -1]]);
+     * @param {Object|String|Array} arg
+     * @return {Query} this
+     */
+    sort(arg) {
+        if (!arg) return this;
+        let len;
+        let type = typeof arg;
+        // .sort([['field', 1], ['test', -1]])
+        if (Array.isArray(arg)) {
+            len = arg.length;
+            for (let i = 0; i < arg.length; ++i)
+                _pushArr(this.options, arg[i][0], arg[i][1]);
+
+            return this;
+        }
+
+        // .sort('field -test')
+        if (1 === arguments.length && 'string' == type) {
+            arg = arg.split(/\s+/);
+            len = arg.length;
+            for (let i = 0; i < len; ++i) {
+                let field = arg[i];
+                if (!field) continue;
+                let ascend = '-' == field[0] ? -1 : 1;
+                if (ascend === -1) field = field.substring(1);
+                push(this.options, field, ascend);
+            }
+
+            return this;
+        }
+
+        // .sort({ field: 1, test: -1 })
+        if (utils.isObject(arg)) {
+            const keys = Object.keys(arg);
+            keys.forEach(field => push(this.options, field, arg[field]));
+            return this;
+        }
+
+        throw new TypeError('Invalid sort() argument. Must be a string, object, or array.');
+    }
+
+    /**
+     * Merges another Query or conditions object into this one.
+     *
+     * When a Query is passed, conditions, field selection and options are merged.
+     *
+     * @param {Query|Object} source
+     * @return {Query} this
+     */
+    merge(source) {
+        if (!source)
+            return this;
+
+        if (!Query.canMerge(source))
+            throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
+
+        if (source instanceof Query) {
+            // if source has a feature, apply it to ourselves
+
+            if (source._conditions)
+                utils.merge(this._conditions, source._conditions);
+
+            if (source._fields) {
+                this._fields || (this._fields = {});
+                utils.merge(this._fields, source._fields);
+            }
+
+            if (source.options) {
+                this.options || (this.options = {});
+                utils.merge(this.options, source.options);
+            }
+
+            if (source._update) {
+                this._update || (this._update = {});
+                utils.mergeClone(this._update, source._update);
+            }
+
+            if (source._distinct)
+                this._distinct = source._distinct;
+
+            return this;
+        }
+
+        // plain object
+        utils.merge(this._conditions, source);
+
+        return this;
+    }
+
+    /**
+     * Finds documents.
+     * ####Example
+     *     query.find()
+     *     query.find({ name: 'Burning Lights' })
+     * @param {Object} [criteria] mongodb selector
+     * @return {Query} this
+     */
+    find(criteria) {
+        if (Query.canMerge(criteria))
+            this.merge(criteria);
+
+        return this;
+    }
+
+    /**
+     * Returns default options.
+     * @return {Object}
+     */
+    _optionsForExec() {
+        const options = clone(this.options);
+        return options;
+    }
+
+    /**
+     * Make sure _path is set.
+     *
+     * @parmam {String} method
+     */
+    _ensurePath(method) {
+        if (!this._path) {
+            throw new Error(`
+              ${method}() must be used after where()
+              when called with these arguments
+            `);
+        }
+    }
+}
 
 /**
  * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
@@ -159,179 +417,6 @@ Query.prototype.and = function(array) {
         return this;
     };
 });
-
-/**
- * Specifies a `$mod` condition
- *
- * @param {String} [path]
- * @param {Number} val
- * @return {Query} this
- * @api public
- */
-Query.prototype.mod = function() {
-    let val;
-    let path;
-
-    if (1 === arguments.length) {
-        this._ensurePath('mod');
-        val = arguments[0];
-        path = this._path;
-    } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
-        this._ensurePath('mod');
-        val = arguments.slice();
-        path = this._path;
-    } else if (3 === arguments.length) {
-        val = arguments.slice(1);
-        path = arguments[0];
-    } else {
-        val = arguments[1];
-        path = arguments[0];
-    }
-
-    const conds = this._conditions[path] || (this._conditions[path] = {});
-    conds.$mod = val;
-    return this;
-};
-
-/**
- * Specifies an `$exists` condition
- * ####Example
- *     // { name: { $exists: true }}
- *     Thing.where('name').exists()
- *     Thing.where('name').exists(true)
- *     Thing.find().exists('name')
- * @param {String} [path]
- * @param {Number} val
- * @return {Query} this
- * @api public
- */
-Query.prototype.exists = function() {
-    let path;
-    let val;
-    if (0 === arguments.length) {
-        this._ensurePath('exists');
-        path = this._path;
-        val = true;
-    } else if (1 === arguments.length) {
-        if ('boolean' === typeof arguments[0]) {
-            this._ensurePath('exists');
-            path = this._path;
-            val = arguments[0];
-        } else {
-            path = arguments[0];
-            val = true;
-        }
-    } else if (2 === arguments.length) {
-        path = arguments[0];
-        val = arguments[1];
-    }
-
-    const conds = this._conditions[path] || (this._conditions[path] = {});
-    conds.$exists = val;
-    return this;
-};
-
-/**
- * Specifies an `$elemMatch` condition
- * ####Example
- *     query.elemMatch('comment', { author: 'autobot', votes: {$gte: 5}})
- *     query.where('comment').elemMatch({ author: 'autobot', votes: {$gte: 5}})
- *     query.elemMatch('comment', function (elem) {
- *       elem.where('author').equals('autobot');
- *       elem.where('votes').gte(5);
- *     })
- *     query.where('comment').elemMatch(function (elem) {
- *       elem.where({ author: 'autobot' });
- *       elem.where('votes').gte(5);
- *     })
- * @param {String|Object|Function} path
- * @param {Object|Function} criteria
- * @return {Query} this
- */
-Query.prototype.elemMatch = function() {
-    if (null == arguments[0])
-        throw new TypeError('Invalid argument');
-
-    let fn;
-    let path;
-    let criteria;
-
-    if ('function' === typeof arguments[0]) {
-        this._ensurePath('elemMatch');
-        path = this._path;
-        fn = arguments[0];
-    } else if (utils.isObject(arguments[0])) {
-        this._ensurePath('elemMatch');
-        path = this._path;
-        criteria = arguments[0];
-    } else if ('function' === typeof arguments[1]) {
-        path = arguments[0];
-        fn = arguments[1];
-    } else if (arguments[1] && utils.isObject(arguments[1])) {
-        path = arguments[0];
-        criteria = arguments[1];
-    } else
-        throw new TypeError('Invalid argument');
-    if (fn) {
-        criteria = new Query;
-        fn(criteria);
-        criteria = criteria._conditions;
-    }
-
-    const conds = this._conditions[path] || (this._conditions[path] = {});
-    conds.$elemMatch = criteria;
-    return this;
-};
-
-
-/**
- * Sets the sort order
- * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
- * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
- * ####Example
- *     query.sort({ field: 'asc', test: -1 });
- *     query.sort('field -test');
- *     query.sort([['field', 1], ['test', -1]]);
- * @param {Object|String|Array} arg
- * @return {Query} this
- */
-Query.prototype.sort = function(arg) {
-    if (!arg) return this;
-    let len;
-    let type = typeof arg;
-    // .sort([['field', 1], ['test', -1]])
-    if (Array.isArray(arg)) {
-        len = arg.length;
-        for (let i = 0; i < arg.length; ++i)
-            _pushArr(this.options, arg[i][0], arg[i][1]);
-
-        return this;
-    }
-
-    // .sort('field -test')
-    if (1 === arguments.length && 'string' == type) {
-        arg = arg.split(/\s+/);
-        len = arg.length;
-        for (let i = 0; i < len; ++i) {
-            let field = arg[i];
-            if (!field) continue;
-            let ascend = '-' == field[0] ? -1 : 1;
-            if (ascend === -1) field = field.substring(1);
-            push(this.options, field, ascend);
-        }
-
-        return this;
-    }
-
-    // .sort({ field: 1, test: -1 })
-    if (utils.isObject(arg)) {
-        const keys = Object.keys(arg);
-        keys.forEach(field => push(this.options, field, arg[field]));
-        return this;
-    }
-
-    throw new TypeError('Invalid sort() argument. Must be a string, object, or array.');
-};
 
 /*!
  * @ignore
@@ -364,7 +449,7 @@ function push(opts, field, value) {
         .replace('desc', '-1')
         .replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
-}
+};
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
@@ -383,6 +468,16 @@ function _pushArr(opts, field, value) {
 };
 
 /**
+ * Determines if `conds` can be merged using `mquery().merge()`
+ *
+ * @param {Object} conds
+ * @return {Boolean}
+ */
+Query.canMerge = function(conds) {
+    return conds instanceof Query || utils.isObject(conds);
+};
+
+/**
  * limit, skip, maxScan, batchSize, comment
  *
  * Sets these associated options.
@@ -395,111 +490,6 @@ function _pushArr(opts, field, value) {
         return this;
     };
 });
-
-
-
-/**
- * Merges another Query or conditions object into this one.
- *
- * When a Query is passed, conditions, field selection and options are merged.
- *
- * @param {Query|Object} source
- * @return {Query} this
- */
-Query.prototype.merge = function(source) {
-    if (!source)
-        return this;
-
-    if (!Query.canMerge(source))
-        throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
-
-    if (source instanceof Query) {
-        // if source has a feature, apply it to ourselves
-
-        if (source._conditions)
-            utils.merge(this._conditions, source._conditions);
-
-        if (source._fields) {
-            this._fields || (this._fields = {});
-            utils.merge(this._fields, source._fields);
-        }
-
-        if (source.options) {
-            this.options || (this.options = {});
-            utils.merge(this.options, source.options);
-        }
-
-        if (source._update) {
-            this._update || (this._update = {});
-            utils.mergeClone(this._update, source._update);
-        }
-
-        if (source._distinct)
-            this._distinct = source._distinct;
-
-        return this;
-    }
-
-    // plain object
-    utils.merge(this._conditions, source);
-
-    return this;
-};
-
-/**
- * Finds documents.
- * ####Example
- *     query.find()
- *     query.find({ name: 'Burning Lights' })
- * @param {Object} [criteria] mongodb selector
- * @return {Query} this
- */
-Query.prototype.find = function(criteria) {
-    if ('function' === typeof criteria) {
-        callback = criteria;
-        criteria = undefined;
-    } else if (Query.canMerge(criteria))
-        this.merge(criteria);
-
-    return this;
-};
-
-
-/**
- * Returns default options.
- * @return {Object}
- */
-Query.prototype._optionsForExec = function() {
-    const options = clone(this.options);
-    return options;
-};
-
-
-/**
- * Make sure _path is set.
- *
- * @parmam {String} method
- */
-Query.prototype._ensurePath = function(method) {
-    if (!this._path) {
-        throw new Error(`
-          ${method}() must be used after where()
-          when called with these arguments
-        `);
-    }
-};
-Query.prototype._validate = function(action) {};
-
-/**
- * Determines if `conds` can be merged using `mquery().merge()`
- *
- * @param {Object} conds
- * @return {Boolean}
- */
-Query.canMerge = function(conds) {
-    return conds instanceof Query || utils.isObject(conds);
-};
-
 
 Query.utils = utils;
 export default Query;
