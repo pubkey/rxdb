@@ -15,6 +15,8 @@ Bugfixes:
   - `RxDocument.atomicUpdate()` did not run when reusing after a while
   - `RxQuery.toString()` was sometimes not predictable
 
+`WARNING: If you use RxDB with angular2||zone.js, you might have this error [_global is not defined](https://github.com/angular/zone.js/issues/835). Wait for the next zone.js release before updating RxDB.`
+
 
 ## 5.1.0 (July 10, 2017)
 
