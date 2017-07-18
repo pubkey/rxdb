@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import platform from 'platform';
+import platform from 'detect-browser';
 import request from 'request-promise';
 
 import * as humansCollection from './../helper/humans-collection';

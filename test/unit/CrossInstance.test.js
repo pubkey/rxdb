@@ -6,7 +6,7 @@
  */
 
 import assert from 'assert';
-const platform = require('platform');
+const platform = require('detect-browser');
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';

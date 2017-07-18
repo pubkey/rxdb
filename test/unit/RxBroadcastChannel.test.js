@@ -1,5 +1,5 @@
 import assert from 'assert';
-const platform = require('platform');
+import platform from 'detect-browser';
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';

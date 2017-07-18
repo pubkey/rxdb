@@ -1,5 +1,5 @@
 import assert from 'assert';
-import platform from 'platform';
+import platform from 'detect-browser';
 import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from './../helper/humans-collection';

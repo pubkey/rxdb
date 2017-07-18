@@ -1,7 +1,5 @@
 import assert from 'assert';
-import {
-    default as PouchDB
-} from '../../dist/lib/PouchDB';
+import PouchDB from '../../dist/lib/PouchDB';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';

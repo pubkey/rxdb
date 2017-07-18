@@ -1,4 +1,4 @@
-const platform = require('platform');
+import platform from 'detect-browser';
 import assert from 'assert';
 import memdown from 'memdown';
 
@@ -87,15 +87,8 @@ describe('PouchDB-integration.test.js', () => {
         });
         describe('positive', () => {
             it('should work after adding the adapter', async() => {
-                if (platform.isNode()) return;
-                if (
-                    typeof window === 'undefined' ||
-                    /Firefox/.test(window.navigator.userAgent)
-                ) return;
-
-                // no websql in internet explorer nor Edge
-                if (platform.name == 'IE') return;
-                if (platform.name == 'Microsoft Edge') return;
+                // test websql on chrome only
+                if (platform.name !== 'chrome') return;
 
                 RxDB.plugin(require('pouchdb-adapter-websql'));
                 const db = await RxDB.create({
@@ -108,8 +101,6 @@ describe('PouchDB-integration.test.js', () => {
             });
         });
     });
-
-
     describe('own pouchdb functions', () => {
         describe('.countAllUndeleted()', () => {
             it('should return 0', async() => {

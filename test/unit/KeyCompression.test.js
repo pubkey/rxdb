@@ -2,9 +2,7 @@
  * this test is to the import/export behaviour
  */
 import assert from 'assert';
-import {
-    default as clone
-} from 'clone';
+import clone from 'clone';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';

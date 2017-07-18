@@ -1,8 +1,6 @@
-const platform = require('platform');
+import platform from 'detect-browser';
 import assert from 'assert';
-import {
-    default as memdown
-} from 'memdown';
+import memdown from 'memdown';
 
 let leveldown;
 let leveldb;

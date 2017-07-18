@@ -3,12 +3,8 @@
  */
 
 import assert from 'assert';
-import {
-    default as clone
-} from 'clone';
-import {
-    default as memdown
-} from 'memdown';
+import clone from 'clone';
+import memdown from 'memdown';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';

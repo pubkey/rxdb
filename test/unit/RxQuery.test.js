@@ -1,5 +1,5 @@
 import assert from 'assert';
-import platform from 'platform';
+import platform from 'detect-browser';
 
 import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/RxDatabase';

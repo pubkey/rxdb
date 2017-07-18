@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-const platform = require('platform');
+import platform from 'detect-browser';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';

@@ -2,7 +2,7 @@ import assert from 'assert';
 import memdown from 'memdown';
 import randomInt from 'random-int';
 import clone from 'clone';
-import platform from 'platform';
+import platform from 'detect-browser';
 import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from '../helper/schemas';

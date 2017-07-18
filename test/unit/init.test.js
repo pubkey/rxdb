@@ -1,9 +1,11 @@
 console.log('######## init.test.js ########');
 
 import 'babel-polyfill';
-const platform = require('platform');
+
+const platform = require('detect-browser');
+
 platform.isNode = function() {
-    return platform.name == 'Node.js';
+    return platform.name == 'node';
 };
 
 console.log('###### PLATFORM: ######');
