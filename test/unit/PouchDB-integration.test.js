@@ -1,8 +1,6 @@
 const platform = require('platform');
 import assert from 'assert';
-import {
-    default as memdown
-} from 'memdown';
+import memdown from 'memdown';
 
 let leveldown;
 let leveldb;
@@ -90,7 +88,10 @@ describe('PouchDB-integration.test.js', () => {
         describe('positive', () => {
             it('should work after adding the adapter', async() => {
                 if (platform.isNode()) return;
-                if (/Firefox/.test(window.navigator.userAgent)) return;
+                if (
+                    typeof window === 'undefined' ||
+                    /Firefox/.test(window.navigator.userAgent)
+                ) return;
 
                 // no websql in internet explorer nor Edge
                 if (platform.name == 'IE') return;
