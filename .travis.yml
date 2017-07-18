@@ -8,17 +8,10 @@ before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
-jobs:
-  include:
-    - stage: install
-      script: npm install
-    - stage: test:node
-      script: npm run test:node
-    - stage: test:browser
-      script: npm run test:browser
-    - stage: build
-      script: npm run build
-    - stage: lint
-      script: npm run lint
-    - stage: angular2
-      script: (cd ./examples/angular2 && npm install && npm run build)
+script:
+- npm install
+- npm run test:node
+- npm run test:browser
+- npm run build
+- npm run lint
+- (cd ./examples/angular2 && npm install && npm run build)
