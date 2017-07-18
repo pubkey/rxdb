@@ -8,14 +8,6 @@ const configuration = {
         'detectBrowsers'
     ],
     files: tests,
-    /*        files: [
-                '../test_tmp/browser/Adapters.test.js',
-                '../test_tmp/browser/RxBroadcastChannel.test.js',
-                '../test_tmp/browser/Insert.test.js',
-                '../test_tmp/browser/Observe.test.js',
-                '../test_tmp/browser/CrossInstance.test.js',
-                '../test_tmp/browser/LeaderElection.test.js'
-            ],*/
     port: 9876,
     colors: true,
     autoWatch: false,
@@ -30,7 +22,6 @@ const configuration = {
         postDetection: function(availableBrowser) {
 
             // return ['Firefox']; // comment in to test specific browser
-
             return availableBrowser
                 .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly'].includes(b));
         }
@@ -70,10 +61,6 @@ const configuration = {
         }
     },
     singleRun: true
-};
-
-module.exports = function(config) {
-    config.set();
 };
 
 if (process.env.TRAVIS)
