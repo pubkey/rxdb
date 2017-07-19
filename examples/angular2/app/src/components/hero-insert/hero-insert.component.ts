@@ -31,6 +31,8 @@ export class HeroInsertComponent implements OnInit {
 
     async submit() {
         console.log('HeroInsertComponent.submit():');
+        console.log('name: ' + this.tempDoc.name);
+        console.log('color: ' + this.tempDoc.color);
 
         try {
             await this.tempDoc.save();
