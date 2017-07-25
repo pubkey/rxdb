@@ -4,3 +4,4 @@ package-lock.json
 log.txt
 config.json
 dist/
+.org.chromium.*
