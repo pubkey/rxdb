@@ -72,6 +72,7 @@
     "html-webpack-plugin": "2.29.0",
     "less": "2.7.2",
     "less-loader": "4.0.5",
+    "local-web-server": "^2.2.3",
     "npm-run-all": "4.0.2",
     "postcss-cli": "4.1.0",
     "raw-loader": "0.5.1",
