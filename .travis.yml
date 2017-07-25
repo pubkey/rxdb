@@ -5,19 +5,10 @@ os:
 node_js:
   - "7"
 
-addons:
-  apt:
-    sources:
-     - google-chrome
-    packages:
-     - google-chrome-stable fluxbox
-
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
-  - sleep 3
-  - fluxbox >/dev/null 2>&1 &
 script:
 - npm install
 - npm run test:node

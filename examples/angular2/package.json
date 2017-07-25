@@ -15,7 +15,7 @@
     "build:serve9000": "ws -p 9000 -d dist/",
     "build": "npm run build:clean && npm run build:webpack && echo \"BUILD SUCESS\"",
     "docker": "docker run -it -v $(pwd):/app -p 0.0.0.0:8888:8888 -p 0.0.0.0:10101:10101 node:6.9.1 /bin/bash /app/entrypoint.bash",
-    "test:run": "testcafe chrome test/",
+    "test:run": "testcafe chromium test/",
     "test:build": "concurrently \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "author": "pubkey",
