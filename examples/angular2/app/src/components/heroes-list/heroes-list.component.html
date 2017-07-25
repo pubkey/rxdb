@@ -1,8 +1,8 @@
-<div class="loading" *ngIf="!heroes">
+<div class="loading" *ngIf="!heroes" class="hero-list-component">
     <md-spinner class="app-spinner"></md-spinner>
 </div>
 
-<md-list *ngIf="heroes">
+<md-list *ngIf="heroes" class="hero-list-component">
     <md-list-item *ngFor="let hero of heroes" class="listHero">
         <div class="color-box" [style.background-color]="hero.color"></div>
         <div class="name">
