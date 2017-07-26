@@ -25,3 +25,17 @@ if (platform.name != 'Node.js') {
         process.exit(1);
     });
 }
+
+
+/**
+ * MONKEYPATCH console.error on firefox
+ * this is needed because core-js has its own non-catched-promise-behavior
+ * and spams the console with useless error-logs.
+ */
+if (platform.name === 'firefox') {
+    const consoleErrorBefore = console.error.bind(console);
+    console.error = function(msg) {
+        if (msg !== 'Unhandled promise rejection')
+            consoleErrorBefore(msg);
+    };
+}
