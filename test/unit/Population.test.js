@@ -7,6 +7,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxSchema from '../../dist/lib/RxSchema';
+import * as RxDocument from '../../dist/lib/RxDocument';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -187,6 +188,64 @@ describe('Population.test.js', () => {
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
+        });
+    });
+    describe('issues', () => {
+        it('#222 population not working when multiInstance: false', async() => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: false  // this must be false here
+            });
+            const colA = await db.collection({
+                name: 'doca',
+                schema: {
+                    name: 'doca',
+                    version: 0,
+                    properties: {
+                        name: {
+                            primary: true,
+                            type: 'string'
+                        },
+                        refB: {
+                            ref: 'docb', // refers to collection human
+                            type: 'string' // ref-values must always be string (primary of foreign RxDocument)
+                        }
+                    }
+                }
+            });
+            const colB = await db.collection({
+                name: 'docb',
+                schema: {
+                    name: 'docb',
+                    version: 0,
+                    properties: {
+                        name: {
+                            primary: true,
+                            type: 'string'
+                        },
+                        somevalue: {
+                            type: 'string'
+                        }
+                    }
+                }
+            });
+            await colB.insert({
+                name: 'docB-01',
+                somevalue: 'foobar'
+            });
+            await colA.insert({
+                name: 'docA-01',
+                refB: 'docB-01'
+            });
+
+            const docA = await colA.findOne().where('name').eq('docA-01').exec();
+            const docB = await docA.populate('refB');
+
+            assert.ok(RxDocument.isInstanceOf(docB));
+            assert.equal(docB.somevalue, 'foobar');
+
+            db.destroy();
         });
     });
 });
