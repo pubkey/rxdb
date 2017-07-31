@@ -75,7 +75,7 @@ We optimized, double-checked and made boilerplates so you can directly start to 
 
 ## Quickstart
 
-Installation:
+### Installation:
 
 ```sh
 npm install rxdb --save
@@ -84,13 +84,13 @@ npm install rxdb --save
 npm install rxjs babel-polyfill --save
 ```
 
-Import/Require:
+### Import:
 
 <details>
   <summary>ES7</summary>
 
 ```javascript
-import 'babel-polyfill'; //only needed when you dont have polyfills
+import 'babel-polyfill'; // only needed when you dont have polyfills
 import * as RxDB from 'rxdb';
 const db = await RxDB.create({
     name: 'heroesdb',
@@ -108,7 +108,7 @@ db.heroes.insert({ name: 'Bob' });                          // insert document
   <summary>ES5</summary>
 
 ```javascript
-require('babel-polyfill'); //only needed when you dont have polyfills
+require('babel-polyfill'); // only needed when you dont have polyfills
 var RxDB = require('rxdb');
 RxDB.create({
     name: 'heroesdb',
