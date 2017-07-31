@@ -7,6 +7,7 @@
     "type": "git",
     "url": "https://github.com/pubkey/rxdb"
   },
+  "homepage": "https://pubkey.github.io/rxdb/",
   "keywords": [
     "db",
     "database",
