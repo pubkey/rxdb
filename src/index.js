@@ -1,11 +1,9 @@
-import * as RxDatabase from './RxDatabase';
-import * as RxSchema from './RxSchema';
-import * as RxDocument from './RxDocument';
-import * as RxQuery from './RxQuery';
-import * as RxCollection from './RxCollection';
-
-import * as QueryChangeDetector from './QueryChangeDetector';
-
+import RxDatabase from './RxDatabase';
+import RxSchema from './RxSchema';
+import RxDocument from './RxDocument';
+import RxQuery from './RxQuery';
+import RxCollection from './RxCollection';
+import QueryChangeDetector from './QueryChangeDetector';
 import PouchDB from './PouchDB';
 
 /**
@@ -58,4 +56,20 @@ export {
     PouchDB as PouchDB,
     QueryChangeDetector as QueryChangeDetector,
     RxDatabase as RxDatabase,
+};
+
+
+export default {
+    create,
+    removeDatabase,
+    plugin,
+    isRxDatabase,
+    isRxCollection,
+    isRxDocument,
+    isRxQuery,
+    isRxSchema,
+    RxSchema,
+    PouchDB,
+    QueryChangeDetector,
+    RxDatabase
 };

@@ -33,3 +33,7 @@ class QueryCache {
 export function create() {
     return new QueryCache();
 }
+
+export default {
+    create
+};

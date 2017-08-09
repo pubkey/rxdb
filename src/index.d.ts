@@ -67,7 +67,6 @@ interface SchemaJSON {
     disableKeyCompression?: boolean;
 }
 
-
 /**
  * possible pouch-settings
  * @link https://pouchdb.com/api.html#create_database
@@ -121,7 +120,6 @@ declare class RxDatabase {
      */
     waitForLeadership(): Promise<boolean>;
 }
-
 
 declare class RxReplicationState {
     change$: Observable<any>;
@@ -209,8 +207,6 @@ declare class RxCollection<RxDocumentType> {
     destroy(): Promise<boolean>;
     remove(): Promise<any>;
 }
-
-
 
 declare class RxQuery<RxDocumentType>{
     collection: RxCollection<RxDocumentType>;
@@ -312,4 +308,19 @@ RxDocument as RxDocument,
 RxChangeEvent as RxChangeEvent,
 PouchDB as PouchDB,
 RxCollectionCreator as RxCollectionCreator,
+};
+
+export default {
+    create,
+    removeDatabase,
+    plugin,
+    isRxDatabase,
+    isRxCollection,
+    isRxDocument,
+    isRxQuery,
+    isRxSchema,
+    RxSchema,
+    PouchDB,
+    QueryChangeDetector,
+    RxDatabase
 };

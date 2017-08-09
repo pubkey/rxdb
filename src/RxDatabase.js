@@ -2,11 +2,11 @@ import randomToken from 'random-token';
 import PouchDB from './PouchDB';
 
 import * as util from './util';
-import * as RxCollection from './RxCollection';
-import * as RxSchema from './RxSchema';
-import * as RxChangeEvent from './RxChangeEvent';
-import * as Socket from './Socket';
-import * as LeaderElector from './LeaderElector';
+import RxCollection from './RxCollection';
+import RxSchema from './RxSchema';
+import RxChangeEvent from './RxChangeEvent';
+import Socket from './Socket';
+import LeaderElector from './LeaderElector';
 
 const SETTINGS = {
     minPassLength: 8
@@ -458,4 +458,12 @@ export function isInstanceOf(obj) {
 
 export {
     RxSchema as RxSchema
+};
+
+
+export default {
+    create,
+    removeDatabase,
+    isInstanceOf,
+    RxSchema
 };

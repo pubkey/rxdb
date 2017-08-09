@@ -12,7 +12,7 @@ To import `rxdb`, add this to your javascript file:
 
 ```js
 // es6
-import * as RxDB from 'rxdb';
+import RxDB from 'rxdb';
 
 // es5
 var rxdb = require('rxdb');

@@ -96,3 +96,7 @@ class RxReplicationState {
 export function create(collection) {
     return new RxReplicationState(collection);
 }
+
+export default {
+    create
+};

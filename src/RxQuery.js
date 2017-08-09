@@ -3,8 +3,8 @@ import MQuery from './mquery/mquery';
 import clone from 'clone';
 
 import * as util from './util';
-import * as RxDocument from './RxDocument';
-import * as QueryChangeDetector from './QueryChangeDetector';
+import RxDocument from './RxDocument';
+import QueryChangeDetector from './QueryChangeDetector';
 
 
 let _queryCount = 0;
@@ -438,3 +438,8 @@ export function create(op, queryObj, collection) {
 export function isInstanceOf(obj) {
     return obj instanceof RxQuery;
 }
+
+export default {
+    create,
+    isInstanceOf
+};

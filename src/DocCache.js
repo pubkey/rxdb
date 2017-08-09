@@ -20,3 +20,7 @@ class DocCache {
 export function create() {
     return new DocCache();
 }
+
+export default {
+    create
+};

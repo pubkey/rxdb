@@ -4,7 +4,7 @@ import clone from 'clone';
 const validator = require('is-my-json-valid');
 
 import * as util from './util';
-import * as RxDocument from './RxDocument';
+import RxDocument from './RxDocument';
 
 export class RxSchema {
     constructor(jsonID) {
@@ -507,3 +507,17 @@ export function create(jsonID, doCheck = true) {
 export function isInstanceOf(obj) {
     return obj instanceof RxSchema;
 }
+
+export default {
+    RxSchema,
+    getEncryptedPaths,
+    hasCrypt,
+    getIndexes,
+    getPrimary,
+    checkFieldNameRegex,
+    validateFieldsDeep,
+    checkSchema,
+    normalize,
+    create,
+    isInstanceOf
+};

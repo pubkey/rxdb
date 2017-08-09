@@ -5,8 +5,8 @@
 import * as unload from 'unload';
 
 import * as util from './util';
-import * as RxChangeEvent from './RxChangeEvent';
-import * as RxBroadcastChannel from './RxBroadcastChannel';
+import RxChangeEvent from './RxChangeEvent';
+import RxBroadcastChannel from './RxBroadcastChannel';
 
 const documentID = '_local/leader';
 const SIGNAL_TIME = 500; // TODO evaluate this time
@@ -334,4 +334,10 @@ export async function create(database) {
 export {
     documentID as documentID,
     SIGNAL_TIME as SIGNAL_TIME
+};
+
+export default {
+    create,
+    documentID,
+    SIGNAL_TIME
 };

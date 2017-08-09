@@ -83,3 +83,10 @@ export function create(op, database, collection, doc, value) {
 export function isInstanceOf(obj) {
     return obj instanceof RxChangeEvent;
 }
+
+export default {
+    fromJSON,
+    fromPouchChange,
+    create,
+    isInstanceOf
+};

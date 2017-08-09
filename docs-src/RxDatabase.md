@@ -31,7 +31,7 @@ Before using a level-adapter, you have to add the ``` pouchdb-adapter-leveldb```
 Example with level-adapter:
 
 ```javascript
-import { default as memdown } from 'memdown';
+import memdown from 'memdown';
 RxDB.plugin(require('pouchdb-adapter-leveldb'));
 const db = await RxDB.create({name: 'mydatabase', adapter: memdown});
 ```

@@ -328,3 +328,9 @@ export function create(query) {
     const ret = new QueryChangeDetector(query);
     return ret;
 }
+
+export default {
+    create,
+    enableDebugging,
+    enable
+};

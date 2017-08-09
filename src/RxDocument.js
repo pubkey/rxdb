@@ -4,7 +4,7 @@ import deepEqual from 'deep-equal';
 import modify from 'modifyjs';
 
 import * as util from './util';
-import * as RxChangeEvent from './RxChangeEvent';
+import RxChangeEvent from './RxChangeEvent';
 
 class RxDocument {
     constructor(collection, jsonData) {
@@ -441,3 +441,10 @@ export function properties() {
 export function isInstanceOf(obj) {
     return obj instanceof RxDocument;
 }
+
+export default {
+    create,
+    createAr,
+    properties,
+    isInstanceOf
+};

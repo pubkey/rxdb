@@ -1,4 +1,4 @@
-<!-- 
+<!--
 
 | Announcement                                                        |
 | :--: |
@@ -91,7 +91,7 @@ npm install rxjs babel-polyfill --save
 
 ```javascript
 import 'babel-polyfill'; // only needed when you dont have polyfills
-import * as RxDB from 'rxdb';
+import RxDB from 'rxdb';
 const db = await RxDB.create({
     name: 'heroesdb',
     adapter: 'websql',

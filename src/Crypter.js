@@ -53,3 +53,7 @@ class Crypter {
 export function create(password, schema) {
     return new Crypter(password, schema);
 }
+
+export default {
+    create
+};
