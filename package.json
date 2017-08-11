@@ -146,7 +146,7 @@
     "request-promise": "4.2.1",
     "request-promise-native": "1.0.4",
     "rimraf": "2.6.1",
-    "rxjs": "5.4.2",
+    "rxjs": "5.4.3",
     "shelljs": "0.7.8",
     "typescript": "2.4.2",
     "uglify-js": "3.0.27",
