@@ -1,7 +1,7 @@
 import objectPath from 'object-path';
 import clone from 'clone';
 
-const ZSchema = require("z-schema");
+const ZSchema = require('z-schema');
 const validator = new ZSchema();
 
 import * as util from './util';
