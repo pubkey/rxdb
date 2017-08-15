@@ -1,10 +1,11 @@
 import objectPath from 'object-path';
 import clone from 'clone';
 
-const validator = require('is-my-json-valid');
+const ZSchema = require("z-schema");
+const validator = new ZSchema();
 
 import * as util from './util';
-import RxDocument from './RxDocument';
+import * as RxDocument from './RxDocument';
 
 export class RxSchema {
     constructor(jsonID) {
@@ -117,10 +118,10 @@ export class RxSchema {
                     error: 'does the field ' + schemaPath + ' exist in your schema?'
                 }));
             }
-            this._validators[schemaPath] = validator(schemaPart);
+            this._validators[schemaPath] = schemaPart;
         }
-        const useValidator = this._validators[schemaPath];
-        const isValid = useValidator(obj);
+        const schemaPart = this._validators[schemaPath];
+        const isValid = validator.validate(obj, schemaPart);
         if (isValid) return obj;
         else {
             throw new Error(JSON.stringify({
@@ -508,16 +509,3 @@ export function isInstanceOf(obj) {
     return obj instanceof RxSchema;
 }
 
-export default {
-    RxSchema,
-    getEncryptedPaths,
-    hasCrypt,
-    getIndexes,
-    getPrimary,
-    checkFieldNameRegex,
-    validateFieldsDeep,
-    checkSchema,
-    normalize,
-    create,
-    isInstanceOf
-};
