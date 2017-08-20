@@ -159,6 +159,10 @@ Destroys the collections object-instance. This is to free up memory and stop all
 myDatabase.destroy();
 ```
 
+### sync()
+This method allows you to replicate data between other RxCollections, pouchdb-instances or remove servers which supprot the couchdb-sync-protocol.
+Full documentation on how to use replication is [here](./Replication.md).
+
 ### remove()
 
 Removes all known data of the collection and its previous versions.
