@@ -20,7 +20,7 @@ import RxDatabase from './RxDatabase';
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
-class RxCollection {
+export class RxCollection {
     constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
         this.database = database;
         this.name = name;
@@ -749,5 +749,6 @@ export function isInstanceOf(obj) {
 export default {
     create,
     properties,
-    isInstanceOf
+    isInstanceOf,
+    RxCollection
 };

@@ -7,14 +7,9 @@ import RxSchema from './RxSchema';
 import RxChangeEvent from './RxChangeEvent';
 import Socket from './Socket';
 import LeaderElector from './LeaderElector';
-
-const SETTINGS = {
-    minPassLength: 8
-};
+import overwritable from './overwritable';
 
 export class RxDatabase {
-
-
     constructor(name, adapter, password, multiInstance) {
         this.name = name;
         this.adapter = adapter;
@@ -369,10 +364,8 @@ export async function create({
         }
     }
 
-    if (password && typeof password !== 'string')
-        throw new TypeError('password is no string');
-    if (password && password.length < SETTINGS.minPassLength)
-        throw new Error(`password must have at least ${SETTINGS.minPassLength} chars`);
+    if (password)
+        overwritable.validatePassword(password);
 
     const db = new RxDatabase(name, adapter, password, multiInstance);
     await db.prepare();

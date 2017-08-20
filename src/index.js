@@ -4,6 +4,7 @@ import RxDocument from './RxDocument';
 import RxQuery from './RxQuery';
 import RxCollection from './RxCollection';
 import QueryChangeDetector from './QueryChangeDetector';
+import Plugin from './Plugin';
 import PouchDB from './PouchDB';
 
 /**
@@ -29,9 +30,22 @@ export async function removeDatabase(databaseName, adapter) {
 }
 
 export function plugin(mod) {
-    if (typeof mod === 'object' && mod.default) mod = mod.default;
-    PouchDB.plugin(mod);
+    if (mod.rxdb) {
+        // rxdb-plugin
+        Plugin.addPlugin(mod);
+    } else {
+        // pouchdb-plugin
+        if (typeof mod === 'object' && mod.default) mod = mod.default;
+        PouchDB.plugin(mod);
+    }
 }
+
+// default plugins
+import ValidatePlugin from './modules/validate';
+plugin(ValidatePlugin);
+import EncryptionPlugin from './modules/encryption';
+plugin(EncryptionPlugin);
+
 
 export function isRxDatabase(obj) {
     return RxDatabase.isInstanceOf(obj);

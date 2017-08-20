@@ -27,5 +27,6 @@ module.exports = [
     '../test_tmp/unit/Replication.test.js',
     '../test_tmp/unit/Encryption.test.js',
     '../test_tmp/unit/ImportExport.test.js',
-    '../test_tmp/unit/CrossInstance.test.js'
+    '../test_tmp/unit/CrossInstance.test.js',
+    '../test_tmp/unit/mod_encryption.test.js',    
 ];
