@@ -14,12 +14,8 @@ import QueryCache from './QueryCache';
 import ChangeEventBuffer from './ChangeEventBuffer';
 import RxReplicationState from './RxReplicationState';
 
-import {
-    RxSchema
-} from './RxSchema';
-import {
-    RxDatabase
-} from './RxDatabase';
+import RxSchema from './RxSchema';
+import RxDatabase from './RxDatabase';
 
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -709,10 +705,10 @@ export async function create({
     statics = {},
     methods = {}
 }) {
-    if (!schema instanceof RxSchema)
+    if (!RxSchema.isInstanceOf(schema))
         throw new TypeError('given schema is no Schema-object');
 
-    if (!database instanceof RxDatabase)
+    if (!RxDatabase.isInstanceOf(database))
         throw new TypeError('given database is no Database-object');
 
     if (typeof autoMigrate !== 'boolean')
