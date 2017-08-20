@@ -5,7 +5,7 @@ import clone from 'clone';
 import * as util from './util';
 import RxDocument from './RxDocument';
 import QueryChangeDetector from './QueryChangeDetector';
-
+import RxError from './RxError';
 
 let _queryCount = 0;
 const newQueryID = function() {
@@ -13,7 +13,7 @@ const newQueryID = function() {
 };
 
 
-class RxQuery {
+export class RxQuery {
     constructor(op, queryObj, collection) {
         this.op = op;
         this.collection = collection;
@@ -309,21 +309,12 @@ class RxQuery {
 
     /**
      * updates all found documents
+     * @overwritten by plugin (optinal)
      * @param  {object} updateObj
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
     async update(updateObj) {
-        const docs = await this.exec();
-        if (!docs) return null;
-        if (Array.isArray(docs)) {
-            await Promise.all(
-                docs.map(doc => doc.update(updateObj))
-            );
-        } else {
-            // via findOne()
-            await docs.update(updateObj);
-        }
-        return docs;
+        throw RxError.pluginMissing('update');
     }
 
     async exec() {
@@ -441,5 +432,6 @@ export function isInstanceOf(obj) {
 
 export default {
     create,
+    RxQuery,
     isInstanceOf
 };

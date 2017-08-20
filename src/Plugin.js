@@ -6,11 +6,16 @@
 
 import RxSchema from './RxSchema';
 import Crypter from './Crypter';
+import RxDocument from './RxDocument';
+import RxQuery from './RxQuery';
+
 import overwritable from './overwritable';
 
 const PROTOTYPES = {
     RxSchema: RxSchema.RxSchema.prototype,
-    Crypter: Crypter.Crypter.prototype
+    Crypter: Crypter.Crypter.prototype,
+    RxDocument: RxDocument.RxDocument.prototype,
+    RxQuery: RxQuery.RxQuery.prototype
 };
 
 export function addPlugin(plugin) {

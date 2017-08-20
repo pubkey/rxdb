@@ -45,7 +45,8 @@ import ValidatePlugin from './modules/validate';
 plugin(ValidatePlugin);
 import EncryptionPlugin from './modules/encryption';
 plugin(EncryptionPlugin);
-
+import UpdatePlugin from './modules/update';
+plugin(UpdatePlugin);
 
 export function isRxDatabase(obj) {
     return RxDatabase.isInstanceOf(obj);
