@@ -98,5 +98,6 @@ export function create(collection) {
 }
 
 export default {
-    create
+    create,
+    RxReplicationState
 };

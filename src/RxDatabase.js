@@ -458,5 +458,6 @@ export default {
     create,
     removeDatabase,
     isInstanceOf,
+    RxDatabase,
     RxSchema
 };
