@@ -35,16 +35,18 @@ const validate = function(obj, schemaPath = '') {
 };
 
 
+export const rxdb = true;
+export const prototypes = {
+    /**
+     * set validate-function for the RxSchema.prototype
+     * @param {[type]} prototype of RxSchema
+     */
+    RxSchema: (proto) => {
+        proto.validate = validate;
+    }
+};
 
 export default {
-    rxdb: true,
-    prototypes: {
-        /**
-         * set validate-function for the RxSchema.prototype
-         * @param {[type]} prototype of RxSchema
-         */
-        RxSchema: (proto) => {
-            proto.validate = validate;
-        }
-    }
+    rxdb,
+    prototypes
 };

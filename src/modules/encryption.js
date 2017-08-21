@@ -28,24 +28,29 @@ const _decryptValue = function(encValue) {
     return JSON.parse(decrypted);
 };
 
-export default {
-    rxdb: true,
-    prototypes: {
-        /**
-         * set crypto-functions for the Crypter.prototype
-         * @param {[type]} prototype of Crypter
-         */
-        Crypter: (proto) => {
-            proto._encryptValue = _encryptValue;
-            proto._decryptValue = _decryptValue;
-        }
-    },
-    overwritable: {
-        validatePassword: function(password) {
-            if (password && typeof password !== 'string')
-                throw new TypeError('password is no string');
-            if (password && password.length < minPassLength)
-                throw new Error(`password must have at least ${minPassLength} chars`);
-        }
+
+export const rxdb = true;
+export const prototypes = {
+    /**
+     * set crypto-functions for the Crypter.prototype
+     * @param {[type]} prototype of Crypter
+     */
+    Crypter: (proto) => {
+        proto._encryptValue = _encryptValue;
+        proto._decryptValue = _decryptValue;
     }
+};
+export const overwritable = {
+    validatePassword: function(password) {
+        if (password && typeof password !== 'string')
+            throw new TypeError('password is no string');
+        if (password && password.length < minPassLength)
+            throw new Error(`password must have at least ${minPassLength} chars`);
+    }
+};
+
+export default {
+    rxdb,
+    prototypes,
+    overwritable
 };

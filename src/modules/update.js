@@ -40,14 +40,18 @@ export async function RxQuery_update(updateObj) {
     return docs;
 }
 
-export default {
-    rxdb: true,
-    prototypes: {
-        RxDocument: (proto) => {
-            proto.update = update;
-        },
-        RxQuery: (proto) => {
-            proto.update = RxQuery_update;
-        }
+
+export const rxdb = true;
+export const prototypes = {
+    RxDocument: (proto) => {
+        proto.update = update;
+    },
+    RxQuery: (proto) => {
+        proto.update = RxQuery_update;
     }
+};
+
+export default {
+    rxdb,
+    prototypes
 };
