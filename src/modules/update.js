@@ -40,7 +40,6 @@ export async function RxQuery_update(updateObj) {
     return docs;
 }
 
-
 export default {
     rxdb: true,
     prototypes: {

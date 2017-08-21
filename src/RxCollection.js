@@ -77,7 +77,6 @@ export class RxCollection {
             })
         );
 
-
         this._subs.push(
             this._observable$.subscribe(cE => {
                 // when data changes, send it to RxDocument in docCache
