@@ -6,7 +6,6 @@ import RxCollection from './RxCollection';
 import RxSchema from './RxSchema';
 import RxChangeEvent from './RxChangeEvent';
 import Socket from './Socket';
-import LeaderElector from './LeaderElector';
 import overwritable from './overwritable';
 
 export class RxDatabase {
@@ -70,9 +69,12 @@ export class RxDatabase {
             //TODO only subscribe when sth is listening to the event-chain
             this.socket.messages$.subscribe(cE => this.$emit(cE));
         }
+    }
 
-        // leader elector
-        this.leaderElector = await LeaderElector.create(this);
+    get leaderElector() {
+        if (!this._leaderElector)
+            this._leaderElector = overwritable.createLeaderElector(this);
+        return this._leaderElector;
     }
 
     /**

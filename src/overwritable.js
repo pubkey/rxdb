@@ -22,6 +22,14 @@ const funs = {
      */
     createKeyCompressor(schema) {
         throw RxError.pluginMissing('keycompression');
+    },
+    /**
+     * creates a leader-elector for the given database
+     * @param  {RxDatabase} database
+     * @return {LeaderElector}
+     */
+    createLeaderElector(database) {
+        throw RxError.pluginMissing('leaderelection');
     }
 };
 

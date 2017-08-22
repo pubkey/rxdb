@@ -2,6 +2,8 @@
 
 By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you dont have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.
 
+`NOTICE: Custom Builds are in beta-mode. It can happen that you have to re-adjust you build without a major rxdb-release.`
+
 ## Core
 
 The core-module is the part of RxDB which is always needed to provide basic functionality. If you need a custom build, you start with the core and then add all modules that you need.
@@ -35,7 +37,7 @@ RxDB.plugin(require('rxdb/dist/lib/modules/validate'));
 
 Some modules are optional and only needed if you use their functionality.
 
-### keyCompression
+### keycompression
 The keycompressor-module is needed when you have keyCompression enabled.
 This is done by default so make sure that you set [disableKeyCompression](./RxSchema.html#disablekeycompression) to `true` when you do not have this module.
 
@@ -48,6 +50,18 @@ RxDB.plugin(RxDBKeyCompressionModule);
 RxDB.plugin(require('rxdb/dist/lib/modules/keycompression'));
 ```
 
+### leaderelection
+
+The leaderelection-module is needed when want to use the leaderelection.
+
+```javascript
+// es6-import
+import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leaderelection';
+RxDB.plugin(RxDBLeaderElectionModule);
+
+// es5-require (dont forget to use the 'lib'-folder instead of 'es')
+RxDB.plugin(require('rxdb/dist/lib/modules/leaderelection'));
+```
 
 ### encryption
 

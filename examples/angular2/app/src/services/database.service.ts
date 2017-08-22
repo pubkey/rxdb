@@ -8,9 +8,11 @@ import { Injectable } from '@angular/core';
  */
 import RxDB from 'rxdb/dist/es/core';
 
-// required
+// import modules
 import RxDBValidateModule from 'rxdb/dist/es/modules/validate';
 RxDB.plugin(RxDBValidateModule);
+import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leaderelection';
+RxDB.plugin(RxDBLeaderElectionModule);
 
 
 // always needed for replicatin with the node-server

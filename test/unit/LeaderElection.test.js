@@ -10,8 +10,9 @@ import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxCollection from '../../dist/lib/RxCollection';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import * as LeaderElector from '../../dist/lib/LeaderElector';
 import * as RxBroadcastChannel from '../../dist/lib/RxBroadcastChannel';
+
+import * as LeaderElector from '../../dist/lib/modules/leaderelection';
 
 describe('LeaderElection.test.js', () => {
     describe('leaderObject', () => {
