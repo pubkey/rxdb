@@ -5,11 +5,16 @@
 import assert from 'assert';
 import clone from 'clone';
 import AsyncTestUtil from 'async-test-util';
+import platform from 'detect-browser';
 
 const exec = require('child-process-promise').exec;
 const spawn = require('child-process-promise').spawn;
 
 describe('Plugin.test.js', () => {
+
+    if (!platform.isNode())
+        return;
+
     describe('Core.node.js', () => {
         it('should run without errors', async() => {
             const stdout = [];
