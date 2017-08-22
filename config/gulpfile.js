@@ -4,7 +4,7 @@ const tests = require('../test/unit.test');
 
 gulp.task('test', function() {
     return gulp
-        .src(tests)
+        .src(tests.all)
         .pipe(mocha({
             bail: true,
             timeout: 6000
