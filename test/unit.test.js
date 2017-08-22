@@ -1,6 +1,7 @@
 module.exports = [
     '../test_tmp/unit/init.test.js',
     '../test_tmp/unit/util.test.js',
+    '../test_tmp/unit/Plugin.test.js', // TODO move this down (last)
     '../test_tmp/unit/PouchDB-integration.test.js',
     '../test_tmp/unit/RxBroadcastChannel.test.js',
     '../test_tmp/unit/InstanceOfCheck.test.js',
@@ -28,5 +29,5 @@ module.exports = [
     '../test_tmp/unit/Encryption.test.js',
     '../test_tmp/unit/ImportExport.test.js',
     '../test_tmp/unit/CrossInstance.test.js',
-    '../test_tmp/unit/mod_encryption.test.js',    
+    '../test_tmp/unit/mod_encryption.test.js'
 ];

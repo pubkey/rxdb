@@ -170,6 +170,7 @@ class OldCollection {
         const decrypted = this.crypter.decrypt(decompressed);
         return decrypted;
     }
+    
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
      */
