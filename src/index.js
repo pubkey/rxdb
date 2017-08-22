@@ -7,10 +7,16 @@
 import Core from './core';
 
 // default plugins
+
 import ValidatePlugin from './modules/validate';
 Core.plugin(ValidatePlugin);
+
+import KeyCompressionPlugin from './modules/keycompression';
+Core.plugin(KeyCompressionPlugin);
+
 import EncryptionPlugin from './modules/encryption';
 Core.plugin(EncryptionPlugin);
+
 import UpdatePlugin from './modules/update';
 Core.plugin(UpdatePlugin);
 

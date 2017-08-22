@@ -1,5 +1,5 @@
 /**
- * this test is to the import/export behaviour
+ * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
 import clone from 'clone';
@@ -8,14 +8,13 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-
 import * as RxSchema from '../../dist/lib/RxSchema';
 import * as RxDatabase from '../../dist/lib/RxDatabase';
 import * as RxDocument from '../../dist/lib/RxDocument';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
-import * as KeyCompressor from '../../dist/lib/KeyCompressor';
+import * as KeyCompressor from '../../dist/lib/modules/keycompression';
 
 
 describe('KeyCompressor.test.js', () => {

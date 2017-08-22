@@ -35,6 +35,20 @@ RxDB.plugin(require('rxdb/dist/lib/modules/validate'));
 
 Some modules are optional and only needed if you use their functionality.
 
+### keyCompression
+The keycompressor-module is needed when you have keyCompression enabled.
+This is done by default so make sure that you set [disableKeyCompression](./RxSchema.html#disablekeycompression) to `true` when you do not have this module.
+
+```javascript
+// es6-import
+import RxDBKeyCompressionModule from 'rxdb/dist/es/modules/keycompression';
+RxDB.plugin(RxDBKeyCompressionModule);
+
+// es5-require (dont forget to use the 'lib'-folder instead of 'es')
+RxDB.plugin(require('rxdb/dist/lib/modules/keycompression'));
+```
+
+
 ### encryption
 
 The encryption-module is using `crypto-js` and is only needed when you create your RxDB-Database with a [password](./RxDatabase.md#password-optional).

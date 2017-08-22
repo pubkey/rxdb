@@ -15,8 +15,9 @@ Core.plugin(require('pouchdb-adapter-memory'));
 
 const schema = {
     title: 'human schema',
-    version: 0,
     description: 'describes a human being',
+    version: 0,
+    disableKeyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -75,12 +76,22 @@ describe('Core.test.js', () => {
                 name: 'humans',
                 schema
             });
+
+            console.log('11111');
+
             await db.humans.insert({
                 passportId: 'mypw',
                 firstName: 'steve',
                 lastName: 'piotr'
             });
+
+            console.log('22222');
+
             const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
+
+            console.log('33333');
+
+
             assert.ok(Core.isRxDocument(doc));
             db.destroy();
         });

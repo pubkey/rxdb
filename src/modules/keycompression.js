@@ -1,7 +1,12 @@
+/**
+ * this plugin adds the keycompression-capabilities to rxdb
+ * if you dont use this, ensure that you set disableKeyComression to false in your schema
+ */
+
 import objectPath from 'object-path';
 import clone from 'clone';
+import * as util from '../util';
 
-import * as util from './util';
 
 class KeyCompressor {
 
@@ -196,6 +201,15 @@ export function create(schema) {
     return new KeyCompressor(schema);
 }
 
+
+export const rxdb = true;
+export const prototypes = {};
+export const overwritable = {
+    createKeyCompressor: create
+};
+
 export default {
-    create
+    rxdb,
+    prototypes,
+    overwritable
 };

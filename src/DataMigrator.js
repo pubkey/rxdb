@@ -8,8 +8,8 @@ import clone from 'clone';
 
 import * as util from './util';
 import RxSchema from './RxSchema';
-import KeyCompressor from './KeyCompressor';
 import Crypter from './Crypter';
+import overwritable from './overwritable';
 
 class DataMigrator {
 
@@ -133,7 +133,7 @@ class OldCollection {
     }
     get keyCompressor() {
         if (!this._keyCompressor)
-            this._keyCompressor = KeyCompressor.create(this.schema);
+            this._keyCompressor = overwritable.createKeyCompressor(this.schema);
         return this._keyCompressor;
     }
     get crypter() {
@@ -165,20 +165,24 @@ class OldCollection {
      * handles a document from the pouchdb-instance
      */
     _handleFromPouch(docData) {
-        const swapped = this.schema.swapIdToPrimary(docData);
-        const decompressed = this.keyCompressor.decompress(swapped);
-        const decrypted = this.crypter.decrypt(decompressed);
-        return decrypted;
+        let data = clone(docData);
+        data = this.schema.swapIdToPrimary(docData);
+        if (this.schema.doKeyCompression())
+            data = this.keyCompressor.decompress(data);
+        data = this.crypter.decrypt(data);
+        return data;
     }
-    
+
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
      */
     _handleToPouch(docData) {
-        const encrypted = this.crypter.encrypt(docData);
-        const swapped = this.schema.swapPrimaryToId(encrypted);
-        const compressed = this.keyCompressor.compress(swapped);
-        return compressed;
+        let data = clone(docData);
+        data = this.crypter.encrypt(data);
+        data = this.schema.swapPrimaryToId(data);
+        if (this.schema.doKeyCompression())
+            data = this.keyCompressor.compress(data);
+        return data;
     }
 
     /**

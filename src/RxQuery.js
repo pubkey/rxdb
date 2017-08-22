@@ -284,10 +284,14 @@ export class RxQuery {
      * @return {{selector: {}, sort: []}} compressedQuery
      */
     keyCompress() {
-        return this
-            .collection
-            ._keyCompressor
-            .compressQuery(this.toJSON());
+        if (!this.collection.schema.doKeyCompression())
+            return this.toJSON();
+        else {
+            return this
+                .collection
+                ._keyCompressor
+                .compressQuery(this.toJSON());
+        }
     }
 
     /**

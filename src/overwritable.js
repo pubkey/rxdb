@@ -14,6 +14,14 @@ const funs = {
      */
     validatePassword: function(password) {
         throw RxError.pluginMissing('encryption');
+    },
+    /**
+     * creates a key-compressor for the given schema
+     * @param  {RxSchema} schema
+     * @return {KeyCompressor}
+     */
+    createKeyCompressor(schema) {
+        throw RxError.pluginMissing('keycompression');
     }
 };
 

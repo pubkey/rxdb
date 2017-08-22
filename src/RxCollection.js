@@ -6,13 +6,13 @@ import * as util from './util';
 import RxDocument from './RxDocument';
 import RxQuery from './RxQuery';
 import RxChangeEvent from './RxChangeEvent';
-import KeyCompressor from './KeyCompressor';
 import DataMigrator from './DataMigrator';
 import Crypter from './Crypter';
 import DocCache from './DocCache';
 import QueryCache from './QueryCache';
 import ChangeEventBuffer from './ChangeEventBuffer';
 import RxReplicationState from './RxReplicationState';
+import overwritable from './overwritable';
 
 import RxSchema from './RxSchema';
 import RxDatabase from './RxDatabase';
@@ -52,7 +52,6 @@ export class RxCollection {
     async prepare() {
         this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
         this._crypter = Crypter.create(this.database.password, this.schema);
-        this._keyCompressor = KeyCompressor.create(this.schema);
 
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
         this._observable$ = this.database.$
@@ -65,9 +64,10 @@ export class RxCollection {
             .map(indexAr => {
                 const compressedIdx = indexAr
                     .map(key => {
-                        if (!this.schema.doKeyCompression()) return key;
-                        const ret = this._keyCompressor._transformKey('', '', key.split('.'));
-                        return ret;
+                        if (!this.schema.doKeyCompression())
+                            return key;
+                        else
+                            return this._keyCompressor._transformKey('', '', key.split('.'));
                     });
                 return this.pouch.createIndex({
                     index: {
@@ -84,6 +84,12 @@ export class RxCollection {
                 if (doc) doc._handleChangeEvent(cE);
             })
         );
+    }
+
+    get _keyCompressor() {
+        if (!this.__keyCompressor)
+            this.__keyCompressor = overwritable.createKeyCompressor(this.schema);
+        return this.__keyCompressor;
     }
 
     /**
@@ -117,17 +123,21 @@ export class RxCollection {
      * wrappers for Pouch.put/get to handle keycompression etc
      */
     _handleToPouch(docData) {
-        const encrypted = this._crypter.encrypt(docData);
-        const swapped = this.schema.swapPrimaryToId(encrypted);
-        const compressed = this._keyCompressor.compress(swapped);
-        return compressed;
+        let data = clone(docData);
+        data = this._crypter.encrypt(data);
+        data = this.schema.swapPrimaryToId(data);
+        if (this.schema.doKeyCompression())
+            data = this._keyCompressor.compress(data);
+        return data;
     }
     _handleFromPouch(docData, noDecrypt = false) {
-        const swapped = this.schema.swapIdToPrimary(docData);
-        const decompressed = this._keyCompressor.decompress(swapped);
-        if (noDecrypt) return decompressed;
-        const decrypted = this._crypter.decrypt(decompressed);
-        return decrypted;
+        let data = clone(docData);
+        data = this.schema.swapIdToPrimary(data);
+        if (this.schema.doKeyCompression())
+            data = this._keyCompressor.decompress(data);
+        if (noDecrypt) return data;
+        data = this._crypter.decrypt(data);
+        return data;
     }
 
     /**
