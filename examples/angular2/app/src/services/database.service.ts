@@ -9,6 +9,8 @@ import { Injectable } from '@angular/core';
 import RxDB from 'rxdb/dist/es/core';
 
 // import modules
+import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schemacheck';
+RxDB.plugin(RxDBSchemaCheckModule);
 import RxDBValidateModule from 'rxdb/dist/es/modules/validate';
 RxDB.plugin(RxDBValidateModule);
 import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leaderelection';
