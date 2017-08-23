@@ -89,45 +89,6 @@ RxDB.plugin(RxDBUpdateModule);
 RxDB.plugin(require('rxdb/dist/lib/modules/update'));
 ```
 
-## Custom plugins
+--------------------------------------------------------------------------------
 
-Creating custom modules is very simple. You provide an object which overwrites prototypes of RxDB's internal classes.
-
-A basic plugins:
-
-```javascript
-
-const myPlugin = {
-        rxdb: true, // this must be true so rxdb knows that this is a rxdb-plugin and not a pouchdb-plugin
-        /**
-         * every value in this object can manipulate the prototype of the keynames class
-         * You can manipulate every prototype in this list:
-         * @link https://github.com/pubkey/rxdb/blob/cutsom-builds/src/Plugin.js
-         */
-        prototypes: {
-            /**
-             * add a function to RxCollection so you can call 'myCollection.hello()'
-             *
-             * @param {[type]} prototype of RxCollection
-             */
-            RxCollection: (proto) => {
-                proto.hello = function(){
-                    return 'world';
-                };
-            }
-        },
-        /**
-         * some methods are static and can be overwritte in the overwriteable-object
-         * @link https://github.com/pubkey/rxdb/blob/cutsom-builds/src/overwritable.js
-         */
-        overwritable: {
-            validatePassword: function(password) {
-                if (password && typeof password !== 'string' || password.length < 10)
-                    throw new TypeError('password is not valid');
-            }
-        }
-};
-
-// now you can import the plugin
-RxDB.plugin(myPlugin);
-```
+If you are new to RxDB, you should continue [here](./Plugins.md)

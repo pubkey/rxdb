@@ -1,0 +1,59 @@
+# Plugins
+
+Creating an own plugin is very simple. A plugin is basically an javascript-object which overwrites or extends RxDB's internal classes, prototypes and hooks.
+
+A basic plugins:
+
+```javascript
+
+const myPlugin = {
+        rxdb: true, // this must be true so rxdb knows that this is a rxdb-plugin and not a pouchdb-plugin
+        /**
+         * every value in this object can manipulate the prototype of the keynames class
+         * You can manipulate every prototype in this list:
+         * @link https://github.com/pubkey/rxdb/blob/cutsom-builds/src/Plugin.js
+         */
+        prototypes: {
+            /**
+             * add a function to RxCollection so you can call 'myCollection.hello()'
+             *
+             * @param {object} prototype of RxCollection
+             */
+            RxCollection: (proto) => {
+                proto.hello = function(){
+                    return 'world';
+                };
+            }
+        },
+        /**
+         * some methods are static and can be overwritten in the overwriteable-object
+         */
+        overwritable: {
+            validatePassword: function(password) {
+                if (password && typeof password !== 'string' || password.length < 10)
+                    throw new TypeError('password is not valid');
+            }
+        }
+};
+
+// now you can import the plugin into rxdb
+RxDB.plugin(myPlugin);
+```
+
+# Properties
+
+## rxdb
+
+The `rxdb`-property singals that this plugin is and rxdb-plugin and not a pouchdb-plugin. The value should always be `true`.
+
+## prototypes
+
+The `prototypes`-property contains a function for each of RxDB's internal protoype that you want to manipulate. Each function gets the protoype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/cutsom-builds/src/Plugin.js)
+
+## overwritable
+
+Some of RxDB's functions are not inside of a class-prototype but are static. You can set and overwrite them with the `overwritable`-object. You can see a list of all overwriteables [here](https://github.com/pubkey/rxdb/blob/cutsom-builds/src/overwriteable.js).
+
+--------------------------------------------------------------------------------
+
+If you are new to RxDB, you should continue [here](https://github.com/pubkey/rxdb/tree/master/examples)
