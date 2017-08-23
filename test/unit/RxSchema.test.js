@@ -7,6 +7,8 @@ import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
+import * as SchemaCheck from '../../dist/lib/modules/schemacheck.js';
+
 describe('RxSchema.test.js', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
@@ -39,36 +41,36 @@ describe('RxSchema.test.js', () => {
         describe('.checkSchema()', () => {
             describe('positive', () => {
                 it('validate human', () => {
-                    RxSchema.checkSchema(schemas.human);
+                    SchemaCheck.checkSchema(schemas.human);
                 });
                 it('validate bigHuman', () => {
-                    RxSchema.checkSchema(schemas.bigHuman);
+                    SchemaCheck.checkSchema(schemas.bigHuman);
                 });
                 it('validate without index', () => {
-                    RxSchema.checkSchema(schemas.noindexHuman);
+                    SchemaCheck.checkSchema(schemas.noindexHuman);
                 });
                 it('validate with compoundIndexes', () => {
-                    RxSchema.checkSchema(schemas.compoundIndex);
+                    SchemaCheck.checkSchema(schemas.compoundIndex);
                 });
                 it('validate empty', () => {
-                    RxSchema.checkSchema(schemas.empty);
+                    SchemaCheck.checkSchema(schemas.empty);
                 });
                 it('validate with defaults', () => {
-                    RxSchema.checkSchema(schemas.humanDefault);
+                    SchemaCheck.checkSchema(schemas.humanDefault);
                 });
             });
             describe('negative', () => {
                 it('break when index is no string', () => {
-                    assert.throws(() => RxSchema.checkSchema(schemas.nostringIndex), Error);
+                    assert.throws(() => SchemaCheck.checkSchema(schemas.nostringIndex), Error);
                 });
                 it('break compoundIndex key is no string', () => {
-                    assert.throws(() => RxSchema.checkSchema(schemas.compoundIndexNoString), Error);
+                    assert.throws(() => SchemaCheck.checkSchema(schemas.compoundIndexNoString), Error);
                 });
                 it('break on wrong formated compundIndex', () => {
-                    assert.throws(() => RxSchema.checkSchema(schemas.wrongCompoundFormat), Error);
+                    assert.throws(() => SchemaCheck.checkSchema(schemas.wrongCompoundFormat), Error);
                 });
                 it('break when dots in fieldname', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'dot in fieldname',
@@ -84,7 +86,7 @@ describe('RxSchema.test.js', () => {
                  * things to make sure there a no conflicts with the RxDocument-proxy
                  */
                 it('should not allow $-char in fieldnames', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'dot in fieldname',
@@ -94,7 +96,7 @@ describe('RxSchema.test.js', () => {
                             }
                         }
                     }), Error);
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: '$ in fieldname',
@@ -106,7 +108,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('should not allow $-char in nested fieldnames', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: '$ in nested fieldname',
@@ -121,7 +123,7 @@ describe('RxSchema.test.js', () => {
                             }
                         }
                     }), Error);
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: '$ in nested fieldname',
@@ -138,7 +140,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('should not allow ending lodash _ in fieldnames (reserved for populate)', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: '_ in fieldname',
@@ -149,7 +151,7 @@ describe('RxSchema.test.js', () => {
                         }
                     }), Error, 'underscore');
                     // nested
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'dot in fieldname',
@@ -166,7 +168,7 @@ describe('RxSchema.test.js', () => {
                     }), Error, 'underscore');
                 });
                 it('should not allow RxDocument-properties as top-fieldnames (own)', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'collection as fieldname',
@@ -178,7 +180,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('should not allow RxDocument-properties as top-fieldnames (prototype)', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'save as fieldname',
@@ -190,7 +192,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('throw when no version', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         description: 'save as fieldname',
                         properties: {
@@ -201,7 +203,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('throw when version < 0', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: -10,
                         description: 'save as fieldname',
@@ -213,7 +215,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('throw when version no number', () => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 'foobar',
                         description: 'save as fieldname',
@@ -225,7 +227,7 @@ describe('RxSchema.test.js', () => {
                     }), Error);
                 });
                 it('throw when defaults on non-first-level field', async() => {
-                    assert.throws(() => RxSchema.checkSchema({
+                    assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'save as fieldname',

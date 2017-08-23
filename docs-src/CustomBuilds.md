@@ -37,9 +37,22 @@ RxDB.plugin(require('rxdb/dist/lib/modules/validate'));
 
 Some modules are optional and only needed if you use their functionality.
 
+### schemacheck
+
+The schemacheck-module does additional checks on your jsonschema before you create a RxCollection. This ensure that your collection-schema is correctly working with rxdb. You should always enable this plugin on dev-mode.
+
+```javascript
+// es6-import
+import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schemacheck';
+RxDB.plugin(RxDBSchemaCheckModule);
+
+// es5-require (dont forget to use the 'lib'-folder instead of 'es')
+RxDB.plugin(require('rxdb/dist/lib/modules/schemacheck'));
+```
+
 ### keycompression
-The keycompressor-module is needed when you have keyCompression enabled.
-This is done by default so make sure that you set [disableKeyCompression](./RxSchema.html#disablekeycompression) to `true` when you do not have this module.
+
+The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set [disableKeyCompression](./RxSchema.html#disablekeycompression) to `true` when you do not have this module.
 
 ```javascript
 // es6-import

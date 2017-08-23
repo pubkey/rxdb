@@ -8,6 +8,11 @@
 export const HOOKS = {
     createRxDatabase: [],
     createRxCollection: [],
+    /**
+     * functions that get the json-schema as input
+     * to do additionally checks/manipulation
+     */
+    preCreateRxSchema: [],
     createRxSchema: [],
     createRxQuery: [],
     createRxDocument: []

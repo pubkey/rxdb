@@ -8,6 +8,9 @@ import Core from './core';
 
 // default plugins
 
+import SchemaCheckPlugin from './modules/schemacheck';
+Core.plugin(SchemaCheckPlugin);
+
 import ValidatePlugin from './modules/validate';
 Core.plugin(ValidatePlugin);
 
