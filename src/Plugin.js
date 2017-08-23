@@ -13,6 +13,9 @@ import RxDatabase from './RxDatabase';
 import RxReplicationState from './RxReplicationState';
 
 import overwritable from './overwritable';
+import {
+    HOOKS
+} from './hooks';
 
 /**
  * prototypes that can be manipulated with a plugin
@@ -43,6 +46,14 @@ export function addPlugin(plugin) {
             const name = entry[0];
             const fun = entry[1];
             overwritable[name] = fun;
+        });
+    }
+    // extend-hooks
+    if (plugin.hooks) {
+        Object.entries(plugin.hooks).forEach(entry => {
+            const name = entry[0];
+            const fun = entry[1];
+            HOOKS[name].push(fun);
         });
     }
 }

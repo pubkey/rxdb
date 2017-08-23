@@ -5,6 +5,9 @@ import deepEqual from 'deep-equal';
 import * as util from './util';
 import RxChangeEvent from './RxChangeEvent';
 import RxError from './RxError';
+import {
+    runPluginHooks
+} from './hooks';
 
 export class RxDocument {
     constructor(collection, jsonData) {
@@ -397,6 +400,7 @@ export function create(collection, jsonData) {
 
     const doc = new RxDocument(collection, jsonData);
     doc.prepare();
+    runPluginHooks('createRxDocument', doc);
     return doc;
 }
 

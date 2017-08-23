@@ -7,6 +7,9 @@ import RxSchema from './RxSchema';
 import RxChangeEvent from './RxChangeEvent';
 import Socket from './Socket';
 import overwritable from './overwritable';
+import {
+    runPluginHooks
+} from './hooks';
 
 export class RxDatabase {
     constructor(name, adapter, password, multiInstance) {
@@ -372,6 +375,7 @@ export async function create({
     const db = new RxDatabase(name, adapter, password, multiInstance);
     await db.prepare();
 
+    runPluginHooks('createRxDatabase', db);
     return db;
 }
 
@@ -451,10 +455,10 @@ export function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
 
+// TODO is this needed?
 export {
     RxSchema as RxSchema
 };
-
 
 export default {
     create,

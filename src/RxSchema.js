@@ -4,6 +4,9 @@ import clone from 'clone';
 import * as util from './util';
 import RxDocument from './RxDocument';
 import RxError from './RxError';
+import {
+    runPluginHooks
+} from './hooks';
 
 export class RxSchema {
     constructor(jsonID) {
@@ -476,7 +479,9 @@ const fillWithDefaultSettings = function(schemaObj) {
 
 export function create(jsonID, doCheck = true) {
     if (doCheck) checkSchema(jsonID);
-    return new RxSchema(fillWithDefaultSettings(jsonID));
+    const schema = new RxSchema(fillWithDefaultSettings(jsonID));
+    runPluginHooks('createRxSchema', schema);
+    return schema;
 }
 
 export function isInstanceOf(obj) {

@@ -33,6 +33,17 @@ const myPlugin = {
                 if (password && typeof password !== 'string' || password.length < 10)
                     throw new TypeError('password is not valid');
             }
+        },
+        /**
+         * you can add hooks to the hook-list
+         */
+        hooks: {
+            /**
+             * add a foo-property to each document. You can then call myDocument.foo (='bar')
+             */
+            createRxDocument: function(doc) {
+                doc.foo = 'bar';
+            }
         }
 };
 
@@ -53,6 +64,10 @@ The `prototypes`-property contains a function for each of RxDB's internal protoy
 ## overwritable
 
 Some of RxDB's functions are not inside of a class-prototype but are static. You can set and overwrite them with the `overwritable`-object. You can see a list of all overwriteables [here](https://github.com/pubkey/rxdb/blob/cutsom-builds/src/overwriteable.js).
+
+# hooks
+
+Sometimes you don't want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks here [here](https://github.com/pubkey/rxdb/blob/cutsom-builds/src/hooks.js).
 
 --------------------------------------------------------------------------------
 

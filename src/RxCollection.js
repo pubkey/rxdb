@@ -13,6 +13,9 @@ import QueryCache from './QueryCache';
 import ChangeEventBuffer from './ChangeEventBuffer';
 import RxReplicationState from './RxReplicationState';
 import overwritable from './overwritable';
+import {
+    runPluginHooks
+} from './hooks';
 
 import RxSchema from './RxSchema';
 import RxDatabase from './RxDatabase';
@@ -748,6 +751,7 @@ export async function create({
     if (autoMigrate)
         await collection.migratePromise();
 
+    runPluginHooks('createRxCollection', collection);
     return collection;
 }
 

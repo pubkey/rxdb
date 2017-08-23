@@ -6,6 +6,9 @@ import * as util from './util';
 import RxDocument from './RxDocument';
 import QueryChangeDetector from './QueryChangeDetector';
 import RxError from './RxError';
+import {
+    runPluginHooks
+} from './hooks';
 
 let _queryCount = 0;
 const newQueryID = function() {
@@ -427,6 +430,7 @@ export function create(op, queryObj, collection) {
         protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
     }
 
+    runPluginHooks('createRxQuery', ret);
     return ret;
 }
 
