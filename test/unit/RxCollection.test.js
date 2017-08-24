@@ -1,6 +1,7 @@
 import assert from 'assert';
 import memdown from 'memdown';
 import randomInt from 'random-int';
+import randomToken from 'random-token';
 import clone from 'clone';
 import platform from 'detect-browser';
 import AsyncTestUtil from 'async-test-util';
@@ -493,6 +494,35 @@ describe('RxCollection.test.js', () => {
                 });
                 describe('negative', () => {});
             });
+            describe('.or()', () => {
+                it('should find the 2 documents with the or-method', async() => {
+                    const c = await humansCollection.create(10);
+                    // add 2 docs to be found
+                    await c.insert({
+                        passportId: randomToken(12),
+                        firstName: 'foobarAlice',
+                        lastName: 'aliceLastName',
+                        age: randomInt(10, 50)
+                    });
+                    await c.insert({
+                        passportId: randomToken(12),
+                        firstName: 'foobarBob',
+                        lastName: 'bobLastName',
+                        age: randomInt(10, 50)
+                    });
+                    const query = c.find().or([{
+                        firstName: 'foobarAlice'
+                    }, {
+                        firstName: 'foobarBob'
+                    }]);
+                    const results = await query.exec();
+                    assert.equal(results.length, 2);
+                    const foundFirstNames = results.map(doc => doc.firstName);
+                    assert.ok(foundFirstNames.includes('foobarAlice'));
+                    assert.ok(foundFirstNames.includes('foobarBob'));
+                    c.database.destroy();
+                });
+            });
             describe('.sort()', () => {
                 describe('positive', () => {
                     it('sort by age desc (with own index-search)', async() => {
@@ -755,7 +785,6 @@ describe('RxCollection.test.js', () => {
                     });
                 });
             });
-
             describe('.regex()', () => {
                 describe('positive', () => {
                     it('find the one where the regex matches', async() => {
@@ -798,7 +827,6 @@ describe('RxCollection.test.js', () => {
                     });
                 });
             });
-
             describe('.remove()', () => {
                 it('should remove all documents', async() => {
                     const c = await humansCollection.create(10);

@@ -177,8 +177,21 @@ class KeyCompressor {
         const selector = {};
         Object.keys(queryJSON.selector).forEach(key => {
             const value = queryJSON.selector[key];
-            const transKey = this._transformKey('', '', key.split('.'));
-            selector[transKey] = value;
+            if (key.startsWith('$')) {
+                // $or, $not etc have different structure
+                const setObj = value.map(obj => {
+                    const newObj = {};
+                    Object.keys(obj).forEach(k => {
+                        const transKey = this._transformKey('', '', k.split('.'));
+                        newObj[transKey] = obj[k];
+                    });
+                    return newObj;
+                });
+                selector[key] = setObj;
+            } else {
+                const transKey = this._transformKey('', '', key.split('.'));
+                selector[transKey] = value;
+            }
         });
         queryJSON.selector = selector;
 
