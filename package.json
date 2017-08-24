@@ -59,12 +59,12 @@
     "rxjs": "^5.4.2"
   },
   "dependencies": {
-    "@types/core-js": "^0.9.42",
+    "@types/core-js": "0.9.43",
     "babel-runtime": "^6.25.0",
     "clone": "^2.1.1",
     "crypto-js": "^3.1.8",
     "deep-equal": "^1.0.1",
-    "is-my-json-valid": "^2.16.0",
+    "is-my-json-valid": "2.16.1",
     "modifyjs": "0.3.1",
     "object-path": "0.11.4",
     "pouchdb-core": "6.3.4",
@@ -109,7 +109,7 @@
     "eslint": "4.5.0",
     "eslint-plugin-babel": "4.1.2",
     "exists-file": "3.0.2",
-    "express": "4.15.3",
+    "express": "4.15.4",
     "express-pouchdb": "2.3.7",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",

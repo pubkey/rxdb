@@ -1,14 +1,30 @@
-import _regeneratorRuntime from 'babel-runtime/regenerator';
-import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
-import * as RxDatabase from './RxDatabase';
-import * as RxSchema from './RxSchema';
-import * as RxDocument from './RxDocument';
-import * as RxQuery from './RxQuery';
-import * as RxCollection from './RxCollection';
+/**
+ * this is the default rxdb-export
+ * It has a batteries-included garantie.
+ * It basically just rxdb-core with some default plugins
+ */
 
-import * as QueryChangeDetector from './QueryChangeDetector';
+import Core from './core';
 
-import PouchDB from './PouchDB';
+// default plugins
+
+import SchemaCheckPlugin from './modules/schema-check';
+Core.plugin(SchemaCheckPlugin);
+
+import ValidatePlugin from './modules/validate';
+Core.plugin(ValidatePlugin);
+
+import KeyCompressionPlugin from './modules/key-compression';
+Core.plugin(KeyCompressionPlugin);
+
+import LeaderelectionPlugin from './modules/leader-election';
+Core.plugin(LeaderelectionPlugin);
+
+import EncryptionPlugin from './modules/encryption';
+Core.plugin(EncryptionPlugin);
+
+import UpdatePlugin from './modules/update';
+Core.plugin(UpdatePlugin);
 
 /**
  * create a database
@@ -18,26 +34,7 @@ import PouchDB from './PouchDB';
  * @param  {boolean} multiInstance if true, multiInstance-handling will be done
  * @return {Promise<Database>}
  */
-export var create = function () {
-    var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee(args) {
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        return _context.abrupt('return', RxDatabase.create(args));
-
-                    case 1:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }));
-
-    return function create(_x) {
-        return _ref.apply(this, arguments);
-    };
-}();
+export var create = Core.create;
 
 /**
  * removes the database and all its known data
@@ -45,46 +42,34 @@ export var create = function () {
  * @param  {Object} adapter
  * @return {Promise}
  */
-export var removeDatabase = function () {
-    var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2(databaseName, adapter) {
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        return _context2.abrupt('return', RxDatabase.removeDatabase(databaseName, adapter));
+export var removeDatabase = Core.removeDatabase;
 
-                    case 1:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, this);
-    }));
+/**
+ * add a plugin for rxdb or pouchdb
+ */
+export var plugin = Core.plugin;
 
-    return function removeDatabase(_x2, _x3) {
-        return _ref2.apply(this, arguments);
-    };
-}();
+export var isRxDatabase = Core.isRxDatabase;
+export var isRxCollection = Core.isRxCollection;
+export var isRxDocument = Core.isRxDocument;
+export var isRxQuery = Core.isRxQuery;
+export var isRxSchema = Core.isRxSchema;
+export var RxSchema = Core.RxSchema;
+export var PouchDB = Core.PouchDB;
+export var QueryChangeDetector = Core.QueryChangeDetector;
+export var RxDatabase = Core.RxDatabase;
 
-export function plugin(mod) {
-    if (typeof mod === 'object' && mod['default']) mod = mod['default'];
-    PouchDB.plugin(mod);
-}
-
-export function isRxDatabase(obj) {
-    return RxDatabase.isInstanceOf(obj);
-}
-export function isRxCollection(obj) {
-    return RxCollection.isInstanceOf(obj);
-}
-export function isRxDocument(obj) {
-    return RxDocument.isInstanceOf(obj);
-}
-export function isRxQuery(obj) {
-    return RxQuery.isInstanceOf(obj);
-}
-export function isRxSchema(obj) {
-    return RxSchema.isInstanceOf(obj);
-}
-
-export { RxSchema, PouchDB, QueryChangeDetector, RxDatabase };
+export default {
+  create: create,
+  removeDatabase: removeDatabase,
+  plugin: plugin,
+  isRxDatabase: isRxDatabase,
+  isRxCollection: isRxCollection,
+  isRxDocument: isRxDocument,
+  isRxQuery: isRxQuery,
+  isRxSchema: isRxSchema,
+  RxSchema: RxSchema,
+  PouchDB: PouchDB,
+  QueryChangeDetector: QueryChangeDetector,
+  RxDatabase: RxDatabase
+};

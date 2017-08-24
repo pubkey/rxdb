@@ -11,9 +11,9 @@ import PouchDB from './PouchDB';
 import clone from 'clone';
 
 import * as util from './util';
-import * as RxSchema from './RxSchema';
-import * as KeyCompressor from './KeyCompressor';
-import * as Crypter from './Crypter';
+import RxSchema from './RxSchema';
+import Crypter from './Crypter';
+import overwritable from './overwritable';
 
 var DataMigrator = function () {
     function DataMigrator(newestCollection, migrationStrategies) {
@@ -33,7 +33,7 @@ var DataMigrator = function () {
 
 
     DataMigrator.prototype._getOldCollections = function () {
-        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
             var _this = this;
 
             var oldColDocs;
@@ -98,7 +98,7 @@ var DataMigrator = function () {
         };
 
         var migrationState$ = new util.Rx.Observable(function () {
-            var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2(observer) {
+            var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(observer) {
                 var oldCols, countAll, total_count, currentCol, error, _loop;
 
                 return _regeneratorRuntime.wrap(function _callee2$(_context3) {
@@ -127,7 +127,7 @@ var DataMigrator = function () {
 
                                 currentCol = null;
                                 error = null;
-                                _loop = _regeneratorRuntime.mark(function _loop() {
+                                _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop() {
                                     var migrationState$;
                                     return _regeneratorRuntime.wrap(function _loop$(_context2) {
                                         while (1) {
@@ -221,7 +221,7 @@ var OldCollection = function () {
     }
 
     OldCollection.prototype.countAllUndeleted = function () {
-        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3() {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
             return _regeneratorRuntime.wrap(function _callee3$(_context4) {
                 while (1) {
                     switch (_context4.prev = _context4.next) {
@@ -244,7 +244,7 @@ var OldCollection = function () {
     }();
 
     OldCollection.prototype.getBatch = function () {
-        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4(batchSize) {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(batchSize) {
             var _this4 = this;
 
             var docs;
@@ -282,21 +282,24 @@ var OldCollection = function () {
 
 
     OldCollection.prototype._handleFromPouch = function _handleFromPouch(docData) {
-        var swapped = this.schema.swapIdToPrimary(docData);
-        var decompressed = this.keyCompressor.decompress(swapped);
-        var decrypted = this.crypter.decrypt(decompressed);
-        return decrypted;
+        var data = clone(docData);
+        data = this.schema.swapIdToPrimary(docData);
+        if (this.schema.doKeyCompression()) data = this.keyCompressor.decompress(data);
+        data = this.crypter.decrypt(data);
+        return data;
     };
+
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
      */
 
 
     OldCollection.prototype._handleToPouch = function _handleToPouch(docData) {
-        var encrypted = this.crypter.encrypt(docData);
-        var swapped = this.schema.swapPrimaryToId(encrypted);
-        var compressed = this.keyCompressor.compress(swapped);
-        return compressed;
+        var data = clone(docData);
+        data = this.crypter.encrypt(data);
+        data = this.schema.swapPrimaryToId(data);
+        if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
+        return data;
     };
 
     /**
@@ -308,7 +311,7 @@ var OldCollection = function () {
 
 
     OldCollection.prototype.migrateDocumentData = function () {
-        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5(doc) {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(doc) {
             var nextVersion, error;
             return _regeneratorRuntime.wrap(function _callee5$(_context6) {
                 while (1) {
@@ -384,7 +387,7 @@ var OldCollection = function () {
 
 
     OldCollection.prototype._migrateDocument = function () {
-        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6(doc) {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(doc) {
             var migrated, action;
             return _regeneratorRuntime.wrap(function _callee6$(_context7) {
                 while (1) {
@@ -455,7 +458,7 @@ var OldCollection = function () {
 
 
     OldCollection.prototype['delete'] = function () {
-        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7() {
+        var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7() {
             return _regeneratorRuntime.wrap(function _callee7$(_context8) {
                 while (1) {
                     switch (_context8.prev = _context8.next) {
@@ -496,7 +499,7 @@ var OldCollection = function () {
         this._migrate = true;
 
         var stateStream$ = new util.Rx.Observable(function () {
-            var _ref8 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee8(observer) {
+            var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(observer) {
                 var batch, error;
                 return _regeneratorRuntime.wrap(function _callee8$(_context9) {
                     while (1) {
@@ -588,7 +591,7 @@ var OldCollection = function () {
     }, {
         key: 'keyCompressor',
         get: function get() {
-            if (!this._keyCompressor) this._keyCompressor = KeyCompressor.create(this.schema);
+            if (!this._keyCompressor) this._keyCompressor = overwritable.createKeyCompressor(this.schema);
             return this._keyCompressor;
         }
     }, {
@@ -613,3 +616,7 @@ var OldCollection = function () {
 export function create(newestCollection, migrationStrategies) {
     return new DataMigrator(newestCollection, migrationStrategies);
 }
+
+export default {
+    create: create
+};

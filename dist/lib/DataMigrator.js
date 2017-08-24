@@ -36,15 +36,15 @@ var util = _interopRequireWildcard(_util);
 
 var _RxSchema = require('./RxSchema');
 
-var RxSchema = _interopRequireWildcard(_RxSchema);
-
-var _KeyCompressor = require('./KeyCompressor');
-
-var KeyCompressor = _interopRequireWildcard(_KeyCompressor);
+var _RxSchema2 = _interopRequireDefault(_RxSchema);
 
 var _Crypter = require('./Crypter');
 
-var Crypter = _interopRequireWildcard(_Crypter);
+var _Crypter2 = _interopRequireDefault(_Crypter);
+
+var _overwritable = require('./overwritable');
+
+var _overwritable2 = _interopRequireDefault(_overwritable);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -75,7 +75,7 @@ var DataMigrator = function () {
     (0, _createClass3['default'])(DataMigrator, [{
         key: '_getOldCollections',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                 var _this = this;
 
                 var oldColDocs;
@@ -141,7 +141,7 @@ var DataMigrator = function () {
             };
 
             var migrationState$ = new util.Rx.Observable(function () {
-                var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(observer) {
+                var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(observer) {
                     var oldCols, countAll, total_count, currentCol, error, _loop;
 
                     return _regenerator2['default'].wrap(function _callee2$(_context3) {
@@ -170,7 +170,7 @@ var DataMigrator = function () {
 
                                     currentCol = null;
                                     error = null;
-                                    _loop = _regenerator2['default'].mark(function _loop() {
+                                    _loop = /*#__PURE__*/_regenerator2['default'].mark(function _loop() {
                                         var migrationState$;
                                         return _regenerator2['default'].wrap(function _loop$(_context2) {
                                             while (1) {
@@ -267,7 +267,7 @@ var OldCollection = function () {
     (0, _createClass3['default'])(OldCollection, [{
         key: 'countAllUndeleted',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
                 return _regenerator2['default'].wrap(function _callee3$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
@@ -291,7 +291,7 @@ var OldCollection = function () {
     }, {
         key: 'getBatch',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4(batchSize) {
+            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(batchSize) {
                 var _this4 = this;
 
                 var docs;
@@ -330,11 +330,13 @@ var OldCollection = function () {
     }, {
         key: '_handleFromPouch',
         value: function _handleFromPouch(docData) {
-            var swapped = this.schema.swapIdToPrimary(docData);
-            var decompressed = this.keyCompressor.decompress(swapped);
-            var decrypted = this.crypter.decrypt(decompressed);
-            return decrypted;
+            var data = (0, _clone2['default'])(docData);
+            data = this.schema.swapIdToPrimary(docData);
+            if (this.schema.doKeyCompression()) data = this.keyCompressor.decompress(data);
+            data = this.crypter.decrypt(data);
+            return data;
         }
+
         /**
          * wrappers for Pouch.put/get to handle keycompression etc
          */
@@ -342,10 +344,11 @@ var OldCollection = function () {
     }, {
         key: '_handleToPouch',
         value: function _handleToPouch(docData) {
-            var encrypted = this.crypter.encrypt(docData);
-            var swapped = this.schema.swapPrimaryToId(encrypted);
-            var compressed = this.keyCompressor.compress(swapped);
-            return compressed;
+            var data = (0, _clone2['default'])(docData);
+            data = this.crypter.encrypt(data);
+            data = this.schema.swapPrimaryToId(data);
+            if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
+            return data;
         }
 
         /**
@@ -358,7 +361,7 @@ var OldCollection = function () {
     }, {
         key: 'migrateDocumentData',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(doc) {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(doc) {
                 var nextVersion, error;
                 return _regenerator2['default'].wrap(function _callee5$(_context6) {
                     while (1) {
@@ -435,7 +438,7 @@ var OldCollection = function () {
     }, {
         key: '_migrateDocument',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(doc) {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(doc) {
                 var migrated, action;
                 return _regenerator2['default'].wrap(function _callee6$(_context7) {
                     while (1) {
@@ -507,7 +510,7 @@ var OldCollection = function () {
     }, {
         key: 'delete',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7() {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7() {
                 return _regenerator2['default'].wrap(function _callee7$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
@@ -549,7 +552,7 @@ var OldCollection = function () {
             this._migrate = true;
 
             var stateStream$ = new util.Rx.Observable(function () {
-                var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(observer) {
+                var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(observer) {
                     var batch, error;
                     return _regenerator2['default'].wrap(function _callee8$(_context9) {
                         while (1) {
@@ -634,20 +637,20 @@ var OldCollection = function () {
         get: function get() {
             if (!this._schema) {
                 //            delete this.schemaObj._id;
-                this._schema = RxSchema.create(this.schemaObj, false);
+                this._schema = _RxSchema2['default'].create(this.schemaObj, false);
             }
             return this._schema;
         }
     }, {
         key: 'keyCompressor',
         get: function get() {
-            if (!this._keyCompressor) this._keyCompressor = KeyCompressor.create(this.schema);
+            if (!this._keyCompressor) this._keyCompressor = _overwritable2['default'].createKeyCompressor(this.schema);
             return this._keyCompressor;
         }
     }, {
         key: 'crypter',
         get: function get() {
-            if (!this._crypter) this._crypter = Crypter.create(this.database.password, this.schema);
+            if (!this._crypter) this._crypter = _Crypter2['default'].create(this.database.password, this.schema);
             return this._crypter;
         }
     }, {
@@ -665,3 +668,7 @@ var OldCollection = function () {
 function create(newestCollection, migrationStrategies) {
     return new DataMigrator(newestCollection, migrationStrategies);
 }
+
+exports['default'] = {
+    create: create
+};

@@ -2,10 +2,10 @@ import _regeneratorRuntime from 'babel-runtime/regenerator';
 import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
-import * as RxCollection from './RxCollection';
-import * as RxChangeEvent from './RxChangeEvent';
-import * as RxBroadcastChannel from './RxBroadcastChannel';
 import * as util from './util';
+import RxCollection from './RxCollection';
+import RxChangeEvent from './RxChangeEvent';
+import RxBroadcastChannel from './RxBroadcastChannel';
 
 var EVENT_TTL = 5000; // after this age, events will be deleted
 var PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
@@ -29,7 +29,7 @@ var Socket = function () {
     }
 
     Socket.prototype.prepare = function () {
-        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
             var _this = this;
 
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -52,7 +52,7 @@ var Socket = function () {
                             }
 
                             // pull on intervall
-                            _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+                            _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
                                 return _regeneratorRuntime.wrap(function _callee$(_context) {
                                     while (1) {
                                         switch (_context.prev = _context.next) {
@@ -109,7 +109,7 @@ var Socket = function () {
 
 
     Socket.prototype.write = function () {
-        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(changeEvent) {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(changeEvent) {
             var socketDoc;
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
@@ -164,7 +164,7 @@ var Socket = function () {
 
 
     Socket.prototype.fetchDocs = function () {
-        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4() {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
             var result;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
@@ -197,7 +197,7 @@ var Socket = function () {
     }();
 
     Socket.prototype.deleteDoc = function () {
-        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5(doc) {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(doc) {
             return _regeneratorRuntime.wrap(function _callee5$(_context5) {
                 while (1) {
                     switch (_context5.prev = _context5.next) {
@@ -236,7 +236,7 @@ var Socket = function () {
 
 
     Socket.prototype.pull = function () {
-        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6() {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6() {
             var _this2 = this;
 
             var minTime, docs, maxAge, delDocs;
@@ -384,7 +384,7 @@ var Socket = function () {
 }();
 
 export var create = function () {
-    var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7(database) {
+    var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(database) {
         var socket;
         return _regeneratorRuntime.wrap(function _callee7$(_context7) {
             while (1) {
@@ -411,3 +411,9 @@ export var create = function () {
 }();
 
 export { EVENT_TTL, PULL_TIME };
+
+export default {
+    create: create,
+    EVENT_TTL: EVENT_TTL,
+    PULL_TIME: PULL_TIME
+};

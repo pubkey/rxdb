@@ -7,6 +7,9 @@ Features:
   - Added [plugin-support](https://pubkey.github.io/rxdb/Plugins.html)
   - Added default exports. Use `import RxDB from 'rxdb'` instead of `import * as RxDB from 'rxdb'`
 
+Bugfixes:
+  - `RxQuery.or()` did not work with KeyCompression [#252](https://github.com/pubkey/rxdb/issues/252)
+
 ## 5.2.1 (July 17, 2017)
 
 Quickfix because of new [pouchdb-import](https://github.com/pouchdb/pouchdb/issues/6603#issuecomment-315867346)

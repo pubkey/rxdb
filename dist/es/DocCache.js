@@ -29,3 +29,7 @@ var DocCache = function () {
 export function create() {
     return new DocCache();
 }
+
+export default {
+    create: create
+};

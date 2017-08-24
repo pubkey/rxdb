@@ -5,12 +5,13 @@ import _createClass from 'babel-runtime/helpers/createClass';
 import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
-import modify from 'modifyjs';
 
 import * as util from './util';
-import * as RxChangeEvent from './RxChangeEvent';
+import RxChangeEvent from './RxChangeEvent';
+import RxError from './RxError';
+import { runPluginHooks } from './hooks';
 
-var RxDocument = function () {
+export var RxDocument = function () {
     function RxDocument(collection, jsonData) {
         _classCallCheck(this, RxDocument);
 
@@ -80,7 +81,6 @@ var RxDocument = function () {
                 break;
             case 'UPDATE':
                 var newData = clone(changeEvent.data.v);
-                delete newData._ext;
                 var prevSyncData = this._dataSync$.getValue();
                 var prevData = this._data;
 
@@ -135,7 +135,7 @@ var RxDocument = function () {
     };
 
     RxDocument.prototype.populate = function () {
-        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee(path, object) {
+        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(path, object) {
             var schemaObj, value, refCollection;
             return _regeneratorRuntime.wrap(function _callee$(_context) {
                 while (1) {
@@ -299,38 +299,18 @@ var RxDocument = function () {
 
     /**
      * updates document
-     *  @param  {object} updateObj
+     * @overwritten by plugin (optinal)
+     * @param  {object} updateObj mongodb-like syntax
      */
     RxDocument.prototype.update = function () {
-        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2(updateObj) {
-            var _this2 = this;
-
-            var newDoc;
+        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(updateObj) {
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
                     switch (_context2.prev = _context2.next) {
                         case 0:
-                            newDoc = modify(this._data, updateObj);
+                            throw RxError.pluginMissing('update');
 
-
-                            Object.keys(this._data).forEach(function (previousPropName) {
-                                if (newDoc[previousPropName]) {
-                                    // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
-                                    // which causes problems with "readonly" fields
-                                    if (!deepEqual(_this2._data[previousPropName], newDoc[previousPropName])) _this2._data[previousPropName] = newDoc[previousPropName];
-                                } else delete _this2._data[previousPropName];
-                            });
-                            delete newDoc._rev;
-                            delete newDoc._id;
-                            Object.keys(newDoc).filter(function (newPropName) {
-                                return !deepEqual(_this2._data[newPropName], newDoc[newPropName]);
-                            }).forEach(function (newPropName) {
-                                return _this2._data[newPropName] = newDoc[newPropName];
-                            });
-                            _context2.next = 7;
-                            return this.save();
-
-                        case 7:
+                        case 1:
                         case 'end':
                             return _context2.stop();
                     }
@@ -353,8 +333,8 @@ var RxDocument = function () {
 
 
     RxDocument.prototype.atomicUpdate = function () {
-        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(fun) {
-            var _this3 = this;
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(fun) {
+            var _this2 = this;
 
             var retPromise;
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
@@ -363,7 +343,7 @@ var RxDocument = function () {
                         case 0:
                             this._atomicUpdates.push(fun);
                             retPromise = new Promise(function (resolve, reject) {
-                                _this3._atomicUpdatesResolveFunctions.set(fun, {
+                                _this2._atomicUpdatesResolveFunctions.set(fun, {
                                     resolve: resolve,
                                     reject: reject
                                 });
@@ -388,7 +368,7 @@ var RxDocument = function () {
     }();
 
     RxDocument.prototype._runAtomicUpdates = function () {
-        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4() {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
             var fun;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
@@ -461,7 +441,7 @@ var RxDocument = function () {
 
 
     RxDocument.prototype.save = function () {
-        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5() {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
             var ret, emitValue, changeEvent;
             return _regeneratorRuntime.wrap(function _callee5$(_context5) {
                 while (1) {
@@ -556,7 +536,7 @@ var RxDocument = function () {
 
 
     RxDocument.prototype._saveTemporary = function () {
-        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6() {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6() {
             return _regeneratorRuntime.wrap(function _callee6$(_context6) {
                 while (1) {
                     switch (_context6.prev = _context6.next) {
@@ -590,7 +570,7 @@ var RxDocument = function () {
     }();
 
     RxDocument.prototype.remove = function () {
-        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7() {
+        var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7() {
             return _regeneratorRuntime.wrap(function _callee7$(_context7) {
                 while (1) {
                     switch (_context7.prev = _context7.next) {
@@ -676,6 +656,7 @@ export function create(collection, jsonData) {
 
     var doc = new RxDocument(collection, jsonData);
     doc.prepare();
+    runPluginHooks('createRxDocument', doc);
     return doc;
 }
 
@@ -706,3 +687,11 @@ export function properties() {
 export function isInstanceOf(obj) {
     return obj instanceof RxDocument;
 }
+
+export default {
+    create: create,
+    createAr: createAr,
+    properties: properties,
+    RxDocument: RxDocument,
+    isInstanceOf: isInstanceOf
+};

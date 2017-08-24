@@ -11,7 +11,7 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 
 import * as util from './util';
 
-var RxReplicationState = function () {
+export var RxReplicationState = function () {
     function RxReplicationState(collection) {
         var _this = this;
 
@@ -84,7 +84,7 @@ var RxReplicationState = function () {
     };
 
     RxReplicationState.prototype.cancel = function () {
-        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
             return _regeneratorRuntime.wrap(function _callee$(_context) {
                 while (1) {
                     switch (_context.prev = _context.next) {
@@ -115,3 +115,8 @@ var RxReplicationState = function () {
 export function create(collection) {
     return new RxReplicationState(collection);
 }
+
+export default {
+    create: create,
+    RxReplicationState: RxReplicationState
+};

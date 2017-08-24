@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.RxQuery = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
@@ -49,11 +50,17 @@ var util = _interopRequireWildcard(_util);
 
 var _RxDocument = require('./RxDocument');
 
-var RxDocument = _interopRequireWildcard(_RxDocument);
+var _RxDocument2 = _interopRequireDefault(_RxDocument);
 
 var _QueryChangeDetector = require('./QueryChangeDetector');
 
-var QueryChangeDetector = _interopRequireWildcard(_QueryChangeDetector);
+var _QueryChangeDetector2 = _interopRequireDefault(_QueryChangeDetector);
+
+var _RxError = require('./RxError');
+
+var _RxError2 = _interopRequireDefault(_RxError);
+
+var _hooks = require('./hooks');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -64,7 +71,7 @@ var newQueryID = function newQueryID() {
     return ++_queryCount;
 };
 
-var RxQuery = function () {
+var RxQuery = exports.RxQuery = function () {
     function RxQuery(op, queryObj, collection) {
         (0, _classCallCheck3['default'])(this, RxQuery);
 
@@ -76,7 +83,7 @@ var RxQuery = function () {
 
         this.mquery = new _mquery2['default'](queryObj);
 
-        this._queryChangeDetector = QueryChangeDetector.create(this);
+        this._queryChangeDetector = _QueryChangeDetector2['default'].create(this);
         this._resultsData = null;
         this._results$ = new util.Rx.BehaviorSubject(null);
         this._observable$ = null;
@@ -149,7 +156,7 @@ var RxQuery = function () {
     }, {
         key: '_ensureEqual',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                 var ret, resolve, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
                 return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
@@ -265,7 +272,7 @@ var RxQuery = function () {
     }, {
         key: '_setResultData',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(newResultData) {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(newResultData) {
                 var newResults;
                 return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
@@ -303,7 +310,7 @@ var RxQuery = function () {
     }, {
         key: '_execOverDatabase',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3() {
+            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
                 var docsData, ret;
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
@@ -430,7 +437,9 @@ var RxQuery = function () {
          * @return {{selector: {}, sort: []}} compressedQuery
          */
         value: function keyCompress() {
-            return this.collection._keyCompressor.compressQuery(this.toJSON());
+            if (!this.collection.schema.doKeyCompression()) return this.toJSON();else {
+                return this.collection._keyCompressor.compressQuery(this.toJSON());
+            }
         }
 
         /**
@@ -441,7 +450,7 @@ var RxQuery = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
                 var docs;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -491,6 +500,7 @@ var RxQuery = function () {
 
         /**
          * updates all found documents
+         * @overwritten by plugin (optinal)
          * @param  {object} updateObj
          * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
          */
@@ -498,48 +508,14 @@ var RxQuery = function () {
     }, {
         key: 'update',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(updateObj) {
-                var docs;
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(updateObj) {
                 return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
-                                _context5.next = 2;
-                                return this.exec();
+                                throw _RxError2['default'].pluginMissing('update');
 
-                            case 2:
-                                docs = _context5.sent;
-
-                                if (docs) {
-                                    _context5.next = 5;
-                                    break;
-                                }
-
-                                return _context5.abrupt('return', null);
-
-                            case 5:
-                                if (!Array.isArray(docs)) {
-                                    _context5.next = 10;
-                                    break;
-                                }
-
-                                _context5.next = 8;
-                                return Promise.all(docs.map(function (doc) {
-                                    return doc.update(updateObj);
-                                }));
-
-                            case 8:
-                                _context5.next = 12;
-                                break;
-
-                            case 10:
-                                _context5.next = 12;
-                                return docs.update(updateObj);
-
-                            case 12:
-                                return _context5.abrupt('return', docs);
-
-                            case 13:
+                            case 1:
                             case 'end':
                                 return _context5.stop();
                         }
@@ -556,7 +532,7 @@ var RxQuery = function () {
     }, {
         key: 'exec',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6() {
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
@@ -659,7 +635,7 @@ var RxQuery = function () {
             if (!this._observable$) {
 
                 var res$ = this._results$.mergeMap(function () {
-                    var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(results) {
+                    var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(results) {
                         var hasChanged;
                         return _regenerator2['default'].wrap(function _callee7$(_context7) {
                             while (1) {
@@ -699,7 +675,7 @@ var RxQuery = function () {
                 var changeEvents$ = this.collection.$.filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }).mergeMap(function () {
-                    var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(changeEvent) {
+                    var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(changeEvent) {
                         return _regenerator2['default'].wrap(function _callee8$(_context8) {
                             while (1) {
                                 switch (_context8.prev = _context8.next) {
@@ -767,9 +743,16 @@ function create(op, queryObj, collection) {
         protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
     }
 
+    (0, _hooks.runPluginHooks)('createRxQuery', ret);
     return ret;
 }
 
 function isInstanceOf(obj) {
     return obj instanceof RxQuery;
 }
+
+exports['default'] = {
+    create: create,
+    RxQuery: RxQuery,
+    isInstanceOf: isInstanceOf
+};

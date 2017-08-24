@@ -6,15 +6,12 @@ import randomToken from 'random-token';
 import PouchDB from './PouchDB';
 
 import * as util from './util';
-import * as RxCollection from './RxCollection';
-import * as RxSchema from './RxSchema';
-import * as RxChangeEvent from './RxChangeEvent';
-import * as Socket from './Socket';
-import * as LeaderElector from './LeaderElector';
-
-var SETTINGS = {
-    minPassLength: 8
-};
+import RxCollection from './RxCollection';
+import RxSchema from './RxSchema';
+import RxChangeEvent from './RxChangeEvent';
+import Socket from './Socket';
+import overwritable from './overwritable';
+import { runPluginHooks } from './hooks';
 
 export var RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance) {
@@ -44,7 +41,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.prepare = function () {
-        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
             var _this = this;
 
             var internalPouch, pwHashDoc;
@@ -134,13 +131,6 @@ export var RxDatabase = function () {
                             });
 
                         case 30:
-                            _context.next = 32;
-                            return LeaderElector.create(this);
-
-                        case 32:
-                            this.leaderElector = _context.sent;
-
-                        case 33:
                         case 'end':
                             return _context.stop();
                     }
@@ -162,8 +152,6 @@ export var RxDatabase = function () {
      * @param {Object} [pouchSettings={}] pouchSettings
      * @type {Object}
      */
-
-
     RxDatabase.prototype._spawnPouchDB = function _spawnPouchDB(collectionName, schemaVersion) {
         var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
@@ -171,7 +159,7 @@ export var RxDatabase = function () {
     };
 
     RxDatabase.prototype.waitForLeadership = function () {
-        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
                     switch (_context2.prev = _context2.next) {
@@ -202,7 +190,7 @@ export var RxDatabase = function () {
     }();
 
     RxDatabase.prototype.writeToSocket = function () {
-        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(changeEvent) {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(changeEvent) {
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
                     switch (_context3.prev = _context3.next) {
@@ -273,7 +261,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.removeCollectionDoc = function () {
-        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4(name, schema) {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(name, schema) {
             var docId, doc;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
@@ -310,7 +298,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype._removeAllOfCollection = function () {
-        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5(collectionName) {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(collectionName) {
             var _this2 = this;
 
             var data, relevantDocs;
@@ -364,7 +352,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.collection = function () {
-        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6(args) {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(args) {
             var _this3 = this;
 
             var internalPrimary, schemaHash, collectionDoc, collection, cEvent;
@@ -512,7 +500,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.removeCollection = function () {
-        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7(collectionName) {
+        var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(collectionName) {
             var _this4 = this;
 
             var knownVersions, pouches;
@@ -570,7 +558,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.dump = function () {
-        var _ref8 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee8() {
+        var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8() {
             var _this5 = this;
 
             var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -632,7 +620,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.importDump = function () {
-        var _ref9 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee9(dump) {
+        var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(dump) {
             var _this6 = this;
 
             return _regeneratorRuntime.wrap(function _callee9$(_context9) {
@@ -661,7 +649,7 @@ export var RxDatabase = function () {
     }();
 
     RxDatabase.prototype.destroy = function () {
-        var _ref10 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee10() {
+        var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10() {
             var _this7 = this;
 
             return _regeneratorRuntime.wrap(function _callee10$(_context10) {
@@ -707,7 +695,7 @@ export var RxDatabase = function () {
     }();
 
     RxDatabase.prototype.remove = function () {
-        var _ref11 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee11() {
+        var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee11() {
             return _regeneratorRuntime.wrap(function _callee11$(_context11) {
                 while (1) {
                     switch (_context11.prev = _context11.next) {
@@ -735,6 +723,12 @@ export var RxDatabase = function () {
     }();
 
     _createClass(RxDatabase, [{
+        key: 'leaderElector',
+        get: function get() {
+            if (!this._leaderElector) this._leaderElector = overwritable.createLeaderElector(this);
+            return this._leaderElector;
+        }
+    }, {
         key: 'isLeader',
         get: function get() {
             if (!this.multiInstance) return true;
@@ -766,7 +760,7 @@ export function properties() {
 }
 
 export var create = function () {
-    var _ref12 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee12(_ref13) {
+    var _ref12 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee12(_ref13) {
         var name = _ref13.name,
             adapter = _ref13.adapter,
             password = _ref13.password,
@@ -808,30 +802,19 @@ export var create = function () {
                         throw new Error('To use leveldown-adapters, you have to add the leveldb-plugin.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));');
 
                     case 9:
-                        if (!(password && typeof password !== 'string')) {
-                            _context12.next = 11;
-                            break;
-                        }
 
-                        throw new TypeError('password is no string');
+                        if (password) overwritable.validatePassword(password);
 
-                    case 11:
-                        if (!(password && password.length < SETTINGS.minPassLength)) {
-                            _context12.next = 13;
-                            break;
-                        }
-
-                        throw new Error('password must have at least ' + SETTINGS.minPassLength + ' chars');
-
-                    case 13:
                         db = new RxDatabase(name, adapter, password, multiInstance);
-                        _context12.next = 16;
+                        _context12.next = 13;
                         return db.prepare();
 
-                    case 16:
+                    case 13:
+
+                        runPluginHooks('createRxDatabase', db);
                         return _context12.abrupt('return', db);
 
-                    case 17:
+                    case 15:
                     case 'end':
                         return _context12.stop();
                 }
@@ -884,7 +867,7 @@ function _internalPouchDbs(dbName, adapter) {
 }
 
 export var removeDatabase = function () {
-    var _ref14 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee13(databaseName, adapter) {
+    var _ref14 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee13(databaseName, adapter) {
         var internalPouch, collectionsPouch, collectionsData, socketPouch;
         return _regeneratorRuntime.wrap(function _callee13$(_context13) {
             while (1) {
@@ -942,4 +925,13 @@ export function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
 
+// TODO is this needed?
 export { RxSchema };
+
+export default {
+    create: create,
+    removeDatabase: removeDatabase,
+    isInstanceOf: isInstanceOf,
+    RxDatabase: RxDatabase,
+    RxSchema: RxSchema
+};

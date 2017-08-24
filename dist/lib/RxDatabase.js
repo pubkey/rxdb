@@ -26,7 +26,7 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref13 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee12(_ref12) {
+    var _ref13 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee12(_ref12) {
         var name = _ref12.name,
             adapter = _ref12.adapter,
             password = _ref12.password,
@@ -68,30 +68,19 @@ var create = exports.create = function () {
                         throw new Error('To use leveldown-adapters, you have to add the leveldb-plugin.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));');
 
                     case 9:
-                        if (!(password && typeof password !== 'string')) {
-                            _context12.next = 11;
-                            break;
-                        }
 
-                        throw new TypeError('password is no string');
+                        if (password) _overwritable2['default'].validatePassword(password);
 
-                    case 11:
-                        if (!(password && password.length < SETTINGS.minPassLength)) {
-                            _context12.next = 13;
-                            break;
-                        }
-
-                        throw new Error('password must have at least ' + SETTINGS.minPassLength + ' chars');
-
-                    case 13:
                         db = new RxDatabase(name, adapter, password, multiInstance);
-                        _context12.next = 16;
+                        _context12.next = 13;
                         return db.prepare();
 
-                    case 16:
+                    case 13:
+
+                        (0, _hooks.runPluginHooks)('createRxDatabase', db);
                         return _context12.abrupt('return', db);
 
-                    case 17:
+                    case 15:
                     case 'end':
                         return _context12.stop();
                 }
@@ -111,7 +100,7 @@ var create = exports.create = function () {
 
 
 var removeDatabase = exports.removeDatabase = function () {
-    var _ref14 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee13(databaseName, adapter) {
+    var _ref14 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee13(databaseName, adapter) {
         var internalPouch, collectionsPouch, collectionsData, socketPouch;
         return _regenerator2['default'].wrap(function _callee13$(_context13) {
             while (1) {
@@ -182,31 +171,29 @@ var util = _interopRequireWildcard(_util);
 
 var _RxCollection = require('./RxCollection');
 
-var RxCollection = _interopRequireWildcard(_RxCollection);
+var _RxCollection2 = _interopRequireDefault(_RxCollection);
 
 var _RxSchema = require('./RxSchema');
 
-var RxSchema = _interopRequireWildcard(_RxSchema);
+var _RxSchema2 = _interopRequireDefault(_RxSchema);
 
 var _RxChangeEvent = require('./RxChangeEvent');
 
-var RxChangeEvent = _interopRequireWildcard(_RxChangeEvent);
+var _RxChangeEvent2 = _interopRequireDefault(_RxChangeEvent);
 
 var _Socket = require('./Socket');
 
-var Socket = _interopRequireWildcard(_Socket);
+var _Socket2 = _interopRequireDefault(_Socket);
 
-var _LeaderElector = require('./LeaderElector');
+var _overwritable = require('./overwritable');
 
-var LeaderElector = _interopRequireWildcard(_LeaderElector);
+var _overwritable2 = _interopRequireDefault(_overwritable);
+
+var _hooks = require('./hooks');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var SETTINGS = {
-    minPassLength: 8
-};
 
 var RxDatabase = exports.RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance) {
@@ -238,7 +225,7 @@ var RxDatabase = exports.RxDatabase = function () {
     (0, _createClass3['default'])(RxDatabase, [{
         key: 'prepare',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                 var _this = this;
 
                 var internalPouch, pwHashDoc;
@@ -250,7 +237,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 // rx
                                 this.subject = new util.Rx.Subject();
                                 this.observable$ = this.subject.asObservable().filter(function (cEvent) {
-                                    return RxChangeEvent.isInstanceOf(cEvent);
+                                    return _RxChangeEvent2['default'].isInstanceOf(cEvent);
                                 });
 
                                 // create internal collections
@@ -316,7 +303,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 }
 
                                 _context.next = 28;
-                                return Socket.create(this);
+                                return _Socket2['default'].create(this);
 
                             case 28:
                                 this.socket = _context.sent;
@@ -328,13 +315,6 @@ var RxDatabase = exports.RxDatabase = function () {
                                 });
 
                             case 30:
-                                _context.next = 32;
-                                return LeaderElector.create(this);
-
-                            case 32:
-                                this.leaderElector = _context.sent;
-
-                            case 33:
                             case 'end':
                                 return _context.stop();
                         }
@@ -348,6 +328,9 @@ var RxDatabase = exports.RxDatabase = function () {
 
             return prepare;
         }()
+    }, {
+        key: '_spawnPouchDB',
+
 
         /**
          * spawns a new pouch-instance
@@ -356,9 +339,6 @@ var RxDatabase = exports.RxDatabase = function () {
          * @param {Object} [pouchSettings={}] pouchSettings
          * @type {Object}
          */
-
-    }, {
-        key: '_spawnPouchDB',
         value: function _spawnPouchDB(collectionName, schemaVersion) {
             var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
@@ -367,7 +347,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'waitForLeadership',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                 return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
@@ -399,7 +379,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'writeToSocket',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3(changeEvent) {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(changeEvent) {
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
@@ -475,7 +455,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'removeCollectionDoc',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4(name, schema) {
+            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(name, schema) {
                 var docId, doc;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -513,7 +493,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: '_removeAllOfCollection',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(collectionName) {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(collectionName) {
                 var _this2 = this;
 
                 var data, relevantDocs;
@@ -568,7 +548,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'collection',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(args) {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(args) {
                 var _this3 = this;
 
                 var internalPrimary, schemaHash, collectionDoc, collection, cEvent;
@@ -603,7 +583,7 @@ var RxDatabase = exports.RxDatabase = function () {
 
                             case 7:
 
-                                if (!RxSchema.isInstanceOf(args.schema)) args.schema = RxSchema.create(args.schema);
+                                if (!_RxSchema2['default'].isInstanceOf(args.schema)) args.schema = _RxSchema2['default'].create(args.schema);
 
                                 internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
@@ -644,7 +624,7 @@ var RxDatabase = exports.RxDatabase = function () {
 
                             case 23:
                                 _context6.next = 25;
-                                return RxCollection.create(args);
+                                return _RxCollection2['default'].create(args);
 
                             case 25:
                                 collection = _context6.sent;
@@ -680,7 +660,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 _context6.t1 = _context6['catch'](29);
 
                             case 36:
-                                cEvent = RxChangeEvent.create('RxDatabase.collection', this);
+                                cEvent = _RxChangeEvent2['default'].create('RxDatabase.collection', this);
 
                                 cEvent.data.v = collection.name;
                                 cEvent.data.col = '_collections';
@@ -717,7 +697,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'removeCollection',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(collectionName) {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(collectionName) {
                 var _this4 = this;
 
                 var knownVersions, pouches;
@@ -776,7 +756,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'dump',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8() {
+            var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8() {
                 var _this5 = this;
 
                 var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -839,7 +819,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'importDump',
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee9(dump) {
+            var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee9(dump) {
                 var _this6 = this;
 
                 return _regenerator2['default'].wrap(function _callee9$(_context9) {
@@ -869,7 +849,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee10() {
+            var _ref10 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee10() {
                 var _this7 = this;
 
                 return _regenerator2['default'].wrap(function _callee10$(_context10) {
@@ -916,7 +896,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref11 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee11() {
+            var _ref11 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee11() {
                 return _regenerator2['default'].wrap(function _callee11$(_context11) {
                     while (1) {
                         switch (_context11.prev = _context11.next) {
@@ -942,6 +922,12 @@ var RxDatabase = exports.RxDatabase = function () {
 
             return remove;
         }()
+    }, {
+        key: 'leaderElector',
+        get: function get() {
+            if (!this._leaderElector) this._leaderElector = _overwritable2['default'].createLeaderElector(this);
+            return this._leaderElector;
+        }
     }, {
         key: 'isLeader',
         get: function get() {
@@ -1013,4 +999,12 @@ function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
 
-exports.RxSchema = RxSchema;
+// TODO is this needed?
+exports.RxSchema = _RxSchema2['default'];
+exports['default'] = {
+    create: create,
+    removeDatabase: removeDatabase,
+    isInstanceOf: isInstanceOf,
+    RxDatabase: RxDatabase,
+    RxSchema: _RxSchema2['default']
+};

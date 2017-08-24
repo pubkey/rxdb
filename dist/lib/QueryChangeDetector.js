@@ -378,3 +378,9 @@ function create(query) {
     var ret = new QueryChangeDetector(query);
     return ret;
 }
+
+exports['default'] = {
+    create: create,
+    enableDebugging: enableDebugging,
+    enable: enable
+};

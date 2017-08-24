@@ -70,7 +70,7 @@ var RxBroadcastChannel = function () {
     (0, _createClass3['default'])(RxBroadcastChannel, [{
         key: 'write',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(type, data) {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(type, data) {
                 return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
@@ -126,3 +126,8 @@ function create(database, name) {
 
     return new RxBroadcastChannel(database, name);
 }
+
+exports['default'] = {
+    create: create,
+    canIUse: canIUse
+};

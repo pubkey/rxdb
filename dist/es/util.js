@@ -38,18 +38,6 @@ export var Rx = {
     BehaviorSubject: BehaviorSubject
 };
 
-// crypto-js
-import * as crypto_AES from 'crypto-js/aes';
-import * as crypto_enc from 'crypto-js/enc-utf8';
-export function encrypt(value, password) {
-    var encrypted = crypto_AES.encrypt(value, password);
-    return encrypted.toString();
-}
-export function decrypt(ciphertext, password) {
-    var decrypted = crypto_AES.decrypt(ciphertext, password);
-    return decrypted.toString(crypto_enc);
-}
-
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
@@ -107,7 +95,7 @@ export function generate_id() {
  * @return {Promise}
  */
 export var promiseWait = function () {
-    var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
         var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
         return _regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
@@ -131,7 +119,7 @@ export var promiseWait = function () {
 }();
 
 export var requestIdlePromise = function () {
-    var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
         var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
         return _regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {

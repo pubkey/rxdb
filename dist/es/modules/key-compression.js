@@ -1,9 +1,13 @@
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
+/**
+ * this plugin adds the keycompression-capabilities to rxdb
+ * if you dont use this, ensure that you set disableKeyComression to false in your schema
+ */
+
 import objectPath from 'object-path';
 import clone from 'clone';
-
-import * as util from './util';
+import * as util from '../util';
 
 var KeyCompressor = function () {
 
@@ -126,8 +130,21 @@ var KeyCompressor = function () {
         var selector = {};
         Object.keys(queryJSON.selector).forEach(function (key) {
             var value = queryJSON.selector[key];
-            var transKey = _this3._transformKey('', '', key.split('.'));
-            selector[transKey] = value;
+            if (key.startsWith('$')) {
+                // $or, $not etc have different structure
+                var setObj = value.map(function (obj) {
+                    var newObj = {};
+                    Object.keys(obj).forEach(function (k) {
+                        var transKey = _this3._transformKey('', '', k.split('.'));
+                        newObj[transKey] = obj[k];
+                    });
+                    return newObj;
+                });
+                selector[key] = setObj;
+            } else {
+                var transKey = _this3._transformKey('', '', key.split('.'));
+                selector[transKey] = value;
+            }
         });
         queryJSON.selector = selector;
 
@@ -205,3 +222,15 @@ var KeyCompressor = function () {
 export function create(schema) {
     return new KeyCompressor(schema);
 }
+
+export var rxdb = true;
+export var prototypes = {};
+export var overwritable = {
+    createKeyCompressor: create
+};
+
+export default {
+    rxdb: rxdb,
+    prototypes: prototypes,
+    overwritable: overwritable
+};

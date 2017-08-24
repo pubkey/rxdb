@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.RxReplicationState = undefined;
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -30,7 +31,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var RxReplicationState = function () {
+var RxReplicationState = exports.RxReplicationState = function () {
     function RxReplicationState(collection) {
         var _this = this;
 
@@ -106,7 +107,7 @@ var RxReplicationState = function () {
     }, {
         key: 'cancel',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                 return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
@@ -143,3 +144,8 @@ var RxReplicationState = function () {
 function create(collection) {
     return new RxReplicationState(collection);
 }
+
+exports['default'] = {
+    create: create,
+    RxReplicationState: RxReplicationState
+};

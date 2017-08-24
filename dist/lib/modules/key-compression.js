@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.overwritable = exports.prototypes = exports.rxdb = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
@@ -26,7 +27,7 @@ var _clone = require('clone');
 
 var _clone2 = _interopRequireDefault(_clone);
 
-var _util = require('./util');
+var _util = require('../util');
 
 var util = _interopRequireWildcard(_util);
 
@@ -162,8 +163,21 @@ var KeyCompressor = function () {
             var selector = {};
             Object.keys(queryJSON.selector).forEach(function (key) {
                 var value = queryJSON.selector[key];
-                var transKey = _this3._transformKey('', '', key.split('.'));
-                selector[transKey] = value;
+                if (key.startsWith('$')) {
+                    // $or, $not etc have different structure
+                    var setObj = value.map(function (obj) {
+                        var newObj = {};
+                        Object.keys(obj).forEach(function (k) {
+                            var transKey = _this3._transformKey('', '', k.split('.'));
+                            newObj[transKey] = obj[k];
+                        });
+                        return newObj;
+                    });
+                    selector[key] = setObj;
+                } else {
+                    var transKey = _this3._transformKey('', '', key.split('.'));
+                    selector[transKey] = value;
+                }
             });
             queryJSON.selector = selector;
 
@@ -234,8 +248,23 @@ var KeyCompressor = function () {
         }
     }]);
     return KeyCompressor;
-}();
+}(); /**
+      * this plugin adds the keycompression-capabilities to rxdb
+      * if you dont use this, ensure that you set disableKeyComression to false in your schema
+      */
 
 function create(schema) {
     return new KeyCompressor(schema);
 }
+
+var rxdb = exports.rxdb = true;
+var prototypes = exports.prototypes = {};
+var overwritable = exports.overwritable = {
+    createKeyCompressor: create
+};
+
+exports['default'] = {
+    rxdb: rxdb,
+    prototypes: prototypes,
+    overwritable: overwritable
+};

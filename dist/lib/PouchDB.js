@@ -39,7 +39,7 @@ _pouchdbCore2['default'].plugin(_pouchdbFind2['default']);
 
 // pouchdb-find
 _pouchdbCore2['default'].countAllUndeleted = function () {
-    var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(pouchdb) {
+    var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(pouchdb) {
         var docs;
         return _regenerator2['default'].wrap(function _callee$(_context) {
             while (1) {
@@ -77,7 +77,7 @@ _pouchdbCore2['default'].countAllUndeleted = function () {
  * @return {{}[]} array with documents
  */
 _pouchdbCore2['default'].getBatch = function () {
-    var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(pouchdb, limit) {
+    var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(pouchdb, limit) {
         var docs;
         return _regenerator2['default'].wrap(function _callee2$(_context2) {
             while (1) {

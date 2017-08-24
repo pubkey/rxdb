@@ -18,7 +18,7 @@ PouchDB.plugin(PouchDBFind);
  * @return {Promise(number)} number of documents
  */
 PouchDB.countAllUndeleted = function () {
-    var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee(pouchdb) {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(pouchdb) {
         var docs;
         return _regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
@@ -56,7 +56,7 @@ PouchDB.countAllUndeleted = function () {
  * @return {{}[]} array with documents
  */
 PouchDB.getBatch = function () {
-    var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2(pouchdb, limit) {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(pouchdb, limit) {
         var docs;
         return _regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {

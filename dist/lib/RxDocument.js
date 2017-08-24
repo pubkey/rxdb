@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.RxDocument = undefined;
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
@@ -45,23 +46,25 @@ var _deepEqual = require('deep-equal');
 
 var _deepEqual2 = _interopRequireDefault(_deepEqual);
 
-var _modifyjs = require('modifyjs');
-
-var _modifyjs2 = _interopRequireDefault(_modifyjs);
-
 var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
 var _RxChangeEvent = require('./RxChangeEvent');
 
-var RxChangeEvent = _interopRequireWildcard(_RxChangeEvent);
+var _RxChangeEvent2 = _interopRequireDefault(_RxChangeEvent);
+
+var _RxError = require('./RxError');
+
+var _RxError2 = _interopRequireDefault(_RxError);
+
+var _hooks = require('./hooks');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var RxDocument = function () {
+var RxDocument = exports.RxDocument = function () {
     function RxDocument(collection, jsonData) {
         (0, _classCallCheck3['default'])(this, RxDocument);
 
@@ -140,7 +143,6 @@ var RxDocument = function () {
                     break;
                 case 'UPDATE':
                     var newData = (0, _clone2['default'])(changeEvent.data.v);
-                    delete newData._ext;
                     var prevSyncData = this._dataSync$.getValue();
                     var prevData = this._data;
 
@@ -198,7 +200,7 @@ var RxDocument = function () {
     }, {
         key: 'populate',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(path, object) {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(path, object) {
                 var schemaObj, value, refCollection;
                 return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
@@ -369,38 +371,18 @@ var RxDocument = function () {
 
         /**
          * updates document
-         *  @param  {object} updateObj
+         * @overwritten by plugin (optinal)
+         * @param  {object} updateObj mongodb-like syntax
          */
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(updateObj) {
-                var _this2 = this;
-
-                var newDoc;
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(updateObj) {
                 return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
-                                newDoc = (0, _modifyjs2['default'])(this._data, updateObj);
+                                throw _RxError2['default'].pluginMissing('update');
 
-
-                                Object.keys(this._data).forEach(function (previousPropName) {
-                                    if (newDoc[previousPropName]) {
-                                        // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
-                                        // which causes problems with "readonly" fields
-                                        if (!(0, _deepEqual2['default'])(_this2._data[previousPropName], newDoc[previousPropName])) _this2._data[previousPropName] = newDoc[previousPropName];
-                                    } else delete _this2._data[previousPropName];
-                                });
-                                delete newDoc._rev;
-                                delete newDoc._id;
-                                Object.keys(newDoc).filter(function (newPropName) {
-                                    return !(0, _deepEqual2['default'])(_this2._data[newPropName], newDoc[newPropName]);
-                                }).forEach(function (newPropName) {
-                                    return _this2._data[newPropName] = newDoc[newPropName];
-                                });
-                                _context2.next = 7;
-                                return this.save();
-
-                            case 7:
+                            case 1:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -424,8 +406,8 @@ var RxDocument = function () {
     }, {
         key: 'atomicUpdate',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3(fun) {
-                var _this3 = this;
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(fun) {
+                var _this2 = this;
 
                 var retPromise;
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
@@ -434,7 +416,7 @@ var RxDocument = function () {
                             case 0:
                                 this._atomicUpdates.push(fun);
                                 retPromise = new Promise(function (resolve, reject) {
-                                    _this3._atomicUpdatesResolveFunctions.set(fun, {
+                                    _this2._atomicUpdatesResolveFunctions.set(fun, {
                                         resolve: resolve,
                                         reject: reject
                                     });
@@ -460,7 +442,7 @@ var RxDocument = function () {
     }, {
         key: '_runAtomicUpdates',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
                 var fun;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -534,7 +516,7 @@ var RxDocument = function () {
     }, {
         key: 'save',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5() {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5() {
                 var ret, emitValue, changeEvent;
                 return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
@@ -601,7 +583,7 @@ var RxDocument = function () {
                                 this._synced$.next(true);
                                 this._dataSync$.next((0, _clone2['default'])(emitValue));
 
-                                changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
+                                changeEvent = _RxChangeEvent2['default'].create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
                                 this.$emit(changeEvent);
                                 return _context5.abrupt('return', true);
@@ -630,7 +612,7 @@ var RxDocument = function () {
     }, {
         key: '_saveTemporary',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6() {
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
@@ -665,7 +647,7 @@ var RxDocument = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7() {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7() {
                 return _regenerator2['default'].wrap(function _callee7$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
@@ -687,7 +669,7 @@ var RxDocument = function () {
 
                             case 6:
 
-                                this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
+                                this.$emit(_RxChangeEvent2['default'].create('REMOVE', this.collection.database, this.collection, this, this._data));
 
                                 _context7.next = 9;
                                 return this.collection._runHooks('post', 'remove', this);
@@ -750,6 +732,7 @@ function create(collection, jsonData) {
 
     var doc = new RxDocument(collection, jsonData);
     doc.prepare();
+    (0, _hooks.runPluginHooks)('createRxDocument', doc);
     return doc;
 }
 
@@ -780,3 +763,11 @@ function properties() {
 function isInstanceOf(obj) {
     return obj instanceof RxDocument;
 }
+
+exports['default'] = {
+    create: create,
+    createAr: createAr,
+    properties: properties,
+    RxDocument: RxDocument,
+    isInstanceOf: isInstanceOf
+};

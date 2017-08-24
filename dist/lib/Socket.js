@@ -22,7 +22,7 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 var create = exports.create = function () {
-    var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(database) {
+    var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(database) {
         var socket;
         return _regenerator2['default'].wrap(function _callee7$(_context7) {
             while (1) {
@@ -48,28 +48,28 @@ var create = exports.create = function () {
     };
 }();
 
-var _RxCollection = require('./RxCollection');
-
-var RxCollection = _interopRequireWildcard(_RxCollection);
-
-var _RxChangeEvent = require('./RxChangeEvent');
-
-var RxChangeEvent = _interopRequireWildcard(_RxChangeEvent);
-
-var _RxBroadcastChannel = require('./RxBroadcastChannel');
-
-var RxBroadcastChannel = _interopRequireWildcard(_RxBroadcastChannel);
-
 var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
+
+var _RxCollection = require('./RxCollection');
+
+var _RxCollection2 = _interopRequireDefault(_RxCollection);
+
+var _RxChangeEvent = require('./RxChangeEvent');
+
+var _RxChangeEvent2 = _interopRequireDefault(_RxChangeEvent);
+
+var _RxBroadcastChannel = require('./RxBroadcastChannel');
+
+var _RxBroadcastChannel2 = _interopRequireDefault(_RxBroadcastChannel);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var EVENT_TTL = 5000; // after this age, events will be deleted
-var PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
+var PULL_TIME = _RxBroadcastChannel2['default'].canIUse() ? EVENT_TTL / 2 : 200;
 
 var Socket = function () {
     function Socket(database) {
@@ -85,14 +85,14 @@ var Socket = function () {
         this.lastPull = new Date().getTime();
         this.recievedEvents = {};
 
-        this.bc = RxBroadcastChannel.create(this.database, 'socket');
+        this.bc = _RxBroadcastChannel2['default'].create(this.database, 'socket');
         this.messages$ = new util.Rx.Subject();
     }
 
     (0, _createClass3['default'])(Socket, [{
         key: 'prepare',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                 var _this = this;
 
                 return _regenerator2['default'].wrap(function _callee2$(_context2) {
@@ -115,7 +115,7 @@ var Socket = function () {
                                 }
 
                                 // pull on intervall
-                                (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+                                (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                                     return _regenerator2['default'].wrap(function _callee$(_context) {
                                         while (1) {
                                             switch (_context.prev = _context.next) {
@@ -173,7 +173,7 @@ var Socket = function () {
     }, {
         key: 'write',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3(changeEvent) {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(changeEvent) {
                 var socketDoc;
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
@@ -229,7 +229,7 @@ var Socket = function () {
     }, {
         key: 'fetchDocs',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4() {
+            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
                 var result;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -263,7 +263,7 @@ var Socket = function () {
     }, {
         key: 'deleteDoc',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(doc) {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(doc) {
                 return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
@@ -303,7 +303,7 @@ var Socket = function () {
     }, {
         key: 'pull',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6() {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6() {
                 var _this2 = this;
 
                 var minTime, docs, maxAge, delDocs;
@@ -364,7 +364,7 @@ var Socket = function () {
                                     if (a.t > b.t) return 1;
                                     return -1;
                                 }).map(function (doc) {
-                                    return RxChangeEvent.fromJSON(doc);
+                                    return _RxChangeEvent2['default'].fromJSON(doc);
                                 })
                                 // make sure the same event is not emitted twice
                                 .filter(function (cE) {
@@ -451,3 +451,8 @@ var Socket = function () {
 
 exports.EVENT_TTL = EVENT_TTL;
 exports.PULL_TIME = PULL_TIME;
+exports['default'] = {
+    create: create,
+    EVENT_TTL: EVENT_TTL,
+    PULL_TIME: PULL_TIME
+};

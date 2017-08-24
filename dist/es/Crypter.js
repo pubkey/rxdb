@@ -7,8 +7,9 @@ import objectPath from 'object-path';
 import clone from 'clone';
 
 import * as util from './util';
+import RxError from './RxError';
 
-var Crypter = function () {
+export var Crypter = function () {
     function Crypter(password, schema) {
         _classCallCheck(this, Crypter);
 
@@ -16,13 +17,28 @@ var Crypter = function () {
         this._schema = schema;
     }
 
+    /**
+     * encrypt and stringify data
+     * @overwritten by plugin (optional)
+     * @param  {any} value
+     * @return {string}
+     */
+
+
     Crypter.prototype._encryptValue = function _encryptValue(value) {
-        return util.encrypt(JSON.stringify(value), this._password);
+        throw RxError.pluginMissing('encryption');
     };
 
+    /**
+     * decrypt and json-parse an encrypted value
+     * @overwritten by plugin (optional)
+     * @param  {string} encValue
+     * @return {any}
+     */
+
+
     Crypter.prototype._decryptValue = function _decryptValue(encValue) {
-        var decrypted = util.decrypt(encValue, this._password);
-        return JSON.parse(decrypted);
+        throw RxError.pluginMissing('encryption');
     };
 
     Crypter.prototype.encrypt = function encrypt(obj) {
@@ -58,3 +74,8 @@ var Crypter = function () {
 export function create(password, schema) {
     return new Crypter(password, schema);
 }
+
+export default {
+    create: create,
+    Crypter: Crypter
+};

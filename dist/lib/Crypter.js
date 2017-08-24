@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.Crypter = undefined;
 
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
@@ -26,11 +27,19 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
+var _RxError = require('./RxError');
+
+var _RxError2 = _interopRequireDefault(_RxError);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var Crypter = function () {
+/**
+ * handle the en/decryption of documents-data
+ */
+
+var Crypter = exports.Crypter = function () {
     function Crypter(password, schema) {
         (0, _classCallCheck3['default'])(this, Crypter);
 
@@ -38,16 +47,31 @@ var Crypter = function () {
         this._schema = schema;
     }
 
+    /**
+     * encrypt and stringify data
+     * @overwritten by plugin (optional)
+     * @param  {any} value
+     * @return {string}
+     */
+
+
     (0, _createClass3['default'])(Crypter, [{
         key: '_encryptValue',
         value: function _encryptValue(value) {
-            return util.encrypt(JSON.stringify(value), this._password);
+            throw _RxError2['default'].pluginMissing('encryption');
         }
+
+        /**
+         * decrypt and json-parse an encrypted value
+         * @overwritten by plugin (optional)
+         * @param  {string} encValue
+         * @return {any}
+         */
+
     }, {
         key: '_decryptValue',
         value: function _decryptValue(encValue) {
-            var decrypted = util.decrypt(encValue, this._password);
-            return JSON.parse(decrypted);
+            throw _RxError2['default'].pluginMissing('encryption');
         }
     }, {
         key: 'encrypt',
@@ -80,10 +104,13 @@ var Crypter = function () {
         }
     }]);
     return Crypter;
-}(); /**
-      * handle the en/decryption of documents-data
-      */
+}();
 
 function create(password, schema) {
     return new Crypter(password, schema);
 }
+
+exports['default'] = {
+    create: create,
+    Crypter: Crypter
+};

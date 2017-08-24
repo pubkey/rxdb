@@ -23,7 +23,7 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
  * @return {Promise}
  */
 var promiseWait = exports.promiseWait = function () {
-    var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+    var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
         var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
         return _regenerator2['default'].wrap(function _callee$(_context) {
             while (1) {
@@ -47,7 +47,7 @@ var promiseWait = exports.promiseWait = function () {
 }();
 
 var requestIdlePromise = exports.requestIdlePromise = function () {
-    var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+    var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
         var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
         return _regenerator2['default'].wrap(function _callee2$(_context2) {
             while (1) {
@@ -89,8 +89,6 @@ var requestIdlePromise = exports.requestIdlePromise = function () {
  */
 
 
-exports.encrypt = encrypt;
-exports.decrypt = decrypt;
 exports.isLevelDown = isLevelDown;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
@@ -155,16 +153,6 @@ require('rxjs/add/operator/distinctUntilChanged');
 
 require('rxjs/add/operator/distinct');
 
-var _aes = require('crypto-js/aes');
-
-var crypto_AES = _interopRequireWildcard(_aes);
-
-var _encUtf = require('crypto-js/enc-utf8');
-
-var crypto_enc = _interopRequireWildcard(_encUtf);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var Rx = exports.Rx = {
@@ -173,7 +161,10 @@ var Rx = exports.Rx = {
     BehaviorSubject: _BehaviorSubject.BehaviorSubject
 };
 
-// crypto-js
+/**
+ * check if the given module is a leveldown-adapter
+ * throws if not
+ */
 
 
 // rxjs cherry-pick
@@ -182,19 +173,6 @@ var Rx = exports.Rx = {
  * which should be easy to change
  */
 
-function encrypt(value, password) {
-    var encrypted = crypto_AES.encrypt(value, password);
-    return encrypted.toString();
-}
-function decrypt(ciphertext, password) {
-    var decrypted = crypto_AES.decrypt(ciphertext, password);
-    return decrypted.toString(crypto_enc);
-}
-
-/**
- * check if the given module is a leveldown-adapter
- * throws if not
- */
 function isLevelDown(adapter) {
     if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') throw new Error('given leveldown is no valid adapter');
 }

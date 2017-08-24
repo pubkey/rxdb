@@ -111,3 +111,10 @@ function create(op, database, collection, doc, value) {
 function isInstanceOf(obj) {
     return obj instanceof RxChangeEvent;
 }
+
+exports['default'] = {
+    fromJSON: fromJSON,
+    fromPouchChange: fromPouchChange,
+    create: create,
+    isInstanceOf: isInstanceOf
+};

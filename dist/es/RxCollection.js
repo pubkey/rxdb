@@ -7,24 +7,25 @@ import objectPath from 'object-path';
 import clone from 'clone';
 
 import * as util from './util';
-import * as RxDocument from './RxDocument';
-import * as RxQuery from './RxQuery';
-import * as RxChangeEvent from './RxChangeEvent';
-import * as KeyCompressor from './KeyCompressor';
-import * as DataMigrator from './DataMigrator';
-import * as Crypter from './Crypter';
-import * as DocCache from './DocCache';
-import * as QueryCache from './QueryCache';
-import * as ChangeEventBuffer from './ChangeEventBuffer';
-import * as RxReplicationState from './RxReplicationState';
+import RxDocument from './RxDocument';
+import RxQuery from './RxQuery';
+import RxChangeEvent from './RxChangeEvent';
+import DataMigrator from './DataMigrator';
+import Crypter from './Crypter';
+import DocCache from './DocCache';
+import QueryCache from './QueryCache';
+import ChangeEventBuffer from './ChangeEventBuffer';
+import RxReplicationState from './RxReplicationState';
+import overwritable from './overwritable';
+import { runPluginHooks } from './hooks';
 
-import { RxSchema } from './RxSchema';
-import { RxDatabase } from './RxDatabase';
+import RxSchema from './RxSchema';
+import RxDatabase from './RxDatabase';
 
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
-var RxCollection = function () {
+export var RxCollection = function () {
     function RxCollection(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
@@ -65,7 +66,7 @@ var RxCollection = function () {
     }
 
     RxCollection.prototype.prepare = function () {
-        var _ref = _asyncToGenerator(_regeneratorRuntime.mark(function _callee() {
+        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
             var _this2 = this;
 
             return _regeneratorRuntime.wrap(function _callee$(_context) {
@@ -74,7 +75,6 @@ var RxCollection = function () {
                         case 0:
                             this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
                             this._crypter = Crypter.create(this.database.password, this.schema);
-                            this._keyCompressor = KeyCompressor.create(this.schema);
 
                             this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
                             this._observable$ = this.database.$.filter(function (event) {
@@ -83,12 +83,10 @@ var RxCollection = function () {
                             this._changeEventBuffer = ChangeEventBuffer.create(this);
 
                             // INDEXES
-                            _context.next = 8;
+                            _context.next = 7;
                             return Promise.all(this.schema.indexes.map(function (indexAr) {
                                 var compressedIdx = indexAr.map(function (key) {
-                                    if (!_this2.schema.doKeyCompression()) return key;
-                                    var ret = _this2._keyCompressor._transformKey('', '', key.split('.'));
-                                    return ret;
+                                    if (!_this2.schema.doKeyCompression()) return key;else return _this2._keyCompressor._transformKey('', '', key.split('.'));
                                 });
                                 return _this2.pouch.createIndex({
                                     index: {
@@ -97,7 +95,7 @@ var RxCollection = function () {
                                 });
                             }));
 
-                        case 8:
+                        case 7:
 
                             this._subs.push(this._observable$.subscribe(function (cE) {
                                 // when data changes, send it to RxDocument in docCache
@@ -105,7 +103,7 @@ var RxCollection = function () {
                                 if (doc) doc._handleChangeEvent(cE);
                             }));
 
-                        case 9:
+                        case 8:
                         case 'end':
                             return _context.stop();
                     }
@@ -124,10 +122,8 @@ var RxCollection = function () {
      * checks if a migration is needed
      * @return {boolean}
      */
-
-
     RxCollection.prototype.migrationNeeded = function () {
-        var _ref2 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee2() {
+        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
             var oldCols;
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
@@ -194,20 +190,22 @@ var RxCollection = function () {
 
 
     RxCollection.prototype._handleToPouch = function _handleToPouch(docData) {
-        var encrypted = this._crypter.encrypt(docData);
-        var swapped = this.schema.swapPrimaryToId(encrypted);
-        var compressed = this._keyCompressor.compress(swapped);
-        return compressed;
+        var data = clone(docData);
+        data = this._crypter.encrypt(data);
+        data = this.schema.swapPrimaryToId(data);
+        if (this.schema.doKeyCompression()) data = this._keyCompressor.compress(data);
+        return data;
     };
 
     RxCollection.prototype._handleFromPouch = function _handleFromPouch(docData) {
         var noDecrypt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-        var swapped = this.schema.swapIdToPrimary(docData);
-        var decompressed = this._keyCompressor.decompress(swapped);
-        if (noDecrypt) return decompressed;
-        var decrypted = this._crypter.decrypt(decompressed);
-        return decrypted;
+        var data = clone(docData);
+        data = this.schema.swapIdToPrimary(data);
+        if (this.schema.doKeyCompression()) data = this._keyCompressor.decompress(data);
+        if (noDecrypt) return data;
+        data = this._crypter.decrypt(data);
+        return data;
     };
 
     /**
@@ -218,7 +216,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype._pouchPut = function () {
-        var _ref3 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee3(obj) {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(obj) {
             var overwrite = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
             var ret, exist;
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
@@ -282,7 +280,7 @@ var RxCollection = function () {
     }();
 
     RxCollection.prototype._pouchGet = function () {
-        var _ref4 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee4(key) {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(key) {
             var doc;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
@@ -321,7 +319,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype._pouchFind = function () {
-        var _ref5 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee5(rxQuery, limit) {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(rxQuery, limit) {
             var _this3 = this;
 
             var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
@@ -383,7 +381,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype._createDocument = function () {
-        var _ref6 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee6(json) {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(json) {
             var id, cacheDoc, doc;
             return _regeneratorRuntime.wrap(function _callee6$(_context6) {
                 while (1) {
@@ -430,7 +428,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype._createDocuments = function () {
-        var _ref7 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee7(docsJSON) {
+        var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(docsJSON) {
             var _this4 = this;
 
             return _regeneratorRuntime.wrap(function _callee7$(_context7) {
@@ -473,7 +471,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.insert = function () {
-        var _ref8 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee8(json) {
+        var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(json) {
             var tempDoc, insertResult, newDoc, emitEvent;
             return _regeneratorRuntime.wrap(function _callee8$(_context8) {
                 while (1) {
@@ -586,7 +584,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.upsert = function () {
-        var _ref9 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee9(json) {
+        var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(json) {
             var primary, existing, newDoc;
             return _regeneratorRuntime.wrap(function _callee9$(_context9) {
                 while (1) {
@@ -646,7 +644,7 @@ var RxCollection = function () {
     }();
 
     RxCollection.prototype._atomicUpsertEnsureRxDocumentExists = function () {
-        var _ref10 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee10(primary, json) {
+        var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10(primary, json) {
             var doc;
             return _regeneratorRuntime.wrap(function _callee10$(_context10) {
                 while (1) {
@@ -691,7 +689,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.atomicUpsert = function () {
-        var _ref11 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee11(json) {
+        var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee11(json) {
             var primary, doc;
             return _regeneratorRuntime.wrap(function _callee11$(_context11) {
                 while (1) {
@@ -775,7 +773,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.dump = function () {
-        var _ref12 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee12() {
+        var _ref12 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee12() {
             var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
             var encrypted, json, query, docs;
             return _regeneratorRuntime.wrap(function _callee12$(_context12) {
@@ -832,7 +830,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.importDump = function () {
-        var _ref13 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee13(exportedJSON) {
+        var _ref13 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee13(exportedJSON) {
             var _this5 = this;
 
             var importFns;
@@ -911,9 +909,6 @@ var RxCollection = function () {
             return c.id.charAt(0) != '_';
         }).map(function (c) {
             return c.doc;
-        }).map(function (doc) {
-            doc._ext = true;
-            return doc;
         }).filter(function (doc) {
             return !_this6._changeEventBuffer.buffer.map(function (cE) {
                 return cE.data.v._rev;
@@ -986,7 +981,7 @@ var RxCollection = function () {
         var repState = RxReplicationState.create(this);
 
         // run internal so .sync() does not have to be async
-        _asyncToGenerator(_regeneratorRuntime.mark(function _callee14() {
+        _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee14() {
             var pouchSync;
             return _regeneratorRuntime.wrap(function _callee14$(_context14) {
                 while (1) {
@@ -1064,7 +1059,7 @@ var RxCollection = function () {
     };
 
     RxCollection.prototype._runHooks = function () {
-        var _ref16 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee15(when, key, doc) {
+        var _ref16 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee15(when, key, doc) {
             var hooks, i;
             return _regeneratorRuntime.wrap(function _callee15$(_context15) {
                 while (1) {
@@ -1149,7 +1144,7 @@ var RxCollection = function () {
     };
 
     RxCollection.prototype.destroy = function () {
-        var _ref17 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee16() {
+        var _ref17 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee16() {
             return _regeneratorRuntime.wrap(function _callee16$(_context16) {
                 while (1) {
                     switch (_context16.prev = _context16.next) {
@@ -1186,7 +1181,7 @@ var RxCollection = function () {
 
 
     RxCollection.prototype.remove = function () {
-        var _ref18 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee17() {
+        var _ref18 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee17() {
             return _regeneratorRuntime.wrap(function _callee17$(_context17) {
                 while (1) {
                     switch (_context17.prev = _context17.next) {
@@ -1210,6 +1205,12 @@ var RxCollection = function () {
     }();
 
     _createClass(RxCollection, [{
+        key: '_keyCompressor',
+        get: function get() {
+            if (!this.__keyCompressor) this.__keyCompressor = overwritable.createKeyCompressor(this.schema);
+            return this.__keyCompressor;
+        }
+    }, {
         key: '$',
         get: function get() {
             return this._observable$;
@@ -1226,8 +1227,6 @@ var RxCollection = function () {
  * @throws {Error|TypeError} if not ok
  * @return {boolean}
  */
-
-
 var checkMigrationStrategies = function checkMigrationStrategies(schema, migrationStrategies) {
     // migrationStrategies must be object not array
     if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) throw new TypeError('migrationStrategies must be an object');
@@ -1296,7 +1295,7 @@ var checkORMmethdods = function checkORMmethdods(statics) {
  * @return {Promise.<RxCollection>} promise with collection
  */
 export var create = function () {
-    var _ref19 = _asyncToGenerator(_regeneratorRuntime.mark(function _callee18(_ref20) {
+    var _ref19 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee18(_ref20) {
         var database = _ref20.database,
             name = _ref20.name,
             schema = _ref20.schema,
@@ -1315,7 +1314,7 @@ export var create = function () {
             while (1) {
                 switch (_context18.prev = _context18.next) {
                     case 0:
-                        if (!(!schema instanceof RxSchema)) {
+                        if (RxSchema.isInstanceOf(schema)) {
                             _context18.next = 2;
                             break;
                         }
@@ -1323,7 +1322,7 @@ export var create = function () {
                         throw new TypeError('given schema is no Schema-object');
 
                     case 2:
-                        if (!(!database instanceof RxDatabase)) {
+                        if (RxDatabase.isInstanceOf(database)) {
                             _context18.next = 4;
                             break;
                         }
@@ -1376,9 +1375,11 @@ export var create = function () {
                         return collection.migratePromise();
 
                     case 18:
+
+                        runPluginHooks('createRxCollection', collection);
                         return _context18.abrupt('return', collection);
 
-                    case 19:
+                    case 20:
                     case 'end':
                         return _context18.stop();
                 }
@@ -1394,3 +1395,10 @@ export var create = function () {
 export function isInstanceOf(obj) {
     return obj instanceof RxCollection;
 }
+
+export default {
+    create: create,
+    properties: properties,
+    isInstanceOf: isInstanceOf,
+    RxCollection: RxCollection
+};

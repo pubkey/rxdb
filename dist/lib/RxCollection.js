@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.create = undefined;
+exports.create = exports.RxCollection = undefined;
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
@@ -39,7 +39,7 @@ var _createClass3 = _interopRequireDefault(_createClass2);
  * @return {Promise.<RxCollection>} promise with collection
  */
 var create = exports.create = function () {
-    var _ref20 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee18(_ref19) {
+    var _ref20 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee18(_ref19) {
         var database = _ref19.database,
             name = _ref19.name,
             schema = _ref19.schema,
@@ -58,7 +58,7 @@ var create = exports.create = function () {
             while (1) {
                 switch (_context18.prev = _context18.next) {
                     case 0:
-                        if (!(!schema instanceof _RxSchema.RxSchema)) {
+                        if (_RxSchema2['default'].isInstanceOf(schema)) {
                             _context18.next = 2;
                             break;
                         }
@@ -66,7 +66,7 @@ var create = exports.create = function () {
                         throw new TypeError('given schema is no Schema-object');
 
                     case 2:
-                        if (!(!database instanceof _RxDatabase.RxDatabase)) {
+                        if (_RxDatabase2['default'].isInstanceOf(database)) {
                             _context18.next = 4;
                             break;
                         }
@@ -119,9 +119,11 @@ var create = exports.create = function () {
                         return collection.migratePromise();
 
                     case 18:
+
+                        (0, _hooks.runPluginHooks)('createRxCollection', collection);
                         return _context18.abrupt('return', collection);
 
-                    case 19:
+                    case 20:
                     case 'end':
                         return _context18.stop();
                 }
@@ -155,47 +157,53 @@ var util = _interopRequireWildcard(_util);
 
 var _RxDocument = require('./RxDocument');
 
-var RxDocument = _interopRequireWildcard(_RxDocument);
+var _RxDocument2 = _interopRequireDefault(_RxDocument);
 
 var _RxQuery = require('./RxQuery');
 
-var RxQuery = _interopRequireWildcard(_RxQuery);
+var _RxQuery2 = _interopRequireDefault(_RxQuery);
 
 var _RxChangeEvent = require('./RxChangeEvent');
 
-var RxChangeEvent = _interopRequireWildcard(_RxChangeEvent);
-
-var _KeyCompressor = require('./KeyCompressor');
-
-var KeyCompressor = _interopRequireWildcard(_KeyCompressor);
+var _RxChangeEvent2 = _interopRequireDefault(_RxChangeEvent);
 
 var _DataMigrator = require('./DataMigrator');
 
-var DataMigrator = _interopRequireWildcard(_DataMigrator);
+var _DataMigrator2 = _interopRequireDefault(_DataMigrator);
 
 var _Crypter = require('./Crypter');
 
-var Crypter = _interopRequireWildcard(_Crypter);
+var _Crypter2 = _interopRequireDefault(_Crypter);
 
 var _DocCache = require('./DocCache');
 
-var DocCache = _interopRequireWildcard(_DocCache);
+var _DocCache2 = _interopRequireDefault(_DocCache);
 
 var _QueryCache = require('./QueryCache');
 
-var QueryCache = _interopRequireWildcard(_QueryCache);
+var _QueryCache2 = _interopRequireDefault(_QueryCache);
 
 var _ChangeEventBuffer = require('./ChangeEventBuffer');
 
-var ChangeEventBuffer = _interopRequireWildcard(_ChangeEventBuffer);
+var _ChangeEventBuffer2 = _interopRequireDefault(_ChangeEventBuffer);
 
 var _RxReplicationState = require('./RxReplicationState');
 
-var RxReplicationState = _interopRequireWildcard(_RxReplicationState);
+var _RxReplicationState2 = _interopRequireDefault(_RxReplicationState);
+
+var _overwritable = require('./overwritable');
+
+var _overwritable2 = _interopRequireDefault(_overwritable);
+
+var _hooks = require('./hooks');
 
 var _RxSchema = require('./RxSchema');
 
+var _RxSchema2 = _interopRequireDefault(_RxSchema);
+
 var _RxDatabase = require('./RxDatabase');
+
+var _RxDatabase2 = _interopRequireDefault(_RxDatabase);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -204,7 +212,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
-var RxCollection = function () {
+var RxCollection = exports.RxCollection = function () {
     function RxCollection(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
@@ -222,8 +230,8 @@ var RxCollection = function () {
         this._methods = methods;
         this._atomicUpsertLocks = {};
 
-        this._docCache = DocCache.create();
-        this._queryCache = QueryCache.create();
+        this._docCache = _DocCache2['default'].create();
+        this._queryCache = _QueryCache2['default'].create();
 
         // defaults
         this.synced = false;
@@ -246,30 +254,27 @@ var RxCollection = function () {
     (0, _createClass3['default'])(RxCollection, [{
         key: 'prepare',
         value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee() {
+            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                 var _this2 = this;
 
                 return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
-                                this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
-                                this._crypter = Crypter.create(this.database.password, this.schema);
-                                this._keyCompressor = KeyCompressor.create(this.schema);
+                                this._dataMigrator = _DataMigrator2['default'].create(this, this._migrationStrategies);
+                                this._crypter = _Crypter2['default'].create(this.database.password, this.schema);
 
                                 this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
                                 this._observable$ = this.database.$.filter(function (event) {
                                     return event.data.col == _this2.name;
                                 });
-                                this._changeEventBuffer = ChangeEventBuffer.create(this);
+                                this._changeEventBuffer = _ChangeEventBuffer2['default'].create(this);
 
                                 // INDEXES
-                                _context.next = 8;
+                                _context.next = 7;
                                 return Promise.all(this.schema.indexes.map(function (indexAr) {
                                     var compressedIdx = indexAr.map(function (key) {
-                                        if (!_this2.schema.doKeyCompression()) return key;
-                                        var ret = _this2._keyCompressor._transformKey('', '', key.split('.'));
-                                        return ret;
+                                        if (!_this2.schema.doKeyCompression()) return key;else return _this2._keyCompressor._transformKey('', '', key.split('.'));
                                     });
                                     return _this2.pouch.createIndex({
                                         index: {
@@ -278,7 +283,7 @@ var RxCollection = function () {
                                     });
                                 }));
 
-                            case 8:
+                            case 7:
 
                                 this._subs.push(this._observable$.subscribe(function (cE) {
                                     // when data changes, send it to RxDocument in docCache
@@ -286,7 +291,7 @@ var RxCollection = function () {
                                     if (doc) doc._handleChangeEvent(cE);
                                 }));
 
-                            case 9:
+                            case 8:
                             case 'end':
                                 return _context.stop();
                         }
@@ -300,16 +305,16 @@ var RxCollection = function () {
 
             return prepare;
         }()
+    }, {
+        key: 'migrationNeeded',
+
 
         /**
          * checks if a migration is needed
          * @return {boolean}
          */
-
-    }, {
-        key: 'migrationNeeded',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2() {
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                 var oldCols;
                 return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
@@ -379,21 +384,23 @@ var RxCollection = function () {
     }, {
         key: '_handleToPouch',
         value: function _handleToPouch(docData) {
-            var encrypted = this._crypter.encrypt(docData);
-            var swapped = this.schema.swapPrimaryToId(encrypted);
-            var compressed = this._keyCompressor.compress(swapped);
-            return compressed;
+            var data = (0, _clone2['default'])(docData);
+            data = this._crypter.encrypt(data);
+            data = this.schema.swapPrimaryToId(data);
+            if (this.schema.doKeyCompression()) data = this._keyCompressor.compress(data);
+            return data;
         }
     }, {
         key: '_handleFromPouch',
         value: function _handleFromPouch(docData) {
             var noDecrypt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-            var swapped = this.schema.swapIdToPrimary(docData);
-            var decompressed = this._keyCompressor.decompress(swapped);
-            if (noDecrypt) return decompressed;
-            var decrypted = this._crypter.decrypt(decompressed);
-            return decrypted;
+            var data = (0, _clone2['default'])(docData);
+            data = this.schema.swapIdToPrimary(data);
+            if (this.schema.doKeyCompression()) data = this._keyCompressor.decompress(data);
+            if (noDecrypt) return data;
+            data = this._crypter.decrypt(data);
+            return data;
         }
 
         /**
@@ -405,7 +412,7 @@ var RxCollection = function () {
     }, {
         key: '_pouchPut',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee3(obj) {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(obj) {
                 var overwrite = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
                 var ret, exist;
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
@@ -470,7 +477,7 @@ var RxCollection = function () {
     }, {
         key: '_pouchGet',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee4(key) {
+            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(key) {
                 var doc;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -510,7 +517,7 @@ var RxCollection = function () {
     }, {
         key: '_pouchFind',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee5(rxQuery, limit) {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(rxQuery, limit) {
                 var _this3 = this;
 
                 var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
@@ -574,7 +581,7 @@ var RxCollection = function () {
     }, {
         key: '_createDocument',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee6(json) {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(json) {
                 var id, cacheDoc, doc;
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
@@ -592,7 +599,7 @@ var RxCollection = function () {
                                 return _context6.abrupt('return', cacheDoc);
 
                             case 4:
-                                doc = RxDocument.create(this, json);
+                                doc = _RxDocument2['default'].create(this, json);
 
                                 this._assignMethodsToDocument(doc);
                                 this._docCache.set(id, doc);
@@ -622,7 +629,7 @@ var RxCollection = function () {
     }, {
         key: '_createDocuments',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee7(docsJSON) {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(docsJSON) {
                 var _this4 = this;
 
                 return _regenerator2['default'].wrap(function _callee7$(_context7) {
@@ -667,7 +674,7 @@ var RxCollection = function () {
     }, {
         key: 'insert',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee8(json) {
+            var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(json) {
                 var tempDoc, insertResult, newDoc, emitEvent;
                 return _regenerator2['default'].wrap(function _callee8$(_context8) {
                     while (1) {
@@ -677,7 +684,7 @@ var RxCollection = function () {
                                 // inserting a temporary-document
                                 tempDoc = null;
 
-                                if (!RxDocument.isInstanceOf(json)) {
+                                if (!_RxDocument2['default'].isInstanceOf(json)) {
                                     _context8.next = 6;
                                     break;
                                 }
@@ -753,7 +760,7 @@ var RxCollection = function () {
                             case 29:
 
                                 // event
-                                emitEvent = RxChangeEvent.create('INSERT', this.database, this, newDoc, json);
+                                emitEvent = _RxChangeEvent2['default'].create('INSERT', this.database, this, newDoc, json);
 
                                 this.$emit(emitEvent);
 
@@ -781,7 +788,7 @@ var RxCollection = function () {
     }, {
         key: 'upsert',
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee9(json) {
+            var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee9(json) {
                 var primary, existing, newDoc;
                 return _regenerator2['default'].wrap(function _callee9$(_context9) {
                     while (1) {
@@ -842,7 +849,7 @@ var RxCollection = function () {
     }, {
         key: '_atomicUpsertEnsureRxDocumentExists',
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee10(primary, json) {
+            var _ref10 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee10(primary, json) {
                 var doc;
                 return _regenerator2['default'].wrap(function _callee10$(_context10) {
                     while (1) {
@@ -888,7 +895,7 @@ var RxCollection = function () {
     }, {
         key: 'atomicUpsert',
         value: function () {
-            var _ref11 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee11(json) {
+            var _ref11 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee11(json) {
                 var primary, doc;
                 return _regenerator2['default'].wrap(function _callee11$(_context11) {
                     while (1) {
@@ -948,7 +955,7 @@ var RxCollection = function () {
         value: function find(queryObj) {
             if (typeof queryObj === 'string') throw new Error('if you want to search by _id, use .findOne(_id)');
 
-            var query = RxQuery.create('find', queryObj, this);
+            var query = _RxQuery2['default'].create('find', queryObj, this);
             return query;
         }
     }, {
@@ -957,10 +964,10 @@ var RxCollection = function () {
             var query = void 0;
 
             if (typeof queryObj === 'string') {
-                query = RxQuery.create('findOne', {
+                query = _RxQuery2['default'].create('findOne', {
                     _id: queryObj
                 }, this);
-            } else query = RxQuery.create('findOne', queryObj, this);
+            } else query = _RxQuery2['default'].create('findOne', queryObj, this);
 
             if (typeof queryObj === 'number' || Array.isArray(queryObj)) throw new TypeError('.findOne() needs a queryObject or string');
 
@@ -975,7 +982,7 @@ var RxCollection = function () {
     }, {
         key: 'dump',
         value: function () {
-            var _ref12 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee12() {
+            var _ref12 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee12() {
                 var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
                 var encrypted, json, query, docs;
                 return _regenerator2['default'].wrap(function _callee12$(_context12) {
@@ -997,7 +1004,7 @@ var RxCollection = function () {
                                     json.encrypted = true;
                                 }
 
-                                query = RxQuery.create('find', {}, this);
+                                query = _RxQuery2['default'].create('find', {}, this);
                                 _context12.next = 6;
                                 return this._pouchFind(query, null, encrypted);
 
@@ -1033,7 +1040,7 @@ var RxCollection = function () {
     }, {
         key: 'importDump',
         value: function () {
-            var _ref13 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee13(exportedJSON) {
+            var _ref13 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee13(exportedJSON) {
                 var _this5 = this;
 
                 var importFns;
@@ -1113,9 +1120,6 @@ var RxCollection = function () {
                 return c.id.charAt(0) != '_';
             }).map(function (c) {
                 return c.doc;
-            }).map(function (doc) {
-                doc._ext = true;
-                return doc;
             }).filter(function (doc) {
                 return !_this6._changeEventBuffer.buffer.map(function (cE) {
                     return cE.data.v._rev;
@@ -1130,7 +1134,7 @@ var RxCollection = function () {
             }).filter(function (doc) {
                 return doc != null;
             }).subscribe(function (doc) {
-                _this6.$emit(RxChangeEvent.fromPouchChange(doc, _this6));
+                _this6.$emit(_RxChangeEvent2['default'].fromPouchChange(doc, _this6));
             });
 
             this._subs.push(pouch$);
@@ -1147,7 +1151,7 @@ var RxCollection = function () {
     }, {
         key: 'createRxReplicationState',
         value: function createRxReplicationState() {
-            return RxReplicationState.create(this);
+            return _RxReplicationState2['default'].create(this);
         }
 
         /**
@@ -1187,10 +1191,10 @@ var RxCollection = function () {
             var syncFun = util.pouchReplicationFunction(this.pouch, direction);
             if (query) options.selector = query.keyCompress().selector;
 
-            var repState = RxReplicationState.create(this);
+            var repState = _RxReplicationState2['default'].create(this);
 
             // run internal so .sync() does not have to be async
-            (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee14() {
+            (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee14() {
                 var pouchSync;
                 return _regenerator2['default'].wrap(function _callee14$(_context14) {
                     while (1) {
@@ -1271,7 +1275,7 @@ var RxCollection = function () {
     }, {
         key: '_runHooks',
         value: function () {
-            var _ref16 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee15(when, key, doc) {
+            var _ref16 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee15(when, key, doc) {
                 var hooks, i;
                 return _regenerator2['default'].wrap(function _callee15$(_context15) {
                     while (1) {
@@ -1350,7 +1354,7 @@ var RxCollection = function () {
             var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
             docData = this.schema.fillObjectWithDefaults(docData);
-            var doc = RxDocument.create(this, docData);
+            var doc = _RxDocument2['default'].create(this, docData);
             doc._isTemporary = true;
             this._assignMethodsToDocument(doc);
             this._runHooksSync('post', 'create', doc);
@@ -1359,7 +1363,7 @@ var RxCollection = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref17 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee16() {
+            var _ref17 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee16() {
                 return _regenerator2['default'].wrap(function _callee16$(_context16) {
                     while (1) {
                         switch (_context16.prev = _context16.next) {
@@ -1397,7 +1401,7 @@ var RxCollection = function () {
     }, {
         key: 'remove',
         value: function () {
-            var _ref18 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee17() {
+            var _ref18 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee17() {
                 return _regenerator2['default'].wrap(function _callee17$(_context17) {
                     while (1) {
                         switch (_context17.prev = _context17.next) {
@@ -1419,6 +1423,12 @@ var RxCollection = function () {
 
             return remove;
         }()
+    }, {
+        key: '_keyCompressor',
+        get: function get() {
+            if (!this.__keyCompressor) this.__keyCompressor = _overwritable2['default'].createKeyCompressor(this.schema);
+            return this.__keyCompressor;
+        }
     }, {
         key: '$',
         get: function get() {
@@ -1491,8 +1501,15 @@ var checkORMmethdods = function checkORMmethdods(statics) {
 
         if (typeof entry[1] != 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function but ' + (0, _typeof3['default'])(entry[1]));
 
-        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
+        if (properties().includes(entry[0]) || _RxDocument2['default'].properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
     });
 };function isInstanceOf(obj) {
     return obj instanceof RxCollection;
 }
+
+exports['default'] = {
+    create: create,
+    properties: properties,
+    isInstanceOf: isInstanceOf,
+    RxCollection: RxCollection
+};

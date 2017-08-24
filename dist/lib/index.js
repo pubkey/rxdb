@@ -1,21 +1,59 @@
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
-exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.removeDatabase = exports.create = undefined;
+exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.removeDatabase = exports.create = undefined;
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
+var _core = require('./core');
 
-var _typeof3 = _interopRequireDefault(_typeof2);
+var _core2 = _interopRequireDefault(_core);
 
-var _regenerator = require('babel-runtime/regenerator');
+var _schemaCheck = require('./modules/schema-check');
 
-var _regenerator2 = _interopRequireDefault(_regenerator);
+var _schemaCheck2 = _interopRequireDefault(_schemaCheck);
 
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+var _validate = require('./modules/validate');
 
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+var _validate2 = _interopRequireDefault(_validate);
+
+var _keyCompression = require('./modules/key-compression');
+
+var _keyCompression2 = _interopRequireDefault(_keyCompression);
+
+var _leaderElection = require('./modules/leader-election');
+
+var _leaderElection2 = _interopRequireDefault(_leaderElection);
+
+var _encryption = require('./modules/encryption');
+
+var _encryption2 = _interopRequireDefault(_encryption);
+
+var _update = require('./modules/update');
+
+var _update2 = _interopRequireDefault(_update);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/**
+ * this is the default rxdb-export
+ * It has a batteries-included garantie.
+ * It basically just rxdb-core with some default plugins
+ */
+
+_core2['default'].plugin(_schemaCheck2['default']);
+
+// default plugins
+
+_core2['default'].plugin(_validate2['default']);
+
+_core2['default'].plugin(_keyCompression2['default']);
+
+_core2['default'].plugin(_leaderElection2['default']);
+
+_core2['default'].plugin(_encryption2['default']);
+
+_core2['default'].plugin(_update2['default']);
 
 /**
  * create a database
@@ -25,26 +63,7 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
  * @param  {boolean} multiInstance if true, multiInstance-handling will be done
  * @return {Promise<Database>}
  */
-var create = exports.create = function () {
-    var _ref = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee(args) {
-        return _regenerator2['default'].wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        return _context.abrupt('return', RxDatabase.create(args));
-
-                    case 1:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }));
-
-    return function create(_x) {
-        return _ref.apply(this, arguments);
-    };
-}();
+var create = exports.create = _core2['default'].create;
 
 /**
  * removes the database and all its known data
@@ -52,90 +71,34 @@ var create = exports.create = function () {
  * @param  {Object} adapter
  * @return {Promise}
  */
+var removeDatabase = exports.removeDatabase = _core2['default'].removeDatabase;
 
+/**
+ * add a plugin for rxdb or pouchdb
+ */
+var plugin = exports.plugin = _core2['default'].plugin;
 
-var removeDatabase = exports.removeDatabase = function () {
-    var _ref2 = (0, _asyncToGenerator3['default'])(_regenerator2['default'].mark(function _callee2(databaseName, adapter) {
-        return _regenerator2['default'].wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        return _context2.abrupt('return', RxDatabase.removeDatabase(databaseName, adapter));
+var isRxDatabase = exports.isRxDatabase = _core2['default'].isRxDatabase;
+var isRxCollection = exports.isRxCollection = _core2['default'].isRxCollection;
+var isRxDocument = exports.isRxDocument = _core2['default'].isRxDocument;
+var isRxQuery = exports.isRxQuery = _core2['default'].isRxQuery;
+var isRxSchema = exports.isRxSchema = _core2['default'].isRxSchema;
+var RxSchema = exports.RxSchema = _core2['default'].RxSchema;
+var PouchDB = exports.PouchDB = _core2['default'].PouchDB;
+var QueryChangeDetector = exports.QueryChangeDetector = _core2['default'].QueryChangeDetector;
+var RxDatabase = exports.RxDatabase = _core2['default'].RxDatabase;
 
-                    case 1:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, this);
-    }));
-
-    return function removeDatabase(_x2, _x3) {
-        return _ref2.apply(this, arguments);
-    };
-}();
-
-exports.plugin = plugin;
-exports.isRxDatabase = isRxDatabase;
-exports.isRxCollection = isRxCollection;
-exports.isRxDocument = isRxDocument;
-exports.isRxQuery = isRxQuery;
-exports.isRxSchema = isRxSchema;
-
-var _RxDatabase = require('./RxDatabase');
-
-var RxDatabase = _interopRequireWildcard(_RxDatabase);
-
-var _RxSchema = require('./RxSchema');
-
-var RxSchema = _interopRequireWildcard(_RxSchema);
-
-var _RxDocument = require('./RxDocument');
-
-var RxDocument = _interopRequireWildcard(_RxDocument);
-
-var _RxQuery = require('./RxQuery');
-
-var RxQuery = _interopRequireWildcard(_RxQuery);
-
-var _RxCollection = require('./RxCollection');
-
-var RxCollection = _interopRequireWildcard(_RxCollection);
-
-var _QueryChangeDetector = require('./QueryChangeDetector');
-
-var QueryChangeDetector = _interopRequireWildcard(_QueryChangeDetector);
-
-var _PouchDB = require('./PouchDB');
-
-var _PouchDB2 = _interopRequireDefault(_PouchDB);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function plugin(mod) {
-    if ((typeof mod === 'undefined' ? 'undefined' : (0, _typeof3['default'])(mod)) === 'object' && mod['default']) mod = mod['default'];
-    _PouchDB2['default'].plugin(mod);
-}
-
-function isRxDatabase(obj) {
-    return RxDatabase.isInstanceOf(obj);
-}
-function isRxCollection(obj) {
-    return RxCollection.isInstanceOf(obj);
-}
-function isRxDocument(obj) {
-    return RxDocument.isInstanceOf(obj);
-}
-function isRxQuery(obj) {
-    return RxQuery.isInstanceOf(obj);
-}
-function isRxSchema(obj) {
-    return RxSchema.isInstanceOf(obj);
-}
-
-exports.RxSchema = RxSchema;
-exports.PouchDB = _PouchDB2['default'];
-exports.QueryChangeDetector = QueryChangeDetector;
-exports.RxDatabase = RxDatabase;
+exports['default'] = {
+  create: create,
+  removeDatabase: removeDatabase,
+  plugin: plugin,
+  isRxDatabase: isRxDatabase,
+  isRxCollection: isRxCollection,
+  isRxDocument: isRxDocument,
+  isRxQuery: isRxQuery,
+  isRxSchema: isRxSchema,
+  RxSchema: RxSchema,
+  PouchDB: PouchDB,
+  QueryChangeDetector: QueryChangeDetector,
+  RxDatabase: RxDatabase
+};
