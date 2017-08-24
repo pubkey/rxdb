@@ -89,7 +89,6 @@ export class RxDocument {
                 break;
             case 'UPDATE':
                 const newData = clone(changeEvent.data.v);
-                delete newData._ext;
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 

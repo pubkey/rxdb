@@ -65,7 +65,6 @@ describe('QueryChangeDetector.test.js', () => {
                 hp: 100,
                 maxHP: 767,
                 name: 'asdfsadf',
-                _ext: true,
                 _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
             };
 

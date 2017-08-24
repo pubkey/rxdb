@@ -447,10 +447,6 @@ export class RxCollection {
             )
             .filter(c => c.id.charAt(0) != '_')
             .map(c => c.doc)
-            .map(doc => {
-                doc._ext = true;
-                return doc;
-            })
             .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
             .filter(doc => sendChanges[doc._rev] = 'YES')
             .delay(10)
