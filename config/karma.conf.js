@@ -7,7 +7,7 @@ const configuration = {
         'browserify',
         'detectBrowsers'
     ],
-    files: tests,
+    files: tests.browser,
     port: 9876,
     colors: true,
     autoWatch: false,

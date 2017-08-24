@@ -8,7 +8,7 @@
 
 import * as util from './util';
 
-class RxReplicationState {
+export class RxReplicationState {
     constructor(collection) {
         this._subs = [];
         this.collection = collection;
@@ -98,5 +98,6 @@ export function create(collection) {
 }
 
 export default {
-    create
+    create,
+    RxReplicationState
 };

@@ -1,4 +1,4 @@
-module.exports = [
+const nodeAndBrowser = [
     '../test_tmp/unit/init.test.js',
     '../test_tmp/unit/util.test.js',
     '../test_tmp/unit/PouchDB-integration.test.js',
@@ -27,5 +27,15 @@ module.exports = [
     '../test_tmp/unit/Replication.test.js',
     '../test_tmp/unit/Encryption.test.js',
     '../test_tmp/unit/ImportExport.test.js',
-    '../test_tmp/unit/CrossInstance.test.js'
+    '../test_tmp/unit/CrossInstance.test.js',
+    '../test_tmp/unit/mod_encryption.test.js'
 ];
+
+const nodeOnly = [
+    '../test_tmp/unit/Plugin.test.js'
+];
+
+module.exports = {
+    browser: nodeAndBrowser,
+    all: nodeAndBrowser.concat(nodeOnly)
+};

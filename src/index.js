@@ -1,10 +1,30 @@
-import RxDatabase from './RxDatabase';
-import RxSchema from './RxSchema';
-import RxDocument from './RxDocument';
-import RxQuery from './RxQuery';
-import RxCollection from './RxCollection';
-import QueryChangeDetector from './QueryChangeDetector';
-import PouchDB from './PouchDB';
+/**
+ * this is the default rxdb-export
+ * It has a batteries-included garantie.
+ * It basically just rxdb-core with some default plugins
+ */
+
+import Core from './core';
+
+// default plugins
+
+import SchemaCheckPlugin from './modules/schema-check';
+Core.plugin(SchemaCheckPlugin);
+
+import ValidatePlugin from './modules/validate';
+Core.plugin(ValidatePlugin);
+
+import KeyCompressionPlugin from './modules/key-compression';
+Core.plugin(KeyCompressionPlugin);
+
+import LeaderelectionPlugin from './modules/leader-election';
+Core.plugin(LeaderelectionPlugin);
+
+import EncryptionPlugin from './modules/encryption';
+Core.plugin(EncryptionPlugin);
+
+import UpdatePlugin from './modules/update';
+Core.plugin(UpdatePlugin);
 
 /**
  * create a database
@@ -14,9 +34,7 @@ import PouchDB from './PouchDB';
  * @param  {boolean} multiInstance if true, multiInstance-handling will be done
  * @return {Promise<Database>}
  */
-export async function create(args) {
-    return RxDatabase.create(args);
-}
+export const create = Core.create;
 
 /**
  * removes the database and all its known data
@@ -24,40 +42,22 @@ export async function create(args) {
  * @param  {Object} adapter
  * @return {Promise}
  */
-export async function removeDatabase(databaseName, adapter) {
-    return RxDatabase.removeDatabase(databaseName, adapter);
-}
+export const removeDatabase = Core.removeDatabase;
 
-export function plugin(mod) {
-    if (typeof mod === 'object' && mod.default) mod = mod.default;
-    PouchDB.plugin(mod);
-}
+/**
+ * add a plugin for rxdb or pouchdb
+ */
+export const plugin = Core.plugin;
 
-export function isRxDatabase(obj) {
-    return RxDatabase.isInstanceOf(obj);
-}
-export function isRxCollection(obj) {
-    return RxCollection.isInstanceOf(obj);
-}
-export function isRxDocument(obj) {
-    return RxDocument.isInstanceOf(obj);
-}
-export function isRxQuery(obj) {
-    return RxQuery.isInstanceOf(obj);
-}
-export function isRxSchema(obj) {
-    return RxSchema.isInstanceOf(obj);
-}
-
-
-
-export {
-    RxSchema as RxSchema,
-    PouchDB as PouchDB,
-    QueryChangeDetector as QueryChangeDetector,
-    RxDatabase as RxDatabase,
-};
-
+export const isRxDatabase = Core.isRxDatabase;
+export const isRxCollection = Core.isRxCollection;
+export const isRxDocument = Core.isRxDocument;
+export const isRxQuery = Core.isRxQuery;
+export const isRxSchema = Core.isRxSchema;
+export const RxSchema = Core.RxSchema;
+export const PouchDB = Core.PouchDB;
+export const QueryChangeDetector = Core.QueryChangeDetector;
+export const RxDatabase = Core.RxDatabase;
 
 export default {
     create,

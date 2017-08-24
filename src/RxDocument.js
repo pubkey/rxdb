@@ -1,12 +1,15 @@
 import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
-import modify from 'modifyjs';
 
 import * as util from './util';
 import RxChangeEvent from './RxChangeEvent';
+import RxError from './RxError';
+import {
+    runPluginHooks
+} from './hooks';
 
-class RxDocument {
+export class RxDocument {
     constructor(collection, jsonData) {
         this.collection = collection;
 
@@ -256,28 +259,12 @@ class RxDocument {
 
     /**
      * updates document
-     *  @param  {object} updateObj
+     * @overwritten by plugin (optinal)
+     * @param  {object} updateObj mongodb-like syntax
      */
     async update(updateObj) {
-        const newDoc = modify(this._data, updateObj);
-
-        Object.keys(this._data).forEach((previousPropName) => {
-            if (newDoc[previousPropName]) {
-                // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
-                // which causes problems with "readonly" fields
-                if (!deepEqual(this._data[previousPropName], newDoc[previousPropName]))
-                    this._data[previousPropName] = newDoc[previousPropName];
-            } else
-                delete this._data[previousPropName];
-        });
-        delete newDoc._rev;
-        delete newDoc._id;
-        Object.keys(newDoc)
-            .filter(newPropName => !deepEqual(this._data[newPropName], newDoc[newPropName]))
-            .forEach(newPropName => this._data[newPropName] = newDoc[newPropName]);
-        await this.save();
+        throw RxError.pluginMissing('update');
     }
-
 
     /**
      * [atomicUpdate description]
@@ -413,6 +400,7 @@ export function create(collection, jsonData) {
 
     const doc = new RxDocument(collection, jsonData);
     doc.prepare();
+    runPluginHooks('createRxDocument', doc);
     return doc;
 }
 
@@ -446,5 +434,6 @@ export default {
     create,
     createAr,
     properties,
+    RxDocument,
     isInstanceOf
 };

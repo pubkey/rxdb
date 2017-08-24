@@ -44,20 +44,6 @@ export const Rx = {
 };
 
 
-
-// crypto-js
-import * as crypto_AES from 'crypto-js/aes';
-import * as crypto_enc from 'crypto-js/enc-utf8';
-export function encrypt(value, password) {
-    const encrypted = crypto_AES.encrypt(value, password);
-    return encrypted.toString();
-}
-export function decrypt(ciphertext, password) {
-    const decrypted = crypto_AES.decrypt(ciphertext, password);
-    return decrypted.toString(crypto_enc);
-}
-
-
 /**
  * check if the given module is a leveldown-adapter
  * throws if not

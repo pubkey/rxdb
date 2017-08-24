@@ -1,11 +1,30 @@
 import { Injectable } from '@angular/core';
 
-import * as RxDB from 'rxdb';
+// batteries-included
+// import RxDB from 'rxdb';
+
+/**
+ * custom build
+ */
+import RxDB from 'rxdb/dist/es/core';
+
+// import modules
+
+import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schema-check';
+RxDB.plugin(RxDBSchemaCheckModule); // this should be used in dev-mode only
+
+import RxDBValidateModule from 'rxdb/dist/es/modules/validate';
+RxDB.plugin(RxDBValidateModule);
+import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leader-election';
+RxDB.plugin(RxDBLeaderElectionModule);
+
+
+// always needed for replicatin with the node-server
+RxDB.plugin(require('pouchdb-adapter-http'));
+RxDB.plugin(require('pouchdb-replication'));
+
+// import typings
 import * as RxDBTypes from './../RxDB.d';
-
-// if something does not work, try the published rxdb-module
-// import * as RxDB from 'rxdb';
-
 
 RxDB.QueryChangeDetector.enable();
 RxDB.QueryChangeDetector.enableDebugging();
@@ -20,8 +39,6 @@ const useAdapter = 'idb';
 RxDB.plugin(adapters[useAdapter]);
 
 
-RxDB.plugin(require('pouchdb-adapter-http'));
-RxDB.plugin(require('pouchdb-replication'));
 
 let collections = [
     {
@@ -50,7 +67,7 @@ export class DatabaseService {
         const db: RxDBTypes.RxHeroesDatabase = await RxDB.create({
             name: 'heroes',
             adapter: useAdapter,
-            password: 'myLongAndStupidPassword'
+            // password: 'myLongAndStupidPassword' // no password needed
         });
         console.log('DatabaseService: created database');
         window['db'] = db; // write to window for debugging

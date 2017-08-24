@@ -37,8 +37,10 @@ export class HeroInsertComponent implements OnInit {
         try {
             await this.tempDoc.save();
             await this.reset();
-        } catch (e) {
+        } catch (err) {
             alert('Error: Please check console');
+            console.error('hero-insert.submit(): error:');
+            throw err;
         }
 
         this.inputfield.nativeElement.focus();

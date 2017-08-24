@@ -32,44 +32,6 @@ describe('util.test.js', () => {
             assert.ok(hash > 0);
         });
     });
-    describe('.encrypt()', () => {
-        it('should encrypt properly', () => {
-            const value = 'foobar';
-            const pwd = 'pwd';
-            const encrypted = util.encrypt(value, pwd);
-            assert.notEqual(value, encrypted);
-            assert.ok(encrypted.length > value.length);
-            assert.equal(typeof encrypted, 'string');
-        });
-        it('should decrypt properly', () => {
-            const value = 'foobar';
-            const pwd = 'pwd';
-            const encrypted = util.encrypt(value, pwd);
-            const decrypted = util.decrypt(encrypted, pwd);
-            assert.notEqual(decrypted, encrypted);
-            assert.equal(value, decrypted);
-        });
-        it('should encrypt and decrypt an extremly long string', () => {
-            const value = util.randomCouchString(5000);
-            const pwd = 'pwd';
-            const encrypted = util.encrypt(value, pwd);
-            const decrypted = util.decrypt(encrypted, pwd);
-            assert.notEqual(value, encrypted);
-            assert.ok(encrypted.length > value.length);
-            assert.equal(typeof encrypted, 'string');
-            assert.equal(value, decrypted);
-        });
-        it('should encrypt and decrypt an extremly long password', () => {
-            const value = 'foobar';
-            const pwd = util.randomCouchString(5000);
-            const encrypted = util.encrypt(value, pwd);
-            const decrypted = util.decrypt(encrypted, pwd);
-            assert.notEqual(value, encrypted);
-            assert.ok(encrypted.length > value.length);
-            assert.equal(typeof encrypted, 'string');
-            assert.equal(value, decrypted);
-        });
-    });
     describe('.numberToLetter()', () => {
         it('1 letter', () => {
             assert.equal(util.numberToLetter(0), 'a');

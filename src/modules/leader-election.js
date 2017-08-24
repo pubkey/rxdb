@@ -1,15 +1,15 @@
 /**
- * this handles the leader-election for the given RxDatabase-instance
+ * this plugin adds the leader-election-capabilities to rxdb
  */
 
-import * as unload from 'unload';
+import unload from 'unload';
 
-import * as util from './util';
-import RxChangeEvent from './RxChangeEvent';
-import RxBroadcastChannel from './RxBroadcastChannel';
+import * as util from '../util';
+import RxChangeEvent from '../RxChangeEvent';
+import RxBroadcastChannel from '../RxBroadcastChannel';
 
-const documentID = '_local/leader';
-const SIGNAL_TIME = 500; // TODO evaluate this time
+export const documentID = '_local/leader';
+export const SIGNAL_TIME = 500; // TODO evaluate this time
 
 class LeaderElector {
     constructor(database) {
@@ -33,8 +33,6 @@ class LeaderElector {
         this.bc = RxBroadcastChannel.create(this.database, 'leader');
         this.electionChannel = this.bc ? 'broadcast' : 'socket';
     }
-
-    async prepare() {}
 
     createLeaderObject() {
         return {
@@ -325,19 +323,19 @@ class LeaderElector {
     }
 }
 
-export async function create(database) {
+export function create(database) {
     const elector = new LeaderElector(database);
-    await elector.prepare();
     return elector;
-}
+};
 
-export {
-    documentID as documentID,
-    SIGNAL_TIME as SIGNAL_TIME
+export const rxdb = true;
+export const prototypes = {};
+export const overwritable = {
+    createLeaderElector: create
 };
 
 export default {
-    create,
-    documentID,
-    SIGNAL_TIME
+    rxdb,
+    prototypes,
+    overwritable
 };

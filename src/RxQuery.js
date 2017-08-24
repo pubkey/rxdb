@@ -5,7 +5,10 @@ import clone from 'clone';
 import * as util from './util';
 import RxDocument from './RxDocument';
 import QueryChangeDetector from './QueryChangeDetector';
-
+import RxError from './RxError';
+import {
+    runPluginHooks
+} from './hooks';
 
 let _queryCount = 0;
 const newQueryID = function() {
@@ -13,7 +16,7 @@ const newQueryID = function() {
 };
 
 
-class RxQuery {
+export class RxQuery {
     constructor(op, queryObj, collection) {
         this.op = op;
         this.collection = collection;
@@ -284,10 +287,14 @@ class RxQuery {
      * @return {{selector: {}, sort: []}} compressedQuery
      */
     keyCompress() {
-        return this
-            .collection
-            ._keyCompressor
-            .compressQuery(this.toJSON());
+        if (!this.collection.schema.doKeyCompression())
+            return this.toJSON();
+        else {
+            return this
+                .collection
+                ._keyCompressor
+                .compressQuery(this.toJSON());
+        }
     }
 
     /**
@@ -309,21 +316,12 @@ class RxQuery {
 
     /**
      * updates all found documents
+     * @overwritten by plugin (optinal)
      * @param  {object} updateObj
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
     async update(updateObj) {
-        const docs = await this.exec();
-        if (!docs) return null;
-        if (Array.isArray(docs)) {
-            await Promise.all(
-                docs.map(doc => doc.update(updateObj))
-            );
-        } else {
-            // via findOne()
-            await docs.update(updateObj);
-        }
-        return docs;
+        throw RxError.pluginMissing('update');
     }
 
     async exec() {
@@ -432,6 +430,7 @@ export function create(op, queryObj, collection) {
         protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
     }
 
+    runPluginHooks('createRxQuery', ret);
     return ret;
 }
 
@@ -441,5 +440,6 @@ export function isInstanceOf(obj) {
 
 export default {
     create,
+    RxQuery,
     isInstanceOf
 };

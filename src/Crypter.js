@@ -6,20 +6,33 @@ import objectPath from 'object-path';
 import clone from 'clone';
 
 import * as util from './util';
+import RxError from './RxError';
 
-class Crypter {
+export class Crypter {
 
     constructor(password, schema) {
         this._password = password;
         this._schema = schema;
     }
 
+    /**
+     * encrypt and stringify data
+     * @overwritten by plugin (optional)
+     * @param  {any} value
+     * @return {string}
+     */
     _encryptValue(value) {
-        return util.encrypt(JSON.stringify(value), this._password);
+        throw RxError.pluginMissing('encryption');
     }
+
+    /**
+     * decrypt and json-parse an encrypted value
+     * @overwritten by plugin (optional)
+     * @param  {string} encValue
+     * @return {any}
+     */
     _decryptValue(encValue) {
-        const decrypted = util.decrypt(encValue, this._password);
-        return JSON.parse(decrypted);
+        throw RxError.pluginMissing('encryption');
     }
 
     encrypt(obj) {
@@ -55,5 +68,6 @@ export function create(password, schema) {
 }
 
 export default {
-    create
+    create,
+    Crypter
 };

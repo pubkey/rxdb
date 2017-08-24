@@ -1,8 +1,11 @@
 # Changelog
 
-## 5.x.x (coming soon)
+## 5.3.0 (coming soon)
 
-- Added default exports. Use `import RxDB from 'rxdb'` instead of `import * as RxDB from 'rxdb'`
+Features:
+  - Added [custom builds](https://pubkey.github.io/rxdb/CustomBuilds.html)
+  - Added [plugin-support](https://pubkey.github.io/rxdb/Plugins.html)
+  - Added default exports. Use `import RxDB from 'rxdb'` instead of `import * as RxDB from 'rxdb'`
 
 ## 5.2.1 (July 17, 2017)
 
