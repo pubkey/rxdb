@@ -14,7 +14,7 @@ import * as RxDocument from '../../dist/lib/RxDocument';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
-import * as KeyCompressor from '../../dist/lib/modules/keycompression';
+import * as KeyCompressor from '../../dist/lib/modules/key-compression';
 
 
 describe('KeyCompressor.test.js', () => {

@@ -112,10 +112,6 @@ class DataMigrator {
 
 }
 
-
-
-
-
 class OldCollection {
     constructor(version, schemaObj, dataMigrator) {
         this.version = version;

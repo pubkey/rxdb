@@ -2,7 +2,7 @@
 
 By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you dont have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.
 
-`NOTICE: Custom Builds are in beta-mode. It can happen that you have to re-adjust you build without a major rxdb-release.`
+`NOTICE: Custom Builds are in beta-mode an do not comply to semver. It can happen that you have to re-adjust you build without a major rxdb-release.`
 
 ## Core
 
@@ -43,11 +43,11 @@ The schemacheck-module does additional checks on your jsonschema before you crea
 
 ```javascript
 // es6-import
-import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schemacheck';
+import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schema-check';
 RxDB.plugin(RxDBSchemaCheckModule);
 
 // es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/schemacheck'));
+RxDB.plugin(require('rxdb/dist/lib/modules/schema-check'));
 ```
 
 ### keycompression
@@ -56,11 +56,11 @@ The keycompressor-module is needed when you have keyCompression enabled. This is
 
 ```javascript
 // es6-import
-import RxDBKeyCompressionModule from 'rxdb/dist/es/modules/keycompression';
+import RxDBKeyCompressionModule from 'rxdb/dist/es/modules/key-compression';
 RxDB.plugin(RxDBKeyCompressionModule);
 
 // es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/keycompression'));
+RxDB.plugin(require('rxdb/dist/lib/modules/key-compression'));
 ```
 
 ### leaderelection
@@ -69,11 +69,11 @@ The leaderelection-module is needed when want to use the leaderelection.
 
 ```javascript
 // es6-import
-import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leaderelection';
+import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leader-election';
 RxDB.plugin(RxDBLeaderElectionModule);
 
 // es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/leaderelection'));
+RxDB.plugin(require('rxdb/dist/lib/modules/leader-election'));
 ```
 
 ### encryption

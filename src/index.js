@@ -8,16 +8,16 @@ import Core from './core';
 
 // default plugins
 
-import SchemaCheckPlugin from './modules/schemacheck';
+import SchemaCheckPlugin from './modules/schema-check';
 Core.plugin(SchemaCheckPlugin);
 
 import ValidatePlugin from './modules/validate';
 Core.plugin(ValidatePlugin);
 
-import KeyCompressionPlugin from './modules/keycompression';
+import KeyCompressionPlugin from './modules/key-compression';
 Core.plugin(KeyCompressionPlugin);
 
-import LeaderelectionPlugin from './modules/leaderelection';
+import LeaderelectionPlugin from './modules/leader-election';
 Core.plugin(LeaderelectionPlugin);
 
 import EncryptionPlugin from './modules/encryption';

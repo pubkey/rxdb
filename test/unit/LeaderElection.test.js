@@ -12,7 +12,7 @@ import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as RxBroadcastChannel from '../../dist/lib/RxBroadcastChannel';
 
-import * as LeaderElector from '../../dist/lib/modules/leaderelection';
+import * as LeaderElector from '../../dist/lib/modules/leader-election';
 
 describe('LeaderElection.test.js', () => {
     describe('leaderObject', () => {
