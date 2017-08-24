@@ -220,6 +220,17 @@ describe('RxQuery.test.js', () => {
             assert.equal(q.id, q2.id);
             col.database.destroy();
         });
+        it('should have the correct amount of cached queries', async() => {
+            const col = await humansCollection.create(0);
+            const q3 = col.find()
+                .where('name').ne('Bob');
+            const q = col.find()
+                .where('name').ne('Alice');
+            const q2 = col.find()
+                .where('name').ne('Bob');
+            assert.equal(Object.keys(col._queryCache._map).length, 3);
+            col.database.destroy();
+        });
         it('return another object', async() => {
             const col = await humansCollection.create(0);
             const q = col.find()
