@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.3.0 (coming soon)
+## 5.3.0 (August 25, 2017)
 
 Features:
   - Added [custom builds](https://pubkey.github.io/rxdb/CustomBuilds.html)

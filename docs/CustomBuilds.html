@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Middleware-hooks · RxDB - Documentation</title>
+        <title>Custom Builds · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="ORM.html" />
+    <link rel="next" href="Plugins.html" />
     
     
-    <link rel="prev" href="RxQuery.html" />
+    <link rel="prev" href="QueryChangeDetection.html" />
     
 
     </head>
@@ -895,7 +895,7 @@
         
         
     
-        <li class="chapter active" data-level="3.1" data-path="Middleware.html">
+        <li class="chapter " data-level="3.1" data-path="Middleware.html">
             
                 <a href="Middleware.html">
             
@@ -986,7 +986,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.8" data-path="CustomBuilds.html">
+        <li class="chapter active" data-level="3.8" data-path="CustomBuilds.html">
             
                 <a href="CustomBuilds.html">
             
@@ -1055,7 +1055,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Middleware-hooks</a>
+        <a href="." >Custom Builds</a>
     </h1>
 </div>
 
@@ -1070,206 +1070,77 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="middleware">Middleware</h1>
-<p>RxDB supports middleware-hooks like <a href="http://mongoosejs.com/docs/middleware.html" target="_blank">mongoose</a>.
-Middleware (also called pre and post hooks) are functions which are passed control during execution of asynchronous functions.
-The hooks are specified on RxCollection-level and help to create a clear what-happens-when-structure of your code.</p>
-<p>Hooks can be defined to run parallel or as series one after another.
-Hooks can be synchronous or asynchronous when they return a Promise.
-To stop the operation at a specific hook, throw an error.</p>
-<h2 id="list">List</h2>
-<p>RxDB supports the following hooks:</p>
-<ul>
-<li>preInsert</li>
-<li>postInsert</li>
-<li>preSave</li>
-<li>postSave</li>
-<li>preRemove</li>
-<li>postRemove</li>
-<li>postCreate</li>
-</ul>
-<h3 id="why-is-there-no-validate-hook">Why is there no validate-hook?</h3>
-<p>Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
-This means if you set the value <code>lastName</code> of a RxDocument, then the validation will only run on the changed field, not the whole document.
-Therefore it is not usefull to have validate-hooks when a document is written to the database.</p>
-<h2 id="use-cases">Use Cases</h2>
-<p>Middleware are useful for atomizing model logic and avoiding nested blocks of async code.
-Here are some other ideas:</p>
-<ul>
-<li>complex validation</li>
-<li>removing dependent documents</li>
-<li>asynchronous defaults</li>
-<li>asynchronous tasks that a certain action triggers</li>
-<li>triggering custom events</li>
-<li>notifications</li>
-</ul>
-<h2 id="usage">Usage</h2>
-<h3 id="insert">Insert</h3>
-<p>An insert-hook recieves the data-object of the new document.</p>
-<h4 id="lifecycle">lifecycle</h4>
-<ul>
-<li>RxCollection.insert is called</li>
-<li>preInsert series-hooks</li>
-<li>preInsert parallel-hooks</li>
-<li>schema validation runs</li>
-<li>new document is written to database</li>
-<li>postInsert series-hooks</li>
-<li>postInsert parallel-hooks</li>
-<li>event is emmited to RxDatabase and RxCollection</li>
-</ul>
-<h4 id="preinsert">preInsert</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+                                <h1 id="custom-builds">Custom Builds</h1>
+<p>By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you dont have to choose which things you need and which not. The disadvantage is the build-size. Often you don&apos;t need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.</p>
+<p><code>NOTICE: Custom Builds are in beta-mode an do not comply to semver. It can happen that you have to re-adjust you build without a major rxdb-release.</code></p>
+<h2 id="core">Core</h2>
+<p>The core-module is the part of RxDB which is always needed to provide basic functionality. If you need a custom build, you start with the core and then add all modules that you need.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDB <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/core&apos;</span>;
 
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// stop the insert-operation</span>
-myCollection.preInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
-}, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+<span class="hljs-keyword">const</span> RxDB = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/core&apos;</span>);
 </code></pre>
-<h4 id="postinsert">postInsert</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
+<h2 id="required-modules">required modules</h2>
+<p>Some parts of RxDB are not in the core, but are required. This means they must always be overwritte by at least one plugin.</p>
+<h3 id="validate">validate</h3>
+<p>The validation-module does the schema-validation when you insert or update a <code>RxDocument</code>. Currently we have only one validation-module, which is using <a href="https://www.npmjs.com/package/is-my-json-valid" target="_blank">is-my-json-valid</a> but you can also use your own validator instead. To import the default validation-module, do this:</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBValidateModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/modules/validate&apos;</span>;
+RxDB.plugin(RxDBValidateModule);
 
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">documentData</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/modules/validate&apos;</span>));
 </code></pre>
-<h3 id="save">Save</h3>
-<p>A save-hook receives the document which is saved.</p>
-<h4 id="lifecycle">lifecycle</h4>
-<ul>
-<li>RxDocument.save is called</li>
-<li>preSave series-hooks</li>
-<li>preSave parallel-hooks</li>
-<li>updated document is written to database</li>
-<li>postSave series-hooks</li>
-<li>postSave parallel-hooks</li>
-<li>event is emmited to RxDatabase and RxCollection</li>
-</ul>
-<h4 id="presave">preSave</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  doc.anyField = <span class="hljs-string">&apos;anyValue&apos;</span>;
-}, <span class="hljs-literal">false</span>);
+<h2 id="optional-modules">optional modules</h2>
+<p>Some modules are optional and only needed if you use their functionality.</p>
+<h3 id="schemacheck">schemacheck</h3>
+<p>The schemacheck-module does additional checks on your jsonschema before you create a RxCollection. This ensure that your collection-schema is correctly working with rxdb. You should always enable this plugin on dev-mode.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBSchemaCheckModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/modules/schema-check&apos;</span>;
+RxDB.plugin(RxDBSchemaCheckModule);
 
-<span class="hljs-comment">// parallel</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// stop the save-operation</span>
-myCollection.preSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
-}, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/modules/schema-check&apos;</span>));
 </code></pre>
-<h4 id="postsave">postSave</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+<h3 id="keycompression">keycompression</h3>
+<p>The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set <a href="RxSchema.html#disablekeycompression">disableKeyCompression</a> to <code>true</code> when you do not have this module.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBKeyCompressionModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/modules/key-compression&apos;</span>;
+RxDB.plugin(RxDBKeyCompressionModule);
 
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/modules/key-compression&apos;</span>));
 </code></pre>
-<h3 id="remove">Remove</h3>
-<p>An remove-hook recieves the document which is removed.</p>
-<h4 id="lifecycle">lifecycle</h4>
-<ul>
-<li>RxDocument.remove is called</li>
-<li>preRemove series-hooks</li>
-<li>preRemove parallel-hooks</li>
-<li>deleted document is written to database</li>
-<li>postRemove series-hooks</li>
-<li>postRemove parallel-hooks</li>
-<li>event is emmited to RxDatabase and RxCollection</li>
-</ul>
-<h4 id="presave">preSave</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+<h3 id="leaderelection">leaderelection</h3>
+<p>The leaderelection-module is needed when want to use the leaderelection.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBLeaderElectionModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/modules/leader-election&apos;</span>;
+RxDB.plugin(RxDBLeaderElectionModule);
 
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// stop the remove-operation</span>
-myCollection.preRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&apos;stop&apos;</span>);
-}, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/modules/leader-election&apos;</span>));
 </code></pre>
-<h4 id="postremove">postRemove</h4>
-<pre><code class="lang-js"><span class="hljs-comment">// series</span>
-myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
+<h3 id="encryption">encryption</h3>
+<p>The encryption-module is using <code>crypto-js</code> and is only needed when you create your RxDB-Database with a <a href="RxDatabase.html#password-optional">password</a>.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBEncryptionModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/modules/encryption&apos;</span>;
+RxDB.plugin(RxDBEncryptionModule);
 
-}, <span class="hljs-literal">false</span>);
-
-<span class="hljs-comment">// parallel</span>
-myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-
-}, <span class="hljs-literal">true</span>);
-
-<span class="hljs-comment">// async</span>
-myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; setTimeout(res, <span class="hljs-number">100</span>));
-}, <span class="hljs-literal">false</span>);
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/modules/encryption&apos;</span>));
 </code></pre>
-<h3 id="postcreate">postCreate</h3>
-<p>This hook is called whenever a <code>RxDocument</code> is constructed.
-You can use <code>postCreate</code> to modify every RxDocument-instance of the collection.
-This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be <strong>asynchronous</strong>.</p>
-<pre><code class="lang-js">myCollection.postCreate(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
-    <span class="hljs-built_in">Object</span>.defineProperty(doc, <span class="hljs-string">&apos;myField&apos;</span>, {
-        get: () =&gt; <span class="hljs-string">&apos;foobar&apos;</span>,
-    });
-});
+<h3 id="update">update</h3>
+<p>The update-module is only required when you use <a href="RxDocument.html#update">RxDocument.update</a> or <a href="RxQuery.html#update">RxQuery.update</a>.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBUpdateModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/dist/es/modules/update&apos;</span>;
+RxDB.plugin(RxDBUpdateModule);
 
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.findOne().exec();
-
-<span class="hljs-built_in">console</span>.log(doc.myField);
-<span class="hljs-comment">// &apos;foobar&apos;</span>
+<span class="hljs-comment">// es5-require (dont forget to use the &apos;lib&apos;-folder instead of &apos;es&apos;)</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/dist/lib/modules/update&apos;</span>));
 </code></pre>
-<p>Notice: This hook does not run on already created or cached documents. Make sure to add <code>postCreate</code>-hooks before interacting with the collection.</p>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="ORM.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="Plugins.html">here</a></p>
 
                                 
                                 </section>
@@ -1297,12 +1168,12 @@ This adds a flexible way to add specifiy behavior to every document. You can als
 
             
                 
-                <a href="RxQuery.html#update" class="navigation navigation-prev " aria-label="Previous page: update()">
+                <a href="QueryChangeDetection.html" class="navigation navigation-prev " aria-label="Previous page: QueryChangeDetection">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="ORM.html" class="navigation navigation-next " aria-label="Next page: ORM/DRM">
+                <a href="Plugins.html" class="navigation navigation-next " aria-label="Next page: Plugins">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1313,7 +1184,7 @@ This adds a flexible way to add specifiy behavior to every document. You can als
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"3.1","depth":1,"next":{"title":"ORM/DRM","level":"3.2","depth":1,"path":"ORM.md","ref":"./ORM.md","articles":[]},"previous":{"title":"update()","level":"2.3.2","depth":2,"anchor":"#update","path":"RxQuery.md","ref":"./RxQuery.md#update","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"Middleware.md","mtime":"2017-08-20T20:26:25.442Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-08-25T20:00:25.413Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Builds","level":"3.8","depth":1,"next":{"title":"Plugins","level":"3.9","depth":1,"path":"Plugins.md","ref":"./Plugins.md","articles":[]},"previous":{"title":"QueryChangeDetection","level":"3.7","depth":1,"path":"QueryChangeDetection.md","ref":"./QueryChangeDetection.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"CustomBuilds.md","mtime":"2017-08-24T17:17:12.042Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-08-25T20:00:25.413Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

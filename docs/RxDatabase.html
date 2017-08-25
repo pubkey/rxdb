@@ -986,7 +986,33 @@
             
         </li>
     
-        <li class="chapter " data-level="3.8" data-path="Contribute.html">
+        <li class="chapter " data-level="3.8" data-path="CustomBuilds.html">
+            
+                <a href="CustomBuilds.html">
+            
+                    
+                    Custom Builds
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.9" data-path="Plugins.html">
+            
+                <a href="Plugins.html">
+            
+                    
+                    Plugins
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.10" data-path="Contribute.html">
             
                 <a href="Contribute.html">
             
@@ -1063,7 +1089,7 @@ Depending on the adapter this can also be used to define the storage-folder of y
 <p>The storage-adapter defines where the data is actually stored at. You can use a string for <a href="https://pouchdb.com/adapters.html" target="_blank">pouchdb-adapters</a> or an object for level-adapters. To use an adapter it must before have been added with the RxDB.plugin()-function.</p>
 <p>Before using a level-adapter, you have to add the <code>pouchdb-adapter-leveldb</code> module.</p>
 <p>Example with level-adapter:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> memdown } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;memdown&apos;</span>;
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> memdown <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;memdown&apos;</span>;
 RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-leveldb&apos;</span>));
 <span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> RxDB.create({name: <span class="hljs-string">&apos;mydatabase&apos;</span>, adapter: memdown});
 </code></pre>
@@ -1154,7 +1180,7 @@ RxDB.removeDatabase(<span class="hljs-string">&apos;mydatabasename&apos;</span>,
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.3","depth":1,"next":{"title":"Creation","level":"1.3.1","depth":2,"anchor":"#creation","path":"RxDatabase.md","ref":"./RxDatabase.md#creation","articles":[{"title":"name","level":"1.3.1.1","depth":3,"anchor":"#name","path":"RxDatabase.md","ref":"./RxDatabase.md#name","articles":[]},{"title":"adapter","level":"1.3.1.2","depth":3,"anchor":"#adapter","path":"RxDatabase.md","ref":"./RxDatabase.md#adapter","articles":[]},{"title":"password","level":"1.3.1.3","depth":3,"anchor":"#password-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#password-optional","articles":[]},{"title":"multiInstance","level":"1.3.1.4","depth":3,"anchor":"#multiInstance-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#multiInstance-optional","articles":[]}]},"previous":{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"Install.md","ref":"./Install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"RxDatabase.md","mtime":"2017-07-07T21:06:51.298Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-07-17T14:31:46.151Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.3","depth":1,"next":{"title":"Creation","level":"1.3.1","depth":2,"anchor":"#creation","path":"RxDatabase.md","ref":"./RxDatabase.md#creation","articles":[{"title":"name","level":"1.3.1.1","depth":3,"anchor":"#name","path":"RxDatabase.md","ref":"./RxDatabase.md#name","articles":[]},{"title":"adapter","level":"1.3.1.2","depth":3,"anchor":"#adapter","path":"RxDatabase.md","ref":"./RxDatabase.md#adapter","articles":[]},{"title":"password","level":"1.3.1.3","depth":3,"anchor":"#password-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#password-optional","articles":[]},{"title":"multiInstance","level":"1.3.1.4","depth":3,"anchor":"#multiInstance-optional","path":"RxDatabase.md","ref":"./RxDatabase.md#multiInstance-optional","articles":[]}]},"previous":{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"Install.md","ref":"./Install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"RxDatabase.md","mtime":"2017-08-20T20:26:25.442Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-08-25T20:00:25.413Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
