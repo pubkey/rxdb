@@ -312,6 +312,39 @@ describe('Replication.test.js', () => {
                 c.database.destroy();
                 c2.database.destroy();
             });
+            it('should emit true on non-live-replication when done', async() => {
+                const c = await humansCollection.create(10);
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: true,
+                    direction: {
+                        pull: true,
+                        push: true
+                    },
+                    options: {
+                        live: false,
+                        retry: true
+                    }
+                });
+
+                const emited = [];
+                const sub = repState.complete$.subscribe(ev => emited.push(ev));
+                await AsyncTestUtil.waitUntil(() => {
+                    const lastEv = emited[emited.length - 1];
+                    let ret = false;
+                    try {
+                        if (
+                            lastEv.push.ok == true &&
+                            lastEv.pull.ok == true
+                        ) ret = true;
+                    } catch (e) {}
+                    return ret;
+                });
+                sub.unsubscribe();
+                c.database.destroy();
+                c2.database.destroy();
+            });
         });
         describe('docs$', () => {
             it('should emit one event per doc', async() => {
