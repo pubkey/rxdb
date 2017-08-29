@@ -13,7 +13,8 @@
     "build:clean": "rimraf dist",
     "build:serve": "ws -p 8888 -d dist/",
     "build:serve9000": "ws -p 9000 -d dist/",
-    "build": "npm run build:clean && npm run build:webpack && echo \"BUILD SUCCESS\"",
+    "build:copy": "cp test/multitab.html dist/multitab.html",
+    "build": "npm run build:clean && npm run build:webpack && npm run build:copy && echo \"BUILD SUCCESS\"",
     "docker": "docker run -it -v $(pwd):/app -p 0.0.0.0:8888:8888 -p 0.0.0.0:10101:10101 node:6.9.1 /bin/bash /app/entrypoint.bash",
     "test:run": "testcafe chromium test/",
     "test:build": "concurrently \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
@@ -51,7 +52,7 @@
     "roboto-npm-webfont": "0.0.4",
     "rxdb": "../../",
     "rxjs": "5.4.3",
-    "zone.js": "0.8.17"
+    "zone.js": "0.8.14"
   },
   "devDependencies": {
     "@types/chai": "4.0.4",

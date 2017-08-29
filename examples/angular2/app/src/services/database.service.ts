@@ -37,7 +37,7 @@ const adapters = {
     idb: require('pouchdb-adapter-idb')
 };
 
-const useAdapter = 'idb';
+const useAdapter = 'localstorage';
 RxDB.plugin(adapters[useAdapter]);
 
 
