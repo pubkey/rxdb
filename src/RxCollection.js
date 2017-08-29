@@ -57,6 +57,8 @@ export class RxCollection {
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
+        await this.pouch.info(); // ensure that we wait until db is useable
+
         this._observable$ = this.database.$
             .filter(event => event.data.col == this.name);
         this._changeEventBuffer = ChangeEventBuffer.create(this);
