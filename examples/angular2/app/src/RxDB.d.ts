@@ -18,7 +18,7 @@ declare interface RxHeroDocumentData {
     }>;
 }
 
-declare class RxHeroDocument extends RxDB.RxDocument {
+export class RxHeroDocument extends RxDB.RxDocument {
     name: string;
     color: string;
     maxHP: number;
@@ -39,3 +39,9 @@ declare class RxHeroCollection extends RxDB.RxCollection<RxHeroDocument> {
 export class RxHeroesDatabase extends RxDB.RxDatabase {
     hero?: RxHeroCollection;
 }
+
+export default {
+    RxHeroDocument,
+    RxHeroCollection,
+    RxHeroesDatabase
+};

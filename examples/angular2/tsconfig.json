@@ -32,6 +32,9 @@
         "./app/**/*.less",
         "./node_modules/rxdb/*.ts"
     ],
+    "files": [
+        "./app/src/RxDB.d.ts"
+    ],
     "filesGlob": [
         "**/*.ts",
         "!node_modules/**"

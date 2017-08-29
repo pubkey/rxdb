@@ -1,6 +1,6 @@
 import { Component, ViewChildren, Input, OnChanges, Output, EventEmitter, OnInit } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
-import * as RxDBTypes from '../../RxDB.d';
+import { RxHeroDocument } from '../../RxDB.d';
 
 @Component({
     selector: 'hero-edit',
@@ -10,7 +10,7 @@ import * as RxDBTypes from '../../RxDB.d';
 })
 export class HeroEditComponent {
 
-    @Input('hero') hero: RxDBTypes.RxHeroDocument;
+    @Input('hero') hero: RxHeroDocument;
     @Output('done') done = new EventEmitter();
 
     constructor(

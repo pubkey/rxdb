@@ -9,9 +9,11 @@ import { Injectable } from '@angular/core';
 import RxDB from 'rxdb/dist/es/core';
 
 // import modules
-
 import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schema-check';
-RxDB.plugin(RxDBSchemaCheckModule); // this should be used in dev-mode only
+if (ENV === 'development') {
+    // schema-checks should be used in dev-mode only
+    RxDB.plugin(RxDBSchemaCheckModule);
+}
 
 import RxDBValidateModule from 'rxdb/dist/es/modules/validate';
 RxDB.plugin(RxDBValidateModule);
