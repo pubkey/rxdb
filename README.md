@@ -265,7 +265,7 @@ For example you can use websql in the browser, localstorage in mobile-browsers a
 
 ```js
 // this requires the localstorage-adapter
-RxDB.plugin(require('rxdb-adapter-localstorage'));
+RxDB.plugin(require('pouchdb-adapter-localstorage'));
 // this creates a database with the localstorage-adapter
 const db = await RxDB.create('heroesDB', 'localstorage');
 ```
