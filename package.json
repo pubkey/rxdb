@@ -116,7 +116,7 @@
     "gulp": "3.9.1",
     "gulp-mocha": "4.3.1",
     "http-server": "0.10.0",
-    "karma": "1.7.0",
+    "karma": "1.7.1",
     "karma-babel-preprocessor": "6.0.1",
     "karma-browserify": "5.1.1",
     "karma-chrome-launcher": "2.2.0",
