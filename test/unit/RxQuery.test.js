@@ -528,6 +528,13 @@ describe('RxQuery.test.js', () => {
 
             db.destroy();
         });
+        it('#267 query for null-fields', async() => {
+            const c = await humansCollection.create(2);
+            const foundDocs = await c.find({
+                foobar: null
+            }).exec();
+            c.database.destroy();
+        });
     });
 
     describe('e', () => {

@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.x.x (coming soon)
+
+Bugfixes:
+  - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
+
+Other:
+  - Fix deprecated warning with indexeddb-adapter `db.type()`
+
 ## 5.3.0 (August 25, 2017)
 
 Features:

@@ -260,13 +260,11 @@ export class RxQuery {
 
 
         // strip empty selectors
-        Object.entries(json.selector).forEach(entry => {
-            const key = entry[0];
-            const select = entry[1];
-            if (typeof select === 'object' && Object.keys(select) == 0)
-                delete json.selector[key];
-        });
-
+        Object.entries(json.selector)
+            .filter(entry => typeof entry[1] === 'object')
+            .filter(entry => entry[1] != null)
+            .filter(entry => Object.keys(entry[1]) == 0)
+            .forEach(entry => delete json.selector[entry[0]]);
 
         // primary swap
         if (
