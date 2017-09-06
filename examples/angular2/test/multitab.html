@@ -6,15 +6,41 @@
         iframe {
             width: 45%;
             float: left;
-            height: 100%;
+            height: 30%;
             min-height: 500px;
         }
     </style>
 </head>
 
 <body>
-    <iframe src="/index.html" id="frame_left"></iframe>
-    <iframe src="/index.html" id="frame_right"></iframe>
+
+
+    <script>
+        window.removeFrame = function() {
+            var id = document.querySelector('#removeId').value;
+            var frame = document.querySelector('#frame_' + id);
+            console.log(frame);
+            frame.parentNode.removeChild(frame);
+        }
+    </script>
+    <input type="number" id="removeId" />
+    <input type="submit" id="submit" onclick="removeFrame();" />
+
+    <script>
+        var amount = parseInt(window.location.search.split('=')[1], 10);
+        if (isNaN(amount))
+            amount = 2;
+        console.log(amount);
+        var t = 0;
+        while (t < amount) {
+            var ifrm = document.createElement('iframe');
+            ifrm.setAttribute('src', '/index.html');
+            ifrm.id = 'frame_' + t;
+            document.body.appendChild(ifrm);
+            t++;
+        }
+    </script>
+
 </body>
 
 </html>
