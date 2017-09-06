@@ -77,13 +77,19 @@ export var RxCollection = function () {
                             this._crypter = Crypter.create(this.database.password, this.schema);
 
                             this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
+                            _context.next = 5;
+                            return this.pouch.info();
+
+                        case 5:
+                            // ensure that we wait until db is useable
+
                             this._observable$ = this.database.$.filter(function (event) {
                                 return event.data.col == _this2.name;
                             });
                             this._changeEventBuffer = ChangeEventBuffer.create(this);
 
                             // INDEXES
-                            _context.next = 7;
+                            _context.next = 9;
                             return Promise.all(this.schema.indexes.map(function (indexAr) {
                                 var compressedIdx = indexAr.map(function (key) {
                                     if (!_this2.schema.doKeyCompression()) return key;else return _this2._keyCompressor._transformKey('', '', key.split('.'));
@@ -95,7 +101,7 @@ export var RxCollection = function () {
                                 });
                             }));
 
-                        case 7:
+                        case 9:
 
                             this._subs.push(this._observable$.subscribe(function (cE) {
                                 // when data changes, send it to RxDocument in docCache
@@ -103,7 +109,7 @@ export var RxCollection = function () {
                                 if (doc) doc._handleChangeEvent(cE);
                             }));
 
-                        case 8:
+                        case 10:
                         case 'end':
                             return _context.stop();
                     }

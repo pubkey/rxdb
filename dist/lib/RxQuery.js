@@ -412,10 +412,14 @@ var RxQuery = exports.RxQuery = function () {
             json.selector.language.$ne = 'query';
 
             // strip empty selectors
-            Object.entries(json.selector).forEach(function (entry) {
-                var key = entry[0];
-                var select = entry[1];
-                if ((typeof select === 'undefined' ? 'undefined' : (0, _typeof3['default'])(select)) === 'object' && Object.keys(select) == 0) delete json.selector[key];
+            Object.entries(json.selector).filter(function (entry) {
+                return (0, _typeof3['default'])(entry[1]) === 'object';
+            }).filter(function (entry) {
+                return entry[1] != null;
+            }).filter(function (entry) {
+                return Object.keys(entry[1]) == 0;
+            }).forEach(function (entry) {
+                return delete json.selector[entry[0]];
             });
 
             // primary swap
