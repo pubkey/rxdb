@@ -10,7 +10,7 @@ const collections = [{
     methods: {
         hpPercent() {
             return this.hp / this.maxHP * 100;
-        }
+        } 
     },
     sync: true
 }];

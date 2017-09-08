@@ -5,6 +5,7 @@
   "author": "pubkey",
   "private": true,
   "scripts": {
+    "lint": "eslint src",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
@@ -25,6 +26,7 @@
     "babel-preset-stage-0": "6.24.1",
     "cross-env": "5.0.1",
     "css-loader": "0.28.4",
+    "eslint": "4.6.1",
     "file-loader": "0.11.2",
     "vue-loader": "12.2.2",
     "vue-template-compiler": "2.4.1",
