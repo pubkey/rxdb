@@ -3,7 +3,7 @@
     <ul v-if="results">
         <li v-for="hero in results">
             <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
-            {{ hero.name }}
+            <span class="hero-name">{{ hero.name }}</span>
             <div class="life">
                 <div class="currentPercent" v-bind:style="{ width: hero.hpPercent() +'%' }"></div>
             </div>

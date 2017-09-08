@@ -10,7 +10,7 @@ const collections = [{
     methods: {
         hpPercent() {
             return this.hp / this.maxHP * 100;
-        } 
+        }
     },
     sync: true
 }];
@@ -58,9 +58,9 @@ const _create = async function() {
 
     // sync
     console.log('DatabaseService: sync');
-    collections.filter(col => col.sync).map(col => col.name).map(colName => db[colName].sync({
-        remote: syncURL + colName + '/'
-    }));
+    db.heroes.sync({
+        remote: syncURL + 'heroes/'
+    });
 
     return db;
 };

@@ -16,3 +16,4 @@ script:
 - npm run build
 - npm run lint
 - (cd ./examples/angular2 && npm install && npm run build && npm run test:build)
+- (cd ./examples/vue && npm install && npm run build && npm run test)
