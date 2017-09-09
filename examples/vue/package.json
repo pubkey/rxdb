@@ -22,7 +22,7 @@
     "vue": "2.4.2"
   },
   "devDependencies": {
-    "async-test-util": "1.1.1",
+    "async-test-util": "1.2.0",
     "babel-core": "6.26.0",
     "babel-loader": "7.1.2",
     "babel-polyfill": "6.26.0",
@@ -34,7 +34,7 @@
     "eslint": "4.6.1",
     "file-loader": "0.11.2",
     "local-web-server": "2.2.4",
-    "testcafe": "0.17.1",
+    "testcafe": "0.17.2",
     "vue-loader": "13.0.4",
     "vue-template-compiler": "2.4.2",
     "webpack": "3.5.6",
