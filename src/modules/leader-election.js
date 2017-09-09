@@ -13,6 +13,7 @@ export const SIGNAL_TIME = 500; // TODO evaluate this time
 
 class LeaderElector {
     constructor(database) {
+        this.destroyed = false;
 
         // things that must be cleared on destroy
         this.subs = [];
@@ -214,7 +215,6 @@ class LeaderElector {
             isLeader: true
         });
 
-        this.applyInterval && this.applyInterval.unsubscribe();
         await this.leaderSignal();
 
         // signal leadership on interval
@@ -292,6 +292,7 @@ class LeaderElector {
 
             switch (this.electionChannel) {
                 case 'broadcast':
+                    // apply when leader dies
                     this.subs.push(
                         this.bc.$
                         .filter(msg => msg.type == 'death')
@@ -299,13 +300,18 @@ class LeaderElector {
                     );
                     break;
                 case 'socket':
-                    // apply on interval
-                    this.applyInterval = util.Rx.Observable
-                        .interval(SIGNAL_TIME * 2)
-                        .subscribe(x => this.applyOnce());
-                    this.subs.push(this.applyInterval);
+                    // no message via socket, so just use the interval
                     break;
             }
+
+            // apply on interval incase leader dies without notification
+            (async() => {
+                while (!this.destroyed && !this.isLeader) {
+                    await util.promiseWait(SIGNAL_TIME * 2);
+                    await util.requestIdlePromise();
+                    await this.applyOnce();
+                }
+            })();
         }
 
         return this.becomeLeader$
@@ -316,6 +322,7 @@ class LeaderElector {
     }
 
     async destroy() {
+        this.destroyed = true;
         this.subs.map(sub => sub.unsubscribe());
         this.unloads.map(fn => fn());
         await this.die();

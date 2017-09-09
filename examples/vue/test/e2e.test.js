@@ -90,4 +90,30 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
     if (leaderAmount !== 1)
         throw new Error('more than one tab is leader');
 
+
+    // kill the leader
+    await t
+        .typeText('#removeId', currentLeader + '')
+        .click('#submit');
+
+    // wait until next one becomes leader
+    await AsyncTestUtil.wait(200);
+    const leaders = [];
+    await AsyncTestUtil.waitUntil(async() => {
+        let ret = false;
+        for (let i = 0; i < 6; i++) {
+            if (i !== currentLeader) {
+                await t.switchToIframe('#frame_' + i);
+                const title = await Selector('title').innerText;
+                console.log(title);
+                if (title.includes('♛')) {
+                    leaders.push(i);
+                    ret = true;
+                }
+                await t.switchToMainWindow();
+            }
+        }
+        return ret;
+    });
+
 });

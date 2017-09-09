@@ -85,37 +85,34 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
 
 
 
-    /*
-        // TODO killing the leader does not work inside of iframes, this could be a bug of the unload-module
+    //    console.log('leaderAmount: ' + leaderAmount);
+    //    console.log('currentLeader: ' + currentLeader);
 
-        console.log('leaderAmount: ' + leaderAmount);
-        console.log('currentLeader: ' + currentLeader);
+    // kill the leader
+    await t
+        .typeText('#removeId', currentLeader + '')
+        .click('#submit');
 
-        // kill the leader
-        await t
-            .typeText('#removeId', currentLeader + '')
-            .click('#submit');
-
-        // wait until next one becomes leader
-        await AsyncTestUtil.wait(200);
-        const leaders = [];
-        await AsyncTestUtil.waitUntil(async() => {
-            let ret = false;
-            for (let i = 0; i < 6; i++) {
-                if (i !== currentLeader) {
-                    await t.switchToIframe('#frame_' + i);
-                    const title = await Selector('title').innerText;
-                    console.log(title);
-                    if (title.includes('♛')) {
-                        leaders.push(i);
-                        ret = true;
-                    }
-                    await t.switchToMainWindow();
+    // wait until next one becomes leader
+    await AsyncTestUtil.wait(200);
+    const leaders = [];
+    await AsyncTestUtil.waitUntil(async() => {
+        let ret = false;
+        for (let i = 0; i < 6; i++) {
+            if (i !== currentLeader) {
+                await t.switchToIframe('#frame_' + i);
+                const title = await Selector('title').innerText;
+                console.log(title);
+                if (title.includes('♛')) {
+                    leaders.push(i);
+                    ret = true;
                 }
+                await t.switchToMainWindow();
             }
-            return ret;
-        });
+        }
+        return ret;
+    });
 
-        console.dir(leaders);
-    */
+    //    console.dir(leaders);
+
 });

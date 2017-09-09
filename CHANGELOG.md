@@ -7,6 +7,8 @@ Bugfixes:
 
 Other:
   - Fix deprecated warning with indexeddb-adapter `db.type()`
+  - Add fallback to leader-election
+  - Optimize leader-election to not waste resources when many tabs open
 
 ## 5.3.0 (August 25, 2017)
 
