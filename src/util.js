@@ -82,7 +82,7 @@ export function fastUnsecureHash(obj) {
  *  because pouchdb uses the same
  *  and build-size could be reduced by 9kb
  */
-const Md5 = require('spark-md5');
+import Md5 from 'spark-md5';
 export function hash(obj) {
     const salt = 'dW8a]Qsà<<>0lW6{3Fqxp3IdößBh:Fot';
     let msg = obj;
