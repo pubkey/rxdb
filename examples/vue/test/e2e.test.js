@@ -105,7 +105,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
             if (i !== currentLeader) {
                 await t.switchToIframe('#frame_' + i);
                 const title = await Selector('title').innerText;
-                console.log(title);
+                // console.log(title);
                 if (title.includes('♛')) {
                     leaders.push(i);
                     ret = true;
