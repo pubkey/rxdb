@@ -314,7 +314,8 @@ export class RxDatabase {
         if (this.destroyed) return;
         this.destroyed = true;
         this.socket && this.socket.destroy();
-        await this.leaderElector.destroy();
+        if (this._leaderElector)
+            await this._leaderElector.destroy();
         this.subs.map(sub => sub.unsubscribe());
         Object.keys(this.collections)
             .map(key => this.collections[key])
