@@ -9,7 +9,15 @@ import RxChangeEvent from '../RxChangeEvent';
 import RxBroadcastChannel from '../RxBroadcastChannel';
 
 export const documentID = '_local/leader';
-export const SIGNAL_TIME = 500; // TODO evaluate this time
+
+
+/**
+ * This time defines how 'fast' the communication between the instances is.
+ * If this time is too low, it's possible that more than one instance becomes leader
+ * If this time is too height, the leader-election takes longer than necessary
+ * @type {Number} in milliseconds
+ */
+export const SIGNAL_TIME = 500;
 
 class LeaderElector {
     constructor(database) {
@@ -290,6 +298,7 @@ class LeaderElector {
             // apply now
             this.applyOnce();
 
+            let fallbackIntervalTime = SIGNAL_TIME * 5;
             switch (this.electionChannel) {
                 case 'broadcast':
                     // apply when leader dies
@@ -300,14 +309,15 @@ class LeaderElector {
                     );
                     break;
                 case 'socket':
-                    // no message via socket, so just use the interval
+                    // no message via socket, so just use the interval but set it lower
+                    fallbackIntervalTime = SIGNAL_TIME * 2;
                     break;
             }
 
             // apply on interval incase leader dies without notification
             (async() => {
                 while (!this.destroyed && !this.isLeader) {
-                    await util.promiseWait(SIGNAL_TIME * 2);
+                    await util.promiseWait(fallbackIntervalTime);
                     await util.requestIdlePromise();
                     await this.applyOnce();
                 }
