@@ -5,8 +5,8 @@
 
 import objectPath from 'object-path';
 
-import RxDocument from '../RxDocument';
-import { getIndexes } from '../RxSchema';
+import RxDocument from '../rx-document';
+import { getIndexes } from '../rx-schema';
 
 /**
  * checks if the fieldname is allowed

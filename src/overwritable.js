@@ -2,7 +2,7 @@
  * functions that can or should be overwritten by plugins
  */
 
-import RxError from './RxError';
+import RxError from './rx-error';
 
 const funs = {
     /**

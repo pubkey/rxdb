@@ -3,14 +3,14 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import RxDatabase from './RxDatabase';
-import RxSchema from './RxSchema';
-import RxDocument from './RxDocument';
-import RxQuery from './RxQuery';
-import RxCollection from './RxCollection';
-import QueryChangeDetector from './QueryChangeDetector';
-import Plugin from './Plugin';
-import PouchDB from './PouchDB';
+import RxDatabase from './rx-database';
+import RxSchema from './rx-schema';
+import RxDocument from './rx-document';
+import RxQuery from './rx-query';
+import RxCollection from './rx-collection';
+import QueryChangeDetector from './query-change-detector';
+import Plugin from './plugin';
+import PouchDB from './pouch-db';
 
 export const create = RxDatabase.create;
 export const removeDatabase = RxDatabase.removeDatabase;

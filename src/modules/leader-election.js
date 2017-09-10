@@ -5,8 +5,8 @@
 import unload from 'unload';
 
 import * as util from '../util';
-import RxChangeEvent from '../RxChangeEvent';
-import RxBroadcastChannel from '../RxBroadcastChannel';
+import RxChangeEvent from '../rx-change-event';
+import RxBroadcastChannel from '../rx-broadcast-channel';
 
 export const documentID = '_local/leader';
 
