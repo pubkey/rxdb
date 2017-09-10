@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  Reactive, serverless, client-side, offline-first database in javascript.
+  Reactive, client-side, offline-first database in javascript.
 </p>
 
 <p align="center">
@@ -173,7 +173,7 @@ db.heroes
   <p>
 
 When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
-This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely serverless.
+This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely offline.
 </p>
 </summary>
 
