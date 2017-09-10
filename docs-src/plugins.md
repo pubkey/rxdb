@@ -59,7 +59,7 @@ The `rxdb`-property singals that this plugin is and rxdb-plugin and not a pouchd
 
 ## prototypes
 
-The `prototypes`-property contains a function for each of RxDB's internal protoype that you want to manipulate. Each function gets the protoype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/cutsom-builds/src/Plugin.js)
+The `prototypes`-property contains a function for each of RxDB's internal protoype that you want to manipulate. Each function gets the protoype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/cutsom-builds/src/plugin.js)
 
 ## overwritable
 

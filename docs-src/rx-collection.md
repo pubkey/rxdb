@@ -86,7 +86,7 @@ const doc = await myCollection.upsert({
 When you run many upsert-operations on the same RxDocument in a very short timespan, it can happen that you get a `409 Conflict`-Error.
 This means that you did run a `.upsert()` on the document, while the previous upsert-operation was still running.
 To prevent these types of errors, you can run atomic upsert-operations.
-The behavior is similar to [RxDocument.atomicUpdate](./RxDocument.md#atomicUpdate).
+The behavior is similar to [RxDocument.atomicUpdate](./rx-document.md#atomicUpdate).
 
 ```js
 const docData = {
@@ -161,7 +161,7 @@ myDatabase.destroy();
 
 ### sync()
 This method allows you to replicate data between other RxCollections, pouchdb-instances or remove servers which supprot the couchdb-sync-protocol.
-Full documentation on how to use replication is [here](./Replication.md).
+Full documentation on how to use replication is [here](./replication.md).
 
 ### remove()
 
@@ -180,4 +180,4 @@ const is = RxDB.isRxCollection(myObj);
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](./RxDocument.md)
+If you are new to RxDB, you should continue [here](./rx-document.md)

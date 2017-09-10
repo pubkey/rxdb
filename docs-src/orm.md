@@ -84,4 +84,4 @@ console.log(doc.whoAmI());
 
 
 ---------
-If you are new to RxDB, you should continue [here](./Population.md)
+If you are new to RxDB, you should continue [here](./population.md)

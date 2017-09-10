@@ -160,4 +160,4 @@ For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./RxCollection.md)
+If you are new to RxDB, you should continue [here](./rx-collection.md)

@@ -52,7 +52,7 @@ RxDB.plugin(require('rxdb/dist/lib/modules/schema-check'));
 
 ### keycompression
 
-The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set [disableKeyCompression](./RxSchema.html#disablekeycompression) to `true` when you do not have this module.
+The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set [disableKeyCompression](./rx-schema.html#disablekeycompression) to `true` when you do not have this module.
 
 ```javascript
 // es6-import
@@ -78,7 +78,7 @@ RxDB.plugin(require('rxdb/dist/lib/modules/leader-election'));
 
 ### encryption
 
-The encryption-module is using `crypto-js` and is only needed when you create your RxDB-Database with a [password](./RxDatabase.md#password-optional).
+The encryption-module is using `crypto-js` and is only needed when you create your RxDB-Database with a [password](./rx-database.md#password-optional).
 
 ```javascript
 // es6-import
@@ -91,7 +91,7 @@ RxDB.plugin(require('rxdb/dist/lib/modules/encryption'));
 
 ### update
 
-The update-module is only required when you use [RxDocument.update](./RxDocument.md#update) or [RxQuery.update](./RxQuery.md#update).
+The update-module is only required when you use [RxDocument.update](./rx-document.md#update) or [RxQuery.update](./rx-query.md#update).
 
 ```javascript
 // es6-import
@@ -104,4 +104,4 @@ RxDB.plugin(require('rxdb/dist/lib/modules/update'));
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./Plugins.md)
+If you are new to RxDB, you should continue [here](./plugins.md)

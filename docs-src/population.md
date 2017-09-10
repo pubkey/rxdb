@@ -133,4 +133,4 @@ console.dir(friends); //> Array.<RxDocument>
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](./DataMigration.md)
+If you are new to RxDB, you should continue [here](./data-migration.md)

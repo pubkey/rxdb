@@ -283,4 +283,4 @@ const is = RxDB.isRxDocument(myObj);
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](./RxQuery.md)
+If you are new to RxDB, you should continue [here](./rx-query.md)

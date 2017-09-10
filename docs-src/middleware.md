@@ -231,4 +231,4 @@ Notice: This hook does not run on already created or cached documents. Make sure
 
 
 ---------
-If you are new to RxDB, you should continue [here](./ORM.md)
+If you are new to RxDB, you should continue [here](./orm.md)

@@ -53,7 +53,7 @@ myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### waitForLeadership()
-Returns a Promise which resolves when the RxDatabase becomes [elected leader](./LeaderElection.md).
+Returns a Promise which resolves when the RxDatabase becomes [elected leader](./leader-election.md).
 
 ### dump()
 Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
@@ -100,4 +100,4 @@ const is = RxDB.isRxDatabase(myObj);
 
 
 -----------
-If you are new to RxDB, you should continue [here](./RxSchema.md)
+If you are new to RxDB, you should continue [here](./rx-schema.md)

@@ -15,7 +15,7 @@ const removedDocs = await query.remove();
 
 
 ## update()
-Runs and [update](./RxDocument.md#update) on every RxDocument of the query-result.
+Runs and [update](./rx-document.md#update) on every RxDocument of the query-result.
 
 ```js
 const query = myCollection.find().where('age').gt(18);
@@ -52,4 +52,4 @@ const is = RxDB.isRxQuery(myObj);
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](./Middleware.md)
+If you are new to RxDB, you should continue [here](./middleware.md)

@@ -29,4 +29,4 @@ require('babel-polyfill');
 ```
 
 -----------
-If you are new to RxDB, you should continue [here](./RxDatabase.md)
+If you are new to RxDB, you should continue [here](./rx-database.md)
