@@ -59,3 +59,14 @@ There should be the following default-strategies:
 - lexical-ordering of the documents-hash
 - It should also be possible to define custom resolution-strategies.
 - equal [strategy as rethinkdb](https://rethinkdb.com/api/javascript/insert/) (as RxDB.plugin)
+
+
+
+## Full Text Search
+
+Add a plugin with full-text-search like
+- https://github.com/pouchdb-community/pouchdb-quick-search
+- https://docs.mongodb.com/manual/core/index-text/
+
+See [#259](https://github.com/pubkey/rxdb/issues/259)
+

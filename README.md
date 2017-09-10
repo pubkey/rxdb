@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  Reactive, serverless, client-side, offline-first database in javascript.
+  Reactive, offline-first database in javascript.
 </p>
 
 <p align="center">
@@ -173,7 +173,7 @@ db.heroes
   <p>
 
 When two instances of RxDB use the same storage-engine, their state and action-stream will be broadcasted.
-This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely serverless.
+This means with two browser-windows the change of window #1 will automatically affect window #2. This works completely offline.
 </p>
 </summary>
 
@@ -409,7 +409,7 @@ Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or explori
 You can test out RxDB in the browser with [WebpackBin](https://www.webpackbin.com/bins/-Kl_UJwIRc7wysOY96PZ).
 
 ## Contribute
-[Check out how you can contribute to this project](./docs-src/Contribute.md).
+[Check out how you can contribute to this project](./docs-src/contribute.md).
 
 ## Follow up
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
