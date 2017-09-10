@@ -2,7 +2,6 @@ import objectPath from 'object-path';
 import clone from 'clone';
 
 import * as util from './util';
-import RxDocument from './rx-document';
 import RxError from './rx-error';
 import {
     runPluginHooks
@@ -107,7 +106,7 @@ export class RxSchema {
      * @throws {Error} if not valid
      * @param {Object} obj equal to input-obj
      */
-    validate(obj, schemaPath = '') {
+    validate() {
         throw RxError.pluginMissing('validate');
     }
 
@@ -129,8 +128,6 @@ export class RxSchema {
             .entries(this.defaultValues)
             .filter(entry => !obj.hasOwnProperty(entry[0]))
             .forEach(entry => {
-                const fieldName = entry[0];
-                const value = entry[0];
                 obj[entry[0]] = entry[1];
             });
         return obj;
@@ -177,7 +174,7 @@ export function getEncryptedPaths(jsonSchema) {
             ret[currentPath.substring(1)] = currentObj;
             return;
         }
-        for (let attributeName in currentObj) {
+        for (const attributeName in currentObj) {
             let nextPath = currentPath;
             if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);

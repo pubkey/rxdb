@@ -1,5 +1,4 @@
 import assert from 'assert';
-import memdown from 'memdown';
 import randomInt from 'random-int';
 import randomToken from 'random-token';
 import clone from 'clone';
@@ -384,7 +383,7 @@ describe('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         assert.ok(docs.length >= 10);
-                        for (let doc of docs)
+                        for (const doc of docs)
                             assert.equal(doc.constructor.name, 'RxDocument');
                     });
                     it('find 2 times', async() => {
@@ -398,7 +397,7 @@ describe('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find({}).exec();
                         assert.ok(docs.length >= 10);
-                        for (let doc of docs)
+                        for (const doc of docs)
                             assert.equal(doc.constructor.name, 'RxDocument');
                     });
                     it('find nothing with empty collection', async() => {
@@ -419,19 +418,19 @@ describe('rx-collection.test.js', () => {
                     it('BUG: insert and find very often', async() => {
                         const amount = 10;
                         for (let i = 0; i < amount; i++) {
-                            let db = await RxDatabase.create({
+                            const db = await RxDatabase.create({
                                 name: util.randomCouchString(10),
                                 adapter: 'memory'
                             });
-                            let collection = await db.collection({
+                            const collection = await db.collection({
                                 name: 'human',
                                 schema: schemas.human
                             });
-                            let human = schemaObjects.human();
-                            let passportId = human.passportId;
+                            const human = schemaObjects.human();
+                            const passportId = human.passportId;
                             await collection.insert(human);
-                            let docs = await collection.find().exec();
-                            let doc = docs[0];
+                            const docs = await collection.find().exec();
+                            const doc = docs[0];
                             assert.equal(passportId, doc._data.passportId);
                             db.destroy();
                         }
@@ -666,7 +665,7 @@ describe('rx-collection.test.js', () => {
                 describe('negative', () => {
                     it('throw when sort is not index', async() => {
                         const c = await humansCollection.create();
-                        const docs = await c.find({}).exec();
+                        await c.find({}).exec();
                         await AsyncTestUtil.assertThrows(
                             () => c.find({
                                 age: {
@@ -872,7 +871,7 @@ describe('rx-collection.test.js', () => {
                         }
                     });
                     const docsAfterUpdate = await c.find().exec();
-                    for (let doc of docsAfterUpdate)
+                    for (const doc of docsAfterUpdate)
                         assert.equal(doc._data.firstName, 'new first name');
                 });
                 it('unsets fields in all documents', async() => {
@@ -884,7 +883,7 @@ describe('rx-collection.test.js', () => {
                         }
                     });
                     const docsAfterUpdate = await c.find().exec();
-                    for (let doc of docsAfterUpdate)
+                    for (const doc of docsAfterUpdate)
                         assert.equal(doc.age, undefined);
                 });
             });
@@ -923,20 +922,20 @@ describe('rx-collection.test.js', () => {
                     this.timeout(5000);
                     const amount = 10;
                     for (let i = 0; i < amount; i++) {
-                        let db = await RxDatabase.create({
+                        const db = await RxDatabase.create({
                             name: util.randomCouchString(10),
                             adapter: 'memory'
                         });
-                        let collection = await db.collection({
+                        const collection = await db.collection({
                             name: 'human',
                             schema: schemas.human
                         });
-                        let human = schemaObjects.human();
-                        let passportId = human.passportId;
+                        const human = schemaObjects.human();
+                        const passportId = human.passportId;
                         await collection.insert(human);
-                        let docs = await collection.find().exec();
+                        const docs = await collection.find().exec();
                         if (!docs[0]) console.log('docs[0]: null');
-                        let doc = await collection.findOne().exec();
+                        const doc = await collection.findOne().exec();
                         if (!doc) console.log('doc: null');
                         assert.equal(passportId, doc._data.passportId);
                     }
@@ -1156,7 +1155,7 @@ describe('rx-collection.test.js', () => {
                 it('should throw when not matching schema', async() => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
-                    const docs = await Promise.all([
+                    await Promise.all([
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData)
@@ -1193,7 +1192,7 @@ describe('rx-collection.test.js', () => {
                     otherSchema.properties.foobar = {
                         type: 'string'
                     };
-                    const collection2 = await db.collection({
+                    await db.collection({
                         name: 'human',
                         schema: otherSchema
                     });

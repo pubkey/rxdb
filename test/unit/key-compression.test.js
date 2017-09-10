@@ -11,8 +11,6 @@ import * as humansCollection from './../helper/humans-collection';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxDocument from '../../dist/lib/rx-document';
-import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 
 import * as KeyCompressor from '../../dist/lib/modules/key-compression';
 
@@ -157,6 +155,7 @@ describe('key-compressor.test.js', () => {
             human._rev = 'foobar';
             const compressed = k.compress(human);
             assert.equal(human._rev, 'foobar');
+            assert.equal(compressed._rev, 'foobar');
         });
         it('nested', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.nestedHuman));

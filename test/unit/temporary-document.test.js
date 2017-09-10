@@ -1,10 +1,8 @@
 import assert from 'assert';
-import platform from 'detect-browser';
 import AsyncTestUtil from 'async-test-util';
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
-import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -15,6 +13,7 @@ describe('temporary-document.test.js', () => {
         it('should create a new document', async() => {
             const c = await humansCollection.create(0);
             const newDoc = c.newDocument();
+            assert.ok(newDoc);
             c.database.destroy();
         });
         it('should have initial data', async() => {
@@ -131,6 +130,7 @@ describe('temporary-document.test.js', () => {
             await newDoc.save();
             await AsyncTestUtil.waitUntil(() => emitted.length == 3);
             assert.equal('foobar2', emitted.pop());
+            sub.unsubscribe();
             c.database.destroy();
         });
     });

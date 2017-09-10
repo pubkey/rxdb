@@ -24,8 +24,6 @@ export async function spawn() {
     app.use(path, expressPouch);
     const ret = 'http://localhost:' + lastPort + path;
 
-    const myPouch = new InMemPouchDB('foo' + lastPort);
-
     return new Promise(res => {
         app.listen(lastPort, function() {
             res(ret + '/' + randomToken(5) + '/');

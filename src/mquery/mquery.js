@@ -269,7 +269,7 @@ class MQuery {
     sort(arg) {
         if (!arg) return this;
         let len;
-        let type = typeof arg;
+        const type = typeof arg;
         // .sort([['field', 1], ['test', -1]])
         if (Array.isArray(arg)) {
             len = arg.length;
@@ -286,7 +286,7 @@ class MQuery {
             for (let i = 0; i < len; ++i) {
                 let field = arg[i];
                 if (!field) continue;
-                let ascend = '-' == field[0] ? -1 : 1;
+                const ascend = '-' == field[0] ? -1 : 1;
                 if (ascend === -1) field = field.substring(1);
                 push(this.options, field, ascend);
             }
@@ -459,11 +459,12 @@ function _pushArr(opts, field, value) {
             \n- .sort([['field', 1], ['test', -1]])
             \n- .sort({ field: 1, test: -1 })`);
     }
-    const valueStr = value.toString()
-        .replace('asc', '1')
-        .replace('ascending', '1')
-        .replace('desc', '-1')
-        .replace('descending', '-1');
+
+    /*    const valueStr = value.toString()
+            .replace('asc', '1')
+            .replace('ascending', '1')
+            .replace('desc', '-1')
+            .replace('descending', '-1');*/
     opts.sort.push([field, value]);
 };
 

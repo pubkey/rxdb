@@ -91,7 +91,7 @@ export function validateFieldsDeep(jsonSchema) {
 
     function traverse(currentObj, currentPath) {
         if (typeof currentObj !== 'object') return;
-        for (let attributeName in currentObj) {
+        for (const attributeName in currentObj) {
             if (!currentObj.properties) {
                 checkField(
                     attributeName,
@@ -165,7 +165,6 @@ export function checkSchema(jsonID) {
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        let error = null;
         if (!Array.isArray(jsonID.compoundIndexes))
             throw new Error('compoundIndexes must be an array');
         jsonID.compoundIndexes.forEach(ar => {

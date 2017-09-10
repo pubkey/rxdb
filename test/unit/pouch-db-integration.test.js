@@ -2,12 +2,10 @@ import platform from 'detect-browser';
 import assert from 'assert';
 import memdown from 'memdown';
 
-let leveldown;
 let leveldb;
-if (platform.isNode()) {
-    leveldown = require('leveldown');
+if (platform.isNode())
     leveldb = require('pouchdb-adapter-leveldb');
-}
+
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';

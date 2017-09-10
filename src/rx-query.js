@@ -1,9 +1,7 @@
 import deepEqual from 'deep-equal';
 import MQuery from './mquery/mquery';
-import clone from 'clone';
 
 import * as util from './util';
-import RxDocument from './rx-document';
 import QueryChangeDetector from './query-change-detector';
 import RxError from './rx-error';
 import {
@@ -160,7 +158,7 @@ export class RxQuery {
      */
     async _execOverDatabase() {
         this._execOverDatabaseCount++;
-        let docsData, ret;
+        let docsData;
         switch (this.op) {
             case 'find':
                 docsData = await this.collection._pouchFind(this);
@@ -190,7 +188,7 @@ export class RxQuery {
 
             const changeEvents$ = this.collection.$
                 .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
-                .mergeMap(async(changeEvent) => this._ensureEqual())
+                .mergeMap(async() => this._ensureEqual())
                 .filter(() => false);
 
             this._observable$ = util.Rx.Observable
@@ -217,7 +215,7 @@ export class RxQuery {
             selector: this.mquery._conditions
         };
 
-        let options = this.mquery._optionsForExec();
+        const options = this.mquery._optionsForExec();
 
         // sort
         if (options.sort) {
@@ -318,7 +316,7 @@ export class RxQuery {
      * @param  {object} updateObj
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
-    async update(updateObj) {
+    async update() {
         throw RxError.pluginMissing('update');
     }
 

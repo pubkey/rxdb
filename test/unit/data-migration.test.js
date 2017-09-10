@@ -1,13 +1,11 @@
 import assert from 'assert';
 import PouchDB from '../../dist/lib/pouch-db';
 import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxCollection from '../../dist/lib/rx-collection';
 import * as RxSchema from '../../dist/lib/rx-schema';
-import * as Crypter from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -40,7 +38,7 @@ describe('data-migration.test.js', () => {
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.human);
-                const col = await db.collection({
+                await db.collection({
                     name: colName,
                     schema,
                     autoMigrate: false
@@ -51,7 +49,7 @@ describe('data-migration.test.js', () => {
                     adapter: 'memory'
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
-                const col2 = await db2.collection({
+                await db2.collection({
                     name: colName,
                     schema: schema2,
                     autoMigrate: false,
@@ -189,7 +187,7 @@ describe('data-migration.test.js', () => {
                     adapter: 'memory'
                 });
                 const schema = RxSchema.create(schemas.simpleHuman);
-                const col = await db.collection({
+                await db.collection({
                     name: colName,
                     schema,
                     autoMigrate: false
@@ -222,7 +220,6 @@ describe('data-migration.test.js', () => {
 
                     const col = await humansCollection.createMigrationCollection();
 
-                    const migrator = await col._dataMigrator;
                     const old = await col._dataMigrator._getOldCollections();
                     const oldCol = old.pop();
 
@@ -242,7 +239,6 @@ describe('data-migration.test.js', () => {
                         }
                     });
 
-                    const migrator = col._dataMigrator;
                     const old = await col._dataMigrator._getOldCollections();
                     const oldCol = old.pop();
 
@@ -259,7 +255,6 @@ describe('data-migration.test.js', () => {
                         }
                     });
 
-                    const migrator = col._dataMigrator;
                     const old = await col._dataMigrator._getOldCollections();
                     const oldCol = old.pop();
 
@@ -272,7 +267,6 @@ describe('data-migration.test.js', () => {
                 it('should delete the pouchdb with all its content', async() => {
                     const dbName = util.randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
-                    const migrator = col._dataMigrator;
                     const olds = await col._dataMigrator._getOldCollections();
                     const old = olds.pop();
 
@@ -392,7 +386,7 @@ describe('data-migration.test.js', () => {
                         assert.equal(state.type, 'success');
                         assert.ok(state.doc._id);
                         states.push(state);
-                    }, e => {
+                    }, () => {
                         throw new Error('this test should not call error');
                     }, pw8.resolve);
 
@@ -402,7 +396,7 @@ describe('data-migration.test.js', () => {
 
                 it('should emit "deleted" when migration-strategy returns null', async() => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async(doc) => {
+                        3: async() => {
                             return null;
                         }
                     });
@@ -424,7 +418,7 @@ describe('data-migration.test.js', () => {
                 });
                 it('should throw when document cannot be migrated', async() => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async(doc) => {
+                        3: async() => {
                             throw new Error('foobar');
                         }
                     });
@@ -497,12 +491,11 @@ describe('data-migration.test.js', () => {
             describe('negative', () => {
                 it('should .error when strategy fails', async() => {
                     const col = await humansCollection.createMigrationCollection(5, {
-                        3: doc => {
+                        3: () => {
                             throw new Error('foobar');
                         }
                     });
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
-                    let error = null;
                     const state$ = col.migrate();
                     state$.subscribe(null, pw8.resolve, null);
 
@@ -530,12 +523,12 @@ describe('data-migration.test.js', () => {
             describe('negative', () => {
                 it('should reject when migration fails', async() => {
                     const col = await humansCollection.createMigrationCollection(5, {
-                        3: doc => {
+                        3: () => {
                             throw new Error('foobar');
                         }
                     });
                     let failed = false;
-                    await col.migratePromise().catch(e => failed = true);
+                    await col.migratePromise().catch(() => failed = true);
                     assert.ok(failed);
                 });
             });

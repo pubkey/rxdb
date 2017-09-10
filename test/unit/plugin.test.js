@@ -3,8 +3,6 @@
  */
 
 import assert from 'assert';
-import clone from 'clone';
-import AsyncTestUtil from 'async-test-util';
 import platform from 'detect-browser';
 import RxDB from '../../dist/lib/index';
 import * as humansCollection from '../helper/humans-collection';

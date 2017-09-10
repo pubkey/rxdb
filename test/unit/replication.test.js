@@ -7,7 +7,6 @@
 import assert from 'assert';
 import platform from 'detect-browser';
 
-import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
@@ -75,7 +74,7 @@ describe('replication.test.js', () => {
                     since: 'now',
                     live: true,
                     include_docs: true
-                }).on('change', function(change) {
+                }).on('change', () => {
                     count++;
                     if (count == 2) pw8.resolve();
                 });
@@ -108,7 +107,7 @@ describe('replication.test.js', () => {
                     live: true
                 });
 
-                let e1 = [];
+                const e1 = [];
                 const pouch$ = util.Rx.Observable
                     .fromEvent(c.pouch.changes({
                         since: 'now',
@@ -117,7 +116,7 @@ describe('replication.test.js', () => {
                     }), 'change')
                     .filter(e => !e.id.startsWith('_'))
                     .subscribe(e => e1.push(e));
-                let e2 = [];
+                const e2 = [];
                 const pouch2$ = util.Rx.Observable
                     .fromEvent(c2.pouch.changes({
                         since: 'now',
@@ -135,6 +134,8 @@ describe('replication.test.js', () => {
                 await AsyncTestUtil.waitUntil(() => e2.length == 1);
                 assert.equal(e1.length, e2.length);
 
+                pouch$.unsubscribe();
+                pouch2$.unsubscribe();
                 c.database.destroy();
                 c2.database.destroy();
             });
@@ -382,7 +383,7 @@ describe('replication.test.js', () => {
                 });
 
                 const pw8 = AsyncTestUtil.waitResolveable(1700);
-                let events = [];
+                const events = [];
                 c2.$.subscribe(e => {
                     events.push(e);
                     pw8.resolve();

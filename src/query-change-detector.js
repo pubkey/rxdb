@@ -11,7 +11,6 @@ import {
     filterInMemoryFields,
     massageSelector
 } from 'pouchdb-selector-core';
-import clone from 'clone';
 import objectPath from 'object-path';
 
 let DEBUG = false;
@@ -31,12 +30,9 @@ class QueryChangeDetector {
      */
     runChangeDetection(changeEvents) {
         if (changeEvents.length == 0) return false;
-
         if (!ENABLED) return true;
 
-        const options = this.query.toJSON();
         let resultsData = this.query._resultsData;
-
         let changed = false;
 
         const found = changeEvents.find(changeEvent => {

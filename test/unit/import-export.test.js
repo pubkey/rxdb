@@ -8,8 +8,6 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
-import * as RxCollection from '../../dist/lib/rx-collection';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -307,10 +305,9 @@ describe('import-export.test.js', () => {
                     name: 'enchuman',
                     schema: schemas.encryptedObjectHuman
                 });
-                const fns = [];
                 await Promise.all(
                     new Array(10).fill(0)
-                    .map(x => col.insert(schemaObjects.encryptedObjectHuman()))
+                    .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
                 );
                 const json = await db.dump(true);
 

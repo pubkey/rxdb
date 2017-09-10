@@ -52,7 +52,7 @@ export class RxReplicationState {
                     ev.direction !== 'pull'
                 ) return;
 
-                const docs = ev.change.docs
+                ev.change.docs
                     .filter(doc => doc.language !== 'query') // remove internal docs
                     .map(doc => this.collection._handleFromPouch(doc)) // do primary-swap and keycompression
                     .forEach(doc => this._subjects.docs.next(doc));
@@ -69,12 +69,12 @@ export class RxReplicationState {
         this._subs.push(
             util.Rx.Observable
             .fromEvent(evEmitter, 'active')
-            .subscribe(ev => this._subjects.active.next(true))
+            .subscribe(() => this._subjects.active.next(true))
         );
         this._subs.push(
             util.Rx.Observable
             .fromEvent(evEmitter, 'paused')
-            .subscribe(ev => this._subjects.active.next(false))
+            .subscribe(() => this._subjects.active.next(false))
         );
 
         // complete

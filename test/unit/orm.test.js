@@ -1,11 +1,10 @@
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from './../helper/humans-collection';
 
 describe('orm.test.js', () => {
     describe('statics', () => {
@@ -16,7 +15,7 @@ describe('orm.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
-                    const collection = await db.collection({
+                    await db.collection({
                         name: 'humans',
                         schema: schemas.human,
                         statics: {
@@ -148,7 +147,7 @@ describe('orm.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
-                    const collection = await db.collection({
+                    await db.collection({
                         name: 'humans',
                         schema: schemas.human,
                         methods: {

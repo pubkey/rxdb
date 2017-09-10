@@ -1,5 +1,4 @@
 import * as util from './util';
-import RxCollection from './rx-collection';
 import RxChangeEvent from './rx-change-event';
 import RxBroadcastChannel from './rx-broadcast-channel';
 
@@ -38,7 +37,7 @@ class Socket {
             this.subs.push(
                 this.bc.$
                 .filter(msg => msg.type == 'pull')
-                .subscribe(msg => this.pull())
+                .subscribe(() => this.pull())
             );
         }
 

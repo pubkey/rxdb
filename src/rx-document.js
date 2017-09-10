@@ -142,7 +142,7 @@ export class RxDocument {
             .asObservable();
     }
 
-    async populate(path, object) {
+    async populate(path) {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!schemaObj)
@@ -239,7 +239,7 @@ export class RxDocument {
         if (Object.is(this.get(objPath), value)) return;
 
         // check if nested without root-object
-        let pathEls = objPath.split('.');
+        const pathEls = objPath.split('.');
         pathEls.pop();
         const rootPath = pathEls.join('.');
         if (typeof objectPath.get(this._data, rootPath) === 'undefined') {
@@ -261,7 +261,7 @@ export class RxDocument {
      * @overwritten by plugin (optinal)
      * @param  {object} updateObj mongodb-like syntax
      */
-    async update(updateObj) {
+    async update() {
         throw RxError.pluginMissing('update');
     }
 

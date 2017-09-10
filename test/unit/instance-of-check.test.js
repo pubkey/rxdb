@@ -1,9 +1,7 @@
 import assert from 'assert';
 
 import * as humansCollection from '../helper/humans-collection';
-import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
-
 
 describe('instance-of-check.test.js', () => {
     it('positive', async() => {

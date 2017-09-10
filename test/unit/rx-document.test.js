@@ -409,6 +409,7 @@ describe('rx-document.test.js', () => {
                 await c.insert(schemaObjects.simpleHuman());
                 const doc = await c.findOne().exec();
                 const docData = doc.toJSON();
+                assert.ok(docData);
                 await doc.atomicUpdate(innerDoc => innerDoc.firstName = 'foobar');
                 assert.equal(doc.firstName, 'foobar');
                 await db.destroy();
@@ -425,6 +426,7 @@ describe('rx-document.test.js', () => {
                 const doc2 = await c2.findOne().exec();
                 assert.equal(doc.passportId, doc2.passportId);
                 const docData2 = doc2.toJSON();
+                assert.ok(docData2);
                 assert.equal(doc2.firstName, 'foobar');
                 db2.destroy();
             });

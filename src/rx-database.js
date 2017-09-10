@@ -88,7 +88,7 @@ export class RxDatabase {
      * @type {Object}
      */
     _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings = {});
+        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings);
     }
 
     get isLeader() {

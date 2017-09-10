@@ -3,11 +3,8 @@ import assert from 'assert';
 import memdown from 'memdown';
 
 let leveldown;
-let leveldb;
-if (platform.isNode()) {
+if (platform.isNode())
     leveldown = require('leveldown');
-    leveldb = require('pouchdb-adapter-leveldb');
-}
 
 const path = require('path');
 
@@ -135,6 +132,7 @@ describe('rx-database.test.js', () => {
                     password
                 });
                 const doc2 = await db._adminPouch.get('_local/pwHash');
+                assert.ok(doc2);
                 assert.equal(typeof doc.value, 'string');
 
                 db.destroy();
@@ -182,7 +180,7 @@ describe('rx-database.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const collection = await db.collection({
+                await db.collection({
                     name: 'human0',
                     schema: schemas.human
                 });

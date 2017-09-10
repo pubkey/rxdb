@@ -1,16 +1,12 @@
 import assert from 'assert';
 import * as faker from 'faker';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
-
 
 describe('population.test.js', () => {
     describe('RxSchema.create', () => {

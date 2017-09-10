@@ -8,8 +8,6 @@ import * as RxSchema from '../../dist/lib/rx-schema';
 
 import * as RxDB from '../../dist/lib/index';
 
-const dbLifetime = 1000 * 2; // db.destroy() will be called after this time
-
 export async function create(size = 20, name = 'human', multiInstance = true) {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));

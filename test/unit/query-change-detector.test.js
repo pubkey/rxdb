@@ -1,7 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
 import platform from 'detect-browser';
-import request from 'request-promise';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -362,8 +361,7 @@ describe('query-change-detector.test.js', () => {
 
                     const other = schemaObjects.human();
                     other.passportId = '000aaaaa'; // to make sure it sorts at start
-                    const otherDoc = await col.insert(other);
-
+                    await col.insert(other);
 
                     results = await q.exec();
                     assert.equal(results.length, 6);

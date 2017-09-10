@@ -12,7 +12,7 @@
         "indent": [
             "error",
             4, {
-				"MemberExpression": "off",
+                "MemberExpression": "off",
                 "SwitchCase": 1
             }
         ],
@@ -31,6 +31,10 @@
         "no-console": "off",
         "curly": ["error", "multi-or-nest"],
         "no-var": "error",
-        "no-throw-literal": "error"
+        "no-throw-literal": "error",
+        "prefer-const": "error",
+        "no-unused-vars": "error",
+        "no-implicit-globals": "error",
+        "no-global-assign": "error"
     }
 }

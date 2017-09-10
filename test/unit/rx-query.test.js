@@ -8,8 +8,6 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import * as RxDocument from '../../dist/lib/rx-document';
-import mquery from '../../dist/lib/mquery/mquery';
 
 describe('rx-query.test.js', () => {
     describe('mquery', () => {
@@ -224,10 +222,13 @@ describe('rx-query.test.js', () => {
             const col = await humansCollection.create(0);
             const q3 = col.find()
                 .where('name').ne('Bob');
+            assert.ok(q3);
             const q = col.find()
                 .where('name').ne('Alice');
+            assert.ok(q);
             const q2 = col.find()
                 .where('name').ne('Bob');
+            assert.ok(q2);
             assert.equal(Object.keys(col._queryCache._map).length, 3);
             col.database.destroy();
         });
@@ -410,7 +411,7 @@ describe('rx-query.test.js', () => {
                 }
             });
             const docs = await query.exec();
-            for (let doc of docs)
+            for (const doc of docs)
                 assert.equal(doc._data.firstName, 'new first name');
             c.database.destroy();
         });
@@ -423,7 +424,7 @@ describe('rx-query.test.js', () => {
                 }
             });
             const docs = await query.exec();
-            for (let doc of docs)
+            for (const doc of docs)
                 assert.equal(doc._data.age, undefined);
             c.database.destroy();
         });
@@ -533,6 +534,7 @@ describe('rx-query.test.js', () => {
             const foundDocs = await c.find({
                 foobar: null
             }).exec();
+            assert.ok(Array.isArray(foundDocs));
             c.database.destroy();
         });
     });

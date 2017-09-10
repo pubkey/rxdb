@@ -2,12 +2,9 @@ import assert from 'assert';
 import platform from 'detect-browser';
 
 import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
-import * as RxCollection from '../../dist/lib/rx-collection';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
@@ -111,7 +108,6 @@ describe('leader-election.test.js', () => {
             await leaderElector.beLeader();
 
             const c2 = await humansCollection.createMultiInstance(name);
-            const leaderElector2 = c2.database.leaderElector;
             const is = await leaderElector.applyOnce();
             assert.equal(is, false);
             c.database.destroy();
@@ -258,9 +254,9 @@ describe('leader-election.test.js', () => {
             assert.equal(leaderCount, 1);
 
             // let leader die
-            let leader = dbs
+            const leader = dbs
                 .filter(db => db.leaderElector.isLeader == true)[0];
-            let leaderToken = leader.token;
+            const leaderToken = leader.token;
             await leader.destroy();
 
             // noone should be leader
@@ -285,9 +281,9 @@ describe('leader-election.test.js', () => {
             });
             assert.equal(leaderCount, 1);
 
-            let leader2 = dbs
+            const leader2 = dbs
                 .filter(db => db.leaderElector.isLeader == true)[0];
-            let leaderToken2 = leader2.token;
+            const leaderToken2 = leader2.token;
 
             assert.notEqual(leaderToken, leaderToken2);
             await Promise.all(dbs.map(db => db.destroy()));
@@ -301,7 +297,7 @@ describe('leader-election.test.js', () => {
                 multiInstance: false
             });
             // setTimeout(() => db.destroy(), dbLifetime);
-            const collection = await db.collection({
+            await db.collection({
                 name: 'human',
                 schema: schemas.human
             });
@@ -320,13 +316,13 @@ describe('leader-election.test.js', () => {
             const cols = await Promise.all(
                 new Array(5)
                 .fill(0)
-                .map(i => humansCollection.createMultiInstance(name))
+                .map(() => humansCollection.createMultiInstance(name))
             );
             const dbs = cols.map(col => col.database);
 
 
             let count = 0;
-            dbs.forEach(db => db.waitForLeadership().then(is => count++));
+            dbs.forEach(db => db.waitForLeadership().then(() => count++));
             await AsyncTestUtil.waitUntil(() => count == 1);
 
             // let leader die

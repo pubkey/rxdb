@@ -356,6 +356,7 @@ describe('rx-schema.test.js', () => {
                 assert.equal(schema._normalized, null);
                 const normalized = schema.normalized;
                 assert.notEqual(schema._normalized, null);
+                assert.notEqual(normalized, null);
             });
         });
         describe('.previousVersions', () => {

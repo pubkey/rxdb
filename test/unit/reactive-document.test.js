@@ -3,19 +3,10 @@
  */
 
 import assert from 'assert';
-import clone from 'clone';
-import memdown from 'memdown';
-
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
-
-import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
-import * as RxCollection from '../../dist/lib/rx-collection';
-import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import * as RxDB from '../../dist/lib/index';
+
+import * as humansCollection from '../helper/humans-collection';
+import * as util from '../../dist/lib/util';
 
 describe('reactive-document.test.js', () => {
     describe('.save()', () => {

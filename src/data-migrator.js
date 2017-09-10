@@ -30,7 +30,7 @@ class DataMigrator {
         const oldColDocs = await Promise.all(
             this.currentSchema.previousVersions
             .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
-            .map(fun => fun.catch(e => null)) // auto-catch so Promise.all continues
+            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
         );
         // spawn OldCollection-instances
         return oldColDocs
@@ -68,7 +68,6 @@ class DataMigrator {
             observer.next(clone(state));
 
             let currentCol = null;
-            let error = null;
             while (currentCol = oldCols.shift()) {
                 const migrationState$ = currentCol.migrate(batchSize);
                 await new Promise(res => {
@@ -80,7 +79,6 @@ class DataMigrator {
                             observer.next(clone(state));
                         },
                         e => {
-                            error = e;
                             sub.unsubscribe();
                             observer.error(e);
                         }, () => {
@@ -88,7 +86,6 @@ class DataMigrator {
                             res();
                         });
                 });
-
             }
 
             state.done = true;
@@ -191,18 +188,13 @@ class OldCollection {
         doc = clone(doc);
         let nextVersion = this.version + 1;
 
-
         // run throught migrationStrategies
-        let error = null;
-        while (nextVersion <= this.newestCollection.schema.version && !error) {
-
+        while (nextVersion <= this.newestCollection.schema.version) {
             doc = await this.dataMigrator.migrationStrategies[nextVersion + ''](doc);
-
             nextVersion++;
-            if (doc == null && !error)
+            if (doc == null)
                 return null;
         }
-
 
         // check final schema
         try {

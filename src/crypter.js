@@ -5,7 +5,6 @@
 import objectPath from 'object-path';
 import clone from 'clone';
 
-import * as util from './util';
 import RxError from './rx-error';
 
 export class Crypter {
@@ -21,7 +20,7 @@ export class Crypter {
      * @param  {any} value
      * @return {string}
      */
-    _encryptValue(value) {
+    _encryptValue() {
         throw RxError.pluginMissing('encryption');
     }
 
@@ -31,7 +30,7 @@ export class Crypter {
      * @param  {string} encValue
      * @return {any}
      */
-    _decryptValue(encValue) {
+    _decryptValue() {
         throw RxError.pluginMissing('encryption');
     }
 

@@ -2,9 +2,6 @@ import assert from 'assert';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
-import * as util from '../../dist/lib/util';
-import * as RxDocument from '../../dist/lib/rx-document';
-import * as ChangeEventBuffer from '../../dist/lib/change-event-buffer';
 import AsyncTestUtil from 'async-test-util';
 
 describe('change-event-buffer.test.js', () => {

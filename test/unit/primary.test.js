@@ -12,7 +12,6 @@ import assert from 'assert';
 import clone from 'clone';
 
 import * as RxSchema from '../../dist/lib/rx-schema';
-import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';

@@ -8,7 +8,6 @@ import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as Crypter from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 
 describe('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {

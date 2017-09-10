@@ -4,7 +4,6 @@
  */
 
 
-import clone from 'clone';
 import randomToken from 'random-token';
 
 // rxjs cherry-pick
@@ -84,7 +83,6 @@ export function fastUnsecureHash(obj) {
  */
 import Md5 from 'spark-md5';
 export function hash(obj) {
-    const salt = 'dW8a]Qsà<<>0lW6{3Fqxp3IdößBh:Fot';
     let msg = obj;
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
     return Md5.hash(msg);

@@ -2,7 +2,6 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
 
 describe('util.test.js', () => {

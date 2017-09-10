@@ -5,7 +5,6 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -90,7 +89,7 @@ describe('hooks.test.js', () => {
                 it('should not insert if hook throws', async() => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
-                    c.preInsert(function(doc) {
+                    c.preInsert(() => {
                         throw new Error('foobar');
                     }, false);
 
@@ -216,7 +215,7 @@ describe('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
 
-                    c.preSave(function(doc) {
+                    c.preSave(function() {
                         throw new Error('fail');
                     }, false);
 
@@ -321,7 +320,7 @@ describe('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
 
-                    c.preRemove(function(doc) {
+                    c.preRemove(function() {
                         throw new Error('fail');
                     }, false);
 
@@ -423,7 +422,7 @@ describe('hooks.test.js', () => {
     describe('issues', () => {
         it('BUG #158 : Throwing error in async preInsert does not prevent insert', async() => {
             const c = await humansCollection.create(0);
-            c.preInsert(async function(doc) {
+            c.preInsert(async function() {
                 await util.promiseWait(1);
                 throw new Error('This throw should prevent the insert');
             }, false);

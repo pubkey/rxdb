@@ -1,5 +1,3 @@
-import PouchDB from './pouch-db';
-import objectPath from 'object-path';
 import clone from 'clone';
 
 import * as util from './util';
@@ -391,7 +389,7 @@ export class RxCollection {
         }
 
         const query = RxQuery.create('find', {}, this);
-        let docs = await this._pouchFind(query, null, encrypted);
+        const docs = await this._pouchFind(query, null, encrypted);
         json.docs = docs.map(docData => {
             delete docData._rev;
             return docData;

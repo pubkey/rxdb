@@ -4,8 +4,6 @@
  */
 
 import assert from 'assert';
-import clone from 'clone';
-import memdown from 'memdown';
 import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
 

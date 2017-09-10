@@ -1,14 +1,9 @@
 import assert from 'assert';
-import platform from 'detect-browser';
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
-
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
 
 describe('rx-broadcast-channel.test.js', () => {
 

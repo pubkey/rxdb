@@ -12,7 +12,7 @@ const funs = {
      * @throws if password not valid
      * @return {void}
      */
-    validatePassword: function(password) {
+    validatePassword: function() {
         throw RxError.pluginMissing('encryption');
     },
     /**
@@ -20,7 +20,7 @@ const funs = {
      * @param  {RxSchema} schema
      * @return {KeyCompressor}
      */
-    createKeyCompressor(schema) {
+    createKeyCompressor() {
         throw RxError.pluginMissing('keycompression');
     },
     /**
@@ -28,7 +28,7 @@ const funs = {
      * @param  {RxDatabase} database
      * @return {LeaderElector}
      */
-    createLeaderElector(database) {
+    createLeaderElector() {
         throw RxError.pluginMissing('leaderelection');
     }
 };

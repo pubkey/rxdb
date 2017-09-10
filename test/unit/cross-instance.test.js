@@ -6,7 +6,6 @@
  */
 
 import assert from 'assert';
-const platform = require('detect-browser');
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -114,7 +113,6 @@ describe('cross-instance.test.js', () => {
             c2.database.destroy();
         });
         it('get no changes via pouchdb on different dbs', async() => {
-            const name = util.randomCouchString(10);
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
             let got;
@@ -146,8 +144,8 @@ describe('cross-instance.test.js', () => {
             const doc2 = await c2.findOne().exec();
 
             let recieved = 0;
-            doc2.$.subscribe(cEvent => {
-                recieved++;
+            doc2.$.subscribe(() => {
+                recieved = recieved + 1;
             });
 
             let firstNameAfter;
@@ -195,13 +193,13 @@ describe('cross-instance.test.js', () => {
             const doc2 = await c2.findOne().exec();
 
             let recievedCollection = 0;
-            c2.$.subscribe(cEvent => {
-                recievedCollection++;
+            c2.$.subscribe(() => {
+                recievedCollection = recievedCollection + 1;
             });
 
             let recieved = 0;
-            doc2.$.subscribe(cEvent => {
-                recieved++;
+            doc2.$.subscribe(() => {
+                recieved = recieved + 1;
             });
 
             let secretAfter;
@@ -248,13 +246,13 @@ describe('cross-instance.test.js', () => {
             const doc2 = await c2.findOne().exec();
 
             let recievedCollection = 0;
-            c2.$.subscribe(cEvent => {
-                recievedCollection++;
+            c2.$.subscribe(() => {
+                recievedCollection = recievedCollection + 1;
             });
 
             let recieved = 0;
-            doc2.$.subscribe(cEvent => {
-                recieved++;
+            doc2.$.subscribe(() => {
+                recieved = recieved + 1;
             });
 
             let secretAfter;

@@ -1,13 +1,9 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as Socket from '../../dist/lib/socket';
 import * as RxChangeEvent from '../../dist/lib/rx-change-event';
 import * as util from '../../dist/lib/util';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
 
 describe('socket.test.js', () => {
 

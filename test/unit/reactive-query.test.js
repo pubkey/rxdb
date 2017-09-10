@@ -1,14 +1,8 @@
 import assert from 'assert';
-import clone from 'clone';
-import memdown from 'memdown';
 
-import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
-import * as RxCollection from '../../dist/lib/rx-collection';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -96,7 +90,7 @@ describe('reactive-query.test.js', () => {
             let pw8 = AsyncTestUtil.waitResolveable(500);
 
             let values;
-            const query = c.find({
+            const querySub = c.find({
                 firstName: doc.get('firstName')
             }).$.subscribe(newV => {
                 values = newV;
@@ -112,6 +106,7 @@ describe('reactive-query.test.js', () => {
             await doc.save();
             await pw8.promise;
             assert.equal(values.length, 0);
+            querySub.unsubscribe();
             c.database.destroy();
         });
 
@@ -122,13 +117,13 @@ describe('reactive-query.test.js', () => {
         it('do not fire on doc-change when result-doc not affected', async() => {
             const c = await humansCollection.createAgeIndex(10);
             // take only 9 of 10
-            let valuesAr = [];
+            const valuesAr = [];
             let pw8 = AsyncTestUtil.waitResolveable(300);
-            const query = c.find()
+            const querySub = c.find()
                 .limit(9)
                 .sort('age')
                 .$
-                .do(x => pw8.resolve())
+                .do(() => pw8.resolve())
                 .filter(x => x !== null)
                 .subscribe(newV => valuesAr.push(newV));
 
@@ -150,6 +145,8 @@ describe('reactive-query.test.js', () => {
 
             await util.promiseWait(20);
             assert.equal(valuesAr.length, 1);
+            querySub.unsubscribe();
+            c.database.destroy();
         });
 
         it('BUG: should have the document in DocCache when getting it from observe', async() => {
@@ -227,10 +224,11 @@ describe('reactive-query.test.js', () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let recieved = 0;
-            query.$.subscribe(newResults => {
+            const querySub = query.$.subscribe(() => {
                 recieved++;
             });
             await AsyncTestUtil.waitUntil(() => recieved == 1);
+            querySub.unsubscribe();
             c.database.destroy();
         });
     });
