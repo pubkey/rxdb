@@ -409,7 +409,7 @@ Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or explori
 You can test out RxDB in the browser with [WebpackBin](https://www.webpackbin.com/bins/-Kl_UJwIRc7wysOY96PZ).
 
 ## Contribute
-[Check out how you can contribute to this project](./docs-src/Contribute.md).
+[Check out how you can contribute to this project](./docs-src/contribute.md).
 
 ## Follow up
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
