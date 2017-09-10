@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  Reactive, client-side, offline-first database in javascript.
+  Reactive, offline-first database in javascript.
 </p>
 
 <p align="center">
