@@ -2,8 +2,6 @@
  * this contains a mapping to basic dependencies
  * which should be easy to change
  */
-
-
 import randomToken from 'random-token';
 
 // rxjs cherry-pick
@@ -306,4 +304,21 @@ export function randomCouchString(length = 10) {
  */
 export function shuffleArray(arr) {
     return arr.sort(() => (Math.random() - 0.5));
+};
+
+
+/**
+ * transforms the given adapter into a pouch-compatible object
+ * @return {Object} adapterObject
+ */
+export function adapterObject(adapter) {
+    let adapterObj = {
+        db: adapter
+    };
+    if (typeof adapter === 'string') {
+        adapterObj = {
+            adapter: adapter
+        };
+    }
+    return adapterObj;
 };

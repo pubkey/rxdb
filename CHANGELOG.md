@@ -2,6 +2,9 @@
 
 ## 5.x.x (coming soon)
 
+Features:
+  - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkAdapter)
+
 Bugfixes:
   - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
 

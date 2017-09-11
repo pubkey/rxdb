@@ -12,7 +12,7 @@ const funs = {
      * @throws if password not valid
      * @return {void}
      */
-    validatePassword: function() {
+    validatePassword() {
         throw RxError.pluginMissing('encryption');
     },
     /**
@@ -30,6 +30,14 @@ const funs = {
      */
     createLeaderElector() {
         throw RxError.pluginMissing('leaderelection');
+    },
+
+    /**
+     * checks if the given adapter can be used
+     * @return {any} adapter
+     */
+    checkAdapter() {
+        throw RxError.pluginMissing('adapter-check');
     }
 };
 

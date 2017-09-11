@@ -380,27 +380,12 @@ export async function create({
     return db;
 }
 
-/**
- * transforms the given adapter into a pouch-compatible object
- * @return {Object} adapterObject
- */
-function _adapterObject(adapter) {
-    let adapterObj = {
-        db: adapter
-    };
-    if (typeof adapter === 'string') {
-        adapterObj = {
-            adapter: adapter
-        };
-    }
-    return adapterObj;
-}
 
 function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}) {
     const pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
     return new PouchDB(
         pouchLocation,
-        _adapterObject(adapter),
+        util.adapterObject(adapter),
         pouchSettings
     );
 }
@@ -452,6 +437,13 @@ export async function removeDatabase(databaseName, adapter) {
     await socketPouch.destroy();
 }
 
+/**
+ * check is the given adapter can be used
+ */
+export async function checkAdapter(adapter) {
+    return await overwritable.checkAdapter(adapter);
+};
+
 export function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
@@ -464,6 +456,7 @@ export {
 export default {
     create,
     removeDatabase,
+    checkAdapter,
     isInstanceOf,
     RxDatabase,
     RxSchema

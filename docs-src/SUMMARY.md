@@ -19,6 +19,7 @@
         * [importDump()](./rx-database.md#importdump)
         * [destroy()](./rx-database.md#destroy)
         * [remove()](./rx-database.md#remove)
+        * [checkAdapter()](./rx-database.md#checkadapter)
 
 * [RxSchema](./rx-schema.md)
     * [Example](./rx-schema.md#example)

@@ -3,7 +3,6 @@
  * basically it changes the internal prototypes
  * by passing them to the plugins-functions
  */
-
 import RxSchema from './rx-schema';
 import Crypter from './crypter';
 import RxDocument from './rx-document';
@@ -59,5 +58,6 @@ export function addPlugin(plugin) {
 }
 
 export default {
-    addPlugin
+    addPlugin,
+    overwritable
 };

@@ -26,6 +26,10 @@ Core.plugin(EncryptionPlugin);
 import UpdatePlugin from './modules/update';
 Core.plugin(UpdatePlugin);
 
+import AdapterCheckPlugin from './modules/adapter-check';
+Core.plugin(AdapterCheckPlugin);
+
+
 /**
  * create a database
  * @param  {string} prefix as databaseName for the storage (this can be the foldername)
@@ -58,9 +62,11 @@ export const RxSchema = Core.RxSchema;
 export const PouchDB = Core.PouchDB;
 export const QueryChangeDetector = Core.QueryChangeDetector;
 export const RxDatabase = Core.RxDatabase;
+export const checkAdapter = Core.checkAdapter;
 
 export default {
     create,
+    checkAdapter,
     removeDatabase,
     plugin,
     isRxDatabase,

@@ -14,6 +14,8 @@ import PouchDB from './pouch-db';
 
 export const create = RxDatabase.create;
 export const removeDatabase = RxDatabase.removeDatabase;
+export const checkAdapter = RxDatabase.checkAdapter;
+
 
 export function plugin(mod) {
     if (mod.rxdb) {
@@ -35,6 +37,7 @@ export const isRxSchema = RxSchema.isInstanceOf;
 export default {
     create,
     removeDatabase,
+    checkAdapter,
     plugin,
     isRxDatabase,
     isRxCollection,

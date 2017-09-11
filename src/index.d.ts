@@ -285,6 +285,8 @@ export interface DatabaseCreator {
 
 export function create(creator: DatabaseCreator): Promise<RxDatabase>;
 export function removeDatabase(databaseName: string, adapter: any): Promise<any>;
+export function checkAdapter(adapter: any | string): Promise<boolean>;
+
 
 export const QueryChangeDetector: {
     enable(): void;

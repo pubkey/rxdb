@@ -2,6 +2,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/init.test.js',
     '../test_tmp/unit/util.test.js',
     '../test_tmp/unit/pouch-db-integration.test.js',
+    '../test_tmp/unit/adapter-check.test.js',
     '../test_tmp/unit/rx-broadcast-channel.test.js',
     '../test_tmp/unit/instance-of-check.test.js',
     '../test_tmp/unit/rx-schema.test.js',

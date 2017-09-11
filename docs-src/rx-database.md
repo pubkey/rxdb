@@ -92,6 +92,16 @@ await myDatabase.remove();
 RxDB.removeDatabase('mydatabasename', 'localstorage');
 ```
 
+### checkAdapter()
+Checks if the given adapter can be used with RxDB in the current environment.
+
+```js
+RxDB.plugin(require('pouchdb-adapter-localstorage')); // adapter must be added before
+
+const ok = await RxDB.checkAdapter('localstorage');
+console.dir(ok); // true on most browsers, false on nodejs
+```
+
 ### isRxDatabase
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
 ```js
