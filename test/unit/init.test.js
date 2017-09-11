@@ -2,6 +2,10 @@ console.log('######## init.test.js ########');
 
 import 'babel-polyfill';
 
+// set faker seed
+import faker from 'faker';
+faker.seed(123);
+
 const platform = require('detect-browser');
 
 platform.isNode = function() {
