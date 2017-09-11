@@ -20,10 +20,11 @@ RxDB.plugin(RxDBValidateModule);
 import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leader-election';
 RxDB.plugin(RxDBLeaderElectionModule);
 
-
-// always needed for replicatin with the node-server
+import RxDBReplicationModule from 'rxdb/dist/es/modules/replication';
+RxDB.plugin(RxDBReplicationModule);
+// always needed for replication with the node-server
 RxDB.plugin(require('pouchdb-adapter-http'));
-RxDB.plugin(require('pouchdb-replication'));
+
 
 // import typings
 import * as RxDBTypes from './../RxDB.d';

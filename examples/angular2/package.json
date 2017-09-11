@@ -45,7 +45,6 @@
     "pouchdb-adapter-idb": "6.3.4",
     "pouchdb-adapter-localstorage": "6.3.4",
     "pouchdb-adapter-websql": "^6.3.4",
-    "pouchdb-replication": "6.3.4",
     "pouchdb-server": "2.3.7",
     "random-int": "1.0.0",
     "regenerator": "0.10.1",

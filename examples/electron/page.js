@@ -2,7 +2,6 @@ const RxDB = require('../../');
 require('babel-polyfill');
 RxDB.plugin(require('pouchdb-adapter-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
-RxDB.plugin(require('pouchdb-replication'));
 
 const listBox = document.querySelector('#list-box');
 const insertBox = document.querySelector('#insert-box');

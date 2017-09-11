@@ -16,7 +16,6 @@ const useAdapter = 'idb';
 RxDB.plugin(adapters[useAdapter]);
 
 RxDB.plugin(require('pouchdb-adapter-http'));
-RxDB.plugin(require('pouchdb-replication'));
 
 let collections = [
   {

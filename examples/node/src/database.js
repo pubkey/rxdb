@@ -2,7 +2,6 @@ require('babel-polyfill');
 const RxDB = require('../../../');
 RxDB.plugin(require('pouchdb-adapter-node-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
-RxDB.plugin(require('pouchdb-replication'));
 
 const Database = {};
 
