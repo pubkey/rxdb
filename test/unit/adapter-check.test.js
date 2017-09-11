@@ -1,9 +1,11 @@
 import assert from 'assert';
 import platform from 'detect-browser';
+import RxDB from '../../dist/lib/index';
 
 import memdown from 'memdown';
+if (!platform.isNode())
+    RxDB.plugin(require('pouchdb-adapter-localstorage'));
 
-import RxDB from '../../dist/lib/index';
 
 describe('adapter-check.test.js', () => {
     it('should be true on memory', async() => {
