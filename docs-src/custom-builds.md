@@ -50,7 +50,7 @@ RxDB.plugin(RxDBSchemaCheckModule);
 RxDB.plugin(require('rxdb/dist/lib/modules/schema-check'));
 ```
 
-### keycompression
+### key-compression
 
 The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set [disableKeyCompression](./rx-schema.html#disablekeycompression) to `true` when you do not have this module.
 
@@ -63,7 +63,7 @@ RxDB.plugin(RxDBKeyCompressionModule);
 RxDB.plugin(require('rxdb/dist/lib/modules/key-compression'));
 ```
 
-### leaderelection
+### leader-election
 
 The leaderelection-module is needed when want to use the leaderelection.
 
@@ -101,6 +101,21 @@ RxDB.plugin(RxDBUpdateModule);
 // es5-require (dont forget to use the 'lib'-folder instead of 'es')
 RxDB.plugin(require('rxdb/dist/lib/modules/update'));
 ```
+
+### adapter-check
+This module add the [checkAdapter](./rx-database.html#checkadapter)-function to RxDB.
+
+```javascript
+// es6-import
+import RxDBAdapterCheckModule from 'rxdb/dist/es/modules/adapter-check';
+RxDB.plugin(RxDBAdapterCheckModule);
+
+// es5-require (dont forget to use the 'lib'-folder instead of 'es')
+RxDB.plugin(require('rxdb/dist/lib/modules/adapter-check'));
+```
+
+
+
 
 --------------------------------------------------------------------------------
 
