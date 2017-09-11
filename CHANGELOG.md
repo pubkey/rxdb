@@ -3,7 +3,7 @@
 ## 5.x.x (coming soon)
 
 Features:
-  - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkAdapter)
+  - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
 
 Bugfixes:
   - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
@@ -17,8 +17,8 @@ Other:
 ## 5.3.0 (August 25, 2017)
 
 Features:
-  - Added [custom builds](https://pubkey.github.io/rxdb/CustomBuilds.html)
-  - Added [plugin-support](https://pubkey.github.io/rxdb/Plugins.html)
+  - Added [custom builds](https://pubkey.github.io/rxdb/custom-builds.html)
+  - Added [plugin-support](https://pubkey.github.io/rxdb/plugins.html)
   - Added default exports. Use `import RxDB from 'rxdb'` instead of `import * as RxDB from 'rxdb'`
 
 Bugfixes:
@@ -31,8 +31,8 @@ Quickfix because of new [pouchdb-import](https://github.com/pouchdb/pouchdb/issu
 ## 5.2.0 (July 17, 2017)
 
 Features:
-  - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/RxCollection.html#atomicupsert)
-  - Added [defaul values](https://pubkey.github.io/rxdb/RxSchema.html#default)
+  - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/rx-collection.html#atomicupsert)
+  - Added [defaul values](https://pubkey.github.io/rxdb/rx-schema.html#default)
   - Added generic typings so it's easier to be extended [see](https://github.com/pubkey/rxdb/blob/master/examples/angular2/app/src/RxDB.d.ts)
 
 Other:
@@ -65,16 +65,16 @@ Other:
 ## 5.0.0 (June 20, 2017) BREAKING
 
 Features:
-  - Added `RxDocument.atomicUpdate()` [docs](https://pubkey.github.io/rxdb/RxDocument.html#atomicUpdate)
-  - Added `RxCollection.remove()` [docs](https://pubkey.github.io/rxdb/RxCollection.html#clear)
-  - Added `RxDatabase.remove()` [docs](https://pubkey.github.io/rxdb/RxDatabase.html#remove)
-  - Added options for `RxCollection.sync()`: direction and pouchdb-replication-settings [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
-  - Added query-param for `RxCollection.sync()` to allow selector-based replication [docs](https://pubkey.github.io/rxdb/RxCollection.html#sync)
-  - Added TemporaryDocuments `RxCollection.newDocument()` [docs](https://pubkey.github.io/rxdb/RxCollection.html#newDocument)
+  - Added `RxDocument.atomicUpdate()` [docs](https://pubkey.github.io/rxdb/rx-document.html#atomicUpdate)
+  - Added `RxCollection.remove()` [docs](https://pubkey.github.io/rxdb/rx-collection.html#clear)
+  - Added `RxDatabase.remove()` [docs](https://pubkey.github.io/rxdb/rx-database.html#remove)
+  - Added options for `RxCollection.sync()`: direction and pouchdb-replication-settings [docs](https://pubkey.github.io/rxdb/rx-collection.html#sync)
+  - Added query-param for `RxCollection.sync()` to allow selector-based replication [docs](https://pubkey.github.io/rxdb/rx-collection.html#sync)
+  - Added TemporaryDocuments `RxCollection.newDocument()` [docs](https://pubkey.github.io/rxdb/rx-collection.html#newDocument)
 
 Breaking:
   - `postCreate`-hooks can no longer be async
-  - `RxCollection.sync()` completely changed [docs](https://pubkey.github.io/rxdb/Replication.html)
+  - `RxCollection.sync()` completely changed [docs](https://pubkey.github.io/rxdb/replication.html)
 
 Other:
   - Added .babelrc to .npmignore
@@ -83,7 +83,7 @@ Other:
 ## 4.1.0 (June 7, 2017)
 
 Features:
-  - Added `postCreate`-[hook](https://pubkey.github.io/rxdb/Middleware.html#postCreate) [#165](https://github.com/pubkey/rxdb/issues/165)
+  - Added `postCreate`-[hook](https://pubkey.github.io/rxdb/middleware.html#postCreate) [#165](https://github.com/pubkey/rxdb/issues/165)
   - Added `RxQuery.update()` and `RxDocument.update()` [#143](https://github.com/pubkey/rxdb/issues/143) Thanks [@lgandecki](https://github.com/lgandecki)
 
 Bugfixes:
@@ -111,12 +111,12 @@ Bugfixes:
 ## 4.0.0 (May 5, 2017) BREAKING
 
 Breaking:
-  - RxQuery's are now [immutable](https://pubkey.github.io/rxdb/RxQuery.html#notice-rxquerys-are-immutable)
+  - RxQuery's are now [immutable](https://pubkey.github.io/rxdb/rx-query.html#notice-rxquerys-are-immutable)
   - RxQuery.$ does not emit `null` when running
   - RxQuery will sort by primary (ASC) as default
 
 Features:
-  - Added [QueryChangeDetection](https://pubkey.github.io/rxdb/QueryChangeDetection.html) (in **beta**, disabled by default)
+  - Added [QueryChangeDetection](https://pubkey.github.io/rxdb/query-change-detection.html) (in **beta**, disabled by default)
 
 Other:
   - upgraded to pouchdb [v6.2.0](https://pouchdb.com/2017/04/20/pouchdb-6.2.0.html)
@@ -137,7 +137,7 @@ Bugfixes:
 ## 3.0.6 (March 29, 2017)
 
 Features:
-  - [Population](https://pubkey.github.io/rxdb/Population.html) can now be done on arrays
+  - [Population](https://pubkey.github.io/rxdb/population.html) can now be done on arrays
 
 Other:
   - improved typings
@@ -162,8 +162,8 @@ Bugfixes:
 ## 3.0.3 (March 6, 2017)
 
 Features:
-  - Added RxDocument.[deleted](https://pubkey.github.io/rxdb/RxDocument.html#get-deleted)
-  - Added RxDocument.[synced](https://pubkey.github.io/rxdb/RxDocument.html#get-synced)
+  - Added RxDocument.[deleted](https://pubkey.github.io/rxdb/rx-document.html#get-deleted)
+  - Added RxDocument.[synced](https://pubkey.github.io/rxdb/rx-document.html#get-synced)
   - moved from [jsonschema](https://www.npmjs.com/package/jsonschema) to [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid)
 
 Bugfixes:
@@ -182,14 +182,14 @@ Bugfixes:
 ## 3.0.0 (February 27, 2017) BREAKING
 
 Features:
-  - added [DataMigration](https://pubkey.github.io/rxdb/DataMigration.html)
-  - added [ORM/DRM](https://pubkey.github.io/rxdb/ORM.html)-capabilities
-  - added [RxQuery.remove()](https://pubkey.github.io/rxdb/RxQuery.html)
-  - added [Population](https://pubkey.github.io/rxdb/Population.html)
-  - added [RxDocument.deleted$](https://pubkey.github.io/rxdb/RxDocument.html#deleted)
-  - added [RxDocument.synced$](https://pubkey.github.io/rxdb/RxDocument.html#synced)
-  - added [RxDocument.resnyc()](https://pubkey.github.io/rxdb/RxDocument.html#resync)
-  - added [RxCollection.upsert()](https://pubkey.github.io/rxdb/RxDocument.html#synced)
+  - added [DataMigration](https://pubkey.github.io/rxdb/data-migration.html)
+  - added [ORM/DRM](https://pubkey.github.io/rxdb/orm.html)-capabilities
+  - added [RxQuery.remove()](https://pubkey.github.io/rxdb/rx-query.html)
+  - added [Population](https://pubkey.github.io/rxdb/population.html)
+  - added [RxDocument.deleted$](https://pubkey.github.io/rxdb/rx-document.html#deleted)
+  - added [RxDocument.synced$](https://pubkey.github.io/rxdb/rx-document.html#synced)
+  - added [RxDocument.resnyc()](https://pubkey.github.io/rxdb/rx-document.html#resync)
+  - added [RxCollection.upsert()](https://pubkey.github.io/rxdb/rx-document.html#synced)
   - non-top-level-indexes are now allowed
   - `RxQuery.sort()` now works on non-top-level-indexes
 
@@ -198,8 +198,8 @@ Bugfixes:
 
 Breaking:
   - Collection-names must match `^[a-z][a-z0-9]*$` Fixes [#45](https://github.com/pubkey/rxdb/issues/45)
-  - RxDB.create has new api with destructuring [see](https://pubkey.github.io/rxdb/RxDatabase.html)
-  - RxDatabase.collection() has new api with destructuring [see](https://pubkey.github.io/rxdb/RxDatabase.html)
+  - RxDB.create has new api with destructuring [see](https://pubkey.github.io/rxdb/rx-database.html)
+  - RxDatabase.collection() has new api with destructuring [see](https://pubkey.github.io/rxdb/rx-database.html)
   - schema-fieldnames must match the regex: `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$`
   - `RxDatabase.collection()` only to create collection, use `myDatabase.heroes` to get existing one
   - `RxDB.create()` multiInstance is now true by default
@@ -258,12 +258,12 @@ Bugfixes:
 ## 1.7.7 (January 13, 2017)
 
 Features:
-  - add [Proxy-wrapping arround RxDocument](https://pubkey.github.io/rxdb/RxDocument.html)
+  - add [Proxy-wrapping arround RxDocument](https://pubkey.github.io/rxdb/rx-document.html)
 
 ## 1.6.7 (January 11, 2017)
 
 Features:
-  - add [middleware-hooks](https://pubkey.github.io/rxdb/Middleware.html)
+  - add [middleware-hooks](https://pubkey.github.io/rxdb/middleware.html)
 
 ## 1.5.6 (December 22, 2016)
 
@@ -275,7 +275,7 @@ Bugfixes:
 Features:
   - refactor socket to save db-io
   - wrap BroadcastChannel-API
-  - added [leader-election](https://pubkey.github.io/rxdb/LeaderElection.html)
+  - added [leader-election](https://pubkey.github.io/rxdb/leader-election.html)
   - sync() will only start if db is leader
 
 Bugfixes:
