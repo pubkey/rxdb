@@ -246,7 +246,7 @@ class LeaderElector {
         // this.die() on unload
         this.unloads.push(
             unload.add(() => {
-                this.bc.write('death');
+                this.bc && this.bc.write('death');
                 this.die();
             })
         );

@@ -14,7 +14,6 @@ let SpawnServer;
 if (platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
-    RxDB.PouchDB.plugin(require('pouchdb-replication'));
 }
 
 // TODO disable later

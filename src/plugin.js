@@ -9,7 +9,6 @@ import RxDocument from './rx-document';
 import RxQuery from './rx-query';
 import RxCollection from './rx-collection';
 import RxDatabase from './rx-database';
-import RxReplicationState from './rx-replication-state';
 
 import overwritable from './overwritable';
 import {
@@ -26,8 +25,7 @@ const PROTOTYPES = {
     RxDocument: RxDocument.RxDocument.prototype,
     RxQuery: RxQuery.RxQuery.prototype,
     RxCollection: RxCollection.RxCollection.prototype,
-    RxDatabase: RxDatabase.RxDatabase.prototype,
-    RxReplicationState: RxReplicationState.RxReplicationState.prototype
+    RxDatabase: RxDatabase.RxDatabase.prototype
 };
 
 export function addPlugin(plugin) {

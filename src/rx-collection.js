@@ -4,12 +4,12 @@ import * as util from './util';
 import RxDocument from './rx-document';
 import RxQuery from './rx-query';
 import RxChangeEvent from './rx-change-event';
+import RxError from './rx-error';
 import DataMigrator from './data-migrator';
 import Crypter from './crypter';
 import DocCache from './doc-cache';
 import QueryCache from './query-cache';
 import ChangeEventBuffer from './change-event-buffer';
-import RxReplicationState from './rx-replication-state';
 import overwritable from './overwritable';
 import {
     runPluginHooks
@@ -430,104 +430,14 @@ export class RxCollection {
      * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
      */
     watchForChanges() {
-        if (this.synced) return;
-
-        /**
-         * this will grap the changes and publish them to the rx-stream
-         * this is to ensure that changes from 'synced' dbs will be published
-         */
-        const sendChanges = {};
-        const pouch$ = util.Rx.Observable
-            .fromEvent(
-                this.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
-                }), 'change'
-            )
-            .filter(c => c.id.charAt(0) != '_')
-            .map(c => c.doc)
-            .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
-            .filter(doc => sendChanges[doc._rev] = 'YES')
-            .delay(10)
-            .map(doc => {
-                let ret = null;
-                if (sendChanges[doc._rev] == 'YES') ret = doc;
-                delete sendChanges[doc._rev];
-                return ret;
-            })
-            .filter(doc => doc != null)
-            .subscribe(doc => {
-                this.$emit(RxChangeEvent.fromPouchChange(doc, this));
-            });
-
-        this._subs.push(pouch$);
-
-        const ob2 = this.$
-            .map(cE => cE.data.v)
-            .map(doc => {
-                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-            })
-            .subscribe();
-        this._subs.push(ob2);
-
-        this.synced = true;
-    }
-
-    createRxReplicationState() {
-        return RxReplicationState.create(this);
+        throw RxError.pluginMissing('replication');
     }
 
     /**
      * sync with another database
      */
-    sync({
-        remote,
-        waitForLeadership = true,
-        direction = {
-            pull: true,
-            push: true
-        },
-        options = {
-            live: true,
-            retry: true
-        },
-        query
-    }) {
-        options = clone(options);
-        if (typeof this.pouch.sync !== 'function') {
-            throw new Error(
-                `RxCollection.sync needs 'pouchdb-replication'. Code:
-                 RxDB.plugin(require('pouchdb-replication')); `
-            );
-        }
-
-        // if remote is RxCollection, get internal pouchdb
-        if (isInstanceOf(remote))
-            remote = remote.pouch;
-
-        if (query && this !== query.collection)
-            throw new Error('RxCollection.sync() query must be from the same RxCollection');
-
-        const syncFun = util.pouchReplicationFunction(this.pouch, direction);
-        if (query) options.selector = query.keyCompress().selector;
-
-        const repState = RxReplicationState.create(this);
-
-        // run internal so .sync() does not have to be async
-        (async() => {
-            if (waitForLeadership)
-                await this.database.waitForLeadership();
-            else // ensure next-tick
-                await util.promiseWait(0);
-
-            const pouchSync = syncFun(remote, options);
-            this.watchForChanges();
-            repState.setPouchEventEmitter(pouchSync);
-            this._repStates.push(repState);
-        })();
-
-        return repState;
+    sync() {
+        throw RxError.pluginMissing('replication');
     }
 
 

@@ -20,9 +20,6 @@ if (platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
-    try {
-        RxDB.PouchDB.plugin(require('pouchdb-replication'));
-    } catch (e) {}
 }
 
 describe('replication.test.js', () => {
@@ -164,13 +161,12 @@ describe('replication.test.js', () => {
                 const nonSyncedDocs = await c.find().exec();
                 assert.equal(nonSyncedDocs.length, 10);
 
-                c.database.destroy();
-                c2.database.destroy();
+                await c.database.destroy();
+                await c2.database.destroy();
             });
             it('pull-only-sync', async() => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
-
                 c.sync({
                     remote: c2.pouch,
                     waitForLeadership: false,
@@ -179,7 +175,6 @@ describe('replication.test.js', () => {
                         push: false
                     }
                 });
-
                 await AsyncTestUtil.waitUntil(async() => {
                     const docs = await c.find().exec();
                     return docs.length == 20;

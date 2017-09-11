@@ -26,6 +26,9 @@ Core.plugin(EncryptionPlugin);
 import UpdatePlugin from './modules/update';
 Core.plugin(UpdatePlugin);
 
+import ReplicationPlugin from './modules/replication';
+Core.plugin(ReplicationPlugin);
+
 import AdapterCheckPlugin from './modules/adapter-check';
 Core.plugin(AdapterCheckPlugin);
 

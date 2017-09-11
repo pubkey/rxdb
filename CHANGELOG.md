@@ -1,9 +1,14 @@
 # Changelog
 
-## 5.x.x (coming soon)
+## 6.x.x (coming soon)
+
+Breaking:    
+  - Filenames are now kebab-case
+  - `pouchdb-replication`-plugin is now imported by default
 
 Features:
   - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
+  - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#replication)
 
 Bugfixes:
   - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
@@ -12,7 +17,6 @@ Other:
   - Fix deprecated warning with indexeddb-adapter `db.type()`
   - Add fallback to leader-election
   - Optimize leader-election to not waste resources when many tabs open
-  - Filenames are now kebab-case
 
 ## 5.3.0 (August 25, 2017)
 
