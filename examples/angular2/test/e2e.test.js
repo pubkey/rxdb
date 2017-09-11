@@ -46,10 +46,12 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
     await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
 });
 
-test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact one tab should become leader', async t => {
+const tabsAmount = 4;
+test.page('http://0.0.0.0:8888/multitab.html?frames=' + tabsAmount)('leader-election: Exact one tab should become leader', async t => {
 
     // wait until last tab loaded
-    await t.switchToIframe('#frame_5');
+    await t.switchToIframe('#frame_' + (tabsAmount - 1));
+    await AsyncTestUtil.wait(1000);
     const heroNameInput = Selector('.hero-insert-component input[name=name]');
     await t.typeText(heroNameInput, 'foobar');
     await t.switchToMainWindow();
@@ -58,7 +60,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
     let currentLeader = null;
     await AsyncTestUtil.waitUntil(async() => {
         let ret = false;
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < tabsAmount; i++) {
             await t.switchToIframe('#frame_' + i);
             const title = await Selector('title').innerText;
             if (title.includes('♛')) {
@@ -73,7 +75,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
     await AsyncTestUtil.wait(200); // w8 a bit
     // ensure still only one is leader
     let leaderAmount = 0;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < tabsAmount; i++) {
         await t.switchToIframe('#frame_' + i);
         const title = await Selector('title').innerText;
         if (title.includes('♛'))
@@ -98,7 +100,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
     const leaders = [];
     await AsyncTestUtil.waitUntil(async() => {
         let ret = false;
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < tabsAmount; i++) {
             if (i !== currentLeader) {
                 await t.switchToIframe('#frame_' + i);
                 const title = await Selector('title').innerText;
