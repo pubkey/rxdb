@@ -9,36 +9,55 @@ class RxBroadcastChannel {
         this.name = name;
         this.database = database;
         this.token = database.token;
+    }
 
-        this.bc = new BroadcastChannel(
-            'RxDB:' +
-            this.database.name + ':' +
-            this.name
-        );
+    /**
+     * @return {BroadcastChannel}
+     */
+    get bc() {
+        if (!this._bc) {
+            this._bc = new BroadcastChannel(
+                'RxDB:' +
+                this.database.name + ':' +
+                this.name
+            );
+        }
+        return this._bc;
+    }
 
-        this.$ = util.Rx.Observable
-            .fromEvent(this.bc, 'message')
-            .map(msg => msg.data)
-            .map(strMsg => JSON.parse(strMsg))
-            .filter(msg => msg.it != this.token);
+    /**
+     * @return {Observable}
+     */
+    get $() {
+        if (!this._$) {
+            this._$ = util.Rx.Observable
+                .fromEvent(this.bc, 'message')
+                .map(msg => msg.data)
+                .map(strMsg => JSON.parse(strMsg))
+                .filter(msg => msg.it != this.token);
+        }
+        return this._$;
     }
 
     /**
      * write data to the channel
      * @param {string} type
      * @param {Object} data
+     * @return {Promise<any>}
      */
-    async write(type, data) {
-        await this.bc.postMessage(JSON.stringify({
-            type,
-            it: this.token,
-            data,
-            t: new Date().getTime()
-        }));
+    write(type, data) {
+        return this.bc.postMessage(
+            JSON.stringify({
+                type,
+                it: this.token,
+                data,
+                t: new Date().getTime()
+            })
+        );
     }
 
     destroy() {
-        this.bc.close();
+        this._bc && this._bc.close();
     }
 }
 
@@ -67,7 +86,6 @@ export function canIUse() {
  */
 export function create(database, name) {
     if (!canIUse()) return null;
-
     return new RxBroadcastChannel(database, name);
 }
 
