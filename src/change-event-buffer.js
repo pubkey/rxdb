@@ -30,7 +30,6 @@ class ChangeEventBuffer {
             this.buffer.shift();
     }
 
-
     /**
      * gets the array-index for the given pointer
      * @param  {number} pointer

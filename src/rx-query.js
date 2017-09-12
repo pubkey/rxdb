@@ -88,7 +88,7 @@ export class RxQuery {
      */
     async _ensureEqual() {
 
-
+        // do nothing if nothing happend between the last exec-run and now
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
 
@@ -123,7 +123,6 @@ export class RxQuery {
             }
         }
 
-
         if (this._mustReExec) {
             // counter can change while _execOverDatabase() is running
             const latestAfter = this.collection._changeEventBuffer.counter;
@@ -152,33 +151,40 @@ export class RxQuery {
 
     /**
      * executes the query on the database
-     * @return {Promise<{}[]>} returns new resultData
+     * @return {Promise<{}[]>} results-array with document-data
      */
-    async _execOverDatabase() {
+    _execOverDatabase() {
         this._execOverDatabaseCount++;
-        let docsData;
+
+        let docsPromise;
         switch (this.op) {
             case 'find':
-                docsData = await this.collection._pouchFind(this);
+                docsPromise = this.collection._pouchFind(this);
                 break;
             case 'findOne':
-                docsData = await this.collection._pouchFind(this, 1);
+                docsPromise = this.collection._pouchFind(this, 1);
                 break;
             default:
                 throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
         }
 
-        this._mustReExec = false;
-        return docsData;
+        return docsPromise
+            .then(docsData => {
+                this._mustReExec = false;
+                return docsData;
+            });
     }
 
     get $() {
         if (!this._$) {
             const res$ = this._results$
-                .mergeMap(async(results) => {
-                    const hasChanged = await this._ensureEqual();
-                    if (hasChanged) return 'WAITFORNEXTEMIT';
-                    return results;
+                .mergeMap(results => {
+                    return this
+                        ._ensureEqual()
+                        .then(hasChanged => {
+                            if (hasChanged) return 'WAITFORNEXTEMIT';
+                            else return results;
+                        });
                 })
                 .filter(results => results != 'WAITFORNEXTEMIT')
                 .asObservable();
@@ -297,17 +303,16 @@ export class RxQuery {
      * deletes all found documents
      * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
      */
-    async remove() {
-        const docs = await this.exec();
-        if (Array.isArray(docs)) {
-            await Promise.all(
-                docs.map(doc => doc.remove())
-            );
-        } else {
-            // via findOne()
-            await docs.remove();
-        }
-        return docs;
+    remove() {
+        let ret;
+        return this
+            .exec()
+            .then(docs => {
+                ret = docs;
+                if (Array.isArray(docs)) return Promise.all(docs.map(doc => doc.remove()));
+                else return docs.remove();
+            })
+            .then(() => ret);
     }
 
     /**
@@ -316,10 +321,14 @@ export class RxQuery {
      * @param  {object} updateObj
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
-    async update() {
+    update() {
         throw RxError.pluginMissing('update');
     }
 
+    /**
+     * execute the query
+     * @return {Promise<RxDocument|RxDocument[]>} found documents
+     */
     exec() {
         return this.$
             .first()

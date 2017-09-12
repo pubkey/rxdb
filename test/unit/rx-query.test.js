@@ -539,6 +539,8 @@ describe('rx-query.test.js', () => {
             c.database.destroy();
         });
         it('#278 queryCache breaks when pointer out of bounds', async() => {
+            if (!platform.isNode()) return; // dont do this on browsers because firefox takes too long
+
             const c = await humansCollection.createPrimary(0);
 
             // insert 100
