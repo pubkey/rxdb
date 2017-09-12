@@ -16,17 +16,7 @@ export const create = RxDatabase.create;
 export const removeDatabase = RxDatabase.removeDatabase;
 export const checkAdapter = RxDatabase.checkAdapter;
 
-
-export function plugin(mod) {
-    if (mod.rxdb) {
-        // rxdb-plugin
-        Plugin.addPlugin(mod);
-    } else {
-        // pouchdb-plugin
-        if (typeof mod === 'object' && mod.default) mod = mod.default;
-        PouchDB.plugin(mod);
-    }
-}
+export const plugin = Plugin.addPlugin;
 
 export const isRxDatabase = RxDatabase.isInstanceOf;
 export const isRxCollection = RxCollection.isInstanceOf;

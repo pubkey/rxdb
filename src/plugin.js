@@ -9,6 +9,7 @@ import RxDocument from './rx-document';
 import RxQuery from './rx-query';
 import RxCollection from './rx-collection';
 import RxDatabase from './rx-database';
+import PouchDB from './pouch-db';
 
 import overwritable from './overwritable';
 import {
@@ -29,6 +30,12 @@ const PROTOTYPES = {
 };
 
 export function addPlugin(plugin) {
+    if (!plugin.rxdb) {
+        // pouchdb-plugin
+        if (typeof plugin === 'object' && plugin.default) plugin = plugin.default;
+        PouchDB.plugin(plugin);
+    }
+
     // prototype-overwrites
     if (plugin.prototypes) {
         Object.entries(plugin.prototypes).forEach(entry => {
