@@ -106,16 +106,23 @@ export class RxDatabase {
         return this.leaderElector.waitForLeadership();
     }
 
-    async writeToSocket(changeEvent) {
+    /**
+     * writes the changeEvent to the socket
+     * @param  {RxChangeEvent} changeEvent
+     * @return {Promise<boolean>}
+     */
+    writeToSocket(changeEvent) {
         if (
             this.multiInstance &&
             !changeEvent.isIntern() &&
             this.socket
         ) {
-            await this.socket.write(changeEvent);
-            return true;
-        }
-        return false;
+            return this
+                .socket
+                .write(changeEvent)
+                .then(() => true);
+        } else
+            return Promise.resolve(false);
     }
 
     /**
