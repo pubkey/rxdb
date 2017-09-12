@@ -305,7 +305,13 @@ export class RxCollection {
     async upsert(json) {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
-        if (!primary) throw new Error('RxCollection.upsert() does not work without primary');
+        if (!primary) {
+            throw new Error(`
+                RxCollection.upsert() does not work without primary
+                - primaryPath: ${this.schema.primaryPath}
+                - given data: ${JSON.stringify(json)}
+            `);
+        }
 
         const existing = await this.findOne(primary).exec();
         if (existing) {

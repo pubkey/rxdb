@@ -106,8 +106,11 @@ export class RxQuery {
         });
 
         if (!this._mustReExec) {
-            try {
-                const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+            const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+            if (missedChangeEvents === null) {
+                // out of bounds -> reExec
+                this._mustReExec = true;
+            } else {
                 // console.dir(missedChangeEvents);
                 this._latestChangeEvent = this.collection._changeEventBuffer.counter;
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
@@ -117,17 +120,11 @@ export class RxQuery {
                     ret = true;
                     await this._setResultData(changeResult);
                 }
-
-            } catch (e) {
-                console.error('RxQuery()._ensureEqual(): Unexpected Error:');
-                console.dir(e);
-                this._mustReExec = true;
             }
         }
 
 
         if (this._mustReExec) {
-
             // counter can change while _execOverDatabase() is running
             const latestAfter = this.collection._changeEventBuffer.counter;
 

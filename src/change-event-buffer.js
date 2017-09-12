@@ -31,25 +31,33 @@ class ChangeEventBuffer {
     }
 
 
+    /**
+     * gets the array-index for the given pointer
+     * @param  {number} pointer
+     * @return {number|null} arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
+     */
     getArrayIndexByPointer(pointer) {
         const oldestEvent = this.buffer[0];
         const oldestCounter = this.eventCounterMap.get(oldestEvent);
 
-        if (pointer < oldestCounter) {
-            throw new Error(`
-							pointer lower than lowest cache-pointer
-							- wanted: ${pointer}
-							- oldest: ${oldestCounter}
-							`);
-        }
+        if (pointer < oldestCounter)
+            return null; // out of bounds
 
         const rest = pointer - oldestCounter;
         return rest;
     }
 
+    /**
+     * get all changeEvents which came in later than the pointer-event
+     * @param  {number} pointer
+     * @return {RxChangeEvent[]|null} array with change-events. Iif null, pointer out of bounds
+     */
     getFrom(pointer) {
-        let currentIndex = this.getArrayIndexByPointer(pointer);
         const ret = [];
+        let currentIndex = this.getArrayIndexByPointer(pointer);
+        if (currentIndex === null) // out of bounds
+            return null;
+
         while (true) {
             const nextEvent = this.buffer[currentIndex];
             currentIndex++;

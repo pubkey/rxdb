@@ -1,5 +1,6 @@
 import assert from 'assert';
 import platform from 'detect-browser';
+import clone from 'clone';
 
 import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/rx-database';
@@ -537,9 +538,58 @@ describe('rx-query.test.js', () => {
             assert.ok(Array.isArray(foundDocs));
             c.database.destroy();
         });
+        it('#278 queryCache breaks when pointer out of bounds', async() => {
+            const c = await humansCollection.createPrimary(0);
+
+            // insert 100
+            await Promise.all(
+                new Array(100)
+                .fill(0)
+                .map(() => schemaObjects.human())
+                .map(docData => c.insert(docData))
+            );
+
+            // make and exec query
+            const query = c.find();
+            const docs = await query.exec();
+            assert.ok(docs.length, 100);
+
+            // produces changeEvents
+            await Promise.all(
+                new Array(300) // higher than ChangeEventBuffer.limit
+                .fill(0)
+                .map(() => schemaObjects.human())
+                .map(docData => c.insert(docData))
+            );
+
+            // re-exec query
+            const docs2 = await query.exec();
+            assert.ok(docs2.length, 400);
+
+            // try same with upserts
+            const docData = new Array(200)
+                .fill(0)
+                .map(() => schemaObjects.human());
+            for (const doc of docData)
+                await c.insert(doc);
+
+            const docs3 = await query.exec();
+            assert.ok(docs3.length, 600);
+
+            const docData2 = clone(docData);
+            docData2.forEach(doc => doc.lastName = doc.lastName + '1');
+
+            for (const doc of docData2)
+                await c.upsert(doc);
+
+            const docs4 = await query.exec();
+            assert.ok(docs4.length, 600);
+
+            c.database.destroy();
+        });
     });
 
     describe('e', () => {
-        //    it('e', () => process.exit());
+        // it('e', () => process.exit());
     });
 });

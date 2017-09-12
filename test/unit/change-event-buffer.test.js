@@ -43,28 +43,22 @@ describe('change-event-buffer.test.js', () => {
         });
     });
     describe('.getArrayIndexByPointer()', () => {
-        it('throw if pointer is no more in buffer (too low)', async() => {
+        it('return null if pointer is no more in buffer (too low)', async() => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            await AsyncTestUtil.assertThrows(
-                () => col._changeEventBuffer.getArrayIndexByPointer(0),
-                Error,
-                'lowest'
-            );
+            const pointer = col._changeEventBuffer.getArrayIndexByPointer(0);
+            assert.equal(pointer, null);
 
             await Promise.all(
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            await AsyncTestUtil.assertThrows(
-                () => col._changeEventBuffer.getArrayIndexByPointer(10),
-                Error,
-                'lowest'
-            );
+            const pointer2 = col._changeEventBuffer.getArrayIndexByPointer(10);
+            assert.equal(pointer2, null);
 
             col.database.destroy();
         });
@@ -77,11 +71,8 @@ describe('change-event-buffer.test.js', () => {
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            await AsyncTestUtil.assertThrows(
-                () => col._changeEventBuffer.getArrayIndexByPointer(0),
-                Error,
-                'lowest'
-            );
+            const pointer = col._changeEventBuffer.getArrayIndexByPointer(0);
+            assert.equal(pointer, null);
 
             await Promise.all(
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
