@@ -5,11 +5,21 @@
  */
 import validator from 'is-my-json-valid';
 
-const validate = function(obj, schemaPath = '') {
-    if (!this._validators)
-        this._validators = {};
 
-    if (!this._validators[schemaPath]) {
+/**
+ * cache the validators by the schema-hash
+ * so we can reuse them when multiple collections have the same schema
+ * @type {Object<string, any>}
+ */
+const validatorsCache = {};
+
+const validate = function(obj, schemaPath = '') {
+    const hash = this.hash;
+    if (!validatorsCache[hash])
+        validatorsCache[hash] = {};
+
+    const validatorsOfHash = validatorsCache[hash];
+    if (!validatorsOfHash[schemaPath]) {
         const schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
 
         if (!schemaPart) {
@@ -18,9 +28,9 @@ const validate = function(obj, schemaPath = '') {
                 error: 'does the field ' + schemaPath + ' exist in your schema?'
             }));
         }
-        this._validators[schemaPath] = validator(schemaPart);
+        validatorsOfHash[schemaPath] = validator(schemaPart);
     }
-    const useValidator = this._validators[schemaPath];
+    const useValidator = validatorsOfHash[schemaPath];
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
@@ -33,7 +43,6 @@ const validate = function(obj, schemaPath = '') {
         }));
     };
 };
-
 
 export const rxdb = true;
 export const prototypes = {

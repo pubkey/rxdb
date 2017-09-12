@@ -17,6 +17,7 @@ Other:
   - Fix deprecated warning with indexeddb-adapter `db.type()`
   - Add fallback to leader-election
   - Optimize leader-election to not waste resources when many tabs open
+  - Optimize schema-rendering when multiple collections have the same schema
 
 ## 5.3.0 (August 25, 2017)
 
