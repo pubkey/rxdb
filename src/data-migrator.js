@@ -24,18 +24,19 @@ class DataMigrator {
 
     /**
      * get an array with OldCollection-instances from all existing old pouchdb-instance
-     * @return {OldCollection[]}
+     * @return {Promise<OldCollection[]>}
      */
-    async _getOldCollections() {
-        const oldColDocs = await Promise.all(
-            this.currentSchema.previousVersions
-            .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
-            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-        );
-        // spawn OldCollection-instances
-        return oldColDocs
-            .filter(colDoc => colDoc != null)
-            .map(colDoc => new OldCollection(colDoc.schema.version, colDoc.schema, this));
+    _getOldCollections() {
+        return Promise
+            .all(
+                this.currentSchema.previousVersions
+                .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
+                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+            )
+            .then(oldColDocs => oldColDocs
+                .filter(colDoc => colDoc != null)
+                .map(colDoc => new OldCollection(colDoc.schema.version, colDoc.schema, this))
+            );
     }
 
     /**
@@ -148,10 +149,13 @@ class OldCollection {
     async countAllUndeleted() {
         return PouchDB.countAllUndeleted(this.pouchdb);
     }
-    async getBatch(batchSize) {
-        const docs = await PouchDB.getBatch(this.pouchdb, batchSize);
-        return docs
-            .map(doc => this._handleFromPouch(doc));
+
+    getBatch(batchSize) {
+        return PouchDB
+            .getBatch(this.pouchdb, batchSize)
+            .then(docs => docs
+                .map(doc => this._handleFromPouch(doc))
+            );
     }
 
     /**
@@ -241,10 +245,12 @@ class OldCollection {
 
     /**
      * deletes this.pouchdb and removes it from the database.collectionsCollection
+     * @return {Promise}
      */
-    async delete() {
-        await this.pouchdb.destroy();
-        await this.database.removeCollectionDoc(this.dataMigrator.name, this.schema);
+    delete() {
+        return this
+            .pouchdb.destroy()
+            .then(() => this.database.removeCollectionDoc(this.dataMigrator.name, this.schema));
     }
 
 

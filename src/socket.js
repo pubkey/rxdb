@@ -56,7 +56,7 @@ class Socket {
             }
         })();
 
-        return;
+        return this;
     }
 
 
@@ -162,10 +162,13 @@ class Socket {
 }
 
 
-export async function create(database) {
+/**
+ * creates a socket
+ * @return {Promise<Socket>}
+ */
+export function create(database) {
     const socket = new Socket(database);
-    await socket.prepare();
-    return socket;
+    return socket.prepare();
 }
 
 export {

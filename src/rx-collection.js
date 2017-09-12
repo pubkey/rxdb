@@ -99,10 +99,12 @@ export class RxCollection {
      * checks if a migration is needed
      * @return {boolean}
      */
-    async migrationNeeded() {
+    migrationNeeded() {
         if (this.schema.version == 0) return false;
-        const oldCols = await this._dataMigrator._getOldCollections();
-        return oldCols.length > 0;
+        return this
+            ._dataMigrator
+            ._getOldCollections()
+            .then(oldCols => oldCols.length > 0);
     }
 
     /**
@@ -162,11 +164,19 @@ export class RxCollection {
         }
         return ret;
     }
-    async _pouchGet(key) {
-        let doc = await this.pouch.get(key);
-        doc = this._handleFromPouch(doc);
-        return doc;
+
+    /**
+     * get document from pouchdb by its _id
+     * @param  {[type]} key [description]
+     * @return {[type]}     [description]
+     */
+    _pouchGet(key) {
+        return this
+            .pouch
+            .get(key)
+            .then(doc => this._handleFromPouch(doc));
     }
+
     /**
      * wrapps pouch-find
      * @param {RxQuery} rxQuery
@@ -309,11 +319,20 @@ export class RxCollection {
         }
     }
 
-
-    async _atomicUpsertEnsureRxDocumentExists(primary, json) {
-        const doc = await this.findOne(primary).exec();
-        if (doc) return; // doc exists, continue
-        return this.insert(json);
+    /**
+     * ensures that the given document exists
+     * @param  {string}  primary
+     * @param  {any}  json
+     * @return {Promise} promise that resolves when finished
+     */
+    _atomicUpsertEnsureRxDocumentExists(primary, json) {
+        return this
+            .findOne(primary)
+            .exec()
+            .then(doc => {
+                if (!doc)
+                    return this.insert(json);
+            });
     }
 
     /**
@@ -321,7 +340,7 @@ export class RxCollection {
      * @param  {object}  json
      * @return {Promise}
      */
-    async atomicUpsert(json) {
+    atomicUpsert(json) {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) throw new Error('RxCollection.atomicUpsert() does not work without primary');
@@ -329,13 +348,14 @@ export class RxCollection {
         // ensure that it wont try 2 parallel inserts
         if (!this._atomicUpsertLocks[primary])
             this._atomicUpsertLocks[primary] = this._atomicUpsertEnsureRxDocumentExists(primary, json);
-        await this._atomicUpsertLocks[primary];
 
-        const doc = await this.findOne(primary).exec();
-        return doc.atomicUpdate(innerDoc => {
-            json._rev = innerDoc._rev;
-            innerDoc._data = json;
-        });
+        return this
+            ._atomicUpsertLocks[primary]
+            .then(() => this.findOne(primary).exec())
+            .then(doc => doc.atomicUpdate(innerDoc => {
+                json._rev = innerDoc._rev;
+                innerDoc._data = json;
+            }));
     }
 
     /**
@@ -484,8 +504,8 @@ export class RxCollection {
      * remove all data
      * @return {Promise}
      */
-    async remove() {
-        await this.database.removeCollection(this.name);
+    remove() {
+        return this.database.removeCollection(this.name);
     }
 
 }

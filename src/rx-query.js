@@ -145,10 +145,12 @@ export class RxQuery {
         return ret;
     }
 
-    async _setResultData(newResultData) {
+    _setResultData(newResultData) {
         this._resultsData = newResultData;
-        const newResults = await this.collection._createDocuments(this._resultsData);
-        this._results$.next(newResults);
+        return this
+            .collection
+            ._createDocuments(this._resultsData)
+            .then(newResults => this._results$.next(newResults));
     }
 
     /**
@@ -321,8 +323,8 @@ export class RxQuery {
         throw RxError.pluginMissing('update');
     }
 
-    async exec() {
-        return await this.$
+    exec() {
+        return this.$
             .first()
             .toPromise();
     }

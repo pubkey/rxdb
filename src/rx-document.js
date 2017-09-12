@@ -146,7 +146,12 @@ export class RxDocument {
             .asObservable();
     }
 
-    async populate(path) {
+    /**
+     * populate the given path
+     * @param  {string}  path
+     * @return {Promise<RxDocument>}
+     */
+    populate(path) {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!schemaObj)
@@ -161,7 +166,7 @@ export class RxDocument {
         if (schemaObj.type == 'array')
             return Promise.all(value.map(id => refCollection.findOne(id).exec()));
         else
-            return await refCollection.findOne(value).exec();
+            return refCollection.findOne(value).exec();
     }
 
     /**

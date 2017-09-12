@@ -62,9 +62,13 @@ class LeaderElector {
         return obj;
     }
 
-    async setLeaderObject(newObj) {
-        await this.database._adminPouch.put(newObj);
-        return;
+    /**
+     * saves the leader-object to the internal adminPouch
+     * @param {any} newObj [description]
+     * @return {Promise}
+     */
+    setLeaderObject(newObj) {
+        return this.database._adminPouch.put(newObj);
     }
 
     /**

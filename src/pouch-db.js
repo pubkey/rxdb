@@ -14,37 +14,42 @@ PouchDB.plugin(PouchDBFind);
 /**
  * get the number of all undeleted documents
  * @param  {PouchDB}  pouchdb instance
- * @return {Promise(number)} number of documents
+ * @return {Promise<number>} number of documents
  */
-PouchDB.countAllUndeleted = async function(pouchdb) {
-    const docs = await pouchdb.allDocs({
-        include_docs: false,
-        attachments: false
-    });
-    return docs.rows
-        .filter(row => !row.id.startsWith('_design/'))
-        .length;
+PouchDB.countAllUndeleted = function(pouchdb) {
+    return pouchdb
+        .allDocs({
+            include_docs: false,
+            attachments: false
+        })
+        .then(docs => docs
+            .rows
+            .filter(row => !row.id.startsWith('_design/'))
+            .length
+        );
 };
 
 /**
  * get a batch of documents from the pouch-instance
  * @param  {PouchDB}  pouchdb instance
  * @param  {number}  limit
- * @return {{}[]} array with documents
+ * @return {Promise<{}[]>} array with documents
  */
-PouchDB.getBatch = async function(pouchdb, limit) {
+PouchDB.getBatch = function(pouchdb, limit) {
     if (limit <= 1)
         throw new Error('PouchDB.getBatch: limit must be > 2');
 
-    const docs = await pouchdb.allDocs({
-        include_docs: true,
-        attachments: false,
-        limit
-    });
-    return docs
-        .rows
-        .map(row => row.doc)
-        .filter(doc => !doc._id.startsWith('_design'));
+    return pouchdb
+        .allDocs({
+            include_docs: true,
+            attachments: false,
+            limit
+        })
+        .then(docs => docs
+            .rows
+            .map(row => row.doc)
+            .filter(doc => !doc._id.startsWith('_design'))
+        );
 };
 
 

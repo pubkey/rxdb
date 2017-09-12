@@ -153,10 +153,12 @@ export class RxDatabase {
      * removes the collection-doc from this._collectionsPouch
      * @return {Promise}
      */
-    async removeCollectionDoc(name, schema) {
+    removeCollectionDoc(name, schema) {
         const docId = this._collectionNamePrimary(name, schema);
-        const doc = await this._collectionsPouch.get(docId);
-        return this._collectionsPouch.remove(doc);
+        return this
+            ._collectionsPouch
+            .get(docId)
+            .then(doc => this._collectionsPouch.remove(doc));
     }
 
     /**
@@ -264,7 +266,7 @@ export class RxDatabase {
             .map(v => this._spawnPouchDB(collectionName, v));
 
         // remove documents
-        await Promise.all(pouches.map(pouch => pouch.destroy()));
+        return Promise.all(pouches.map(pouch => pouch.destroy()));
     }
 
 
@@ -297,9 +299,14 @@ export class RxDatabase {
             .map(col => col.destroy());
     }
 
-    async remove() {
-        await this.destroy();
-        await removeDatabase(this.name, this.adapter);
+    /**
+     * deletes the database and its stored data
+     * @return {Promise}
+     */
+    remove() {
+        return this
+            .destroy()
+            .then(() => removeDatabase(this.name, this.adapter));
     }
 
 }

@@ -6,7 +6,7 @@
 import modifyjs from 'modifyjs';
 import deepEqual from 'deep-equal';
 
-export async function update(updateObj) {
+export function update(updateObj) {
     const newDoc = modifyjs(this._data, updateObj);
 
     Object.keys(this._data).forEach((previousPropName) => {
@@ -23,7 +23,8 @@ export async function update(updateObj) {
     Object.keys(newDoc)
         .filter(newPropName => !deepEqual(this._data[newPropName], newDoc[newPropName]))
         .forEach(newPropName => this._data[newPropName] = newDoc[newPropName]);
-    await this.save();
+
+    return this.save();
 }
 
 export async function RxQuery_update(updateObj) {
