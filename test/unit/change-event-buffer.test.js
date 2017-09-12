@@ -200,7 +200,7 @@ describe('change-event-buffer.test.js', () => {
             const reduced = q.collection._changeEventBuffer.reduceByLastOfDoc(allEvents);
 
             assert.equal(reduced.length, 5);
-            const lastEvent = reduced.find(cE => cE.data.doc == oneDoc.getPrimary());
+            const lastEvent = reduced.find(cE => cE.data.doc == oneDoc.primary);
             assert.equal(lastEvent.data.v.age, 5);
             col.database.destroy();
         });

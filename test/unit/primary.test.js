@@ -180,7 +180,7 @@ describe('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne(obj.passportId).exec();
-                    assert.equal(doc.getPrimary(), obj.passportId);
+                    assert.equal(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
                 it('find nothing', async() => {
@@ -196,7 +196,7 @@ describe('primary.test.js', () => {
                     const doc = await c.findOne({
                         firstName: obj.firstName
                     }).exec();
-                    assert.equal(doc.getPrimary(), obj.passportId);
+                    assert.equal(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
                 it('BUG: findOne().where(myPrimary)', async() => {

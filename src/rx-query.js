@@ -27,7 +27,6 @@ export class RxQuery {
         this._queryChangeDetector = QueryChangeDetector.create(this);
         this._resultsData = null;
         this._results$ = new util.Rx.BehaviorSubject(null);
-        this._observable$ = null;
         this._latestChangeEvent = -1;
         this._runningPromise = Promise.resolve(true);
 
@@ -175,8 +174,7 @@ export class RxQuery {
     }
 
     get $() {
-        if (!this._observable$) {
-
+        if (!this._$) {
             const res$ = this._results$
                 .mergeMap(async(results) => {
                     const hasChanged = await this._ensureEqual();
@@ -191,7 +189,7 @@ export class RxQuery {
                 .mergeMap(async() => this._ensureEqual())
                 .filter(() => false);
 
-            this._observable$ = util.Rx.Observable
+            this._$ = util.Rx.Observable
                 .merge(
                     res$,
                     changeEvents$
@@ -203,7 +201,7 @@ export class RxQuery {
                     else return results[0];
                 });
         }
-        return this._observable$;
+        return this._$;
     }
 
     toJSON() {
@@ -286,10 +284,13 @@ export class RxQuery {
         if (!this.collection.schema.doKeyCompression())
             return this.toJSON();
         else {
-            return this
-                .collection
-                ._keyCompressor
-                .compressQuery(this.toJSON());
+            if (!this._keyCompress) {
+                this._keyCompress = this
+                    .collection
+                    ._keyCompressor
+                    .compressQuery(this.toJSON());
+            }
+            return this._keyCompress;
         }
     }
 

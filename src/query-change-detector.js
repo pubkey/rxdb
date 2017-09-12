@@ -23,7 +23,6 @@ class QueryChangeDetector {
         this.primaryKey = this.query.collection.schema.primaryPath;
     }
 
-
     /**
      * @param {ChangeEvent[]} changeEvents
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results

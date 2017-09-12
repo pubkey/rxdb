@@ -46,15 +46,19 @@ class RxBroadcastChannel {
  * Detect if client can use BroadcastChannel
  * @return {Boolean}
  */
+let _canIUse = null;
 export function canIUse() {
-    if (
-        typeof window === 'object' &&
-        window.BroadcastChannel &&
-        typeof window.BroadcastChannel === 'function' &&
-        typeof window.BroadcastChannel.prototype.postMessage === 'function' &&
-        typeof window.BroadcastChannel.prototype.close === 'function'
-    ) return true;
-    return false;
+    if (_canIUse === null) {
+        if (
+            typeof window === 'object' &&
+            window.BroadcastChannel &&
+            typeof window.BroadcastChannel === 'function' &&
+            typeof window.BroadcastChannel.prototype.postMessage === 'function' &&
+            typeof window.BroadcastChannel.prototype.close === 'function'
+        ) _canIUse = true;
+        else _canIUse = false;
+    }
+    return _canIUse;
 }
 
 /**

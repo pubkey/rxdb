@@ -24,6 +24,7 @@ export class RxDocument {
 
         // atomic-update-functions that have not run yes
         this._atomicUpdates = [];
+
         // resolve-functions to resolve the promises of atomicUpdate
         this._atomicUpdatesResolveFunctions = new WeakMap();
 
@@ -37,15 +38,17 @@ export class RxDocument {
         this._defineGetterSetter(this, '');
     }
 
-    getPrimaryPath() {
+    get primaryPath() {
         return this.collection.schema.primaryPath;
     }
-    getPrimary() {
-        return this._data[this.getPrimaryPath()];
+    get primary() {
+        return this._data[this.primaryPath];
     }
-    getRevision() {
+
+    get revision() {
         return this._data._rev;
     }
+
     get deleted$() {
         return this._deleted$.asObservable();
     }
@@ -60,7 +63,8 @@ export class RxDocument {
     }
     resync() {
         const syncedData = this._dataSync$.getValue();
-        if (this._synced$.getValue() && deepEqual(syncedData, this._data)) return;
+        if (this._synced$.getValue() && deepEqual(syncedData, this._data))
+            return;
         else {
             this._data = clone(this._dataSync$.getValue());
             this._synced$.next(true);
@@ -79,7 +83,7 @@ export class RxDocument {
      * @param {ChangeEvent}
      */
     _handleChangeEvent(changeEvent) {
-        if (changeEvent.data.doc != this.getPrimary())
+        if (changeEvent.data.doc != this.primary)
             return;
 
         // TODO check if new _rev is higher then current
@@ -110,7 +114,7 @@ export class RxDocument {
                 break;
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
-                this.collection._docCache.delete(this.getPrimary());
+                this.collection._docCache.delete(this.primary);
                 this._deleted$.next(true);
                 break;
         }
@@ -230,9 +234,9 @@ export class RxDocument {
     set(objPath, value) {
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.set(): objPath must be a string');
-        if (!this._isTemporary && objPath == this.getPrimaryPath()) {
+        if (!this._isTemporary && objPath == this.primaryPath) {
             throw new Error(
-                `RxDocument.set(): primary-key (${this.getPrimaryPath()})
+                `RxDocument.set(): primary-key (${this.primaryPath})
                 cannot be modified`);
         }
         // check if equal
@@ -358,7 +362,7 @@ export class RxDocument {
     async _saveTemporary() {
         await this.collection.insert(this);
         this._isTemporary = false;
-        this.collection._docCache.set(this.getPrimary(), this);
+        this.collection._docCache.set(this.primary, this);
 
         // internal events
         this._synced$.next(true);
@@ -373,7 +377,7 @@ export class RxDocument {
 
         await this.collection._runHooks('pre', 'remove', this);
 
-        await this.collection.pouch.remove(this.getPrimary(), this._data._rev);
+        await this.collection.pouch.remove(this.primary, this._data._rev);
 
         this.$emit(RxChangeEvent.create(
             'REMOVE',
@@ -388,7 +392,9 @@ export class RxDocument {
         return;
     }
 
-    destroy() {}
+    destroy() {
+        throw new Error('RxDocument.destroy() does not exist');
+    }
 }
 
 export function create(collection, jsonData) {

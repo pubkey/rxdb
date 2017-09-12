@@ -36,6 +36,9 @@ export class RxSchema {
         }
     }
 
+    /**
+     * @return {number}
+     */
     get version() {
         return this.jsonID.version;
     }
@@ -281,7 +284,7 @@ const fillWithDefaultSettings = function(schemaObj) {
 };
 
 export function create(jsonID, runPreCreateHooks = true) {
-    if(runPreCreateHooks)
+    if (runPreCreateHooks)
         runPluginHooks('preCreateRxSchema', jsonID);
     const schema = new RxSchema(fillWithDefaultSettings(jsonID));
     runPluginHooks('createRxSchema', schema);

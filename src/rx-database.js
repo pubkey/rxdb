@@ -27,28 +27,32 @@ export class RxDatabase {
         // cache for collection-objects
         this.collections = {};
 
-        // this is needed to preserver attribute-name
-        this.subject = null;
-        this.observable$ = null;
-    }
-
-    /**
-     * make the async things for this database
-     */
-    async prepare() {
-
         // rx
         this.subject = new util.Rx.Subject();
         this.observable$ = this.subject.asObservable()
             .filter(cEvent => RxChangeEvent.isInstanceOf(cEvent));
+    }
 
-        // create internal collections
-        const internalPouch = _internalPouchDbs(this.name, this.adapter);
-        this._adminPouch = internalPouch._adminPouch;
-        this._collectionsPouch = internalPouch._collectionsPouch;
+    get _adminPouch() {
+        if (!this.__adminPouch)
+            this.__adminPouch = _internalAdminPouch(this.name, this.adapter);
+        return this.__adminPouch;
+    }
+
+    get _collectionsPouch() {
+        if (!this.__collectionsPouch)
+            this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter);
+        return this.__collectionsPouch;
+    }
+
+    /**
+     * do the async things for this database
+     */
+    async prepare() {
 
         // validate/insert password-hash
         if (this.password) {
+            await this._adminPouch.info(); // ensure admin-pouch is useable
             let pwHashDoc = null;
             try {
                 pwHashDoc = await this._adminPouch.get('_local/pwHash');
@@ -69,8 +73,10 @@ export class RxDatabase {
             // socket
             this.socket = await Socket.create(this);
 
-            //TODO only subscribe when sth is listening to the event-chain
-            this.socket.messages$.subscribe(cE => this.$emit(cE));
+            // TODO only subscribe when sth is listening to the event-chain
+            this.subs.push(
+                this.socket.messages$.subscribe(cE => this.$emit(cE))
+            );
         }
     }
 
@@ -126,14 +132,12 @@ export class RxDatabase {
             this.writeToSocket(changeEvent);
     }
 
-
     /**
      * @return {Observable} observable
      */
     get $() {
         return this.observable$;
     }
-
 
     /**
      * returns the primary for a given collection-data
@@ -293,7 +297,6 @@ export class RxDatabase {
             useCollections
             .map(col => col.dump(decrypted))
         );
-
         return json;
     }
 
@@ -390,25 +393,24 @@ function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSett
     );
 }
 
-function _internalPouchDbs(dbName, adapter) {
-    const ret = {};
-    // create internal collections
-    // - admin-collection
-    ret._adminPouch = _spawnPouchDB(dbName, adapter, '_admin', 0, {
+function _internalAdminPouch(name, adapter) {
+    return _spawnPouchDB(name, adapter, '_admin', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
     });
-    // - collections-collection
-    ret._collectionsPouch = _spawnPouchDB(dbName, adapter, '_collections', 0, {
+}
+
+function _internalCollectionsPouch(name, adapter) {
+    return _spawnPouchDB(name, adapter, '_collections', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
     });
-    return ret;
 }
 
 export async function removeDatabase(databaseName, adapter) {
-    const internalPouch = _internalPouchDbs(databaseName, adapter);
-    const collectionsPouch = internalPouch._collectionsPouch;
+    const adminPouch = _internalAdminPouch(databaseName, adapter);
+    const socketPouch = _spawnPouchDB(databaseName, adapter, '_socket', 0);
+    const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
     const collectionsData = await collectionsPouch.allDocs({
         include_docs: true
     });
@@ -427,14 +429,11 @@ export async function removeDatabase(databaseName, adapter) {
     );
 
     // remove internals
-    await Promise.all(
-        Object.values(internalPouch)
-        .map(pouch => pouch.destroy())
-    );
-
-    // remove _socket-pouch
-    const socketPouch = _spawnPouchDB(databaseName, adapter, '_socket', 0);
-    await socketPouch.destroy();
+    await Promise.all([
+        collectionsPouch.destroy(),
+        adminPouch.destroy(),
+        socketPouch.destroy()
+    ]);
 }
 
 /**

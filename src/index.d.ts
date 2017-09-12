@@ -250,7 +250,7 @@ declare class RxDocument {
     synced$: Observable<boolean>;
     resync(): void;
 
-    getPrimary(): string;
+    primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
     set(objPath: string, value: any): RxDocument;

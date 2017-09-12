@@ -21,8 +21,14 @@ class Socket {
         this.bc = RxBroadcastChannel.create(this.database, 'socket');
         this.messages$ = new util.Rx.Subject();
     }
+
+    /**
+     * @return {Observable}
+     */
     get $() {
-        return this.messages$.asObservable();
+        if (!this._$)
+            this._$ = this.messages$.asObservable();
+        return this._$;
     }
 
     async prepare() {
@@ -148,14 +154,11 @@ class Socket {
         return true;
     }
 
-
-
     destroy() {
         this._destroyed = true;
         this.subs.map(sub => sub.unsubscribe());
-        if (this.bc) this.bc.destroy();
+        this.bc && this.bc.destroy();
     }
-
 }
 
 

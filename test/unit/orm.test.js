@@ -185,7 +185,7 @@ describe('orm.test.js', () => {
                         adapter: 'memory'
                     });
                     const reserved = [
-                        'getPrimaryPath',
+                        'primaryPath',
                         'get',
                         'toJSON',
                     ];

@@ -74,7 +74,7 @@ export function create(op, database, collection, doc, value) {
         it: database.token,
     };
     if (collection) data.col = collection.name;
-    if (doc) data.doc = doc.getPrimary();
+    if (doc) data.doc = doc.primary;
     if (value) data.v = value;
     return new RxChangeEvent(data);
 }

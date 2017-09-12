@@ -17,7 +17,7 @@ describe('reactive-document.test.js', () => {
                 doc.set('firstName', util.randomCouchString(8));
                 doc.save();
                 const changeEvent = await doc.$.first().toPromise();
-                assert.equal(changeEvent._id, doc.getPrimary());
+                assert.equal(changeEvent._id, doc.primary);
                 c.database.destroy();
             });
             it('should observe a single field', async() => {

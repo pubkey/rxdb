@@ -913,7 +913,7 @@ describe('rx-collection.test.js', () => {
                 it('find by primary', async() => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
-                    const _id = doc.getPrimary();
+                    const _id = doc.primary;
                     assert.equal(typeof _id, 'string');
                     const docById = await c.findOne(_id).exec();
                     assert.deepEqual(docById.data, doc.data);

@@ -154,7 +154,7 @@ describe('reactive-query.test.js', () => {
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
             const doc = await c.findOne().exec();
-            const docId = doc.getPrimary();
+            const docId = doc.primary;
 
             assert.deepEqual(c2._docCache.get(docId), undefined);
 
@@ -162,7 +162,7 @@ describe('reactive-query.test.js', () => {
             const sub = c2.find().$.subscribe(docs => results.push(docs));
             await AsyncTestUtil.waitUntil(() => results.length >= 1);
 
-            assert.equal(c2._docCache.get(docId).getPrimary(), docId);
+            assert.equal(c2._docCache.get(docId).primary, docId);
 
             sub.unsubscribe();
             c.database.destroy();

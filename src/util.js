@@ -236,7 +236,6 @@ export function sortObject(obj, noArraySort = false) {
 
     // object
     if (typeof obj === 'object') {
-
         if (obj instanceof RegExp)
             return obj;
 
