@@ -35,7 +35,7 @@ export const prototypes = {
      * set crypto-functions for the Crypter.prototype
      * @param {[type]} prototype of Crypter
      */
-    Crypter: (proto) => {
+    Crypter: proto => {
         proto._encryptValue = _encryptValue;
         proto._decryptValue = _decryptValue;
     }

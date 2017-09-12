@@ -273,44 +273,16 @@ export class RxDatabase {
      * @param {boolean} decrypted
      * @param {?string[]} collections array with collectionNames or null if all
      */
-    async dump(decrypted = false, collections = null) {
-        const json = {
-            name: this.name,
-            instanceToken: this.token,
-            encrypted: false,
-            passwordHash: null,
-            collections: []
-        };
-
-        if (this.password) {
-            json.passwordHash = util.hash(this.password);
-            if (decrypted) json.encrypted = false;
-            else json.encrypted = true;
-        }
-
-        const useCollections = Object.keys(this.collections)
-            .filter(colName => !collections || collections.includes(colName))
-            .filter(colName => colName.charAt(0) != '_')
-            .map(colName => this.collections[colName]);
-
-        json.collections = await Promise.all(
-            useCollections
-            .map(col => col.dump(decrypted))
-        );
-        return json;
+    dump() {
+        throw RxError.pluginMissing('json-dump');
     }
-
 
     /**
      * import json
      * @param {Object} dump
      */
-    async importDump(dump) {
-        return Promise.all(
-            dump.collections
-            .filter(colDump => this.collections[colDump.name])
-            .map(colDump => this.collections[colDump.name].importDump(colDump))
-        );
+    importDump() {
+        throw RxError.pluginMissing('json-dump');
     }
 
     async destroy() {

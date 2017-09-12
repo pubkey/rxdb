@@ -63,6 +63,19 @@ RxDB.plugin(RxDBReplicationModule);
 RxDB.plugin(require('rxdb/dist/lib/modules/replication'));
 ```
 
+### json-dump
+
+Adds the [json import/export](./rx-database.html+dump)-functionality to RxDB.
+
+```javascript
+// es6-import
+import RxDBJsonDumpModule from 'rxdb/dist/es/modules/json-dump';
+RxDB.plugin(RxDBJsonDumpModule);
+
+// es5-require (dont forget to use the 'lib'-folder instead of 'es')
+RxDB.plugin(require('rxdb/dist/lib/modules/json-dump'));
+```
+
 ### key-compression
 
 The keycompressor-module is needed when you have keyCompression enabled. This is done by default so make sure that you set [disableKeyCompression](./rx-schema.html#disablekeycompression) to `true` when you do not have this module.
@@ -116,6 +129,7 @@ RxDB.plugin(require('rxdb/dist/lib/modules/update'));
 ```
 
 ### adapter-check
+
 This module add the [checkAdapter](./rx-database.html#checkadapter)-function to RxDB.
 
 ```javascript
@@ -126,9 +140,6 @@ RxDB.plugin(RxDBAdapterCheckModule);
 // es5-require (dont forget to use the 'lib'-folder instead of 'es')
 RxDB.plugin(require('rxdb/dist/lib/modules/adapter-check'));
 ```
-
-
-
 
 --------------------------------------------------------------------------------
 

@@ -32,6 +32,9 @@ Core.plugin(ReplicationPlugin);
 import AdapterCheckPlugin from './modules/adapter-check';
 Core.plugin(AdapterCheckPlugin);
 
+import JsonDumpPlugin from './modules/json-dump';
+Core.plugin(JsonDumpPlugin);
+
 
 /**
  * create a database

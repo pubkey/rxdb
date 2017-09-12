@@ -372,56 +372,16 @@ export class RxCollection {
      * export to json
      * @param {boolean} decrypted if true, all encrypted values will be decrypted
      */
-    async dump(decrypted = false) {
-        const encrypted = !decrypted;
-
-        const json = {
-            name: this.name,
-            schemaHash: this.schema.hash,
-            encrypted: false,
-            passwordHash: null,
-            docs: []
-        };
-
-        if (this.database.password && encrypted) {
-            json.passwordHash = util.hash(this.database.password);
-            json.encrypted = true;
-        }
-
-        const query = RxQuery.create('find', {}, this);
-        const docs = await this._pouchFind(query, null, encrypted);
-        json.docs = docs.map(docData => {
-            delete docData._rev;
-            return docData;
-        });
-        return json;
+    dump() {
+        throw RxError.pluginMissing('json-dump');
     }
 
     /**
      * imports the json-data into the collection
      * @param {Array} exportedJSON should be an array of raw-data
      */
-    async importDump(exportedJSON) {
-
-        // check schemaHash
-        if (exportedJSON.schemaHash != this.schema.hash)
-            throw new Error('the imported json relies on a different schema');
-
-        // check if passwordHash matches own
-        if (
-            exportedJSON.encrypted &&
-            exportedJSON.passwordHash != util.hash(this.database.password)
-        ) throw new Error('json.passwordHash does not match the own');
-
-
-        const importFns = exportedJSON.docs
-            // decrypt
-            .map(doc => this._crypter.decrypt(doc))
-            // validate schema
-            .map(doc => this.schema.validate(doc))
-            // import
-            .map(doc => this._pouchPut(doc));
-        return Promise.all(importFns);
+    async importDump() {
+        throw RxError.pluginMissing('json-dump');
     }
 
     /**
