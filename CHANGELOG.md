@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.x.x (coming soon)
+## 6.x.x (coming soon) BREAKING
 
 Breaking:    
   - Filenames are now kebab-case
