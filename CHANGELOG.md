@@ -10,6 +10,7 @@ Features:
   - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
   - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#replication)
   - Json import/exportis now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#json-dump)
+  - Use `RxError`-class to throw Custom errors with the `parameters`-attribute
 
 Bugfixes:
   - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
