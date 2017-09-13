@@ -121,6 +121,19 @@ export async function requestIdlePromise(timeout = null) {
         return new Promise(res => setTimeout(res, 0));
 }
 
+/**
+ * run the callback if requestIdleCallback available
+ * do nothing if not
+ * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
+ * @param  {function} fun
+ * @return {void}
+ */
+export function requestIdleCallbackIfAvailable(fun) {
+    if (
+        typeof window === 'object' &&
+        window.requestIdleCallback
+    ) window.requestIdleCallback(fun);
+}
 
 /**
  * uppercase first char

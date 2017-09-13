@@ -3,8 +3,9 @@
  * It's using is-my-json-valid as jsonschema-validator
  * @link https://github.com/mafintosh/is-my-json-valid
  */
-import validator from 'is-my-json-valid';
+import isMyJsonValid from 'is-my-json-valid';
 import RxError from '../rx-error';
+import * as util from '../util';
 
 /**
  * cache the validators by the schema-hash
@@ -13,15 +14,19 @@ import RxError from '../rx-error';
  */
 const validatorsCache = {};
 
-const validate = function(obj, schemaPath = '') {
+
+/**
+ * returns the parsed validator from is-my-json-valid
+ * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
+ * @
+ */
+const _getValidator = function(schemaPath = '') {
     const hash = this.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
-
     const validatorsOfHash = validatorsCache[hash];
     if (!validatorsOfHash[schemaPath]) {
         const schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
-
         if (!schemaPart) {
             throw RxError.newRxError(
                 'Sub-schema not found, does the schemaPath exists in your schema?', {
@@ -29,9 +34,20 @@ const validate = function(obj, schemaPath = '') {
                 }
             );
         }
-        validatorsOfHash[schemaPath] = validator(schemaPart);
+        validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart);
     }
-    const useValidator = validatorsOfHash[schemaPath];
+    return validatorsOfHash[schemaPath];
+};
+
+/**
+ * validates the given object agains the schema
+ * @param  {any} obj
+ * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
+ * @throws {RxError} if not valid
+ * @return {any} obj if validation successful
+ */
+const validate = function(obj, schemaPath = '') {
+    const useValidator = this._getValidator(schemaPath);
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
@@ -46,6 +62,13 @@ const validate = function(obj, schemaPath = '') {
     };
 };
 
+const runAfterSchemaCreated = rxSchema => {
+    // pre-generate the isMyJsonValid-validator from the schema
+    util.requestIdleCallbackIfAvailable(() => {
+        rxSchema._getValidator();
+    });
+};
+
 export const rxdb = true;
 export const prototypes = {
     /**
@@ -53,11 +76,16 @@ export const prototypes = {
      * @param {[type]} prototype of RxSchema
      */
     RxSchema: (proto) => {
+        proto._getValidator = _getValidator;
         proto.validate = validate;
     }
+};
+export const hooks = {
+    createRxSchema: runAfterSchemaCreated
 };
 
 export default {
     rxdb,
-    prototypes
+    prototypes,
+    hooks
 };

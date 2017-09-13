@@ -17,11 +17,12 @@ Bugfixes:
   - `RxQuery.exec()` throws when out of change-event-buffer-bounds [#278](https://github.com/pubkey/rxdb/issues/278)
 
 Other:
-  - Fix deprecated warning with indexeddb-adapter `db.type()`
+  - Fix deprecated warning that sometime occurs with indexeddb-adapter `db.type()`
   - Add fallback to leader-election
   - Optimize leader-election to not waste resources when many tabs open
   - Optimize schema-rendering when multiple collections have the same schema
   - Reduced build-size by only using async/await if it makes sense
+  - Pre-Parse schema to validator when [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) available
 
 ## 5.3.0 (August 25, 2017)
 

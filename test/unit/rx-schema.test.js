@@ -353,7 +353,6 @@ describe('rx-schema.test.js', () => {
         describe('.normalized', () => {
             it('should normalize if schema has not been normalized yet', () => {
                 const schema = RxSchema.create(schemas.humanNormalizeSchema1);
-                assert.equal(schema._normalized, null);
                 const normalized = schema.normalized;
                 assert.notEqual(schema._normalized, null);
                 assert.notEqual(normalized, null);
