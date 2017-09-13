@@ -3,45 +3,39 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.removeDatabase = exports.create = undefined;
+exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = undefined;
 
-var _typeof2 = require('babel-runtime/helpers/typeof');
+var _rxDatabase = require('./rx-database');
 
-var _typeof3 = _interopRequireDefault(_typeof2);
+var _rxDatabase2 = _interopRequireDefault(_rxDatabase);
 
-exports.plugin = plugin;
+var _rxSchema = require('./rx-schema');
 
-var _RxDatabase = require('./RxDatabase');
+var _rxSchema2 = _interopRequireDefault(_rxSchema);
 
-var _RxDatabase2 = _interopRequireDefault(_RxDatabase);
+var _rxDocument = require('./rx-document');
 
-var _RxSchema = require('./RxSchema');
+var _rxDocument2 = _interopRequireDefault(_rxDocument);
 
-var _RxSchema2 = _interopRequireDefault(_RxSchema);
+var _rxQuery = require('./rx-query');
 
-var _RxDocument = require('./RxDocument');
+var _rxQuery2 = _interopRequireDefault(_rxQuery);
 
-var _RxDocument2 = _interopRequireDefault(_RxDocument);
+var _rxCollection = require('./rx-collection');
 
-var _RxQuery = require('./RxQuery');
+var _rxCollection2 = _interopRequireDefault(_rxCollection);
 
-var _RxQuery2 = _interopRequireDefault(_RxQuery);
+var _queryChangeDetector = require('./query-change-detector');
 
-var _RxCollection = require('./RxCollection');
+var _queryChangeDetector2 = _interopRequireDefault(_queryChangeDetector);
 
-var _RxCollection2 = _interopRequireDefault(_RxCollection);
+var _plugin = require('./plugin');
 
-var _QueryChangeDetector = require('./QueryChangeDetector');
+var _plugin2 = _interopRequireDefault(_plugin);
 
-var _QueryChangeDetector2 = _interopRequireDefault(_QueryChangeDetector);
+var _pouchDb = require('./pouch-db');
 
-var _Plugin = require('./Plugin');
-
-var _Plugin2 = _interopRequireDefault(_Plugin);
-
-var _PouchDB = require('./PouchDB');
-
-var _PouchDB2 = _interopRequireDefault(_PouchDB);
+var _pouchDb2 = _interopRequireDefault(_pouchDb);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -50,37 +44,30 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-var create = exports.create = _RxDatabase2['default'].create;
-var removeDatabase = exports.removeDatabase = _RxDatabase2['default'].removeDatabase;
+var create = exports.create = _rxDatabase2['default'].create;
+var removeDatabase = exports.removeDatabase = _rxDatabase2['default'].removeDatabase;
+var checkAdapter = exports.checkAdapter = _rxDatabase2['default'].checkAdapter;
 
-function plugin(mod) {
-    if (mod.rxdb) {
-        // rxdb-plugin
-        _Plugin2['default'].addPlugin(mod);
-    } else {
-        // pouchdb-plugin
-        if ((typeof mod === 'undefined' ? 'undefined' : (0, _typeof3['default'])(mod)) === 'object' && mod['default']) mod = mod['default'];
-        _PouchDB2['default'].plugin(mod);
-    }
-}
+var plugin = exports.plugin = _plugin2['default'].addPlugin;
 
-var isRxDatabase = exports.isRxDatabase = _RxDatabase2['default'].isInstanceOf;
-var isRxCollection = exports.isRxCollection = _RxCollection2['default'].isInstanceOf;
-var isRxDocument = exports.isRxDocument = _RxDocument2['default'].isInstanceOf;
-var isRxQuery = exports.isRxQuery = _RxQuery2['default'].isInstanceOf;
-var isRxSchema = exports.isRxSchema = _RxSchema2['default'].isInstanceOf;
+var isRxDatabase = exports.isRxDatabase = _rxDatabase2['default'].isInstanceOf;
+var isRxCollection = exports.isRxCollection = _rxCollection2['default'].isInstanceOf;
+var isRxDocument = exports.isRxDocument = _rxDocument2['default'].isInstanceOf;
+var isRxQuery = exports.isRxQuery = _rxQuery2['default'].isInstanceOf;
+var isRxSchema = exports.isRxSchema = _rxSchema2['default'].isInstanceOf;
 
 exports['default'] = {
     create: create,
     removeDatabase: removeDatabase,
+    checkAdapter: checkAdapter,
     plugin: plugin,
     isRxDatabase: isRxDatabase,
     isRxCollection: isRxCollection,
     isRxDocument: isRxDocument,
     isRxQuery: isRxQuery,
     isRxSchema: isRxSchema,
-    RxSchema: _RxSchema2['default'],
-    PouchDB: _PouchDB2['default'],
-    QueryChangeDetector: _QueryChangeDetector2['default'],
-    RxDatabase: _RxDatabase2['default']
+    RxSchema: _rxSchema2['default'],
+    PouchDB: _pouchDb2['default'],
+    QueryChangeDetector: _queryChangeDetector2['default'],
+    RxDatabase: _rxDatabase2['default']
 };

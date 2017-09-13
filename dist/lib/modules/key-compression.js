@@ -19,10 +19,6 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
 
-var _objectPath = require('object-path');
-
-var _objectPath2 = _interopRequireDefault(_objectPath);
-
 var _clone = require('clone');
 
 var _clone2 = _interopRequireDefault(_clone);
@@ -34,6 +30,11 @@ var util = _interopRequireWildcard(_util);
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+/**
+ * this plugin adds the keycompression-capabilities to rxdb
+ * if you dont use this, ensure that you set disableKeyComression to false in your schema
+ */
 
 var KeyCompressor = function () {
 
@@ -157,8 +158,6 @@ var KeyCompressor = function () {
             queryJSON = (0, _clone2['default'])(queryJSON);
             if (!this.schema.doKeyCompression()) return queryJSON;
 
-            var table = this.table;
-
             // selector
             var selector = {};
             Object.keys(queryJSON.selector).forEach(function (key) {
@@ -248,10 +247,7 @@ var KeyCompressor = function () {
         }
     }]);
     return KeyCompressor;
-}(); /**
-      * this plugin adds the keycompression-capabilities to rxdb
-      * if you dont use this, ensure that you set disableKeyComression to false in your schema
-      */
+}();
 
 function create(schema) {
     return new KeyCompressor(schema);

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.removeDatabase = exports.create = undefined;
+exports.checkAdapter = exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.removeDatabase = exports.create = undefined;
 
 var _core = require('./core');
 
@@ -33,6 +33,18 @@ var _update = require('./modules/update');
 
 var _update2 = _interopRequireDefault(_update);
 
+var _replication = require('./modules/replication');
+
+var _replication2 = _interopRequireDefault(_replication);
+
+var _adapterCheck = require('./modules/adapter-check');
+
+var _adapterCheck2 = _interopRequireDefault(_adapterCheck);
+
+var _jsonDump = require('./modules/json-dump');
+
+var _jsonDump2 = _interopRequireDefault(_jsonDump);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
@@ -54,6 +66,12 @@ _core2['default'].plugin(_leaderElection2['default']);
 _core2['default'].plugin(_encryption2['default']);
 
 _core2['default'].plugin(_update2['default']);
+
+_core2['default'].plugin(_replication2['default']);
+
+_core2['default'].plugin(_adapterCheck2['default']);
+
+_core2['default'].plugin(_jsonDump2['default']);
 
 /**
  * create a database
@@ -77,7 +95,6 @@ var removeDatabase = exports.removeDatabase = _core2['default'].removeDatabase;
  * add a plugin for rxdb or pouchdb
  */
 var plugin = exports.plugin = _core2['default'].plugin;
-
 var isRxDatabase = exports.isRxDatabase = _core2['default'].isRxDatabase;
 var isRxCollection = exports.isRxCollection = _core2['default'].isRxCollection;
 var isRxDocument = exports.isRxDocument = _core2['default'].isRxDocument;
@@ -87,9 +104,11 @@ var RxSchema = exports.RxSchema = _core2['default'].RxSchema;
 var PouchDB = exports.PouchDB = _core2['default'].PouchDB;
 var QueryChangeDetector = exports.QueryChangeDetector = _core2['default'].QueryChangeDetector;
 var RxDatabase = exports.RxDatabase = _core2['default'].RxDatabase;
+var checkAdapter = exports.checkAdapter = _core2['default'].checkAdapter;
 
 exports['default'] = {
   create: create,
+  checkAdapter: checkAdapter,
   removeDatabase: removeDatabase,
   plugin: plugin,
   isRxDatabase: isRxDatabase,

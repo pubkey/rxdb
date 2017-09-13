@@ -5,8 +5,9 @@
 
 import objectPath from 'object-path';
 
-import RxDocument from '../RxDocument';
-import { getIndexes } from '../RxSchema';
+import RxDocument from '../rx-document';
+import RxError from '../rx-error';
+import { getIndexes } from '../rx-schema';
 
 /**
  * checks if the fieldname is allowed
@@ -23,7 +24,10 @@ export function checkFieldNameRegex(fieldName) {
     var regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
     var regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
-        throw new Error('\n         fieldnames must match the regex:\n         - regex: ' + regexStr + '\n         - fieldName: ' + fieldName + '\n         ');
+        throw RxError.newRxError('fieldnames do not match the regex', {
+            regex: regexStr,
+            fieldName: fieldName
+        });
     }
 };
 
@@ -129,7 +133,6 @@ export function checkSchema(jsonID) {
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        var error = null;
         if (!Array.isArray(jsonID.compoundIndexes)) throw new Error('compoundIndexes must be an array');
         jsonID.compoundIndexes.forEach(function (ar) {
             if (!Array.isArray(ar)) throw new Error('compoundIndexes must contain arrays');

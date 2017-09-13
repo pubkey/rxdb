@@ -83,9 +83,11 @@ var requestIdlePromise = exports.requestIdlePromise = function () {
 }();
 
 /**
- * uppercase first char
- * @param  {string} str
- * @return {string} Str
+ * run the callback if requestIdleCallback available
+ * do nothing if not
+ * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
+ * @param  {function} fun
+ * @return {void}
  */
 
 
@@ -93,6 +95,7 @@ exports.isLevelDown = isLevelDown;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generate_id = generate_id;
+exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
 exports.trimDots = trimDots;
@@ -102,14 +105,15 @@ exports.stringifyFilter = stringifyFilter;
 exports.pouchReplicationFunction = pouchReplicationFunction;
 exports.randomCouchString = randomCouchString;
 exports.shuffleArray = shuffleArray;
-
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
+exports.adapterObject = adapterObject;
 
 var _randomToken = require('random-token');
 
 var _randomToken2 = _interopRequireDefault(_randomToken);
+
+var _rxError = require('./rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
 
 var _Observable = require('rxjs/Observable');
 
@@ -153,6 +157,10 @@ require('rxjs/add/operator/distinctUntilChanged');
 
 require('rxjs/add/operator/distinct');
 
+var _sparkMd = require('spark-md5');
+
+var _sparkMd2 = _interopRequireDefault(_sparkMd);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var Rx = exports.Rx = {
@@ -172,7 +180,6 @@ var Rx = exports.Rx = {
  * this contains a mapping to basic dependencies
  * which should be easy to change
  */
-
 function isLevelDown(adapter) {
     if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') throw new Error('given leveldown is no valid adapter');
 }
@@ -204,12 +211,10 @@ function fastUnsecureHash(obj) {
  *  because pouchdb uses the same
  *  and build-size could be reduced by 9kb
  */
-var Md5 = require('spark-md5');
 function hash(obj) {
-    var salt = 'dW8a]Qsà<<>0lW6{3Fqxp3IdößBh:Fot';
     var msg = obj;
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
-    return Md5.hash(msg);
+    return _sparkMd2['default'].hash(msg);
 }
 
 /**
@@ -218,7 +223,16 @@ function hash(obj) {
  */
 function generate_id() {
     return (0, _randomToken2['default'])(10) + ':' + new Date().getTime();
-}function ucfirst(str) {
+}function requestIdleCallbackIfAvailable(fun) {
+    if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3['default'])(window)) === 'object' && window.requestIdleCallback) window.requestIdleCallback(fun);
+}
+
+/**
+ * uppercase first char
+ * @param  {string} str
+ * @return {string} Str
+ */
+function ucfirst(str) {
     str += '';
     var f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
@@ -281,7 +295,11 @@ function validateCouchDBString(name) {
     var regStr = '^[a-z][a-z0-9]*$';
     var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new Error('\n            collection- and database-names must match the regex:\n            - regex: ' + regStr + '\n            - given: ' + name + '\n            - info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n    ');
+        throw new _rxError2['default'].newRxError('collection- and database-names must match the regex\n            info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n            ', {
+            regex: regStr,
+            givenName: name
+
+        });
     }
 
     return true;
@@ -312,7 +330,6 @@ function sortObject(obj) {
 
     // object
     if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(obj)) === 'object') {
-
         if (obj instanceof RegExp) return obj;
 
         var out = {};
@@ -380,4 +397,20 @@ function shuffleArray(arr) {
     return arr.sort(function () {
         return Math.random() - 0.5;
     });
+};
+
+/**
+ * transforms the given adapter into a pouch-compatible object
+ * @return {Object} adapterObject
+ */
+function adapterObject(adapter) {
+    var adapterObj = {
+        db: adapter
+    };
+    if (typeof adapter === 'string') {
+        adapterObj = {
+            adapter: adapter
+        };
+    }
+    return adapterObj;
 };

@@ -472,7 +472,12 @@ function _pushArr(opts, field, value) {
     if (!Array.isArray(opts.sort)) {
         throw new TypeError('\n          Can\'t mix sort syntaxes. Use either array or object:\n            \n- .sort([[\'field\', 1], [\'test\', -1]])\n            \n- .sort({ field: 1, test: -1 })');
     }
-    var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
+
+    /*    const valueStr = value.toString()
+            .replace('asc', '1')
+            .replace('ascending', '1')
+            .replace('desc', '-1')
+            .replace('descending', '-1');*/
     opts.sort.push([field, value]);
 };
 

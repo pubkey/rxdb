@@ -2,7 +2,7 @@
  * functions that can or should be overwritten by plugins
  */
 
-import RxError from './RxError';
+import RxError from './rx-error';
 
 var funs = {
   /**
@@ -12,15 +12,16 @@ var funs = {
    * @throws if password not valid
    * @return {void}
    */
-  validatePassword: function validatePassword(password) {
+  validatePassword: function validatePassword() {
     throw RxError.pluginMissing('encryption');
   },
+
   /**
    * creates a key-compressor for the given schema
    * @param  {RxSchema} schema
    * @return {KeyCompressor}
    */
-  createKeyCompressor: function createKeyCompressor(schema) {
+  createKeyCompressor: function createKeyCompressor() {
     throw RxError.pluginMissing('keycompression');
   },
 
@@ -29,8 +30,17 @@ var funs = {
    * @param  {RxDatabase} database
    * @return {LeaderElector}
    */
-  createLeaderElector: function createLeaderElector(database) {
+  createLeaderElector: function createLeaderElector() {
     throw RxError.pluginMissing('leaderelection');
+  },
+
+
+  /**
+   * checks if the given adapter can be used
+   * @return {any} adapter
+   */
+  checkAdapter: function checkAdapter() {
+    throw RxError.pluginMissing('adapter-check');
   }
 };
 

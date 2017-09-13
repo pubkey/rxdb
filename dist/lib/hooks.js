@@ -19,6 +19,10 @@ var HOOKS = exports.HOOKS = {
    * to do additionally checks/manipulation
    */
   preCreateRxSchema: [],
+  /**
+   * functions that run after the RxSchema is created
+   * gets RxSchema as attribute
+   */
   createRxSchema: [],
   createRxQuery: [],
   createRxDocument: []

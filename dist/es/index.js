@@ -26,6 +26,15 @@ Core.plugin(EncryptionPlugin);
 import UpdatePlugin from './modules/update';
 Core.plugin(UpdatePlugin);
 
+import ReplicationPlugin from './modules/replication';
+Core.plugin(ReplicationPlugin);
+
+import AdapterCheckPlugin from './modules/adapter-check';
+Core.plugin(AdapterCheckPlugin);
+
+import JsonDumpPlugin from './modules/json-dump';
+Core.plugin(JsonDumpPlugin);
+
 /**
  * create a database
  * @param  {string} prefix as databaseName for the storage (this can be the foldername)
@@ -48,7 +57,6 @@ export var removeDatabase = Core.removeDatabase;
  * add a plugin for rxdb or pouchdb
  */
 export var plugin = Core.plugin;
-
 export var isRxDatabase = Core.isRxDatabase;
 export var isRxCollection = Core.isRxCollection;
 export var isRxDocument = Core.isRxDocument;
@@ -58,9 +66,11 @@ export var RxSchema = Core.RxSchema;
 export var PouchDB = Core.PouchDB;
 export var QueryChangeDetector = Core.QueryChangeDetector;
 export var RxDatabase = Core.RxDatabase;
+export var checkAdapter = Core.checkAdapter;
 
 export default {
   create: create,
+  checkAdapter: checkAdapter,
   removeDatabase: removeDatabase,
   plugin: plugin,
   isRxDatabase: isRxDatabase,

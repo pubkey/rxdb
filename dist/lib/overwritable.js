@@ -4,9 +4,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _RxError = require('./RxError');
+var _rxError = require('./rx-error');
 
-var _RxError2 = _interopRequireDefault(_RxError);
+var _rxError2 = _interopRequireDefault(_rxError);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -18,16 +18,17 @@ var funs = {
    * @throws if password not valid
    * @return {void}
    */
-  validatePassword: function validatePassword(password) {
-    throw _RxError2['default'].pluginMissing('encryption');
+  validatePassword: function validatePassword() {
+    throw _rxError2['default'].pluginMissing('encryption');
   },
+
   /**
    * creates a key-compressor for the given schema
    * @param  {RxSchema} schema
    * @return {KeyCompressor}
    */
-  createKeyCompressor: function createKeyCompressor(schema) {
-    throw _RxError2['default'].pluginMissing('keycompression');
+  createKeyCompressor: function createKeyCompressor() {
+    throw _rxError2['default'].pluginMissing('keycompression');
   },
 
   /**
@@ -35,8 +36,17 @@ var funs = {
    * @param  {RxDatabase} database
    * @return {LeaderElector}
    */
-  createLeaderElector: function createLeaderElector(database) {
-    throw _RxError2['default'].pluginMissing('leaderelection');
+  createLeaderElector: function createLeaderElector() {
+    throw _rxError2['default'].pluginMissing('leaderelection');
+  },
+
+
+  /**
+   * checks if the given adapter can be used
+   * @return {any} adapter
+   */
+  checkAdapter: function checkAdapter() {
+    throw _rxError2['default'].pluginMissing('adapter-check');
   }
 }; /**
     * functions that can or should be overwritten by plugins

@@ -42,7 +42,7 @@ export var prototypes = {
 export var overwritable = {
     validatePassword: function validatePassword(password) {
         if (password && typeof password !== 'string') throw new TypeError('password is no string');
-        if (password && password.length < minPassLength) throw new Error('password must have at least ' + minPassLength + ' chars');
+        if (password && password.length < minPassLength) throw new Error('password must have at least ' + minPassLength + ' chars (given: ' + password + ')');
     }
 };
 

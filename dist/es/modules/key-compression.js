@@ -5,7 +5,6 @@ import _createClass from 'babel-runtime/helpers/createClass';
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import objectPath from 'object-path';
 import clone from 'clone';
 import * as util from '../util';
 
@@ -123,8 +122,6 @@ var KeyCompressor = function () {
 
         queryJSON = clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
-
-        var table = this.table;
 
         // selector
         var selector = {};

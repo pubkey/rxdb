@@ -3,28 +3,20 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import RxDatabase from './RxDatabase';
-import RxSchema from './RxSchema';
-import RxDocument from './RxDocument';
-import RxQuery from './RxQuery';
-import RxCollection from './RxCollection';
-import QueryChangeDetector from './QueryChangeDetector';
-import Plugin from './Plugin';
-import PouchDB from './PouchDB';
+import RxDatabase from './rx-database';
+import RxSchema from './rx-schema';
+import RxDocument from './rx-document';
+import RxQuery from './rx-query';
+import RxCollection from './rx-collection';
+import QueryChangeDetector from './query-change-detector';
+import Plugin from './plugin';
+import PouchDB from './pouch-db';
 
 export var create = RxDatabase.create;
 export var removeDatabase = RxDatabase.removeDatabase;
+export var checkAdapter = RxDatabase.checkAdapter;
 
-export function plugin(mod) {
-    if (mod.rxdb) {
-        // rxdb-plugin
-        Plugin.addPlugin(mod);
-    } else {
-        // pouchdb-plugin
-        if (typeof mod === 'object' && mod['default']) mod = mod['default'];
-        PouchDB.plugin(mod);
-    }
-}
+export var plugin = Plugin.addPlugin;
 
 export var isRxDatabase = RxDatabase.isInstanceOf;
 export var isRxCollection = RxCollection.isInstanceOf;
@@ -35,6 +27,7 @@ export var isRxSchema = RxSchema.isInstanceOf;
 export default {
     create: create,
     removeDatabase: removeDatabase,
+    checkAdapter: checkAdapter,
     plugin: plugin,
     isRxDatabase: isRxDatabase,
     isRxCollection: isRxCollection,

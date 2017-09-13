@@ -17,11 +17,15 @@ var _objectPath = require('object-path');
 
 var _objectPath2 = _interopRequireDefault(_objectPath);
 
-var _RxDocument = require('../RxDocument');
+var _rxDocument = require('../rx-document');
 
-var _RxDocument2 = _interopRequireDefault(_RxDocument);
+var _rxDocument2 = _interopRequireDefault(_rxDocument);
 
-var _RxSchema = require('../RxSchema');
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
+var _rxSchema = require('../rx-schema');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -32,6 +36,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  * @param  {string} fieldName
  * @throws {Error}
  */
+/**
+ * does additional checks over the schema-json
+ * to ensure nothing is broken or not supported
+ */
+
 function checkFieldNameRegex(fieldName) {
     if (fieldName == '') return;
 
@@ -40,14 +49,12 @@ function checkFieldNameRegex(fieldName) {
     var regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
     var regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
-        throw new Error('\n         fieldnames must match the regex:\n         - regex: ' + regexStr + '\n         - fieldName: ' + fieldName + '\n         ');
+        throw _rxError2['default'].newRxError('fieldnames do not match the regex', {
+            regex: regexStr,
+            fieldName: fieldName
+        });
     }
-} /**
-   * does additional checks over the schema-json
-   * to ensure nothing is broken or not supported
-   */
-
-;
+};
 
 /**
  * validate that all schema-related things are ok
@@ -144,14 +151,13 @@ function checkSchema(jsonID) {
         }
 
         // check if RxDocument-property
-        if (_RxDocument2['default'].properties().includes(key)) throw new Error('top-level fieldname is not allowed: ' + key);
+        if (_rxDocument2['default'].properties().includes(key)) throw new Error('top-level fieldname is not allowed: ' + key);
     });
 
     if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath)) throw new Error('primary is always required, do not declare it as required');
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        var error = null;
         if (!Array.isArray(jsonID.compoundIndexes)) throw new Error('compoundIndexes must be an array');
         jsonID.compoundIndexes.forEach(function (ar) {
             if (!Array.isArray(ar)) throw new Error('compoundIndexes must contain arrays');
@@ -163,7 +169,7 @@ function checkSchema(jsonID) {
     }
 
     // check that indexes are string
-    (0, _RxSchema.getIndexes)(jsonID).reduce(function (a, b) {
+    (0, _rxSchema.getIndexes)(jsonID).reduce(function (a, b) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
         return arr.indexOf(elem) == pos;

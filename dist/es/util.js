@@ -4,9 +4,8 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
  * this contains a mapping to basic dependencies
  * which should be easy to change
  */
-
-import clone from 'clone';
 import randomToken from 'random-token';
+import RxError from './rx-error';
 
 // rxjs cherry-pick
 import { Observable } from 'rxjs/Observable';
@@ -73,9 +72,8 @@ export function fastUnsecureHash(obj) {
  *  because pouchdb uses the same
  *  and build-size could be reduced by 9kb
  */
-var Md5 = require('spark-md5');
+import Md5 from 'spark-md5';
 export function hash(obj) {
-    var salt = 'dW8a]Qsà<<>0lW6{3Fqxp3IdößBh:Fot';
     var msg = obj;
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
     return Md5.hash(msg);
@@ -155,6 +153,17 @@ export var requestIdlePromise = function () {
 }();
 
 /**
+ * run the callback if requestIdleCallback available
+ * do nothing if not
+ * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
+ * @param  {function} fun
+ * @return {void}
+ */
+export function requestIdleCallbackIfAvailable(fun) {
+    if (typeof window === 'object' && window.requestIdleCallback) window.requestIdleCallback(fun);
+}
+
+/**
  * uppercase first char
  * @param  {string} str
  * @return {string} Str
@@ -222,7 +231,11 @@ export function validateCouchDBString(name) {
     var regStr = '^[a-z][a-z0-9]*$';
     var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new Error('\n            collection- and database-names must match the regex:\n            - regex: ' + regStr + '\n            - given: ' + name + '\n            - info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n    ');
+        throw new RxError.newRxError('collection- and database-names must match the regex\n            info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n            ', {
+            regex: regStr,
+            givenName: name
+
+        });
     }
 
     return true;
@@ -253,7 +266,6 @@ export function sortObject(obj) {
 
     // object
     if (typeof obj === 'object') {
-
         if (obj instanceof RegExp) return obj;
 
         var out = {};
@@ -321,4 +333,20 @@ export function shuffleArray(arr) {
     return arr.sort(function () {
         return Math.random() - 0.5;
     });
+};
+
+/**
+ * transforms the given adapter into a pouch-compatible object
+ * @return {Object} adapterObject
+ */
+export function adapterObject(adapter) {
+    var adapterObj = {
+        db: adapter
+    };
+    if (typeof adapter === 'string') {
+        adapterObj = {
+            adapter: adapter
+        };
+    }
+    return adapterObj;
 };
