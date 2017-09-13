@@ -6,7 +6,10 @@
 import objectPath from 'object-path';
 
 import RxDocument from '../rx-document';
-import { getIndexes } from '../rx-schema';
+import RxError from '../rx-error';
+import {
+    getIndexes
+} from '../rx-schema';
 
 /**
  * checks if the fieldname is allowed
@@ -24,11 +27,12 @@ export function checkFieldNameRegex(fieldName) {
     const regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
     const regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
-        throw new Error(`
-         fieldnames must match the regex:
-         - regex: ${regexStr}
-         - fieldName: ${fieldName}
-         `);
+        throw RxError.newRxError(
+            'fieldnames do not match the regex', {
+                regex: regexStr,
+                fieldName
+            }
+        );
     }
 };
 

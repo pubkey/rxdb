@@ -3,6 +3,7 @@
  * which should be easy to change
  */
 import randomToken from 'random-token';
+import RxError from './rx-error';
 
 // rxjs cherry-pick
 import {
@@ -200,12 +201,15 @@ export function validateCouchDBString(name) {
     const regStr = '^[a-z][a-z0-9]*$';
     const reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new Error(`
-            collection- and database-names must match the regex:
-            - regex: ${regStr}
-            - given: ${name}
-            - info: if your database-name specifies a folder, the name must contain the slash-char '/'
-    `);
+        throw new RxError.newRxError(
+            `collection- and database-names must match the regex
+            info: if your database-name specifies a folder, the name must contain the slash-char '/'
+            `, {
+                regex: regStr,
+                givenName: name,
+
+            }
+        );
     }
 
     return true;

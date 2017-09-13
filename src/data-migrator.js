@@ -9,6 +9,7 @@ import clone from 'clone';
 import * as util from './util';
 import RxSchema from './rx-schema';
 import Crypter from './crypter';
+import RxError from './rx-error';
 import overwritable from './overwritable';
 
 class DataMigrator {
@@ -204,11 +205,12 @@ class OldCollection {
         try {
             this.newestCollection.schema.validate(doc);
         } catch (e) {
-            throw new Error(`
-              migration of document from v${this.version} to v${this.newestCollection.schema.version} failed
-              - final document does not match final schema
-              - final doc: ${JSON.stringify(doc)}
-            `);
+            throw RxError.newRxError(
+                `migration of document from v${this.version} to v${this.newestCollection.schema.version} failed
+                final document does not match final schema`, {
+                    finalDoc: doc
+                }
+            );
         }
         return doc;
     }

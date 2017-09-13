@@ -4,7 +4,7 @@
  * @link https://github.com/mafintosh/is-my-json-valid
  */
 import validator from 'is-my-json-valid';
-
+import RxError from '../rx-error';
 
 /**
  * cache the validators by the schema-hash
@@ -23,10 +23,11 @@ const validate = function(obj, schemaPath = '') {
         const schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
 
         if (!schemaPart) {
-            throw new Error(JSON.stringify({
-                name: 'sub-schema not found',
-                error: 'does the field ' + schemaPath + ' exist in your schema?'
-            }));
+            throw RxError.newRxError(
+                'Sub-schema not found, does the schemaPath exists in your schema?', {
+                    schemaPath
+                }
+            );
         }
         validatorsOfHash[schemaPath] = validator(schemaPart);
     }
@@ -34,13 +35,14 @@ const validate = function(obj, schemaPath = '') {
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
-        throw new Error(JSON.stringify({
-            name: 'object does not match schema',
-            errors: useValidator.errors,
-            schemaPath,
-            obj,
-            schema: this.jsonID
-        }));
+        throw RxError.newRxError(
+            'object does not match schema', {
+                errors: useValidator.errors,
+                schemaPath,
+                obj,
+                schema: this.jsonID
+            }
+        );
     };
 };
 

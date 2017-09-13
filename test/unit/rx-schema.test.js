@@ -459,6 +459,19 @@ describe('rx-schema.test.js', () => {
                     obj._id = util.generate_id();
                     schema.validate(obj);
                 });
+                it('accessible error-parameters', () => {
+                    const schema = RxSchema.create(schemas.human);
+                    const obj = schemaObjects.human();
+                    let hasThrown = false;
+                    try {
+                        schema.validate(obj);
+                    } catch (err) {
+                        const deepParam = err.parameters.errors[0].field;
+                        assert.equal(deepParam, 'data._id');
+                        hasThrown = true;
+                    }
+                    assert.ok(hasThrown);
+                });
             });
         });
         describe('.getSchemaByObjectPath()', () => {

@@ -306,11 +306,12 @@ export class RxCollection {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
-            throw new Error(`
-                RxCollection.upsert() does not work without primary
-                - primaryPath: ${this.schema.primaryPath}
-                - given data: ${JSON.stringify(json)}
-            `);
+            throw RxError.newRxError(
+                'RxCollection.upsert() does not work without primary', {
+                    primaryPath: this.schema.primaryPath,
+                    data: json
+                }
+            );
         }
 
         const existing = await this.findOne(primary).exec();
@@ -532,11 +533,12 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
 
     // for every previousVersion there must be strategy
     if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
-        throw new Error(`
-      a migrationStrategy is missing or too much
-      - have: ${JSON.stringify(Object.keys(migrationStrategies).map(v => parseInt(v)))}
-      - should: ${JSON.stringify(schema.previousVersions)}
-      `);
+        throw RxError.newRxError(
+            'A migrationStrategy is missing or too much', {
+                have: Object.keys(migrationStrategies),
+                should: schema.previousVersions
+            }
+        );
     }
 
     // every strategy must have number as property and be a function
