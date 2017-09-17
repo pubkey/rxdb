@@ -7,6 +7,7 @@ Breaking:
   - `pouchdb-replication`-plugin is now imported by default
 
 Features:
+  - Added [RxDatabase.requestIdlePromise()](https://pubkey.github.io/rxdb/rx-database.html#requestidlepromise)
   - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
   - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#replication)
   - Json import/exportis now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#json-dump)

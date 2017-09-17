@@ -6,6 +6,7 @@ import RxCollection from './rx-collection';
 import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
 import Socket from './socket';
+import IdleQueue from './idle-queue';
 import overwritable from './overwritable';
 import {
     runPluginHooks
@@ -17,7 +18,7 @@ export class RxDatabase {
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
-
+        this.idleQueue = IdleQueue.create();
         this.token = randomToken(10);
 
         this.subs = [];
@@ -52,17 +53,26 @@ export class RxDatabase {
 
         // validate/insert password-hash
         if (this.password) {
-            await this._adminPouch.info(); // ensure admin-pouch is useable
+
+            // ensure admin-pouch is useable
+            await this.lockedRun(
+                () => this._adminPouch.info()
+            );
+
             let pwHashDoc = null;
             try {
-                pwHashDoc = await this._adminPouch.get('_local/pwHash');
+                pwHashDoc = await this.lockedRun(
+                    () => this._adminPouch.get('_local/pwHash')
+                );
             } catch (e) {}
             if (!pwHashDoc) {
                 try {
-                    await this._adminPouch.put({
-                        _id: '_local/pwHash',
-                        value: util.hash(this.password)
-                    });
+                    await this.lockedRun(
+                        () => this._adminPouch.put({
+                            _id: '_local/pwHash',
+                            value: util.hash(this.password)
+                        })
+                    );
                 } catch (e) {}
             }
             if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)
@@ -165,7 +175,9 @@ export class RxDatabase {
         return this
             ._collectionsPouch
             .get(docId)
-            .then(doc => this._collectionsPouch.remove(doc));
+            .then(doc => this.lockedRun(
+                () => this._collectionsPouch.remove(doc)
+            ));
     }
 
     /**
@@ -174,9 +186,11 @@ export class RxDatabase {
      * @return {Promise<string[]>} resolves all known collection-versions
      */
     async _removeAllOfCollection(collectionName) {
-        const data = await this._collectionsPouch.allDocs({
-            include_docs: true
-        });
+        const data = await this.lockedRun(
+            () => this._collectionsPouch.allDocs({
+                include_docs: true
+            })
+        );
         const relevantDocs = data.rows
             .map(row => row.doc)
             .filter(doc => {
@@ -185,7 +199,9 @@ export class RxDatabase {
             });
         await Promise.all(
             relevantDocs
-            .map(doc => this._collectionsPouch.remove(doc))
+            .map(doc => this.lockedRun(
+                () => this._collectionsPouch.remove(doc)
+            ))
         );
         return relevantDocs.map(doc => doc.version);
     }
@@ -220,7 +236,9 @@ export class RxDatabase {
         const schemaHash = args.schema.hash;
         let collectionDoc = null;
         try {
-            collectionDoc = await this._collectionsPouch.get(internalPrimary);
+            collectionDoc = await this.lockedRun(
+                () => this._collectionsPouch.get(internalPrimary)
+            );
         } catch (e) {}
 
         if (collectionDoc && collectionDoc.schemaHash != schemaHash)
@@ -234,12 +252,14 @@ export class RxDatabase {
 
         if (!collectionDoc) {
             try {
-                await this._collectionsPouch.put({
-                    _id: internalPrimary,
-                    schemaHash,
-                    schema: collection.schema.normalized,
-                    version: collection.schema.version
-                });
+                await this.lockedRun(
+                    () => this._collectionsPouch.put({
+                        _id: internalPrimary,
+                        schemaHash,
+                        schema: collection.schema.normalized,
+                        version: collection.schema.version
+                    })
+                );
             } catch (e) {}
         }
 
@@ -273,9 +293,25 @@ export class RxDatabase {
             .map(v => this._spawnPouchDB(collectionName, v));
 
         // remove documents
-        return Promise.all(pouches.map(pouch => pouch.destroy()));
+        return Promise.all(
+            pouches.map(pouch => this.lockedRun(
+                () => pouch.destroy()
+            ))
+        );
     }
 
+
+    /**
+     * runs the given function between idleQueue-locking
+     * @return {any}
+     */
+    lockedRun(fun) {
+        return this.idleQueue.wrapFunctionWithLocking(fun);
+    }
+
+    requestIdlePromise() {
+        return this.idleQueue.requestIdlePromise();
+    }
 
     /**
      * export to json

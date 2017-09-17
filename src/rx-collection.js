@@ -55,7 +55,11 @@ export class RxCollection {
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
-        await this.pouch.info(); // ensure that we wait until db is useable
+
+        // ensure that we wait until db is useable
+        await this.database.lockedRun(
+            () => this.pouch.info()
+        );
 
         this._observable$ = this.database.$
             .filter(event => event.data.col == this.name);
@@ -72,11 +76,14 @@ export class RxCollection {
                         else
                             return this._keyCompressor._transformKey('', '', key.split('.'));
                     });
-                return this.pouch.createIndex({
-                    index: {
-                        fields: compressedIdx
-                    }
-                });
+
+                return this.database.lockedRun(
+                    () => this.pouch.createIndex({
+                        index: {
+                            fields: compressedIdx
+                        }
+                    })
+                );
             })
         );
 
@@ -154,12 +161,18 @@ export class RxCollection {
         obj = this._handleToPouch(obj);
         let ret = null;
         try {
-            ret = await this.pouch.put(obj);
+            ret = await this.database.lockedRun(
+                () => this.pouch.put(obj)
+            );
         } catch (e) {
             if (overwrite && e.status == 409) {
-                const exist = await this.pouch.get(obj._id);
+                const exist = await this.database.lockedRun(
+                    () => this.pouch.get(obj._id)
+                );
                 obj._rev = exist._rev;
-                ret = await this.pouch.put(obj);
+                ret = await this.database.lockedRun(
+                    () => this.pouch.put(obj)
+                );
             } else throw e;
         }
         return ret;
@@ -188,7 +201,10 @@ export class RxCollection {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
 
-        const docsCompressed = await this.pouch.find(compressedQueryJSON);
+        const docsCompressed = await this.database.lockedRun(
+            () => this.pouch.find(compressedQueryJSON)
+        );
+
         const docs = docsCompressed.docs
             .map(doc => this._handleFromPouch(doc, noDecrypt));
 

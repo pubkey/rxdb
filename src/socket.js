@@ -73,7 +73,9 @@ class Socket {
         // TODO find a way to getAll on local documents
         //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
         socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;
-        await this.pouch.put(socketDoc);
+        await this.database.lockedRun(
+            () => this.pouch.put(socketDoc)
+        );
         this.bc && await this.bc.write('pull');
         return true;
     }
@@ -83,15 +85,19 @@ class Socket {
      * get all docs from the socket-collection
      */
     async fetchDocs() {
-        const result = await this.pouch.allDocs({
-            include_docs: true
-        });
+        const result = await this.database.lockedRun(
+            () => this.pouch.allDocs({
+                include_docs: true
+            })
+        );
         return result.rows
             .map(row => row.doc);
     }
     async deleteDoc(doc) {
         try {
-            await this.pouch.remove(doc);
+            await this.database.lockedRun(
+                () => this.pouch.remove(doc)
+            );
         } catch (e) {}
     }
 
@@ -141,8 +147,11 @@ class Socket {
         const delDocs = docs
             .filter(doc => doc.t < maxAge)
             .map(doc => this.deleteDoc(doc));
-        if (delDocs.length > 0)
-            await this.pouch.compact();
+        if (delDocs.length > 0) {
+            await this.database.lockedRun(
+                () => this.pouch.compact()
+            );
+        }
 
 
         this.lastPull = new Date().getTime();

@@ -9,6 +9,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/key-compression.test.js',
     '../test_tmp/unit/socket.test.js',
     '../test_tmp/unit/rx-database.test.js',
+    '../test_tmp/unit/idle-queue.test.js', // TODO move this under rx-query
     '../test_tmp/unit/rx-collection.test.js',
     '../test_tmp/unit/rx-document.test.js',
     '../test_tmp/unit/temporary-document.test.js',

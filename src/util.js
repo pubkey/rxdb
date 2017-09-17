@@ -97,6 +97,13 @@ export function generate_id() {
     return randomToken(10) + ':' + new Date().getTime();
 }
 
+/**
+ * returns a promise that resolves on the next tick
+ * @return {Promise}
+ */
+export function nextTick() {
+    return new Promise(res => setTimeout(res, 0));
+}
 
 /**
  * [promiseWait description]

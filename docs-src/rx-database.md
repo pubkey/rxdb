@@ -75,6 +75,26 @@ emptyDatabase.importDump(json)
   .then(() => console.log('done'));
 ```
 
+### requestIdlePromise()
+Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idle-ness of the database instead of the CPU.
+Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.
+
+```js
+
+myDatabase.requestIdlePromise().then(() => {
+    // this will run at the moment the database has nothing else to do
+    myCollection.customCleanupFunction();
+});
+
+// with timeout
+myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
+    // this will run at the moment the database has nothing else to do
+    // or the timeout has passed
+    myCollection.customCleanupFunction();
+});
+
+```
+
 ### destroy()
 Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
 ```js

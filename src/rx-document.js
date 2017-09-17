@@ -382,7 +382,9 @@ export class RxDocument {
 
         await this.collection._runHooks('pre', 'remove', this);
 
-        await this.collection.pouch.remove(this.primary, this._data._rev);
+        await this.collection.database.lockedRun(
+            () => this.collection.pouch.remove(this.primary, this._data._rev)
+        );
 
         this.$emit(RxChangeEvent.create(
             'REMOVE',
