@@ -78,6 +78,7 @@ class LeaderElector {
         if (this.isLeader) return false;
         if (this.isDead) return false;
         if (this.isApplying) return false;
+        if (this.destroyed) return false;
         this.isApplying = true;
 
         const elected = await this['apply_' + this.electionChannel]();

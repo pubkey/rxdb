@@ -305,6 +305,7 @@ describe('key-compression.test.js', () => {
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));
             assert.equal(query.selector[c._keyCompressor.table['firstName']], 'myFirstName');
+            c.database.destroy();
         });
         it('primary', async() => {
             const c = await humansCollection.createPrimary(0);
@@ -315,6 +316,7 @@ describe('key-compression.test.js', () => {
             assert.ok(!jsonString.includes('passportId'));
             assert.ok(jsonString.includes('myPassportId'));
             assert.equal(query.selector._id, 'myPassportId');
+            c.database.destroy();
         });
         it('nested', async() => {
             const c = await humansCollection.createNested(0);
@@ -330,6 +332,7 @@ describe('key-compression.test.js', () => {
             assert.ok(!jsonString.includes('level'));
             assert.ok(jsonString.includes(5));
             assert.equal(query.selector[cString], 5);
+            c.database.destroy();
         });
 
         it('additional attribute', async() => {
@@ -339,6 +342,7 @@ describe('key-compression.test.js', () => {
                 .keyCompress();
 
             assert.equal(query.selector.foobar, 5);
+            c.database.destroy();
         });
         it('additional nested attribute', async() => {
             const c = await humansCollection.createNested(0);
@@ -351,6 +355,7 @@ describe('key-compression.test.js', () => {
                 'foobar'
             ].join('.');
             assert.equal(query.selector[cString], 5);
+            c.database.destroy();
         });
         it('additional deep nested attribute', async() => {
             const c = await humansCollection.createDeepNested(0);
@@ -364,12 +369,14 @@ describe('key-compression.test.js', () => {
                 'foobar'
             ].join('.');
             assert.equal(query.selector[cString], 5);
+            c.database.destroy();
         });
         it('.sort()', async() => {
             const c = await humansCollection.createDeepNested(0);
             const query = c.find().sort('mainSkill');
             const compressed = query.keyCompress();
             assert.equal(compressed.sort[0][c._keyCompressor.table['mainSkill']], 'asc');
+            c.database.destroy();
         });
         it('.sort() nested', async() => {
             const c = await humansCollection.createNested(0);
@@ -382,6 +389,7 @@ describe('key-compression.test.js', () => {
                 c._keyCompressor.table['mainSkill.level']
             ].join('.');
             assert.equal(query.sort[0][cString], 'asc');
+            c.database.destroy();
         });
     });
 

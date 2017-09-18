@@ -51,7 +51,7 @@ class Socket {
         (async() => {
             while (!this._destroyed) {
                 await util.promiseWait(PULL_TIME);
-                if (this.messages$.observers.length > 0)
+                if (this.messages$.observers.length > 0 && !this._destroyed)
                     await this.pull();
             }
         })();
@@ -64,9 +64,6 @@ class Socket {
      * write the given event to the socket
      */
     async write(changeEvent) {
-        // w8 for idle-time because this is a non-prio-task
-        await util.requestIdlePromise();
-
         const socketDoc = changeEvent.toJSON();
         delete socketDoc.db;
 
@@ -194,7 +191,7 @@ class Socket {
         return true;
     }
 
-    destroy() {
+    async destroy() {
         this._destroyed = true;
         this.subs.map(sub => sub.unsubscribe());
         this.bc && this.bc.destroy();

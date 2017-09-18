@@ -20,7 +20,6 @@ describe('socket.test.js', () => {
         const docs = await socket.fetchDocs();
         assert.equal(docs.length, 1);
         assert.equal(docs[0].op, 'test');
-
         db.destroy();
     });
 
@@ -39,10 +38,9 @@ describe('socket.test.js', () => {
 
         assert.equal(docs.length, 1);
         assert.equal(docs[0].op, 'test');
-
-        db.destroy();
-        socket1.destroy();
-        socket2.destroy();
+        await db.destroy();
+        await socket1.destroy();
+        await socket2.destroy();
     });
 
     it('socket-observable should emit changeEvent on pull', async() => {

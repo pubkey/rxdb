@@ -18,11 +18,14 @@ if (typeof window !== 'undefined')
 console.log('PLATFORM-NAME: ' + platform.name);
 console.log('PLATFORM-VERSION: ' + platform.version);
 
-if (platform.name != 'Node.js') {
+if (platform.name != 'node') {
     console.dir = (d) => {
         console.log(JSON.stringify(d));
     };
 } else {
+    /**
+     * exit with non-zero on unhandledRejection
+     */
     process.on('unhandledRejection', function(err) {
         console.log('init.test.js: unhandledRejection');
         console.error(err);

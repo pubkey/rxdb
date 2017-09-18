@@ -120,8 +120,9 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 
 ### destroy()
 Destroys the databases object-instance. This is to free up memory and stop all observings and replications.
+Returns a `Promise` that resolves when the database is destroyed.
 ```js
-myDatabase.destroy();
+await myDatabase.destroy();
 ```
 
 ### remove()

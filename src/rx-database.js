@@ -339,17 +339,25 @@ export class RxDatabase {
         throw RxError.pluginMissing('json-dump');
     }
 
+    /**
+     * destroys the database-instance and all collections
+     * @return {Promise}
+     */
     async destroy() {
         if (this.destroyed) return;
         this.destroyed = true;
-        this.socket && this.socket.destroy();
+        this.socket && await this.socket.destroy();
         if (this._leaderElector)
             await this._leaderElector.destroy();
         this.subs.map(sub => sub.unsubscribe());
-        Object.keys(this.collections)
-            .map(key => this.collections[key])
-            .map(col => col.destroy());
 
+        // destroy all collections
+        await Promise.all(Object.keys(this.collections)
+            .map(key => this.collections[key])
+            .map(col => col.destroy())
+        );
+
+        // remove combination from USED_COMBINATIONS-map
         _removeUsedCombination(this.name, this.adapter);
     }
 

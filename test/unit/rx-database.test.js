@@ -68,7 +68,7 @@ describe('rx-database.test.js', () => {
                     name,
                     adapter: 'memory'
                 });
-                db.destroy();
+                await db.destroy();
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory'
