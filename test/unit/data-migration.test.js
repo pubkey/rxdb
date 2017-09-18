@@ -29,6 +29,7 @@ describe('data-migration.test.js', () => {
                         3: () => {}
                     }
                 });
+                db.destroy();
             });
             it('create same collection with different schema-versions', async() => {
                 const colName = 'human';
@@ -59,6 +60,8 @@ describe('data-migration.test.js', () => {
                         3: () => {}
                     }
                 });
+                db.destroy();
+                db2.destroy();
             });
         });
         describe('negative', () => {
@@ -78,6 +81,7 @@ describe('data-migration.test.js', () => {
                     }),
                     TypeError
                 );
+                db.destroy();
             });
             it('should throw when property no number', async() => {
                 const db = await RxDatabase.create({
@@ -97,6 +101,7 @@ describe('data-migration.test.js', () => {
                     }),
                     Error
                 );
+                db.destroy();
             });
             it('should throw when property no non-float-number', async() => {
                 const db = await RxDatabase.create({
@@ -116,6 +121,7 @@ describe('data-migration.test.js', () => {
                     }),
                     Error
                 );
+                db.destroy();
             });
             it('should throw when property-value no function', async() => {
                 const db = await RxDatabase.create({
@@ -135,6 +141,7 @@ describe('data-migration.test.js', () => {
                     }),
                     Error
                 );
+                db.destroy();
             });
             it('throw when strategy missing', async() => {
                 const db = await RxDatabase.create({
@@ -155,6 +162,7 @@ describe('data-migration.test.js', () => {
                     }),
                     Error
                 );
+                db.destroy();
             });
         });
     });
@@ -178,6 +186,7 @@ describe('data-migration.test.js', () => {
                 });
                 const old = await col._dataMigrator._getOldCollections();
                 assert.deepEqual(old, []);
+                db.destroy();
             });
             it('should get an older version', async() => {
                 const name = util.randomCouchString(10);
@@ -212,12 +221,13 @@ describe('data-migration.test.js', () => {
                 assert.ok(Array.isArray(old));
                 assert.equal(old.length, 1);
                 assert.equal(old[0].constructor.name, 'OldCollection');
+                db.destroy();
+                db2.destroy();
             });
         });
         describe('OldCollection', () => {
             describe('create', () => {
                 it('create', async() => {
-
                     const col = await humansCollection.createMigrationCollection();
 
                     const old = await col._dataMigrator._getOldCollections();
@@ -228,6 +238,7 @@ describe('data-migration.test.js', () => {
                     assert.equal(oldCol.crypter.constructor.name, 'Crypter');
                     assert.equal(oldCol.keyCompressor.constructor.name, 'KeyCompressor');
                     assert.ok(oldCol.pouchdb.constructor.name.includes('PouchDB'));
+                    col.database.destroy();
                 });
             });
             describe('.migrateDocumentData()', () => {
@@ -245,6 +256,7 @@ describe('data-migration.test.js', () => {
                     const oldDocs = await oldCol.getBatch(10);
                     const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
                     assert.deepEqual(newDoc.age, parseInt(oldDocs[0].age));
+                    col.database.destroy();
                 });
                 it('get a valid migrated document from async strategy', async() => {
                     const col = await humansCollection.createMigrationCollection(1, {
@@ -261,6 +273,7 @@ describe('data-migration.test.js', () => {
                     const oldDocs = await oldCol.getBatch(10);
                     const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
                     assert.deepEqual(newDoc.age, parseInt(oldDocs[0].age));
+                    col.database.destroy();
                 });
             });
             describe('.delete()', () => {
@@ -304,6 +317,7 @@ describe('data-migration.test.js', () => {
                         has = false;
                     }
                     assert.equal(has, false);
+                    col.database.destroy();
                 });
             });
             describe('._migrateDocument()', () => {
@@ -333,6 +347,7 @@ describe('data-migration.test.js', () => {
 
                     // this should no crash because existing doc will be overwritten
                     await oldCol._migrateDocument(tryDoc);
+                    col.database.destroy();
                 });
             });
             describe('.migrate()', () => {
@@ -342,6 +357,7 @@ describe('data-migration.test.js', () => {
                     const oldCol = olds.pop();
 
                     await oldCol.migratePromise();
+                    col.database.destroy();
                 });
                 it('should resolve finished when some docs', async() => {
                     const col = await humansCollection.createMigrationCollection(10, {
@@ -365,6 +381,7 @@ describe('data-migration.test.js', () => {
                     // check if in new collection
                     const docs = await col.find().exec();
                     assert.equal(docs.length, 10);
+                    col.database.destroy();
                 });
                 it('should emit status for every handled document', async() => {
                     const col = await humansCollection.createMigrationCollection(10, {
@@ -392,6 +409,7 @@ describe('data-migration.test.js', () => {
 
                     await pw8.promise;
                     assert.equal(states.length, 10);
+                    col.database.destroy();
                 });
 
                 it('should emit "deleted" when migration-strategy returns null', async() => {
@@ -415,6 +433,7 @@ describe('data-migration.test.js', () => {
 
                     await pw8.promise;
                     assert.equal(states.length, 10);
+                    col.database.destroy();
                 });
                 it('should throw when document cannot be migrated', async() => {
                     const col = await humansCollection.createMigrationCollection(10, {
@@ -428,6 +447,7 @@ describe('data-migration.test.js', () => {
                         () => oldCol.migratePromise(),
                         Error
                     );
+                    col.database.destroy();
                 });
             });
         });
@@ -451,6 +471,7 @@ describe('data-migration.test.js', () => {
                     assert.equal(states[1].done, true);
                     assert.equal(states[1].percent, 100);
                     assert.equal(states[1].total, 0);
+                    col.database.destroy();
                 });
 
                 it('should not crash when migrating data', async() => {
@@ -486,6 +507,7 @@ describe('data-migration.test.js', () => {
                     assert.equal(lastState.percent, 100);
                     assert.equal(lastState.total, 5);
                     assert.equal(lastState.success, 5);
+                    col.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -500,6 +522,7 @@ describe('data-migration.test.js', () => {
                     state$.subscribe(null, pw8.resolve, null);
 
                     await pw8.promise;
+                    col.database.destroy();
                 });
             });
         });
@@ -508,6 +531,7 @@ describe('data-migration.test.js', () => {
                 it('should resolve when nothing to migrate', async() => {
                     const col = await humansCollection.createMigrationCollection(0, {});
                     await col.migratePromise();
+                    col.database.destroy();
                 });
 
                 it('should resolve when migrating data', async() => {
@@ -518,6 +542,7 @@ describe('data-migration.test.js', () => {
                         }
                     });
                     await col.migratePromise();
+                    col.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -530,6 +555,7 @@ describe('data-migration.test.js', () => {
                     let failed = false;
                     await col.migratePromise().catch(() => failed = true);
                     assert.ok(failed);
+                    col.database.destroy();
                 });
             });
         });
@@ -550,6 +576,7 @@ describe('data-migration.test.js', () => {
                 const docs = await col.find().exec();
                 assert.equal(docs.length, 10);
                 assert.equal(typeof docs.pop().age, 'number');
+                col.database.destroy();
             });
             it('should auto-run on creation (async)', async() => {
                 const col = await humansCollection.createMigrationCollection(
@@ -566,6 +593,7 @@ describe('data-migration.test.js', () => {
                 const docs = await col.find().exec();
                 assert.equal(docs.length, 10);
                 assert.equal(typeof docs.pop().age, 'number');
+                col.database.destroy();
             });
         });
 

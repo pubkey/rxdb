@@ -184,6 +184,7 @@ describe('rx-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 const r = await doc.save();
                 assert.equal(r, false);
+                c.database.destroy();
             });
             it('.save() returns true data changed', async() => {
                 const c = await humansCollection.create(10);
@@ -191,6 +192,7 @@ describe('rx-document.test.js', () => {
                 doc.passportId = util.randomCouchString(20);
                 const r = await doc.save();
                 assert.equal(r, true);
+                c.database.destroy();
             });
         });
         describe('negative', () => {
@@ -276,6 +278,7 @@ describe('rx-document.test.js', () => {
                 firstName: 'new first name'
             }).exec();
             assert.equal(updatedDoc.firstName, 'new first name');
+            c.database.destroy();
         });
         it('$unset a value with a mongo like query', async() => {
             const c = await humansCollection.create(1);
@@ -287,6 +290,7 @@ describe('rx-document.test.js', () => {
             });
             const updatedDoc = await c.findOne().exec();
             assert.equal(updatedDoc.age, undefined);
+            c.database.destroy();
         });
         it('$inc a value with a mongo like query', async() => {
             const c = await humansCollection.create(1);
@@ -301,6 +305,7 @@ describe('rx-document.test.js', () => {
             await doc.save;
             const updatedDoc = await c.findOne().exec();
             assert.equal(updatedDoc.age, agePrev + 1);
+            c.database.destroy();
         });
     });
     describe('.atomicUpdate()', () => {
@@ -458,17 +463,20 @@ describe('rx-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 const passportId = doc.get('passportId');
                 assert.equal(doc.passportId, passportId);
+                c.database.destroy();
             });
             it('hidden properties should not show up', async() => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 assert.ok(!Object.keys(doc).includes('lastName_'));
+                c.database.destroy();
             });
             it('nested-value', async() => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
                 const mainSkillLevel = doc.get('mainSkill.level');
                 assert.equal(doc.mainSkill.level, mainSkillLevel);
+                c.database.destroy();
             });
             it('deep-nested-value', async() => {
                 const c = await humansCollection.createDeepNested(1);
@@ -478,6 +486,7 @@ describe('rx-document.test.js', () => {
 
                 const value2 = doc.get('mainSkill.attack.good');
                 assert.equal(doc.mainSkill.attack.good, value2);
+                c.database.destroy();
             });
             it('top-value-observable', async() => {
                 const c = await humansCollection.create(1);
@@ -501,7 +510,7 @@ describe('rx-document.test.js', () => {
                 });
                 await util.promiseWait(5);
                 assert.equal(value2, 'foobar');
-
+                c.database.destroy();
             });
             it('nested-value-observable', async() => {
                 const c = await humansCollection.createNested(1);
@@ -517,6 +526,7 @@ describe('rx-document.test.js', () => {
                 await doc.save();
                 await util.promiseWait(5);
                 assert.equal(value, 10);
+                c.database.destroy();
             });
             it('deep-nested-value-observable', async() => {
                 const c = await humansCollection.createDeepNested(1);
@@ -532,6 +542,7 @@ describe('rx-document.test.js', () => {
                 await doc.save();
                 await util.promiseWait(5);
                 assert.equal(value, true);
+                c.database.destroy();
             });
         });
         describe('set', () => {
@@ -543,6 +554,7 @@ describe('rx-document.test.js', () => {
                 await doc.save();
                 const doc2 = await c.findOne(doc.passportId).exec();
                 assert.equal(doc2.firstName, 'foobar');
+                c.database.destroy();
             });
             it('nested value', async() => {
                 const c = await humansCollection.createNested(1);
@@ -553,6 +565,7 @@ describe('rx-document.test.js', () => {
                 await doc.save();
                 const doc2 = await c.findOne().exec();
                 assert.equal(doc2.mainSkill.level, 10);
+                c.database.destroy();
             });
             it('deep nested value', async() => {
                 const c = await humansCollection.createDeepNested(1);
@@ -563,6 +576,7 @@ describe('rx-document.test.js', () => {
                 await doc.save();
                 const doc2 = await c.findOne().exec();
                 assert.equal(doc2.mainSkill.attack.good, true);
+                c.database.destroy();
             });
         });
     });
@@ -639,6 +653,7 @@ describe('rx-document.test.js', () => {
             const afterSkills = colDump.docs[0].skills;
             assert.equal(afterSkills.length, 4);
             assert.ok(afterSkills.includes(newSkill));
+            db.destroy();
         });
     });
 });

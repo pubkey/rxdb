@@ -84,6 +84,7 @@ describe('reactive-collection.test.js', () => {
                 await doc.remove();
                 await AsyncTestUtil.waitUntil(() => ar.length == 3);
                 sub.unsubscribe();
+
                 c.database.destroy();
             });
         });

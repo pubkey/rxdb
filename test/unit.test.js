@@ -9,12 +9,12 @@ const nodeAndBrowser = [
     '../test_tmp/unit/key-compression.test.js',
     '../test_tmp/unit/socket.test.js',
     '../test_tmp/unit/rx-database.test.js',
-    '../test_tmp/unit/idle-queue.test.js', // TODO move this under rx-query
     '../test_tmp/unit/rx-collection.test.js',
     '../test_tmp/unit/rx-document.test.js',
     '../test_tmp/unit/temporary-document.test.js',
     '../test_tmp/unit/change-event-buffer.test.js',
     '../test_tmp/unit/rx-query.test.js',
+    '../test_tmp/unit/idle-queue.test.js',
     '../test_tmp/unit/query-change-detector.test.js',
     '../test_tmp/unit/reactive-database.test.js',
     '../test_tmp/unit/reactive-collection.test.js',

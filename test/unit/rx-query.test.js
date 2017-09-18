@@ -350,6 +350,7 @@ describe('rx-query.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => fired.length == 2);
             assert.equal(fired[1].pop().passportId, addObj.passportId);
+            col.database.destroy();
         });
         it('reusing exec should execOverDatabase when change happened', async() => {
             const col = await humansCollection.create(2);

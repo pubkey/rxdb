@@ -163,6 +163,7 @@ describe('population.test.js', () => {
                 friendDocs.forEach(friend => {
                     assert.equal(friend.constructor.name, 'RxDocument');
                 });
+                db.destroy();
             });
         });
     });

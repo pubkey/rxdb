@@ -15,7 +15,7 @@ import * as RxDocument from '../../dist/lib/rx-document';
 import * as KeyCompressor from '../../dist/lib/modules/key-compression';
 
 
-describe('key-compressor.test.js', () => {
+describe('key-compression.test.js', () => {
 
     describe('create table', () => {
         it('get a valid table', () => {
@@ -399,6 +399,7 @@ describe('key-compressor.test.js', () => {
             });
             assert.equal(doc._id, docData.passportId);
             assert.equal(doc['|a'], docData.firstName);
+            c.database.destroy();
         });
 
     });
@@ -425,6 +426,7 @@ describe('key-compressor.test.js', () => {
                 const after = col._keyCompressor.compress(human);
                 assert.deepEqual(human, after);
                 assert.ok(typeof after.lastName, 'string');
+                col.database.destroy();
             });
         });
         describe('.decompress()', async() => {
@@ -434,6 +436,7 @@ describe('key-compressor.test.js', () => {
                 const after = col._keyCompressor.decompress(human);
                 assert.deepEqual(human, after);
                 assert.ok(typeof after.lastName, 'string');
+                col.database.destroy();
             });
         });
 
@@ -472,6 +475,7 @@ describe('key-compressor.test.js', () => {
             const doc = await collection.findOne().exec();
             assert.ok(RxDocument.isInstanceOf(doc));
             assert.deepEqual(doc.likes, docData.likes);
+            db.destroy();
         });
     });
 });

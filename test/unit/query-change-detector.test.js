@@ -196,6 +196,7 @@ describe('query-change-detector.test.js', () => {
                 await AsyncTestUtil.waitUntil(() => changeEvents.length == 1);
                 const res = q._queryChangeDetector.handleSingleChange([], changeEvents[0]);
                 assert.equal(res, false);
+                col.database.destroy();
             });
         });
     });
@@ -348,6 +349,7 @@ describe('query-change-detector.test.js', () => {
                     assert.equal(results.length, 5);
                     assert.equal(q._execOverDatabaseCount, 1);
                     assert.equal(results[0].age, 1);
+                    col.database.destroy();
                 });
             });
             describe('U3', () => {
@@ -366,6 +368,7 @@ describe('query-change-detector.test.js', () => {
                     assert.equal(results.length, 6);
                     assert.equal(q._execOverDatabaseCount, 1);
                     assert.equal(results[0].passportId, '000aaaaa');
+                    col.database.destroy();
                 });
                 it('U3: BUG: does not resort when sorted by primary', async() => {
                     const col = await humansCollection.createPrimary(5);
@@ -390,6 +393,7 @@ describe('query-change-detector.test.js', () => {
                     assert.equal(q._execOverDatabaseCount, 1);
                     assert.equal(results[0].passportId, '000aaa');
                     assert.equal(results[6].passportId, 'zzzzzz');
+                    col.database.destroy();
                 });
             });
         });

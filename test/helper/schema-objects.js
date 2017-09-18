@@ -1,14 +1,10 @@
 /**
- * this file contains objects which metch the schemas in schema.js
+ * this file contains objects which match the schemas in schemas.js
  */
 
-import * as faker from 'faker';
-import {
-    default as randomToken
-} from 'random-token';
-import {
-    default as randomInt
-} from 'random-int';
+import faker from 'faker';
+import randomToken from 'random-token';
+import randomInt from 'random-int';
 
 export function human() {
     return {

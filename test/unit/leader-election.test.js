@@ -11,6 +11,7 @@ import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
 
 import * as LeaderElector from '../../dist/lib/modules/leader-election';
 
+
 describe('leader-election.test.js', () => {
     describe('leaderObject', () => {
         it('should not have a leaderObject', async() => {

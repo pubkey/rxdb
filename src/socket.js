@@ -93,12 +93,50 @@ class Socket {
         return result.rows
             .map(row => row.doc);
     }
+
+
+    /**
+     * delete the document from the socket-database.
+     * This mutes errors because they are likely but not bad on multiInstance
+     * @param  {any} doc
+     * @return {Promise<boolean>} success
+     */
     async deleteDoc(doc) {
+        let success = true;
         try {
             await this.database.lockedRun(
                 () => this.pouch.remove(doc)
             );
-        } catch (e) {}
+        } catch (err) {
+            success = false;
+        }
+        return success;
+    }
+
+    /**
+     * runs a cleanup to delete the given docs
+     * @param  {array} docsData docs to be deleted
+     * @return {void}
+     */
+    _cleanupDocs(docsData) {
+        // delete docs on idle
+        docsData.forEach(docData => {
+            this.database.requestIdlePromise().then(() => {
+                if (this._destroyed)
+                    return;
+                this.deleteDoc(docData);
+            });
+        });
+
+        // run a compaction if more than one doc was deleted
+        if (docsData.length > 0) {
+            this.database.requestIdlePromise().then(() => {
+                if (this._destroyed) return;
+                this.database.lockedRun(
+                    () => this.pouch.compact()
+                );
+            });
+        }
     }
 
     /**
@@ -144,15 +182,8 @@ class Socket {
 
         // delete old documents
         const maxAge = new Date().getTime() - EVENT_TTL;
-        const delDocs = docs
-            .filter(doc => doc.t < maxAge)
-            .map(doc => this.deleteDoc(doc));
-        if (delDocs.length > 0) {
-            await this.database.lockedRun(
-                () => this.pouch.compact()
-            );
-        }
-
+        const delDocs = docs.filter(doc => doc.t < maxAge);
+        this._cleanupDocs(delDocs);
 
         this.lastPull = new Date().getTime();
         this.isPulling = false;

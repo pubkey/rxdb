@@ -5,7 +5,6 @@ import * as schemas from '../helper/schemas';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 
-
 describe('reactive-database.test.js', () => {
     describe('.collection()', () => {
         describe('positive', () => {

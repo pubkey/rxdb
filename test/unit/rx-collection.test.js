@@ -57,6 +57,7 @@ describe('rx-collection.test.js', () => {
                         .map(i => i.def.fields[0])
                         .filter(i => !!i[compressedKey]);
                     assert.equal(has.length, 1);
+                    col.database.destroy();
                 });
                 it('should create compound-indexes (disableKeyCompression)', async() => {
                     const db = await RxDatabase.create({
@@ -81,6 +82,7 @@ describe('rx-collection.test.js', () => {
                             'passportCountry': 'asc'
                         }]
                     );
+                    db.destroy();
                 });
                 it('should create compound-indexes', async() => {
                     const db = await RxDatabase.create({
@@ -103,6 +105,7 @@ describe('rx-collection.test.js', () => {
                             '|a': 'asc'
                         }]
                     );
+                    db.destroy();
                 });
                 it('should have the version-number in the pouchdb-prefix', async() => {
                     const db = await RxDatabase.create({
@@ -385,6 +388,7 @@ describe('rx-collection.test.js', () => {
                         assert.ok(docs.length >= 10);
                         for (const doc of docs)
                             assert.equal(doc.constructor.name, 'RxDocument');
+                        c.database.destroy();
                     });
                     it('find 2 times', async() => {
                         const c = await humansCollection.create();
@@ -392,6 +396,7 @@ describe('rx-collection.test.js', () => {
                         const docs2 = await c.find().exec();
                         assert.ok(docs.length >= 10);
                         assert.ok(docs2.length >= 10);
+                        c.database.destroy();
                     });
                     it('find all by empty object', async() => {
                         const c = await humansCollection.create();
@@ -399,6 +404,7 @@ describe('rx-collection.test.js', () => {
                         assert.ok(docs.length >= 10);
                         for (const doc of docs)
                             assert.equal(doc.constructor.name, 'RxDocument');
+                        c.database.destroy();
                     });
                     it('find nothing with empty collection', async() => {
                         const db = await RxDatabase.create({
@@ -443,6 +449,7 @@ describe('rx-collection.test.js', () => {
                             () => c.find('foobar').exec(),
                             Error
                         );
+                        c.database.destroy();
                     });
                     it('should crash with array as query', async() => {
                         const c = await humansCollection.create();
@@ -450,6 +457,7 @@ describe('rx-collection.test.js', () => {
                             () => c.find([]).exec(),
                             TypeError
                         );
+                        c.database.destroy();
                     });
                 });
             });
@@ -467,6 +475,7 @@ describe('rx-collection.test.js', () => {
                         assert.equal(doc.length, 1);
                         doc = doc[0];
                         assert.deepEqual(doc.data, last.data);
+                        c.database.destroy();
                     });
                     it('find none with random passportId', async() => {
                         const c = await humansCollection.create();
@@ -474,6 +483,7 @@ describe('rx-collection.test.js', () => {
                             passportId: util.randomCouchString(10)
                         }).exec();
                         assert.equal(docs.length, 0);
+                        c.database.destroy();
                     });
                     it('find via $eq', async() => {
                         const c = await humansCollection.create();
@@ -489,6 +499,7 @@ describe('rx-collection.test.js', () => {
                         assert.equal(doc.length, 1);
                         doc = doc[0];
                         assert.deepEqual(doc.data, last.data);
+                        c.database.destroy();
                     });
                 });
                 describe('negative', () => {});
@@ -537,6 +548,7 @@ describe('rx-collection.test.js', () => {
                         const docs = await query.exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
+                        c.database.destroy();
                     });
                     it('sort by age desc (with default index-search)', async() => {
                         const c = await humansCollection.createAgeIndex();
@@ -545,6 +557,7 @@ describe('rx-collection.test.js', () => {
                         }).exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
+                        c.database.destroy();
                     });
                     it('sort by age asc', async() => {
                         const c = await humansCollection.createAgeIndex();
@@ -553,6 +566,7 @@ describe('rx-collection.test.js', () => {
                         }).exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age <= docs[1]._data.age);
+                        c.database.destroy();
                     });
                     it('sort by non-top-level-key as index (no keycompression)', async() => {
                         const db = await RxDatabase.create({
@@ -650,6 +664,7 @@ describe('rx-collection.test.js', () => {
                         }).exec();
                         const last_desc = desc[desc.length - 1];
                         assert.equal(last_desc._data.passportId, asc[0]._data.passportId);
+                        c.database.destroy();
                     });
                     it('find the same twice', async() => {
                         const c = await humansCollection.createNested(5);
@@ -660,6 +675,7 @@ describe('rx-collection.test.js', () => {
                             passportId: 1
                         }).exec();
                         assert.equal(doc1._data.passportId, doc2._data.passportId);
+                        c.database.destroy();
                     });
                 });
                 describe('negative', () => {
@@ -709,6 +725,7 @@ describe('rx-collection.test.js', () => {
                         const docs = await c.find().limit(1).exec();
                         assert.equal(docs.length, 1);
                         assert.equal(docs[0].constructor.name, 'RxDocument');
+                        c.database.destroy();
                     });
                     it('get last in order', async() => {
                         const c = await humansCollection.create(20);
@@ -725,12 +742,14 @@ describe('rx-collection.test.js', () => {
                         last = last[0];
                         assert.equal(last._data.passportId, docs[(docs.length - 1)]._data.passportId);
                         assert.notEqual(first._data.passportId, last._data.passportId);
+                        c.database.destroy();
                     });
                     it('reset limit with .limit(null)', async() => {
                         const c = await humansCollection.create();
                         const docs = await c.find().limit(1).limit(null).exec();
                         assert.ok(docs.length > 1);
                         assert.equal(docs[0].constructor.name, 'RxDocument');
+                        c.database.destroy();
                     });
                 });
                 describe('negative', () => {
@@ -740,6 +759,7 @@ describe('rx-collection.test.js', () => {
                             () => c.find().limit('foobar').exec(),
                             TypeError
                         );
+                        c.database.destroy();
                     });
                 });
             });
@@ -750,6 +770,7 @@ describe('rx-collection.test.js', () => {
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).exec();
                         assert.equal(noFirst[0]._data.passportId, docs[1]._data.passportId);
+                        c.database.destroy();
                     });
                     it('skip first in order', async() => {
                         const c = await humansCollection.create();
@@ -760,18 +781,21 @@ describe('rx-collection.test.js', () => {
                             passportId: 1
                         }).skip(1).exec();
                         assert.equal(noFirst[0]._data.passportId, docs[1]._data.passportId);
+                        c.database.destroy();
                     });
                     it('skip first and limit', async() => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const second = await c.find().skip(1).limit(1).exec();
                         assert.deepEqual(second[0].data, docs[1].data);
+                        c.database.destroy();
                     });
                     it('reset skip with .skip(null)', async() => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).skip(null).exec();
                         assert.notEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
+                        c.database.destroy();
                     });
                 });
                 describe('negative', () => {
@@ -781,6 +805,7 @@ describe('rx-collection.test.js', () => {
                             () => c.find().skip('foobar').exec(),
                             TypeError
                         );
+                        c.database.destroy();
                     });
                 });
             });
@@ -798,6 +823,7 @@ describe('rx-collection.test.js', () => {
                         assert.equal(docs.length, 1);
                         const first = docs[0];
                         assert.equal(first.get('firstName'), matchHuman.firstName);
+                        c.database.destroy();
                     });
                     it('regex on index', async() => {
                         const c = await humansCollection.create(10);
@@ -811,6 +837,7 @@ describe('rx-collection.test.js', () => {
                         assert.equal(docs.length, 1);
                         const first = docs[0];
                         assert.equal(first.get('passportId'), matchHuman.passportId);
+                        c.database.destroy();
                     });
                 });
                 describe('negative', () => {
@@ -823,6 +850,7 @@ describe('rx-collection.test.js', () => {
                             () => c.find().where('passportId').regex(/Match/).exec(),
                             Error
                         );
+                        c.database.destroy();
                     });
                 });
             });
@@ -838,6 +866,7 @@ describe('rx-collection.test.js', () => {
                     });
                     const docsAfter = await c.find().exec();
                     assert.equal(docsAfter.length, 0);
+                    c.database.destroy();
                 });
                 it('should remove only found documents', async() => {
                     const c = await humansCollection.create(10);
@@ -850,6 +879,7 @@ describe('rx-collection.test.js', () => {
                     });
                     const docsAfter = await c.find().exec();
                     assert.equal(docsAfter.length, 5);
+                    c.database.destroy();
                 });
                 it('remove on findOne', async() => {
                     const c = await humansCollection.create(10);
@@ -859,6 +889,7 @@ describe('rx-collection.test.js', () => {
                     assert.equal(removed.deleted, true);
                     const docsAfter = await c.find().exec();
                     assert.equal(docsAfter.length, 9);
+                    c.database.destroy();
                 });
             });
             describe('.update()', () => {
@@ -873,6 +904,7 @@ describe('rx-collection.test.js', () => {
                     const docsAfterUpdate = await c.find().exec();
                     for (const doc of docsAfterUpdate)
                         assert.equal(doc._data.firstName, 'new first name');
+                    c.database.destroy();
                 });
                 it('unsets fields in all documents', async() => {
                     const c = await humansCollection.create(10);
@@ -885,6 +917,7 @@ describe('rx-collection.test.js', () => {
                     const docsAfterUpdate = await c.find().exec();
                     for (const doc of docsAfterUpdate)
                         assert.equal(doc.age, undefined);
+                    c.database.destroy();
                 });
             });
         });
@@ -894,6 +927,7 @@ describe('rx-collection.test.js', () => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
                     assert.equal(doc.constructor.name, 'RxDocument');
+                    c.database.destroy();
                 });
                 it('not crash on empty db', async() => {
                     const c = await humansCollection.create(0);
@@ -901,6 +935,7 @@ describe('rx-collection.test.js', () => {
                     assert.equal(docs.length, 0);
                     const doc = await c.findOne().exec();
                     assert.equal(doc, null);
+                    c.database.destroy();
                 });
                 it('find different on .skip()', async() => {
                     const c = await humansCollection.create();
@@ -909,6 +944,7 @@ describe('rx-collection.test.js', () => {
                     assert.equal(doc.constructor.name, 'RxDocument');
                     assert.equal(doc2.constructor.name, 'RxDocument');
                     assert.notEqual(doc._data.passportId, doc2._data.passportId);
+                    c.database.destroy();
                 });
                 it('find by primary', async() => {
                     const c = await humansCollection.create();
@@ -917,6 +953,7 @@ describe('rx-collection.test.js', () => {
                     assert.equal(typeof _id, 'string');
                     const docById = await c.findOne(_id).exec();
                     assert.deepEqual(docById.data, doc.data);
+                    c.database.destroy();
                 });
                 it('BUG: insert and find very often', async function() {
                     this.timeout(5000);
@@ -938,6 +975,7 @@ describe('rx-collection.test.js', () => {
                         const doc = await collection.findOne().exec();
                         if (!doc) console.log('doc: null');
                         assert.equal(passportId, doc._data.passportId);
+                        db.destroy();
                     }
                 });
             });
@@ -948,6 +986,7 @@ describe('rx-collection.test.js', () => {
                         () => c.findOne().limit(1).exec(),
                         Error
                     );
+                    c.database.destroy();
                 });
                 it('BUG: should throw when no-string given (number)', async() => {
                     const c = await humansCollection.create();

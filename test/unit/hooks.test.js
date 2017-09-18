@@ -14,6 +14,7 @@ describe('hooks.test.js', () => {
         it('should set a hook', async() => {
             const c = await humansCollection.create(0);
             c.preSave(function() {}, false);
+            c.database.destroy();
         });
         it('should get a hook', async() => {
             const c = await humansCollection.create(0);
@@ -21,6 +22,7 @@ describe('hooks.test.js', () => {
             const hooks = c.getHooks('pre', 'save');
             assert.ok(Array.isArray(hooks.series));
             assert.equal(hooks.series.length, 1);
+            c.database.destroy();
         });
         it('should get a parallel hook', async() => {
             const c = await humansCollection.create(0);
@@ -28,6 +30,7 @@ describe('hooks.test.js', () => {
             const hooks = c.getHooks('pre', 'save');
             assert.ok(Array.isArray(hooks.parallel));
             assert.equal(hooks.parallel.length, 1);
+            c.database.destroy();
         });
     });
     describe('insert', () => {
@@ -43,6 +46,7 @@ describe('hooks.test.js', () => {
                     }, false);
                     await c.insert(human);
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('parallel', async() => {
                     const c = await humansCollection.create(0);
@@ -60,6 +64,7 @@ describe('hooks.test.js', () => {
                     await c.insert(human);
                     assert.equal(count, 1);
                     assert.equal(countp, 1);
+                    c.database.destroy();
                 });
                 it('should save a modified document', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -72,6 +77,7 @@ describe('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     assert.equal(doc.get('lastName'), 'foobar');
+                    c.database.destroy();
                 });
                 it('async: should save a modified document', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -85,6 +91,7 @@ describe('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     assert.equal(doc.get('lastName'), 'foobar');
+                    c.database.destroy();
                 });
                 it('should not insert if hook throws', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -102,6 +109,7 @@ describe('hooks.test.js', () => {
                     assert.equal(failC, 1);
                     const doc = await c.findOne(human.passportId).exec();
                     assert.equal(doc, null);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -117,6 +125,7 @@ describe('hooks.test.js', () => {
                         () => c.insert(human),
                         Error
                     );
+                    c.database.destroy();
                 });
             });
         });
@@ -132,6 +141,7 @@ describe('hooks.test.js', () => {
                     }, false);
                     await c.insert(human);
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('parallel', async() => {
                     const c = await humansCollection.create(0);
@@ -143,6 +153,7 @@ describe('hooks.test.js', () => {
                     }, true);
                     await c.insert(human);
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
             });
         });
@@ -163,6 +174,7 @@ describe('hooks.test.js', () => {
                     doc.set('firstName', 'foobar');
                     await doc.save();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('parallel', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -177,6 +189,7 @@ describe('hooks.test.js', () => {
                     doc.set('firstName', 'foobar');
                     await doc.save();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('should save a modified document', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -191,7 +204,7 @@ describe('hooks.test.js', () => {
                     await doc.save();
                     const doc2 = await c.findOne(human.passportId).exec();
                     assert.equal(doc2.get('lastName'), 'foobar');
-
+                    c.database.destroy();
                 });
                 it('async: should save a modified document', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -207,6 +220,7 @@ describe('hooks.test.js', () => {
                     await doc.save();
                     const doc2 = await c.findOne(human.passportId).exec();
                     assert.equal(doc2.get('lastName'), 'foobar');
+                    c.database.destroy();
                 });
                 it('should not save if hook throws', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -229,6 +243,7 @@ describe('hooks.test.js', () => {
                     assert.equal(failC, 1);
                     const syncValue = await doc.firstName$.first().toPromise();
                     assert.equal(syncValue, 'test');
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -248,6 +263,7 @@ describe('hooks.test.js', () => {
                         () => doc.save(),
                         Error
                     );
+                    c.database.destroy();
                 });
             });
         });
@@ -266,6 +282,7 @@ describe('hooks.test.js', () => {
                     doc.set('firstName', 'foobar');
                     await doc.save();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('parallel', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -280,6 +297,7 @@ describe('hooks.test.js', () => {
                     doc.set('firstName', 'foobar');
                     await doc.save();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -300,6 +318,7 @@ describe('hooks.test.js', () => {
                     }, false);
                     await doc.remove();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('parallel', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -313,6 +332,7 @@ describe('hooks.test.js', () => {
                     }, true);
                     await doc.remove();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('should not remove if hook throws', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -334,6 +354,7 @@ describe('hooks.test.js', () => {
                     const doc2 = await c.findOne(human.passportId).exec();
                     assert.notEqual(doc2, null);
                     assert.equal(doc2.get('passportId'), human.passportId);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -352,6 +373,7 @@ describe('hooks.test.js', () => {
                     }, false);
                     await doc.remove();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
                 it('parallel', async() => {
                     const c = await humansCollection.createPrimary(0);
@@ -365,6 +387,7 @@ describe('hooks.test.js', () => {
                     }, true);
                     await doc.remove();
                     assert.equal(count, 1);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});
@@ -436,6 +459,7 @@ describe('hooks.test.js', () => {
             await util.promiseWait(10);
             const allDocs = await c.find().exec();
             assert.equal(allDocs.length, 0);
+            c.database.destroy();
         });
     });
 });
