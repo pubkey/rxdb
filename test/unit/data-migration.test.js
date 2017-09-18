@@ -36,7 +36,8 @@ describe('data-migration.test.js', () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 const schema = RxSchema.create(schemas.human);
                 await db.collection({
@@ -47,7 +48,8 @@ describe('data-migration.test.js', () => {
 
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 await db2.collection({
@@ -193,7 +195,8 @@ describe('data-migration.test.js', () => {
                 const colName = 'human';
                 const db = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 const schema = RxSchema.create(schemas.simpleHuman);
                 await db.collection({
@@ -204,7 +207,8 @@ describe('data-migration.test.js', () => {
 
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection({

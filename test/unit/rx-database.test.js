@@ -47,17 +47,32 @@ describe('rx-database.test.js', () => {
                 assert.equal(db.constructor.name, 'RxDatabase');
                 db.destroy();
             });
-            it('2 instances on same adapter', async() => {
+            it('2 instances on same adapter (if ingoreDuplicate is true)', async() => {
+                const name = util.randomCouchString(10);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: 'memory',
+                    ingoreDuplicate: true
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: 'memory',
+                    ingoreDuplicate: true
+                });
+                db.destroy();
+                db2.destroy();
+            });
+            it('2 instances on same adapter -> ingoreDuplicate is false but first db gets destroyed', async() => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
                     adapter: 'memory'
                 });
+                db.destroy();
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory'
                 });
-                db.destroy();
                 db2.destroy();
             });
             it('2 password-instances on same adapter', async() => {
@@ -66,12 +81,14 @@ describe('rx-database.test.js', () => {
                 const db = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    password
+                    password,
+                    ingoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    password
+                    password,
+                    ingoreDuplicate: true
                 });
                 db.destroy();
                 db2.destroy();
@@ -122,14 +139,16 @@ describe('rx-database.test.js', () => {
                 const db = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    password
+                    password,
+                    ingoreDuplicate: true
                 });
                 const doc = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    password
+                    password,
+                    ingoreDuplicate: true
                 });
                 const doc2 = await db._adminPouch.get('_local/pwHash');
                 assert.ok(doc2);
@@ -151,7 +170,23 @@ describe('rx-database.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     }),
-                    Error
+                    Error,
+                );
+                db.destroy();
+            });
+            it('do not allow 2 databases with same name and adapter', async() => {
+                const name = util.randomCouchString(10);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: 'memory'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => RxDatabase.create({
+                        name,
+                        adapter: 'memory'
+                    }),
+                    Error,
+                    'ingoreDuplicate'
                 );
                 db.destroy();
             });
@@ -234,11 +269,13 @@ describe('rx-database.test.js', () => {
                 const collectionName = 'foobar';
                 const db1 = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 await db1.collection({
                     name: collectionName,
@@ -364,11 +401,13 @@ describe('rx-database.test.js', () => {
                 const collectionName = 'foobar';
                 const db1 = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
-                    adapter: 'memory'
+                    adapter: 'memory',
+                    ingoreDuplicate: true
                 });
                 await db1.collection({
                     name: collectionName,

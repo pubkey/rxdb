@@ -2,6 +2,7 @@ import randomToken from 'random-token';
 import PouchDB from './pouch-db';
 
 import * as util from './util';
+import RxError from './rx-error';
 import RxCollection from './rx-collection';
 import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
@@ -11,6 +12,14 @@ import overwritable from './overwritable';
 import {
     runPluginHooks
 } from './hooks';
+
+/**
+ * stores the combinations
+ * of used database-names with their adapters
+ * so we can throw when the same database is created more then once
+ * @type {Object<string, array>} map with {dbName -> array<adapters>}
+ */
+const USED_COMBINATIONS = {};
 
 export class RxDatabase {
     constructor(name, adapter, password, multiInstance) {
@@ -340,6 +349,8 @@ export class RxDatabase {
         Object.keys(this.collections)
             .map(key => this.collections[key])
             .map(col => col.destroy());
+
+        _removeUsedCombination(this.name, this.adapter);
     }
 
     /**
@@ -370,11 +381,47 @@ export function properties() {
     return _properties;
 }
 
+/**
+ * checks if an instance with same name and adapter already exists
+ * @param       {string}  name
+ * @param       {any}  adapter
+ * @throws {RxError} if used
+ */
+function _isNameAdapterUsed(name, adapter) {
+    if (!USED_COMBINATIONS[name])
+        return false;
+
+    let used = false;
+    USED_COMBINATIONS[name].forEach(ad => {
+        if (ad == adapter)
+            used = true;
+    });
+    if (used) {
+        throw RxError.newRxError(
+            'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
+            'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional', {
+                name,
+                adapter,
+                link: 'https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate'
+            }
+        );
+    }
+}
+
+function _removeUsedCombination(name, adapter) {
+    if (!USED_COMBINATIONS[name])
+        return;
+
+    const index = USED_COMBINATIONS[name].indexOf(adapter);
+    USED_COMBINATIONS[name].splice(index, 1);
+}
+
 export async function create({
     name,
     adapter,
     password,
-    multiInstance = true
+    multiInstance = true,
+    ingoreDuplicate = false
 }) {
     util.validateCouchDBString(name);
 
@@ -397,6 +444,16 @@ export async function create({
 
     if (password)
         overwritable.validatePassword(password);
+
+    // check if combination already used
+    if (!ingoreDuplicate)
+        _isNameAdapterUsed(name, adapter);
+
+    // add to used_map
+    if (!USED_COMBINATIONS[name])
+        USED_COMBINATIONS[name] = [];
+    USED_COMBINATIONS[name].push(adapter);
+
 
     const db = new RxDatabase(name, adapter, password, multiInstance);
     await db.prepare();

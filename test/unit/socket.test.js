@@ -50,12 +50,14 @@ describe('socket.test.js', () => {
         const db = await RxDatabase.create({
             name,
             adapter: 'memory',
-            multiInstance: true
+            multiInstance: true,
+            ingoreDuplicate: true
         });
         const db2 = await RxDatabase.create({
             name,
             adapter: 'memory',
-            multiInstance: true
+            multiInstance: true,
+            ingoreDuplicate: true
         });
 
         const socket1 = await Socket.create(db);

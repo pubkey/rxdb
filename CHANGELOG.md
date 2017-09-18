@@ -12,6 +12,7 @@ Features:
   - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#replication)
   - Json import/exportis now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#json-dump)
   - Use `RxError`-class to throw Custom errors with the `parameters`-attribute
+  - Added [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate)-parameter to `RxDB.create()`
 
 Bugfixes:
   - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
@@ -24,6 +25,7 @@ Other:
   - Optimize schema-rendering when multiple collections have the same schema
   - Reduced build-size by only using async/await if it makes sense
   - Pre-Parse schema to validator when [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) available
+  - Optimize socket-cleanup by using `requestIdlePromise`
 
 ## 5.3.0 (August 25, 2017)
 

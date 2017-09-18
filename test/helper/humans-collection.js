@@ -14,7 +14,8 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        multiInstance
+        multiInstance,
+        ingoreDuplicate: true
     });
 
     const collection = await db.collection({
@@ -36,7 +37,8 @@ export async function createNoCompression(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
-        adapter: 'memory'
+        adapter: 'memory',
+        ingoreDuplicate: true
     });
     const schemaJSON = clone(schemas.human);
     schemaJSON.disableKeyCompression = true;
@@ -60,7 +62,8 @@ export async function createAgeIndex(amount = 20) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
-        adapter: 'memory'
+        adapter: 'memory',
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -82,7 +85,8 @@ export async function multipleOnSameDB() {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
-        adapter: 'memory'
+        adapter: 'memory',
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -111,7 +115,8 @@ export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
-        adapter
+        adapter,
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -179,7 +184,8 @@ export async function createMultiInstance(name, amount = 0, password = null) {
         name,
         adapter: 'memory',
         password,
-        multiInstance: true
+        multiInstance: true,
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -200,7 +206,8 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
-        multiInstance: true
+        multiInstance: true,
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -240,7 +247,8 @@ export async function createMigrationCollection(
     const colName = 'human';
     const db = await RxDatabase.create({
         name,
-        adapter: 'memory'
+        adapter: 'memory',
+        ingoreDuplicate: true
     });
     const schema = RxSchema.create(schemas.simpleHuman);
     const col = await db.collection({
@@ -260,7 +268,8 @@ export async function createMigrationCollection(
 
     const db2 = await RxDatabase.create({
         name,
-        adapter: 'memory'
+        adapter: 'memory',
+        ingoreDuplicate: true
     });
     const schema2 = RxSchema.create(schemas.simpleHumanV3);
     const col2 = await db2.collection({
@@ -279,7 +288,8 @@ export async function createRelated(name = util.randomCouchString(10)) {
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
-        multiInstance: true
+        multiInstance: true,
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -302,7 +312,8 @@ export async function createRelatedNested(name = util.randomCouchString(10)) {
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
-        multiInstance: true
+        multiInstance: true,
+        ingoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({

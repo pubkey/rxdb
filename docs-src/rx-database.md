@@ -36,12 +36,35 @@ RxDB.plugin(require('pouchdb-adapter-leveldb'));
 const db = await RxDB.create({name: 'mydatabase', adapter: memdown});
 ```
 
-### password (optional)
+### password
+`(optional)`
 If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
 
-### multiInstance (optional=true)
+### multiInstance
+`(optional=true)`
 When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be set to `false` when you have single-instances like a single nodejs-process, a react-native-app, a cordova-app or a single-window electron-app.
 
+### ingoreDuplicate
+`(optional=false)`
+If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
+To prevent this common mistake, RxDB will throw an error when you do this.
+In some rare cases like unit-tests, you want to do this intentional by setting `ingoreDuplicate` to `true`.
+
+```js
+const db1 = await RxDB.create({
+  name: 'heroesdb',
+  adapter: 'websql',
+  ingoreDuplicate: true
+});
+const db2 = await RxDB.create({
+  name: 'heroesdb',
+  adapter: 'websql',
+  ingoreDuplicate: true // this create-call will not throw because you explicitly allow it
+});
+```
+
+RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
+'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional
 
 ## Functions
 
