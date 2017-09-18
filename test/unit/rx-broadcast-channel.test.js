@@ -6,24 +6,22 @@ import AsyncTestUtil from 'async-test-util';
 import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
 
 describe('rx-broadcast-channel.test.js', () => {
-
     if (!RxBroadcastChannel.canIUse()) return;
-
     const state = {
         dbs: []
     };
-
     it('init', async() => {
         const name = util.randomCouchString(10);
-
         state.dbs = await Promise.all([
             RxDB.create({
                 name,
-                adapter: 'memory'
+                adapter: 'memory',
+                ingoreDuplicate: true
             }),
             RxDB.create({
                 name,
-                adapter: 'memory'
+                adapter: 'memory',
+                ingoreDuplicate: true
             })
         ]);
         state.otherDB = await RxDB.create({
@@ -33,13 +31,11 @@ describe('rx-broadcast-channel.test.js', () => {
         util.promiseWait(10);
         assert.equal(state.dbs.length, 2);
     });
-
     it('should create a channel', async() => {
         const bc = RxBroadcastChannel.create(state.dbs[0], 'foobar');
         assert.equal(bc.constructor.name, 'RxBroadcastChannel');
         bc.destroy();
     });
-
     it('should send a message from bc1 to bc2', async() => {
         const bc1 = RxBroadcastChannel.create(state.dbs[0], 'foobar');
         const bc2 = RxBroadcastChannel.create(state.dbs[1], 'foobar');
@@ -52,7 +48,6 @@ describe('rx-broadcast-channel.test.js', () => {
         bc1.destroy();
         bc2.destroy();
     });
-
     it('should not get a message from other db', async() => {
         const bc1 = RxBroadcastChannel.create(state.dbs[0], 'foobar');
         const bc2 = RxBroadcastChannel.create(state.otherDB, 'foobar');
@@ -65,7 +60,6 @@ describe('rx-broadcast-channel.test.js', () => {
         bc1.destroy();
         bc2.destroy();
     });
-
     it('should send a message from bc1 to bc2 and bc3', async() => {
         const bc1 = RxBroadcastChannel.create(state.dbs[0], 'foobar');
         const bc2 = RxBroadcastChannel.create(state.dbs[1], 'foobar');
@@ -87,10 +81,7 @@ describe('rx-broadcast-channel.test.js', () => {
         bc2.destroy();
         bc3.destroy();
     });
-
-
     it('cleanup', async() => {
         state.dbs.map(db => db.destroy());
     });
-
 });

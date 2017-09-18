@@ -5,6 +5,7 @@
 Breaking:    
   - Filenames are now kebab-case
   - `pouchdb-replication`-plugin is now imported by default
+  - `RxDB.create()` throws if you create the same database twice. (You can use [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate))
 
 Features:
   - Added [RxDatabase.requestIdlePromise()](https://pubkey.github.io/rxdb/rx-database.html#requestidlepromise)
@@ -19,7 +20,7 @@ Bugfixes:
   - `RxQuery.exec()` throws when out of change-event-buffer-bounds [#278](https://github.com/pubkey/rxdb/issues/278)
 
 Other:
-  - Fix deprecated warning that sometime occurs with indexeddb-adapter `db.type()`
+  - Fix deprecated warning that sometimes occurs with indexeddb-adapter `db.type()`
   - Add fallback to leader-election
   - Optimize leader-election to not waste resources when many tabs open
   - Optimize schema-rendering when multiple collections have the same schema
