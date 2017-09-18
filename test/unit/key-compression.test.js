@@ -392,8 +392,6 @@ describe('key-compression.test.js', () => {
             c.database.destroy();
         });
     });
-
-
     describe('integration into pouchDB', () => {
         it('should have saved a compressed document', async() => {
             const c = await humansCollection.createPrimary(0);
@@ -409,9 +407,7 @@ describe('key-compression.test.js', () => {
             assert.equal(doc['|a'], docData.firstName);
             c.database.destroy();
         });
-
     });
-
     describe('disable key-compression', () => {
         describe('.doKeyCompression()', () => {
             it('doKeyCompression(): true', async() => {

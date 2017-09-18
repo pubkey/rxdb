@@ -50,6 +50,11 @@ class LeaderElector {
             t: 0 // time when the leader send a signal the last time
         };
     }
+
+    /**
+     * returns the leader-document from the _adminPouch
+     * @return {Promise<any>} leaderDoc
+     */
     async getLeaderObject() {
         let obj;
         try {
@@ -320,7 +325,7 @@ class LeaderElector {
             (async() => {
                 while (!this.destroyed && !this.isLeader) {
                     await util.promiseWait(fallbackIntervalTime);
-                    await util.requestIdlePromise();
+                    await util.requestIdlePromise(fallbackIntervalTime);
                     await this.applyOnce();
                 }
             })();
