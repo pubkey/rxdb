@@ -27,6 +27,7 @@ Other:
   - Reduced build-size by only using async/await if it makes sense
   - Pre-Parse schema to validator when [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) available
   - Optimize socket-cleanup by using `requestIdlePromise`
+  - Added plugin-hook for `preCreatePouchDb`
 
 ## 5.3.0 (August 25, 2017)
 

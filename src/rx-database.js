@@ -465,10 +465,16 @@ export async function create({
 
 function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}) {
     const pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
+    const pouchDbParameters = {
+        location: pouchLocation,
+        adapter: util.adapterObject(adapter),
+        settings: pouchSettings
+    };
+    runPluginHooks('preCreatePouchDb', pouchDbParameters);
     return new PouchDB(
-        pouchLocation,
-        util.adapterObject(adapter),
-        pouchSettings
+        pouchDbParameters.location,
+        pouchDbParameters.adapter,
+        pouchDbParameters.settings
     );
 }
 
