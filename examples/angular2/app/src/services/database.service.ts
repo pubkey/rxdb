@@ -6,21 +6,21 @@ import { Injectable } from '@angular/core';
 /**
  * custom build
  */
-import RxDB from 'rxdb/dist/es/core';
+import RxDB from 'rxdb/plugins/core';
 
 // import modules
-import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schema-check';
+import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
 if (ENV === 'development') {
     // schema-checks should be used in dev-mode only
     RxDB.plugin(RxDBSchemaCheckModule);
 }
 
-import RxDBValidateModule from 'rxdb/dist/es/modules/validate';
+import RxDBValidateModule from 'rxdb/plugins/validate';
 RxDB.plugin(RxDBValidateModule);
-import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leader-election';
+import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
 RxDB.plugin(RxDBLeaderElectionModule);
 
-import RxDBReplicationModule from 'rxdb/dist/es/modules/replication';
+import RxDBReplicationModule from 'rxdb/plugins/replication';
 RxDB.plugin(RxDBReplicationModule);
 // always needed for replication with the node-server
 RxDB.plugin(require('pouchdb-adapter-http'));

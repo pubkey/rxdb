@@ -42,4 +42,4 @@ Now, when one user loggs of, it will calculate the new results from the current 
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./custom-builds.md)
+If you are new to RxDB, you should continue [here](./custom-build.md)

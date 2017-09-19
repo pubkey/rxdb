@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-validate",
+  "main": "../../dist/lib/plugins/validate.js",
+  "jsnext:main": "../../dist/es/plugins/validate.js",
+  "module": "../../dist/es/plugins/validate.js"
+}

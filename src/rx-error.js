@@ -55,9 +55,9 @@ export function pluginMissing(pluginKey) {
         `You are using a function which must be overwritten by a plugin.
         You should either prevent the usage of this function or add the plugin via:
           - es5-require:
-            RxDB.plugin(require(\'rxdb/dist/lib/modules/${pluginKey}\'))
+            RxDB.plugin(require(\'rxdb/plugins/${pluginKey}\'))
           - es6-import:
-            import ${util.ucfirst(pluginKey)}Plugin from \'rxdb/dist/es/modules/${pluginKey}\';
+            import ${util.ucfirst(pluginKey)}Plugin from \'rxdb/plugins/${pluginKey}\';
             RxDB.plugin(${util.ucfirst(pluginKey)}Plugin);
         `, {
             pluginKey

@@ -8,7 +8,7 @@ import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
 
 import Core from '../../dist/lib/core';
-Core.plugin(require('../../dist/lib/modules/validate'));
+Core.plugin(require('../../plugins/validate'));
 Core.plugin(require('pouchdb-adapter-memory'));
 
 const schema = {

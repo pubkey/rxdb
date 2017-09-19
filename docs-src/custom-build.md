@@ -2,7 +2,7 @@
 
 By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you dont have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.
 
-`NOTICE: Custom Builds are in beta-mode an do not comply to semver. It can happen that you have to re-adjust you build without a major rxdb-release.`
+`NOTICE: Custom-builds are in beta-mode an do not comply to semver. It can happen that you have to re-adjust you build without a major rxdb-release.`
 
 ## Core
 
@@ -10,10 +10,10 @@ The core-module is the part of RxDB which is always needed to provide basic func
 
 ```javascript
 // es6-import
-import RxDB from 'rxdb/dist/es/core';
+import RxDB from 'rxdb/plugins/core';
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-const RxDB = require('rxdb/dist/lib/core');
+// es5-require
+const RxDB = require('rxdb/plugins/core');
 ```
 
 ## required modules
@@ -26,11 +26,11 @@ The validation-module does the schema-validation when you insert or update a `Rx
 
 ```javascript
 // es6-import
-import RxDBValidateModule from 'rxdb/dist/es/modules/validate';
+import RxDBValidateModule from 'rxdb/plugins/validate';
 RxDB.plugin(RxDBValidateModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/validate'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/validate'));
 ```
 
 ## optional modules
@@ -43,11 +43,11 @@ The schemacheck-module does additional checks on your jsonschema before you crea
 
 ```javascript
 // es6-import
-import RxDBSchemaCheckModule from 'rxdb/dist/es/modules/schema-check';
+import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
 RxDB.plugin(RxDBSchemaCheckModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/schema-check'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/schema-check'));
 ```
 
 ### replication
@@ -56,11 +56,11 @@ Adds the [replication](./replication.md)-functionality to RxDB.
 
 ```javascript
 // es6-import
-import RxDBReplicationModule from 'rxdb/dist/es/modules/replication';
+import RxDBReplicationModule from 'rxdb/plugins/replication';
 RxDB.plugin(RxDBReplicationModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/replication'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/replication'));
 ```
 
 ### json-dump
@@ -69,11 +69,11 @@ Adds the [json import/export](./rx-database.md#dump)-functionality to RxDB.
 
 ```javascript
 // es6-import
-import RxDBJsonDumpModule from 'rxdb/dist/es/modules/json-dump';
+import RxDBJsonDumpModule from 'rxdb/plugins/json-dump';
 RxDB.plugin(RxDBJsonDumpModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/json-dump'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/json-dump'));
 ```
 
 ### key-compression
@@ -82,11 +82,11 @@ The keycompressor-module is needed when you have keyCompression enabled. This is
 
 ```javascript
 // es6-import
-import RxDBKeyCompressionModule from 'rxdb/dist/es/modules/key-compression';
+import RxDBKeyCompressionModule from 'rxdb/plugins/key-compression';
 RxDB.plugin(RxDBKeyCompressionModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/key-compression'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/key-compression'));
 ```
 
 ### leader-election
@@ -95,11 +95,11 @@ The leaderelection-module is needed when want to use the leaderelection.
 
 ```javascript
 // es6-import
-import RxDBLeaderElectionModule from 'rxdb/dist/es/modules/leader-election';
+import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
 RxDB.plugin(RxDBLeaderElectionModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/leader-election'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/leader-election'));
 ```
 
 ### encryption
@@ -108,11 +108,11 @@ The encryption-module is using `crypto-js` and is only needed when you create yo
 
 ```javascript
 // es6-import
-import RxDBEncryptionModule from 'rxdb/dist/es/modules/encryption';
+import RxDBEncryptionModule from 'rxdb/plugins/encryption';
 RxDB.plugin(RxDBEncryptionModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/encryption'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/encryption'));
 ```
 
 ### update
@@ -121,11 +121,11 @@ The update-module is only required when you use [RxDocument.update](./rx-documen
 
 ```javascript
 // es6-import
-import RxDBUpdateModule from 'rxdb/dist/es/modules/update';
+import RxDBUpdateModule from 'rxdb/plugins/update';
 RxDB.plugin(RxDBUpdateModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/update'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/update'));
 ```
 
 ### adapter-check
@@ -134,11 +134,11 @@ This module add the [checkAdapter](./rx-database.md#checkadapter)-function to Rx
 
 ```javascript
 // es6-import
-import RxDBAdapterCheckModule from 'rxdb/dist/es/modules/adapter-check';
+import RxDBAdapterCheckModule from 'rxdb/plugins/adapter-check';
 RxDB.plugin(RxDBAdapterCheckModule);
 
-// es5-require (dont forget to use the 'lib'-folder instead of 'es')
-RxDB.plugin(require('rxdb/dist/lib/modules/adapter-check'));
+// es5-require
+RxDB.plugin(require('rxdb/plugins/adapter-check'));
 ```
 
 --------------------------------------------------------------------------------

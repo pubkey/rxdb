@@ -81,7 +81,7 @@
 
 * [QueryChangeDetection](./query-change-detection.md)
 
-* [Custom Builds](./custom-builds.md)
+* [Custom Build](./custom-build.md)
 
 * [Plugins](./plugins.md)
 

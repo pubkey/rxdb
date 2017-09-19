@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-schema-check",
+  "main": "../../dist/lib/plugins/schema-check.js",
+  "jsnext:main": "../../dist/es/plugins/schema-check.js",
+  "module": "../../dist/es/plugins/schema-check.js"
+}

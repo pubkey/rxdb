@@ -12,7 +12,7 @@ import * as RxSchema from '../../dist/lib/rx-schema';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxDocument from '../../dist/lib/rx-document';
 
-import * as KeyCompressor from '../../dist/lib/modules/key-compression';
+import * as KeyCompressor from '../../dist/lib/plugins/key-compression';
 
 
 describe('key-compression.test.js', () => {

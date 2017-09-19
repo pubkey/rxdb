@@ -6,12 +6,13 @@ Breaking:
   - Filenames are now kebab-case
   - `pouchdb-replication`-plugin is now imported by default
   - `RxDB.create()` throws if you create the same database twice. (You can use [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate))
+  - If you use a custom-build, you have to change the import-paths. See [custom-build](https://pubkey.github.io/rxdb/custom-build.html)
 
 Features:
   - Added [RxDatabase.requestIdlePromise()](https://pubkey.github.io/rxdb/rx-database.html#requestidlepromise)
   - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
-  - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#replication)
-  - Json import/exportis now its own module [see](https://pubkey.github.io/rxdb/custom-builds.html#json-dump)
+  - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-build.html#replication)
+  - Json import/exportis now its own module [see](https://pubkey.github.io/rxdb/custom-build.html#json-dump)
   - Use `RxError`-class to throw Custom errors with the `parameters`-attribute
   - Added [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate)-parameter to `RxDB.create()`
 
@@ -32,7 +33,7 @@ Other:
 ## 5.3.0 (August 25, 2017)
 
 Features:
-  - Added [custom builds](https://pubkey.github.io/rxdb/custom-builds.html)
+  - Added [custom builds](https://pubkey.github.io/rxdb/custom-build.html)
   - Added [plugin-support](https://pubkey.github.io/rxdb/plugins.html)
   - Added default exports. Use `import RxDB from 'rxdb'` instead of `import * as RxDB from 'rxdb'`
 

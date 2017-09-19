@@ -1,10 +1,10 @@
 /**
  * test agains the encryption-module
- * @file src/modules/encryption.js
+ * @file src/plugins/encryption.js
  */
 import assert from 'assert';
 import * as util from '../../dist/lib/util';
-import * as encryption from '../../dist/lib/modules/encryption';
+import * as encryption from '../../dist/lib/plugins/encryption';
 
 describe('mod-encrytion.test.js : .encrypt()', () => {
     it('should encrypt properly', () => {

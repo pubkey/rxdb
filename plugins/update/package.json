@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-update",
+  "main": "../../dist/lib/plugins/update.js",
+  "jsnext:main": "../../dist/es/plugins/update.js",
+  "module": "../../dist/es/plugins/update.js"
+}

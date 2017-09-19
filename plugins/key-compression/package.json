@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-key-compression",
+  "main": "../../dist/lib/plugins/key-compression.js",
+  "jsnext:main": "../../dist/es/plugins/key-compression.js",
+  "module": "../../dist/es/plugins/key-compression.js"
+}

@@ -7,7 +7,7 @@ import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
-import * as SchemaCheck from '../../dist/lib/modules/schema-check.js';
+import * as SchemaCheck from '../../dist/lib/plugins/schema-check.js';
 
 describe('rx-schema.test.js', () => {
     describe('static', () => {

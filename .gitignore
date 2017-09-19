@@ -3,7 +3,6 @@ npm-debug.log
 test_tmp/
 psrqlbn-db/
 coverage/
-core
 log.txt
 package-lock.json
 config.json

@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-core",
+  "main": "../../dist/lib/core.js",
+  "jsnext:main": "../../dist/es/core.js",
+  "module": "../../dist/es/core.js"
+}
