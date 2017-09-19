@@ -144,7 +144,7 @@
     "pouchdb-adapter-websql": "6.3.4",
     "pre-commit": "1.2.2",
     "random-int": "1.0.0",
-    "request": "2.81.0",
+    "request": "2.82.0",
     "request-promise": "4.2.1",
     "request-promise-native": "1.0.4",
     "rimraf": "2.6.2",
