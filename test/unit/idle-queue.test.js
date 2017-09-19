@@ -15,35 +15,21 @@ describe('idle-queue.test.js', () => {
         });
     });
     describe('instance', () => {
-        describe('get _nextLockNr', () => {
-            it('should get an increasing lock-number', () => {
-                const queue = IdleQueue.create();
-                const nrs = new Array(10)
-                    .fill(0)
-                    .map(() => queue._nextLockNr);
-
-                assert.deepEqual(nrs, [
-                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-                ]);
-            });
-        });
         describe('.lock()', () => {
-            it('should get a unlock-function while increasing the lockNr', () => {
+            it('should get a unlock-function while increasing the _queueCounter', () => {
                 const queue = IdleQueue.create();
                 const unlock1 = queue.lock();
                 const unlock2 = queue.lock();
                 assert.equal(typeof unlock1, 'function');
                 assert.equal(typeof unlock2, 'function');
-                const nextNr = queue._nextLockNr;
-                assert.equal(nextNr, 3);
+                assert.equal(queue._queueCounter, 2);
             });
-            it('should have the lock-numbers in the queue', () => {
+            it('should have the correct lock-amount queue', () => {
                 const queue = IdleQueue.create();
                 new Array(50)
                     .fill(0)
                     .map(() => queue.lock());
-                assert.equal(queue._queue.length, 50);
-                assert.ok(queue._queue.includes(42));
+                assert.equal(queue._queueCounter, 50);
             });
         });
         describe('.unlock()', () => {
@@ -57,9 +43,9 @@ describe('idle-queue.test.js', () => {
                 const unlocks = new Array(10)
                     .fill(0)
                     .map(() => queue.lock());
-                assert.equal(queue._queue.length, 10);
+                assert.equal(queue._queueCounter, 10);
                 unlocks.forEach(unlock => unlock());
-                assert.equal(queue._queue.length, 0);
+                assert.equal(queue._queueCounter, 0);
             });
             it('should not contain the single unlocked nr', () => {
                 const queue = IdleQueue.create();
@@ -71,11 +57,9 @@ describe('idle-queue.test.js', () => {
                     .fill(0)
                     .map(() => queue.lock());
 
-                assert.equal(queue._queue.length, 21);
-                assert.ok(queue._queue.includes(11));
+                assert.equal(queue._queueCounter, 21);
                 unlock();
-                assert.equal(queue._queue.length, 20);
-                assert.ok(!queue._queue.includes(11));
+                assert.equal(queue._queueCounter, 20);
             });
         });
         describe('.wrapFunctionWithLocking()', () => {
@@ -94,10 +78,10 @@ describe('idle-queue.test.js', () => {
                         return 42;
                     }
                 );
-                assert.equal(queue._queue.length, 1);
+                assert.equal(queue._queueCounter, 1);
                 const res = await promise;
                 assert.equal(res, 42);
-                assert.equal(queue._queue.length, 0);
+                assert.equal(queue._queueCounter, 0);
             });
             it('should pass the error if function throws', async() => {
                 const queue = IdleQueue.create();
@@ -115,6 +99,7 @@ describe('idle-queue.test.js', () => {
                     assert.ok(err.flag);
                 }
                 assert.ok(thrown);
+                assert.equal(queue._queueCounter, 0);
             });
         });
         describe('.requestIdlePromise()', () => {

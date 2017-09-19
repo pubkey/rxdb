@@ -11,17 +11,12 @@ const PROMISE_RESOLVE_MAP = new WeakMap();
 export class IdleQueue {
     constructor() {
         /**
-         * array that contains all non-unlocked lock-numbers
-         * @type {Array<number>}
-         */
-        this._queue = [];
-
-        /**
-         * each lock has its own number
-         * to prevent duplicate usage, we increment this one
+         * each lock() increased this number
+         * each unlock() decreases this number
+         * If _queueCounter==0, the state is in idle
          * @type {Number}
          */
-        this._lockNr = 0;
+        this._queueCounter = 0;
 
         /**
          * contains all functions that where added via requestIdlePromise()
@@ -31,34 +26,19 @@ export class IdleQueue {
         this._idleCalls = [];
     }
 
-    get _nextLockNr() {
-        this._lockNr++;
-        return this._lockNr;
-    }
-
-    /**
-     * removes the lockNumber from the queue
-     * @param  {number} lockNr
-     */
-    _removeLockNrFromQueue(lockNr) {
-        const index = this._queue.indexOf(lockNr);
-        this._queue.splice(index, 1);
-    }
-
     /**
      * creates a lock in the queue
      * and creates an unlock-function to remove the lock from the queue
      * @return {function} unlock function than must be called afterwards
      */
     lock() {
-        const lockNr = this._nextLockNr;
-        this._queue.push(lockNr);
-        const unlock = (() => this._unLock(lockNr)).bind(this);
+        this._queueCounter++;
+        const unlock = (() => this._unLock()).bind(this);
         return unlock;
     }
 
-    _unLock(lockNr) {
-        this._removeLockNrFromQueue(lockNr);
+    _unLock() {
+        this._queueCounter--;
         this._tryIdleCall();
     }
 
@@ -135,7 +115,7 @@ export class IdleQueue {
         await util.nextTick();
 
         // check if queue empty
-        if (this._queue.length !== 0) {
+        if (this._queueCounter !== 0) {
             this._tryIdleCallRunning = false;
             return;
         };
@@ -148,7 +128,7 @@ export class IdleQueue {
          */
         await util.nextTick();
         // check if queue still empty
-        if (this._queue.length !== 0) {
+        if (this._queueCounter !== 0) {
             this._tryIdleCallRunning = false;
             return;
         }
