@@ -9,39 +9,39 @@ var _core = require('./core');
 
 var _core2 = _interopRequireDefault(_core);
 
-var _schemaCheck = require('./modules/schema-check');
+var _schemaCheck = require('./plugins/schema-check');
 
 var _schemaCheck2 = _interopRequireDefault(_schemaCheck);
 
-var _validate = require('./modules/validate');
+var _validate = require('./plugins/validate');
 
 var _validate2 = _interopRequireDefault(_validate);
 
-var _keyCompression = require('./modules/key-compression');
+var _keyCompression = require('./plugins/key-compression');
 
 var _keyCompression2 = _interopRequireDefault(_keyCompression);
 
-var _leaderElection = require('./modules/leader-election');
+var _leaderElection = require('./plugins/leader-election');
 
 var _leaderElection2 = _interopRequireDefault(_leaderElection);
 
-var _encryption = require('./modules/encryption');
+var _encryption = require('./plugins/encryption');
 
 var _encryption2 = _interopRequireDefault(_encryption);
 
-var _update = require('./modules/update');
+var _update = require('./plugins/update');
 
 var _update2 = _interopRequireDefault(_update);
 
-var _replication = require('./modules/replication');
+var _replication = require('./plugins/replication');
 
 var _replication2 = _interopRequireDefault(_replication);
 
-var _adapterCheck = require('./modules/adapter-check');
+var _adapterCheck = require('./plugins/adapter-check');
 
 var _adapterCheck2 = _interopRequireDefault(_adapterCheck);
 
-var _jsonDump = require('./modules/json-dump');
+var _jsonDump = require('./plugins/json-dump');
 
 var _jsonDump2 = _interopRequireDefault(_jsonDump);
 
@@ -49,7 +49,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 /**
  * this is the default rxdb-export
- * It has a batteries-included garantie.
+ * It has a batteries-included guarantee.
  * It basically just rxdb-core with some default plugins
  */
 

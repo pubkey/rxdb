@@ -588,6 +588,8 @@ var RxDocument = exports.RxDocument = function () {
         key: 'remove',
         value: function () {
             var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6() {
+                var _this3 = this;
+
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
@@ -605,7 +607,9 @@ var RxDocument = exports.RxDocument = function () {
 
                             case 4:
                                 _context6.next = 6;
-                                return this.collection.pouch.remove(this.primary, this._data._rev);
+                                return this.collection.database.lockedRun(function () {
+                                    return _this3.collection.pouch.remove(_this3.primary, _this3._data._rev);
+                                });
 
                             case 6:
 

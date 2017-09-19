@@ -25,7 +25,18 @@ var HOOKS = exports.HOOKS = {
    */
   createRxSchema: [],
   createRxQuery: [],
-  createRxDocument: []
+  createRxDocument: [],
+  /**
+   * runs before a pouchdb-instance is created
+   * gets pouchParameters as attribute so you can manipulate them
+   * {
+   *   location: string,
+   *   adapter: any,
+   *   settings: object
+   * }
+   * @type {Array}
+   */
+  preCreatePouchDb: []
 };
 
 function runPluginHooks(hookKey, obj) {

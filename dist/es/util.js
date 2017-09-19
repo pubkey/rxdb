@@ -88,6 +88,16 @@ export function generate_id() {
 }
 
 /**
+ * returns a promise that resolves on the next tick
+ * @return {Promise}
+ */
+export function nextTick() {
+    return new Promise(function (res) {
+        return setTimeout(res, 0);
+    });
+}
+
+/**
  * [promiseWait description]
  * @param  {Number}  [ms=0]
  * @return {Promise}

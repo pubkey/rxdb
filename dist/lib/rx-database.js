@@ -31,7 +31,9 @@ var create = exports.create = function () {
             adapter = _ref7.adapter,
             password = _ref7.password,
             _ref7$multiInstance = _ref7.multiInstance,
-            multiInstance = _ref7$multiInstance === undefined ? true : _ref7$multiInstance;
+            multiInstance = _ref7$multiInstance === undefined ? true : _ref7$multiInstance,
+            _ref7$ingoreDuplicate = _ref7.ingoreDuplicate,
+            ingoreDuplicate = _ref7$ingoreDuplicate === undefined ? false : _ref7$ingoreDuplicate;
         var db;
         return _regenerator2['default'].wrap(function _callee7$(_context7) {
             while (1) {
@@ -71,16 +73,23 @@ var create = exports.create = function () {
 
                         if (password) _overwritable2['default'].validatePassword(password);
 
+                        // check if combination already used
+                        if (!ingoreDuplicate) _isNameAdapterUsed(name, adapter);
+
+                        // add to used_map
+                        if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
+                        USED_COMBINATIONS[name].push(adapter);
+
                         db = new RxDatabase(name, adapter, password, multiInstance);
-                        _context7.next = 13;
+                        _context7.next = 16;
                         return db.prepare();
 
-                    case 13:
+                    case 16:
 
                         (0, _hooks.runPluginHooks)('createRxDatabase', db);
                         return _context7.abrupt('return', db);
 
-                    case 15:
+                    case 18:
                     case 'end':
                         return _context7.stop();
                 }
@@ -185,6 +194,10 @@ var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
 
+var _rxError = require('./rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
 var _rxCollection = require('./rx-collection');
 
 var _rxCollection2 = _interopRequireDefault(_rxCollection);
@@ -201,6 +214,10 @@ var _socket = require('./socket');
 
 var _socket2 = _interopRequireDefault(_socket);
 
+var _idleQueue = require('./idle-queue');
+
+var _idleQueue2 = _interopRequireDefault(_idleQueue);
+
 var _overwritable = require('./overwritable');
 
 var _overwritable2 = _interopRequireDefault(_overwritable);
@@ -211,6 +228,14 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+/**
+ * stores the combinations
+ * of used database-names with their adapters
+ * so we can throw when the same database is created more then once
+ * @type {Object<string, array>} map with {dbName -> array<adapters>}
+ */
+var USED_COMBINATIONS = {};
+
 var RxDatabase = exports.RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance) {
         (0, _classCallCheck3['default'])(this, RxDatabase);
@@ -219,7 +244,7 @@ var RxDatabase = exports.RxDatabase = function () {
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
-
+        this.idleQueue = _idleQueue2['default'].create();
         this.token = (0, _randomToken2['default'])(10);
 
         this.subs = [];
@@ -257,14 +282,17 @@ var RxDatabase = exports.RxDatabase = function () {
                                 }
 
                                 _context.next = 3;
-                                return this._adminPouch.info();
+                                return this.lockedRun(function () {
+                                    return _this._adminPouch.info();
+                                });
 
                             case 3:
-                                // ensure admin-pouch is useable
                                 pwHashDoc = null;
                                 _context.prev = 4;
                                 _context.next = 7;
-                                return this._adminPouch.get('_local/pwHash');
+                                return this.lockedRun(function () {
+                                    return _this._adminPouch.get('_local/pwHash');
+                                });
 
                             case 7:
                                 pwHashDoc = _context.sent;
@@ -283,9 +311,11 @@ var RxDatabase = exports.RxDatabase = function () {
 
                                 _context.prev = 13;
                                 _context.next = 16;
-                                return this._adminPouch.put({
-                                    _id: '_local/pwHash',
-                                    value: util.hash(this.password)
+                                return this.lockedRun(function () {
+                                    return _this._adminPouch.put({
+                                        _id: '_local/pwHash',
+                                        value: util.hash(_this.password)
+                                    });
                                 });
 
                             case 16:
@@ -447,7 +477,9 @@ var RxDatabase = exports.RxDatabase = function () {
 
             var docId = this._collectionNamePrimary(name, schema);
             return this._collectionsPouch.get(docId).then(function (doc) {
-                return _this2._collectionsPouch.remove(doc);
+                return _this2.lockedRun(function () {
+                    return _this2._collectionsPouch.remove(doc);
+                });
             });
         }
 
@@ -469,8 +501,10 @@ var RxDatabase = exports.RxDatabase = function () {
                         switch (_context3.prev = _context3.next) {
                             case 0:
                                 _context3.next = 2;
-                                return this._collectionsPouch.allDocs({
-                                    include_docs: true
+                                return this.lockedRun(function () {
+                                    return _this3._collectionsPouch.allDocs({
+                                        include_docs: true
+                                    });
                                 });
 
                             case 2:
@@ -483,7 +517,9 @@ var RxDatabase = exports.RxDatabase = function () {
                                 });
                                 _context3.next = 6;
                                 return Promise.all(relevantDocs.map(function (doc) {
-                                    return _this3._collectionsPouch.remove(doc);
+                                    return _this3.lockedRun(function () {
+                                        return _this3._collectionsPouch.remove(doc);
+                                    });
                                 }));
 
                             case 6:
@@ -570,7 +606,9 @@ var RxDatabase = exports.RxDatabase = function () {
                                 collectionDoc = null;
                                 _context4.prev = 13;
                                 _context4.next = 16;
-                                return this._collectionsPouch.get(internalPrimary);
+                                return this.lockedRun(function () {
+                                    return _this4._collectionsPouch.get(internalPrimary);
+                                });
 
                             case 16:
                                 collectionDoc = _context4.sent;
@@ -611,11 +649,13 @@ var RxDatabase = exports.RxDatabase = function () {
 
                                 _context4.prev = 29;
                                 _context4.next = 32;
-                                return this._collectionsPouch.put({
-                                    _id: internalPrimary,
-                                    schemaHash: schemaHash,
-                                    schema: collection.schema.normalized,
-                                    version: collection.schema.version
+                                return this.lockedRun(function () {
+                                    return _this4._collectionsPouch.put({
+                                        _id: internalPrimary,
+                                        schemaHash: schemaHash,
+                                        schema: collection.schema.normalized,
+                                        version: collection.schema.version
+                                    });
                                 });
 
                             case 32:
@@ -695,7 +735,9 @@ var RxDatabase = exports.RxDatabase = function () {
                                 // remove documents
 
                                 return _context5.abrupt('return', Promise.all(pouches.map(function (pouch) {
-                                    return pouch.destroy();
+                                    return _this5.lockedRun(function () {
+                                        return pouch.destroy();
+                                    });
                                 })));
 
                             case 8:
@@ -714,6 +756,22 @@ var RxDatabase = exports.RxDatabase = function () {
         }()
 
         /**
+         * runs the given function between idleQueue-locking
+         * @return {any}
+         */
+
+    }, {
+        key: 'lockedRun',
+        value: function lockedRun(fun) {
+            return this.idleQueue.wrapFunctionWithLocking(fun);
+        }
+    }, {
+        key: 'requestIdlePromise',
+        value: function requestIdlePromise() {
+            return this.idleQueue.requestIdlePromise();
+        }
+
+        /**
          * export to json
          * @param {boolean} decrypted
          * @param {?string[]} collections array with collectionNames or null if all
@@ -722,7 +780,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'dump',
         value: function dump() {
-            throw RxError.pluginMissing('json-dump');
+            throw _rxError2['default'].pluginMissing('json-dump');
         }
 
         /**
@@ -733,8 +791,14 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'importDump',
         value: function importDump() {
-            throw RxError.pluginMissing('json-dump');
+            throw _rxError2['default'].pluginMissing('json-dump');
         }
+
+        /**
+         * destroys the database-instance and all collections
+         * @return {Promise}
+         */
+
     }, {
         key: 'destroy',
         value: function () {
@@ -754,27 +818,44 @@ var RxDatabase = exports.RxDatabase = function () {
 
                             case 2:
                                 this.destroyed = true;
-                                this.socket && this.socket.destroy();
+                                _context6.t0 = this.socket;
 
-                                if (!this._leaderElector) {
+                                if (!_context6.t0) {
                                     _context6.next = 7;
                                     break;
                                 }
 
                                 _context6.next = 7;
-                                return this._leaderElector.destroy();
+                                return this.socket.destroy();
 
                             case 7:
+                                if (!this._leaderElector) {
+                                    _context6.next = 10;
+                                    break;
+                                }
+
+                                _context6.next = 10;
+                                return this._leaderElector.destroy();
+
+                            case 10:
                                 this.subs.map(function (sub) {
                                     return sub.unsubscribe();
                                 });
-                                Object.keys(this.collections).map(function (key) {
+
+                                // destroy all collections
+                                _context6.next = 13;
+                                return Promise.all(Object.keys(this.collections).map(function (key) {
                                     return _this6.collections[key];
                                 }).map(function (col) {
                                     return col.destroy();
-                                });
+                                }));
 
-                            case 9:
+                            case 13:
+
+                                // remove combination from USED_COMBINATIONS-map
+                                _removeUsedCombination(this.name, this.adapter);
+
+                            case 14:
                             case 'end':
                                 return _context6.stop();
                         }
@@ -853,11 +934,46 @@ function properties() {
     return _properties;
 }
 
+/**
+ * checks if an instance with same name and adapter already exists
+ * @param       {string}  name
+ * @param       {any}  adapter
+ * @throws {RxError} if used
+ */
+function _isNameAdapterUsed(name, adapter) {
+    if (!USED_COMBINATIONS[name]) return false;
+
+    var used = false;
+    USED_COMBINATIONS[name].forEach(function (ad) {
+        if (ad == adapter) used = true;
+    });
+    if (used) {
+        throw _rxError2['default'].newRxError('RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional', {
+            name: name,
+            adapter: adapter,
+            link: 'https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate'
+        });
+    }
+}
+
+function _removeUsedCombination(name, adapter) {
+    if (!USED_COMBINATIONS[name]) return;
+
+    var index = USED_COMBINATIONS[name].indexOf(adapter);
+    USED_COMBINATIONS[name].splice(index, 1);
+}
+
 function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
     var pouchSettings = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
     var pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
-    return new _pouchDb2['default'](pouchLocation, util.adapterObject(adapter), pouchSettings);
+    var pouchDbParameters = {
+        location: pouchLocation,
+        adapter: util.adapterObject(adapter),
+        settings: pouchSettings
+    };
+    (0, _hooks.runPluginHooks)('preCreatePouchDb', pouchDbParameters);
+    return new _pouchDb2['default'](pouchDbParameters.location, pouchDbParameters.adapter, pouchDbParameters.settings);
 }
 
 function _internalAdminPouch(name, adapter) {

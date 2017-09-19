@@ -75,11 +75,14 @@ export var RxCollection = function () {
                             this._crypter = Crypter.create(this.database.password, this.schema);
 
                             this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
+
+                            // ensure that we wait until db is useable
                             _context.next = 5;
-                            return this.pouch.info();
+                            return this.database.lockedRun(function () {
+                                return _this2.pouch.info();
+                            });
 
                         case 5:
-                            // ensure that we wait until db is useable
 
                             this._observable$ = this.database.$.filter(function (event) {
                                 return event.data.col == _this2.name;
@@ -92,10 +95,13 @@ export var RxCollection = function () {
                                 var compressedIdx = indexAr.map(function (key) {
                                     if (!_this2.schema.doKeyCompression()) return key;else return _this2._keyCompressor._transformKey('', '', key.split('.'));
                                 });
-                                return _this2.pouch.createIndex({
-                                    index: {
-                                        fields: compressedIdx
-                                    }
+
+                                return _this2.database.lockedRun(function () {
+                                    return _this2.pouch.createIndex({
+                                        index: {
+                                            fields: compressedIdx
+                                        }
+                                    });
                                 });
                             }));
 
@@ -191,6 +197,8 @@ export var RxCollection = function () {
 
     RxCollection.prototype._pouchPut = function () {
         var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(obj) {
+            var _this3 = this;
+
             var overwrite = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
             var ret, exist;
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
@@ -201,7 +209,9 @@ export var RxCollection = function () {
                             ret = null;
                             _context2.prev = 2;
                             _context2.next = 5;
-                            return this.pouch.put(obj);
+                            return this.database.lockedRun(function () {
+                                return _this3.pouch.put(obj);
+                            });
 
                         case 5:
                             ret = _context2.sent;
@@ -218,14 +228,18 @@ export var RxCollection = function () {
                             }
 
                             _context2.next = 13;
-                            return this.pouch.get(obj._id);
+                            return this.database.lockedRun(function () {
+                                return _this3.pouch.get(obj._id);
+                            });
 
                         case 13:
                             exist = _context2.sent;
 
                             obj._rev = exist._rev;
                             _context2.next = 17;
-                            return this.pouch.put(obj);
+                            return this.database.lockedRun(function () {
+                                return _this3.pouch.put(obj);
+                            });
 
                         case 17:
                             ret = _context2.sent;
@@ -261,10 +275,10 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype._pouchGet = function _pouchGet(key) {
-        var _this3 = this;
+        var _this4 = this;
 
         return this.pouch.get(key).then(function (doc) {
-            return _this3._handleFromPouch(doc);
+            return _this4._handleFromPouch(doc);
         });
     };
 
@@ -279,7 +293,7 @@ export var RxCollection = function () {
 
     RxCollection.prototype._pouchFind = function () {
         var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(rxQuery, limit) {
-            var _this4 = this;
+            var _this5 = this;
 
             var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
             var compressedQueryJSON, docsCompressed, docs;
@@ -292,12 +306,14 @@ export var RxCollection = function () {
                             if (limit) compressedQueryJSON.limit = limit;
 
                             _context3.next = 4;
-                            return this.pouch.find(compressedQueryJSON);
+                            return this.database.lockedRun(function () {
+                                return _this5.pouch.find(compressedQueryJSON);
+                            });
 
                         case 4:
                             docsCompressed = _context3.sent;
                             docs = docsCompressed.docs.map(function (doc) {
-                                return _this4._handleFromPouch(doc, noDecrypt);
+                                return _this5._handleFromPouch(doc, noDecrypt);
                             });
                             return _context3.abrupt('return', docs);
 
@@ -388,14 +404,14 @@ export var RxCollection = function () {
 
     RxCollection.prototype._createDocuments = function () {
         var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(docsJSON) {
-            var _this5 = this;
+            var _this6 = this;
 
             return _regeneratorRuntime.wrap(function _callee5$(_context5) {
                 while (1) {
                     switch (_context5.prev = _context5.next) {
                         case 0:
                             return _context5.abrupt('return', Promise.all(docsJSON.map(function (json) {
-                                return _this5._createDocument(json);
+                                return _this6._createDocument(json);
                             })));
 
                         case 1:
@@ -614,10 +630,10 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype._atomicUpsertEnsureRxDocumentExists = function _atomicUpsertEnsureRxDocumentExists(primary, json) {
-        var _this6 = this;
+        var _this7 = this;
 
         return this.findOne(primary).exec().then(function (doc) {
-            if (!doc) return _this6.insert(json);
+            if (!doc) return _this7.insert(json);
         });
     };
 
@@ -629,7 +645,7 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype.atomicUpsert = function atomicUpsert(json) {
-        var _this7 = this;
+        var _this8 = this;
 
         json = clone(json);
         var primary = json[this.schema.primaryPath];
@@ -639,7 +655,7 @@ export var RxCollection = function () {
         if (!this._atomicUpsertLocks[primary]) this._atomicUpsertLocks[primary] = this._atomicUpsertEnsureRxDocumentExists(primary, json);
 
         return this._atomicUpsertLocks[primary].then(function () {
-            return _this7.findOne(primary).exec();
+            return _this8.findOne(primary).exec();
         }).then(function (doc) {
             return doc.atomicUpdate(function (innerDoc) {
                 json._rev = innerDoc._rev;

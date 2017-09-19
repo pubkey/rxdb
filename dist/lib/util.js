@@ -95,6 +95,7 @@ exports.isLevelDown = isLevelDown;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generate_id = generate_id;
+exports.nextTick = nextTick;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
@@ -223,6 +224,16 @@ function hash(obj) {
  */
 function generate_id() {
     return (0, _randomToken2['default'])(10) + ':' + new Date().getTime();
+}
+
+/**
+ * returns a promise that resolves on the next tick
+ * @return {Promise}
+ */
+function nextTick() {
+    return new Promise(function (res) {
+        return setTimeout(res, 0);
+    });
 }function requestIdleCallbackIfAvailable(fun) {
     if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3['default'])(window)) === 'object' && window.requestIdleCallback) window.requestIdleCallback(fun);
 }

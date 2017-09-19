@@ -1,6 +1,6 @@
 /**
  * this is the default rxdb-export
- * It has a batteries-included garantie.
+ * It has a batteries-included guarantee.
  * It basically just rxdb-core with some default plugins
  */
 
@@ -8,31 +8,31 @@ import Core from './core';
 
 // default plugins
 
-import SchemaCheckPlugin from './modules/schema-check';
+import SchemaCheckPlugin from './plugins/schema-check';
 Core.plugin(SchemaCheckPlugin);
 
-import ValidatePlugin from './modules/validate';
+import ValidatePlugin from './plugins/validate';
 Core.plugin(ValidatePlugin);
 
-import KeyCompressionPlugin from './modules/key-compression';
+import KeyCompressionPlugin from './plugins/key-compression';
 Core.plugin(KeyCompressionPlugin);
 
-import LeaderelectionPlugin from './modules/leader-election';
+import LeaderelectionPlugin from './plugins/leader-election';
 Core.plugin(LeaderelectionPlugin);
 
-import EncryptionPlugin from './modules/encryption';
+import EncryptionPlugin from './plugins/encryption';
 Core.plugin(EncryptionPlugin);
 
-import UpdatePlugin from './modules/update';
+import UpdatePlugin from './plugins/update';
 Core.plugin(UpdatePlugin);
 
-import ReplicationPlugin from './modules/replication';
+import ReplicationPlugin from './plugins/replication';
 Core.plugin(ReplicationPlugin);
 
-import AdapterCheckPlugin from './modules/adapter-check';
+import AdapterCheckPlugin from './plugins/adapter-check';
 Core.plugin(AdapterCheckPlugin);
 
-import JsonDumpPlugin from './modules/json-dump';
+import JsonDumpPlugin from './plugins/json-dump';
 Core.plugin(JsonDumpPlugin);
 
 /**

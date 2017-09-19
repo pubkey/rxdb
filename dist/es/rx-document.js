@@ -514,6 +514,8 @@ export var RxDocument = function () {
 
     RxDocument.prototype.remove = function () {
         var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6() {
+            var _this3 = this;
+
             return _regeneratorRuntime.wrap(function _callee6$(_context6) {
                 while (1) {
                     switch (_context6.prev = _context6.next) {
@@ -531,7 +533,9 @@ export var RxDocument = function () {
 
                         case 4:
                             _context6.next = 6;
-                            return this.collection.pouch.remove(this.primary, this._data._rev);
+                            return this.collection.database.lockedRun(function () {
+                                return _this3.collection.pouch.remove(_this3.primary, _this3._data._rev);
+                            });
 
                         case 6:
 

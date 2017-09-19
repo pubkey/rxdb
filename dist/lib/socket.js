@@ -105,7 +105,7 @@ var Socket = function () {
                                                     return util.promiseWait(PULL_TIME);
 
                                                 case 3:
-                                                    if (!(_this.messages$.observers.length > 0)) {
+                                                    if (!(_this.messages$.observers.length > 0 && !_this._destroyed)) {
                                                         _context.next = 6;
                                                         break;
                                                     }
@@ -150,15 +150,13 @@ var Socket = function () {
         key: 'write',
         value: function () {
             var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(changeEvent) {
+                var _this2 = this;
+
                 var socketDoc;
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
-                                _context3.next = 2;
-                                return util.requestIdlePromise();
-
-                            case 2:
                                 socketDoc = changeEvent.toJSON();
 
                                 delete socketDoc.db;
@@ -166,24 +164,26 @@ var Socket = function () {
                                 // TODO find a way to getAll on local documents
                                 //  socketDoc._id = '_local/' + util.fastUnsecureHash(socketDoc);
                                 socketDoc._id = '' + util.fastUnsecureHash(socketDoc) + socketDoc.t;
-                                _context3.next = 7;
-                                return this.pouch.put(socketDoc);
+                                _context3.next = 5;
+                                return this.database.lockedRun(function () {
+                                    return _this2.pouch.put(socketDoc);
+                                });
 
-                            case 7:
+                            case 5:
                                 _context3.t0 = this.bc;
 
                                 if (!_context3.t0) {
-                                    _context3.next = 11;
+                                    _context3.next = 9;
                                     break;
                                 }
 
-                                _context3.next = 11;
+                                _context3.next = 9;
                                 return this.bc.write('pull');
 
-                            case 11:
+                            case 9:
                                 return _context3.abrupt('return', true);
 
-                            case 12:
+                            case 10:
                             case 'end':
                                 return _context3.stop();
                         }
@@ -206,14 +206,18 @@ var Socket = function () {
         key: 'fetchDocs',
         value: function () {
             var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
+                var _this3 = this;
+
                 var result;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
                                 _context4.next = 2;
-                                return this.pouch.allDocs({
-                                    include_docs: true
+                                return this.database.lockedRun(function () {
+                                    return _this3.pouch.allDocs({
+                                        include_docs: true
+                                    });
                                 });
 
                             case 2:
@@ -236,32 +240,51 @@ var Socket = function () {
 
             return fetchDocs;
         }()
+
+        /**
+         * delete the document from the socket-database.
+         * This mutes errors because they are likely but not bad on multiInstance
+         * @param  {any} doc
+         * @return {Promise<boolean>} success
+         */
+
     }, {
         key: 'deleteDoc',
         value: function () {
             var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(doc) {
+                var _this4 = this;
+
+                var success;
                 return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
                         switch (_context5.prev = _context5.next) {
                             case 0:
-                                _context5.prev = 0;
-                                _context5.next = 3;
-                                return this.pouch.remove(doc);
+                                success = true;
+                                _context5.prev = 1;
+                                _context5.next = 4;
+                                return this.database.lockedRun(function () {
+                                    return _this4.pouch.remove(doc);
+                                });
 
-                            case 3:
-                                _context5.next = 7;
+                            case 4:
+                                _context5.next = 9;
                                 break;
 
-                            case 5:
-                                _context5.prev = 5;
-                                _context5.t0 = _context5['catch'](0);
+                            case 6:
+                                _context5.prev = 6;
+                                _context5.t0 = _context5['catch'](1);
 
-                            case 7:
+                                success = false;
+
+                            case 9:
+                                return _context5.abrupt('return', success);
+
+                            case 10:
                             case 'end':
                                 return _context5.stop();
                         }
                     }
-                }, _callee5, this, [[0, 5]]);
+                }, _callee5, this, [[1, 6]]);
             }));
 
             function deleteDoc(_x2) {
@@ -272,6 +295,36 @@ var Socket = function () {
         }()
 
         /**
+         * runs a cleanup to delete the given docs
+         * @param  {array} docsData docs to be deleted
+         * @return {void}
+         */
+
+    }, {
+        key: '_cleanupDocs',
+        value: function _cleanupDocs(docsData) {
+            var _this5 = this;
+
+            // delete docs on idle
+            docsData.forEach(function (docData) {
+                _this5.database.requestIdlePromise().then(function () {
+                    if (_this5._destroyed) return;
+                    _this5.deleteDoc(docData);
+                });
+            });
+
+            // run a compaction if more than one doc was deleted
+            if (docsData.length > 0) {
+                this.database.requestIdlePromise().then(function () {
+                    if (_this5._destroyed) return;
+                    _this5.database.lockedRun(function () {
+                        return _this5.pouch.compact();
+                    });
+                });
+            }
+        }
+
+        /**
          * grab all new events from the socket-pouchdb
          * and throw them into this.messages$
          */
@@ -280,7 +333,7 @@ var Socket = function () {
         key: 'pull',
         value: function () {
             var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6() {
-                var _this2 = this;
+                var _this6 = this;
 
                 var minTime, docs, maxAge, delDocs;
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
@@ -329,7 +382,7 @@ var Socket = function () {
 
                             case 15:
                                 docs.filter(function (doc) {
-                                    return doc.it != _this2.token;
+                                    return doc.it != _this6.token;
                                 }) // do not get events emitted by self
                                 // do not get events older than minTime
                                 .filter(function (doc) {
@@ -344,18 +397,18 @@ var Socket = function () {
                                 })
                                 // make sure the same event is not emitted twice
                                 .filter(function (cE) {
-                                    if (_this2.recievedEvents[cE.hash]) return false;
-                                    return _this2.recievedEvents[cE.hash] = new Date().getTime();
+                                    if (_this6.recievedEvents[cE.hash]) return false;
+                                    return _this6.recievedEvents[cE.hash] = new Date().getTime();
                                 })
                                 // prevent memory leak of this.recievedEvents
                                 .filter(function (cE) {
                                     return setTimeout(function () {
-                                        return delete _this2.recievedEvents[cE.hash];
+                                        return delete _this6.recievedEvents[cE.hash];
                                     }, EVENT_TTL * 3);
                                 })
                                 // emit to messages
                                 .forEach(function (cE) {
-                                    return _this2.messages$.next(cE);
+                                    return _this6.messages$.next(cE);
                                 });
 
                                 if (!this._destroyed) {
@@ -371,19 +424,9 @@ var Socket = function () {
                                 maxAge = new Date().getTime() - EVENT_TTL;
                                 delDocs = docs.filter(function (doc) {
                                     return doc.t < maxAge;
-                                }).map(function (doc) {
-                                    return _this2.deleteDoc(doc);
                                 });
 
-                                if (!(delDocs.length > 0)) {
-                                    _context6.next = 23;
-                                    break;
-                                }
-
-                                _context6.next = 23;
-                                return this.pouch.compact();
-
-                            case 23:
+                                this._cleanupDocs(delDocs);
 
                                 this.lastPull = new Date().getTime();
                                 this.isPulling = false;
@@ -393,7 +436,7 @@ var Socket = function () {
                                 }
                                 return _context6.abrupt('return', true);
 
-                            case 27:
+                            case 25:
                             case 'end':
                                 return _context6.stop();
                         }
@@ -409,13 +452,32 @@ var Socket = function () {
         }()
     }, {
         key: 'destroy',
-        value: function destroy() {
-            this._destroyed = true;
-            this.subs.map(function (sub) {
-                return sub.unsubscribe();
-            });
-            this.bc && this.bc.destroy();
-        }
+        value: function () {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7() {
+                return _regenerator2['default'].wrap(function _callee7$(_context7) {
+                    while (1) {
+                        switch (_context7.prev = _context7.next) {
+                            case 0:
+                                this._destroyed = true;
+                                this.subs.map(function (sub) {
+                                    return sub.unsubscribe();
+                                });
+                                this.bc && this.bc.destroy();
+
+                            case 3:
+                            case 'end':
+                                return _context7.stop();
+                        }
+                    }
+                }, _callee7, this);
+            }));
+
+            function destroy() {
+                return _ref7.apply(this, arguments);
+            }
+
+            return destroy;
+        }()
     }, {
         key: '$',
         get: function get() {

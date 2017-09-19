@@ -89,6 +89,12 @@ var LeaderElector = function () {
                 t: 0 // time when the leader send a signal the last time
             };
         }
+
+        /**
+         * returns the leader-document from the _adminPouch
+         * @return {Promise<any>} leaderDoc
+         */
+
     }, {
         key: 'getLeaderObject',
         value: function () {
@@ -188,28 +194,36 @@ var LeaderElector = function () {
                                 return _context2.abrupt('return', false);
 
                             case 6:
-                                this.isApplying = true;
-
-                                _context2.next = 9;
-                                return this['apply_' + this.electionChannel]();
-
-                            case 9:
-                                elected = _context2.sent;
-
-                                if (!elected) {
-                                    _context2.next = 13;
+                                if (!this.destroyed) {
+                                    _context2.next = 8;
                                     break;
                                 }
 
-                                _context2.next = 13;
+                                return _context2.abrupt('return', false);
+
+                            case 8:
+                                this.isApplying = true;
+
+                                _context2.next = 11;
+                                return this['apply_' + this.electionChannel]();
+
+                            case 11:
+                                elected = _context2.sent;
+
+                                if (!elected) {
+                                    _context2.next = 15;
+                                    break;
+                                }
+
+                                _context2.next = 15;
                                 return this.beLeader();
 
-                            case 13:
+                            case 15:
 
                                 this.isApplying = false;
                                 return _context2.abrupt('return', true);
 
-                            case 15:
+                            case 17:
                             case 'end':
                                 return _context2.stop();
                         }
@@ -774,7 +788,7 @@ var LeaderElector = function () {
 
                                                 case 3:
                                                     _context9.next = 5;
-                                                    return util.requestIdlePromise();
+                                                    return util.requestIdlePromise(fallbackIntervalTime);
 
                                                 case 5:
                                                     _context9.next = 7;
