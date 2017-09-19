@@ -194,6 +194,7 @@ class LeaderElector {
 
 
     async leaderSignal() {
+        if (this.destroyed) return;
         if (this.leaderSignal_run) return;
         this.leaderSignal_run = true;
         switch (this.electionChannel) {
@@ -245,11 +246,13 @@ class LeaderElector {
                 this.subs.push(this.signalLeadership);
                 break;
             case 'socket':
-                this.signalLeadership = util.Rx.Observable
-                    .interval(SIGNAL_TIME)
-                    .filter(() => !!this.isLeader)
-                    .subscribe(() => this.leaderSignal());
-                this.subs.push(this.signalLeadership);
+                (async() => {
+                    while (!this.destroyed) {
+                        await util.promiseWait(SIGNAL_TIME);
+                        if (!this.isLeader) return;
+                        await this.leaderSignal();
+                    }
+                })();
                 break;
         }
 
@@ -325,7 +328,15 @@ class LeaderElector {
             (async() => {
                 while (!this.destroyed && !this.isLeader) {
                     await util.promiseWait(fallbackIntervalTime);
-                    await util.requestIdlePromise(fallbackIntervalTime);
+
+                    switch (this.electionChannel) {
+                        case 'broadcast':
+                            await util.requestIdlePromise(fallbackIntervalTime);
+                            break;
+                        case 'socket':
+                            await this.database.requestIdlePromise(fallbackIntervalTime);
+                            break;
+                    }
                     await this.applyOnce();
                 }
             })();

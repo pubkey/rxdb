@@ -1,8 +1,6 @@
-# Custom Builds
+# Custom Build
 
 By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you dont have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.
-
-`NOTICE: Custom-builds are in beta-mode an do not comply to semver. It can happen that you have to re-adjust you build without a major rxdb-release.`
 
 ## Core
 

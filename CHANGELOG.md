@@ -4,27 +4,30 @@
 
 Breaking:    
   - Filenames are now kebab-case
-  - `pouchdb-replication`-plugin is now imported by default
+  - `pouchdb-replication`-plugin is now imported by default, do not import it by your own.
   - `RxDB.create()` throws if you create the same database twice. (You can use [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate))
-  - If you use a custom-build, you have to change the import-paths. See [custom-build](https://pubkey.github.io/rxdb/custom-build.html)
 
 Features:
   - Added [RxDatabase.requestIdlePromise()](https://pubkey.github.io/rxdb/rx-database.html#requestidlepromise)
   - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
+  - Added [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate)-parameter to `RxDB.create()`
+
+Custom-Build:
+  - Custom-build is now out of beta
+  - If you use a custom-build, you have to change the import-paths. See [custom-build](https://pubkey.github.io/rxdb/custom-build.html)
   - Replication is now its own module [see](https://pubkey.github.io/rxdb/custom-build.html#replication)
   - Json import/exportis now its own module [see](https://pubkey.github.io/rxdb/custom-build.html#json-dump)
-  - Use `RxError`-class to throw Custom errors with the `parameters`-attribute
-  - Added [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate)-parameter to `RxDB.create()`
 
 Bugfixes:
   - Allow null-selector [#267](https://github.com/pubkey/rxdb/issues/267)
   - `RxQuery.exec()` throws when out of change-event-buffer-bounds [#278](https://github.com/pubkey/rxdb/issues/278)
+  - Fix deprecated warning that sometimes occurs with indexeddb-adapter `db.type()`
+  - Add fallback to leader-election when [unload](https://github.com/pubkey/unload) not works (mostly when you use RxDB inside of an iFrame)
 
 Other:
-  - Fix deprecated warning that sometimes occurs with indexeddb-adapter `db.type()`
-  - Add fallback to leader-election
+  - Use `RxError`-class to throw Custom errors with the `parameters`-attribute
   - Optimize leader-election to not waste resources when many tabs open
-  - Optimize schema-rendering when multiple collections have the same schema
+  - Optimize schema-parsing when multiple collections have the same schema
   - Reduced build-size by only using async/await if it makes sense
   - Pre-Parse schema to validator when [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) available
   - Optimize socket-cleanup by using `requestIdlePromise`
