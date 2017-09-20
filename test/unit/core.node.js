@@ -1,6 +1,6 @@
 /**
  * this test checks if the core-module is useable without any plugins
- * this is run in a seperate node-process via Plugin.test.js
+ * this is run in a seperate node-process via plugin.test.js
  */
 
 import assert from 'assert';
@@ -75,22 +75,15 @@ describe('Core.test.js', () => {
                 schema
             });
 
-            console.log('11111');
-
             await db.humans.insert({
                 passportId: 'mypw',
                 firstName: 'steve',
                 lastName: 'piotr'
             });
 
-            console.log('22222');
-
             const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
-
-            console.log('33333');
-
-
             assert.ok(Core.isRxDocument(doc));
+
             db.destroy();
         });
     });

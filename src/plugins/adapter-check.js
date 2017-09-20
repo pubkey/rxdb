@@ -47,6 +47,5 @@ export const overwritable = {
 export default {
     rxdb,
     prototypes,
-    overwritable,
-    core
+    overwritable
 };
