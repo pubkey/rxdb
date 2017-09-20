@@ -63,9 +63,6 @@ const db2 = await RxDB.create({
 });
 ```
 
-RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
-'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional
-
 ## Functions
 
 ### Observe with $

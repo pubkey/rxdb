@@ -2427,8 +2427,7 @@ var overwritable = exports.overwritable = {
 exports['default'] = {
     rxdb: rxdb,
     prototypes: prototypes,
-    overwritable: overwritable,
-    core: core
+    overwritable: overwritable
 };
 
 },{"../pouch-db":23,"../util":35,"babel-runtime/helpers/asyncToGenerator":46,"babel-runtime/regenerator":54}],15:[function(require,module,exports){

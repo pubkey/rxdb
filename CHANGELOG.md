@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.0.1 (comming soon)
+## 6.0.1 (September 20, 2017)
 
 - Fix `core is not defined` [#296](https://github.com/pubkey/rxdb/issues/296)
 

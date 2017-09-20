@@ -115,6 +115,5 @@ var overwritable = exports.overwritable = {
 exports['default'] = {
     rxdb: rxdb,
     prototypes: prototypes,
-    overwritable: overwritable,
-    core: core
+    overwritable: overwritable
 };
