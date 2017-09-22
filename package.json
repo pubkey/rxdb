@@ -145,7 +145,7 @@
     "pre-commit": "1.2.2",
     "random-int": "1.0.0",
     "request": "2.82.0",
-    "request-promise": "4.2.1",
+    "request-promise": "4.2.2",
     "request-promise-native": "1.0.4",
     "rimraf": "2.6.2",
     "rxjs": "5.4.3",
