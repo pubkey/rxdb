@@ -3,7 +3,7 @@
  */
 
 import assert from 'assert';
-import platform from 'detect-browser';
+import config from './config';
 import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
@@ -12,7 +12,7 @@ describe('plugin.test.js', () => {
 
     describe('core.node.js', () => {
         it('should run without errors', async() => {
-            if (!platform.isNode())
+            if (!config.platform.isNode())
                 return;
 
             const spawn = require('child-process-promise').spawn;
@@ -38,7 +38,7 @@ describe('plugin.test.js', () => {
 
     describe('full.node.js', () => {
         it('should run without errors', async() => {
-            if (!platform.isNode())
+            if (!config.platform.isNode())
                 return;
 
             const spawn = require('child-process-promise').spawn;

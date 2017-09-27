@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import platform from 'detect-browser';
+import config from './config';
 
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -11,7 +11,7 @@ import * as RxDB from '../../dist/lib/index';
 import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 
 let SpawnServer;
-if (platform.isNode()) {
+if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
 }
@@ -400,7 +400,7 @@ describe('query-change-detector.test.js', () => {
     });
     describe('BUGS', () => {
         it('SYNC and Observe does not work with R3 - resort', async() => {
-            if (!platform.isNode()) return;
+            if (!config.platform.isNode()) return;
             const serverURL = await SpawnServer.spawn();
             const col = await humansCollection.createPrimary(5);
             col.sync({

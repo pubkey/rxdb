@@ -1,9 +1,9 @@
-import platform from 'detect-browser';
+import config from './config';
 import assert from 'assert';
 import memdown from 'memdown';
 
 let leveldb;
-if (platform.isNode())
+if (config.platform.isNode())
     leveldb = require('pouchdb-adapter-leveldb');
 
 import * as RxDB from '../../dist/lib/index';
@@ -27,7 +27,7 @@ describe('pouch-db-integration.test.js', () => {
             );
         });
         it('should work after adding the leveldb-plugin', async() => {
-            if (!platform.isNode()) return;
+            if (!config.platform.isNode()) return;
             RxDB.PouchDB.plugin(leveldb);
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
@@ -60,7 +60,7 @@ describe('pouch-db-integration.test.js', () => {
     });
     describe('localstorage', () => {
         it('should crash because nodejs has no localstorage', async() => {
-            if (!platform.isNode()) return;
+            if (!config.platform.isNode()) return;
             RxDB.PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await AsyncTestUtil.assertThrows(
                 () => RxDB.create({
@@ -86,7 +86,7 @@ describe('pouch-db-integration.test.js', () => {
         describe('positive', () => {
             it('should work after adding the adapter', async() => {
                 // test websql on chrome only
-                if (platform.name !== 'chrome') return;
+                if (config.platform.name !== 'chrome') return;
 
                 RxDB.plugin(require('pouchdb-adapter-websql'));
                 const db = await RxDB.create({

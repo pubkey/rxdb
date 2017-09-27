@@ -1,5 +1,5 @@
 import assert from 'assert';
-import platform from 'detect-browser';
+import config from './config';
 
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
@@ -197,7 +197,7 @@ describe('leader-election.test.js', () => {
         });
         it('when 2 instances apply at the same time, one should win', async() => {
 
-            if (!platform.isNode()) return;
+            if (!config.platform.isNode()) return;
 
             // run often
             let tries = 0;

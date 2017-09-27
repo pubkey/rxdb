@@ -2,7 +2,7 @@ import assert from 'assert';
 import randomInt from 'random-int';
 import randomToken from 'random-token';
 import clone from 'clone';
-import platform from 'detect-browser';
+import config from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
@@ -1164,7 +1164,7 @@ describe('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('should work when inserting on a slow storage', async() => {
-                    if (!platform.isNode()) return;
+                    if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
                     RxDB.plugin(require('pouchdb-adapter-node-websql'));
                     const db = await RxDB.create({

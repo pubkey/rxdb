@@ -1,9 +1,9 @@
 import assert from 'assert';
-import platform from 'detect-browser';
+import config from './config';
 import RxDB from '../../dist/lib/index';
 
 import memdown from 'memdown';
-if (!platform.isNode())
+if (!config.platform.isNode())
     RxDB.plugin(require('pouchdb-adapter-localstorage'));
 
 
@@ -24,7 +24,7 @@ describe('adapter-check.test.js', () => {
         assert.ok(ok);
     });
     it('localstorage should be true on browser', async() => {
-        const should = platform.isNode() ? false : true;
+        const should = config.platform.isNode() ? false : true;
         const ok = await RxDB.checkAdapter('localstorage');
         assert.equal(should, ok);
     });

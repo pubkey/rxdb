@@ -1,9 +1,9 @@
-import platform from 'detect-browser';
+import config from './config';
 import assert from 'assert';
 import memdown from 'memdown';
 
 let leveldown;
-if (platform.isNode())
+if (config.platform.isNode())
     leveldown = require('leveldown');
 
 const path = require('path');
@@ -19,7 +19,7 @@ describe('rx-database.test.js', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('memdown', async() => {
-                if (!platform.isNode()) return;
+                if (!config.platform.isNode()) return;
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: memdown
@@ -28,7 +28,7 @@ describe('rx-database.test.js', () => {
                 db.destroy();
             });
             it('leveldown', async() => {
-                if (!platform.isNode()) return;
+                if (!config.platform.isNode()) return;
                 if (path.join('..', 'x') != '..\\x') { // leveldown does not work on windows
                     const db = await RxDatabase.create({
                         name: '../test_tmp/' + util.randomCouchString(10),

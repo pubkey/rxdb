@@ -1,5 +1,5 @@
 import assert from 'assert';
-import platform from 'detect-browser';
+import config from './config';
 import clone from 'clone';
 
 import * as RxDB from '../../dist/lib/index';
@@ -378,7 +378,7 @@ describe('rx-query.test.js', () => {
             col.database.destroy();
         });
         it('querying fast should still return the same RxDocument', async() => {
-            if (!platform.isNode()) return;
+            if (!config.platform.isNode()) return;
             // use a 'slow' adapter because memory might be to fast
             RxDB.plugin(require('pouchdb-adapter-node-websql'));
             const db = await RxDB.create({
@@ -540,7 +540,7 @@ describe('rx-query.test.js', () => {
             c.database.destroy();
         });
         it('#278 queryCache breaks when pointer out of bounds', async() => {
-            if (!platform.isNode()) return; // dont do this on browsers because firefox takes too long
+            if (!config.platform.isNode()) return; // dont do this on browsers because firefox takes too long
 
             const c = await humansCollection.createPrimary(0);
 

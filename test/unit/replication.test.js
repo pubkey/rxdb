@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import platform from 'detect-browser';
+import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -16,7 +16,7 @@ import * as RxDB from '../../dist/lib/index';
 
 let request;
 let SpawnServer;
-if (platform.isNode()) {
+if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -24,7 +24,7 @@ if (platform.isNode()) {
 
 describe('replication.test.js', () => {
 
-    if (!platform.isNode()) return;
+    if (!config.platform.isNode()) return;
 
     describe('spawnServer.js', () => {
         it('spawn and reach a server', async() => {
