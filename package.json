@@ -110,7 +110,7 @@
     "eslint": "4.7.2",
     "eslint-plugin-babel": "4.1.2",
     "exists-file": "3.0.2",
-    "express": "4.15.4",
+    "express": "5.0.0-alpha.6",
     "express-pouchdb": "2.3.7",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",
