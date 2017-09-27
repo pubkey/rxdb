@@ -1,13 +1,13 @@
 import randomToken from 'random-token';
-import PouchDB from './pouch-db';
+import IdleQueue from 'custom-idle-queue';
 
+import PouchDB from './pouch-db';
 import * as util from './util';
 import RxError from './rx-error';
 import RxCollection from './rx-collection';
 import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
 import Socket from './socket';
-import IdleQueue from './idle-queue';
 import overwritable from './overwritable';
 import {
     runPluginHooks
@@ -27,7 +27,7 @@ export class RxDatabase {
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
-        this.idleQueue = IdleQueue.create();
+        this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
         this.subs = [];
@@ -315,7 +315,7 @@ export class RxDatabase {
      * @return {any}
      */
     lockedRun(fun) {
-        return this.idleQueue.wrapFunctionWithLocking(fun);
+        return this.idleQueue.wrapCall(fun);
     }
 
     requestIdlePromise() {
