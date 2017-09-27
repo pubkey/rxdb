@@ -10,10 +10,10 @@ before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 script:
-- npm install
+- npm install --silent
 - npm run test:node
 - npm run test:browser
 - npm run build
 - npm run lint
-- (cd ./examples/angular2 && npm install && npm run build && npm run test:build)
-- (cd ./examples/vue && npm install && npm run lint && npm run build && npm run test)
+- (cd ./examples/angular2 && npm install --silent && npm run build && npm run test:build)
+- (cd ./examples/vue && npm install --silent && npm run lint && npm run build && npm run test)
