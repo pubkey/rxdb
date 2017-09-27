@@ -63,7 +63,7 @@
     "babel-runtime": "^6.25.0",
     "clone": "^2.1.1",
     "crypto-js": "^3.1.8",
-    "custom-idle-queue": "^1.0.0",
+    "custom-idle-queue": "1.0.0",
     "deep-equal": "^1.0.1",
     "is-my-json-valid": "2.16.1",
     "modifyjs": "0.3.1",

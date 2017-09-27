@@ -1,6 +1,6 @@
 <!-- REMOVE EVERYTHING WRITTEN IN UPPERCASE -->
 
-<!-- IMPORTANT: 
+<!-- IMPORTANT:
 If you have a common question which cannot be solved with a PR, ask it here https://gitter.im/pubkey/rxdb
 -->
 
@@ -18,7 +18,7 @@ If you have a common question which cannot be solved with a PR, ask it here http
 <!--
   IF YOU HAVE A BUG, WRITE CODE HERE TO REPRODUCE IT.
   BUGS WONT BE TOUCHED BY THE MAINTAINER UNTIL THERE IS SOME CODE!
-  
-  HERE IS A PLAYGROUND TO DEMONSTRATE: https://www.webpackbin.com/bins/-KmqQee22Trs1bs1ZFsW
-  OR WITHOUT ES6, THIS FIDDLE: https://jsfiddle.net/h8n0awfc/
+
+  OPTIMALLY YOU SHOULD ADD A PULL-REQUEST WHICH REPRODUCES THE BUG
+  BY MODIFYING THIS FILE: https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.js
 -->

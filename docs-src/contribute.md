@@ -8,7 +8,7 @@ We are open to, and grateful for, any contributions made by the community.
 
 Before you can start developing, do the following:
 
-1. Make shoud you have install nodejs with version 7 or higher.
+1. Make shoud you have installed nodejs with version 7 or higher
 2. Clone the repository `git clone https://github.com/pubkey/rxdb.git`
 3. Install the dependencies `cd rxdb && npm install`
 4. Make sure that the tests work for you `npm run test`
@@ -19,7 +19,8 @@ While developing you should run `npm run dev` and leave it open in the console. 
 
 ## Adding tests
 
-Before you start creating a bugfix or a feature, you should create a test to reprocue it. Tests are in the `test/unit`-folder. If you don't know where to put your test into, just put it anywhere The maintainer will later move it to the correct position.
+Before you start creating a bugfix or a feature, you should create a test to reproduce it. Tests are in the `test/unit`-folder.
+If you want to reproduce a bug, you can modify the test in [this file](https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.js).
 
 ## Making a PR
 
