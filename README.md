@@ -24,7 +24,7 @@
     <span> | </span>
     <a href="./examples">Code Examples</a>
     <span> | </span>
-    <a href="https://www.webpackbin.com/bins/-KmqQee22Trs1bs1ZFsW">Live Demo</a>
+    <a href="https://www.webpackbin.com/bins/-Kv9UWdorylh0jzGYmZy">Live Demo</a>
   </h3>
 </div>
 
