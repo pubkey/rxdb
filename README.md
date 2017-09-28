@@ -1,24 +1,32 @@
 
 
+<!--
 | Announcement                                                        |
 | :--: |
 | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **6.0.0** is now released, read the [CHANGELOG](./CHANGELOG.md#600-september-19-2017) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+-->
 
-
+<h1 align="center">RxDB</h1>
 
 <p align="center">
   <a href="https://github.com/pubkey/rxdb">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="400px" />
+    <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="380px" />
   </a>
 </p>
 
 <p align="center">
-  Reactive, offline-first database in javascript.
+  <strong>A reactive, offline-first Database for Javascript</strong>
 </p>
 
-<p align="center">
-  <b><a href="https://pubkey.github.io/rxdb/">Documentation</a> | <a href="./examples">Code Examples</a> | <a href="https://www.webpackbin.com/bins/-KmqQee22Trs1bs1ZFsW">Live Demo</a></b>
-</p>
+<div align="center">
+  <h3>
+    <a href="https://pubkey.github.io/rxdb/">Documentation</a>
+    <span> | </span>
+    <a href="./examples">Code Examples</a>
+    <span> | </span>
+    <a href="https://www.webpackbin.com/bins/-KmqQee22Trs1bs1ZFsW">Live Demo</a>
+  </h3>
+</div>
 
 <p align="center">
   <a href="https://gitter.im/pubkey/rxdb">
