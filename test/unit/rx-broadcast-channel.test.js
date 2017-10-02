@@ -16,12 +16,12 @@ describe('rx-broadcast-channel.test.js', () => {
             RxDB.create({
                 name,
                 adapter: 'memory',
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             }),
             RxDB.create({
                 name,
                 adapter: 'memory',
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             })
         ]);
         state.otherDB = await RxDB.create({
