@@ -12,7 +12,7 @@
         * [adapter](./rx-database.md#adapter)
         * [password](./rx-database.md#password)
         * [multiInstance](./rx-database.md#multiinstance)
-        * [ingoreDuplicate](./rx-database.md#ingoreduplicate)
+        * [ignoreDuplicate](./rx-database.md#ignoreduplicate)
     * [Functions](./rx-database.md#functions)
         * [$()](./rx-database.md#observe-with-)
         * [waitForLeadership()](./rx-database.md#waitforleadership)

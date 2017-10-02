@@ -31,13 +31,13 @@ describe('cross-instance.test.js', () => {
                 name,
                 adapter: 'memory',
                 multiInstance: true,
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             });
             const db2 = await RxDatabase.create({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             });
             assert.equal(db.constructor.name, 'RxDatabase');
             assert.equal(db2.constructor.name, 'RxDatabase');
@@ -174,14 +174,14 @@ describe('cross-instance.test.js', () => {
                 adapter: 'memory',
                 password,
                 multiInstance: true,
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             });
             const db2 = await RxDatabase.create({
                 name,
                 adapter: 'memory',
                 password,
                 multiInstance: true,
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             });
             const c1 = await db1.collection({
                 name: 'human',
@@ -229,14 +229,14 @@ describe('cross-instance.test.js', () => {
                 adapter: 'memory',
                 password,
                 multiInstance: true,
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             });
             const db2 = await RxDatabase.create({
                 name,
                 adapter: 'memory',
                 password,
                 multiInstance: true,
-                ingoreDuplicate: true
+                ignoreDuplicate: true
             });
             const c1 = await db1.collection({
                 name: 'human',

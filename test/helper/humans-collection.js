@@ -15,7 +15,7 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
 
     const collection = await db.collection({
@@ -38,7 +38,7 @@ export async function createNoCompression(size = 20, name = 'human') {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     const schemaJSON = clone(schemas.human);
     schemaJSON.disableKeyCompression = true;
@@ -63,7 +63,7 @@ export async function createAgeIndex(amount = 20) {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -86,7 +86,7 @@ export async function multipleOnSameDB() {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -116,7 +116,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter,
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -185,7 +185,7 @@ export async function createMultiInstance(name, amount = 0, password = null) {
         adapter: 'memory',
         password,
         multiInstance: true,
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -207,7 +207,7 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
         name,
         adapter: 'memory',
         multiInstance: true,
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -248,7 +248,7 @@ export async function createMigrationCollection(
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     const schema = RxSchema.create(schemas.simpleHuman);
     const col = await db.collection({
@@ -269,7 +269,7 @@ export async function createMigrationCollection(
     const db2 = await RxDatabase.create({
         name,
         adapter: 'memory',
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     const schema2 = RxSchema.create(schemas.simpleHumanV3);
     const col2 = await db2.collection({
@@ -289,7 +289,7 @@ export async function createRelated(name = util.randomCouchString(10)) {
         name,
         adapter: 'memory',
         multiInstance: true,
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -313,7 +313,7 @@ export async function createRelatedNested(name = util.randomCouchString(10)) {
         name,
         adapter: 'memory',
         multiInstance: true,
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({

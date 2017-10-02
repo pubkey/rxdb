@@ -14,8 +14,8 @@ export function encrypt(value, password) {
     return encrypted.toString();
 };
 
-export function decrypt(ciphertext, password) {
-    const decrypted = crypto_AES.decrypt(ciphertext, password);
+export function decrypt(cipherText, password) {
+    const decrypted = crypto_AES.decrypt(cipherText, password);
     return decrypted.toString(crypto_enc);
 };
 

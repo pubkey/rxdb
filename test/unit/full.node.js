@@ -36,7 +36,7 @@ const run = async function(){
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
-        ingoreDuplicate: true
+        ignoreDuplicate: true
     });
 
     // create collection

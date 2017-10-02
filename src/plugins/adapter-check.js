@@ -7,7 +7,7 @@ import * as util from '../util';
 
 export async function checkAdapter(adapter) {
     const id = 'rxdb-test-adapter-' + util.generate_id();
-    let refoundDoc = null;
+    let recoveredDoc = null;
     let pouch;
     try {
         pouch = new PouchDB(
@@ -22,7 +22,7 @@ export async function checkAdapter(adapter) {
             _id: id,
             value: true
         });
-        refoundDoc = await pouch.get(id);
+        recoveredDoc = await pouch.get(id);
     } catch (err) {
         return false;
     }
@@ -32,7 +32,7 @@ export async function checkAdapter(adapter) {
         await pouch.destroy();
     } catch (err) {}
 
-    if (refoundDoc && refoundDoc.value)
+    if (recoveredDoc && recoveredDoc.value)
         return true;
     else
         return false;

@@ -16,7 +16,7 @@ class Socket {
         this.pullCount = 0;
         this.pull_running = false;
         this.lastPull = new Date().getTime();
-        this.recievedEvents = {};
+        this.receivedEvents = {};
 
         this.bc = RxBroadcastChannel.create(this.database, 'socket');
         this.messages$ = new util.Rx.Subject();
@@ -167,11 +167,11 @@ class Socket {
             .map(doc => RxChangeEvent.fromJSON(doc))
             // make sure the same event is not emitted twice
             .filter(cE => {
-                if (this.recievedEvents[cE.hash]) return false;
-                return this.recievedEvents[cE.hash] = new Date().getTime();
+                if (this.receivedEvents[cE.hash]) return false;
+                return this.receivedEvents[cE.hash] = new Date().getTime();
             })
-            // prevent memory leak of this.recievedEvents
-            .filter(cE => setTimeout(() => delete this.recievedEvents[cE.hash], EVENT_TTL * 3))
+            // prevent memory leak of this.receivedEvents
+            .filter(cE => setTimeout(() => delete this.receivedEvents[cE.hash], EVENT_TTL * 3))
             // emit to messages
             .forEach(cE => this.messages$.next(cE));
 

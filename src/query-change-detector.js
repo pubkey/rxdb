@@ -254,11 +254,11 @@ class QueryChangeDetector {
     _isSortedBefore(docDataLeft, docDataRight) {
         const options = this.query.toJSON();
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
-        const swapedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
-        const swapedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
+        const swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
+        const swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
         const rows = [
-            swapedLeft,
-            swapedRight
+            swappedLeft,
+            swappedRight
         ].map(doc => ({
             id: doc._id,
             doc
@@ -272,7 +272,7 @@ class QueryChangeDetector {
             },
             inMemoryFields
         );
-        return sortedRows[0].id == swapedLeft._id;
+        return sortedRows[0].id == swappedLeft._id;
     }
 
     /**

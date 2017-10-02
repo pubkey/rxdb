@@ -49,13 +49,13 @@ describe('socket.test.js', () => {
             name,
             adapter: 'memory',
             multiInstance: true,
-            ingoreDuplicate: true
+            ignoreDuplicate: true
         });
         const db2 = await RxDatabase.create({
             name,
             adapter: 'memory',
             multiInstance: true,
-            ingoreDuplicate: true
+            ignoreDuplicate: true
         });
 
         const socket1 = await Socket.create(db);

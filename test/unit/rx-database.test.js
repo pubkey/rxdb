@@ -47,22 +47,22 @@ describe('rx-database.test.js', () => {
                 assert.equal(db.constructor.name, 'RxDatabase');
                 db.destroy();
             });
-            it('2 instances on same adapter (if ingoreDuplicate is true)', async() => {
+            it('2 instances on same adapter (if ignoreDuplicate is true)', async() => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 db.destroy();
                 db2.destroy();
             });
-            it('2 instances on same adapter -> ingoreDuplicate is false but first db gets destroyed', async() => {
+            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets destroyed', async() => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
@@ -82,13 +82,13 @@ describe('rx-database.test.js', () => {
                     name,
                     adapter: 'memory',
                     password,
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
                     password,
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 db.destroy();
                 db2.destroy();
@@ -140,7 +140,7 @@ describe('rx-database.test.js', () => {
                     name,
                     adapter: 'memory',
                     password,
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 const doc = await db._adminPouch.get('_local/pwHash');
                 assert.equal(typeof doc.value, 'string');
@@ -148,7 +148,7 @@ describe('rx-database.test.js', () => {
                     name,
                     adapter: 'memory',
                     password,
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 const doc2 = await db._adminPouch.get('_local/pwHash');
                 assert.ok(doc2);
@@ -186,7 +186,7 @@ describe('rx-database.test.js', () => {
                         adapter: 'memory'
                     }),
                     Error,
-                    'ingoreDuplicate'
+                    'ignoreDuplicate'
                 );
                 db.destroy();
             });
@@ -270,12 +270,12 @@ describe('rx-database.test.js', () => {
                 const db1 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 await db1.collection({
                     name: collectionName,
@@ -402,12 +402,12 @@ describe('rx-database.test.js', () => {
                 const db1 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 const db2 = await RxDatabase.create({
                     name,
                     adapter: 'memory',
-                    ingoreDuplicate: true
+                    ignoreDuplicate: true
                 });
                 await db1.collection({
                     name: collectionName,

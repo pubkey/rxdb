@@ -407,10 +407,10 @@ function _isNameAdapterUsed(name, adapter) {
     if (used) {
         throw RxError.newRxError(
             'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
-            'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional', {
+            'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional', {
                 name,
                 adapter,
-                link: 'https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate'
+                link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
             }
         );
     }
@@ -429,7 +429,7 @@ export async function create({
     adapter,
     password,
     multiInstance = true,
-    ingoreDuplicate = false
+    ignoreDuplicate = false
 }) {
     util.validateCouchDBString(name);
 
@@ -454,7 +454,7 @@ export async function create({
         overwritable.validatePassword(password);
 
     // check if combination already used
-    if (!ingoreDuplicate)
+    if (!ignoreDuplicate)
         _isNameAdapterUsed(name, adapter);
 
     // add to used_map

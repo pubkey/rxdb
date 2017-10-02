@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.0.2 (coming soon)
+
+Bugfixes:
+    - Removed type `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
+
+Other:
+    - Split out idle-queue into own [npm-module](http://npmjs.com/package/custom-idle-queue)
+
 ## 6.0.1 (September 20, 2017)
 
 - Fix `core is not defined` [#296](https://github.com/pubkey/rxdb/issues/296)
@@ -9,12 +17,12 @@
 Breaking:    
   - Filenames are now kebab-case
   - `pouchdb-replication`-plugin is now imported by default, do not import it by your own.
-  - `RxDB.create()` throws if you create the same database twice. (You can use [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate))
+  - `RxDB.create()` throws if you create the same database twice. (You can use [ignoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate))
 
 Features:
   - Added [RxDatabase.requestIdlePromise()](https://pubkey.github.io/rxdb/rx-database.html#requestidlepromise)
   - Added [RxDB.checkAdapter()](https://pubkey.github.io/rxdb/rx-database.html#checkadapter)
-  - Added [ingoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate)-parameter to `RxDB.create()`
+  - Added [ignoreDuplicate](https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate)-parameter to `RxDB.create()`
 
 Custom-Build:
   - Custom-build is now out of beta

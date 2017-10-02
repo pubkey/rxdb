@@ -592,7 +592,7 @@ export function properties() {
  * @param  {{}} statics [description]
  * @throws if not allowed
  */
-const checkORMmethdods = function(statics) {
+const checkOrmMethods = function(statics) {
     Object.entries(statics).forEach(entry => {
         if (typeof entry[0] != 'string')
             throw new TypeError(`given static method-name (${entry[0]}) is not a string`);
@@ -640,8 +640,8 @@ export async function create({
     checkMigrationStrategies(schema, migrationStrategies);
 
     // check ORM-methods
-    checkORMmethdods(statics);
-    checkORMmethdods(methods);
+    checkOrmMethods(statics);
+    checkOrmMethods(methods);
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
