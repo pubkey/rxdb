@@ -130,7 +130,7 @@
     "karma-mocha": "1.3.0",
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
-    "leveldown": "1.9.0",
+    "leveldown": "2.0.0",
     "memdown": "1.4.0",
     "mocha": "3.5.3",
     "nconf": "0.8.5",
