@@ -83,7 +83,7 @@ export class RxDocument {
      * @param {ChangeEvent}
      */
     _handleChangeEvent(changeEvent) {
-        if (changeEvent.data.doc != this.primary)
+        if (changeEvent.data.doc !== this.primary)
             return;
 
         // TODO check if new _rev is higher then current
@@ -100,11 +100,11 @@ export class RxDocument {
                     // document is in sync, overwrite _data
                     this._data = newData;
 
-                    if (this._synced$.getValue() != true)
+                    if (this._synced$.getValue() !== true)
                         this._synced$.next(true);
                 } else {
                     // not in sync, emit to synced$
-                    if (this._synced$.getValue() != false)
+                    if (this._synced$.getValue() !== false)
                         this._synced$.next(false);
 
                     // overwrite _rev of data
@@ -163,7 +163,7 @@ export class RxDocument {
         if (!refCollection)
             throw new Error(`ref-collection (${schemaObj.ref}) not in database`);
 
-        if (schemaObj.type == 'array')
+        if (schemaObj.type === 'array')
             return Promise.all(value.map(id => refCollection.findOne(id).exec()));
         else
             return refCollection.findOne(value).exec();
@@ -185,7 +185,7 @@ export class RxDocument {
 
         // direct return if array or non-object
         if (
-            typeof valueObj != 'object' ||
+            typeof valueObj !== 'object' ||
             Array.isArray(valueObj)
         ) return valueObj;
 
@@ -239,7 +239,7 @@ export class RxDocument {
     set(objPath, value) {
         if (typeof objPath !== 'string')
             throw new TypeError('RxDocument.set(): objPath must be a string');
-        if (!this._isTemporary && objPath == this.primaryPath) {
+        if (!this._isTemporary && objPath === this.primaryPath) {
             throw new Error(
                 `RxDocument.set(): primary-key (${this.primaryPath})
                 cannot be modified`);
@@ -419,7 +419,7 @@ export function create(collection, jsonData) {
 export function createAr(collection, jsonDataAr) {
     return jsonDataAr
         .map(jsonData => create(collection, jsonData))
-        .filter(doc => doc != null);
+        .filter(doc => doc !== null);
 }
 
 /**

@@ -62,7 +62,7 @@ export class RxCollection {
         );
 
         this._observable$ = this.database.$
-            .filter(event => event.data.col == this.name);
+            .filter(event => event.data.col === this.name);
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
         // INDEXES
@@ -107,7 +107,7 @@ export class RxCollection {
      * @return {boolean}
      */
     migrationNeeded() {
-        if (this.schema.version == 0) return false;
+        if (this.schema.version === 0) return false;
         return this
             ._dataMigrator
             ._getOldCollections()
@@ -165,7 +165,7 @@ export class RxCollection {
                 () => this.pouch.put(obj)
             );
         } catch (e) {
-            if (overwrite && e.status == 409) {
+            if (overwrite && e.status === 409) {
                 const exist = await this.database.lockedRun(
                     () => this.pouch.get(obj._id)
                 );
@@ -283,7 +283,7 @@ export class RxCollection {
 
         // fill _id
         if (
-            this.schema.primaryPath == '_id' &&
+            this.schema.primaryPath === '_id' &&
             !json._id
         ) json._id = util.generate_id();
 
@@ -448,7 +448,7 @@ export class RxCollection {
      * HOOKS
      */
     addHook(when, key, fun, parallel = false) {
-        if (typeof fun != 'function')
+        if (typeof fun !== 'function')
             throw new TypeError(key + '-hook must be a function');
 
         if (!HOOKS_WHEN.includes(when))
@@ -457,7 +457,7 @@ export class RxCollection {
         if (!HOOKS_KEYS.includes(key))
             throw new Error('hook-name ' + key + 'not known');
 
-        if (when == 'post' && key == 'create' && parallel == true)
+        if (when === 'post' && key === 'create' && parallel === true)
             throw new Error('.postCreate-hooks cannot be async');
 
         const runName = parallel ? 'parallel' : 'series';
@@ -548,7 +548,7 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
     ) throw new TypeError('migrationStrategies must be an object');
 
     // for every previousVersion there must be strategy
-    if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
+    if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
         throw RxError.newRxError(
             'A migrationStrategy is missing or too much', {
                 have: Object.keys(migrationStrategies),
@@ -594,13 +594,13 @@ export function properties() {
  */
 const checkOrmMethods = function(statics) {
     Object.entries(statics).forEach(entry => {
-        if (typeof entry[0] != 'string')
+        if (typeof entry[0] !== 'string')
             throw new TypeError(`given static method-name (${entry[0]}) is not a string`);
 
         if (entry[0].startsWith('_'))
             throw new TypeError(`static method-names cannot start with underscore _ (${entry[0]})`);
 
-        if (typeof entry[1] != 'function')
+        if (typeof entry[1] !== 'function')
             throw new TypeError(`given static method (${entry[0]}) is not a function but ${typeof entry[1]}`);
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0]))

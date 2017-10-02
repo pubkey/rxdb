@@ -49,14 +49,14 @@ class MQuery {
     where() {
         if (!arguments.length) return this;
         const type = typeof arguments[0];
-        if ('string' == type) {
+        if ('string' === type) {
             this._path = arguments[0];
             if (2 === arguments.length)
                 this._conditions[this._path] = arguments[1];
             return this;
         }
 
-        if ('object' == type && !Array.isArray(arguments[0]))
+        if ('object' === type && !Array.isArray(arguments[0]))
             return this.merge(arguments[0]);
 
         throw new TypeError('path must be a string or object');
@@ -221,7 +221,7 @@ class MQuery {
      * @return {MQuery} this
      */
     elemMatch() {
-        if (null == arguments[0])
+        if (null === arguments[0])
             throw new TypeError('Invalid argument');
 
         let fn;
@@ -280,13 +280,13 @@ class MQuery {
         }
 
         // .sort('field -test')
-        if (1 === arguments.length && 'string' == type) {
+        if (1 === arguments.length && 'string' === type) {
             arg = arg.split(/\s+/);
             len = arg.length;
             for (let i = 0; i < len; ++i) {
                 let field = arg[i];
                 if (!field) continue;
-                const ascend = '-' == field[0] ? -1 : 1;
+                const ascend = '-' === field[0] ? -1 : 1;
                 if (ascend === -1) field = field.substring(1);
                 push(this.options, field, ascend);
             }

@@ -186,7 +186,7 @@ export class RxQuery {
                             else return results;
                         });
                 })
-                .filter(results => results != 'WAITFORNEXTEMIT')
+                .filter(results => results !== 'WAITFORNEXTEMIT')
                 .asObservable();
 
             const changeEvents$ = this.collection.$
@@ -199,10 +199,10 @@ export class RxQuery {
                     res$,
                     changeEvents$
                 )
-                .filter(x => x != null)
+                .filter(x => x !== null)
                 .map(results => {
-                    if (this.op != 'findOne') return results;
-                    else if (results.length == 0) return null;
+                    if (this.op !== 'findOne') return results;
+                    else if (results.length === 0) return null;
                     else return results[0];
                 });
         }
@@ -226,10 +226,10 @@ export class RxQuery {
             Object.keys(options.sort).map(fieldName => {
                 const dirInt = options.sort[fieldName];
                 let dir = 'asc';
-                if (dirInt == -1) dir = 'desc';
+                if (dirInt === -1) dir = 'desc';
                 const pushMe = {};
                 // TODO run primary-swap somewhere else
-                if (fieldName == primPath)
+                if (fieldName === primPath)
                     fieldName = '_id';
 
                 pushMe[fieldName] = dir;
@@ -259,17 +259,17 @@ export class RxQuery {
         if (!json.selector.language) json.selector.language = {};
         json.selector.language.$ne = 'query';
 
-
         // strip empty selectors
         Object.entries(json.selector)
             .filter(entry => typeof entry[1] === 'object')
-            .filter(entry => entry[1] != null)
-            .filter(entry => Object.keys(entry[1]) == 0)
+            .filter(entry => entry[1] !== null)
+            .filter(entry => !Array.isArray(entry[1]))
+            .filter(entry => Object.keys(entry[1]).length === 0)
             .forEach(entry => delete json.selector[entry[0]]);
 
         // primary swap
         if (
-            primPath != '_id' &&
+            primPath !== '_id' &&
             json.selector[primPath]
         ) {
             // selector
@@ -342,7 +342,7 @@ export class RxQuery {
     regex(params) {
         const clonedThis = this._clone();
 
-        if (this.mquery._path == this.collection.schema.primaryPath)
+        if (this.mquery._path === this.collection.schema.primaryPath)
             throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
 
         clonedThis.mquery.regex(params);
@@ -361,12 +361,12 @@ export class RxQuery {
 
         // workarround because sort wont work on unused keys
         if (typeof params !== 'object') {
-            const checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+            const checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
             if (!clonedThis.mquery._conditions[checkParam]) {
                 const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
                 if (!schemaObj) throwNotInSchema(checkParam);
 
-                if (schemaObj.type == 'integer')
+                if (schemaObj.type === 'integer')
                     // TODO change back to -Infinity when issue resolved
                     // @link https://github.com/pouchdb/pouchdb/issues/6454
                     clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -379,7 +379,7 @@ export class RxQuery {
                     const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
                     if (!schemaObj) throwNotInSchema(k);
 
-                    if (schemaObj.type == 'integer')
+                    if (schemaObj.type === 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
                         clonedThis.mquery.where(k).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -392,7 +392,7 @@ export class RxQuery {
     };
 
     limit(amount) {
-        if (this.op == 'findOne')
+        if (this.op === 'findOne')
             throw new Error('.limit() cannot be called on .findOne()');
         else {
             const clonedThis = this._clone();

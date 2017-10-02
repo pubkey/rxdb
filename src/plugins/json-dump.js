@@ -21,7 +21,7 @@ const dumpRxDatabase = async function(decrypted = false, collections = null) {
 
     const useCollections = Object.keys(this.collections)
         .filter(colName => !collections || collections.includes(colName))
-        .filter(colName => colName.charAt(0) != '_')
+        .filter(colName => colName.charAt(0) !== '_')
         .map(colName => this.collections[colName]);
 
     json.collections = await Promise.all(
@@ -66,13 +66,13 @@ const dumpRxCollection = async function(decrypted = false) {
 
 const importDumpRxCollection = async function(exportedJSON) {
     // check schemaHash
-    if (exportedJSON.schemaHash != this.schema.hash)
+    if (exportedJSON.schemaHash !== this.schema.hash)
         throw new Error('the imported json relies on a different schema');
 
     // check if passwordHash matches own
     if (
         exportedJSON.encrypted &&
-        exportedJSON.passwordHash != util.hash(this.database.password)
+        exportedJSON.passwordHash !== util.hash(this.database.password)
     ) throw new Error('json.passwordHash does not match the own');
 
 

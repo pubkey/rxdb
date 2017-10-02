@@ -137,18 +137,18 @@ export class RxSchema {
     }
 
     swapIdToPrimary(obj) {
-        if (this.primaryPath == '_id' || obj[this.primaryPath]) return obj;
+        if (this.primaryPath === '_id' || obj[this.primaryPath]) return obj;
         obj[this.primaryPath] = obj._id;
         delete obj._id;
         return obj;
     }
     swapPrimaryToId(obj) {
-        if (this.primaryPath == '_id') return obj;
+        if (this.primaryPath === '_id') return obj;
         const ret = {};
         Object
             .entries(obj)
             .forEach(entry => {
-                const newKey = entry[0] == this.primaryPath ? '_id' : entry[0];
+                const newKey = entry[0] === this.primaryPath ? '_id' : entry[0];
                 ret[newKey] = entry[1];
             });
         return ret;
@@ -179,7 +179,7 @@ export function getEncryptedPaths(jsonSchema) {
         }
         for (const attributeName in currentObj) {
             let nextPath = currentPath;
-            if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
+            if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
         }
     }
@@ -204,7 +204,7 @@ export function getIndexes(jsonID, prePath = '') {
     Object.entries(jsonID).forEach(entry => {
         const key = entry[0];
         const obj = entry[1];
-        const path = key == 'properties' ? prePath : util.trimDots(prePath + '.' + key);
+        const path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
 
         if (obj.index)
             indexes.push([path]);
@@ -215,13 +215,13 @@ export function getIndexes(jsonID, prePath = '') {
         }
     });
 
-    if (prePath == '') {
+    if (prePath === '') {
         const addCompound = jsonID.compoundIndexes || [];
         indexes = indexes.concat(addCompound);
     }
 
     indexes = indexes
-        .filter((elem, pos, arr) => arr.indexOf(elem) == pos); // unique;
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
     return indexes;
 }
 

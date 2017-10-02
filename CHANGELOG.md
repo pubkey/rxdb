@@ -7,6 +7,7 @@ Bugfixes:
 
 Other:
     - Split out idle-queue into own [npm-module](http://npmjs.com/package/custom-idle-queue)
+    - Enfore usage of strict-equality via eslint
 
 ## 6.0.1 (September 20, 2017)
 

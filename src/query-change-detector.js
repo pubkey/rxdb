@@ -28,7 +28,7 @@ class QueryChangeDetector {
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     runChangeDetection(changeEvents) {
-        if (changeEvents.length == 0) return false;
+        if (changeEvents.length === 0) return false;
         if (!ENABLED) return true;
 
         let resultsData = this.query._resultsData;
@@ -101,13 +101,13 @@ class QueryChangeDetector {
         let _sortFieldChanged = null;
         const sortFieldChanged = () => {
             if (_sortFieldChanged === null) {
-                const docBefore = resultsData.find(doc => doc[this.primaryKey] == docData[this.primaryKey]);
+                const docBefore = resultsData.find(doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 _sortFieldChanged = this._sortFieldChanged(docBefore, docData);
             }
             return _sortFieldChanged;
         };
 
-        if (changeEvent.data.op == 'REMOVE') {
+        if (changeEvent.data.op === 'REMOVE') {
 
             // R1 (never matched)
             if (!doesMatchNow) {
@@ -125,13 +125,13 @@ class QueryChangeDetector {
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
                 DEBUG && this._debugMessage('R3', docData);
-                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
             // R3.1 was in results and got removed, no limit, no skip
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
                 DEBUG && this._debugMessage('R3.1', docData);
-                results = results.filter(doc => doc[this.primaryKey] != docData[this.primaryKey]);
+                results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
 
@@ -155,7 +155,7 @@ class QueryChangeDetector {
                 // DEBUG && this._debugMessage('U2', docData);
 
                 // replace but make sure its the same position
-                const wasDoc = results.find(doc => doc[this.primaryKey] == docData[this.primaryKey]);
+                const wasDoc = results.find(doc => doc[this.primaryKey] === docData[this.primaryKey]);
                 const i = results.indexOf(wasDoc);
                 results[i] = docData;
 
@@ -206,7 +206,7 @@ class QueryChangeDetector {
             },
             inMemoryFields
         );
-        const ret = retDocs.length == 1;
+        const ret = retDocs.length === 1;
         return ret;
     }
 
@@ -217,7 +217,7 @@ class QueryChangeDetector {
      */
     _isDocInResultData(docData, resultData) {
         const primaryPath = this.query.collection.schema.primaryPath;
-        const first = resultData.find(doc => doc[primaryPath] == docData[primaryPath]);
+        const first = resultData.find(doc => doc[primaryPath] === docData[primaryPath]);
         return !!first;
     }
 
@@ -236,7 +236,7 @@ class QueryChangeDetector {
         sortFields.find(field => {
             const beforeData = objectPath.get(docDataBefore, field);
             const afterData = objectPath.get(docDataAfter, field);
-            if (beforeData != afterData) {
+            if (beforeData !== afterData) {
                 changed = true;
                 return true;
             } else return false;
@@ -272,7 +272,7 @@ class QueryChangeDetector {
             },
             inMemoryFields
         );
-        return sortedRows[0].id == swappedLeft._id;
+        return sortedRows[0].id === swappedLeft._id;
     }
 
     /**

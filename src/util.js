@@ -189,11 +189,11 @@ export function numberToLetter(nr) {
  */
 export function trimDots(str) {
     // start
-    while (str.charAt(0) == '.')
+    while (str.charAt(0) === '.')
         str = str.substr(1);
 
     // end
-    while (str.slice(-1) == '.')
+    while (str.slice(-1) === '.')
         str = str.slice(0, -1);
 
     return str;
@@ -208,8 +208,8 @@ export function trimDots(str) {
  */
 export function validateCouchDBString(name) {
     if (
-        typeof name != 'string' ||
-        name.length == 0
+        typeof name !== 'string' ||
+        name.length === 0
     ) throw new TypeError('given name is no string or empty');
 
 

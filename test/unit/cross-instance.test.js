@@ -86,7 +86,7 @@ describe('cross-instance.test.js', () => {
                 await AsyncTestUtil.waitUntil(async() => {
                     await db2.socket.pull();
                     await db2.socket.pull();
-                    return recieved == 1;
+                    return recieved === 1;
                 });
 
                 db1.destroy();
@@ -160,7 +160,7 @@ describe('cross-instance.test.js', () => {
             await c2.database.socket.pull();
 
             await util.promiseWait(10);
-            await AsyncTestUtil.waitUntil(() => firstNameAfter == 'foobar');
+            await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
 
             assert.equal(firstNameAfter, 'foobar');
             c1.database.destroy();
@@ -215,7 +215,7 @@ describe('cross-instance.test.js', () => {
             await doc1.save();
             await c2.database.socket.pull();
 
-            await AsyncTestUtil.waitUntil(() => secretAfter == 'foobar');
+            await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
             assert.equal(secretAfter, 'foobar');
 
             db1.destroy();
@@ -273,7 +273,7 @@ describe('cross-instance.test.js', () => {
             await doc1.save();
             await c2.database.socket.pull();
 
-            await AsyncTestUtil.waitUntil(() => secretAfter.name == 'foo');
+            await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
             assert.deepEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'
@@ -317,7 +317,7 @@ describe('cross-instance.test.js', () => {
                 await c1.insert(schemaObjects.human());
                 await c1.insert(schemaObjects.human());
 
-                await AsyncTestUtil.waitUntil(() => recieved == 2);
+                await AsyncTestUtil.waitUntil(() => recieved === 2);
                 assert.equal(recieved, 2);
                 c1.database.destroy();
                 c2.database.destroy();

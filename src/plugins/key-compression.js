@@ -34,21 +34,21 @@ class KeyCompressor {
             const propertiesToTable = (path, obj) => {
                 Object.keys(obj).map(key => {
                     const propertyObj = obj[key];
-                    const fullPath = (key == 'properties') ? path : util.trimDots(path + '.' + key);
+                    const fullPath = (key === 'properties') ? path : util.trimDots(path + '.' + key);
                     if (
                         typeof propertyObj === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !this._table[fullPath] &&
-                        fullPath != '' &&
+                        fullPath !== '' &&
                         key.length > 3 && // do not compress short keys
                         !fullPath.startsWith('_') // _id/_rev etc should never be compressed
                     ) this._table[fullPath] = '|' + nextKey();
 
                     // primary-key is always compressed to _id
-                    if (propertyObj.primary == true)
+                    if (propertyObj.primary === true)
                         this._table[fullPath] = '_id';
 
-                    if (typeof propertyObj == 'object' && !Array.isArray(propertyObj))
+                    if (typeof propertyObj === 'object' && !Array.isArray(propertyObj))
                         propertiesToTable(fullPath, propertyObj);
                 });
 

@@ -68,5 +68,5 @@ export function mergeClone(to, from) {
  * @return {Boolean}
  */
 export function isObject(arg) {
-    return '[object Object]' == arg.toString();
+    return '[object Object]' === arg.toString();
 };

@@ -73,7 +73,7 @@ describe('replication.test.js', () => {
                     include_docs: true
                 }).on('change', () => {
                     count++;
-                    if (count == 2) pw8.resolve();
+                    if (count === 2) pw8.resolve();
                 });
 
                 const obj = schemaObjects.human();
@@ -82,7 +82,7 @@ describe('replication.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(async() => {
                     const docs = await c2.find().exec();
-                    return docs.length == 1;
+                    return docs.length === 1;
                 });
                 const docs = await c2.find().exec();
                 assert.equal(docs.length, 1);
@@ -127,8 +127,8 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                await AsyncTestUtil.waitUntil(() => e1.length == 1);
-                await AsyncTestUtil.waitUntil(() => e2.length == 1);
+                await AsyncTestUtil.waitUntil(() => e1.length === 1);
+                await AsyncTestUtil.waitUntil(() => e2.length === 1);
                 assert.equal(e1.length, e2.length);
 
                 pouch$.unsubscribe();
@@ -155,7 +155,7 @@ describe('replication.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(async() => {
                     const docs = await c2.find().exec();
-                    return docs.length == 20;
+                    return docs.length === 20;
                 });
                 await util.promiseWait(10);
                 const nonSyncedDocs = await c.find().exec();
@@ -177,7 +177,7 @@ describe('replication.test.js', () => {
                 });
                 await AsyncTestUtil.waitUntil(async() => {
                     const docs = await c.find().exec();
-                    return docs.length == 20;
+                    return docs.length === 20;
                 });
                 await util.promiseWait(10);
                 const nonSyncedDocs = await c2.find().exec();
@@ -225,7 +225,7 @@ describe('replication.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(async() => {
                     const docs = await c.find().exec();
-                    return docs.length == 1;
+                    return docs.length === 1;
                 });
                 await util.promiseWait(10);
                 const docs = await c.find().exec();
@@ -288,7 +288,7 @@ describe('replication.test.js', () => {
                 });
                 const emited = [];
                 repState.active$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => emited.pop() == true);
+                await AsyncTestUtil.waitUntil(() => emited.pop() === true);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -331,8 +331,8 @@ describe('replication.test.js', () => {
                     let ret = false;
                     try {
                         if (
-                            lastEv.push.ok == true &&
-                            lastEv.pull.ok == true
+                            lastEv.push.ok === true &&
+                            lastEv.pull.ok === true
                         ) ret = true;
                     } catch (e) {}
                     return ret;
@@ -353,7 +353,7 @@ describe('replication.test.js', () => {
                 const emitedDocs = [];
                 repState.docs$.subscribe(doc => emitedDocs.push(doc));
 
-                await AsyncTestUtil.waitUntil(() => emitedDocs.length == 10);
+                await AsyncTestUtil.waitUntil(() => emitedDocs.length === 10);
                 emitedDocs.forEach(doc => assert.ok(doc.firstName));
 
                 c.database.destroy();
@@ -387,7 +387,7 @@ describe('replication.test.js', () => {
                 const obj = schemaObjects.human();
                 await c.insert(obj);
                 await pw8.promise;
-                await AsyncTestUtil.waitUntil(() => events.length == 1);
+                await AsyncTestUtil.waitUntil(() => events.length === 1);
                 assert.equal(events[0].constructor.name, 'RxChangeEvent');
 
                 syncC.database.destroy();
@@ -412,7 +412,7 @@ describe('replication.test.js', () => {
                 const results = [];
                 c2.find().$.subscribe(res => {
                     results.push(res);
-                    if (results.length == 2) pw8.resolve();
+                    if (results.length === 2) pw8.resolve();
                 });
                 assert.equal(results.length, 0);
                 await util.promiseWait(5);
@@ -462,7 +462,7 @@ describe('replication.test.js', () => {
                     .get$('firstName')
                     .subscribe(newValue => {
                         lastValue = newValue;
-                        if (lastValue == 'foobar') pw8.resolve();
+                        if (lastValue === 'foobar') pw8.resolve();
                     });
                 doc.set('firstName', 'foobar');
                 await doc.save();

@@ -19,7 +19,7 @@ import {
  * @throws {Error}
  */
 export function checkFieldNameRegex(fieldName) {
-    if (fieldName == '') return;
+    if (fieldName === '') return;
 
     if (['properties', 'language'].includes(fieldName))
         throw new Error(`fieldname is not allowed: ${fieldName}`);
@@ -45,13 +45,13 @@ export function validateFieldsDeep(jsonSchema) {
 
     function checkField(fieldName, schemaObj, path) {
         if (
-            typeof fieldName == 'string' &&
-            typeof schemaObj == 'object' &&
+            typeof fieldName === 'string' &&
+            typeof schemaObj === 'object' &&
             !Array.isArray(schemaObj)
         ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
-        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array')
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array')
             throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
 
         // if ref given, must be type=='string' or type=='array' with string-items
@@ -60,7 +60,7 @@ export function validateFieldsDeep(jsonSchema) {
                 case 'string':
                     break;
                 case 'array':
-                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type != 'string')
+                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string')
                         throw new Error(`fieldname ${fieldName} has a ref-array but items-type is not string`);
                     break;
                 default:
@@ -88,7 +88,7 @@ export function validateFieldsDeep(jsonSchema) {
         // first level
         if (!isNested) {
             // check underscore fields
-            if (fieldName.charAt(0) == '_')
+            if (fieldName.charAt(0) === '_')
                 throw new Error(`first level-fields cannot start with underscore _ ${fieldName}`);
         }
     }
@@ -104,7 +104,7 @@ export function validateFieldsDeep(jsonSchema) {
                 );
             }
             let nextPath = currentPath;
-            if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
+            if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
         }
     }
@@ -185,7 +185,7 @@ export function checkSchema(jsonID) {
     // check that indexes are string
     getIndexes(jsonID)
         .reduce((a, b) => a.concat(b), [])
-        .filter((elem, pos, arr) => arr.indexOf(elem) == pos) // unique
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .map(key => {
             const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
             if (!schemaObj || typeof schemaObj !== 'object')
@@ -196,8 +196,8 @@ export function checkSchema(jsonID) {
             };
         })
         .filter(index =>
-            index.schemaObj.type != 'string' &&
-            index.schemaObj.type != 'integer'
+            index.schemaObj.type !== 'string' &&
+            index.schemaObj.type !== 'integer'
         )
         .forEach(index => {
             throw new Error(

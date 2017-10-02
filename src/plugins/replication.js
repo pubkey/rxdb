@@ -125,18 +125,18 @@ export function watchForChanges() {
                 include_docs: true
             }), 'change'
         )
-        .filter(c => c.id.charAt(0) != '_')
+        .filter(c => c.id.charAt(0) !== '_')
         .map(c => c.doc)
         .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
         .filter(doc => sendChanges[doc._rev] = 'YES')
         .delay(10)
         .map(doc => {
             let ret = null;
-            if (sendChanges[doc._rev] == 'YES') ret = doc;
+            if (sendChanges[doc._rev] === 'YES') ret = doc;
             delete sendChanges[doc._rev];
             return ret;
         })
-        .filter(doc => doc != null)
+        .filter(doc => doc !== null)
         .subscribe(doc => {
             this.$emit(RxChangeEvent.fromPouchChange(doc, this));
         });

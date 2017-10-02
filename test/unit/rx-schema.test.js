@@ -502,7 +502,7 @@ describe('rx-schema.test.js', () => {
                         foo: 'bar'
                     };
                     const filled = schema.fillObjectWithDefaults(data);
-                    assert.ok(data != filled);
+                    assert.ok(data !== filled);
                     assert.equal(filled.foo, 'bar');
                     assert.equal(filled.age, 20);
                 });
@@ -515,7 +515,7 @@ describe('rx-schema.test.js', () => {
                     const data2 = clone(data);
                     const filled = schema.fillObjectWithDefaults(data);
                     const filled2 = schema.fillObjectWithDefaults(data2);
-                    assert.ok(data != filled);
+                    assert.ok(data !== filled);
                     assert.equal(filled.foo, 'bar');
                     assert.equal(filled.age, 40);
                     assert.equal(filled2.foo, 'bar');

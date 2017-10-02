@@ -9,7 +9,7 @@ faker.seed(123);
 
 
 config.platform.isNode = function() {
-    return config.platform.name == 'node';
+    return config.platform.name === 'node';
 };
 
 console.log('###### PLATFORM: ######');
@@ -18,7 +18,7 @@ if (typeof window !== 'undefined')
 console.log('PLATFORM-NAME: ' + config.platform.name);
 console.log('PLATFORM-VERSION: ' + config.platform.version);
 
-if (config.platform.name != 'node') {
+if (config.platform.name !== 'node') {
     console.dir = (d) => {
         console.log(JSON.stringify(d));
     };

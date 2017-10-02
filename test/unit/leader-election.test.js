@@ -144,12 +144,12 @@ describe('leader-election.test.js', () => {
 
             const msgs = [];
             const sub = leaderElector2.bc.$
-                .filter(msg => msg.type == 'death')
+                .filter(msg => msg.type === 'death')
                 .subscribe(msg => msgs.push(msg));
             const is = await leaderElector.die();
             assert.ok(is);
 
-            await AsyncTestUtil.waitUntil(() => msgs.length == 1);
+            await AsyncTestUtil.waitUntil(() => msgs.length === 1);
             assert.equal(msgs.length, 1);
 
             sub.unsubscribe();
@@ -210,7 +210,7 @@ describe('leader-election.test.js', () => {
                 const db2 = c2.database;
                 await db1.leaderElector.applyOnce();
                 await db2.leaderElector.applyOnce();
-                assert.ok(db1.leaderElector.isLeader != db2.leaderElector.isLeader);
+                assert.ok(db1.leaderElector.isLeader !== db2.leaderElector.isLeader);
                 await db1.destroy();
                 await db2.destroy();
             }
@@ -228,7 +228,7 @@ describe('leader-election.test.js', () => {
 
             const leaderCount = dbs
                 .map(db => db.leaderElector.isLeader)
-                .filter(is => is == true)
+                .filter(is => is === true)
                 .length;
             assert.equal(leaderCount, 1);
             await Promise.all(dbs.map(db => db.destroy()));
@@ -248,24 +248,24 @@ describe('leader-election.test.js', () => {
             let leaderCount;
             await AsyncTestUtil.waitUntil(async() => {
                 leaderCount = dbs
-                    .filter(db => db.leaderElector.isLeader == true)
+                    .filter(db => db.leaderElector.isLeader === true)
                     .length;
-                return leaderCount == 1;
+                return leaderCount === 1;
             });
             assert.equal(leaderCount, 1);
 
             // let leader die
             const leader = dbs
-                .filter(db => db.leaderElector.isLeader == true)[0];
+                .filter(db => db.leaderElector.isLeader === true)[0];
             const leaderToken = leader.token;
             await leader.destroy();
 
             // noone should be leader
             await AsyncTestUtil.waitUntil(async() => {
                 leaderCount = dbs
-                    .filter(db => db.leaderElector.isLeader == true)
+                    .filter(db => db.leaderElector.isLeader === true)
                     .length;
-                return leaderCount == 0;
+                return leaderCount === 0;
             });
             assert.equal(leaderCount, 0);
 
@@ -276,14 +276,14 @@ describe('leader-election.test.js', () => {
 
             await AsyncTestUtil.waitUntil(async() => {
                 leaderCount = dbs
-                    .filter(db => db.leaderElector.isLeader == true)
+                    .filter(db => db.leaderElector.isLeader === true)
                     .length;
-                return leaderCount == 1;
+                return leaderCount === 1;
             });
             assert.equal(leaderCount, 1);
 
             const leader2 = dbs
-                .filter(db => db.leaderElector.isLeader == true)[0];
+                .filter(db => db.leaderElector.isLeader === true)[0];
             const leaderToken2 = leader2.token;
 
             assert.notEqual(leaderToken, leaderToken2);
@@ -324,14 +324,14 @@ describe('leader-election.test.js', () => {
 
             let count = 0;
             dbs.forEach(db => db.waitForLeadership().then(() => count++));
-            await AsyncTestUtil.waitUntil(() => count == 1);
+            await AsyncTestUtil.waitUntil(() => count === 1);
 
             // let leader die
             await dbs
                 .filter(db => db.isLeader)[0]
                 .leaderElector.die();
 
-            await AsyncTestUtil.waitUntil(() => count == 2);
+            await AsyncTestUtil.waitUntil(() => count === 2);
             await Promise.all(dbs.map(db => db.destroy()));
         });
     });

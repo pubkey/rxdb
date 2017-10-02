@@ -336,7 +336,7 @@ describe('rx-query.test.js', () => {
             const fired = [];
             q.$.subscribe(res => fired.push(res));
 
-            await AsyncTestUtil.waitUntil(() => fired.length == 1);
+            await AsyncTestUtil.waitUntil(() => fired.length === 1);
             assert.equal(q._execOverDatabaseCount, 1);
             assert.equal(q._latestChangeEvent, 2);
 
@@ -345,10 +345,10 @@ describe('rx-query.test.js', () => {
             await col.insert(addObj);
             assert.equal(q.collection._changeEventBuffer.counter, 3);
 
-            await AsyncTestUtil.waitUntil(() => q._latestChangeEvent == 3);
+            await AsyncTestUtil.waitUntil(() => q._latestChangeEvent === 3);
             assert.equal(q._latestChangeEvent, 3);
 
-            await AsyncTestUtil.waitUntil(() => fired.length == 2);
+            await AsyncTestUtil.waitUntil(() => fired.length === 2);
             assert.equal(fired[1].pop().passportId, addObj.passportId);
             col.database.destroy();
         });
@@ -397,7 +397,7 @@ describe('rx-query.test.js', () => {
                 query1.exec(),
                 query2.exec()
             ]);
-            assert.ok(docs[0] == docs[1]);
+            assert.ok(docs[0] === docs[1]);
 
             db.destroy();
         });
@@ -516,16 +516,20 @@ describe('rx-query.test.js', () => {
             });
 
             const sortedNames = ['a123', 'b123', 'c123', 'f123', 'z123'];
-            await Promise.all(sortedNames.map(name => collection.insert({
-                name
-            })));
+            await Promise.all(
+                sortedNames.map(name => collection.insert({
+                    name
+                }))
+            );
 
             // this query is wrong because .find() does not allow sort, limit etc, only the selector
-            const results = await collection.find({
-                sort: ['name']
-            }).exec();
-            assert.equal(results.length, sortedNames.length);
-
+            await AsyncTestUtil.assertThrows(
+                () => collection.find({
+                    sort: ['name']
+                }).exec(),
+                Error,
+                'lte'
+            );
             const results2 = await collection.find().sort('name').exec();
             assert.deepEqual(sortedNames, results2.map(doc => doc.name));
 

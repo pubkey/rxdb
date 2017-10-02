@@ -166,7 +166,7 @@ describe('change-event-buffer.test.js', () => {
             // remove the doc
             const doc = await col.findOne().exec();
             await doc.remove();
-            await AsyncTestUtil.waitUntil(() => col._changeEventBuffer.counter == 2);
+            await AsyncTestUtil.waitUntil(() => col._changeEventBuffer.counter === 2);
 
             const evs = col._changeEventBuffer.getFrom(q._latestChangeEvent + 1);
             assert.equal(evs.length, 1);
@@ -191,7 +191,7 @@ describe('change-event-buffer.test.js', () => {
             const reduced = q.collection._changeEventBuffer.reduceByLastOfDoc(allEvents);
 
             assert.equal(reduced.length, 5);
-            const lastEvent = reduced.find(cE => cE.data.doc == oneDoc.primary);
+            const lastEvent = reduced.find(cE => cE.data.doc === oneDoc.primary);
             assert.equal(lastEvent.data.v.age, 5);
             col.database.destroy();
         });

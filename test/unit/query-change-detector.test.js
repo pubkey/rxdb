@@ -193,7 +193,7 @@ describe('query-change-detector.test.js', () => {
                 await col.insert(docData);
                 col.$.first().toPromise().then(cE => changeEvents.push(cE));
                 await col.findOne('foobar').remove();
-                await AsyncTestUtil.waitUntil(() => changeEvents.length == 1);
+                await AsyncTestUtil.waitUntil(() => changeEvents.length === 1);
                 const res = q._queryChangeDetector.handleSingleChange([], changeEvents[0]);
                 assert.equal(res, false);
                 col.database.destroy();
@@ -413,7 +413,7 @@ describe('query-change-detector.test.js', () => {
             const results = [];
             const q = col.find().sort('passportId');
             const sub = q.$.subscribe(res => results.push(res));
-            await AsyncTestUtil.waitUntil(() => results.length == 1);
+            await AsyncTestUtil.waitUntil(() => results.length === 1);
             assert.equal(results[0].length, 5);
             assert.equal(q._execOverDatabaseCount, 1);
 
@@ -422,7 +422,7 @@ describe('query-change-detector.test.js', () => {
             first.passportId = '000aaa'; // to make sure it sorts at start
             await col.insert(first);
 
-            await AsyncTestUtil.waitUntil(() => results.length == 2);
+            await AsyncTestUtil.waitUntil(() => results.length === 2);
             await util.promiseWait(100);
 
             // here is the error -> this must be 6
@@ -432,7 +432,7 @@ describe('query-change-detector.test.js', () => {
             last.passportId = 'zzzzzz'; // to make sure it sorts at last
             await col.insert(last);
 
-            await AsyncTestUtil.waitUntil(() => results.length == 3);
+            await AsyncTestUtil.waitUntil(() => results.length === 3);
 
             assert.equal(results[2].length, 7);
             assert.equal(q._execOverDatabaseCount, 1);

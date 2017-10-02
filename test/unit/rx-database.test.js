@@ -29,7 +29,7 @@ describe('rx-database.test.js', () => {
             });
             it('leveldown', async() => {
                 if (!config.platform.isNode()) return;
-                if (path.join('..', 'x') != '..\\x') { // leveldown does not work on windows
+                if (path.join('..', 'x') !== '..\\x') { // leveldown does not work on windows
                     const db = await RxDatabase.create({
                         name: '../test_tmp/' + util.randomCouchString(10),
                         adapter: leveldown

@@ -73,16 +73,16 @@ describe('reactive-collection.test.js', () => {
                 assert.equal(ar.length, 0);
 
                 // empty array since no documents
-                await AsyncTestUtil.waitUntil(() => ar.length == 1);
+                await AsyncTestUtil.waitUntil(() => ar.length === 1);
 
                 assert.deepEqual(ar[0], []);
 
                 await c.insert(schemaObjects.human());
-                await AsyncTestUtil.waitUntil(() => ar.length == 2);
+                await AsyncTestUtil.waitUntil(() => ar.length === 2);
 
                 const doc = await c.findOne().exec();
                 await doc.remove();
-                await AsyncTestUtil.waitUntil(() => ar.length == 3);
+                await AsyncTestUtil.waitUntil(() => ar.length === 3);
                 sub.unsubscribe();
 
                 c.database.destroy();

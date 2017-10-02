@@ -23,13 +23,13 @@ class RxChangeEvent {
     }
 
     isIntern() {
-        if (this.data.col && this.data.col.charAt(0) == '_')
+        if (this.data.col && this.data.col.charAt(0) === '_')
             return true;
         return false;
     }
 
     isSocket() {
-        if (this.data.col && this.data.col == '_socket')
+        if (this.data.col && this.data.col === '_socket')
             return true;
         return false;
     }

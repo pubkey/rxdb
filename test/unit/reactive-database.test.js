@@ -18,7 +18,7 @@ describe('reactive-database.test.js', () => {
                     schema: schemas.human
                 });
                 const changeEvent = await db.$
-                    .filter(cEvent => cEvent.data.op == 'RxDatabase.collection')
+                    .filter(cEvent => cEvent.data.op === 'RxDatabase.collection')
                     .first().toPromise();
                 assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.equal(changeEvent.data.v, 'myname');

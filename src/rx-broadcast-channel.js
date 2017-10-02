@@ -34,7 +34,7 @@ class RxBroadcastChannel {
                 .fromEvent(this.bc, 'message')
                 .map(msg => msg.data)
                 .map(strMsg => JSON.parse(strMsg))
-                .filter(msg => msg.it != this.token);
+                .filter(msg => msg.it !== this.token);
         }
         return this._$;
     }

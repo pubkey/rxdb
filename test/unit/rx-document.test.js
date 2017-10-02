@@ -219,7 +219,7 @@ describe('rx-document.test.js', () => {
                 await first.remove();
                 const docsAfter = await c.find().exec();
                 docsAfter.map(doc => {
-                    if (doc._data.passportId == first._data.passportId)
+                    if (doc._data.passportId === first._data.passportId)
                         throw new Error('still here after remove()');
                 });
                 c.database.destroy();
@@ -246,7 +246,7 @@ describe('rx-document.test.js', () => {
                 await first.remove();
                 const docsAfter = await c.find().exec();
                 docsAfter.map(doc => {
-                    if (doc._data.passportId == first._data.passportId)
+                    if (doc._data.passportId === first._data.passportId)
                         throw new Error('still here after remove()');
                 });
                 c.database.destroy();
@@ -318,7 +318,7 @@ describe('rx-document.test.js', () => {
                     innerDoc.firstName = 'foobar';
                 });
                 assert.equal('foobar', doc.firstName);
-                assert.ok(doc == returnedDoc);
+                assert.ok(doc === returnedDoc);
                 c.database.destroy();
             });
             it('run two updates (last write wins)', async() => {

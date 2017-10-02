@@ -289,7 +289,7 @@ describe('primary.test.js', () => {
                     let docs;
                     c.find().$.subscribe(newDocs => docs = newDocs);
                     await c.insert(schemaObjects.simpleHuman());
-                    await AsyncTestUtil.waitUntil(() => docs && docs.length == 1);
+                    await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
                     c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async() => {
@@ -299,7 +299,7 @@ describe('primary.test.js', () => {
                     let docs;
                     c2.find().$.subscribe(newDocs => docs = newDocs);
                     await c1.insert(schemaObjects.simpleHuman());
-                    await AsyncTestUtil.waitUntil(() => docs && docs.length == 1);
+                    await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
 
                     c1.database.destroy();
                     c2.database.destroy();

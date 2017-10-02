@@ -42,7 +42,7 @@ describe('rx-broadcast-channel.test.js', () => {
         const msgs = [];
         const sub = bc2.$.subscribe(msg => msgs.push(msg));
         await bc1.write('test');
-        await AsyncTestUtil.waitUntil(() => msgs.length == 1);
+        await AsyncTestUtil.waitUntil(() => msgs.length === 1);
         assert.equal(msgs[0].type, 'test');
         sub.unsubscribe();
         bc1.destroy();
@@ -70,9 +70,9 @@ describe('rx-broadcast-channel.test.js', () => {
         const sub3 = bc3.$.subscribe(msg => msgs3.push(msg));
 
         await bc1.write('test');
-        await AsyncTestUtil.waitUntil(() => msgs2.length == 1);
+        await AsyncTestUtil.waitUntil(() => msgs2.length === 1);
         assert.equal(msgs2[0].type, 'test');
-        await AsyncTestUtil.waitUntil(() => msgs3.length == 1);
+        await AsyncTestUtil.waitUntil(() => msgs3.length === 1);
         assert.equal(msgs3[0].type, 'test');
 
         sub2.unsubscribe();

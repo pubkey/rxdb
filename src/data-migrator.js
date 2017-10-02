@@ -35,7 +35,7 @@ class DataMigrator {
                 .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
             )
             .then(oldColDocs => oldColDocs
-                .filter(colDoc => colDoc != null)
+                .filter(colDoc => colDoc !== null)
                 .map(colDoc => new OldCollection(colDoc.schema.version, colDoc.schema, this))
             );
     }
@@ -197,7 +197,7 @@ class OldCollection {
         while (nextVersion <= this.newestCollection.schema.version) {
             doc = await this.dataMigrator.migrationStrategies[nextVersion + ''](doc);
             nextVersion++;
-            if (doc == null)
+            if (doc === null)
                 return null;
         }
 

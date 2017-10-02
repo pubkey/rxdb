@@ -84,7 +84,7 @@ export class RxDatabase {
                     );
                 } catch (e) {}
             }
-            if (pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)
+            if (pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value)
                 throw new Error('another instance on this adapter has a different password');
         }
 
@@ -154,7 +154,7 @@ export class RxDatabase {
         this.subject.next(changeEvent);
 
         // write to socket if event was created by self
-        if (changeEvent.data.it == this.token)
+        if (changeEvent.data.it === this.token)
             this.writeToSocket(changeEvent);
     }
 
@@ -204,7 +204,7 @@ export class RxDatabase {
             .map(row => row.doc)
             .filter(doc => {
                 const name = doc._id.split('-')[0];
-                return name == collectionName;
+                return name === collectionName;
             });
         await Promise.all(
             relevantDocs
@@ -223,7 +223,7 @@ export class RxDatabase {
     async collection(args) {
         args.database = this;
 
-        if (args.name.charAt(0) == '_')
+        if (args.name.charAt(0) === '_')
             throw new Error(`collection(${args.name}): collection-names cannot start with underscore _`);
 
         if (this.collections[args.name])
@@ -250,7 +250,7 @@ export class RxDatabase {
             );
         } catch (e) {}
 
-        if (collectionDoc && collectionDoc.schemaHash != schemaHash)
+        if (collectionDoc && collectionDoc.schemaHash !== schemaHash)
             throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
 
         const collection = await RxCollection.create(args);
@@ -401,7 +401,7 @@ function _isNameAdapterUsed(name, adapter) {
 
     let used = false;
     USED_COMBINATIONS[name].forEach(ad => {
-        if (ad == adapter)
+        if (ad === adapter)
             used = true;
     });
     if (used) {
@@ -434,7 +434,7 @@ export async function create({
     util.validateCouchDBString(name);
 
     // check if pouchdb-adapter
-    if (typeof adapter == 'string') {
+    if (typeof adapter === 'string') {
         if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
             throw new Error(
                 `Adapter ${adapter} not added.

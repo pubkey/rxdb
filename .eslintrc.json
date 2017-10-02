@@ -27,6 +27,7 @@
                 "SwitchCase": 1
             }
         ],
+        "eqeqeq": ["error", "always"],
         "linebreak-style": [
             "error",
             "unix"

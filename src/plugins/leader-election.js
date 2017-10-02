@@ -118,7 +118,7 @@ class LeaderElector {
 
             // check if someone overwrote it
             leaderObj = await this.getLeaderObject();
-            if (leaderObj.apply != this.token)
+            if (leaderObj.apply !== this.token)
                 throw new Error('someone else overwrote apply');
 
             return true;
@@ -141,12 +141,12 @@ class LeaderElector {
             subs.push(this.bc.$
                 .filter(() => !!this.isApplying)
                 .filter(msg => msg.t >= applyTime)
-                .filter(msg => msg.type == 'apply')
+                .filter(msg => msg.type === 'apply')
                 .filter(msg => {
                     if (
                         msg.data < applyTime ||
                         (
-                            msg.data == applyTime &&
+                            msg.data === applyTime &&
                             msg.it > this.token
                         )
                     ) return true;
@@ -158,18 +158,18 @@ class LeaderElector {
             subs.push(this.bc.$
                 .filter(() => !!this.isApplying)
                 .filter(msg => msg.t >= applyTime)
-                .filter(msg => msg.type == 'tell')
+                .filter(msg => msg.type === 'tell')
                 .filter(() => errors.length < 1)
                 .subscribe(msg => errors.push('other is leader' + msg.it))
             );
             subs.push(this.bc.$
                 .filter(() => !!this.isApplying)
-                .filter(msg => msg.type == 'apply')
+                .filter(msg => msg.type === 'apply')
                 .filter(msg => {
                     if (
                         msg.data > applyTime ||
                         (
-                            msg.data == applyTime &&
+                            msg.data === applyTime &&
                             msg.it > this.token
                         )
                     ) return true;
@@ -241,7 +241,7 @@ class LeaderElector {
                 this.signalLeadership = this.bc.$
                     .filter(() => !!this.isLeader)
                     // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                    .filter(msg => msg.type != 'tell')
+                    .filter(msg => msg.type !== 'tell')
                     .subscribe(() => this.leaderSignal());
                 this.subs.push(this.signalLeadership);
                 break;
@@ -314,7 +314,7 @@ class LeaderElector {
                     // apply when leader dies
                     this.subs.push(
                         this.bc.$
-                        .filter(msg => msg.type == 'death')
+                        .filter(msg => msg.type === 'death')
                         .subscribe(() => this.applyOnce())
                     );
                     break;
@@ -344,7 +344,7 @@ class LeaderElector {
 
         return this.becomeLeader$
             .asObservable()
-            .filter(i => i.isLeader == true)
+            .filter(i => i.isLeader === true)
             .first()
             .toPromise();
     }

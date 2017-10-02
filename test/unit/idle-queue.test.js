@@ -20,7 +20,7 @@ describe('idle-queue.test.js', () => {
             )).then(() => order.push(0));
             c.database.requestIdlePromise().then(() => order.push(1));
 
-            await AsyncTestUtil.waitUntil(() => order.length == 2);
+            await AsyncTestUtil.waitUntil(() => order.length === 2);
             assert.deepEqual(order, [0, 1]);
 
             c.database.destroy();

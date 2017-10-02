@@ -17,7 +17,7 @@ describe('reactive-query.test.js', () => {
                 count++;
                 lastValue = newResults;
             });
-            await AsyncTestUtil.waitUntil(() => count == 1);
+            await AsyncTestUtil.waitUntil(() => count === 1);
             assert.ok(lastValue);
             assert.equal(lastValue.length, 1);
             assert.equal(count, 1);
@@ -43,7 +43,7 @@ describe('reactive-query.test.js', () => {
 
             let isHere = false;
             lastValue.map(doc => {
-                if (doc.get('passportId') == addHuman.passportId)
+                if (doc.get('passportId') === addHuman.passportId)
                     isHere = true;
             });
             assert.ok(isHere);
@@ -62,7 +62,7 @@ describe('reactive-query.test.js', () => {
             });
             await util.promiseWait(100);
 
-            await AsyncTestUtil.waitUntil(() => lastValue2 && lastValue2.length == 1);
+            await AsyncTestUtil.waitUntil(() => lastValue2 && lastValue2.length === 1);
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();
         });
@@ -178,24 +178,24 @@ describe('reactive-query.test.js', () => {
             const streamed = [];
             subs.push(
                 col.findOne(_id).$
-                .filter(doc => doc != null)
+                .filter(doc => doc !== null)
                 .subscribe(doc => {
                     streamed.push(doc);
                 })
             );
-            await AsyncTestUtil.waitUntil(() => streamed.length == 1);
+            await AsyncTestUtil.waitUntil(() => streamed.length === 1);
             assert.equal(streamed[0].constructor.name, 'RxDocument');
             assert.equal(streamed[0]._id, _id);
 
             const streamed2 = [];
             subs.push(
                 col.findOne().where('_id').eq(_id).$
-                .filter(doc => doc != null)
+                .filter(doc => doc !== null)
                 .subscribe(doc => {
                     streamed2.push(doc);
                 })
             );
-            await AsyncTestUtil.waitUntil(() => streamed2.length == 1);
+            await AsyncTestUtil.waitUntil(() => streamed2.length === 1);
             assert.equal(streamed2.length, 1);
             assert.equal(streamed2[0].constructor.name, 'RxDocument');
             assert.equal(streamed2[0]._id, _id);
@@ -208,11 +208,11 @@ describe('reactive-query.test.js', () => {
             const col = await humansCollection.create(3);
             const streamed = [];
             const sub = col.findOne().$
-                .filter(doc => doc != null)
+                .filter(doc => doc !== null)
                 .subscribe(doc => {
                     streamed.push(doc);
                 });
-            await AsyncTestUtil.waitUntil(() => streamed.length == 1);
+            await AsyncTestUtil.waitUntil(() => streamed.length === 1);
             assert.equal(streamed.length, 1);
             assert.equal(streamed[0].constructor.name, 'RxDocument');
             sub.unsubscribe();
@@ -227,7 +227,7 @@ describe('reactive-query.test.js', () => {
             const querySub = query.$.subscribe(() => {
                 recieved++;
             });
-            await AsyncTestUtil.waitUntil(() => recieved == 1);
+            await AsyncTestUtil.waitUntil(() => recieved === 1);
             querySub.unsubscribe();
             c.database.destroy();
         });

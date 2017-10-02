@@ -1117,7 +1117,7 @@ describe('rx-collection.test.js', () => {
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData)
                     ]);
-                    assert.ok(docs[0] == docs[1]);
+                    assert.ok(docs[0] === docs[1]);
                     assert.ok(RxDocument.isInstanceOf(docs[0]));
                     c.database.destroy();
                 });
@@ -1147,7 +1147,7 @@ describe('rx-collection.test.js', () => {
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData)
                     ]);
-                    assert.ok(docs[0] == docs[1]);
+                    assert.ok(docs[0] === docs[1]);
                     assert.ok(RxDocument.isInstanceOf(docs[0]));
                     c.database.destroy();
                 });

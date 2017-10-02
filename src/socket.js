@@ -42,7 +42,7 @@ class Socket {
         if (this.bc) {
             this.subs.push(
                 this.bc.$
-                .filter(msg => msg.type == 'pull')
+                .filter(msg => msg.type === 'pull')
                 .subscribe(() => this.pull())
             );
         }
@@ -156,7 +156,7 @@ class Socket {
         const docs = await this.fetchDocs();
         if (this._destroyed) return;
         docs
-            .filter(doc => doc.it != this.token) // do not get events emitted by self
+            .filter(doc => doc.it !== this.token) // do not get events emitted by self
             // do not get events older than minTime
             .filter(doc => doc.t > minTime)
             // sort timestamp

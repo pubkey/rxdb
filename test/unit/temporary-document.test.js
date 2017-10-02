@@ -68,7 +68,7 @@ describe('temporary-document.test.js', () => {
                 const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
                 const sameDoc = await c.findOne().exec();
-                assert.ok(newDoc == sameDoc);
+                assert.ok(newDoc === sameDoc);
                 c.database.destroy();
             });
             it('should be able to save again', async() => {
@@ -128,7 +128,7 @@ describe('temporary-document.test.js', () => {
             await newDoc.save();
             newDoc.firstName = 'foobar2';
             await newDoc.save();
-            await AsyncTestUtil.waitUntil(() => emitted.length == 3);
+            await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.equal('foobar2', emitted.pop());
             sub.unsubscribe();
             c.database.destroy();
