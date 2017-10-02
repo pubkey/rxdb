@@ -30,8 +30,7 @@ const schema = {
     required: ['firstName', 'lastName']
 };
 
-const run = async function(){
-
+const run = async function() {
     // create database
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),

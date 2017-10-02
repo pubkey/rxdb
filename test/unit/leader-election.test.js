@@ -40,7 +40,6 @@ describe('leader-election.test.js', () => {
     });
     describe('.beLeader()', () => {
         it('.leaderSignal()', async() => {
-
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -53,8 +52,7 @@ describe('leader-election.test.js', () => {
             assert.ok(dbObj.t > new Date().getTime() - 1000);
             c.database.destroy();
         });
-        it('assing self to leader', async() => {
-
+        it('assign self to leader', async() => {
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -95,10 +93,11 @@ describe('leader-election.test.js', () => {
             assert.ok(is);
             c.database.destroy();
         });
-        it('should assing self to leader', async() => {
+        it('should assign self to leader', async() => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.applyOnce();
+            await AsyncTestUtil.wait();
             assert.ok(leaderElector.isLeader);
             c.database.destroy();
         });
@@ -118,7 +117,6 @@ describe('leader-election.test.js', () => {
 
     describe('.die()', () => {
         it('leader: write status on death', async() => {
-
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -196,7 +194,6 @@ describe('leader-election.test.js', () => {
             c2.database.destroy();
         });
         it('when 2 instances apply at the same time, one should win', async() => {
-
             if (!config.platform.isNode()) return;
 
             // run often

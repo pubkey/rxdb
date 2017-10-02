@@ -6,7 +6,6 @@ const EVENT_TTL = 5000; // after this age, events will be deleted
 const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
 class Socket {
-
     constructor(database) {
         this._destroyed = false;
         this.database = database;

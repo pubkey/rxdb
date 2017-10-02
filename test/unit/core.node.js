@@ -87,5 +87,4 @@ describe('Core.test.js', () => {
             db.destroy();
         });
     });
-
 });

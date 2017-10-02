@@ -93,7 +93,7 @@ export function hash(obj) {
  * generate a new _id as db-primary-key
  * @return {string}
  */
-export function generate_id() {
+export function generateId() {
     return randomToken(10) + ':' + new Date().getTime();
 }
 

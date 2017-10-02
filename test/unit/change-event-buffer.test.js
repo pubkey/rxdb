@@ -195,8 +195,5 @@ describe('change-event-buffer.test.js', () => {
             assert.equal(lastEvent.data.v.age, 5);
             col.database.destroy();
         });
-
-
     });
-
 });

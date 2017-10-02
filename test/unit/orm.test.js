@@ -77,9 +77,7 @@ describe('orm.test.js', () => {
                     }
                     db.destroy();
                 });
-
             });
-
         });
         describe('run', () => {
             it('should be able to run the method', async() => {

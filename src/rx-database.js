@@ -59,10 +59,8 @@ export class RxDatabase {
      * do the async things for this database
      */
     async prepare() {
-
         // validate/insert password-hash
         if (this.password) {
-
             // ensure admin-pouch is useable
             await this.lockedRun(
                 () => this._adminPouch.info()
@@ -370,7 +368,6 @@ export class RxDatabase {
             .destroy()
             .then(() => removeDatabase(this.name, this.adapter));
     }
-
 }
 
 

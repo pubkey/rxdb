@@ -160,7 +160,6 @@ export class RxSchema {
     doKeyCompression() {
         return !!!this.jsonID.disableKeyCompression;
     }
-
 }
 
 /**

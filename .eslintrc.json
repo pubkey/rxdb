@@ -27,7 +27,9 @@
                 "SwitchCase": 1
             }
         ],
+        "camelcase": ["error", {"properties": "never"}],
         "eqeqeq": ["error", "always"],
+        "padded-blocks": ["error", "never"],
         "linebreak-style": [
             "error",
             "unix"
@@ -132,7 +134,8 @@
                     "funs",
                     "undeleted",
                     "rej",
-                    "eq"
+                    "eq",
+                    "aes"
                 ],
                 "skipIfMatch": [
                     "^[.]{1,3}$",

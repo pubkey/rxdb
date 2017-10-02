@@ -27,7 +27,7 @@ export function update(updateObj) {
     return this.save();
 }
 
-export async function RxQuery_update(updateObj) {
+export async function RxQueryUpdate(updateObj) {
     const docs = await this.exec();
     if (!docs) return null;
     if (Array.isArray(docs)) {
@@ -48,7 +48,7 @@ export const prototypes = {
         proto.update = update;
     },
     RxQuery: (proto) => {
-        proto.update = RxQuery_update;
+        proto.update = RxQueryUpdate;
     }
 };
 

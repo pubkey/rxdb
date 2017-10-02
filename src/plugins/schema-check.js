@@ -42,7 +42,6 @@ export function checkFieldNameRegex(fieldName) {
  * @return {boolean} true always
  */
 export function validateFieldsDeep(jsonSchema) {
-
     function checkField(fieldName, schemaObj, path) {
         if (
             typeof fieldName === 'string' &&
@@ -119,7 +118,6 @@ export function validateFieldsDeep(jsonSchema) {
  * @throws {Error} if something is not ok
  */
 export function checkSchema(jsonID) {
-
     // check _id
     if (jsonID.properties._id)
         throw new Error('schema defines ._id, this will be done automatically');

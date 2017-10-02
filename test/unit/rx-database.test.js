@@ -482,5 +482,4 @@ describe('rx-database.test.js', () => {
             setTimeout(done, 30);
         });
     });
-
 });

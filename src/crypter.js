@@ -8,7 +8,6 @@ import clone from 'clone';
 import RxError from './rx-error';
 
 export class Crypter {
-
     constructor(password, schema) {
         this._password = password;
         this._schema = schema;
@@ -58,7 +57,6 @@ export class Crypter {
             });
         return obj;
     }
-
 }
 
 

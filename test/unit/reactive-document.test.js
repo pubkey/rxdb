@@ -129,7 +129,6 @@ describe('reactive-document.test.js', () => {
 
                 c1.database.destroy();
                 c2.database.destroy();
-
             });
             it('should not be in sync when changed document gets changed by other instance', async() => {
                 const name = util.randomCouchString(10);

@@ -47,7 +47,6 @@ export function fromJSON(data) {
 }
 
 export function fromPouchChange(changeDoc, collection) {
-
     let op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) op = 'REMOVE';
 

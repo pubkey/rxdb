@@ -6,7 +6,6 @@ import * as RxChangeEvent from '../../dist/lib/rx-change-event';
 import * as util from '../../dist/lib/util';
 
 describe('socket.test.js', () => {
-
     it('socket should be able to fetch self-inserted event', async() => {
         const db = await RxDatabase.create({
             name: util.randomCouchString(10),
@@ -106,5 +105,4 @@ describe('socket.test.js', () => {
     /*    it('exit', () => {
             process.exit();
         });*/
-
 });

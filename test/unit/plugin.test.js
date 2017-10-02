@@ -9,7 +9,6 @@ import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 
 describe('plugin.test.js', () => {
-
     describe('core.node.js', () => {
         it('should run without errors', async() => {
             if (!config.platform.isNode())

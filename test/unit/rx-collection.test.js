@@ -246,7 +246,6 @@ describe('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
-
             });
         });
     });
@@ -662,8 +661,8 @@ describe('rx-collection.test.js', () => {
                         const asc = await c.find().sort({
                             age: 1
                         }).exec();
-                        const last_desc = desc[desc.length - 1];
-                        assert.equal(last_desc._data.passportId, asc[0]._data.passportId);
+                        const lastDesc = desc[desc.length - 1];
+                        assert.equal(lastDesc._data.passportId, asc[0]._data.passportId);
                         c.database.destroy();
                     });
                     it('find the same twice', async() => {

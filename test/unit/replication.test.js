@@ -23,7 +23,6 @@ if (config.platform.isNode()) {
 }
 
 describe('replication.test.js', () => {
-
     if (!config.platform.isNode()) return;
 
     describe('spawnServer.js', () => {

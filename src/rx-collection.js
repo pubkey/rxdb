@@ -48,7 +48,6 @@ export class RxCollection {
                 this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
             });
         });
-
     }
     async prepare() {
         this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
@@ -265,7 +264,6 @@ export class RxCollection {
      * @return {Promise<RxDocument>}
      */
     async insert(json) {
-
         // inserting a temporary-document
         let tempDoc = null;
         if (RxDocument.isInstanceOf(json)) {
@@ -285,7 +283,7 @@ export class RxCollection {
         if (
             this.schema.primaryPath === '_id' &&
             !json._id
-        ) json._id = util.generate_id();
+        ) json._id = util.generateId();
 
         await this._runHooks('pre', 'insert', json);
 
@@ -530,7 +528,6 @@ export class RxCollection {
     remove() {
         return this.database.removeCollection(this.name);
     }
-
 }
 
 /**

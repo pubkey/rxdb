@@ -87,7 +87,6 @@ describe('encryption.test.js', () => {
                 const decrypted = c._decryptValue(encrypted);
                 assert.deepEqual(decrypted, value);
             });
-
         });
 
         describe('.encrypt()', () => {
@@ -207,11 +206,8 @@ describe('encryption.test.js', () => {
                 assert.equal(newSecret.subname, docNew.get('secret.subname'));
                 db.destroy();
             });
-
         });
 
         describe('negative', () => {});
-
     });
-
 });

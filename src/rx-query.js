@@ -87,7 +87,6 @@ export class RxQuery {
      * @return {Promise<boolean>} true if results have changed
      */
     async _ensureEqual() {
-
         // do nothing if nothing happend between the last exec-run and now
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;

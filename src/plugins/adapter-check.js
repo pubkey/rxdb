@@ -6,7 +6,7 @@ import PouchDB from '../pouch-db';
 import * as util from '../util';
 
 export async function checkAdapter(adapter) {
-    const id = 'rxdb-test-adapter-' + util.generate_id();
+    const id = 'rxdb-test-adapter-' + util.generateId();
     let recoveredDoc = null;
     let pouch;
     try {

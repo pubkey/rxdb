@@ -7,7 +7,6 @@ import RxDB from '../../dist/lib/index';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async() => {
-
         const schema = {
             version: 0,
             type: 'object',

@@ -13,7 +13,6 @@ import RxError from './rx-error';
 import overwritable from './overwritable';
 
 class DataMigrator {
-
     constructor(newestCollection, migrationStrategies) {
         this.newestCollection = newestCollection;
         this.migrationStrategies = migrationStrategies;
@@ -64,9 +63,9 @@ class DataMigrator {
             const countAll = await Promise.all(
                 oldCols.map(oldCol => oldCol.countAllUndeleted())
             );
-            const total_count = countAll.reduce((cur, prev) => prev = cur + prev, 0);
+            const totalCount = countAll.reduce((cur, prev) => prev = cur + prev, 0);
 
-            state.total = total_count;
+            state.total = totalCount;
             observer.next(clone(state));
 
             let currentCol = null;
@@ -108,7 +107,6 @@ class DataMigrator {
         }
         return this._migratePromise;
     }
-
 }
 
 class OldCollection {

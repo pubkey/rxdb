@@ -17,7 +17,6 @@ let DEBUG = false;
 let ENABLED = false;
 
 class QueryChangeDetector {
-
     constructor(query) {
         this.query = query;
         this.primaryKey = this.query.collection.schema.primaryPath;
@@ -64,7 +63,6 @@ class QueryChangeDetector {
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     handleSingleChange(resultsData, changeEvent) {
-
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
@@ -108,7 +106,6 @@ class QueryChangeDetector {
         };
 
         if (changeEvent.data.op === 'REMOVE') {
-
             // R1 (never matched)
             if (!doesMatchNow) {
                 DEBUG && this._debugMessage('R1', docData);
@@ -141,9 +138,7 @@ class QueryChangeDetector {
                 DEBUG && this._debugMessage('R4', docData);
                 return false;
             }
-
         } else {
-
             // U1 doc not matched and also not matches now
             if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
                 DEBUG && this._debugMessage('U1', docData);
@@ -182,7 +177,6 @@ class QueryChangeDetector {
                 //            console.dir(sorted);
                 return sorted;
             }
-
         }
 
         // if no optimisation-algo matches, return mustReExec:true

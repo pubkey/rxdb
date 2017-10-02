@@ -281,7 +281,6 @@ describe('rx-schema.test.js', () => {
                     const schema = RxSchema.create(schemas.human);
                     assert.equal(schema.indexes[0], 'passportId');
                 });
-
             });
             describe('negative', () => {
                 it('broken schema (nostringIndex)', () => {
@@ -406,20 +405,20 @@ describe('rx-schema.test.js', () => {
                 it('validate one human', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate without non-required', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     delete obj.age;
                     schema.validate(obj);
                 });
                 it('validate nested', () => {
                     const schema = RxSchema.create(schemas.nestedHuman);
                     const obj = schemaObjects.nestedHuman();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     schema.validate(obj);
                 });
             });
@@ -427,35 +426,35 @@ describe('rx-schema.test.js', () => {
                 it('index not given', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     delete obj.passportId;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('required field not given', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     delete obj.lastName;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overflow maximum int', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     obj.age = 1000;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overadditional property', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     obj.token = util.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generate_id();
+                    obj._id = util.generateId();
                     schema.validate(obj);
                 });
                 it('accessible error-parameters', () => {

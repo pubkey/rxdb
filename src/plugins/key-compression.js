@@ -8,7 +8,6 @@ import * as util from '../util';
 
 
 class KeyCompressor {
-
     /**
      * @param {RxSchema} schema
      */
@@ -51,7 +50,6 @@ class KeyCompressor {
                     if (typeof propertyObj === 'object' && !Array.isArray(propertyObj))
                         propertiesToTable(fullPath, propertyObj);
                 });
-
             };
             propertiesToTable('', jsonSchema);
         }

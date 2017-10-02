@@ -76,6 +76,15 @@ class LeaderElector {
         return this.database._adminPouch.put(newObj);
     }
 
+
+    getApplyFunction(electionChannel) {
+        if (electionChannel === 'socket')
+            return this.applySocket.bind(this);
+        if (electionChannel === 'broadcast')
+            return this.applyBroadcast.bind(this);
+        throw new Error('this should not happen');
+    }
+
     /**
      * starts applying for leadership
      */
@@ -86,7 +95,7 @@ class LeaderElector {
         if (this.destroyed) return false;
         this.isApplying = true;
 
-        const elected = await this['apply_' + this.electionChannel]();
+        const elected = await this.getApplyFunction(this.electionChannel)();
 
         if (elected) {
             // I am leader now
@@ -101,7 +110,7 @@ class LeaderElector {
      * apply via socket
      * (critical on chrome with indexedDB due to write-locks)
      */
-    async apply_socket() {
+    async applySocket() {
         try {
             let leaderObj = await this.getLeaderObject();
             const minTime = new Date().getTime() - SIGNAL_TIME * 2;
@@ -131,8 +140,7 @@ class LeaderElector {
      * apply via BroadcastChannel-API
      * (better performance than socket)
      */
-    async apply_broadcast() {
-
+    async applyBroadcast() {
         const applyTime = new Date().getTime();
         const subs = [];
         const errors = [];

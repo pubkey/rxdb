@@ -44,7 +44,6 @@ function compareHashMD5({
     obj,
     clone
 }) {
-
     // equal
     const hash1 = hash(JSON.stringify(obj));
     const hash2 = hash(JSON.stringify(clone));
@@ -62,7 +61,6 @@ function compareHashObject({
     obj,
     clone
 }) {
-
     // equal
     const hash1 = hashObj(JSON.stringify(obj));
     const hash2 = hashObj(JSON.stringify(clone));

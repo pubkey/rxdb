@@ -89,7 +89,6 @@ export class RxReplicationState {
             .fromEvent(evEmitter, 'complete')
             .subscribe(info => this._subjects.complete.next(info))
         );
-
     }
 
     async cancel() {

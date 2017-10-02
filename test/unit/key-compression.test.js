@@ -16,7 +16,6 @@ import * as KeyCompressor from '../../dist/lib/plugins/key-compression';
 
 
 describe('key-compression.test.js', () => {
-
     describe('create table', () => {
         it('get a valid table', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.human));
@@ -443,11 +442,9 @@ describe('key-compression.test.js', () => {
                 col.database.destroy();
             });
         });
-
     });
 
     describe('bugs', () => {
-
         it('BUG: #50 compress string array properly', async() => {
             const mySchema = {
                 title: 'hero schema',
