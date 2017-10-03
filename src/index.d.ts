@@ -286,6 +286,7 @@ export interface DatabaseCreator {
     adapter: any;
     password?: string;
     multiInstance?: boolean;
+    ignoreDuplicate?: boolean;
 }
 
 export function create(creator: DatabaseCreator): Promise<RxDatabase>;
