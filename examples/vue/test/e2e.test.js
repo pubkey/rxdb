@@ -54,7 +54,6 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
 
 
 test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact one tab should become leader', async t => {
-
     // wait until last tab loaded
     await t.switchToIframe('#frame_5');
     const heroNameInput = Selector('#insert-box input[name=name]');
@@ -115,5 +114,4 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
         }
         return ret;
     });
-
 });

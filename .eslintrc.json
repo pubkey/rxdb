@@ -135,7 +135,10 @@
                     "undeleted",
                     "rej",
                     "eq",
-                    "aes"
+                    "el",
+                    "aes",
+                    "hostname",
+                    "vue"
                 ],
                 "skipIfMatch": [
                     "^[.]{1,3}$",
