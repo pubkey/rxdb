@@ -7,7 +7,8 @@ gulp.task('test', function() {
         .src(tests.all)
         .pipe(mocha({
             bail: true,
-            timeout: 6000
+            timeout: 6000,
+            exit: true
         }))
         .once('end', function() {
             process.exit();
