@@ -376,6 +376,26 @@ describe('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
+                it('should not insert when primary is missing', async() => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    await AsyncTestUtil.assertThrows(
+                        () => collection.insert({
+                            firstName: 'foo',
+                            lastName: 'bar',
+                            age: 20
+                        }),
+                        Error,
+                        'is required'
+                    );
+                    db.destroy();
+                });
             });
         });
         describe('.find()', () => {

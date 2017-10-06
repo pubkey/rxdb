@@ -51,6 +51,31 @@ export const humanDefault = {
     required: ['passportId']
 };
 
+export const humanFinal = {
+    title: 'human schema with age set final',
+    version: 0,
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            primary: true
+        },
+        firstName: {
+            type: 'string'
+        },
+        lastName: {
+            type: 'string'
+        },
+        age: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 150,
+            final: true
+        }
+    },
+    required: ['passportId']
+};
+
 export const simpleHuman = {
     title: 'human schema',
     version: 0,
