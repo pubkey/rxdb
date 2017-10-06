@@ -34,7 +34,7 @@ var dumpRxDatabase = function () {
                         useCollections = Object.keys(this.collections).filter(function (colName) {
                             return !collections || collections.includes(colName);
                         }).filter(function (colName) {
-                            return colName.charAt(0) != '_';
+                            return colName.charAt(0) !== '_';
                         }).map(function (colName) {
                             return _this.collections[colName];
                         });
@@ -145,7 +145,7 @@ var importDumpRxCollection = function () {
             while (1) {
                 switch (_context4.prev = _context4.next) {
                     case 0:
-                        if (!(exportedJSON.schemaHash != this.schema.hash)) {
+                        if (!(exportedJSON.schemaHash !== this.schema.hash)) {
                             _context4.next = 2;
                             break;
                         }
@@ -153,7 +153,7 @@ var importDumpRxCollection = function () {
                         throw new Error('the imported json relies on a different schema');
 
                     case 2:
-                        if (!(exportedJSON.encrypted && exportedJSON.passwordHash != util.hash(this.database.password))) {
+                        if (!(exportedJSON.encrypted && exportedJSON.passwordHash !== util.hash(this.database.password))) {
                             _context4.next = 4;
                             break;
                         }

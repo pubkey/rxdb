@@ -9,13 +9,13 @@ import * as util from '../util';
 
 export var checkAdapter = function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(adapter) {
-        var id, refoundDoc, pouch;
+        var id, recoveredDoc, pouch;
         return _regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        id = 'rxdb-test-adapter-' + util.generate_id();
-                        refoundDoc = null;
+                        id = 'rxdb-test-adapter-' + util.generateId();
+                        recoveredDoc = null;
                         pouch = void 0;
                         _context.prev = 3;
 
@@ -38,7 +38,7 @@ export var checkAdapter = function () {
                         return pouch.get(id);
 
                     case 11:
-                        refoundDoc = _context.sent;
+                        recoveredDoc = _context.sent;
                         _context.next = 17;
                         break;
 
@@ -61,7 +61,7 @@ export var checkAdapter = function () {
                         _context.t1 = _context['catch'](17);
 
                     case 24:
-                        if (!(refoundDoc && refoundDoc.value)) {
+                        if (!(recoveredDoc && recoveredDoc.value)) {
                             _context.next = 28;
                             break;
                         }

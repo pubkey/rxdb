@@ -74,5 +74,5 @@ function mergeClone(to, from) {
  * @return {Boolean}
  */
 function isObject(arg) {
-    return '[object Object]' == arg.toString();
+    return '[object Object]' === arg.toString();
 };

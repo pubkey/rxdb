@@ -49,13 +49,13 @@ var RxChangeEvent = function () {
     }, {
         key: 'isIntern',
         value: function isIntern() {
-            if (this.data.col && this.data.col.charAt(0) == '_') return true;
+            if (this.data.col && this.data.col.charAt(0) === '_') return true;
             return false;
         }
     }, {
         key: 'isSocket',
         value: function isSocket() {
-            if (this.data.col && this.data.col == '_socket') return true;
+            if (this.data.col && this.data.col === '_socket') return true;
             return false;
         }
     }, {
@@ -76,7 +76,6 @@ function fromJSON(data) {
 }
 
 function fromPouchChange(changeDoc, collection) {
-
     var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) op = 'REMOVE';
 

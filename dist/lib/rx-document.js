@@ -120,7 +120,7 @@ var RxDocument = exports.RxDocument = function () {
          * @param {ChangeEvent}
          */
         value: function _handleChangeEvent(changeEvent) {
-            if (changeEvent.data.doc != this.primary) return;
+            if (changeEvent.data.doc !== this.primary) return;
 
             // TODO check if new _rev is higher then current
 
@@ -136,10 +136,10 @@ var RxDocument = exports.RxDocument = function () {
                         // document is in sync, overwrite _data
                         this._data = newData;
 
-                        if (this._synced$.getValue() != true) this._synced$.next(true);
+                        if (this._synced$.getValue() !== true) this._synced$.next(true);
                     } else {
                         // not in sync, emit to synced$
-                        if (this._synced$.getValue() != false) this._synced$.next(false);
+                        if (this._synced$.getValue() !== false) this._synced$.next(false);
 
                         // overwrite _rev of data
                         this._data._rev = newData._rev;
@@ -201,7 +201,7 @@ var RxDocument = exports.RxDocument = function () {
             var refCollection = this.collection.database.collections[schemaObj.ref];
             if (!refCollection) throw new Error('ref-collection (' + schemaObj.ref + ') not in database');
 
-            if (schemaObj.type == 'array') return Promise.all(value.map(function (id) {
+            if (schemaObj.type === 'array') return Promise.all(value.map(function (id) {
                 return refCollection.findOne(id).exec();
             }));else return refCollection.findOne(value).exec();
         }
@@ -223,7 +223,7 @@ var RxDocument = exports.RxDocument = function () {
             valueObj = (0, _clone2['default'])(valueObj);
 
             // direct return if array or non-object
-            if ((typeof valueObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(valueObj)) != 'object' || Array.isArray(valueObj)) return valueObj;
+            if ((typeof valueObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(valueObj)) !== 'object' || Array.isArray(valueObj)) return valueObj;
 
             this._defineGetterSetter(valueObj, objPath);
             return valueObj;
@@ -285,7 +285,7 @@ var RxDocument = exports.RxDocument = function () {
         key: 'set',
         value: function set(objPath, value) {
             if (typeof objPath !== 'string') throw new TypeError('RxDocument.set(): objPath must be a string');
-            if (!this._isTemporary && objPath == this.primaryPath) {
+            if (!this._isTemporary && objPath === this.primaryPath) {
                 throw new Error('RxDocument.set(): primary-key (' + this.primaryPath + ')\n                cannot be modified');
             }
             // check if equal
@@ -701,7 +701,7 @@ function createAr(collection, jsonDataAr) {
     return jsonDataAr.map(function (jsonData) {
         return create(collection, jsonData);
     }).filter(function (doc) {
-        return doc != null;
+        return doc !== null;
     });
 }
 

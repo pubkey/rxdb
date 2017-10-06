@@ -4,19 +4,19 @@
  * @link https://github.com/brix/crypto-js
  */
 
-import * as crypto_AES from 'crypto-js/aes';
-import * as crypto_enc from 'crypto-js/enc-utf8';
+import * as cryptoAes from 'crypto-js/aes';
+import * as cryptoEnc from 'crypto-js/enc-utf8';
 
 var minPassLength = 8;
 
 export function encrypt(value, password) {
-    var encrypted = crypto_AES.encrypt(value, password);
+    var encrypted = cryptoAes.encrypt(value, password);
     return encrypted.toString();
 };
 
-export function decrypt(ciphertext, password) {
-    var decrypted = crypto_AES.decrypt(ciphertext, password);
-    return decrypted.toString(crypto_enc);
+export function decrypt(cipherText, password) {
+    var decrypted = cryptoAes.decrypt(cipherText, password);
+    return decrypted.toString(cryptoEnc);
 };
 
 var _encryptValue = function _encryptValue(value) {

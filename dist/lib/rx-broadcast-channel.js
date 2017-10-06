@@ -92,7 +92,7 @@ var RxBroadcastChannel = function () {
                 }).map(function (strMsg) {
                     return JSON.parse(strMsg);
                 }).filter(function (msg) {
-                    return msg.it != _this.token;
+                    return msg.it !== _this.token;
                 });
             }
             return this._$;

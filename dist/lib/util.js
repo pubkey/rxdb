@@ -94,7 +94,7 @@ var requestIdlePromise = exports.requestIdlePromise = function () {
 exports.isLevelDown = isLevelDown;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
-exports.generate_id = generate_id;
+exports.generateId = generateId;
 exports.nextTick = nextTick;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
@@ -222,7 +222,7 @@ function hash(obj) {
  * generate a new _id as db-primary-key
  * @return {string}
  */
-function generate_id() {
+function generateId() {
     return (0, _randomToken2['default'])(10) + ':' + new Date().getTime();
 }
 
@@ -282,10 +282,10 @@ function numberToLetter(nr) {
  */
 function trimDots(str) {
     // start
-    while (str.charAt(0) == '.') {
+    while (str.charAt(0) === '.') {
         str = str.substr(1);
     } // end
-    while (str.slice(-1) == '.') {
+    while (str.slice(-1) === '.') {
         str = str.slice(0, -1);
     }return str;
 }
@@ -298,7 +298,7 @@ function trimDots(str) {
  * @return {boolean} true
  */
 function validateCouchDBString(name) {
-    if (typeof name != 'string' || name.length == 0) throw new TypeError('given name is no string or empty');
+    if (typeof name !== 'string' || name.length === 0) throw new TypeError('given name is no string or empty');
 
     // do not check, if foldername is given
     if (name.includes('/')) return true;

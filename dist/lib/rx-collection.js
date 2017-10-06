@@ -87,8 +87,8 @@ var create = exports.create = function () {
                         checkMigrationStrategies(schema, migrationStrategies);
 
                         // check ORM-methods
-                        checkORMmethdods(statics);
-                        checkORMmethdods(methods);
+                        checkOrmMethods(statics);
+                        checkOrmMethods(methods);
                         Object.keys(methods).filter(function (funName) {
                             return schema.topLevelFields.includes(funName);
                         }).forEach(function (funName) {
@@ -267,7 +267,7 @@ var RxCollection = exports.RxCollection = function () {
                             case 5:
 
                                 this._observable$ = this.database.$.filter(function (event) {
-                                    return event.data.col == _this2.name;
+                                    return event.data.col === _this2.name;
                                 });
                                 this._changeEventBuffer = _changeEventBuffer2['default'].create(this);
 
@@ -318,7 +318,7 @@ var RxCollection = exports.RxCollection = function () {
          * @return {boolean}
          */
         value: function migrationNeeded() {
-            if (this.schema.version == 0) return false;
+            if (this.schema.version === 0) return false;
             return this._dataMigrator._getOldCollections().then(function (oldCols) {
                 return oldCols.length > 0;
             });
@@ -412,7 +412,7 @@ var RxCollection = exports.RxCollection = function () {
                                 _context2.prev = 8;
                                 _context2.t0 = _context2['catch'](2);
 
-                                if (!(overwrite && _context2.t0.status == 409)) {
+                                if (!(overwrite && _context2.t0.status === 409)) {
                                     _context2.next = 20;
                                     break;
                                 }
@@ -649,7 +649,6 @@ var RxCollection = exports.RxCollection = function () {
                     while (1) {
                         switch (_context6.prev = _context6.next) {
                             case 0:
-
                                 // inserting a temporary-document
                                 tempDoc = null;
 
@@ -685,7 +684,7 @@ var RxCollection = exports.RxCollection = function () {
                             case 10:
 
                                 // fill _id
-                                if (this.schema.primaryPath == '_id' && !json._id) json._id = util.generate_id();
+                                if (this.schema.primaryPath === '_id' && !json._id) json._id = util.generateId();
 
                                 _context6.next = 13;
                                 return this._runHooks('pre', 'insert', json);
@@ -966,13 +965,13 @@ var RxCollection = exports.RxCollection = function () {
         value: function addHook(when, key, fun) {
             var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
-            if (typeof fun != 'function') throw new TypeError(key + '-hook must be a function');
+            if (typeof fun !== 'function') throw new TypeError(key + '-hook must be a function');
 
             if (!HOOKS_WHEN.includes(when)) throw new TypeError('hooks-when not known');
 
             if (!HOOKS_KEYS.includes(key)) throw new Error('hook-name ' + key + 'not known');
 
-            if (when == 'post' && key == 'create' && parallel == true) throw new Error('.postCreate-hooks cannot be async');
+            if (when === 'post' && key === 'create' && parallel === true) throw new Error('.postCreate-hooks cannot be async');
 
             var runName = parallel ? 'parallel' : 'series';
 
@@ -1155,7 +1154,7 @@ var checkMigrationStrategies = function checkMigrationStrategies(schema, migrati
     if ((typeof migrationStrategies === 'undefined' ? 'undefined' : (0, _typeof3['default'])(migrationStrategies)) !== 'object' || Array.isArray(migrationStrategies)) throw new TypeError('migrationStrategies must be an object');
 
     // for every previousVersion there must be strategy
-    if (schema.previousVersions.length != Object.keys(migrationStrategies).length) {
+    if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
         throw _rxError2['default'].newRxError('A migrationStrategy is missing or too much', {
             have: Object.keys(migrationStrategies),
             should: schema.previousVersions
@@ -1197,13 +1196,13 @@ function properties() {
  * @param  {{}} statics [description]
  * @throws if not allowed
  */
-var checkORMmethdods = function checkORMmethdods(statics) {
+var checkOrmMethods = function checkOrmMethods(statics) {
     Object.entries(statics).forEach(function (entry) {
-        if (typeof entry[0] != 'string') throw new TypeError('given static method-name (' + entry[0] + ') is not a string');
+        if (typeof entry[0] !== 'string') throw new TypeError('given static method-name (' + entry[0] + ') is not a string');
 
         if (entry[0].startsWith('_')) throw new TypeError('static method-names cannot start with underscore _ (' + entry[0] + ')');
 
-        if (typeof entry[1] != 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function but ' + (0, _typeof3['default'])(entry[1]));
+        if (typeof entry[1] !== 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function but ' + (0, _typeof3['default'])(entry[1]));
 
         if (properties().includes(entry[0]) || _rxDocument2['default'].properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
     });

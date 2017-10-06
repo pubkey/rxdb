@@ -83,7 +83,7 @@ export function hash(obj) {
  * generate a new _id as db-primary-key
  * @return {string}
  */
-export function generate_id() {
+export function generateId() {
     return randomToken(10) + ':' + new Date().getTime();
 }
 
@@ -217,10 +217,10 @@ export function numberToLetter(nr) {
  */
 export function trimDots(str) {
     // start
-    while (str.charAt(0) == '.') {
+    while (str.charAt(0) === '.') {
         str = str.substr(1);
     } // end
-    while (str.slice(-1) == '.') {
+    while (str.slice(-1) === '.') {
         str = str.slice(0, -1);
     }return str;
 }
@@ -233,7 +233,7 @@ export function trimDots(str) {
  * @return {boolean} true
  */
 export function validateCouchDBString(name) {
-    if (typeof name != 'string' || name.length == 0) throw new TypeError('given name is no string or empty');
+    if (typeof name !== 'string' || name.length === 0) throw new TypeError('given name is no string or empty');
 
     // do not check, if foldername is given
     if (name.includes('/')) return true;

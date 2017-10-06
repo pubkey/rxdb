@@ -21,7 +21,7 @@ var Socket = function () {
         this.pullCount = 0;
         this.pull_running = false;
         this.lastPull = new Date().getTime();
-        this.recievedEvents = {};
+        this.receivedEvents = {};
 
         this.bc = RxBroadcastChannel.create(this.database, 'socket');
         this.messages$ = new util.Rx.Subject();
@@ -49,7 +49,7 @@ var Socket = function () {
                             // pull on BroadcastChannel-message
                             if (this.bc) {
                                 this.subs.push(this.bc.$.filter(function (msg) {
-                                    return msg.type == 'pull';
+                                    return msg.type === 'pull';
                                 }).subscribe(function () {
                                     return _this.pull();
                                 }));
@@ -342,7 +342,7 @@ var Socket = function () {
 
                         case 15:
                             docs.filter(function (doc) {
-                                return doc.it != _this6.token;
+                                return doc.it !== _this6.token;
                             }) // do not get events emitted by self
                             // do not get events older than minTime
                             .filter(function (doc) {
@@ -357,13 +357,13 @@ var Socket = function () {
                             })
                             // make sure the same event is not emitted twice
                             .filter(function (cE) {
-                                if (_this6.recievedEvents[cE.hash]) return false;
-                                return _this6.recievedEvents[cE.hash] = new Date().getTime();
+                                if (_this6.receivedEvents[cE.hash]) return false;
+                                return _this6.receivedEvents[cE.hash] = new Date().getTime();
                             })
-                            // prevent memory leak of this.recievedEvents
+                            // prevent memory leak of this.receivedEvents
                             .filter(function (cE) {
                                 return setTimeout(function () {
-                                    return delete _this6.recievedEvents[cE.hash];
+                                    return delete _this6.receivedEvents[cE.hash];
                                 }, EVENT_TTL * 3);
                             })
                             // emit to messages

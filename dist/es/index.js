@@ -17,8 +17,8 @@ Core.plugin(ValidatePlugin);
 import KeyCompressionPlugin from './plugins/key-compression';
 Core.plugin(KeyCompressionPlugin);
 
-import LeaderelectionPlugin from './plugins/leader-election';
-Core.plugin(LeaderelectionPlugin);
+import LeaderElectionPlugin from './plugins/leader-election';
+Core.plugin(LeaderElectionPlugin);
 
 import EncryptionPlugin from './plugins/encryption';
 Core.plugin(EncryptionPlugin);

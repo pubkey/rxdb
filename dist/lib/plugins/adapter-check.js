@@ -19,13 +19,13 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
  */
 var checkAdapter = exports.checkAdapter = function () {
     var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(adapter) {
-        var id, refoundDoc, pouch;
+        var id, recoveredDoc, pouch;
         return _regenerator2['default'].wrap(function _callee$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        id = 'rxdb-test-adapter-' + util.generate_id();
-                        refoundDoc = null;
+                        id = 'rxdb-test-adapter-' + util.generateId();
+                        recoveredDoc = null;
                         pouch = void 0;
                         _context.prev = 3;
 
@@ -48,7 +48,7 @@ var checkAdapter = exports.checkAdapter = function () {
                         return pouch.get(id);
 
                     case 11:
-                        refoundDoc = _context.sent;
+                        recoveredDoc = _context.sent;
                         _context.next = 17;
                         break;
 
@@ -71,7 +71,7 @@ var checkAdapter = exports.checkAdapter = function () {
                         _context.t1 = _context['catch'](17);
 
                     case 24:
-                        if (!(refoundDoc && refoundDoc.value)) {
+                        if (!(recoveredDoc && recoveredDoc.value)) {
                             _context.next = 28;
                             break;
                         }

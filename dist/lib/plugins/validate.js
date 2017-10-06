@@ -45,7 +45,7 @@ var _getValidator = function _getValidator() {
     if (!validatorsCache[hash]) validatorsCache[hash] = {};
     var validatorsOfHash = validatorsCache[hash];
     if (!validatorsOfHash[schemaPath]) {
-        var schemaPart = schemaPath == '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+        var schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
         if (!schemaPart) {
             throw _rxError2['default'].newRxError('Sub-schema not found, does the schemaPath exists in your schema?', {
                 schemaPath: schemaPath

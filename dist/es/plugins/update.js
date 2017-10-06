@@ -31,7 +31,7 @@ export function update(updateObj) {
     return this.save();
 }
 
-export var RxQuery_update = function () {
+export var RxQueryUpdate = function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(updateObj) {
         var docs;
         return _regeneratorRuntime.wrap(function _callee$(_context) {
@@ -81,7 +81,7 @@ export var RxQuery_update = function () {
         }, _callee, this);
     }));
 
-    return function RxQuery_update(_x) {
+    return function RxQueryUpdate(_x) {
         return _ref.apply(this, arguments);
     };
 }();
@@ -92,7 +92,7 @@ export var prototypes = {
         proto.update = update;
     },
     RxQuery: function RxQuery(proto) {
-        proto.update = RxQuery_update;
+        proto.update = RxQueryUpdate;
     }
 };
 

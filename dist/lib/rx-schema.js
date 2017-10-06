@@ -134,7 +134,7 @@ var RxSchema = exports.RxSchema = function () {
     }, {
         key: 'swapIdToPrimary',
         value: function swapIdToPrimary(obj) {
-            if (this.primaryPath == '_id' || obj[this.primaryPath]) return obj;
+            if (this.primaryPath === '_id' || obj[this.primaryPath]) return obj;
             obj[this.primaryPath] = obj._id;
             delete obj._id;
             return obj;
@@ -144,10 +144,10 @@ var RxSchema = exports.RxSchema = function () {
         value: function swapPrimaryToId(obj) {
             var _this2 = this;
 
-            if (this.primaryPath == '_id') return obj;
+            if (this.primaryPath === '_id') return obj;
             var ret = {};
             Object.entries(obj).forEach(function (entry) {
-                var newKey = entry[0] == _this2.primaryPath ? '_id' : entry[0];
+                var newKey = entry[0] === _this2.primaryPath ? '_id' : entry[0];
                 ret[newKey] = entry[1];
             });
             return ret;
@@ -257,7 +257,7 @@ function getEncryptedPaths(jsonSchema) {
         }
         for (var attributeName in currentObj) {
             var nextPath = currentPath;
-            if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
+            if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
         }
     }
@@ -282,7 +282,7 @@ function getIndexes(jsonID) {
     Object.entries(jsonID).forEach(function (entry) {
         var key = entry[0];
         var obj = entry[1];
-        var path = key == 'properties' ? prePath : util.trimDots(prePath + '.' + key);
+        var path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
 
         if (obj.index) indexes.push([path]);
 
@@ -292,13 +292,13 @@ function getIndexes(jsonID) {
         }
     });
 
-    if (prePath == '') {
+    if (prePath === '') {
         var addCompound = jsonID.compoundIndexes || [];
         indexes = indexes.concat(addCompound);
     }
 
     indexes = indexes.filter(function (elem, pos, arr) {
-        return arr.indexOf(elem) == pos;
+        return arr.indexOf(elem) === pos;
     }); // unique;
     return indexes;
 }

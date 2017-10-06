@@ -31,7 +31,7 @@ var QueryChangeDetector = function () {
     QueryChangeDetector.prototype.runChangeDetection = function runChangeDetection(changeEvents) {
         var _this = this;
 
-        if (changeEvents.length == 0) return false;
+        if (changeEvents.length === 0) return false;
         if (!ENABLED) return true;
 
         var resultsData = this.query._resultsData;
@@ -107,15 +107,14 @@ var QueryChangeDetector = function () {
         var sortFieldChanged = function sortFieldChanged() {
             if (_sortFieldChanged === null) {
                 var docBefore = resultsData.find(function (doc) {
-                    return doc[_this2.primaryKey] == docData[_this2.primaryKey];
+                    return doc[_this2.primaryKey] === docData[_this2.primaryKey];
                 });
                 _sortFieldChanged = _this2._sortFieldChanged(docBefore, docData);
             }
             return _sortFieldChanged;
         };
 
-        if (changeEvent.data.op == 'REMOVE') {
-
+        if (changeEvent.data.op === 'REMOVE') {
             // R1 (never matched)
             if (!doesMatchNow) {
                 DEBUG && this._debugMessage('R1', docData);
@@ -133,7 +132,7 @@ var QueryChangeDetector = function () {
             if (doesMatchNow && wasDocInResults && !isFilled) {
                 DEBUG && this._debugMessage('R3', docData);
                 results = results.filter(function (doc) {
-                    return doc[_this2.primaryKey] != docData[_this2.primaryKey];
+                    return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
                 });
                 return results;
             }
@@ -141,7 +140,7 @@ var QueryChangeDetector = function () {
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
                 DEBUG && this._debugMessage('R3.1', docData);
                 results = results.filter(function (doc) {
-                    return doc[_this2.primaryKey] != docData[_this2.primaryKey];
+                    return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
                 });
                 return results;
             }
@@ -152,7 +151,6 @@ var QueryChangeDetector = function () {
                 return false;
             }
         } else {
-
             // U1 doc not matched and also not matches now
             if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
                 DEBUG && this._debugMessage('U1', docData);
@@ -165,7 +163,7 @@ var QueryChangeDetector = function () {
 
                 // replace but make sure its the same position
                 var wasDoc = results.find(function (doc) {
-                    return doc[_this2.primaryKey] == docData[_this2.primaryKey];
+                    return doc[_this2.primaryKey] === docData[_this2.primaryKey];
                 });
                 var i = results.indexOf(wasDoc);
                 results[i] = docData;
@@ -213,7 +211,7 @@ var QueryChangeDetector = function () {
         }], {
             selector: massageSelector(this.query.toJSON().selector)
         }, inMemoryFields);
-        var ret = retDocs.length == 1;
+        var ret = retDocs.length === 1;
         return ret;
     };
 
@@ -227,7 +225,7 @@ var QueryChangeDetector = function () {
     QueryChangeDetector.prototype._isDocInResultData = function _isDocInResultData(docData, resultData) {
         var primaryPath = this.query.collection.schema.primaryPath;
         var first = resultData.find(function (doc) {
-            return doc[primaryPath] == docData[primaryPath];
+            return doc[primaryPath] === docData[primaryPath];
         });
         return !!first;
     };
@@ -250,7 +248,7 @@ var QueryChangeDetector = function () {
         sortFields.find(function (field) {
             var beforeData = objectPath.get(docDataBefore, field);
             var afterData = objectPath.get(docDataAfter, field);
-            if (beforeData != afterData) {
+            if (beforeData !== afterData) {
                 changed = true;
                 return true;
             } else return false;
@@ -270,9 +268,9 @@ var QueryChangeDetector = function () {
     QueryChangeDetector.prototype._isSortedBefore = function _isSortedBefore(docDataLeft, docDataRight) {
         var options = this.query.toJSON();
         var inMemoryFields = Object.keys(this.query.toJSON().selector);
-        var swapedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
-        var swapedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
-        var rows = [swapedLeft, swapedRight].map(function (doc) {
+        var swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
+        var swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
+        var rows = [swappedLeft, swappedRight].map(function (doc) {
             return {
                 id: doc._id,
                 doc: doc
@@ -284,7 +282,7 @@ var QueryChangeDetector = function () {
             selector: massageSelector(this.query.toJSON().selector),
             sort: options.sort
         }, inMemoryFields);
-        return sortedRows[0].id == swapedLeft._id;
+        return sortedRows[0].id === swappedLeft._id;
     };
 
     /**

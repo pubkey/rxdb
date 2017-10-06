@@ -3,15 +3,15 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import randomToken from 'random-token';
-import PouchDB from './pouch-db';
+import IdleQueue from 'custom-idle-queue';
 
+import PouchDB from './pouch-db';
 import * as util from './util';
 import RxError from './rx-error';
 import RxCollection from './rx-collection';
 import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
 import Socket from './socket';
-import IdleQueue from './idle-queue';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
 
@@ -31,7 +31,7 @@ export var RxDatabase = function () {
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
-        this.idleQueue = IdleQueue.create();
+        this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
         this.subs = [];
@@ -110,7 +110,7 @@ export var RxDatabase = function () {
                             _context.t1 = _context['catch'](13);
 
                         case 20:
-                            if (!(pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)) {
+                            if (!(pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value)) {
                                 _context.next = 22;
                                 break;
                             }
@@ -221,7 +221,7 @@ export var RxDatabase = function () {
         this.subject.next(changeEvent);
 
         // write to socket if event was created by self
-        if (changeEvent.data.it == this.token) this.writeToSocket(changeEvent);
+        if (changeEvent.data.it === this.token) this.writeToSocket(changeEvent);
     };
 
     /**
@@ -285,7 +285,7 @@ export var RxDatabase = function () {
                                 return row.doc;
                             }).filter(function (doc) {
                                 var name = doc._id.split('-')[0];
-                                return name == collectionName;
+                                return name === collectionName;
                             });
                             _context3.next = 6;
                             return Promise.all(relevantDocs.map(function (doc) {
@@ -332,7 +332,7 @@ export var RxDatabase = function () {
                         case 0:
                             args.database = this;
 
-                            if (!(args.name.charAt(0) == '_')) {
+                            if (!(args.name.charAt(0) === '_')) {
                                 _context4.next = 3;
                                 break;
                             }
@@ -391,7 +391,7 @@ export var RxDatabase = function () {
                             _context4.t0 = _context4['catch'](13);
 
                         case 21:
-                            if (!(collectionDoc && collectionDoc.schemaHash != schemaHash)) {
+                            if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
                                 _context4.next = 23;
                                 break;
                             }
@@ -532,7 +532,7 @@ export var RxDatabase = function () {
 
 
     RxDatabase.prototype.lockedRun = function lockedRun(fun) {
-        return this.idleQueue.wrapFunctionWithLocking(fun);
+        return this.idleQueue.wrapCall(fun);
     };
 
     RxDatabase.prototype.requestIdlePromise = function requestIdlePromise() {
@@ -709,13 +709,13 @@ function _isNameAdapterUsed(name, adapter) {
 
     var used = false;
     USED_COMBINATIONS[name].forEach(function (ad) {
-        if (ad == adapter) used = true;
+        if (ad === adapter) used = true;
     });
     if (used) {
-        throw RxError.newRxError('RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional', {
+        throw RxError.newRxError('RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional', {
             name: name,
             adapter: adapter,
-            link: 'https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate'
+            link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
         });
     }
 }
@@ -734,8 +734,8 @@ export var create = function () {
             password = _ref8.password,
             _ref8$multiInstance = _ref8.multiInstance,
             multiInstance = _ref8$multiInstance === undefined ? true : _ref8$multiInstance,
-            _ref8$ingoreDuplicate = _ref8.ingoreDuplicate,
-            ingoreDuplicate = _ref8$ingoreDuplicate === undefined ? false : _ref8$ingoreDuplicate;
+            _ref8$ignoreDuplicate = _ref8.ignoreDuplicate,
+            ignoreDuplicate = _ref8$ignoreDuplicate === undefined ? false : _ref8$ignoreDuplicate;
         var db;
         return _regeneratorRuntime.wrap(function _callee7$(_context7) {
             while (1) {
@@ -745,7 +745,7 @@ export var create = function () {
 
                         // check if pouchdb-adapter
 
-                        if (!(typeof adapter == 'string')) {
+                        if (!(typeof adapter === 'string')) {
                             _context7.next = 6;
                             break;
                         }
@@ -776,7 +776,7 @@ export var create = function () {
                         if (password) overwritable.validatePassword(password);
 
                         // check if combination already used
-                        if (!ingoreDuplicate) _isNameAdapterUsed(name, adapter);
+                        if (!ignoreDuplicate) _isNameAdapterUsed(name, adapter);
 
                         // add to used_map
                         if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];

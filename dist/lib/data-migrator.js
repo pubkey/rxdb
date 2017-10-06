@@ -85,7 +85,7 @@ var DataMigrator = function () {
             }) // auto-catch so Promise.all continues
             ).then(function (oldColDocs) {
                 return oldColDocs.filter(function (colDoc) {
-                    return colDoc != null;
+                    return colDoc !== null;
                 }).map(function (colDoc) {
                     return new OldCollection(colDoc.schema.version, colDoc.schema, _this);
                 });
@@ -118,7 +118,7 @@ var DataMigrator = function () {
 
             var migrationState$ = new util.Rx.Observable(function () {
                 var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(observer) {
-                    var oldCols, countAll, total_count, currentCol, _loop;
+                    var oldCols, countAll, totalCount, currentCol, _loop;
 
                     return _regenerator2['default'].wrap(function _callee$(_context2) {
                         while (1) {
@@ -136,12 +136,12 @@ var DataMigrator = function () {
 
                                 case 5:
                                     countAll = _context2.sent;
-                                    total_count = countAll.reduce(function (cur, prev) {
+                                    totalCount = countAll.reduce(function (cur, prev) {
                                         return prev = cur + prev;
                                     }, 0);
 
 
-                                    state.total = total_count;
+                                    state.total = totalCount;
                                     observer.next((0, _clone2['default'])(state));
 
                                     currentCol = null;
@@ -340,7 +340,7 @@ var OldCollection = function () {
 
                                 nextVersion++;
 
-                                if (!(doc == null)) {
+                                if (!(doc === null)) {
                                     _context4.next = 9;
                                     break;
                                 }

@@ -82,13 +82,13 @@ var MQuery = function () {
         value: function where() {
             if (!arguments.length) return this;
             var type = (0, _typeof3['default'])(arguments[0]);
-            if ('string' == type) {
+            if ('string' === type) {
                 this._path = arguments[0];
                 if (2 === arguments.length) this._conditions[this._path] = arguments[1];
                 return this;
             }
 
-            if ('object' == type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
+            if ('object' === type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
 
             throw new TypeError('path must be a string or object');
         }
@@ -276,7 +276,7 @@ var MQuery = function () {
     }, {
         key: 'elemMatch',
         value: function elemMatch() {
-            if (null == arguments[0]) throw new TypeError('Invalid argument');
+            if (null === arguments[0]) throw new TypeError('Invalid argument');
 
             var fn = void 0;
             var path = void 0;
@@ -337,13 +337,13 @@ var MQuery = function () {
             }
 
             // .sort('field -test')
-            if (1 === arguments.length && 'string' == type) {
+            if (1 === arguments.length && 'string' === type) {
                 arg = arg.split(/\s+/);
                 len = arg.length;
                 for (var _i = 0; _i < len; ++_i) {
                     var field = arg[_i];
                     if (!field) continue;
-                    var ascend = '-' == field[0] ? -1 : 1;
+                    var ascend = '-' === field[0] ? -1 : 1;
                     if (ascend === -1) field = field.substring(1);
                     push(this.options, field, ascend);
                 }

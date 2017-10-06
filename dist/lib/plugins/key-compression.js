@@ -37,7 +37,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  */
 
 var KeyCompressor = function () {
-
     /**
      * @param {RxSchema} schema
      */
@@ -212,17 +211,17 @@ var KeyCompressor = function () {
                 var propertiesToTable = function propertiesToTable(path, obj) {
                     Object.keys(obj).map(function (key) {
                         var propertyObj = obj[key];
-                        var fullPath = key == 'properties' ? path : util.trimDots(path + '.' + key);
+                        var fullPath = key === 'properties' ? path : util.trimDots(path + '.' + key);
                         if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
-                        !_this4._table[fullPath] && fullPath != '' && key.length > 3 && // do not compress short keys
+                        !_this4._table[fullPath] && fullPath !== '' && key.length > 3 && // do not compress short keys
                         !fullPath.startsWith('_') // _id/_rev etc should never be compressed
                         ) _this4._table[fullPath] = '|' + nextKey();
 
                         // primary-key is always compressed to _id
-                        if (propertyObj.primary == true) _this4._table[fullPath] = '_id';
+                        if (propertyObj.primary === true) _this4._table[fullPath] = '_id';
 
-                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) == 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
+                        if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) === 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
                     });
                 };
                 propertiesToTable('', jsonSchema);

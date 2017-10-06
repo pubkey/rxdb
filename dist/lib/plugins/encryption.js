@@ -9,11 +9,11 @@ exports.decrypt = decrypt;
 
 var _aes = require('crypto-js/aes');
 
-var crypto_AES = _interopRequireWildcard(_aes);
+var cryptoAes = _interopRequireWildcard(_aes);
 
 var _encUtf = require('crypto-js/enc-utf8');
 
-var crypto_enc = _interopRequireWildcard(_encUtf);
+var cryptoEnc = _interopRequireWildcard(_encUtf);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -26,13 +26,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 var minPassLength = 8;
 
 function encrypt(value, password) {
-    var encrypted = crypto_AES.encrypt(value, password);
+    var encrypted = cryptoAes.encrypt(value, password);
     return encrypted.toString();
 };
 
-function decrypt(ciphertext, password) {
-    var decrypted = crypto_AES.decrypt(ciphertext, password);
-    return decrypted.toString(crypto_enc);
+function decrypt(cipherText, password) {
+    var decrypted = cryptoAes.decrypt(cipherText, password);
+    return decrypted.toString(cryptoEnc);
 };
 
 var _encryptValue = function _encryptValue(value) {

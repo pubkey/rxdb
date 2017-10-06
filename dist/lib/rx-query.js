@@ -317,10 +317,10 @@ var RxQuery = exports.RxQuery = function () {
                 Object.keys(options.sort).map(function (fieldName) {
                     var dirInt = options.sort[fieldName];
                     var dir = 'asc';
-                    if (dirInt == -1) dir = 'desc';
+                    if (dirInt === -1) dir = 'desc';
                     var pushMe = {};
                     // TODO run primary-swap somewhere else
-                    if (fieldName == primPath) fieldName = '_id';
+                    if (fieldName === primPath) fieldName = '_id';
 
                     pushMe[fieldName] = dir;
                     sortArray.push(pushMe);
@@ -353,15 +353,17 @@ var RxQuery = exports.RxQuery = function () {
             Object.entries(json.selector).filter(function (entry) {
                 return (0, _typeof3['default'])(entry[1]) === 'object';
             }).filter(function (entry) {
-                return entry[1] != null;
+                return entry[1] !== null;
             }).filter(function (entry) {
-                return Object.keys(entry[1]) == 0;
+                return !Array.isArray(entry[1]);
+            }).filter(function (entry) {
+                return Object.keys(entry[1]).length === 0;
             }).forEach(function (entry) {
                 return delete json.selector[entry[0]];
             });
 
             // primary swap
-            if (primPath != '_id' && json.selector[primPath]) {
+            if (primPath !== '_id' && json.selector[primPath]) {
                 // selector
                 json.selector._id = json.selector[primPath];
                 delete json.selector[primPath];
@@ -440,7 +442,7 @@ var RxQuery = exports.RxQuery = function () {
         value: function regex(params) {
             var clonedThis = this._clone();
 
-            if (this.mquery._path == this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + this.mquery._path + '\'');
+            if (this.mquery._path === this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + this.mquery._path + '\'');
 
             clonedThis.mquery.regex(params);
             return clonedThis._tunnelQueryCache();
@@ -461,12 +463,12 @@ var RxQuery = exports.RxQuery = function () {
 
             // workarround because sort wont work on unused keys
             if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3['default'])(params)) !== 'object') {
-                var checkParam = params.charAt(0) == '-' ? params.substring(1) : params;
+                var checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
                 if (!clonedThis.mquery._conditions[checkParam]) {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
                     if (!schemaObj) throwNotInSchema(checkParam);
 
-                    if (schemaObj.type == 'integer')
+                    if (schemaObj.type === 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
                         clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -479,7 +481,7 @@ var RxQuery = exports.RxQuery = function () {
                     var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
                     if (!schemaObj) throwNotInSchema(k);
 
-                    if (schemaObj.type == 'integer')
+                    if (schemaObj.type === 'integer')
                         // TODO change back to -Infinity when issue resolved
                         // @link https://github.com/pouchdb/pouchdb/issues/6454
                         clonedThis.mquery.where(k).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
@@ -493,7 +495,7 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: 'limit',
         value: function limit(amount) {
-            if (this.op == 'findOne') throw new Error('.limit() cannot be called on .findOne()');else {
+            if (this.op === 'findOne') throw new Error('.limit() cannot be called on .findOne()');else {
                 var clonedThis = this._clone();
                 clonedThis.mquery.limit(amount);
                 return clonedThis._tunnelQueryCache();
@@ -510,7 +512,7 @@ var RxQuery = exports.RxQuery = function () {
                         if (hasChanged) return 'WAITFORNEXTEMIT';else return results;
                     });
                 }).filter(function (results) {
-                    return results != 'WAITFORNEXTEMIT';
+                    return results !== 'WAITFORNEXTEMIT';
                 }).asObservable();
 
                 var changeEvents$ = this.collection.$.filter(function (cEvent) {
@@ -533,9 +535,9 @@ var RxQuery = exports.RxQuery = function () {
                 });
 
                 this._$ = util.Rx.Observable.merge(res$, changeEvents$).filter(function (x) {
-                    return x != null;
+                    return x !== null;
                 }).map(function (results) {
-                    if (_this3.op != 'findOne') return results;else if (results.length == 0) return null;else return results[0];
+                    if (_this3.op !== 'findOne') return results;else if (results.length === 0) return null;else return results[0];
                 });
             }
             return this._$;

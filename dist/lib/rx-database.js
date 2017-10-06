@@ -32,8 +32,8 @@ var create = exports.create = function () {
             password = _ref7.password,
             _ref7$multiInstance = _ref7.multiInstance,
             multiInstance = _ref7$multiInstance === undefined ? true : _ref7$multiInstance,
-            _ref7$ingoreDuplicate = _ref7.ingoreDuplicate,
-            ingoreDuplicate = _ref7$ingoreDuplicate === undefined ? false : _ref7$ingoreDuplicate;
+            _ref7$ignoreDuplicate = _ref7.ignoreDuplicate,
+            ignoreDuplicate = _ref7$ignoreDuplicate === undefined ? false : _ref7$ignoreDuplicate;
         var db;
         return _regenerator2['default'].wrap(function _callee7$(_context7) {
             while (1) {
@@ -43,7 +43,7 @@ var create = exports.create = function () {
 
                         // check if pouchdb-adapter
 
-                        if (!(typeof adapter == 'string')) {
+                        if (!(typeof adapter === 'string')) {
                             _context7.next = 6;
                             break;
                         }
@@ -74,7 +74,7 @@ var create = exports.create = function () {
                         if (password) _overwritable2['default'].validatePassword(password);
 
                         // check if combination already used
-                        if (!ingoreDuplicate) _isNameAdapterUsed(name, adapter);
+                        if (!ignoreDuplicate) _isNameAdapterUsed(name, adapter);
 
                         // add to used_map
                         if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
@@ -186,6 +186,10 @@ var _randomToken = require('random-token');
 
 var _randomToken2 = _interopRequireDefault(_randomToken);
 
+var _customIdleQueue = require('custom-idle-queue');
+
+var _customIdleQueue2 = _interopRequireDefault(_customIdleQueue);
+
 var _pouchDb = require('./pouch-db');
 
 var _pouchDb2 = _interopRequireDefault(_pouchDb);
@@ -214,10 +218,6 @@ var _socket = require('./socket');
 
 var _socket2 = _interopRequireDefault(_socket);
 
-var _idleQueue = require('./idle-queue');
-
-var _idleQueue2 = _interopRequireDefault(_idleQueue);
-
 var _overwritable = require('./overwritable');
 
 var _overwritable2 = _interopRequireDefault(_overwritable);
@@ -244,7 +244,7 @@ var RxDatabase = exports.RxDatabase = function () {
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
-        this.idleQueue = _idleQueue2['default'].create();
+        this.idleQueue = new _customIdleQueue2['default']();
         this.token = (0, _randomToken2['default'])(10);
 
         this.subs = [];
@@ -327,7 +327,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 _context.t1 = _context['catch'](13);
 
                             case 20:
-                                if (!(pwHashDoc && this.password && util.hash(this.password) != pwHashDoc.value)) {
+                                if (!(pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value)) {
                                     _context.next = 22;
                                     break;
                                 }
@@ -444,7 +444,7 @@ var RxDatabase = exports.RxDatabase = function () {
             this.subject.next(changeEvent);
 
             // write to socket if event was created by self
-            if (changeEvent.data.it == this.token) this.writeToSocket(changeEvent);
+            if (changeEvent.data.it === this.token) this.writeToSocket(changeEvent);
         }
 
         /**
@@ -513,7 +513,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                     return row.doc;
                                 }).filter(function (doc) {
                                     var name = doc._id.split('-')[0];
-                                    return name == collectionName;
+                                    return name === collectionName;
                                 });
                                 _context3.next = 6;
                                 return Promise.all(relevantDocs.map(function (doc) {
@@ -561,7 +561,7 @@ var RxDatabase = exports.RxDatabase = function () {
                             case 0:
                                 args.database = this;
 
-                                if (!(args.name.charAt(0) == '_')) {
+                                if (!(args.name.charAt(0) === '_')) {
                                     _context4.next = 3;
                                     break;
                                 }
@@ -620,7 +620,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 _context4.t0 = _context4['catch'](13);
 
                             case 21:
-                                if (!(collectionDoc && collectionDoc.schemaHash != schemaHash)) {
+                                if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
                                     _context4.next = 23;
                                     break;
                                 }
@@ -763,7 +763,7 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: 'lockedRun',
         value: function lockedRun(fun) {
-            return this.idleQueue.wrapFunctionWithLocking(fun);
+            return this.idleQueue.wrapCall(fun);
         }
     }, {
         key: 'requestIdlePromise',
@@ -945,13 +945,13 @@ function _isNameAdapterUsed(name, adapter) {
 
     var used = false;
     USED_COMBINATIONS[name].forEach(function (ad) {
-        if (ad == adapter) used = true;
+        if (ad === adapter) used = true;
     });
     if (used) {
-        throw _rxError2['default'].newRxError('RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ingoreDuplicate to true if you do this intentional', {
+        throw _rxError2['default'].newRxError('RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional', {
             name: name,
             adapter: adapter,
-            link: 'https://pubkey.github.io/rxdb/rx-database.html#ingoreduplicate'
+            link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
         });
     }
 }

@@ -120,6 +120,12 @@ var LeaderElector = function () {
         return this.database._adminPouch.put(newObj);
     };
 
+    LeaderElector.prototype.getApplyFunction = function getApplyFunction(electionChannel) {
+        if (electionChannel === 'socket') return this.applySocket.bind(this);
+        if (electionChannel === 'broadcast') return this.applyBroadcast.bind(this);
+        throw new Error('this should not happen');
+    };
+
     /**
      * starts applying for leadership
      */
@@ -167,7 +173,7 @@ var LeaderElector = function () {
                             this.isApplying = true;
 
                             _context2.next = 11;
-                            return this['apply_' + this.electionChannel]();
+                            return this.getApplyFunction(this.electionChannel)();
 
                         case 11:
                             elected = _context2.sent;
@@ -206,7 +212,7 @@ var LeaderElector = function () {
      */
 
 
-    LeaderElector.prototype.apply_socket = function () {
+    LeaderElector.prototype.applySocket = function () {
         var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
             var leaderObj, minTime;
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
@@ -246,7 +252,7 @@ var LeaderElector = function () {
                         case 15:
                             leaderObj = _context3.sent;
 
-                            if (!(leaderObj.apply != this.token)) {
+                            if (!(leaderObj.apply !== this.token)) {
                                 _context3.next = 18;
                                 break;
                             }
@@ -269,11 +275,11 @@ var LeaderElector = function () {
             }, _callee3, this, [[0, 21]]);
         }));
 
-        function apply_socket() {
+        function applySocket() {
             return _ref3.apply(this, arguments);
         }
 
-        return apply_socket;
+        return applySocket;
     }();
 
     /**
@@ -282,7 +288,7 @@ var LeaderElector = function () {
      */
 
 
-    LeaderElector.prototype.apply_broadcast = function () {
+    LeaderElector.prototype.applyBroadcast = function () {
         var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
             var _this = this;
 
@@ -307,9 +313,9 @@ var LeaderElector = function () {
                                                     }).filter(function (msg) {
                                                         return msg.t >= applyTime;
                                                     }).filter(function (msg) {
-                                                        return msg.type == 'apply';
+                                                        return msg.type === 'apply';
                                                     }).filter(function (msg) {
-                                                        if (msg.data < applyTime || msg.data == applyTime && msg.it > _this.token) return true;else return false;
+                                                        if (msg.data < applyTime || msg.data === applyTime && msg.it > _this.token) return true;else return false;
                                                     }).filter(function () {
                                                         return errors.length < 1;
                                                     }).subscribe(function (msg) {
@@ -320,7 +326,7 @@ var LeaderElector = function () {
                                                     }).filter(function (msg) {
                                                         return msg.t >= applyTime;
                                                     }).filter(function (msg) {
-                                                        return msg.type == 'tell';
+                                                        return msg.type === 'tell';
                                                     }).filter(function () {
                                                         return errors.length < 1;
                                                     }).subscribe(function (msg) {
@@ -329,9 +335,9 @@ var LeaderElector = function () {
                                                     subs.push(_this.bc.$.filter(function () {
                                                         return !!_this.isApplying;
                                                     }).filter(function (msg) {
-                                                        return msg.type == 'apply';
+                                                        return msg.type === 'apply';
                                                     }).filter(function (msg) {
-                                                        if (msg.data > applyTime || msg.data == applyTime && msg.it > _this.token) return true;else return false;
+                                                        if (msg.data > applyTime || msg.data === applyTime && msg.it > _this.token) return true;else return false;
                                                     }).subscribe(function () {
                                                         return _this.bc.write('apply', applyTime);
                                                     }));
@@ -399,11 +405,11 @@ var LeaderElector = function () {
             }, _callee5, this);
         }));
 
-        function apply_broadcast() {
+        function applyBroadcast() {
             return _ref4.apply(this, arguments);
         }
 
-        return apply_broadcast;
+        return applyBroadcast;
     }();
 
     LeaderElector.prototype.leaderSignal = function () {
@@ -549,7 +555,7 @@ var LeaderElector = function () {
                             })
                             // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
                             .filter(function (msg) {
-                                return msg.type != 'tell';
+                                return msg.type !== 'tell';
                             }).subscribe(function () {
                                 return _this2.leaderSignal();
                             });
@@ -753,7 +759,7 @@ var LeaderElector = function () {
                         case 9:
                             // apply when leader dies
                             this.subs.push(this.bc.$.filter(function (msg) {
-                                return msg.type == 'death';
+                                return msg.type === 'death';
                             }).subscribe(function () {
                                 return _this3.applyOnce();
                             }));
@@ -817,7 +823,7 @@ var LeaderElector = function () {
 
                         case 14:
                             return _context11.abrupt('return', this.becomeLeader$.asObservable().filter(function (i) {
-                                return i.isLeader == true;
+                                return i.isLeader === true;
                             }).first().toPromise());
 
                         case 15:

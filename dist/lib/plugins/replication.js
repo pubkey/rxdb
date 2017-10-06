@@ -189,7 +189,7 @@ function watchForChanges() {
         live: true,
         include_docs: true
     }), 'change').filter(function (c) {
-        return c.id.charAt(0) != '_';
+        return c.id.charAt(0) !== '_';
     }).map(function (c) {
         return c.doc;
     }).filter(function (doc) {
@@ -200,11 +200,11 @@ function watchForChanges() {
         return sendChanges[doc._rev] = 'YES';
     }).delay(10).map(function (doc) {
         var ret = null;
-        if (sendChanges[doc._rev] == 'YES') ret = doc;
+        if (sendChanges[doc._rev] === 'YES') ret = doc;
         delete sendChanges[doc._rev];
         return ret;
     }).filter(function (doc) {
-        return doc != null;
+        return doc !== null;
     }).subscribe(function (doc) {
         _this3.$emit(_rxChangeEvent2['default'].fromPouchChange(doc, _this3));
     });

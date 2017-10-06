@@ -17,7 +17,7 @@ import { getIndexes } from '../rx-schema';
  * @throws {Error}
  */
 export function checkFieldNameRegex(fieldName) {
-    if (fieldName == '') return;
+    if (fieldName === '') return;
 
     if (['properties', 'language'].includes(fieldName)) throw new Error('fieldname is not allowed: ' + fieldName);
 
@@ -37,12 +37,11 @@ export function checkFieldNameRegex(fieldName) {
  * @return {boolean} true always
  */
 export function validateFieldsDeep(jsonSchema) {
-
     function checkField(fieldName, schemaObj, path) {
-        if (typeof fieldName == 'string' && typeof schemaObj == 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
+        if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
-        if (schemaObj.hasOwnProperty('item') && schemaObj.type != 'array') throw new Error('name \'item\' reserved for array-fields: ' + fieldName);
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') throw new Error('name \'item\' reserved for array-fields: ' + fieldName);
 
         // if ref given, must be type=='string' or type=='array' with string-items
         if (schemaObj.hasOwnProperty('ref')) {
@@ -50,7 +49,7 @@ export function validateFieldsDeep(jsonSchema) {
                 case 'string':
                     break;
                 case 'array':
-                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type != 'string') throw new Error('fieldname ' + fieldName + ' has a ref-array but items-type is not string');
+                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') throw new Error('fieldname ' + fieldName + ' has a ref-array but items-type is not string');
                     break;
                 default:
                     throw new Error('fieldname ' + fieldName + ' has a ref but is not type string or array<string>');
@@ -73,7 +72,7 @@ export function validateFieldsDeep(jsonSchema) {
         // first level
         if (!isNested) {
             // check underscore fields
-            if (fieldName.charAt(0) == '_') throw new Error('first level-fields cannot start with underscore _ ' + fieldName);
+            if (fieldName.charAt(0) === '_') throw new Error('first level-fields cannot start with underscore _ ' + fieldName);
         }
     }
 
@@ -84,7 +83,7 @@ export function validateFieldsDeep(jsonSchema) {
                 checkField(attributeName, currentObj[attributeName], currentPath);
             }
             var nextPath = currentPath;
-            if (attributeName != 'properties') nextPath = nextPath + '.' + attributeName;
+            if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
         }
     }
@@ -98,7 +97,6 @@ export function validateFieldsDeep(jsonSchema) {
  * @throws {Error} if something is not ok
  */
 export function checkSchema(jsonID) {
-
     // check _id
     if (jsonID.properties._id) throw new Error('schema defines ._id, this will be done automatically');
 
@@ -147,7 +145,7 @@ export function checkSchema(jsonID) {
     getIndexes(jsonID).reduce(function (a, b) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
-        return arr.indexOf(elem) == pos;
+        return arr.indexOf(elem) === pos;
     }) // unique
     .map(function (key) {
         var schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
@@ -157,7 +155,7 @@ export function checkSchema(jsonID) {
             schemaObj: schemaObj
         };
     }).filter(function (index) {
-        return index.schemaObj.type != 'string' && index.schemaObj.type != 'integer';
+        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer';
     }).forEach(function (index) {
         throw new Error('given indexKey (' + index.key + ') is not type:string but\n                 ' + index.schemaObj.type);
     });
