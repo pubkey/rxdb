@@ -3,6 +3,7 @@
  */
 import * as util from '../util';
 import RxQuery from '../rx-query';
+import RxError from '../rx-error';
 
 const dumpRxDatabase = async function(decrypted = false, collections = null) {
     const json = {
@@ -32,9 +33,23 @@ const dumpRxDatabase = async function(decrypted = false, collections = null) {
 };
 
 const importDumpRxDatabase = async function(dump) {
+    /**
+     * collections must be created before the import
+     * because we do not know about the other collection-settings here
+     */
+    const missingCollections = dump.collections
+        .filter(col => !this.collections[col.name])
+        .map(col => col.name);
+    if (missingCollections.length > 0) {
+        throw RxError.newRxError(
+            'You must create the collections before you can import their data', {
+                missingCollections
+            }
+        );
+    }
+
     return Promise.all(
         dump.collections
-        .filter(colDump => this.collections[colDump.name])
         .map(colDump => this.collections[colDump.name].importDump(colDump))
     );
 };

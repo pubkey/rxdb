@@ -249,7 +249,6 @@ describe('import-export.test.js', () => {
             });
         });
     });
-
     describe('Database', () => {
         describe('.dump()', () => {
             it('should export a valid dump', async() => {
@@ -432,6 +431,59 @@ describe('import-export.test.js', () => {
                 });
             });
             describe('negative', () => {});
+        });
+    });
+    describe('issues', () => {
+        it('#319 collections must be created before importDump', async() => {
+            const docSchema = {
+                name: 'demo',
+                version: 0,
+                properties: {
+                    firstName: {
+                        primary: true,
+                        type: 'string'
+                    },
+                    time: {
+                        type: 'string'
+                    }
+                }
+            };
+
+            const db = await RxDatabase.create({
+                name: 'aaa',
+                adapter: 'memory',
+            });
+            const db2 = await RxDatabase.create({
+                name: 'aaa1',
+                adapter: 'memory',
+            });
+            const col = await db.collection({
+                name: 'demo',
+                schema: docSchema
+            });
+            await col.insert({
+                firstName: 'nnnn'
+            });
+            const json = await db.dump();
+
+            // should throw when the collection does not exist
+            await AsyncTestUtil.assertThrows(
+                () => db2.importDump(json),
+                Error,
+                'create the collections'
+            );
+
+            // should work when the collection exists
+            const col2 = await db2.collection({
+                name: 'demo',
+                schema: docSchema
+            });
+            await db2.importDump(json);
+            const docs = await col2.find().exec();
+            assert.equal(docs.length, 1);
+
+            db.destroy();
+            db2.destroy();
         });
     });
 });

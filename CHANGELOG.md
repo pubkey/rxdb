@@ -4,6 +4,7 @@
 
 Bugfixes:
     - Removed type `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
+    - Added error-message when you json-import on a non-existing collection [#319](https://github.com/pubkey/rxdb/issues/319)
 
 Other:
     - Split out idle-queue into own [npm-module](http://npmjs.com/package/custom-idle-queue)
