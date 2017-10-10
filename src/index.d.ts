@@ -309,15 +309,21 @@ export function isRxQuery(obj: any): boolean;
 export function isRxSchema(obj: any): boolean;
 
 export {
-    RxDatabase as RxDatabase,
-    RxCollection as RxCollection,
-    RxQuery as RxQuery,
-    RxSchema as RxSchema,
-    RxDocument as RxDocument,
-    RxChangeEvent as RxChangeEvent,
-    PouchDB as PouchDB,
-    RxCollectionCreator as RxCollectionCreator,
-    RxError as RxError
+    RxDatabase,
+    RxCollection,
+    RxQuery,
+    RxSchema,
+    RxDocument,
+    RxChangeEvent,
+    PouchDB,
+    RxCollectionCreator,
+    RxError,
+    JsonSchemaTypes,
+    JsonSchema,
+    SchemaJSON,
+    PouchSettings,
+    PouchReplicationOptions,
+    SyncOptions
 };
 
 export default {
