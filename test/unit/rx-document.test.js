@@ -134,6 +134,29 @@ describe('rx-document.test.js', () => {
                 );
                 c.database.destroy();
             });
+            it('cannot modify final fields', async() => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema: schemas.humanFinal
+                });
+
+                const docData = schemaObjects.human();
+                docData.age = 60;
+                await col.insert(docData);
+                const doc = await col.findOne().exec();
+                assert.ok(doc);
+
+                await AsyncTestUtil.assertThrows(
+                    () => doc.age = 70,
+                    Error,
+                    'final fields'
+                );
+                db.destroy();
+            });
         });
     });
     describe('.save()', () => {
@@ -580,7 +603,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    describe('other', () => {
+    describe('issues', () => {
         it('BUG #66 - insert -> remove -> upsert does not give new state', async() => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();

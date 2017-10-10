@@ -10,7 +10,6 @@ import {
 export class RxSchema {
     constructor(jsonID) {
         this.jsonID = jsonID;
-
         this.compoundIndexes = this.jsonID.compoundIndexes;
 
         // make indexes required
@@ -26,6 +25,12 @@ export class RxSchema {
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath)
             this.jsonID.required.push(this.primaryPath);
+
+        // final fields are always required
+        this.finalFields = getFinalFields(this.jsonID);
+        this.jsonID.required = this.jsonID.required
+            .concat(this.finalFields)
+            .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
         // add primary to schema if not there (if _id)
         if (!this.jsonID.properties[this.primaryPath]) {
@@ -237,6 +242,16 @@ export function getPrimary(jsonID) {
     else return ret;
 }
 
+/**
+ * returns the final-fields of the schema
+ * @param  {Object} jsonId
+ * @return {string[]} field-names of the final-fields
+ */
+export function getFinalFields(jsonId) {
+    return Object.keys(jsonId.properties)
+        .filter(key => jsonId.properties[key].final);
+}
+
 
 /**
  * orders the schemas attributes by alphabetical order
@@ -300,6 +315,7 @@ export default {
     hasCrypt,
     getIndexes,
     getPrimary,
+    getFinalFields,
     normalize,
     create,
     isInstanceOf

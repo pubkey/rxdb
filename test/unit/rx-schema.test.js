@@ -347,6 +347,18 @@ describe('rx-schema.test.js', () => {
                 });
             });
         });
+        describe('.getFinalFields()', () => {
+            const ret = RxSchema.getFinalFields({
+                version: 0,
+                properties: {
+                    myField: {
+                        type: 'string',
+                        final: true
+                    }
+                }
+            });
+            assert.deepEqual(ret, ['myField']);
+        });
     });
     describe('instance', () => {
         describe('.normalized', () => {
@@ -466,6 +478,23 @@ describe('rx-schema.test.js', () => {
                     } catch (err) {
                         const deepParam = err.parameters.errors[0].field;
                         assert.equal(deepParam, 'data._id');
+                        hasThrown = true;
+                    }
+                    assert.ok(hasThrown);
+                });
+                it('final fields should be required', () => {
+                    const schema = RxSchema.create(schemas.humanFinal);
+                    let hasThrown = false;
+                    const obj = {
+                        passportId: 'foobar',
+                        firstName: 'foo',
+                        lastName: 'bar'
+                    };
+                    try {
+                        schema.validate(obj);
+                    } catch (err) {
+                        const deepParam = err.parameters.errors[0].field;
+                        assert.equal(deepParam, 'data.age');
                         hasThrown = true;
                     }
                     assert.ok(hasThrown);

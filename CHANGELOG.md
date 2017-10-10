@@ -2,6 +2,9 @@
 
 ## 6.0.2 (coming soon)
 
+Features:
+    - Added [final fields](https://pubkey.github.io/rxdb/rx-schema.html#final)
+
 Bugfixes:
     - Removed type `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
     - Added error-message when you json-import on a non-existing collection [#319](https://github.com/pubkey/rxdb/issues/319)

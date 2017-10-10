@@ -72,8 +72,7 @@ export const humanFinal = {
             maximum: 150,
             final: true
         }
-    },
-    required: ['passportId']
+    }
 };
 
 export const simpleHuman = {

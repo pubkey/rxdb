@@ -7,6 +7,9 @@ import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as util from '../../dist/lib/util';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
+import RxDB from '../../dist/lib';
 
 describe('reactive-document.test.js', () => {
     describe('.save()', () => {
@@ -221,6 +224,42 @@ describe('reactive-document.test.js', () => {
             assert.equal(orig, doc.firstName);
 
             c.database.destroy();
+        });
+    });
+    describe('.get$()', () => {
+        describe('positive', () => {
+
+        });
+        describe('negative', () => {
+            it('primary cannot be observed', async() => {
+                const c = await humansCollection.createPrimary();
+                const doc = await c.findOne().exec();
+                await AsyncTestUtil.assertThrows(
+                    () => doc.get$('passportId'),
+                    Error,
+                    'primary path'
+                );
+                c.database.destroy();
+            });
+            it('final fields cannot be observed', async() => {
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema: schemas.humanFinal
+                });
+                const docData = schemaObjects.human();
+                await col.insert(docData);
+                const doc = await col.findOne().exec();
+                await AsyncTestUtil.assertThrows(
+                    () => doc.get$('age'),
+                    Error,
+                    'final fields'
+                );
+                db.destroy();
+            });
         });
     });
 });

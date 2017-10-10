@@ -11,6 +11,7 @@ In this example-schema we define a hero-collection with the following settings:
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
 - the secret-field stores an encrypted value
+- the birthyear-field is final which means it is required and cannot be changed
 - the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
 
   ```json
@@ -35,6 +36,12 @@ In this example-schema we define a hero-collection with the following settings:
         "secret": {
             "type": "string",
             "encrypted": true
+        },
+        "birthyear": {
+            "type": "number",
+            "final": true,
+            "min": 1900,
+            "max": 2050
         },
         "skills": {
             "type": "array",
@@ -152,6 +159,32 @@ const schemaWithDefaultAge = {
 };
 ```
 
+## final
+By setting a field to `final`, you make sure it cannot be modified later. Final fields are always required.
+Final fields cannot be observed because they anyway will not change.
+
+Advantages:
+    - With final fields you can ensure that no other in your dev-team accidentally modifies the data
+    - When you enable the `query-change-detection`, some performance-improvements are done
+
+```js
+const schemaWithFinalAge = {
+  version: 0,
+  type: 'object',
+  properties: {
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      },
+      age: {
+          type: 'integer',
+          final: true
+      }
+  },
+};
+```
 
 ## NOTICE: Not everything within the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
