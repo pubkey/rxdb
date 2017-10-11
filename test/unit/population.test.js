@@ -146,12 +146,14 @@ describe('population.test.js', () => {
                         }
                     }
                 });
-                const friends = new Array(5).fill(0).map(() => {
-                    return {
-                        name: faker.name.firstName(),
-                        friends: []
-                    };
-                });
+                const friends = new Array(5)
+                    .fill(0)
+                    .map(() => {
+                        return {
+                            name: faker.name.firstName() + util.randomCouchString(5),
+                            friends: []
+                        };
+                    });
                 await Promise.all(friends.map(friend => col.insert(friend)));
                 const oneGuy = {
                     name: 'Piotr',
@@ -192,7 +194,7 @@ describe('population.test.js', () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
-                multiInstance: false  // this must be false here
+                multiInstance: false // this must be false here
             });
             const colA = await db.collection({
                 name: 'doca',
