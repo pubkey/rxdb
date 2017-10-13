@@ -441,6 +441,13 @@ export class RxCollection {
         throw RxError.pluginMissing('replication');
     }
 
+    /**
+     * Create a replicated in-memory-collection
+     */
+    inMemory() {
+        throw RxError.pluginMissing('in-memory');
+    }
+
 
     /**
      * HOOKS
