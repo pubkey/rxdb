@@ -35,7 +35,8 @@ const nodeAndBrowser = [
 ];
 
 const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js'
+    '../test_tmp/unit/plugin.test.js',
+    '../test_tmp/unit/typings.test.js'
 ];
 
 module.exports = {
