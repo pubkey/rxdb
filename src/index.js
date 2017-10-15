@@ -35,6 +35,9 @@ Core.plugin(AdapterCheckPlugin);
 import JsonDumpPlugin from './plugins/json-dump';
 Core.plugin(JsonDumpPlugin);
 
+import InMemoryPlugin from './plugins/in-memory';
+Core.plugin(InMemoryPlugin);
+
 
 /**
  * create a database
