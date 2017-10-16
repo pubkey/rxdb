@@ -1,4 +1,4 @@
-import { Observable } from "rxjs";
+import { Observable } from 'rxjs';
 
 declare class RxSchema {
     jsonID: SchemaJSON;
@@ -13,7 +13,7 @@ declare class RxSchema {
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
+type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string';
 interface JsonSchema {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
@@ -51,7 +51,7 @@ interface JsonSchema {
     definitions?: {
         [key: string]: JsonSchema;
     };
-    format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
+    format?: 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri' | string;
     ref?: string;
     primary?: boolean;
     index?: boolean;
@@ -169,12 +169,12 @@ declare class RxCollection<RxDocumentType> {
     schema: RxSchema;
 
     $: Observable<RxChangeEvent>;
-    insert(json: any): Promise<RxDocument>;
-    newDocument(json: any): RxDocument;
-    upsert(json: any): Promise<RxDocument>;
-    atomicUpsert(json: any): Promise<RxDocument>;
-    find(queryObj?: any): RxQuery<RxDocumentType>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType>;
+    insert(json: any): Promise<RxDocument<RxDocumentType>>;
+    newDocument(json: any): RxDocument<RxDocumentType>;
+    upsert(json: any): Promise<RxDocument<RxDocumentType>>;
+    atomicUpsert(json: any): Promise<RxDocument<RxDocumentType>>;
+    find(queryObj?: any): RxQuery<RxDocument<RxDocumentType>[]>;
+    findOne(queryObj?: any): RxQuery<RxDocument<RxDocumentType>>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
@@ -243,8 +243,10 @@ declare class RxQuery<RxDocumentType>{
     update(updateObj: any): Promise<RxDocumentType | RxDocumentType[]>;
 }
 
-declare class RxDocument {
-    collection: RxCollection<RxDocument>;
+type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
+
+declare class RxDocumentBase<RxDocumentType> {
+    collection: RxCollection<RxDocument<RxDocumentType>>;
     deleted: boolean;
 
     $: Observable<any>;
@@ -255,14 +257,14 @@ declare class RxDocument {
     primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
-    set(objPath: string, value: any): RxDocument;
+    set(objPath: string, value: any): RxDocument<RxDocumentType>;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument | any>;
+    populate(objPath: string): Promise<RxDocument<RxDocumentType> | any>;
     update(updateObj: any): Promise<any>;
-    atomicUpdate(fun: Function): Promise<RxDocument>;
+    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType>>;
 
-    toJSON(): any;
+    toJSON(): RxDocumentType;
     destroy(): void;
 }
 
@@ -273,7 +275,7 @@ declare class PouchDB {
 
 declare class RxChangeEvent {
     data: {
-        type: "INSERT" | "UPDATE" | "REMOVE";
+        type: 'INSERT' | 'UPDATE' | 'REMOVE';
     };
     toJSON(): any;
 }
