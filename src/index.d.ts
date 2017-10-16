@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-declare class RxSchema {
+export declare class RxSchema {
     jsonID: SchemaJSON;
     getSchemaByObjectPath(path: string): any;
     encryptedPaths: any;
@@ -13,8 +13,8 @@ declare class RxSchema {
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string';
-interface JsonSchema {
+export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string';
+export interface JsonSchema {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
@@ -58,7 +58,7 @@ interface JsonSchema {
     final?: boolean;
 }
 
-interface SchemaJSON {
+export interface SchemaJSON {
     title?: string;
     description?: string;
     version: number;
@@ -73,7 +73,7 @@ interface SchemaJSON {
  * possible pouch-settings
  * @link https://pouchdb.com/api.html#create_database
  */
-interface PouchSettings {
+export interface PouchSettings {
     auto_compaction?: boolean,
     revs_limit?: number,
     ajax?: any,
@@ -83,7 +83,7 @@ interface PouchSettings {
     size?: number
 }
 
-interface RxCollectionCreator {
+export interface RxCollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: PouchSettings;
@@ -99,7 +99,7 @@ interface RxCollectionCreator {
     };
 }
 
-declare class RxDatabase {
+export declare class RxDatabase {
     name: string;
     token: string;
     multiInstance: boolean;
@@ -135,7 +135,7 @@ declare class RxReplicationState {
     setPouchEventEmitter(pouchSyncState: any): void;
 }
 
-interface PouchReplicationOptions {
+export interface PouchReplicationOptions {
     live?: boolean,
     retry?: boolean,
     filter?: Function,
@@ -151,7 +151,7 @@ interface PouchReplicationOptions {
     checkpoint?: false | 'source' | 'target'
 }
 
-interface SyncOptions {
+export interface SyncOptions {
     remote: string | any,
     waitForLeadership?: boolean,
     direction?: {
@@ -163,9 +163,9 @@ interface SyncOptions {
     query?: RxQuery<any>
 }
 
-type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocumentType>) => void;
+export type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocumentType>) => void;
 
-declare class RxCollection<RxDocumentType> {
+export declare class RxCollection<RxDocumentType> {
     database: RxDatabase;
     name: string;
     schema: RxSchema;
@@ -212,7 +212,7 @@ declare class RxCollection<RxDocumentType> {
     remove(): Promise<any>;
 }
 
-declare class RxQuery<RxDocumentType>{
+export declare class RxQuery<RxDocumentType>{
     collection: RxCollection<RxDocumentType>;
 
     where(queryObj: any): RxQuery<RxDocumentType>;
@@ -245,7 +245,7 @@ declare class RxQuery<RxDocumentType>{
     update(updateObj: any): Promise<RxDocumentType | RxDocumentType[]>;
 }
 
-type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
+export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
 
 declare class RxDocumentBase<RxDocumentType> {
     collection: RxCollection<RxDocument<RxDocumentType>>;
@@ -270,19 +270,19 @@ declare class RxDocumentBase<RxDocumentType> {
     destroy(): void;
 }
 
-declare class PouchDB {
+export declare class PouchDB {
     constructor(name: string, options: { adapter: string });
     info(): any;
 }
 
-declare class RxChangeEvent {
+export declare class RxChangeEvent {
     data: {
         type: 'INSERT' | 'UPDATE' | 'REMOVE';
     };
     toJSON(): any;
 }
 
-declare class RxError extends Error {
+export declare class RxError extends Error {
     rxdb: boolean; // always true, use this to detect if its an rxdb-error
     parameters: any; // an object with parameters to use the programatically
 }
@@ -312,24 +312,6 @@ export function isRxCollection(obj: any): boolean;
 export function isRxDocument(obj: any): boolean;
 export function isRxQuery(obj: any): boolean;
 export function isRxSchema(obj: any): boolean;
-
-export {
-    RxDatabase,
-    RxCollection,
-    RxQuery,
-    RxSchema,
-    RxDocument,
-    RxChangeEvent,
-    PouchDB,
-    RxCollectionCreator,
-    RxError,
-    JsonSchemaTypes,
-    JsonSchema,
-    SchemaJSON,
-    PouchSettings,
-    PouchReplicationOptions,
-    SyncOptions
-};
 
 export default {
     create,
