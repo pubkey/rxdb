@@ -169,12 +169,12 @@ declare class RxCollection<RxDocumentType> {
     schema: RxSchema;
 
     $: Observable<RxChangeEvent>;
-    insert(json: any): Promise<RxDocument>;
-    newDocument(json: any): RxDocument;
-    upsert(json: any): Promise<RxDocument>;
-    atomicUpsert(json: any): Promise<RxDocument>;
-    find(queryObj?: any): RxQuery<RxDocumentType>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType>;
+    insert(json: any): Promise<IRxDocument<RxDocumentType>>;
+    newDocument(json: any): IRxDocument<RxDocumentType>;
+    upsert(json: any): Promise<IRxDocument<RxDocumentType>>;
+    atomicUpsert(json: any): Promise<IRxDocument<RxDocumentType>>;
+    find(queryObj?: any): RxQuery<IRxDocument<RxDocumentType>[]>;
+    findOne(queryObj?: any): RxQuery<IRxDocument<RxDocumentType>>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
@@ -237,14 +237,16 @@ declare class RxQuery<RxDocumentType>{
     // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType>;
 
-    exec(): Promise<RxDocumentType[] | RxDocumentType>;
-    $: Observable<RxDocumentType[] | RxDocumentType>;
-    remove(): Promise<RxDocumentType | RxDocumentType[]>;
-    update(updateObj: any): Promise<RxDocumentType | RxDocumentType[]>;
+    exec(): Promise<RxDocumentType>;
+    $: Observable<RxDocumentType>;
+    remove(): Promise<RxDocumentType>;
+    update(updateObj: any): Promise<RxDocumentType>;
 }
 
-declare class RxDocument {
-    collection: RxCollection<RxDocument>;
+type IRxDocument<T> = RxDocument<T> & T;
+
+declare class RxDocument<T> {
+    collection: RxCollection<T>;
     deleted: boolean;
 
     $: Observable<any>;
@@ -255,14 +257,14 @@ declare class RxDocument {
     primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
-    set(objPath: string, value: any): RxDocument;
+    set(objPath: string, value: any): IRxDocument<T>;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument | any>;
+    populate(objPath: string): Promise<IRxDocument<T> | any>;
     update(updateObj: any): Promise<any>;
-    atomicUpdate(fun: Function): Promise<RxDocument>;
+    atomicUpdate(fun: Function): Promise<IRxDocument<T>>;
 
-    toJSON(): any;
+    toJSON(): T;
     destroy(): void;
 }
 
