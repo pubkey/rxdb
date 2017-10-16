@@ -163,16 +163,18 @@ interface SyncOptions {
     query?: RxQuery<any>
 }
 
+type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocumentType>) => void;
+
 declare class RxCollection<RxDocumentType> {
     database: RxDatabase;
     name: string;
     schema: RxSchema;
 
     $: Observable<RxChangeEvent>;
-    insert(json: any): Promise<RxDocument<RxDocumentType>>;
-    newDocument(json: any): RxDocument<RxDocumentType>;
-    upsert(json: any): Promise<RxDocument<RxDocumentType>>;
-    atomicUpsert(json: any): Promise<RxDocument<RxDocumentType>>;
+    insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
+    newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType>;
+    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
+    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     find(queryObj?: any): RxQuery<RxDocument<RxDocumentType>[]>;
     findOne(queryObj?: any): RxQuery<RxDocument<RxDocumentType>>;
 
@@ -180,14 +182,14 @@ declare class RxCollection<RxDocumentType> {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: Function, parallel: boolean): void;
-    preSave(fun: Function, parallel: boolean): void;
-    preRemove(fun: Function, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    preSave(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    preRemove(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
 
-    postInsert(fun: Function, parallel: boolean): void;
-    postSave(fun: Function, parallel: boolean): void;
-    postRemove(fun: Function, parallel: boolean): void;
-    postCreate(fun: Function): void;
+    postInsert(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    postSave(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    postRemove(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    postCreate(fun: RxCollectionHookCallback<RxDocumentType>): void;
 
 
     // migration
