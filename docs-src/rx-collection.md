@@ -14,7 +14,7 @@ myDatabase.collection({
 ```
 
 ### name
-The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name.
+The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
 
 ### schema
 The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.
