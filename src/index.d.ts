@@ -237,7 +237,7 @@ export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOption
     $and: RxQueryObject<T>[];
 };
 
-export declare class RxQuery<RxDocumentType>{
+export declare class RxQuery<RxDocumentType> {
     collection: RxCollection<RxDocumentType>;
 
     where(queryObj: RxQueryObject<RxDocumentType>): RxQuery<RxDocumentType>;
@@ -264,16 +264,16 @@ export declare class RxQuery<RxDocumentType>{
     // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType>;
 
-    exec(): Promise<RxDocumentType[] | RxDocumentType>;
-    $: Observable<RxDocumentType[] | RxDocumentType>;
-    remove(): Promise<RxDocumentType | RxDocumentType[]>;
-    update(updateObj: any): Promise<RxDocumentType | RxDocumentType[]>;
+    exec(): Promise<RxDocumentType>;
+    $: Observable<RxDocumentType>;
+    remove(): Promise<RxDocumentType>;
+    update(updateObj: any): Promise<RxDocumentType>;
 }
 
 export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
 
-declare class RxDocumentBase<RxDocumentType> {
-    collection: RxCollection<RxDocument<RxDocumentType>>;
+export declare class RxDocumentBase<RxDocumentType> {
+    collection: RxCollection<RxDocumentType>;
     deleted: boolean;
 
     $: Observable<any>;
@@ -328,7 +328,7 @@ export function checkAdapter(adapter: any | string): Promise<boolean>;
 export const QueryChangeDetector: {
     enable(): void;
     enableDebugging(set?: boolean): void;
-}
+};
 
 export function plugin(mod: any): void;
 
