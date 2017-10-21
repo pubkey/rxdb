@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, NgZone, Output, EventEmitter } from '@ang
 import { DatabaseService } from '../../services/database.service';
 import * as RxDBTypes from '../../RxDB.d';
 
+
 @Component({
     selector: 'heroes-list',
     templateUrl: './heroes-list.component.html',
@@ -9,7 +10,6 @@ import * as RxDBTypes from '../../RxDB.d';
     providers: [DatabaseService]
 })
 export class HeroesListComponent implements OnInit, OnDestroy {
-
 
     heroes: RxDBTypes.RxHeroDocument[] | RxDBTypes.RxHeroDocument;
     sub;
@@ -44,6 +44,16 @@ export class HeroesListComponent implements OnInit, OnDestroy {
             this.heroes = heroes;
             this.zone.run(() => { });
         });
+    }
+
+
+    /**
+     * this method exists to play arround with the typings
+     */
+    async foo() {
+        const db = await this.databaseService.get();
+        const firstDoc = await db.hero.findOne().exec();
+        const f: string = firstDoc.color;
     }
 
     ngOnInit() {
