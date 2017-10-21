@@ -113,7 +113,7 @@
     "eslint-plugin-disable": "0.3.0",
     "eslint-plugin-spellcheck": "0.0.8",
     "exists-file": "3.0.2",
-    "express": "4.16.1",
+    "express": "4.16.2",
     "express-pouchdb": "2.3.7",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",
@@ -153,12 +153,12 @@
     "rimraf": "2.6.2",
     "rxjs": "5.5.0",
     "shelljs": "0.7.8",
-    "ts-node": "^3.3.0",
+    "ts-node": "3.3.0",
     "typescript": "2.5.3",
-    "uglify-js": "3.1.4",
+    "uglify-js": "3.1.5",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.9.0",
-    "webpack": "3.8.0"
+    "webpack": "3.8.1"
   }
 }
