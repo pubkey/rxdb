@@ -1,6 +1,6 @@
-import { Observable } from "rxjs";
+import { Observable } from 'rxjs';
 
-declare class RxSchema {
+export declare class RxSchema {
     jsonID: SchemaJSON;
     getSchemaByObjectPath(path: string): any;
     encryptedPaths: any;
@@ -13,8 +13,8 @@ declare class RxSchema {
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-type JsonSchemaTypes = "array" | "boolean" | "integer" | "number" | "null" | "object" | "string";
-interface JsonSchema {
+export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string';
+export interface JsonSchema {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
@@ -51,14 +51,14 @@ interface JsonSchema {
     definitions?: {
         [key: string]: JsonSchema;
     };
-    format?: "date-time" | "email" | "hostname" | "ipv4" | "ipv6" | "uri" | string;
+    format?: 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri' | string;
     ref?: string;
     primary?: boolean;
     index?: boolean;
     final?: boolean;
 }
 
-interface SchemaJSON {
+export interface SchemaJSON {
     title?: string;
     description?: string;
     version: number;
@@ -73,7 +73,7 @@ interface SchemaJSON {
  * possible pouch-settings
  * @link https://pouchdb.com/api.html#create_database
  */
-interface PouchSettings {
+export interface PouchSettings {
     auto_compaction?: boolean,
     revs_limit?: number,
     ajax?: any,
@@ -83,7 +83,7 @@ interface PouchSettings {
     size?: number
 }
 
-interface RxCollectionCreator {
+export interface RxCollectionCreator {
     name: string;
     schema: SchemaJSON | RxSchema;
     pouchSettings?: PouchSettings;
@@ -99,7 +99,7 @@ interface RxCollectionCreator {
     };
 }
 
-declare class RxDatabase {
+export declare class RxDatabase {
     name: string;
     token: string;
     multiInstance: boolean;
@@ -135,7 +135,7 @@ declare class RxReplicationState {
     setPouchEventEmitter(pouchSyncState: any): void;
 }
 
-interface PouchReplicationOptions {
+export interface PouchReplicationOptions {
     live?: boolean,
     retry?: boolean,
     filter?: Function,
@@ -151,7 +151,7 @@ interface PouchReplicationOptions {
     checkpoint?: false | 'source' | 'target'
 }
 
-interface SyncOptions {
+export interface SyncOptions {
     remote: string | any,
     waitForLeadership?: boolean,
     direction?: {
@@ -163,31 +163,33 @@ interface SyncOptions {
     query?: RxQuery<any>
 }
 
-declare class RxCollection<RxDocumentType> {
+export type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocumentType>) => void;
+
+export declare class RxCollection<RxDocumentType> {
     database: RxDatabase;
     name: string;
     schema: RxSchema;
 
     $: Observable<RxChangeEvent>;
-    insert(json: any): Promise<RxDocument>;
-    newDocument(json: any): RxDocument;
-    upsert(json: any): Promise<RxDocument>;
-    atomicUpsert(json: any): Promise<RxDocument>;
-    find(queryObj?: any): RxQuery<RxDocumentType>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType>;
+    insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
+    newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType>;
+    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
+    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
+    find(queryObj?: any): RxQuery<RxDocument<RxDocumentType>[]>;
+    findOne(queryObj?: any): RxQuery<RxDocument<RxDocumentType>>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: Function, parallel: boolean): void;
-    preSave(fun: Function, parallel: boolean): void;
-    preRemove(fun: Function, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    preSave(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    preRemove(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
 
-    postInsert(fun: Function, parallel: boolean): void;
-    postSave(fun: Function, parallel: boolean): void;
-    postRemove(fun: Function, parallel: boolean): void;
-    postCreate(fun: Function): void;
+    postInsert(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    postSave(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    postRemove(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    postCreate(fun: RxCollectionHookCallback<RxDocumentType>): void;
 
 
     // migration
@@ -210,24 +212,49 @@ declare class RxCollection<RxDocumentType> {
     remove(): Promise<any>;
 }
 
-declare class RxQuery<RxDocumentType>{
+export interface RxQueryOptions<T> {
+    $eq?: T;
+    $gt?: T;
+    $gte?: T;
+    $lt?: T;
+    $lte?: T;
+    $ne?: T;
+    $in?: T[];
+    $nin?: T[];
+    $regex?: RegExp;
+    $exists?: boolean;
+    $type?: 'null' | 'boolean' | 'number' | 'string' | 'array' | 'object';
+    $mod?: number;
+    $not?: T;
+    $all?: T[];
+    $size?: number;
+    $elemMatch?: RxQueryOptions<T>;
+}
+
+export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOptions<T[P]>; } & {
+    $or: RxQueryObject<T>[];
+    $nor: RxQueryObject<T>[];
+    $and: RxQueryObject<T>[];
+};
+
+export declare class RxQuery<RxDocumentType> {
     collection: RxCollection<RxDocumentType>;
 
-    where(queryObj: any): RxQuery<RxDocumentType>;
+    where(queryObj: RxQueryObject<RxDocumentType>): RxQuery<RxDocumentType>;
     equals(queryObj: any): RxQuery<RxDocumentType>;
     eq(queryObj: any): RxQuery<RxDocumentType>;
-    or(queryObj: any): RxQuery<RxDocumentType>;
-    nor(queryObj: any): RxQuery<RxDocumentType>;
-    and(queryObj: any): RxQuery<RxDocumentType>;
+    or(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
+    nor(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
+    and(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
     gt(queryObj: any): RxQuery<RxDocumentType>;
     gte(queryObj: any): RxQuery<RxDocumentType>;
     lt(queryObj: any): RxQuery<RxDocumentType>;
     lte(queryObj: any): RxQuery<RxDocumentType>;
     ne(queryObj: any): RxQuery<RxDocumentType>;
-    in(queryObj: any): RxQuery<RxDocumentType>;
-    nin(queryObj: any): RxQuery<RxDocumentType>;
+    in(queryObj: any[]): RxQuery<RxDocumentType>;
+    nin(queryObj: any[]): RxQuery<RxDocumentType>;
     all(queryObj: any): RxQuery<RxDocumentType>;
-    regex(queryObj: any): RxQuery<RxDocumentType>;
+    regex(queryObj: RegExp): RxQuery<RxDocumentType>;
     exists(queryObj: any): RxQuery<RxDocumentType>;
     elemMatch(queryObj: any): RxQuery<RxDocumentType>;
     sort(params: any): RxQuery<RxDocumentType>;
@@ -237,14 +264,16 @@ declare class RxQuery<RxDocumentType>{
     // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType>;
 
-    exec(): Promise<RxDocumentType[] | RxDocumentType>;
-    $: Observable<RxDocumentType[] | RxDocumentType>;
-    remove(): Promise<RxDocumentType | RxDocumentType[]>;
-    update(updateObj: any): Promise<RxDocumentType | RxDocumentType[]>;
+    exec(): Promise<RxDocumentType>;
+    $: Observable<RxDocumentType>;
+    remove(): Promise<RxDocumentType>;
+    update(updateObj: any): Promise<RxDocumentType>;
 }
 
-declare class RxDocument {
-    collection: RxCollection<RxDocument>;
+export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
+
+export declare class RxDocumentBase<RxDocumentType> {
+    collection: RxCollection<RxDocumentType>;
     deleted: boolean;
 
     $: Observable<any>;
@@ -255,30 +284,30 @@ declare class RxDocument {
     primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
-    set(objPath: string, value: any): RxDocument;
+    set(objPath: string, value: any): RxDocument<RxDocumentType>;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument | any>;
+    populate(objPath: string): Promise<RxDocument<RxDocumentType> | any>;
     update(updateObj: any): Promise<any>;
-    atomicUpdate(fun: Function): Promise<RxDocument>;
+    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType>>;
 
-    toJSON(): any;
+    toJSON(): RxDocumentType;
     destroy(): void;
 }
 
-declare class PouchDB {
+export declare class PouchDB {
     constructor(name: string, options: { adapter: string });
     info(): any;
 }
 
-declare class RxChangeEvent {
+export declare class RxChangeEvent {
     data: {
-        type: "INSERT" | "UPDATE" | "REMOVE";
+        type: 'INSERT' | 'UPDATE' | 'REMOVE';
     };
     toJSON(): any;
 }
 
-declare class RxError extends Error {
+export declare class RxError extends Error {
     rxdb: boolean; // always true, use this to detect if its an rxdb-error
     parameters: any; // an object with parameters to use the programatically
 }
@@ -299,7 +328,7 @@ export function checkAdapter(adapter: any | string): Promise<boolean>;
 export const QueryChangeDetector: {
     enable(): void;
     enableDebugging(set?: boolean): void;
-}
+};
 
 export function plugin(mod: any): void;
 
@@ -308,24 +337,6 @@ export function isRxCollection(obj: any): boolean;
 export function isRxDocument(obj: any): boolean;
 export function isRxQuery(obj: any): boolean;
 export function isRxSchema(obj: any): boolean;
-
-export {
-    RxDatabase,
-    RxCollection,
-    RxQuery,
-    RxSchema,
-    RxDocument,
-    RxChangeEvent,
-    PouchDB,
-    RxCollectionCreator,
-    RxError,
-    JsonSchemaTypes,
-    JsonSchema,
-    SchemaJSON,
-    PouchSettings,
-    PouchReplicationOptions,
-    SyncOptions
-};
 
 export default {
     create,
