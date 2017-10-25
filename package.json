@@ -151,7 +151,7 @@
     "request-promise": "4.2.2",
     "request-promise-native": "1.0.5",
     "rimraf": "2.6.2",
-    "rxjs": "5.5.0",
+    "rxjs": "5.5.1",
     "shelljs": "0.7.8",
     "ts-node": "3.3.0",
     "typescript": "2.5.3",
