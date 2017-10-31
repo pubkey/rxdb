@@ -154,7 +154,7 @@
     "rxjs": "5.5.1",
     "shelljs": "0.7.8",
     "ts-node": "3.3.0",
-    "typescript": "2.5.3",
+    "typescript": "2.6.1",
     "uglify-js": "3.1.5",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
