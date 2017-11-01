@@ -3,6 +3,7 @@
 ## 6.0.2 (coming soon)
 
 Features:
+    - Added [attachments](https://pubkey.github.io/rxdb/rx-attachment.html)
     - Added [final fields](https://pubkey.github.io/rxdb/rx-schema.html#final)
 
 Bugfixes:
