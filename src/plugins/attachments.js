@@ -1,5 +1,6 @@
 import IdleQueue from 'custom-idle-queue';
 import RxChangeEvent from './../rx-change-event';
+import * as util from './../util';
 
 /**
  * to not have update-conflicts,
@@ -28,6 +29,57 @@ async function resyncRxDocument(doc) {
     doc.$emit(changeEvent);
 }
 
+
+export const blobBufferUtil = {
+    /**
+     * depending if we are on node or browser,
+     * we have to use Buffer(node) or Blob(browser)
+     * @param  {string} data
+     * @param  {string} type
+     * @return {Blob|Buffer}
+     */
+    createBlobBuffer(data, type) {
+        let blobBuffer;
+        try {
+            // for browsers
+            blobBuffer = new Blob([data], {
+                type
+            });
+        } catch (e) {
+            // for node
+            blobBuffer = new Buffer(data, {
+                type
+            });
+        }
+        return blobBuffer;
+    },
+    toString(blobBuffer) {
+        if (blobBuffer instanceof Buffer) {
+            // node
+            return util.nextTick()
+                .then(() => blobBuffer.toString());
+        }
+        return new Promise(res => {
+            // browsers
+            const reader = new FileReader();
+            reader.addEventListener('loadend', e => {
+                const text = e.srcElement.result;
+                res(text);
+            });
+            reader.readAsText(blobBuffer);
+        });
+    }
+};
+
+
+const _assignMethodsToAttachment = function(attachment) {
+    Object.entries(attachment.doc.collection._attachments).forEach(entry => {
+        const funName = entry[0];
+        const fun = entry[1];
+        attachment.__defineGetter__(funName, () => fun.bind(attachment));
+    });
+};
+
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -47,6 +99,8 @@ export class RxAttachment {
         this.length = length;
         this.digest = digest;
         this.rev = rev;
+
+        _assignMethodsToAttachment(this);
     }
 
     async remove() {
@@ -67,10 +121,11 @@ export class RxAttachment {
         let data = await this.doc.collection.pouch.getAttachment(this.doc.primary, this.id);
 
         if (shouldEncrypt(this.doc)) {
-            data = new Buffer(
-                this.doc.collection._crypter._decryptValue(data.toString()), {
-                    type: this.type
-                });
+            const dataString = await blobBufferUtil.toString(data);
+            data = blobBufferUtil.createBlobBuffer(
+                this.doc.collection._crypter._decryptValue(dataString),
+                this.type
+            );
         }
 
         return data;
@@ -78,7 +133,7 @@ export class RxAttachment {
 
     async getStringData() {
         const bufferBlob = await this.getData();
-        return bufferBlob.toString();
+        return await blobBufferUtil.toString(bufferBlob);
     }
 }
 
@@ -114,13 +169,7 @@ export async function putAttachment({
     if (shouldEncrypt(this))
         data = this.collection._crypter._encryptValue(data);
 
-    const blobBuffer = new Buffer(data, {
-        type
-    });
-    /* TODO use this in browsers
-        const blob = new Blob([data], {
-            type
-        });*/
+    const blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
 
     await queue.requestIdlePromise();
     const ret = await queue.wrapCall(
@@ -204,15 +253,13 @@ export async function postMigrateDocument(action) {
         const stubData = attachments[id];
         const primary = action.doc[primaryPath];
         let data = await action.oldCollection.pouchdb.getAttachment(primary, id);
-        data = data.toString();
+        data = await blobBufferUtil.toString(data);
 
         const res = await action.newestCollection.pouch.putAttachment(
             primary,
             id,
             action.res.rev,
-            new Buffer(data, {
-                type: stubData.content_type
-            }),
+            blobBufferUtil.createBlobBuffer(data, stubData.content_type),
             stubData.content_type
         );
         action.res = res;
@@ -260,5 +307,6 @@ export default {
     rxdb,
     prototypes,
     overwritable,
-    hooks
+    hooks,
+    blobBufferUtil
 };

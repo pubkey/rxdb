@@ -22,13 +22,22 @@ const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
 export class RxCollection {
-    constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
+    constructor(
+        database,
+        name,
+        schema,
+        pouchSettings = {},
+        migrationStrategies = {},
+        methods = {},
+        attachments = {}
+    ) {
         this.database = database;
         this.name = name;
         this.schema = schema;
         this._migrationStrategies = migrationStrategies;
         this._pouchSettings = pouchSettings;
-        this._methods = methods;
+        this._methods = methods; // orm of documents
+        this._attachments = attachments; // orm of attachments
         this._atomicUpsertLocks = {};
 
         this._docCache = DocCache.create();
@@ -622,7 +631,8 @@ export async function create({
     migrationStrategies = {},
     autoMigrate = true,
     statics = {},
-    methods = {}
+    methods = {},
+    attachments = {}
 }) {
     if (!RxSchema.isInstanceOf(schema))
         throw new TypeError('given schema is no Schema-object');
@@ -639,13 +649,14 @@ export async function create({
     // check ORM-methods
     checkOrmMethods(statics);
     checkOrmMethods(methods);
+    checkOrmMethods(attachments);
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
             throw new Error(`collection-method not allowed because fieldname is in the schema ${funName}`);
         });
 
-    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
+    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments);
     await collection.prepare();
 
     // ORM add statics

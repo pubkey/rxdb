@@ -6,6 +6,7 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
 import RxDatabase from '../../dist/lib/rx-database';
+import * as AttachmentPlugin from '../../dist/lib/plugins/attachments';
 
 describe('attachments.test.js', () => {
     describe('.putAttachment()', () => {
@@ -152,7 +153,8 @@ describe('attachments.test.js', () => {
             });
             const attachment = await doc.getAttachment('cat.txt');
             const data = await attachment.getData();
-            assert.equal(data.toString(), dat);
+            const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
+            assert.equal(dataString, dat);
             c.database.destroy();
         });
     });
@@ -222,7 +224,8 @@ describe('attachments.test.js', () => {
             const attachment = attachments[0];
 
             const data = await attachment.getData();
-            assert.deepEqual(data.toString(), 'foo bar');
+            const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
+            assert.deepEqual(dataString, 'foo bar');
             c.database.destroy();
         });
     });
@@ -251,7 +254,8 @@ describe('attachments.test.js', () => {
             });
 
             const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
-            assert.notEqual(encryptedData.toString(), 'foo bar');
+            const dataString = await AttachmentPlugin.blobBufferUtil.toString(encryptedData);
+            assert.notEqual(dataString, 'foo bar');
 
             const data = await attachment.getStringData();
             assert.equal(data, 'foo bar');
@@ -405,8 +409,39 @@ describe('attachments.test.js', () => {
             db2.destroy();
         });
     });
+    describe('orm', () => {
+        it('should be able to call the defined function', async() => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = AsyncTestUtil.clone(schemas.human);
+            schemaJson.attachments = {};
+            const c = await db.collection({
+                name: 'humans',
+                schema: schemaJson,
+                attachments: {
+                    foobar() {
+                        return 'foobar ' + this.type;
+                    }
+                }
+            });
+            await c.insert(schemaObjects.human());
+            const doc = await c.findOne().exec();
+            const attachment = await doc.putAttachment({
+                id: 'cat.txt',
+                data: 'meow I am a kitty',
+                type: 'text/plain'
+            });
+
+            assert.equal(attachment.foobar(), 'foobar text/plain');
+            db.destroy();
+        });
+    });
     describe('integration', () => {
         // TODO remove this line
-        //    it('e', () => process.exit());
+        // it('e', () => process.exit());
     });
 });

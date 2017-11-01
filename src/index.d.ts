@@ -100,6 +100,9 @@ export interface RxCollectionCreator {
     methods?: {
         [key: string]: Function
     };
+    attachments?: {
+        [key: string]: Function
+    };
 }
 
 export declare class RxDatabase {
