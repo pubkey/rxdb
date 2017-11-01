@@ -9,6 +9,7 @@ Features:
 Bugfixes:
     - Removed type `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
     - Added error-message when you json-import on a non-existing collection [#319](https://github.com/pubkey/rxdb/issues/319)
+    - Allow windows-foldernames (with backslash) as collection-name [343](https://github.com/pubkey/rxdb/issues/343)
 
 Other:
     - Split out idle-queue into own [npm-module](http://npmjs.com/package/custom-idle-queue)
