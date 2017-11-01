@@ -30,25 +30,21 @@ export class RxDocument {
 
         // false when _data !== _dataSync
         this._synced$ = new util.Rx.BehaviorSubject(true);
-
         this._deleted$ = new util.Rx.BehaviorSubject(false);
     }
     prepare() {
         // set getter/setter/observable
         this._defineGetterSetter(this, '');
     }
-
     get primaryPath() {
         return this.collection.schema.primaryPath;
     }
     get primary() {
         return this._data[this.primaryPath];
     }
-
     get revision() {
         return this._data._rev;
     }
-
     get deleted$() {
         return this._deleted$.asObservable();
     }

@@ -138,7 +138,8 @@
                     "el",
                     "aes",
                     "hostname",
-                    "vue"
+                    "vue",
+                    "revpos"
                 ],
                 "skipIfMatch": [
                     "^[.]{1,3}$",

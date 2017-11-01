@@ -35,6 +35,9 @@ Core.plugin(AdapterCheckPlugin);
 import JsonDumpPlugin from './plugins/json-dump';
 Core.plugin(JsonDumpPlugin);
 
+import AttachmentsPlugin from './plugins/attachments';
+Core.plugin(AttachmentsPlugin);
+
 
 /**
  * create a database

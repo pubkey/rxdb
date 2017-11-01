@@ -67,6 +67,9 @@ export interface SchemaJSON {
     required?: Array<string>;
     compoundIndexes?: Array<string | Array<string>>;
     disableKeyCompression?: boolean;
+    attachments?: {
+            encrypted?: boolean
+    };
 }
 
 /**
