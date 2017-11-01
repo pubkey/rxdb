@@ -214,8 +214,10 @@ export function validateCouchDBString(name) {
 
 
     // do not check, if foldername is given
-    if (name.includes('/'))
-        return true;
+    if (
+        name.includes('/') || // unix
+        name.includes('\\') // windows
+    ) return true;
 
 
     const regStr = '^[a-z][a-z0-9]*$';
@@ -223,7 +225,7 @@ export function validateCouchDBString(name) {
     if (!name.match(reg)) {
         throw new RxError.newRxError(
             `collection- and database-names must match the regex
-            info: if your database-name specifies a folder, the name must contain the slash-char '/'
+            info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'
             `, {
                 regex: regStr,
                 givenName: name,

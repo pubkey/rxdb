@@ -5,6 +5,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/adapter-check.test.js',
     '../test_tmp/unit/rx-broadcast-channel.test.js',
     '../test_tmp/unit/instance-of-check.test.js',
+    '../test_tmp/unit/attachments.test.js', // TODO move this down
     '../test_tmp/unit/rx-schema.test.js',
     '../test_tmp/unit/key-compression.test.js',
     '../test_tmp/unit/socket.test.js',
