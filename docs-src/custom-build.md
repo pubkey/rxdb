@@ -61,6 +61,20 @@ RxDB.plugin(RxDBReplicationModule);
 RxDB.plugin(require('rxdb/plugins/replication'));
 ```
 
+### attachments
+
+Adds the [attachments](./rx-attachment.md)-functionality to RxDB.
+
+```javascript
+// es6-import
+import RxDBAttachmentsModule from 'rxdb/plugins/attachments';
+RxDB.plugin(RxDBAttachmentsModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/attachments'));
+```
+
+
 ### json-dump
 
 Adds the [json import/export](./rx-database.md#dump)-functionality to RxDB.
