@@ -139,7 +139,10 @@
                     "aes",
                     "hostname",
                     "vue",
-                    "revpos"
+                    "revpos",
+                    "preprocessors",
+                    "travis",
+                    "ci"
                 ],
                 "skipIfMatch": [
                     "^[.]{1,3}$",

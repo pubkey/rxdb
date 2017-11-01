@@ -63,7 +63,7 @@ export const blobBufferUtil = {
             // browsers
             const reader = new FileReader();
             reader.addEventListener('loadend', e => {
-                const text = e.srcElement.result;
+                const text = e.target.result;
                 res(text);
             });
             reader.readAsText(blobBuffer);
