@@ -166,6 +166,19 @@ export interface SyncOptions {
     query?: RxQuery<any>
 }
 
+export declare class RxAttachment<RxDocumentType> {
+    doc: RxDocument<RxDocumentType>;
+    id: string;
+    type: string;
+    length: number;
+    digest: string;
+    rev: string;
+
+    remove(): Promise<void>;
+    getData(): Promise<Blob>;
+    getStringData(): Promise<string>;
+}
+
 export type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocumentType>) => void;
 
 export declare class RxCollection<RxDocumentType> {
@@ -293,6 +306,11 @@ export declare class RxDocumentBase<RxDocumentType> {
     populate(objPath: string): Promise<RxDocument<RxDocumentType> | any>;
     update(updateObj: any): Promise<any>;
     atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType>>;
+
+    putAttachment(id: string, data: string, type?: string): Promise<RxAttachment<RxDocumentType>>;
+    getAttachment(id: string): Promise<RxAttachment<RxDocumentType>>;
+    allAttachments(): Promise<RxAttachment<RxDocumentType>[]>;
+    allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;
 
     toJSON(): RxDocumentType;
     destroy(): void;

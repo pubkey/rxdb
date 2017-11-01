@@ -11,6 +11,7 @@ import RxSchema from './rx-schema';
 import Crypter from './crypter';
 import RxError from './rx-error';
 import overwritable from './overwritable';
+import hooks from './hooks';
 
 class DataMigrator {
     constructor(newestCollection, migrationStrategies) {
@@ -223,14 +224,27 @@ class OldCollection {
         const migrated = await this.migrateDocumentData(doc);
         const action = {
             doc,
-            migrated
+            migrated,
+            oldCollection: this,
+            newestCollection: this.newestCollection
         };
 
         if (migrated) {
+            hooks.runPluginHooks(
+                'preMigrateDocument',
+                action
+            );
+
             // save to newest collection
             delete migrated._rev;
-            await this.newestCollection._pouchPut(migrated, true);
+            const res = await this.newestCollection._pouchPut(migrated, true);
+            action.res = res;
             action.type = 'success';
+
+            await hooks.runAsyncPluginHooks(
+                'postMigrateDocument',
+                action
+            );
         } else action.type = 'deleted';
 
 

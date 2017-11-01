@@ -344,9 +344,69 @@ describe('attachments.test.js', () => {
         });
     });
     describe('data-migration', () => {
+        it('should also migrate the attachments', async() => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = AsyncTestUtil.clone(schemas.human);
+            schemaJson.attachments = {};
+            const c = await db.collection({
+                name: 'humans',
+                schema: schemaJson
+            });
+            await c.insert(schemaObjects.human());
+            const doc = await c.findOne().exec();
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: 'meow I am a kitty',
+                type: 'text/plain'
+            });
+            await doc.putAttachment({
+                id: 'cat2.txt',
+                data: 'meow I am a kitty2',
+                type: 'text/plain'
+            });
 
+            db.destroy();
+
+            const schemaJsonV2 = AsyncTestUtil.clone(schemaJson);
+            schemaJsonV2.version = 1;
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const c2 = await db2.collection({
+                name: 'humans',
+                schema: schemaJsonV2,
+                autoMigrate: true,
+                migrationStrategies: {
+                    1: docData => docData
+                }
+            });
+
+            const doc2 = await c2.findOne().exec();
+            assert.ok(doc2);
+            const attachment = await doc2.getAttachment('cat.txt');
+            const data = await attachment.getStringData();
+            assert.equal(data, 'meow I am a kitty');
+            assert.ok(attachment);
+
+            const attachment2 = await doc2.getAttachment('cat2.txt');
+            assert.ok(attachment2);
+            const data2 = await attachment2.getStringData();
+            assert.equal(data2, 'meow I am a kitty2');
+
+            db2.destroy();
+        });
     });
     describe('integration', () => {
-        it('e', () => process.exit());
+        // TODO remove this line
+        //    it('e', () => process.exit());
     });
 });

@@ -295,6 +295,19 @@ export class RxDocument {
         throw RxError.pluginMissing('update');
     }
 
+    async putAttachment() {
+        throw RxError.pluginMissing('attachments');
+    }
+    async getAttachment() {
+        throw RxError.pluginMissing('attachments');
+    }
+    async allAttachments() {
+        throw RxError.pluginMissing('attachments');
+    }
+    get allAttachments$() {
+        throw RxError.pluginMissing('attachments');
+    }
+
     /**
      * [atomicUpdate description]
      * @param  {[type]}  fun [description]

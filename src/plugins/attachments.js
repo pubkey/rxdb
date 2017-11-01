@@ -189,6 +189,36 @@ export async function allAttachments() {
         });
 };
 
+export async function preMigrateDocument(action) {
+    delete action.migrated._attachments;
+    return action;
+}
+
+export async function postMigrateDocument(action) {
+    const primaryPath = action.oldCollection.schema.primaryPath;
+
+    const attachments = action.doc._attachments;
+    if (!attachments) return action;
+
+    for (const id in attachments) {
+        const stubData = attachments[id];
+        const primary = action.doc[primaryPath];
+        let data = await action.oldCollection.pouchdb.getAttachment(primary, id);
+        data = data.toString();
+
+        const res = await action.newestCollection.pouch.putAttachment(
+            primary,
+            id,
+            action.res.rev,
+            new Buffer(data, {
+                type: stubData.content_type
+            }),
+            stubData.content_type
+        );
+        action.res = res;
+    }
+}
+
 export const rxdb = true;
 export const prototypes = {
     RxDocument: proto => {
@@ -221,9 +251,14 @@ export const prototypes = {
     }
 };
 export const overwritable = {};
+export const hooks = {
+    preMigrateDocument,
+    postMigrateDocument
+};
 
 export default {
     rxdb,
     prototypes,
-    overwritable
+    overwritable,
+    hooks
 };
