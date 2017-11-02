@@ -78,7 +78,7 @@ describe('attachments.test.js', () => {
                 data: 'meow I am a kitty with a knife',
                 type: 'text/plain'
             });
-            const attachment = await doc.getAttachment('cat.txt');
+            const attachment = doc.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.equal(attachment.rev, 2);
             c.database.destroy();
@@ -95,7 +95,7 @@ describe('attachments.test.js', () => {
             doc.age = 7;
             await doc.save();
 
-            const attachment = await doc.getAttachment('cat.txt');
+            const attachment = doc.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.equal(attachment.type, 'text/plain');
             c.database.destroy();
@@ -135,7 +135,7 @@ describe('attachments.test.js', () => {
             });
             const doc2 = await c2.findOne().exec();
             assert.equal(docAge, doc2.age);
-            const attachment = await doc2.getAttachment('cat.txt');
+            const attachment = doc2.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.equal(attachment.type, 'text/plain');
             c2.database.destroy();
@@ -151,7 +151,7 @@ describe('attachments.test.js', () => {
                 data: dat,
                 type: 'text/plain'
             });
-            const attachment = await doc.getAttachment('cat.txt');
+            const attachment = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
             const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
             assert.equal(dataString, dat);
@@ -168,7 +168,7 @@ describe('attachments.test.js', () => {
                 data: dat,
                 type: 'text/plain'
             });
-            const attachment = await doc.getAttachment('cat.txt');
+            const attachment = doc.getAttachment('cat.txt');
             const data = await attachment.getStringData();
             assert.equal(data, dat);
             c.database.destroy();
@@ -183,13 +183,13 @@ describe('attachments.test.js', () => {
                 data: 'meow I am a kitty with a knife',
                 type: 'text/plain'
             });
-            const attachment = await doc.getAttachment('cat.txt');
+            const attachment = doc.getAttachment('cat.txt');
             assert.ok(attachment);
 
             await attachment.remove();
 
             // ensure it does not exist
-            const shouldBeNull = await doc.getAttachment('cat.txt');
+            const shouldBeNull = doc.getAttachment('cat.txt');
             assert.equal(null, shouldBeNull);
 
             c.database.destroy();
@@ -208,7 +208,7 @@ describe('attachments.test.js', () => {
                     type: 'text/plain'
                 }))
             );
-            const attachments = await doc.allAttachments();
+            const attachments = doc.allAttachments();
             assert.equal(attachments.length, 10);
             c.database.destroy();
         });
@@ -220,7 +220,7 @@ describe('attachments.test.js', () => {
                 data: 'foo bar',
                 type: 'text/plain'
             });
-            const attachments = await doc.allAttachments();
+            const attachments = doc.allAttachments();
             const attachment = attachments[0];
 
             const data = await attachment.getData();
@@ -396,12 +396,12 @@ describe('attachments.test.js', () => {
 
             const doc2 = await c2.findOne().exec();
             assert.ok(doc2);
-            const attachment = await doc2.getAttachment('cat.txt');
+            const attachment = doc2.getAttachment('cat.txt');
             const data = await attachment.getStringData();
             assert.equal(data, 'meow I am a kitty');
             assert.ok(attachment);
 
-            const attachment2 = await doc2.getAttachment('cat2.txt');
+            const attachment2 = doc2.getAttachment('cat2.txt');
             assert.ok(attachment2);
             const data2 = await attachment2.getStringData();
             assert.equal(data2, 'meow I am a kitty2');

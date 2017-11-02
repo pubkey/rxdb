@@ -44,7 +44,7 @@ const attachment = await myDocument.putAttachment(
 Returns an `RxAttachment` by its id. Returns `null` when the attachment does not exist.
 
 ```javascript
-const attachment = await myDocument.getAttachment('cat.jpg');
+const attachment = myDocument.getAttachment('cat.jpg');
 ```
 
 ## allAttachments()
@@ -52,7 +52,7 @@ const attachment = await myDocument.getAttachment('cat.jpg');
 Returns an array of all attachments of the `RxDocument`.
 
 ```javascript
-const attachments = await myDocument.allAttachments();
+const attachments = myDocument.allAttachments();
 ```
 
 ## allAttachments$
@@ -99,22 +99,22 @@ The revision-number of the attachment as `number`.
 Removes the attachment. Returns a Promise that resolves when done.
 
 ```javascript
-const attachment = await myDocument.getAttachment('cat.jpg');
+const attachment = myDocument.getAttachment('cat.jpg');
 await attachment.remove();
 ```
 
 ## getData()
 
-Returns the attachments data as `Blob` or `Buffer`. (async)
+Returns a Promise which resolves the attachment's data as `Blob` or `Buffer`. (async)
 
 ```javascript
-const attachment = await myDocument.getAttachment('cat.jpg');
+const attachment = myDocument.getAttachment('cat.jpg');
 const blobBuffer = await attachment.getData();
 ```
 
 ## getStringData()
 
-Returns the attachments data as `string`.
+Returns a Promise which resolves the attachment's data as `string`.
 
 ```javascript
 const attachment = await myDocument.getAttachment('cat.jpg');

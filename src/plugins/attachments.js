@@ -206,7 +206,7 @@ export async function putAttachment({
  * @param  {string} id
  * @return {RxAttachment}
  */
-export async function getAttachment(id) {
+export function getAttachment(id) {
     ensureSchemaSupportsAttachments(this);
     const docData = this._dataSync$.getValue();
     if (!docData._attachments || !docData._attachments[id])
@@ -225,9 +225,9 @@ export async function getAttachment(id) {
  * returns all attachments of the document
  * @return {RxAttachment[]}
  */
-export async function allAttachments() {
+export function allAttachments() {
     ensureSchemaSupportsAttachments(this);
-    const docData = await this.collection.pouch.get(this.primary);
+    const docData = this._dataSync$.getValue();
     return Object.keys(docData._attachments)
         .map(id => {
             return RxAttachment.fromPouchDocument(
