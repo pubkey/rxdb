@@ -1,5 +1,7 @@
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
 import { RxDocument } from '../../../../../../';
+import * as RxDBTypes from '../../RxDB.d';
+
 
 @Component({
     templateUrl: './home.component.html',
@@ -7,10 +9,17 @@ import { RxDocument } from '../../../../../../';
 })
 export class HomeComponent {
 
-    editedHero: RxDocument;
+    editedHero: RxDBTypes.RxHeroDocument;
 
     constructor() { }
     ngOnInit() { }
+
+    /**
+     * this method exists to play arround with the typings
+     */
+    foo() {
+        const x: number = this.editedHero.hpPercent();
+    }
 
     editHero(hero) {
         this.editedHero = hero;

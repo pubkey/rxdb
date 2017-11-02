@@ -32,11 +32,13 @@ const nodeAndBrowser = [
     '../test_tmp/unit/import-export.test.js',
     '../test_tmp/unit/cross-instance.test.js',
     '../test_tmp/unit/mod-encryption.test.js',
+    '../test_tmp/unit/attachments.test.js',
     '../test_tmp/unit/bug-report.test.js'
 ];
 
 const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js'
+    '../test_tmp/unit/plugin.test.js',
+    '../test_tmp/unit/typings.test.js'
 ];
 
 module.exports = {

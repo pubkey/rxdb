@@ -6,25 +6,25 @@ import * as util from '../../dist/lib/util';
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
-        it('should work with a string', async() => {
+        it('should work with a string', async () => {
             const hash = util.fastUnsecureHash('foobar');
             assert.equal(typeof hash, 'number');
             assert.ok(hash > 0);
         });
-        it('should work on object', async() => {
+        it('should work on object', async () => {
             const hash = util.fastUnsecureHash({
                 foo: 'bar'
             });
             assert.equal(typeof hash, 'number');
             assert.ok(hash > 0);
         });
-        it('should get the same hash twice', async() => {
+        it('should get the same hash twice', async () => {
             const str = util.randomCouchString(10);
             const hash = util.fastUnsecureHash(str);
             const hash2 = util.fastUnsecureHash(str);
             assert.equal(hash, hash2);
         });
-        it('should work with a very large string', async() => {
+        it('should work with a very large string', async () => {
             const str = util.randomCouchString(5000);
             const hash = util.fastUnsecureHash(str);
             assert.equal(typeof hash, 'number');
@@ -49,7 +49,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.sortObject()', () => {
-        it('should sort when regex in object', async() => {
+        it('should sort when regex in object', async () => {
             const obj = {
                 _id: {},
                 color: {
@@ -58,6 +58,24 @@ describe('util.test.js', () => {
             };
             const sorted = util.sortObject(obj);
             assert.ok(sorted.color.$regex instanceof RegExp);
+        });
+    });
+    describe('.validateCouchDBString()', () => {
+        describe('positive', () => {
+            it('should validate a normal string', () => {
+                util.validateCouchDBString('foobar');
+            });
+            it('should validate foldernames', () => {
+                util.validateCouchDBString('./foobar'); // unix
+                util.validateCouchDBString('.\\foobar'); //windows
+            });
+        });
+        describe('negative', () => {
+            it('should not validate a spaced string', () => {
+                assert.throws(
+                    () => util.validateCouchDBString('foo bar')
+                );
+            });
         });
     });
 });

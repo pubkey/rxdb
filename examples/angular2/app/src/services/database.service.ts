@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+// import typings
+import * as RxDBTypes from './../RxDB.d';
+
 
 // batteries-included
 // import RxDB from 'rxdb';
@@ -26,8 +29,6 @@ RxDB.plugin(RxDBReplicationModule);
 RxDB.plugin(require('pouchdb-adapter-http'));
 
 
-// import typings
-import * as RxDBTypes from './../RxDB.d';
 
 RxDB.QueryChangeDetector.enable();
 RxDB.QueryChangeDetector.enableDebugging();

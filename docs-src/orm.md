@@ -82,6 +82,29 @@ console.log(doc.whoAmI());
 // 'I am Skeletor!!'
 ```
 
+## attachment-methods
+
+Attachment-methods are defined collection-wide. They can be called on the RxAttachemnts of the RxDocuments of the collection.
+
+```javascript
+const heroes = await myDatabase.collection({
+  name: 'heroes',
+  schema: mySchema,
+  attachments: {
+    scream: function(){
+        return 'AAAH!!';
+    }
+  }
+});
+const doc = await heroes.findOne().exec();
+const attachment = await doc.putAttachment({
+    id: 'cat.txt',
+    data: 'meow I am a kitty',
+    type: 'text/plain'
+});
+console.log(attachment.scream());
+// 'AAAH!!'
+```
 
 ---------
 If you are new to RxDB, you should continue [here](./population.md)

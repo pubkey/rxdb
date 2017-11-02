@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <strong>A reactive, offline-first Database for Javascript</strong>
+  <strong>A reactive, offline-first Database for JavaScript</strong>
 </p>
 
 <div align="center">

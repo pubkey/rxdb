@@ -1,12 +1,10 @@
 # QueryChangeDetection
 
 Similar to Meteors [oplog-observe-driver](https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md),
-RxDB has a QueryChangeDetection to optimize observed or reused queries. This makes sure that when you update/insert/remove documents,
-the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance-gain
-with zero cost.
+RxDB has a QueryChangeDetection to optimize observed or reused queries. This makes sure that when you update/insert/remove documents, the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance gain with zero cost.
 
 ## NOTICE:
-The QueryChangeDetection is currently in **beta** and disabled by default.
+QueryChangeDetection is currently in **beta** and disabled by default.
 You can enable it by calling the `enable()`-function on its module.
 
 ```js
@@ -28,16 +26,16 @@ query.$.subscribe(users => {
 });
 ```
 
-As you may detect, the query can take a very long time to run, because you have thousands of users in the collection.
-When a user now loggs of, the whole query will re-run over the database which takes again very long.
+As you may detect, the query can take a very long time to run because you have thousands of users in the collection.
+Then, when a user logs off, the whole query will re-run over the database which takes a really long time yet again.
 
 ```js
 anyUser.loggedIn = false;
 await anyUser.save();
 ```
 
-But not with the QueryChangeDetection enabled.
-Now, when one user loggs of, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. The QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
+But not with QueryChangeDetection enabled.
+Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This can often be done in-memory without making IO-requests to the storage-engine. QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
 
 
 --------------------------------------------------------------------------------

@@ -38,6 +38,8 @@ Core.plugin(JsonDumpPlugin);
 import InMemoryPlugin from './plugins/in-memory';
 Core.plugin(InMemoryPlugin);
 
+import AttachmentsPlugin from './plugins/attachments';
+Core.plugin(AttachmentsPlugin);
 
 /**
  * create a database

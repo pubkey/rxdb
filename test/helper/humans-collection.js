@@ -32,6 +32,63 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
     return collection;
 }
 
+export async function createAttachments(size = 20, name = 'human', multiInstance = true) {
+    if (!name) name = 'human';
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory',
+        multiInstance,
+        ignoreDuplicate: true
+    });
+
+    const schemaJson = clone(schemas.human);
+    schemaJson.attachments = {};
+
+    const collection = await db.collection({
+        name,
+        schema: schemaJson
+    });
+
+    // insert data
+    const fns = [];
+    for (let i = 0; i < size; i++)
+        fns.push(collection.insert(schemaObjects.human()));
+    await Promise.all(fns);
+
+    return collection;
+}
+
+export async function createEncryptedAttachments(size = 20, name = 'human', multiInstance = true) {
+    if (!name) name = 'human';
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        password: 'foooooobaaaar',
+        adapter: 'memory',
+        multiInstance,
+        ignoreDuplicate: true
+    });
+
+    const schemaJson = clone(schemas.human);
+    schemaJson.attachments = {
+        encrypted: true
+    };
+
+    const collection = await db.collection({
+        name,
+        schema: schemaJson
+    });
+
+    // insert data
+    const fns = [];
+    for (let i = 0; i < size; i++)
+        fns.push(collection.insert(schemaObjects.human()));
+    await Promise.all(fns);
+
+    return collection;
+}
+
 
 export async function createNoCompression(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));

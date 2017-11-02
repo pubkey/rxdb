@@ -30,14 +30,35 @@ export const HOOKS = {
      * }
      * @type {Array}
      */
-    preCreatePouchDb: []
+    preCreatePouchDb: [],
+    /**
+     * runs on the document-data before the document is migrated
+     * {
+     *   doc: Object, // originam doc-data
+     *   migrated: // migrated doc-data after run throught migration-strategies
+     * }
+     * @type {Array}
+     */
+    preMigrateDocument: [],
+    /**
+     * runs after the migration of a document has been done
+     * @type {Array}
+     */
+    postMigrateDocument: []
 };
 
 export function runPluginHooks(hookKey, obj) {
     HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
+export async function runAsyncPluginHooks(hookKey, obj) {
+    return Promise.all(
+        HOOKS[hookKey].map(fun => fun(obj))
+    );
+};
+
 export default {
     runPluginHooks,
+    runAsyncPluginHooks,
     HOOKS
 };

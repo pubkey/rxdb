@@ -52,4 +52,4 @@ const is = RxDB.isRxQuery(myObj);
 ```
 
 ---------
-If you are new to RxDB, you should continue [here](./middleware.md)
+If you are new to RxDB, you should continue [here](./rx-attachment.md)
