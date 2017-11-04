@@ -14,12 +14,13 @@ import PouchDB from '../pouch-db';
 
 import clone from 'clone';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
-import PouchPluginTransform from 'transform-pouch';
-import ReplicationStream from 'pouchdb-replication-stream';
-import MemoryStream from 'memorystream';
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
+const BULK_DOC_OPTIONS = {
+    new_edits: false
+};
+
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
     constructor(parentCollection, pouchSettings) {
@@ -32,6 +33,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             {},
             parentCollection._methods);
         this._parentCollection = parentCollection;
+        this._changeStreams = []; // TODO cancel on destroy
     }
 
     async prepare() {
@@ -65,89 +67,69 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             })
         );
 
-        // add transformator
-        /*        this.pouch.transform({
-                    incoming: doc => {
-                        console.log('incoming');
-                        console.dir(doc);
-                        // do something to the document before storage
-                        return doc;
-                    },
-                    outgoing: doc => {
-                        console.log('outgoins');
-                        console.dir(doc);
-                        // do something to the document after retrieval
-                        return doc;
-                    }
-                });*/
+        await this._initialSync();
+        console.log('_initialSync() done');
+        // await this._replicateChangeStream();
+    }
 
+    /**
+     * this does the initial sync
+     * so that the in-memory-collection has the same docs as the original
+     * @return {Promise}
+     */
+    async _initialSync() {
         // initial sync
-
-
-        const stream = new MemoryStream();
-        const transformedStream = new MemoryStream();
-
-
-        let firstDone = false;
-        stream.on('data', chunk => {
-            if (!firstDone && false) {
-                firstDone = true;
-                transformedStream.write(chunk);
-                return;
-            }
-            const docsData = JSON.parse(chunk.toString());
-
-            if (docsData.docs) {
-                docsData.docs = docsData.docs
-                    .filter(doc => !doc.language) // do not replicate design-docs
-                    .map(doc => this._parentCollection._handleFromPouch(doc));
-            }
-
-            /*            console.log('data:');
-                        console.dir(docsData);
-                        console.log('as string:');
-                        console.dir(chunk.toString());
-            */
-            const outString = JSON.stringify(docsData) + '\n';
-            console.log('outString:');
-            console.dir(outString);
-
-            transformedStream.write(outString);
+        const allRows = await this._parentCollection.pouch.allDocs({
+            attachments: false,
+            include_docs: true
         });
-        stream.on('end', function() {
-            // outputs 'Hello World!'
-            console.log('ended!');
-            transformedStream.end();
+        await this.pouch.bulkDocs({
+            docs: allRows
+                .rows
+                .map(row => row.doc)
+                .map(doc => this._parentCollection._handleFromPouch(doc))
+        }, BULK_DOC_OPTIONS);
+
+        // sync from own to parent
+        this._parentCollection.watchForChanges();
+        this.pouch.changes({
+            since: 'now',
+            include_docs: true,
+            live: true
+        }).on('change', async (change) => {
+            const doc = this._parentCollection._handleToPouch(change.doc);
+            console.log('write to parent:');
+            console.dir(doc);
+            this._parentCollection.pouch.bulkDocs({
+                docs: [doc]
+            }, BULK_DOC_OPTIONS);
         });
 
+        // sync from parent to own
+        this._parentCollection.pouch.changes({
+            since: 'now',
+            include_docs: true,
+            live: true
+        }).on('change', async (change) => {
+            const doc = this._parentCollection._handleFromPouch(change.doc);
+            console.log('write to own2:');
+            console.dir(doc);
+            this.pouch.bulkDocs({
+                docs: [doc]
+            }, BULK_DOC_OPTIONS);
+        });
+    }
 
-        await Promise.all([
-            this._parentCollection.pouch.dump(stream),
-            this.pouch.load(transformedStream)
-        ]);
-        console.log('inital sync complete!');
 
-        /*        const initialReplicationState = this._parentCollection.sync({
-                    remote: this.pouch,
-                    waitForLeadership: false,
-                    direction: {
-                        pull: false,
-                        push: true
-                    },
-                    options: {
-                        live: false,
-                        retry: false
-                    },
-                     // we use a default-query so we do not sync _design-documents
-                    query: this._parentCollection.find()
-                });*/
-        /*        await initialReplicationState
-                    .complete$
-                    .filter(ev => ev.ok === true)
-                    .first()
-                    .toPromise();*/
+    /**
+     * @overwrite
+     */
+    $emit(changeEvent) {
+        //        console.log('$emit called:');
+        //        console.dir(changeEvent);
     }
 };
+
 
 function toCleanSchema(rxSchema) {
     const newSchemaJson = clone(rxSchema.jsonID);
@@ -178,9 +160,6 @@ export async function spawnInMemory() {
         INIT_DONE = true;
         // ensure memory-adapter is added
         Core.plugin(PouchAdapterMemory);
-        Core.plugin(PouchPluginTransform);
-        Core.plugin(ReplicationStream.plugin);
-        PouchDB.adapter('writableStream', ReplicationStream.adapters.writableStream);
     }
 
     if (collectionCacheMap.has(this)) {
