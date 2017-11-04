@@ -136,7 +136,7 @@
     "leveldown": "2.0.0",
     "memdown": "1.4.1",
     "mocha": "4.0.1",
-    "nconf": "0.8.5",
+    "nconf": "0.9.0",
     "pouchdb": "6.3.4",
     "pouchdb-adapter-http": "6.3.4",
     "pouchdb-adapter-idb": "6.3.4",
