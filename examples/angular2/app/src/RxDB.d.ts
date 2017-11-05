@@ -30,7 +30,8 @@ export class RxHeroesDatabase extends RxDatabase {
     hero?: RxHeroCollection;
 }
 
-export default {
+declare let _default: {
     RxHeroCollection,
     RxHeroesDatabase
 };
+export default _default;
