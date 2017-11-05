@@ -4,8 +4,9 @@
  * the primary is always:
  *    - type:     'string'
  *    - index:    true
+ *    - final:    true
  *    - unique:   true
- *    - required: true,
+ *    - required: true
  */
 
 import assert from 'assert';
@@ -17,7 +18,6 @@ import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
-
 
 describe('primary.test.js', () => {
     describe('Schema', () => {
