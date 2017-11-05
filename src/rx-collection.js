@@ -529,7 +529,18 @@ export class RxCollection {
         return doc;
     }
 
+    /**
+     * returns a promise that is resolved when the collection gets destroyed
+     * @return {Promise}
+     */
+    get onDestroy() {
+        if (!this._onDestroy)
+            this._onDestroy = new Promise(res => this._onDestroyCall = res);
+        return this._onDestroy;
+    }
+
     async destroy() {
+        this._onDestroyCall && this._onDestroyCall();
         this._subs.forEach(sub => sub.unsubscribe());
         this._changeEventBuffer && this._changeEventBuffer.destroy();
         this._queryCache.destroy();

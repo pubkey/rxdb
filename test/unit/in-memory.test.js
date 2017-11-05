@@ -3,12 +3,12 @@
  */
 import assert from 'assert';
 
-// import * as schemas from './../helper/schemas';
-// import * as schemaObjects from './../helper/schema-objects';
+import * as schemas from './../helper/schemas';
+import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-// import * as RxDatabase from '../../dist/lib/rx-database';
-// import * as util from '../../dist/lib/util';
+import * as RxDatabase from '../../dist/lib/rx-database';
+import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
 describe('in-memory.test.js', () => {
@@ -62,6 +62,143 @@ describe('in-memory.test.js', () => {
                     .exec();
                 return !!memDoc && memDoc.firstName === 'foobar';
             });
+            col.database.destroy();
+        });
+    });
+    describe('reactive', () => {
+        it('should re-emit query when parent changes', async () => {
+            const col = await humansCollection.create(5);
+            const memCol = await col.inMemory();
+
+            const emitted = [];
+            memCol.find().$.subscribe(docs => emitted.push(docs));
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.equal(emitted[0].length, 5);
+
+            const addDoc = schemaObjects.human();
+            await col.insert(addDoc);
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            assert.equal(emitted[1].length, 6);
+
+            col.database.destroy();
+        });
+        it('it should re-emit on parent when in-mem changes', async () => {
+            const col = await humansCollection.create(5);
+            const memCol = await col.inMemory();
+
+            const emitted = [];
+            col.find().$.subscribe(docs => emitted.push(docs));
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.equal(emitted[0].length, 5);
+
+            const addDoc = schemaObjects.human();
+            await memCol.insert(addDoc);
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            assert.equal(emitted[1].length, 6);
+
+            col.database.destroy();
+        });
+    });
+    describe('multi-instance', () => {
+        it('should emit on other instance when in-mem changes', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+
+            const c1 = await db.collection({
+                name: 'humans',
+                schema: schemas.human
+            });
+            const c2 = await db2.collection({
+                name: 'humans',
+                schema: schemas.human
+            });
+            const memCol = await c1.inMemory();
+
+            const emitted = [];
+            c2.find().$.subscribe(docs => emitted.push(docs));
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+
+            await memCol.insert(schemaObjects.human());
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            await memCol.insert(schemaObjects.human());
+            await AsyncTestUtil.waitUntil(() => emitted.length === 3);
+            await memCol.insert(schemaObjects.human());
+            await AsyncTestUtil.waitUntil(() => emitted.length === 4);
+
+
+            const lastEmitted = emitted.pop();
+            assert.equal(lastEmitted.length, 3);
+
+            db.destroy();
+            db2.destroy();
+        });
+    });
+    describe('encryption', () => {
+        it('should store the encrypted data unencrypted in memory-collection', async () => {
+            const col = await humansCollection.createEncrypted(0);
+            const memCol = await col.inMemory();
+
+            // insert to parent
+            const docData = schemaObjects.encryptedHuman();
+            const doc = await col.insert(docData);
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await memCol.find().exec();
+                return docs.length === 1;
+            });
+            const memPouchDoc = await memCol.pouch.get(doc.primary);
+            assert.equal(memPouchDoc.secret, docData.secret);
+
+            // insert to memory
+            const docData2 = schemaObjects.encryptedHuman();
+            const doc2 = await memCol.insert(docData2);
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await col.find().exec();
+                return docs.length === 2;
+            });
+            const pouchDoc = await col.pouch.get(doc2.primary);
+            assert.notEqual(doc2.secret, pouchDoc.secret);
+
+            col.database.destroy();
+        });
+    });
+    describe('primary', () => {
+        it('should work on set primary-key', async () => {
+            const col = await humansCollection.createPrimary(0);
+            const memCol = await col.inMemory();
+
+            // insert to parent
+            const docData = schemaObjects.simpleHuman();
+            const doc = await col.insert(docData);
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await memCol.find().exec();
+                return docs.length === 1;
+            });
+            const memPouchDoc = await memCol.pouch.get(doc.primary);
+            assert.equal(memPouchDoc.firstName, docData.firstName);
+
+            // insert to memory
+            const docData2 = schemaObjects.simpleHuman();
+            const doc2 = await memCol.insert(docData2);
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await col.find().exec();
+                return docs.length === 2;
+            });
+            const pouchDoc = await col.pouch.get(doc2.primary);
+            assert.notEqual(doc2.firstName, pouchDoc.firstName);
+
             col.database.destroy();
         });
     });

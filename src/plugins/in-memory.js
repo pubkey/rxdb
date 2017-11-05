@@ -33,7 +33,10 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             {},
             parentCollection._methods);
         this._parentCollection = parentCollection;
-        this._changeStreams = []; // TODO cancel on destroy
+        this._parentCollection.onDestroy.then(() => this.destroy());
+
+        this._changeStreams = [];
+        this.onDestroy.then(() => this._changeStreams.forEach(stream => stream.cancel()));
     }
 
     async prepare() {
@@ -68,8 +71,6 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         );
 
         await this._initialSync();
-        console.log('_initialSync() done');
-        // await this._replicateChangeStream();
     }
 
     /**
@@ -87,12 +88,14 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             docs: allRows
                 .rows
                 .map(row => row.doc)
+                .filter(doc => !doc.language) // do not replicate design-docs
                 .map(doc => this._parentCollection._handleFromPouch(doc))
         }, BULK_DOC_OPTIONS);
 
         // sync from own to parent
         this._parentCollection.watchForChanges();
-        this.pouch.changes({
+        this.watchForChanges();
+        const fromOwnStream = this.pouch.changes({
             since: 'now',
             include_docs: true,
             live: true
@@ -104,20 +107,23 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
                 docs: [doc]
             }, BULK_DOC_OPTIONS);
         });
+        this._changeStreams.push(fromOwnStream);
 
         // sync from parent to own
-        this._parentCollection.pouch.changes({
+        const fromParentStream = this._parentCollection.pouch.changes({
             since: 'now',
             include_docs: true,
             live: true
         }).on('change', async (change) => {
-            const doc = this._parentCollection._handleFromPouch(change.doc);
+            let doc = this._parentCollection._handleFromPouch(change.doc);
+            doc = this.schema.swapPrimaryToId(doc);
             console.log('write to own2:');
             console.dir(doc);
             this.pouch.bulkDocs({
                 docs: [doc]
             }, BULK_DOC_OPTIONS);
         });
+        this._changeStreams.push(fromParentStream);
     }
 
 
@@ -125,6 +131,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * @overwrite
      */
     $emit(changeEvent) {
+        this._observable$.next(changeEvent);
         //        console.log('$emit called:');
         //        console.dir(changeEvent);
     }
@@ -138,13 +145,13 @@ function toCleanSchema(rxSchema) {
     delete newSchemaJson.properties._rev;
     delete newSchemaJson.properties._attachments;
 
-    const removeEncryption = (schema) => {
+    const removeEncryption = (schema, complete) => {
         delete schema.encrypted;
         Object.values(schema)
             .filter(val => typeof val === 'object')
-            .forEach(val => removeEncryption(val));
+            .forEach(val => removeEncryption(val, complete));
     };
-    removeEncryption(newSchemaJson);
+    removeEncryption(newSchemaJson, newSchemaJson);
 
     return RxSchema.create(newSchemaJson);
 }
