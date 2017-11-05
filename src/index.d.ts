@@ -362,7 +362,7 @@ export function isRxDocument(obj: any): boolean;
 export function isRxQuery(obj: any): boolean;
 export function isRxSchema(obj: any): boolean;
 
-export default {
+declare let _default: {
     create,
     removeDatabase,
     plugin,
@@ -377,3 +377,5 @@ export default {
     RxDatabase,
     RxError
 };
+
+export default _default;
