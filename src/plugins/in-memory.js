@@ -141,6 +141,15 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      */
     $emit(changeEvent) {
         this._observable$.next(changeEvent);
+
+        // run compaction each 10 events
+        if (!this._eventCounter) this._eventCounter = 0;
+        this._eventCounter++;
+        if (this._eventCounter === 10) {
+            this._eventCounter = 0;
+            this.pouch.compact();
+        }
+
         //        console.log('$emit called:');
         //        console.dir(changeEvent);
     }

@@ -82,6 +82,8 @@
 
 * [QueryChangeDetection](./query-change-detection.md)
 
+* [InMemory](./in-memory.md)
+
 * [Custom Build](./custom-build.md)
 
 * [Plugins](./plugins.md)

@@ -227,6 +227,11 @@ export declare class RxCollection<RxDocumentType> {
     // if you do custom-sync, use this
     createRxReplicationState(): RxReplicationState;
 
+    /**
+     * creates an in-memory replicated version of this collection
+     */
+    inMemory(): Promise<RxCollection<RxDocumentType>>;
+
     destroy(): Promise<boolean>;
     remove(): Promise<any>;
 }
