@@ -48,9 +48,9 @@
     "pouchdb-server": "2.3.7",
     "random-int": "1.0.0",
     "regenerator": "0.11.0",
-    "roboto-npm-webfont": "1.0.0",
+    "roboto-npm-webfont": "1.0.1",
     "rxdb": "../../",
-    "rxjs": "5.5.0",
+    "rxjs": "5.5.2",
     "zone.js": "0.8.18"
   },
   "devDependencies": {
@@ -68,13 +68,13 @@
     "copy-webpack-plugin": "4.2.0",
     "css-loader": "0.28.7",
     "es6-promise": "4.1.1",
-    "extract-text-webpack-plugin": "3.0.1",
+    "extract-text-webpack-plugin": "3.0.2",
     "file-loader": "1.1.5",
     "fsmonitor": "0.2.4",
     "html-webpack-plugin": "2.30.1",
-    "less": "2.7.2",
+    "less": "2.7.3",
     "less-loader": "4.0.5",
-    "local-web-server": "2.2.4",
+    "local-web-server": "2.3.0",
     "npm-run-all": "4.1.1",
     "postcss-cli": "4.1.1",
     "raw-loader": "0.5.1",
@@ -87,7 +87,7 @@
     "url-loader": "0.6.2",
     "webpack": "3.8.1",
     "webpack-dev-middleware": "1.12.0",
-    "webpack-dev-server": "2.9.3",
-    "webpack-merge": "4.1.0"
+    "webpack-dev-server": "2.9.4",
+    "webpack-merge": "4.1.1"
   }
 }
