@@ -36,7 +36,16 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         this._parentCollection.onDestroy.then(() => this.destroy());
 
         this._changeStreams = [];
-        this.onDestroy.then(() => this._changeStreams.forEach(stream => stream.cancel()));
+
+
+        /**
+         * runs on parentCollection.destroy()
+         * Cleans up everything to free up memory
+         */
+        this.onDestroy.then(() => {
+            this._changeStreams.forEach(stream => stream.cancel());
+            this.pouch.destroy();
+        });
     }
 
     async prepare() {
@@ -101,8 +110,8 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             live: true
         }).on('change', async (change) => {
             const doc = this._parentCollection._handleToPouch(change.doc);
-            console.log('write to parent:');
-            console.dir(doc);
+            // console.log('write to parent:');
+            // console.dir(doc);
             this._parentCollection.pouch.bulkDocs({
                 docs: [doc]
             }, BULK_DOC_OPTIONS);
@@ -117,8 +126,8 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         }).on('change', async (change) => {
             let doc = this._parentCollection._handleFromPouch(change.doc);
             doc = this.schema.swapPrimaryToId(doc);
-            console.log('write to own2:');
-            console.dir(doc);
+            // console.log('write to own2:');
+            // console.dir(doc);
             this.pouch.bulkDocs({
                 docs: [doc]
             }, BULK_DOC_OPTIONS);

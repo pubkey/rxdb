@@ -31,6 +31,7 @@ export class RxCollection {
         methods = {},
         attachments = {}
     ) {
+        this.destroyed = false;
         this.database = database;
         this.name = name;
         this.schema = schema;
@@ -540,12 +541,15 @@ export class RxCollection {
     }
 
     async destroy() {
+        if (this.destroyed) return;
+
         this._onDestroyCall && this._onDestroyCall();
         this._subs.forEach(sub => sub.unsubscribe());
         this._changeEventBuffer && this._changeEventBuffer.destroy();
         this._queryCache.destroy();
         this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
+        this.destroyed = true;
     }
 
     /**

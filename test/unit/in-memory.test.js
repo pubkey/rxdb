@@ -30,6 +30,14 @@ describe('in-memory.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('.onDestroy', () => {
+        it('should be destroyed when the parent is destroyed', async () => {
+            const col = await humansCollection.create(5);
+            const memCol = await col.inMemory();
+            await col.database.destroy();
+            assert.ok(memCol.destroyed);
+        });
+    });
     describe('changes', () => {
         it('should replicate change from memory to original', async () => {
             const col = await humansCollection.create(5);
@@ -202,8 +210,18 @@ describe('in-memory.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('other', () => {
+        it('should work with many documents', async () => {
+            const amount = 100;
+            const col = await humansCollection.create(amount);
+            const memCol = await col.inMemory();
+            const docs = await memCol.find().exec();
+            assert.equal(docs.length, amount);
+            col.database.destroy();
+        });
+    });
     describe('e', () => {
         // TODO remove this
-        it('e', () => process.exit());
+        //        it('e', () => process.exit());
     });
 });

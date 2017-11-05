@@ -23,18 +23,18 @@ describe('primary.test.js', () => {
     describe('Schema', () => {
         describe('.create()', () => {
             describe('positive', () => {
-                it('use in schema', async() => {
+                it('use in schema', async () => {
                     const schema = RxSchema.create(schemas.primaryHuman);
                     assert.equal(typeof schema.primaryPath, 'string');
                 });
             });
             describe('negative', () => {
-                it('throw if primary is also index', async() => {
+                it('throw if primary is also index', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.index = true;
                     assert.throws(() => RxSchema.create(schemaObj), Error);
                 });
-                it('throw if primary is also unique', async() => {
+                it('throw if primary is also unique', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.unique = true;
                     assert.throws(() => RxSchema.create(schemaObj), Error);
@@ -44,7 +44,7 @@ describe('primary.test.js', () => {
                     schemaObj.properties.passportId.type = 'integer';
                     assert.throws(() => RxSchema.create(schemaObj), Error);
                 });
-                it('throw if primary is defined twice', async() => {
+                it('throw if primary is defined twice', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId2 = {
                         type: 'string',
@@ -52,13 +52,7 @@ describe('primary.test.js', () => {
                     };
                     assert.throws(() => RxSchema.create(schemaObj), Error);
                 });
-                it('throw if primary is in required', async() => {
-                    const schemaObj = clone(schemas.primaryHuman);
-                    schemaObj.required.push('passportId');
-                    assert.throws(() => RxSchema.create(schemaObj), Error);
-                });
-
-                it('throw if primary is encrypted', async() => {
+                it('throw if primary is encrypted', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.encrypted = true;
                     assert.throws(() => RxSchema.create(schemaObj), Error);
@@ -97,7 +91,7 @@ describe('primary.test.js', () => {
     describe('Collection', () => {
         describe('.insert()', () => {
             describe('positive', () => {
-                it('should insert a human', async() => {
+                it('should insert a human', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -110,7 +104,7 @@ describe('primary.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('throw on duplicate primary', async() => {
+                it('throw on duplicate primary', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -122,7 +116,7 @@ describe('primary.test.js', () => {
                     );
                     c.database.destroy();
                 });
-                it('do not allow primary==null', async() => {
+                it('do not allow primary==null', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     obj.passportId = null;
@@ -136,7 +130,7 @@ describe('primary.test.js', () => {
         });
         describe('.find()', () => {
             describe('positive', () => {
-                it('find the inserted doc', async() => {
+                it('find the inserted doc', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -144,7 +138,7 @@ describe('primary.test.js', () => {
                     assert.equal(docs.length, 1);
                     c.database.destroy();
                 });
-                it('find by primary', async() => {
+                it('find by primary', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -154,7 +148,7 @@ describe('primary.test.js', () => {
                     assert.equal(docs.length, 1);
                     c.database.destroy();
                 });
-                it('sort by primary', async() => {
+                it('sort by primary', async () => {
                     const c = await humansCollection.createPrimary(5);
                     const docsASC = await c.find().sort({
                         passportId: 1
@@ -175,7 +169,7 @@ describe('primary.test.js', () => {
         });
         describe('.findOne()', () => {
             describe('positive', () => {
-                it('find the doc', async() => {
+                it('find the doc', async () => {
                     const c = await humansCollection.createPrimary(6);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -183,13 +177,13 @@ describe('primary.test.js', () => {
                     assert.equal(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
-                it('find nothing', async() => {
+                it('find nothing', async () => {
                     const c = await humansCollection.createPrimary(10);
                     const doc = await c.findOne('foobar').exec();
                     assert.equal(doc, null);
                     c.database.destroy();
                 });
-                it('find with more selectors', async() => {
+                it('find with more selectors', async () => {
                     const c = await humansCollection.createPrimary(6);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -199,7 +193,7 @@ describe('primary.test.js', () => {
                     assert.equal(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
-                it('BUG: findOne().where(myPrimary)', async() => {
+                it('BUG: findOne().where(myPrimary)', async () => {
                     const c = await humansCollection.createPrimary(1);
                     const doc = await c.findOne().exec();
                     const passportId = doc.passportId;
@@ -215,7 +209,7 @@ describe('primary.test.js', () => {
     describe('Document', () => {
         describe('.get()', () => {
             describe('positive', () => {
-                it('get the primary value', async() => {
+                it('get the primary value', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -228,7 +222,7 @@ describe('primary.test.js', () => {
         });
         describe('.set()', () => {
             describe('positive', () => {
-                it('modify a non-primary', async() => {
+                it('modify a non-primary', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -238,7 +232,7 @@ describe('primary.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('should not allow to set the primary', async() => {
+                it('should not allow to set the primary', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -253,7 +247,7 @@ describe('primary.test.js', () => {
         });
         describe('.save()', () => {
             describe('positive', () => {
-                it('save an edited doc with a primary', async() => {
+                it('save an edited doc with a primary', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -271,7 +265,7 @@ describe('primary.test.js', () => {
         });
         describe('.subscribe()', () => {
             describe('positive', () => {
-                it('subscribe to one field', async() => {
+                it('subscribe to one field', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
@@ -284,7 +278,7 @@ describe('primary.test.js', () => {
                     assert.equal(value, 'foobar');
                     c.database.destroy();
                 });
-                it('subscribe to query', async() => {
+                it('subscribe to query', async () => {
                     const c = await humansCollection.createPrimary(0);
                     let docs;
                     c.find().$.subscribe(newDocs => docs = newDocs);
@@ -292,7 +286,7 @@ describe('primary.test.js', () => {
                     await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
                     c.database.destroy();
                 });
-                it('get event on db2 when db1 fires', async() => {
+                it('get event on db2 when db1 fires', async () => {
                     const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
@@ -304,7 +298,7 @@ describe('primary.test.js', () => {
                     c1.database.destroy();
                     c2.database.destroy();
                 });
-                it('get new field-value when other db changes', async() => {
+                it('get new field-value when other db changes', async () => {
                     const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
