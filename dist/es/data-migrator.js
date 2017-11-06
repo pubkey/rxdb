@@ -15,6 +15,7 @@ import RxSchema from './rx-schema';
 import Crypter from './crypter';
 import RxError from './rx-error';
 import overwritable from './overwritable';
+import hooks from './hooks';
 
 var DataMigrator = function () {
     function DataMigrator(newestCollection, migrationStrategies) {
@@ -340,7 +341,7 @@ var OldCollection = function () {
 
     OldCollection.prototype._migrateDocument = function () {
         var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(doc) {
-            var migrated, action;
+            var migrated, action, res;
             return _regeneratorRuntime.wrap(function _callee4$(_context5) {
                 while (1) {
                     switch (_context5.prev = _context5.next) {
@@ -352,49 +353,61 @@ var OldCollection = function () {
                             migrated = _context5.sent;
                             action = {
                                 doc: doc,
-                                migrated: migrated
+                                migrated: migrated,
+                                oldCollection: this,
+                                newestCollection: this.newestCollection
                             };
 
                             if (!migrated) {
-                                _context5.next = 11;
+                                _context5.next = 16;
                                 break;
                             }
 
+                            hooks.runPluginHooks('preMigrateDocument', action);
+
                             // save to newest collection
                             delete migrated._rev;
-                            _context5.next = 8;
+                            _context5.next = 9;
                             return this.newestCollection._pouchPut(migrated, true);
 
-                        case 8:
+                        case 9:
+                            res = _context5.sent;
+
+                            action.res = res;
                             action.type = 'success';
-                            _context5.next = 12;
+
+                            _context5.next = 14;
+                            return hooks.runAsyncPluginHooks('postMigrateDocument', action);
+
+                        case 14:
+                            _context5.next = 17;
                             break;
 
-                        case 11:
+                        case 16:
                             action.type = 'deleted';
-
-                        case 12:
-                            _context5.prev = 12;
-                            _context5.next = 15;
-                            return this.pouchdb.remove(this._handleToPouch(doc));
-
-                        case 15:
-                            _context5.next = 19;
-                            break;
 
                         case 17:
                             _context5.prev = 17;
-                            _context5.t0 = _context5['catch'](12);
-
-                        case 19:
-                            return _context5.abrupt('return', action);
+                            _context5.next = 20;
+                            return this.pouchdb.remove(this._handleToPouch(doc));
 
                         case 20:
+                            _context5.next = 24;
+                            break;
+
+                        case 22:
+                            _context5.prev = 22;
+                            _context5.t0 = _context5['catch'](17);
+
+                        case 24:
+                            return _context5.abrupt('return', action);
+
+                        case 25:
                         case 'end':
                             return _context5.stop();
                     }
                 }
-            }, _callee4, this, [[12, 17]]);
+            }, _callee4, this, [[17, 22]]);
         }));
 
         function _migrateDocument(_x4) {

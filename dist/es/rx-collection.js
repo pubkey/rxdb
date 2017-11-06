@@ -26,20 +26,23 @@ var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 export var RxCollection = function () {
     function RxCollection(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+        var migrationStrategies = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
         var _this = this;
 
-        var migrationStrategies = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var methods = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+        var attachments = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
 
         _classCallCheck(this, RxCollection);
 
+        this.destroyed = false;
         this.database = database;
         this.name = name;
         this.schema = schema;
         this._migrationStrategies = migrationStrategies;
         this._pouchSettings = pouchSettings;
-        this._methods = methods;
+        this._methods = methods; // orm of documents
+        this._attachments = attachments; // orm of attachments
         this._atomicUpsertLocks = {};
 
         this._docCache = DocCache.create();
@@ -260,7 +263,7 @@ export var RxCollection = function () {
             }, _callee2, this, [[2, 8]]);
         }));
 
-        function _pouchPut(_x7) {
+        function _pouchPut(_x8) {
             return _ref2.apply(this, arguments);
         }
 
@@ -325,7 +328,7 @@ export var RxCollection = function () {
             }, _callee3, this);
         }));
 
-        function _pouchFind(_x9, _x10) {
+        function _pouchFind(_x10, _x11) {
             return _ref3.apply(this, arguments);
         }
 
@@ -390,7 +393,7 @@ export var RxCollection = function () {
             }, _callee4, this);
         }));
 
-        function _createDocument(_x12) {
+        function _createDocument(_x13) {
             return _ref4.apply(this, arguments);
         }
 
@@ -422,7 +425,7 @@ export var RxCollection = function () {
             }, _callee5, this);
         }));
 
-        function _createDocuments(_x13) {
+        function _createDocuments(_x14) {
             return _ref5.apply(this, arguments);
         }
 
@@ -545,7 +548,7 @@ export var RxCollection = function () {
             }, _callee6, this);
         }));
 
-        function insert(_x14) {
+        function insert(_x15) {
             return _ref6.apply(this, arguments);
         }
 
@@ -613,7 +616,7 @@ export var RxCollection = function () {
             }, _callee7, this);
         }));
 
-        function upsert(_x15) {
+        function upsert(_x16) {
             return _ref7.apply(this, arguments);
         }
 
@@ -751,6 +754,15 @@ export var RxCollection = function () {
     };
 
     /**
+     * Create a replicated in-memory-collection
+     */
+
+
+    RxCollection.prototype.inMemory = function inMemory() {
+        throw RxError.pluginMissing('in-memory');
+    };
+
+    /**
      * HOOKS
      */
 
@@ -834,7 +846,7 @@ export var RxCollection = function () {
             }, _callee9, this);
         }));
 
-        function _runHooks(_x17, _x18, _x19) {
+        function _runHooks(_x18, _x19, _x20) {
             return _ref9.apply(this, arguments);
         }
 
@@ -872,12 +884,28 @@ export var RxCollection = function () {
         return doc;
     };
 
+    /**
+     * returns a promise that is resolved when the collection gets destroyed
+     * @return {Promise}
+     */
+
+
     RxCollection.prototype.destroy = function () {
         var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10() {
             return _regeneratorRuntime.wrap(function _callee10$(_context10) {
                 while (1) {
                     switch (_context10.prev = _context10.next) {
                         case 0:
+                            if (!this.destroyed) {
+                                _context10.next = 2;
+                                break;
+                            }
+
+                            return _context10.abrupt('return');
+
+                        case 2:
+
+                            this._onDestroyCall && this._onDestroyCall();
                             this._subs.forEach(function (sub) {
                                 return sub.unsubscribe();
                             });
@@ -887,8 +915,9 @@ export var RxCollection = function () {
                                 return sync.cancel();
                             });
                             delete this.database.collections[this.name];
+                            this.destroyed = true;
 
-                        case 5:
+                        case 9:
                         case 'end':
                             return _context10.stop();
                     }
@@ -923,6 +952,16 @@ export var RxCollection = function () {
         key: '$',
         get: function get() {
             return this._observable$;
+        }
+    }, {
+        key: 'onDestroy',
+        get: function get() {
+            var _this9 = this;
+
+            if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
+                return _this9._onDestroyCall = res;
+            });
+            return this._onDestroy;
         }
     }]);
 
@@ -1018,7 +1057,9 @@ export var create = function () {
             _ref12$statics = _ref12.statics,
             statics = _ref12$statics === undefined ? {} : _ref12$statics,
             _ref12$methods = _ref12.methods,
-            methods = _ref12$methods === undefined ? {} : _ref12$methods;
+            methods = _ref12$methods === undefined ? {} : _ref12$methods,
+            _ref12$attachments = _ref12.attachments,
+            attachments = _ref12$attachments === undefined ? {} : _ref12$attachments;
         var collection;
         return _regeneratorRuntime.wrap(function _callee11$(_context11) {
             while (1) {
@@ -1055,17 +1096,18 @@ export var create = function () {
                         // check ORM-methods
                         checkOrmMethods(statics);
                         checkOrmMethods(methods);
+                        checkOrmMethods(attachments);
                         Object.keys(methods).filter(function (funName) {
                             return schema.topLevelFields.includes(funName);
                         }).forEach(function (funName) {
                             throw new Error('collection-method not allowed because fieldname is in the schema ' + funName);
                         });
 
-                        collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
-                        _context11.next = 14;
+                        collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments);
+                        _context11.next = 15;
                         return collection.prepare();
 
-                    case 14:
+                    case 15:
 
                         // ORM add statics
                         Object.entries(statics).forEach(function (entry) {
@@ -1077,19 +1119,19 @@ export var create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context11.next = 18;
+                            _context11.next = 19;
                             break;
                         }
 
-                        _context11.next = 18;
+                        _context11.next = 19;
                         return collection.migratePromise();
 
-                    case 18:
+                    case 19:
 
                         runPluginHooks('createRxCollection', collection);
                         return _context11.abrupt('return', collection);
 
-                    case 20:
+                    case 21:
                     case 'end':
                         return _context11.stop();
                 }
@@ -1097,7 +1139,7 @@ export var create = function () {
         }, _callee11, this);
     }));
 
-    return function create(_x21) {
+    return function create(_x22) {
         return _ref11.apply(this, arguments);
     };
 }();

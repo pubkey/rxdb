@@ -152,7 +152,9 @@ function checkSchema(jsonID) {
         if (_rxDocument2['default'].properties().includes(key)) throw new Error('top-level fieldname is not allowed: ' + key);
     });
 
-    if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath)) throw new Error('primary is always required, do not declare it as required');
+    //    if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath))
+    //        throw new Error('primary is always required, do not declare it as required');
+
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {

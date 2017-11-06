@@ -236,12 +236,14 @@ export function validateCouchDBString(name) {
     if (typeof name !== 'string' || name.length === 0) throw new TypeError('given name is no string or empty');
 
     // do not check, if foldername is given
-    if (name.includes('/')) return true;
+    if (name.includes('/') || // unix
+    name.includes('\\') // windows
+    ) return true;
 
     var regStr = '^[a-z][a-z0-9]*$';
     var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new RxError.newRxError('collection- and database-names must match the regex\n            info: if your database-name specifies a folder, the name must contain the slash-char \'/\'\n            ', {
+        throw new RxError.newRxError('collection- and database-names must match the regex\n            info: if your database-name specifies a folder, the name must contain the slash-char \'/\' or \'\\\'\n            ', {
             regex: regStr,
             givenName: name
 

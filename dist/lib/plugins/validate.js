@@ -57,7 +57,7 @@ var _getValidator = function _getValidator() {
 };
 
 /**
- * validates the given object agains the schema
+ * validates the given object against the schema
  * @param  {any} obj
  * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
  * @throws {RxError} if not valid

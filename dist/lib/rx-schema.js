@@ -21,6 +21,7 @@ exports.getEncryptedPaths = getEncryptedPaths;
 exports.hasCrypt = hasCrypt;
 exports.getIndexes = getIndexes;
 exports.getPrimary = getPrimary;
+exports.getFinalFields = getFinalFields;
 exports.normalize = normalize;
 exports.create = create;
 exports.isInstanceOf = isInstanceOf;
@@ -54,7 +55,6 @@ var RxSchema = exports.RxSchema = function () {
         (0, _classCallCheck3['default'])(this, RxSchema);
 
         this.jsonID = jsonID;
-
         this.compoundIndexes = this.jsonID.compoundIndexes;
 
         // make indexes required
@@ -73,6 +73,12 @@ var RxSchema = exports.RxSchema = function () {
         // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
         if (this.primaryPath) this.jsonID.required.push(this.primaryPath);
+
+        // final fields are always required
+        this.finalFields = getFinalFields(this.jsonID);
+        this.jsonID.required = this.jsonID.required.concat(this.finalFields).filter(function (elem, pos, arr) {
+            return arr.indexOf(elem) === pos;
+        }); // unique;
 
         // add primary to schema if not there (if _id)
         if (!this.jsonID.properties[this.primaryPath]) {
@@ -261,7 +267,7 @@ function getEncryptedPaths(jsonSchema) {
             traverse(currentObj[attributeName], nextPath);
         }
     }
-    traverse(jsonSchema, '');
+    traverse(jsonSchema.properties, '');
     return ret;
 }
 
@@ -316,6 +322,17 @@ function getPrimary(jsonID) {
 }
 
 /**
+ * returns the final-fields of the schema
+ * @param  {Object} jsonId
+ * @return {string[]} field-names of the final-fields
+ */
+function getFinalFields(jsonId) {
+    return Object.keys(jsonId.properties).filter(function (key) {
+        return jsonId.properties[key].final;
+    });
+}
+
+/**
  * orders the schemas attributes by alphabetical order
  * @param {Object} jsonSchema
  * @return {Object} jsonSchema - ordered
@@ -350,6 +367,11 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
         minLength: 1
     };
 
+    // add attachments
+    schemaObj.properties._attachments = {
+        type: 'object'
+    };
+
     // version is 0 by default
     schemaObj.version = schemaObj.version || 0;
 
@@ -375,6 +397,7 @@ exports['default'] = {
     hasCrypt: hasCrypt,
     getIndexes: getIndexes,
     getPrimary: getPrimary,
+    getFinalFields: getFinalFields,
     normalize: normalize,
     create: create,
     isInstanceOf: isInstanceOf

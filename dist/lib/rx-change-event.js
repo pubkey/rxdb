@@ -98,7 +98,7 @@ function create(op, database, collection, doc, value) {
     var data = {
         op: op,
         t: new Date().getTime(),
-        db: database.prefix,
+        db: database.name,
         it: database.token
     };
     if (collection) data.col = collection.name;
