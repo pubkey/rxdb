@@ -142,7 +142,8 @@
                     "revpos",
                     "preprocessors",
                     "travis",
-                    "ci"
+                    "ci",
+                    "init"
                 ],
                 "skipIfMatch": [
                     "^[.]{1,3}$",

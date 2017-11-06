@@ -31,6 +31,7 @@ export class RxCollection {
         methods = {},
         attachments = {}
     ) {
+        this.destroyed = false;
         this.database = database;
         this.name = name;
         this.schema = schema;
@@ -450,6 +451,13 @@ export class RxCollection {
         throw RxError.pluginMissing('replication');
     }
 
+    /**
+     * Create a replicated in-memory-collection
+     */
+    inMemory() {
+        throw RxError.pluginMissing('in-memory');
+    }
+
 
     /**
      * HOOKS
@@ -522,12 +530,26 @@ export class RxCollection {
         return doc;
     }
 
+    /**
+     * returns a promise that is resolved when the collection gets destroyed
+     * @return {Promise}
+     */
+    get onDestroy() {
+        if (!this._onDestroy)
+            this._onDestroy = new Promise(res => this._onDestroyCall = res);
+        return this._onDestroy;
+    }
+
     async destroy() {
+        if (this.destroyed) return;
+
+        this._onDestroyCall && this._onDestroyCall();
         this._subs.forEach(sub => sub.unsubscribe());
         this._changeEventBuffer && this._changeEventBuffer.destroy();
         this._queryCache.destroy();
         this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
+        this.destroyed = true;
     }
 
     /**

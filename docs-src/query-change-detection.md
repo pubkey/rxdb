@@ -40,4 +40,4 @@ Now, when one user logs off, it will calculate the new results from the current 
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./custom-build.md)
+If you are new to RxDB, you should continue [here](./in-memory.md)

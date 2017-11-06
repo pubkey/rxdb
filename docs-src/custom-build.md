@@ -74,6 +74,18 @@ RxDB.plugin(RxDBAttachmentsModule);
 RxDB.plugin(require('rxdb/plugins/attachments'));
 ```
 
+### in-memory
+
+Adds the [in-memory-replication](./in-memory.md) to the collections.
+
+```javascript
+// es6-import
+import RxDBInMemoryModule from 'rxdb/plugins/in-memory';
+RxDB.plugin(RxDBInMemoryModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/in-memory'));
+```
 
 ### json-dump
 
