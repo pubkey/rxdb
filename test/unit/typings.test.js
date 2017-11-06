@@ -6,13 +6,14 @@ import * as schemas from './../helper/schemas';
 
 describe('typings.test.js', () => {
     const codeBase = `
-        import {create, RxDatabase, RxCollection, RxDocument, SchemaJSON} from '../';
+        import { create, RxDatabase, RxCollection, RxDocument, RxJsonSchema } from '../';
     `;
     const transpileCode = async(code) => {
         const spawn = require('child-process-promise').spawn;
         const stdout = [];
         const stderr = [];
         const promise = spawn('ts-node', [
+            '--no-cache',
             '--compilerOptions', '{"target":"es6"}',
             '-p', code
         ]);
@@ -58,7 +59,7 @@ describe('typings.test.js', () => {
                         multiInstance: false,
                         ignoreDuplicate: false
                     });
-                    const mySchema: SchemaJSON = ${JSON.stringify(schemas.human)};
+                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
                     const myCollection: RxCollection<any> = await myDb.collection({
                         name: 'humans',
                         schema: mySchema,
@@ -93,7 +94,7 @@ describe('typings.test.js', () => {
                         multiInstance: false,
                         ignoreDuplicate: false
                     });
-                    const mySchema: SchemaJSON = ${JSON.stringify(schemas.human)};
+                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
                     const myCollection: RxCollection<RxHeroDocument> = await myDb.collection({
                         name: 'humans',
                         schema: mySchema,

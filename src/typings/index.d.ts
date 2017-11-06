@@ -1,20 +1,21 @@
-import { Observable } from 'rxjs';
-
 import {
     RxSchema,
     RxJsonSchema
 } from './rx-schema';
+export * from './rx-schema';
 
 import {
     PouchReplicationOptions,
     PouchSettings,
     PouchDB
 } from './pouch';
+export * from './pouch';
 
 import {
     RxDatabase,
     RxDatabaseCreator
 } from './rx-database';
+export * from './rx-database';
 
 import {
     RxCollectionCreator,
@@ -22,24 +23,29 @@ import {
     SyncOptions,
     RxCollection
 } from './rx-collection';
+export * from './rx-collection';
 
 import {
     RxQueryOptions,
     RxQueryObject,
     RxQuery
 } from './rx-query';
+export * from './rx-query';
 
 import {
     RxDocument
 } from './rx-document';
+export * from './rx-document';
 
 import {
     RxError
 } from './rx-error';
+export * from './rx-error';
 
 import {
     RxAttachment
 } from './rx-attachment';
+export * from './rx-attachment';
 
 export function create(creator: RxDatabaseCreator): Promise<RxDatabase>;
 export function removeDatabase(databaseName: string, adapter: any): Promise<void>;
@@ -61,7 +67,7 @@ export function isRxSchema(obj: any): boolean;
 declare const _default: {
     create,
     removeDatabase,
-    plugin,
+    plugin
 
     // database
     isRxDatabase,
