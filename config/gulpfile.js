@@ -14,3 +14,16 @@ gulp.task('test', function() {
             process.exit();
         });
 });
+
+gulp.task('test:typings', function() {
+    return gulp
+        .src(tests.typings)
+        .pipe(mocha({
+            bail: true,
+            timeout: 6000,
+            exit: true
+        }))
+        .once('end', function() {
+            process.exit();
+        });
+});

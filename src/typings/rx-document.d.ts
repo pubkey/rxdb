@@ -11,15 +11,15 @@ export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocu
 
 
 export declare class RxDocumentBase<RxDocumentType> {
-    collection: RxCollection<RxDocumentType>;
-    deleted: boolean;
+    readonly collection: RxCollection<RxDocumentType>;
+    readonly deleted: boolean;
 
-    $: Observable<any>;
-    deleted$: Observable<boolean>;
-    synced$: Observable<boolean>;
+    readonly $: Observable<any>;
+    readonly deleted$: Observable<boolean>;
+    readonly synced$: Observable<boolean>;
     resync(): void;
 
-    primary: string;
+    readonly primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
     set(objPath: string, value: any): RxDocument<RxDocumentType>;
@@ -32,7 +32,7 @@ export declare class RxDocumentBase<RxDocumentType> {
     putAttachment(id: string, data: string, type?: string): Promise<RxAttachment<RxDocumentType>>;
     getAttachment(id: string): Promise<RxAttachment<RxDocumentType>>;
     allAttachments(): Promise<RxAttachment<RxDocumentType>[]>;
-    allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;
+    readonly allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;
 
     toJSON(): RxDocumentType;
     destroy(): void;

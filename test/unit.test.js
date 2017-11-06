@@ -37,11 +37,14 @@ const nodeAndBrowser = [
 ];
 
 const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js',
-    '../test_tmp/unit/typings.test.js'
+    '../test_tmp/unit/plugin.test.js'
 ];
 
+const typings = [
+    '../test_tmp/unit/typings.test.js'
+];
 module.exports = {
     browser: nodeAndBrowser,
-    all: nodeAndBrowser.concat(nodeOnly)
+    all: nodeAndBrowser.concat(nodeOnly).concat(typings),
+    typings
 };

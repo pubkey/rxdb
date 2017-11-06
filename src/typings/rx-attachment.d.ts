@@ -3,12 +3,12 @@ import {
 } from './rx-document';
 
 export declare class RxAttachment<RxDocumentType> {
-    doc: RxDocument<RxDocumentType>;
-    id: string;
-    type: string;
-    length: number;
-    digest: string;
-    rev: string;
+    readonly doc: RxDocument<RxDocumentType>;
+    readonly id: string;
+    readonly type: string;
+    readonly length: number;
+    readonly digest: string;
+    readonly rev: string;
 
     remove(): Promise<void>;
     getData(): Promise<Blob>;

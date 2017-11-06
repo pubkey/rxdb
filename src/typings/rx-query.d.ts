@@ -29,7 +29,7 @@ export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOption
 };
 
 export declare class RxQuery<RxDocumentType> {
-    collection: RxCollection<RxDocumentType>;
+    readonly collection: RxCollection<RxDocumentType>;
 
     where(queryObj: RxQueryObject<RxDocumentType>): RxQuery<RxDocumentType>;
     equals(queryObj: any): RxQuery<RxDocumentType>;
@@ -56,7 +56,7 @@ export declare class RxQuery<RxDocumentType> {
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType>;
 
     exec(): Promise<RxDocumentType>;
-    $: Observable<RxDocumentType>;
+    readonly $: Observable<RxDocumentType>;
     remove(): Promise<RxDocumentType>;
     update(updateObj: any): Promise<RxDocumentType>;
 }

@@ -67,11 +67,11 @@ export declare class RxJsonSchema {
 }
 
 export declare class RxSchema {
-    jsonID: RxJsonSchema;
+    readonly jsonID: RxJsonSchema;
     getSchemaByObjectPath(path: string): any;
-    encryptedPaths: any;
+    readonly encryptedPaths: any;
     validate(obj: any, schemaObj: any): void;
-    hash: string;
+    readonly hash: string;
 
     static create(jsonSchema: RxJsonSchema): RxSchema;
 }

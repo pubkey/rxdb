@@ -65,11 +65,11 @@ export interface SyncOptions {
 }
 
 export declare class RxCollection<RxDocumentType> {
-    database: RxDatabase;
-    name: string;
-    schema: RxSchema;
+    readonly database: RxDatabase;
+    readonly name: string;
+    readonly schema: RxSchema;
 
-    $: Observable<RxChangeEvent>;
+    readonly $: Observable<RxChangeEvent>;
     insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType>;
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;

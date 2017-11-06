@@ -17,13 +17,13 @@ export interface RxDatabaseCreator {
 }
 
 export declare class RxDatabase {
-    name: string;
-    token: string;
-    multiInstance: boolean;
-    password: string;
-    collections: any;
+    readonly name: string;
+    readonly token: string;
+    readonly multiInstance: boolean;
+    readonly password: string;
+    readonly collections: any;
 
-    $: Observable<RxChangeEvent>;
+    readonly $: Observable<RxChangeEvent>;
 
     collection(args: RxCollectionCreator): Promise<RxCollection<any>>;
     destroy(): Promise<boolean>;
@@ -31,7 +31,7 @@ export declare class RxDatabase {
     importDump(json: any): Promise<any>;
     remove(): Promise<any>;
 
-    isLeader: boolean;
+    readonly isLeader: boolean;
 
     /**
      * returns a promise which resolves when the instance becomes leader
