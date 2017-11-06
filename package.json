@@ -27,7 +27,7 @@
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
-  "types": "./src/index.d.ts",
+  "types": "./src/typings/index.d.ts",
   "scripts": {
     "pretest": "npm run transpile",
     "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
