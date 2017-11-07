@@ -66,12 +66,15 @@ export declare class RxJsonSchema {
     };
 }
 
-export declare class RxSchema {
+export declare class RxSchema<T = any> {
     readonly jsonID: RxJsonSchema;
-    getSchemaByObjectPath(path: string): any;
+    getSchemaByObjectPath(path: keyof T): JsonSchema;
     readonly encryptedPaths: any;
     validate(obj: any, schemaObj: any): void;
     readonly hash: string;
+    readonly topLevelFields: keyof T[];
+    readonly previousVersions: any[];
+    readonly defaultValues: { [P in keyof T]: T[P]; };
 
     static create(jsonSchema: RxJsonSchema): RxSchema;
 }
