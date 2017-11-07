@@ -116,6 +116,63 @@ describe('typings.test.js', () => {
                 await transpileCode(code);
             });
         });
+        describe('negative', () => {
+            it('should not allow wrong collection-settings', async () => {
+                const brokenCode = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        const myCollection: RxCollection<any> = await myDb.collection({
+                            name: 'humans',
+                            schema: {}, // wrong schema format
+                            autoMigrate: false,
+                        });
+                    })();
+                `;
+                let thrown = false;
+                try {
+                    await transpileCode(brokenCode);
+                } catch (err) {
+                    thrown = true;
+                }
+                assert.ok(thrown);
+            });
+        });
+    });
+    describe('document', () => {
+        it('should know the fields of the document', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+
+                    type DocType = {
+                        age: number,
+                        firstName: string,
+                        lastName: string,
+                        passportId: string
+                    };
+
+                    const myCollection: RxCollection<DocType> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        autoMigrate: false,
+                    });
+
+                    const oneDoc: RxDocument<DocType> = await myCollection.findOne().exec();
+                    const id: string = oneDoc.passportId;
+                    const prim: string = oneDoc.primary;
+
+                    const otherDoc = await myCollection.findOne().exec();
+                    const id2 = otherDoc.passportId;
+                });
+            `;
+            await transpileCode(code);
+        });
     });
     describe('orm', () => {
         it('should know the orm-functions of the collection', async () => {

@@ -13,6 +13,7 @@ script:
 - npm install --silent
 - npm run test:node
 - npm run test:browser
+- npm run test:typings
 - npm run build
 - npm run lint
 - (cd ./examples/angular2 && npm install --silent && npm run build && npm run test:build)

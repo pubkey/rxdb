@@ -45,6 +45,6 @@ const typings = [
 ];
 module.exports = {
     browser: nodeAndBrowser,
-    all: nodeAndBrowser.concat(nodeOnly).concat(typings),
+    all: nodeAndBrowser.concat(nodeOnly),
     typings
 };
