@@ -1,11 +1,14 @@
 import { Observable } from 'rxjs';
 
-export declare class RxSchema {
+export declare class RxSchema<T = any> {
     jsonID: SchemaJSON;
-    getSchemaByObjectPath(path: string): any;
+    getSchemaByObjectPath(path: keyof T): JsonSchema;
     encryptedPaths: any;
     validate(obj: any, schemaObj: any): void;
     hash: string;
+    topLevelFields: keyof T[];
+    previousVersions: any[];
+    defaultValues: { [P in keyof T]: T[P]; };
 
     static create(jsonSchema: SchemaJSON): RxSchema;
 }
@@ -168,7 +171,7 @@ export type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocume
 export declare class RxCollection<RxDocumentType> {
     database: RxDatabase;
     name: string;
-    schema: RxSchema;
+    schema: RxSchema<RxDocumentType>;
 
     $: Observable<RxChangeEvent>;
     insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
