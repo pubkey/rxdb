@@ -20,7 +20,6 @@ const configuration = {
         enabled: true,
         usePhantomJS: false,
         postDetection: function(availableBrowser) {
-
             // return ['Firefox']; // comment in to test specific browser
             return availableBrowser
                 .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly'].includes(b));

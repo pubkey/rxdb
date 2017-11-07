@@ -45,6 +45,14 @@ var _jsonDump = require('./plugins/json-dump');
 
 var _jsonDump2 = _interopRequireDefault(_jsonDump);
 
+var _inMemory = require('./plugins/in-memory');
+
+var _inMemory2 = _interopRequireDefault(_inMemory);
+
+var _attachments = require('./plugins/attachments');
+
+var _attachments2 = _interopRequireDefault(_attachments);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
@@ -72,6 +80,10 @@ _core2['default'].plugin(_replication2['default']);
 _core2['default'].plugin(_adapterCheck2['default']);
 
 _core2['default'].plugin(_jsonDump2['default']);
+
+_core2['default'].plugin(_inMemory2['default']);
+
+_core2['default'].plugin(_attachments2['default']);
 
 /**
  * create a database

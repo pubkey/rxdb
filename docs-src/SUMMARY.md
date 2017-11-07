@@ -66,6 +66,7 @@
     * [update()](./rx-query.md#update)
 
 
+* [RxAttachment](./rx-attachment.md)
 
 * [Middleware-hooks](./middleware.md)
 
@@ -80,6 +81,8 @@
 * [Replication](./replication.md)
 
 * [QueryChangeDetection](./query-change-detection.md)
+
+* [InMemory](./in-memory.md)
 
 * [Custom Build](./custom-build.md)
 

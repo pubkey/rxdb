@@ -1,13 +1,9 @@
 const webpack = require('webpack');
 const webpackMerge = require('webpack-merge');
-const path = require('path');
 const commonConfig = require('./webpack.config.common.js');
 const AppCachePlugin = require('appcache-webpack-plugin');
 
-
 const doUglify = true;
-
-
 
 module.exports = function(options) {
     const ENV = options.ENV || 'production';

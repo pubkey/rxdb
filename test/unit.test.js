@@ -5,6 +5,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/adapter-check.test.js',
     '../test_tmp/unit/rx-broadcast-channel.test.js',
     '../test_tmp/unit/instance-of-check.test.js',
+    '../test_tmp/unit/in-memory.test.js', // TODO move this down under mod-encryption
     '../test_tmp/unit/rx-schema.test.js',
     '../test_tmp/unit/key-compression.test.js',
     '../test_tmp/unit/socket.test.js',
@@ -31,15 +32,19 @@ const nodeAndBrowser = [
     '../test_tmp/unit/import-export.test.js',
     '../test_tmp/unit/cross-instance.test.js',
     '../test_tmp/unit/mod-encryption.test.js',
+    '../test_tmp/unit/attachments.test.js',
     '../test_tmp/unit/bug-report.test.js'
 ];
 
 const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js',
-    '../test_tmp/unit/typings.test.js'
+    '../test_tmp/unit/plugin.test.js'
 ];
 
+const typings = [
+    '../test_tmp/unit/typings.test.js'
+];
 module.exports = {
     browser: nodeAndBrowser,
-    all: nodeAndBrowser.concat(nodeOnly)
+    all: nodeAndBrowser.concat(nodeOnly).concat(typings),
+    typings
 };

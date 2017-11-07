@@ -5,6 +5,7 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
  */
 import * as util from '../util';
 import RxQuery from '../rx-query';
+import RxError from '../rx-error';
 
 var dumpRxDatabase = function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
@@ -64,17 +65,36 @@ var importDumpRxDatabase = function () {
     var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(dump) {
         var _this2 = this;
 
+        var missingCollections;
         return _regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
-                        return _context2.abrupt('return', Promise.all(dump.collections.filter(function (colDump) {
-                            return _this2.collections[colDump.name];
-                        }).map(function (colDump) {
+                        /**
+                         * collections must be created before the import
+                         * because we do not know about the other collection-settings here
+                         */
+                        missingCollections = dump.collections.filter(function (col) {
+                            return !_this2.collections[col.name];
+                        }).map(function (col) {
+                            return col.name;
+                        });
+
+                        if (!(missingCollections.length > 0)) {
+                            _context2.next = 3;
+                            break;
+                        }
+
+                        throw RxError.newRxError('You must create the collections before you can import their data', {
+                            missingCollections: missingCollections
+                        });
+
+                    case 3:
+                        return _context2.abrupt('return', Promise.all(dump.collections.map(function (colDump) {
                             return _this2.collections[colDump.name].importDump(colDump);
                         })));
 
-                    case 1:
+                    case 4:
                     case 'end':
                         return _context2.stop();
                 }

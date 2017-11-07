@@ -6,13 +6,21 @@ import * as schemas from './../helper/schemas';
 
 describe('typings.test.js', () => {
     const codeBase = `
-        import {create, RxDatabase, RxCollection, SchemaJSON} from '../';
+        import {
+            create,
+            RxDatabase,
+            RxDatabaseCreator,
+            RxCollection,
+            RxDocument,
+            RxJsonSchema
+        } from '../';
     `;
-    const transpileCode = async(code) => {
+    const transpileCode = async (code) => {
         const spawn = require('child-process-promise').spawn;
         const stdout = [];
         const stderr = [];
         const promise = spawn('ts-node', [
+            '--no-cache',
             '--compilerOptions', '{"target":"es6"}',
             '-p', code
         ]);
@@ -31,10 +39,10 @@ describe('typings.test.js', () => {
     };
 
     describe('basic', () => {
-        it('should sucess on basic test', async() => {
+        it('should sucess on basic test', async () => {
             await transpileCode('console.log("Hello, world!")');
         });
-        it('should fail on broken code', async() => {
+        it('should fail on broken code', async () => {
             const brokenCode = `
                 let x: string = 'foo';
                 x = 1337;
@@ -48,8 +56,69 @@ describe('typings.test.js', () => {
             assert.ok(thrown);
         });
     });
-    describe('positive', () => {
-        it('collection-creation', async() => {
+    describe('database', () => {
+        describe('positive', () => {
+            it('should create the database', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const databaseCreator: RxDatabaseCreator = {
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        };
+                        const myDb: RxDatabase = await create(databaseCreator);
+                    })();
+                `;
+                await transpileCode(code);
+            });
+        });
+        describe('negative', () => {
+            it('should not allow additional parameters', async () => {
+                const brokenCode = `
+                    const databaseCreator: RxDatabaseCreator = {
+                        name: 'mydb',
+                        adapter: 'memory',
+                        multiInstance: false,
+                        ignoreDuplicate: false,
+                        foo: 'bar'
+                    };
+                `;
+                let thrown = false;
+                try {
+                    await transpileCode(brokenCode);
+                } catch (err) {
+                    thrown = true;
+                }
+                assert.ok(thrown);
+            });
+        });
+    });
+    describe('collection', () => {
+        describe('positive', () => {
+            it('collection-creation', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        const myCollection: RxCollection<any> = await myDb.collection({
+                            name: 'humans',
+                            schema: mySchema,
+                            autoMigrate: false,
+                        });
+                    })();
+                `;
+                await transpileCode(code);
+            });
+        });
+    });
+    describe('orm', () => {
+        it('should know the orm-functions of the collection', async () => {
             const code = codeBase + `
                 (async() => {
                     const myDb: RxDatabase = await create({
@@ -58,12 +127,53 @@ describe('typings.test.js', () => {
                         multiInstance: false,
                         ignoreDuplicate: false
                     });
-                    const mySchema: SchemaJSON = ${JSON.stringify(schemas.human)};
+                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
                     const myCollection: RxCollection<any> = await myDb.collection({
                         name: 'humans',
                         schema: mySchema,
-                        autoMigrate: false
+                        autoMigrate: false,
                     });
+                })();
+            `;
+            await transpileCode(code);
+        });
+    });
+    describe('positive', () => {
+        it('should know the orm-methods of an object', async () => {
+            const code = codeBase + `
+                declare interface RxHeroDocumentType {
+                    name?: string;
+                    color?: string;
+                    maxHP?: number;
+                    hp?: number;
+                    team?: string;
+                    skills?: Array<{
+                        name?: string,
+                        damage?: string
+                    }>;
+
+                    // ORM methods
+                    foo(): string;
+                };
+                declare type RxHeroDocument = RxDocument<RxHeroDocumentType>;
+                (async() => {
+                    const myDb: RxDatabase = await create({
+                        name: 'mydb',
+                        adapter: 'memory',
+                        multiInstance: false,
+                        ignoreDuplicate: false
+                    });
+                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                    const myCollection: RxCollection<RxHeroDocument> = await myDb.collection({
+                        name: 'humans',
+                        schema: mySchema,
+                        autoMigrate: false,
+                        methods: {
+                            foo: () => 'bar'
+                        }
+                    });
+                    const oneDoc = await myCollection.findOne().exec();
+                    const x: string = oneDoc.foo();
                 })();
             `;
             await transpileCode(code);

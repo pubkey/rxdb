@@ -22,13 +22,23 @@ const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
 export class RxCollection {
-    constructor(database, name, schema, pouchSettings = {}, migrationStrategies = {}, methods = {}) {
+    constructor(
+        database,
+        name,
+        schema,
+        pouchSettings = {},
+        migrationStrategies = {},
+        methods = {},
+        attachments = {}
+    ) {
+        this.destroyed = false;
         this.database = database;
         this.name = name;
         this.schema = schema;
         this._migrationStrategies = migrationStrategies;
         this._pouchSettings = pouchSettings;
-        this._methods = methods;
+        this._methods = methods; // orm of documents
+        this._attachments = attachments; // orm of attachments
         this._atomicUpsertLocks = {};
 
         this._docCache = DocCache.create();
@@ -441,6 +451,13 @@ export class RxCollection {
         throw RxError.pluginMissing('replication');
     }
 
+    /**
+     * Create a replicated in-memory-collection
+     */
+    inMemory() {
+        throw RxError.pluginMissing('in-memory');
+    }
+
 
     /**
      * HOOKS
@@ -513,12 +530,26 @@ export class RxCollection {
         return doc;
     }
 
+    /**
+     * returns a promise that is resolved when the collection gets destroyed
+     * @return {Promise}
+     */
+    get onDestroy() {
+        if (!this._onDestroy)
+            this._onDestroy = new Promise(res => this._onDestroyCall = res);
+        return this._onDestroy;
+    }
+
     async destroy() {
+        if (this.destroyed) return;
+
+        this._onDestroyCall && this._onDestroyCall();
         this._subs.forEach(sub => sub.unsubscribe());
         this._changeEventBuffer && this._changeEventBuffer.destroy();
         this._queryCache.destroy();
         this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
+        this.destroyed = true;
     }
 
     /**
@@ -622,7 +653,8 @@ export async function create({
     migrationStrategies = {},
     autoMigrate = true,
     statics = {},
-    methods = {}
+    methods = {},
+    attachments = {}
 }) {
     if (!RxSchema.isInstanceOf(schema))
         throw new TypeError('given schema is no Schema-object');
@@ -639,13 +671,14 @@ export async function create({
     // check ORM-methods
     checkOrmMethods(statics);
     checkOrmMethods(methods);
+    checkOrmMethods(attachments);
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
             throw new Error(`collection-method not allowed because fieldname is in the schema ${funName}`);
         });
 
-    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods);
+    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments);
     await collection.prepare();
 
     // ORM add statics

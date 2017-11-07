@@ -138,7 +138,13 @@
                     "el",
                     "aes",
                     "hostname",
-                    "vue"
+                    "vue",
+                    "revpos",
+                    "preprocessors",
+                    "travis",
+                    "ci",
+                    "init",
+                    "typings"
                 ],
                 "skipIfMatch": [
                     "^[.]{1,3}$",

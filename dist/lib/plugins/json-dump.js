@@ -21,13 +21,14 @@ var _rxQuery = require('../rx-query');
 
 var _rxQuery2 = _interopRequireDefault(_rxQuery);
 
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-/**
- * this plugin adds the json export/import capabilities to RxDB
- */
 var dumpRxDatabase = function () {
     var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
         var _this = this;
@@ -80,23 +81,45 @@ var dumpRxDatabase = function () {
     return function dumpRxDatabase() {
         return _ref.apply(this, arguments);
     };
-}();
+}(); /**
+      * this plugin adds the json export/import capabilities to RxDB
+      */
+
 
 var importDumpRxDatabase = function () {
     var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(dump) {
         var _this2 = this;
 
+        var missingCollections;
         return _regenerator2['default'].wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
-                        return _context2.abrupt('return', Promise.all(dump.collections.filter(function (colDump) {
-                            return _this2.collections[colDump.name];
-                        }).map(function (colDump) {
+                        /**
+                         * collections must be created before the import
+                         * because we do not know about the other collection-settings here
+                         */
+                        missingCollections = dump.collections.filter(function (col) {
+                            return !_this2.collections[col.name];
+                        }).map(function (col) {
+                            return col.name;
+                        });
+
+                        if (!(missingCollections.length > 0)) {
+                            _context2.next = 3;
+                            break;
+                        }
+
+                        throw _rxError2['default'].newRxError('You must create the collections before you can import their data', {
+                            missingCollections: missingCollections
+                        });
+
+                    case 3:
+                        return _context2.abrupt('return', Promise.all(dump.collections.map(function (colDump) {
                             return _this2.collections[colDump.name].importDump(colDump);
                         })));
 
-                    case 1:
+                    case 4:
                     case 'end':
                         return _context2.stop();
                 }

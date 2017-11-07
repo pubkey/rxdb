@@ -3,7 +3,7 @@ A collection stores documents of the same type.
 
 
 ## Creating a Collection
-To create a collection you need a RxDatabase-Object which has the .collection()-method. Every collection needs a collection-name and a valid RxSchema.
+To create a collection you need a RxDatabase object which has the .collection()-method. Every collection needs a collection name and a valid RxSchema.
 
 ```js
 myDatabase.collection({
@@ -17,13 +17,13 @@ myDatabase.collection({
 The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
 
 ### schema
-The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.
+The schema defines how your data looks and how it should be handled. You can pass a RxSchema object or a simple javascript-object from which the schema will be generated.
 
 ### pouchSettings
 You can pass settings directly to the [pouchdb database create options](https://pouchdb.com/api.html#options) through this property.
 
 ## Get a collection from the database
-To get an existing collection from the database, call the collection-name directly on the database:
+To get an existing collection from the database, call the collection name directly on the database:
 
 ```javascript
 const collection = await db.collection('heroes');
@@ -44,7 +44,7 @@ myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### insert()
-Use this to insert new documents to the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.
+Use this to insert new documents into the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.
 
 ```js
 const doc = await myCollection.insert({
@@ -55,7 +55,7 @@ const doc = await myCollection.insert({
 
 ### newDocument()
 Sometimes it can be helpfull to spawn and use documents before saving them into the database.
-This is usefull especially when you want to use the ORM-methods or prefill values from form-data.
+This is usefull especially when you want to use the ORM methods or prefill values from form data.
 You can create temporary documents by calling `RxCollection.newDocument(initalData)`.
 
 ```js
@@ -73,7 +73,7 @@ await tempDoc.save();
 
 
 ### upsert()
-Insert's the document if it does not exist within the collection, else it will overwrite it. Returns the new or overwritten RxDocument.
+Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
 ```js
 const doc = await myCollection.upsert({
   name: 'foo',
@@ -83,9 +83,9 @@ const doc = await myCollection.upsert({
 
 ### atomicUpsert()
 
-When you run many upsert-operations on the same RxDocument in a very short timespan, it can happen that you get a `409 Conflict`-Error.
-This means that you did run a `.upsert()` on the document, while the previous upsert-operation was still running.
-To prevent these types of errors, you can run atomic upsert-operations.
+When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
+This means that you tried to run a `.upsert()` on the document, while the previous upsert operation was still running.
+To prevent these types of errors, you can run atomic upsert operations.
 The behavior is similar to [RxDocument.atomicUpdate](./rx-document.md#atomicUpdate).
 
 ```js
@@ -109,7 +109,7 @@ await myCollection.atomicUpsert(docData);
 
 ### find()
 To find documents in your collection, use this method.
-This will return a RxQuery-Object with the exec-function.
+This will return a RxQuery object with the exec function.
 
 ```js
 // directly pass search-object
@@ -122,7 +122,7 @@ myCollection.find().where('name').eq('foo')
 ```
 
 ### findOne()
-This does basically what find() does, but it returns only a single document. You can pass a primary-value to esier find a single document.
+This does basically what find() does, but it returns only a single document. You can pass a primary value to find a single document more easily.
 
 ```js
 // get document with name:foobar
@@ -135,7 +135,7 @@ myCollection.findOne('foo')
 ```
 
 ### dump()
-Use this function to create a json-export from every document in the collection. You can pass true as parameter to decrypt the encrypted data-fields of your documents.
+Use this function to create a json export from every document in the collection. You can pass true as parameter to decrypt the encrypted data fields of your documents.
 ```js
 myCollection.dump()
   .then(json => console.dir(json));
@@ -146,7 +146,7 @@ myCollection.dump(true)
 ```
 
 ### importDump()
-To import the json-dump into your collection, use this function.
+To import the json dump into your collection, use this function.
 ```js
 // import the dump to the database
 myCollection.importDump(json)
@@ -154,19 +154,19 @@ myCollection.importDump(json)
 ```
 
 ### destroy()
-Destroys the collections object-instance. This is to free up memory and stop all observings and replications.
+Destroys the collection's object instance. This is to free up memory and stop all observings and replications.
 ```js
 myDatabase.destroy();
 ```
 
 ### sync()
-This method allows you to replicate data between other RxCollections, pouchdb-instances or remove servers which supprot the couchdb-sync-protocol.
+This method allows you to replicate data between other RxCollections, pouchdb instances or remove servers which supprot the couchdb-sync-protocol.
 Full documentation on how to use replication is [here](./replication.md).
 
 ### remove()
 
 Removes all known data of the collection and its previous versions.
-This removes the documents, the schemas, older schemaVersions.
+This removes the documents, the schemas, and older schemaVersions.
 
 ```js
 await myCollection.remove();
