@@ -4,10 +4,13 @@
  * @link https://pouchdb.com/guides/local-documents.html
  */
 
+import clone from 'clone';
+
 import RxDocument from '../rx-document';
 import RxDatabase from '../rx-database';
 import RxCollection from '../rx-collection';
 import DocCache from '../doc-cache';
+import RxError from '../rx-error';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = parent => {
@@ -19,6 +22,7 @@ const _getDocCache = parent => {
     }
     return DOC_CACHE_BY_PARENT.get(parent);
 };
+const LOCAL_PREFIX = '_local/';
 
 export class RxLocalDocument extends RxDocument.RxDocument {
     /**
@@ -28,26 +32,17 @@ export class RxLocalDocument extends RxDocument.RxDocument {
      * @param  {RxCollection|RxDatabase} parent
      */
     constructor(id, jsonData, parent) {
+        super(null, jsonData);
         this.id = id;
-        this.jsonData = jsonData;
         this.parent = parent;
-
-        // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new util.Rx.BehaviorSubject(clone(jsonData));
-
-        // current doc-data, changes when setting values etc
-        this._data = clone(jsonData);
     }
-
     toPouchJson() {
         const data = clone(this._data);
-        data._id = 'local/' + this.id;
+        data._id = LOCAL_PREFIX + this.id;
     }
-
     get isLocal() {
         return true;
     }
-
     get parentPouch() {
         return _getPouchByParent(this.parent);
     }
@@ -55,6 +50,11 @@ export class RxLocalDocument extends RxDocument.RxDocument {
     //
     // overwrites
     //
+
+    get allAttachments$() {
+        // this is overwritte here because we cannot re-set getters on the prototype
+        throw new Error('cant use attachments on local documents');
+    }
 
     get primaryPath() {
         return 'id';
@@ -91,7 +91,14 @@ export class RxLocalDocument extends RxDocument.RxDocument {
 
     }
     async remove() {
-        await this.parentPouch.remove(this.toPouchJson());
+        const removeId = LOCAL_PREFIX + this.id;
+        console.log('removeId:');
+        console.dir(removeId);
+
+        const d = this._data;
+        d._id = removeId;
+        console.dir(d);
+        await this.parentPouch.remove(d);
     }
 };
 
@@ -113,8 +120,7 @@ const _init = () => {
         'update',
         'putAttachment',
         'getAttachment',
-        'allAttachments',
-        'allAttachments$',
+        'allAttachments'
     ].forEach(k => RxLocalDocument.prototype[k] = getThrowingFun(k));
 };
 
@@ -133,17 +139,29 @@ const _getPouchByParent = parent => {
 
 /**
  * save the local-document-data
- * overwrites the old one if exists
+ * throws if already exists
  * @return {RxLocalDocument}
  */
-const setLocalDocument = async function(id, data) {
-    const existing = await this.getLocalDocument(id);
+const insertLocal = async function(id, data) {
+    let existing = await this.getLocal(id);
+    if (existing) {
+        throw RxError.newRxError(
+            'Local document already exists', {
+                id,
+                data
+            }
+        );
+    }
 
     // create new one
     if (!existing) {
         const pouch = _getPouchByParent(this);
         const saveData = clone(data);
-        saveData._id = 'local/' + id;
+        saveData._id = LOCAL_PREFIX + id;
+
+        console.log('save:data:');
+        console.dir(saveData);
+
         await pouch.put(saveData);
         existing = data;
     }
@@ -152,7 +170,28 @@ const setLocalDocument = async function(id, data) {
     return newDoc;
 };
 
-const getLocalDocument = async function(id) {
+/**
+ * save the local-document-data
+ * overwrites existing if exists
+ * @return {RxLocalDocument}
+ */
+const upsertLocal = async function(id, data) {
+    const existing = await this.getLocal(id);
+
+    if (!existing) {
+        // create new one
+        const doc = this.insertLocal(id, data);
+        return doc;
+    } else {
+        // update existing
+        existing._data = data;
+        await existing.save();
+        return existing;
+    }
+};
+
+
+const getLocal = async function(id) {
     const pouch = _getPouchByParent(this);
     const docCache = _getDocCache(this);
 
@@ -161,7 +200,11 @@ const getLocalDocument = async function(id) {
 
     // check in pouch
     if (!found) {
-        found = await pouch.get('local/' + id);
+        console.log('1');
+        try {
+            found = await pouch.get(LOCAL_PREFIX + id);
+        } catch (err) {}
+        console.log('2');
     }
     return found;
 };
@@ -169,12 +212,14 @@ const getLocalDocument = async function(id) {
 export const rxdb = true;
 export const prototypes = {
     RxCollection: proto => {
-        proto.setLocalDocument = setLocalDocument;
-        proto.getLocalDocument = getLocalDocument;
+        proto.insertLocal = insertLocal;
+        proto.upsertLocal = upsertLocal;
+        proto.getLocal = getLocal;
     },
     RxDatabase: proto => {
-        proto.setLocalDocument = setLocalDocument;
-        proto.getLocalDocument = getLocalDocument;
+        proto.insertLocal = insertLocal;
+        proto.upsertLocal = upsertLocal;
+        proto.getLocal = getLocal;
     }
 };
 export const overwritable = {};
