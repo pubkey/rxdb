@@ -92,13 +92,8 @@ export class RxLocalDocument extends RxDocument.RxDocument {
     }
     async remove() {
         const removeId = LOCAL_PREFIX + this.id;
-        console.log('removeId:');
-        console.dir(removeId);
-
-        const d = this._data;
-        d._id = removeId;
-        console.dir(d);
-        await this.parentPouch.remove(d);
+        await this.parentPouch.remove(removeId, this._data._rev);
+        _getDocCache(this.parent).delete(this.id);
     }
 };
 
@@ -143,7 +138,8 @@ const _getPouchByParent = parent => {
  * @return {RxLocalDocument}
  */
 const insertLocal = async function(id, data) {
-    let existing = await this.getLocal(id);
+    data = clone(data);
+    const existing = await this.getLocal(id);
     if (existing) {
         throw RxError.newRxError(
             'Local document already exists', {
@@ -154,18 +150,13 @@ const insertLocal = async function(id, data) {
     }
 
     // create new one
-    if (!existing) {
-        const pouch = _getPouchByParent(this);
-        const saveData = clone(data);
-        saveData._id = LOCAL_PREFIX + id;
+    const pouch = _getPouchByParent(this);
+    const saveData = clone(data);
+    saveData._id = LOCAL_PREFIX + id;
 
-        console.log('save:data:');
-        console.dir(saveData);
+    const res = await pouch.put(saveData);
 
-        await pouch.put(saveData);
-        existing = data;
-    }
-
+    data._rev = res.rev;
     const newDoc = RxLocalDocument.create(id, data, this);
     return newDoc;
 };

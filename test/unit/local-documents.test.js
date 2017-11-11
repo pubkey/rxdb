@@ -114,7 +114,6 @@ describe('local-documents.test.js', () => {
             await doc.remove();
             const doc2 = await c.getLocal('foobar');
             assert.equal(doc2, null);
-
             c.database.destroy();
         });
     });
@@ -133,6 +132,41 @@ describe('local-documents.test.js', () => {
     });
     describe('multi-instance', () => {});
     describe('data-migration', () => {});
+    describe('issues', () => {
+        it('PouchDB: Create and remove local doc', async () => {
+            const c = await humansCollection.create();
+            const pouch = c.pouch;
+
+            // create
+            await pouch.put({
+                _id: '_local/foobar',
+                foo: 'bar'
+            });
+
+            // find
+            const doc = await pouch.get('_local/foobar');
+            assert.equal(doc.foo, 'bar');
+
+            // update
+            await pouch.put({
+                _id: '_local/foobar',
+                foo: 'bar2',
+                _rev: doc._rev
+            });
+            const doc2 = await pouch.get('_local/foobar');
+            assert.equal(doc2.foo, 'bar2');
+
+            // remove
+            await pouch.remove('_local/foobar', doc2._rev);
+            await AsyncTestUtil.assertThrows(
+                () => pouch.get('_local/foobar'),
+                'PouchError',
+                'missing'
+            );
+
+            c.database.destroy();
+        });
+    });
     describe('exxx', () => {
         it('e', () => process.exit());
     });
