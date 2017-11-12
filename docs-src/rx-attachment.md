@@ -15,7 +15,7 @@ const mySchema = {
         // .
         // .
         // .
-    }
+    },
     attachments: {
         encrypted: true // if true, the attachment-data will be encrypted with the db-password
     }
