@@ -2,6 +2,8 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as RxDocument from '../../dist/lib/rx-document';
@@ -153,7 +155,8 @@ describe('local-documents.test.js', () => {
                 adapter: 'memory',
                 ignoreDuplicate: true
             });
-            const doc2 = await db.getLocal('foobar');
+            const doc2 = await db2.getLocal('foobar');
+            assert.ok(doc2);
             assert.equal(doc2.get('foo'), 'bar2');
             db2.destroy();
         });
@@ -171,8 +174,107 @@ describe('local-documents.test.js', () => {
             db.destroy();
         });
     });
-    describe('multi-instance', () => {});
-    describe('data-migration', () => {});
+    describe('multi-instance', () => {
+        it('should stream events over multi-instance', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory'
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+
+            const doc1 = await db.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const doc2 = await db2.getLocal('foobar');
+            assert.ok(doc2);
+
+            doc1.set('foo', 'bar2');
+            await doc1.save();
+
+            await AsyncTestUtil.waitUntil(() => doc2.get('foo') === 'bar2');
+
+            db.destroy();
+            db2.destroy();
+        });
+        it('should emit deleted', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory'
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+
+            const doc1 = await db.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const doc2 = await db2.getLocal('foobar');
+            assert.ok(doc2);
+
+            doc1.remove();
+
+            await doc2.deleted$.filter(d => d === true).first().toPromise();
+
+            db.destroy();
+            db2.destroy();
+        });
+        it('should not conflict with non-local-doc that has same id', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory'
+            });
+            const c1 = await db.collection({
+                name: 'humans',
+                schema: schemas.primaryHuman
+            });
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const c2 = await db2.collection({
+                name: 'humans',
+                schema: schemas.primaryHuman
+            });
+            const docData = schemaObjects.human();
+            docData.passportId = 'foobar';
+            docData.age = 40;
+            const doc = await c1.insert(docData);
+            const localDoc = await c1.insertLocal('foobar', {
+                foo: 'bar',
+                age: 10
+            });
+
+            const doc2 = await c2.findOne().exec();
+            const localDoc2 = await c2.getLocal('foobar');
+
+            doc.age = 50;
+            await doc.save();
+
+            await AsyncTestUtil.waitUntil(() => doc2.age === 50);
+            await AsyncTestUtil.wait(20);
+            assert.equal(localDoc2.get('age'), 10);
+
+            localDoc.set('age', 66);
+            await localDoc.save();
+
+            await AsyncTestUtil.waitUntil(() => localDoc2.get('age') === 66);
+            await AsyncTestUtil.wait(20);
+            assert.equal(doc2.get('age'), 50);
+
+            db.destroy();
+            db2.destroy();
+        });
+    });
     describe('in-memory', () => {});
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
