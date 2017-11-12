@@ -32,11 +32,11 @@ const myCollection = await myDatabase.collection({
 Adds an attachment to a `RxDocument`. Returns a Promise with the new attachment.
 
 ```javascript
-const attachment = await myDocument.putAttachment(
+const attachment = await myDocument.putAttachment({
     id,     // string, name of the attachment like 'cat.jpg'
     data,   // (string|Blob|Buffer) data of the attachment
     type    // (string) type of the attachment-data like 'image/jpeg'
-);
+});
 ```
 
 ## getAttachment()
