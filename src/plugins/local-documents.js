@@ -5,6 +5,8 @@
  */
 
 import clone from 'clone';
+import objectPath from 'object-path';
+import deepEqual from 'deep-equal';
 
 import RxDocument from '../rx-document';
 import RxDatabase from '../rx-database';
@@ -69,6 +71,15 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         changeEvent.isLocal = true;
         return this.parent.$emit(changeEvent);
     }
+    get(objPath) {
+        if (!this._data) return undefined;
+        if (typeof objPath !== 'string')
+            throw new TypeError('RxDocument.get(): objPath must be a string');
+
+        let valueObj = objectPath.get(this._data, objPath);
+        valueObj = clone(valueObj);
+        return valueObj;
+    }
     get$(path) {
         if (path.includes('.item.'))
             throw new Error(`cannot get observable of in-array fields because order cannot be guessed: ${path}`);
@@ -81,6 +92,13 @@ export class RxLocalDocument extends RxDocument.RxDocument {
             .asObservable();
     }
     set(objPath, value) {
+        if(!value){
+            // object path not set, overwrite whole data
+            const data = clone(objPath);
+            data._rev = this._data._rev;
+            this._data = data;
+            return this;
+        }
         if (objPath === '_id')
             throw new Error('id cannot be modified');
         if (Object.is(this.get(objPath), value)) return;

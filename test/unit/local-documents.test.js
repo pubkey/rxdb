@@ -117,6 +117,47 @@ describe('local-documents.test.js', () => {
             c.database.destroy();
         });
     });
+    describe('.save()', () => {
+        it('should save the document', async () => {
+            const c = await humansCollection.create();
+            const doc = await c.insertLocal('foobar', {
+                foo: 'bar'
+            });
+
+            doc.set('foo', 'bar2');
+            await doc.save();
+            assert.equal(doc.get('foo'), 'bar2');
+            doc.set({
+                foo: 'bar3'
+            });
+            await doc.save();
+            assert.equal(doc.get('foo'), 'bar3');
+
+            c.database.destroy();
+        });
+        it('should save the doc persistent', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory'
+            });
+            const doc = await db.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            doc.set('foo', 'bar2');
+            await doc.save();
+            db.destroy();
+
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const doc2 = await db.getLocal('foobar');
+            assert.equal(doc2.get('foo'), 'bar2');
+            db2.destroy();
+        });
+    });
     describe('with database', () => {
         it('should be able to use local documents directly on the database', async () => {
             const c = await humansCollection.create();
@@ -132,6 +173,7 @@ describe('local-documents.test.js', () => {
     });
     describe('multi-instance', () => {});
     describe('data-migration', () => {});
+    describe('in-memory', () => {});
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
             const c = await humansCollection.create();
