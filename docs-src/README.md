@@ -19,3 +19,9 @@
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
   </a>
 </p>
+
+<br/><br/><br/>
+
+<p align="center">
+    <b>If you are new to RxDB, you should start <a href="./install.html">here.</a></b>
+</p>
