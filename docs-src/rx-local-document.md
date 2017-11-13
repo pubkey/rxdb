@@ -1,6 +1,7 @@
-# local documents
+# Local Documents
 
 Local documents are a special class of documents which are used to store local metadata.
+They come in handy when you want to store settings or additional data next to your documents.
 
 - Local Documents can exist on `RxDatabase` or `RxCollection`
 - Local Document do not have to match the collections schema
@@ -58,7 +59,7 @@ A `RxLocalDocument` behaves like a normal `RxDocument`.
 ```javascript
 const localDoc = await myCollection.getLocal('foobar');
 
-// acess data
+// access data
 const foo = localDoc.get('foo');
 
 // change data
@@ -72,12 +73,14 @@ localDoc.get$('foo').subscribe(value => { /* .. */ });
 await localDoc.remove();
 ```
 
-NOTICE: Because the local document does not have a schema, acessing the documents data-fields via pseudo-proxy will not work.
+## NOTICE: Because the local document does not have a schema, acessing the documents data-fields via pseudo-proxy will not work.
 
 ```javascript
 const foo = localDoc.foo; // undefined
-
 const foo = localDoc.get('foo'); // works!
+
+localDoc.foo = 'bar'; // does not work!
+localDoc.set('foo', 'bar'); // works
 ```
 
 
