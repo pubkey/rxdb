@@ -275,7 +275,37 @@ describe('local-documents.test.js', () => {
             db2.destroy();
         });
     });
-    describe('in-memory', () => {});
+    describe('in-memory', () => {
+        it('should call the non-mem parent', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory'
+            });
+            const c1 = await db.collection({
+                name: 'humans',
+                schema: schemas.primaryHuman
+            });
+            const inMem = await c1.inMemory();
+
+            await inMem.insertLocal('foobar', {
+                foo: 'bar',
+                age: 10
+            });
+            const doc = await c1.getLocal('foobar');
+            assert.ok(doc);
+            assert.equal(doc.get('age'), 10);
+
+            await c1.insertLocal('foobar2', {
+                foo: 'bar',
+                age: 11
+            });
+            const doc2 = await inMem.getLocal('foobar2');
+            assert.equal(doc2.get('age'), 11);
+
+            db.destroy();
+        });
+    });
     describe('issues', () => {
         it('PouchDB: Create and remove local doc', async () => {
             const c = await humansCollection.create();

@@ -31,6 +31,7 @@ export class RxCollection {
         methods = {},
         attachments = {}
     ) {
+        this._isInMemory = false;
         this.destroyed = false;
         this.database = database;
         this.name = name;

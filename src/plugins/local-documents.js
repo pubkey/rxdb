@@ -231,6 +231,9 @@ const _getPouchByParent = parent => {
  * @return {RxLocalDocument}
  */
 const insertLocal = async function(id, data) {
+    if (RxCollection.isInstanceOf(this) && this._isInMemory)
+        return this._parentCollection.insertLocal(id, data);
+
     data = clone(data);
     const existing = await this.getLocal(id);
     if (existing) {
@@ -260,6 +263,9 @@ const insertLocal = async function(id, data) {
  * @return {RxLocalDocument}
  */
 const upsertLocal = async function(id, data) {
+    if (RxCollection.isInstanceOf(this) && this._isInMemory)
+        return this._parentCollection.upsertLocal(id, data);
+
     const existing = await this.getLocal(id);
 
     if (!existing) {
@@ -277,6 +283,9 @@ const upsertLocal = async function(id, data) {
 
 
 const getLocal = async function(id) {
+    if (RxCollection.isInstanceOf(this) && this._isInMemory)
+        return this._parentCollection.getLocal(id);
+
     const pouch = _getPouchByParent(this);
     const docCache = _getDocCache(this);
 
