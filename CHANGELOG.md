@@ -6,6 +6,7 @@ Features:
     - Added [attachments](https://pubkey.github.io/rxdb/rx-attachment.html)
     - Added [final fields](https://pubkey.github.io/rxdb/rx-schema.html#final)
     - Added [inMemory](https://pubkey.github.io/rxdb/in-memory.html)-collections
+    - Added [local documents](https://pubkey.github.io/rxdb/rx-local-document.html)
 
 Breaking:
     - Renamed `ingoreDuplicate` to `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)

@@ -18,7 +18,8 @@ import {
     RxChangeEvent
 } from './rx-change-event';
 import {
-    RxDocument
+    RxDocument,
+    RxLocalDocument
 } from './rx-document';
 
 export interface RxCollectionCreator {
@@ -111,6 +112,10 @@ export declare class RxCollection<RxDocumentType> {
      * creates an in-memory replicated version of this collection
      */
     inMemory(): Promise<RxCollection<RxDocumentType>>;
+
+    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType>>>;
+    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType>>>;
+    getLocal(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType>>>;
 
     destroy(): Promise<boolean>;
     remove(): Promise<any>;

@@ -342,6 +342,6 @@ describe('local-documents.test.js', () => {
         });
     });
     describe('exxx', () => {
-        it('e', () => process.exit());
+        // it('e', () => process.exit());
     });
 });

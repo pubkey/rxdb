@@ -36,4 +36,4 @@ The memory-collection is two-way-replicated with its original collection. This m
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./custom-build.md)
+If you are new to RxDB, you should continue [here](./local-documents.md)

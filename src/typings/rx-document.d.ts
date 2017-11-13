@@ -4,6 +4,9 @@ import {
     RxCollection
 } from './rx-collection';
 import {
+    RxDatabase
+} from './rx-database';
+import {
     RxAttachment
 } from './rx-attachment';
 
@@ -36,4 +39,9 @@ export declare class RxDocumentBase<RxDocumentType> {
 
     toJSON(): RxDocumentType;
     destroy(): void;
+}
+
+export declare class RxLocalDocument<Parent> extends RxDocumentBase<{}> {
+    readonly parent: Parent;
+    isLocal(): true;
 }
