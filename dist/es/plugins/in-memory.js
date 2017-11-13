@@ -37,6 +37,7 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
         //constructor(database, name, schema, pouchSettings, migrationStrategies, methods) {
 
 
+        _this._isInMemory = true;
         _this._parentCollection = parentCollection;
         _this._parentCollection.onDestroy.then(function () {
             return _this.destroy();

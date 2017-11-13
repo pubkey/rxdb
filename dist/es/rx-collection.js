@@ -35,6 +35,7 @@ export var RxCollection = function () {
 
         _classCallCheck(this, RxCollection);
 
+        this._isInMemory = false;
         this.destroyed = false;
         this.database = database;
         this.name = name;
@@ -110,7 +111,9 @@ export var RxCollection = function () {
 
                         case 9:
 
-                            this._subs.push(this._observable$.subscribe(function (cE) {
+                            this._subs.push(this._observable$.filter(function (cE) {
+                                return !cE.data.isLocal;
+                            }).subscribe(function (cE) {
                                 // when data changes, send it to RxDocument in docCache
                                 var doc = _this2._docCache.get(cE.data.doc);
                                 if (doc) doc._handleChangeEvent(cE);

@@ -41,6 +41,9 @@ Core.plugin(InMemoryPlugin);
 import AttachmentsPlugin from './plugins/attachments';
 Core.plugin(AttachmentsPlugin);
 
+import LocalDocumentsPlugin from './plugins/local-documents';
+Core.plugin(LocalDocumentsPlugin);
+
 /**
  * create a database
  * @param  {string} prefix as databaseName for the storage (this can be the foldername)

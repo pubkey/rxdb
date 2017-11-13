@@ -218,6 +218,7 @@ var RxCollection = exports.RxCollection = function () {
         var attachments = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
         (0, _classCallCheck3['default'])(this, RxCollection);
 
+        this._isInMemory = false;
         this.destroyed = false;
         this.database = database;
         this.name = name;
@@ -295,7 +296,9 @@ var RxCollection = exports.RxCollection = function () {
 
                             case 9:
 
-                                this._subs.push(this._observable$.subscribe(function (cE) {
+                                this._subs.push(this._observable$.filter(function (cE) {
+                                    return !cE.data.isLocal;
+                                }).subscribe(function (cE) {
                                     // when data changes, send it to RxDocument in docCache
                                     var doc = _this2._docCache.get(cE.data.doc);
                                     if (doc) doc._handleChangeEvent(cE);

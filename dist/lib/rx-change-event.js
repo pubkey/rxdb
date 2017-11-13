@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.RxChangeEvent = undefined;
 
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
@@ -25,7 +26,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var RxChangeEvent = function () {
+var RxChangeEvent = exports.RxChangeEvent = function () {
     function RxChangeEvent(data) {
         (0, _classCallCheck3['default'])(this, RxChangeEvent);
 
@@ -39,7 +40,8 @@ var RxChangeEvent = function () {
                 op: this.data.op,
                 t: this.data.t,
                 db: this.data.db,
-                it: this.data.it
+                it: this.data.it,
+                isLocal: this.data.isLocal
             };
             if (this.data.col) ret.col = this.data.col;
             if (this.data.doc) ret.doc = this.data.doc;
@@ -95,11 +97,14 @@ function fromPouchChange(changeDoc, collection) {
 }
 
 function create(op, database, collection, doc, value) {
+    var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+
     var data = {
         op: op,
         t: new Date().getTime(),
         db: database.name,
-        it: database.token
+        it: database.token,
+        isLocal: isLocal
     };
     if (collection) data.col = collection.name;
     if (doc) data.doc = doc.primary;

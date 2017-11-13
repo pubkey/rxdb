@@ -247,7 +247,7 @@ var RxDatabase = exports.RxDatabase = function () {
         this.idleQueue = new _customIdleQueue2['default']();
         this.token = (0, _randomToken2['default'])(10);
 
-        this.subs = [];
+        this._subs = [];
         this.destroyed = false;
 
         // cache for collection-objects
@@ -348,7 +348,7 @@ var RxDatabase = exports.RxDatabase = function () {
 
 
                                 // TODO only subscribe when sth is listening to the event-chain
-                                this.subs.push(this.socket.messages$.subscribe(function (cE) {
+                                this._subs.push(this.socket.messages$.subscribe(function (cE) {
                                     return _this.$emit(cE);
                                 }));
 
@@ -838,7 +838,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 return this._leaderElector.destroy();
 
                             case 10:
-                                this.subs.map(function (sub) {
+                                this._subs.map(function (sub) {
                                     return sub.unsubscribe();
                                 });
 

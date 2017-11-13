@@ -177,7 +177,7 @@ var RxDocument = exports.RxDocument = function () {
 
             if (path === this.primaryPath) throw _rxError2['default'].newRxError('cannot observe primary path');
 
-            // final fields cannot be modified
+            // final fields cannot be modified and so also not observed
             if (this.collection.schema.finalFields.includes(path)) {
                 throw _rxError2['default'].newRxError('final fields cannot be observed', {
                     path: path

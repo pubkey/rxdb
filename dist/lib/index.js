@@ -53,6 +53,10 @@ var _attachments = require('./plugins/attachments');
 
 var _attachments2 = _interopRequireDefault(_attachments);
 
+var _localDocuments = require('./plugins/local-documents');
+
+var _localDocuments2 = _interopRequireDefault(_localDocuments);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
@@ -84,6 +88,8 @@ _core2['default'].plugin(_jsonDump2['default']);
 _core2['default'].plugin(_inMemory2['default']);
 
 _core2['default'].plugin(_attachments2['default']);
+
+_core2['default'].plugin(_localDocuments2['default']);
 
 /**
  * create a database

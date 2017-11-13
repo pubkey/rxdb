@@ -7,7 +7,7 @@ import _createClass from 'babel-runtime/helpers/createClass';
 
 import * as util from './util';
 
-var RxChangeEvent = function () {
+export var RxChangeEvent = function () {
     function RxChangeEvent(data) {
         _classCallCheck(this, RxChangeEvent);
 
@@ -19,7 +19,8 @@ var RxChangeEvent = function () {
             op: this.data.op,
             t: this.data.t,
             db: this.data.db,
-            it: this.data.it
+            it: this.data.it,
+            isLocal: this.data.isLocal
         };
         if (this.data.col) ret.col = this.data.col;
         if (this.data.doc) ret.doc = this.data.doc;
@@ -72,11 +73,14 @@ export function fromPouchChange(changeDoc, collection) {
 }
 
 export function create(op, database, collection, doc, value) {
+    var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+
     var data = {
         op: op,
         t: new Date().getTime(),
         db: database.name,
-        it: database.token
+        it: database.token,
+        isLocal: isLocal
     };
     if (collection) data.col = collection.name;
     if (doc) data.doc = doc.primary;
