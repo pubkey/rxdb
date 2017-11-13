@@ -5,8 +5,6 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
-import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
 
 describe('local-documents.test.js', () => {
