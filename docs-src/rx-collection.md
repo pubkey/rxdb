@@ -26,11 +26,14 @@ You can pass settings directly to the [pouchdb database create options](https://
 To get an existing collection from the database, call the collection name directly on the database:
 
 ```javascript
+// newly created collection
 const collection = await db.collection({
   name: 'heroes',
   schema: mySchema
 });
 const collection2 = db.heroes;
+// or
+// const collection2 = db['heroes']
 
 console.log(collection == collection2);
 // true
