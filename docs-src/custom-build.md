@@ -87,6 +87,19 @@ RxDB.plugin(RxDBInMemoryModule);
 RxDB.plugin(require('rxdb/plugins/in-memory'));
 ```
 
+### local-documents
+
+Adds the [local-documents](./rx-local-document.md) to the collections and databases.
+
+```javascript
+// es6-import
+import RxDBLocalDocumentsModule from 'rxdb/plugins/local-documents';
+RxDB.plugin(RxDBLocalDocumentsModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/local-documents'));
+```
+
 ### json-dump
 
 Adds the [json import/export](./rx-database.md#dump)-functionality to RxDB.

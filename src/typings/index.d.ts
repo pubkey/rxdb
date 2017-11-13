@@ -33,7 +33,8 @@ import {
 export * from './rx-query';
 
 import {
-    RxDocument
+    RxDocument,
+    RxLocalDocument
 } from './rx-document';
 export * from './rx-document';
 

@@ -31,6 +31,7 @@ export class RxCollection {
         methods = {},
         attachments = {}
     ) {
+        this._isInMemory = false;
         this.destroyed = false;
         this.database = database;
         this.name = name;
@@ -97,7 +98,9 @@ export class RxCollection {
         );
 
         this._subs.push(
-            this._observable$.subscribe(cE => {
+            this._observable$
+            .filter(cE => !cE.data.isLocal)
+            .subscribe(cE => {
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);

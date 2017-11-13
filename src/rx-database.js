@@ -30,7 +30,7 @@ export class RxDatabase {
         this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
-        this.subs = [];
+        this._subs = [];
         this.destroyed = false;
 
 
@@ -91,7 +91,7 @@ export class RxDatabase {
             this.socket = await Socket.create(this);
 
             // TODO only subscribe when sth is listening to the event-chain
-            this.subs.push(
+            this._subs.push(
                 this.socket.messages$.subscribe(cE => this.$emit(cE))
             );
         }
@@ -347,7 +347,7 @@ export class RxDatabase {
         this.socket && await this.socket.destroy();
         if (this._leaderElector)
             await this._leaderElector.destroy();
-        this.subs.map(sub => sub.unsubscribe());
+        this._subs.map(sub => sub.unsubscribe());
 
         // destroy all collections
         await Promise.all(Object.keys(this.collections)

@@ -32,6 +32,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             pouchSettings, // pouchSettings
             {},
             parentCollection._methods);
+        this._isInMemory = true;
         this._parentCollection = parentCollection;
         this._parentCollection.onDestroy.then(() => this.destroy());
 

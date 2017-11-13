@@ -84,6 +84,8 @@
 
 * [InMemory](./in-memory.md)
 
+* [LocalDocuments](./rx-local-document.md)
+
 * [Custom Build](./custom-build.md)
 
 * [Plugins](./plugins.md)

@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-local-documents",
+  "main": "../../dist/lib/plugins/local-documents.js",
+  "jsnext:main": "../../dist/es/plugins/local-documents.js",
+  "module": "../../dist/es/plugins/local-documents.js"
+}

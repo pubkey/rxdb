@@ -5,6 +5,9 @@ import {
 } from './rx-collection';
 
 import {
+    RxLocalDocument
+} from './rx-document';
+import {
     RxChangeEvent
 } from './rx-change-event';
 
@@ -32,6 +35,10 @@ export declare class RxDatabase {
     remove(): Promise<any>;
 
     readonly isLeader: boolean;
+
+    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
+    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
+    getLocal(id: string): Promise<RxLocalDocument<RxDatabase>>;
 
     /**
      * returns a promise which resolves when the instance becomes leader

@@ -5,7 +5,7 @@
 
 import * as util from './util';
 
-class RxChangeEvent {
+export class RxChangeEvent {
     constructor(data) {
         this.data = data;
     }
@@ -14,7 +14,8 @@ class RxChangeEvent {
             op: this.data.op,
             t: this.data.t,
             db: this.data.db,
-            it: this.data.it
+            it: this.data.it,
+            isLocal: this.data.isLocal
         };
         if (this.data.col) ret.col = this.data.col;
         if (this.data.doc) ret.doc = this.data.doc;
@@ -65,12 +66,13 @@ export function fromPouchChange(changeDoc, collection) {
     return new RxChangeEvent(data);
 }
 
-export function create(op, database, collection, doc, value) {
+export function create(op, database, collection, doc, value, isLocal = false) {
     const data = {
         op: op,
         t: new Date().getTime(),
         db: database.name,
         it: database.token,
+        isLocal
     };
     if (collection) data.col = collection.name;
     if (doc) data.doc = doc.primary;
