@@ -12,7 +12,8 @@ describe('typings.test.js', () => {
             RxDatabaseCreator,
             RxCollection,
             RxDocument,
-            RxJsonSchema
+            RxJsonSchema,
+            RxError
         } from '../';
     `;
     const transpileCode = async (code) => {
@@ -174,64 +175,27 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
-    describe('orm', () => {
-        it('should know the orm-functions of the collection', async () => {
+    describe('rx-error', () => {
+        it('should know the parameters of the error', async () => {
             const code = codeBase + `
                 (async() => {
-                    const myDb: RxDatabase = await create({
-                        name: 'mydb',
-                        adapter: 'memory',
-                        multiInstance: false,
-                        ignoreDuplicate: false
-                    });
-                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                    const myDb: any = {};
                     const myCollection: RxCollection<any> = await myDb.collection({
                         name: 'humans',
-                        schema: mySchema,
+                        schema: {},
                         autoMigrate: false,
                     });
-                })();
-            `;
-            await transpileCode(code);
-        });
-    });
-    describe('positive', () => {
-        it('should know the orm-methods of an object', async () => {
-            const code = codeBase + `
-                declare interface RxHeroDocumentType {
-                    name?: string;
-                    color?: string;
-                    maxHP?: number;
-                    hp?: number;
-                    team?: string;
-                    skills?: Array<{
-                        name?: string,
-                        damage?: string
-                    }>;
 
-                    // ORM methods
-                    foo(): string;
-                };
-                declare type RxHeroDocument = RxDocument<RxHeroDocumentType>;
-                (async() => {
-                    const myDb: RxDatabase = await create({
-                        name: 'mydb',
-                        adapter: 'memory',
-                        multiInstance: false,
-                        ignoreDuplicate: false
-                    });
-                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
-                    const myCollection: RxCollection<RxHeroDocument> = await myDb.collection({
-                        name: 'humans',
-                        schema: mySchema,
-                        autoMigrate: false,
-                        methods: {
-                            foo: () => 'bar'
+                    try{
+                        await myCollection.insert({ age: 4});
+                    } catch(err) {
+                        if (err.rxdb) {
+                            (err as RxError).parameters.errors;
+                        } else {
+                            // handle regular Error class
                         }
-                    });
-                    const oneDoc = await myCollection.findOne().exec();
-                    const x: string = oneDoc.foo();
-                })();
+                    }
+                });
             `;
             await transpileCode(code);
         });
