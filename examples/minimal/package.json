@@ -9,7 +9,7 @@
     "start": "rm -rf ./db && mkdir -p db && npm run preinstall && node index.js",
     "clear": "rm -rf node_modules && rm -f package-lock.json && (cd ../../ && rm -rf node_modules )",
     "preinstall:rmlock": "(cd ../../ && rm -f package-lock.json)",
-    "preinstall:peers": "(cd ../../ && npm i rxjs --silent)",
+    "preinstall:peers": "(cd ../../ && npm i rxjs)",
     "preinstall": "npm run preinstall:rmlock && npm run preinstall:peers"
   },
   "dependencies": {
