@@ -17,6 +17,7 @@ Bugfixes:
     - Allow windows-foldernames (with backslash) as collection-name [343](https://github.com/pubkey/rxdb/issues/343)
 
 Other:
+
     - Split out idle-queue into own [npm-module](http://npmjs.com/package/custom-idle-queue)
     - Enfore usage of strict-equality via eslint
 
