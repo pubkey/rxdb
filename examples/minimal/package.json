@@ -1,0 +1,20 @@
+{
+  "name": "rxdb-test-minimal",
+  "description": "A minmal project that should work, so we can test if the dependencies are ok",
+  "version": "1.0.0",
+  "author": "pubkey",
+  "private": true,
+  "scripts": {
+    "test": "npm run clear && npm i && npm start",
+    "start": "rm -rf ./db && mkdir -p db && npm run preinstall && node index.js",
+    "clear": "rm -rf node_modules && rm -f package-lock.json && (cd ../../ && rm -rf node_modules )",
+    "preinstall:rmlock": "(cd ../../ && rm -f package-lock.json)",
+    "preinstall:peers": "(cd ../../ && npm i rxjs)",
+    "preinstall": "npm run preinstall:rmlock && npm run preinstall:peers"
+  },
+  "dependencies": {
+    "pouchdb-adapter-node-websql": "6.3.4",
+    "rxjs": "5.5.2",
+    "rxdb": "file:../../"
+  }
+}

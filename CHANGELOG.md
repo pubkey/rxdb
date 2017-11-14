@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.0.1 (November 14, 2017)
+
+Bugfixes:
+  - Include `pouchdb-adapter-memory` as dependency [#365](https://github.com/pubkey/rxdb/issues/365)
+
 ## 7.0.0 (November 14, 2017)
 
 Breaking:
