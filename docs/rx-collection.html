@@ -253,10 +253,10 @@
     
         <li class="chapter " data-level="1.3.1.5" data-path="rx-database.html">
             
-                <a href="rx-database.html#ingoreduplicate">
+                <a href="rx-database.html#ignoreduplicate">
             
                     
-                    ingoreDuplicate
+                    ignoreDuplicate
             
                 </a>
             
@@ -934,7 +934,20 @@
         
         
     
-        <li class="chapter " data-level="3.1" data-path="middleware.html">
+        <li class="chapter " data-level="3.1" data-path="rx-attachment.html">
+            
+                <a href="rx-attachment.html">
+            
+                    
+                    RxAttachment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="middleware.html">
             
                 <a href="middleware.html">
             
@@ -947,7 +960,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.2" data-path="orm.html">
+        <li class="chapter " data-level="3.3" data-path="orm.html">
             
                 <a href="orm.html">
             
@@ -960,7 +973,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.3" data-path="population.html">
+        <li class="chapter " data-level="3.4" data-path="population.html">
             
                 <a href="population.html">
             
@@ -973,7 +986,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.4" data-path="data-migration.html">
+        <li class="chapter " data-level="3.5" data-path="data-migration.html">
             
                 <a href="data-migration.html">
             
@@ -986,7 +999,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.5" data-path="leader-election.html">
+        <li class="chapter " data-level="3.6" data-path="leader-election.html">
             
                 <a href="leader-election.html">
             
@@ -999,7 +1012,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.6" data-path="replication.html">
+        <li class="chapter " data-level="3.7" data-path="replication.html">
             
                 <a href="replication.html">
             
@@ -1012,7 +1025,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.7" data-path="query-change-detection.html">
+        <li class="chapter " data-level="3.8" data-path="query-change-detection.html">
             
                 <a href="query-change-detection.html">
             
@@ -1025,7 +1038,33 @@
             
         </li>
     
-        <li class="chapter " data-level="3.8" data-path="custom-build.html">
+        <li class="chapter " data-level="3.9" data-path="in-memory.html">
+            
+                <a href="in-memory.html">
+            
+                    
+                    InMemory
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.10" data-path="rx-local-document.html">
+            
+                <a href="rx-local-document.html">
+            
+                    
+                    LocalDocuments
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.11" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1038,7 +1077,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.9" data-path="plugins.html">
+        <li class="chapter " data-level="3.12" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1051,7 +1090,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.10" data-path="contribute.html">
+        <li class="chapter " data-level="3.13" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1112,7 +1151,7 @@
                                 <h1 id="rxcollection">RxCollection</h1>
 <p>A collection stores documents of the same type.</p>
 <h2 id="creating-a-collection">Creating a Collection</h2>
-<p>To create a collection you need a RxDatabase-Object which has the .collection()-method. Every collection needs a collection-name and a valid RxSchema.</p>
+<p>To create a collection you need a RxDatabase object which has the .collection()-method. Every collection needs a collection name and a valid RxSchema.</p>
 <pre><code class="lang-js">myDatabase.collection({
   name: <span class="hljs-string">&apos;humans&apos;</span>,
   schema: mySchema
@@ -1120,15 +1159,21 @@
   .then(collection =&gt; <span class="hljs-built_in">console</span>.dir(collection));
 </code></pre>
 <h3 id="name">name</h3>
-<p>The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name.</p>
+<p>The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>^[a-z][a-z0-9]*$</code>.</p>
 <h3 id="schema">schema</h3>
-<p>The schema defines how your data looks and how it should be handled. You can pass a RxSchema-Object or a simple javascript-object from which the schema will be generated.</p>
+<p>The schema defines how your data looks and how it should be handled. You can pass a RxSchema object or a simple javascript-object from which the schema will be generated.</p>
 <h3 id="pouchsettings">pouchSettings</h3>
 <p>You can pass settings directly to the <a href="https://pouchdb.com/api.html#options" target="_blank">pouchdb database create options</a> through this property.</p>
 <h2 id="get-a-collection-from-the-database">Get a collection from the database</h2>
-<p>To get an existing collection from the database, call the collection-name directly on the database:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> collection = <span class="hljs-keyword">await</span> db.collection(<span class="hljs-string">&apos;heroes&apos;</span>);
+<p>To get an existing collection from the database, call the collection name directly on the database:</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// newly created collection</span>
+<span class="hljs-keyword">const</span> collection = <span class="hljs-keyword">await</span> db.collection({
+  name: <span class="hljs-string">&apos;heroes&apos;</span>,
+  schema: mySchema
+});
 <span class="hljs-keyword">const</span> collection2 = db.heroes;
+<span class="hljs-comment">// or</span>
+<span class="hljs-comment">// const collection2 = db[&apos;heroes&apos;]</span>
 
 <span class="hljs-built_in">console</span>.log(collection == collection2);
 <span class="hljs-comment">// true</span>
@@ -1139,7 +1184,7 @@
 <pre><code class="lang-js">myCollection.$.subscribe(changeEvent =&gt; <span class="hljs-built_in">console</span>.dir(changeEvent));
 </code></pre>
 <h3 id="insert">insert()</h3>
-<p>Use this to insert new documents to the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.</p>
+<p>Use this to insert new documents into the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.insert({
   name: <span class="hljs-string">&apos;foo&apos;</span>,
   lastname: <span class="hljs-string">&apos;bar&apos;</span>
@@ -1147,7 +1192,7 @@
 </code></pre>
 <h3 id="newdocument">newDocument()</h3>
 <p>Sometimes it can be helpfull to spawn and use documents before saving them into the database.
-This is usefull especially when you want to use the ORM-methods or prefill values from form-data.
+This is usefull especially when you want to use the ORM methods or prefill values from form data.
 You can create temporary documents by calling <code>RxCollection.newDocument(initalData)</code>.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> tempDoc = myCollection.newDocument({
     firstName: <span class="hljs-string">&apos;Bob&apos;</span>
@@ -1161,16 +1206,16 @@ tempDoc.age = <span class="hljs-number">77</span>;
 <span class="hljs-keyword">await</span> tempDoc.save();
 </code></pre>
 <h3 id="upsert">upsert()</h3>
-<p>Insert&apos;s the document if it does not exist within the collection, else it will overwrite it. Returns the new or overwritten RxDocument.</p>
+<p>Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.upsert({
   name: <span class="hljs-string">&apos;foo&apos;</span>,
   lastname: <span class="hljs-string">&apos;bar2&apos;</span>
 });
 </code></pre>
 <h3 id="atomicupsert">atomicUpsert()</h3>
-<p>When you run many upsert-operations on the same RxDocument in a very short timespan, it can happen that you get a <code>409 Conflict</code>-Error.
-This means that you did run a <code>.upsert()</code> on the document, while the previous upsert-operation was still running.
-To prevent these types of errors, you can run atomic upsert-operations.
+<p>When you run many upsert operations on the same RxDocument in a very short timespan, you might get a <code>409 Conflict</code> error.
+This means that you tried to run a <code>.upsert()</code> on the document, while the previous upsert operation was still running.
+To prevent these types of errors, you can run atomic upsert operations.
 The behavior is similar to <a href="rx-document.html#atomicUpdate">RxDocument.atomicUpdate</a>.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> docData = {
     name: <span class="hljs-string">&apos;Bob&apos;</span>, <span class="hljs-comment">// primary</span>
@@ -1191,7 +1236,7 @@ myCollection.atomicUpsert(docData);
 </code></pre>
 <h3 id="find">find()</h3>
 <p>To find documents in your collection, use this method.
-This will return a RxQuery-Object with the exec-function.</p>
+This will return a RxQuery object with the exec function.</p>
 <pre><code class="lang-js"><span class="hljs-comment">// directly pass search-object</span>
 myCollection.find({name: {$eq: <span class="hljs-string">&apos;foo&apos;</span>}})
   .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
@@ -1201,7 +1246,7 @@ myCollection.find().where(<span class="hljs-string">&apos;name&apos;</span>).eq(
   .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
 </code></pre>
 <h3 id="findone">findOne()</h3>
-<p>This does basically what find() does, but it returns only a single document. You can pass a primary-value to esier find a single document.</p>
+<p>This does basically what find() does, but it returns only a single document. You can pass a primary value to find a single document more easily.</p>
 <pre><code class="lang-js"><span class="hljs-comment">// get document with name:foobar</span>
 myCollection.findOne().where(<span class="hljs-string">&apos;name&apos;</span>).eq(<span class="hljs-string">&apos;foo&apos;</span>)
   .exec().then(doc =&gt; <span class="hljs-built_in">console</span>.dir(doc));
@@ -1211,7 +1256,7 @@ myCollection.findOne(<span class="hljs-string">&apos;foo&apos;</span>)
   .exec().then(doc =&gt; <span class="hljs-built_in">console</span>.dir(doc));
 </code></pre>
 <h3 id="dump">dump()</h3>
-<p>Use this function to create a json-export from every document in the collection. You can pass true as parameter to decrypt the encrypted data-fields of your documents.</p>
+<p>Use this function to create a json export from every document in the collection. You can pass true as parameter to decrypt the encrypted data fields of your documents.</p>
 <pre><code class="lang-js">myCollection.dump()
   .then(json =&gt; <span class="hljs-built_in">console</span>.dir(json));
 
@@ -1220,21 +1265,21 @@ myCollection.dump(<span class="hljs-literal">true</span>)
   .then(json =&gt; <span class="hljs-built_in">console</span>.dir(json));
 </code></pre>
 <h3 id="importdump">importDump()</h3>
-<p>To import the json-dump into your collection, use this function.</p>
+<p>To import the json dump into your collection, use this function.</p>
 <pre><code class="lang-js"><span class="hljs-comment">// import the dump to the database</span>
 myCollection.importDump(json)
   .then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;done&apos;</span>));
 </code></pre>
 <h3 id="destroy">destroy()</h3>
-<p>Destroys the collections object-instance. This is to free up memory and stop all observings and replications.</p>
+<p>Destroys the collection&apos;s object instance. This is to free up memory and stop all observings and replications.</p>
 <pre><code class="lang-js">myDatabase.destroy();
 </code></pre>
 <h3 id="sync">sync()</h3>
-<p>This method allows you to replicate data between other RxCollections, pouchdb-instances or remove servers which supprot the couchdb-sync-protocol.
+<p>This method allows you to replicate data between other RxCollections, pouchdb instances or remove servers which supprot the couchdb-sync-protocol.
 Full documentation on how to use replication is <a href="replication.html">here</a>.</p>
 <h3 id="remove">remove()</h3>
 <p>Removes all known data of the collection and its previous versions.
-This removes the documents, the schemas, older schemaVersions.</p>
+This removes the documents, the schemas, and older schemaVersions.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">await</span> myCollection.remove();
 <span class="hljs-comment">// collection is no removed and can be re-created</span>
 </code></pre>
@@ -1287,7 +1332,7 @@ This removes the documents, the schemas, older schemaVersions.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"2.1","depth":1,"next":{"title":"Creation","level":"2.1.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"2.1.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"2.1.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]}]},"previous":{"title":"default","level":"1.4.6","depth":2,"anchor":"#default","path":"rx-schema.md","ref":"./rx-schema.md#default","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-collection.md","mtime":"2017-09-11T08:26:05.264Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-09-20T08:36:36.513Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"2.1","depth":1,"next":{"title":"Creation","level":"2.1.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"2.1.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"2.1.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]}]},"previous":{"title":"default","level":"1.4.6","depth":2,"anchor":"#default","path":"rx-schema.md","ref":"./rx-schema.md#default","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-collection.md","mtime":"2017-11-14T08:58:51.154Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

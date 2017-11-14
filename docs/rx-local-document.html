@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>ORM/DRM · RxDB - Documentation</title>
+        <title>LocalDocuments · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="population.html" />
+    <link rel="next" href="custom-build.html" />
     
     
-    <link rel="prev" href="middleware.html" />
+    <link rel="prev" href="in-memory.html" />
     
 
     </head>
@@ -960,7 +960,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.3" data-path="orm.html">
+        <li class="chapter " data-level="3.3" data-path="orm.html">
             
                 <a href="orm.html">
             
@@ -1051,7 +1051,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.10" data-path="rx-local-document.html">
+        <li class="chapter active" data-level="3.10" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1133,7 +1133,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >ORM/DRM</a>
+        <a href="." >LocalDocuments</a>
     </h1>
 </div>
 
@@ -1148,93 +1148,73 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="object-data-relational-mapping">Object-Data-Relational-Mapping</h1>
-<p>Like <a href="http://mongoosejs.com/docs/guide.html#methods" target="_blank">mongoose</a>, RxDB has ORM-capabilities which can be used to add specific behavior to documents and collections.</p>
-<h2 id="statics">statics</h2>
-<p>Statics are defined collection-wide and can be called on the collection.</p>
-<h3 id="add-statics-to-a-collection">Add statics to a collection</h3>
-<p>To add static functions, pass a <code>statics</code>-object when you create your collection. The object contains functions, mapped to their function-names.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  statics: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
+                                <h1 id="local-documents">Local Documents</h1>
+<p>Local documents are a special class of documents which are used to store local metadata.
+They come in handy when you want to store settings or additional data next to your documents.</p>
+<ul>
+<li>Local Documents can exist on <code>RxDatabase</code> or <code>RxCollection</code></li>
+<li>Local Document do not have to match the collections schema</li>
+<li>Local Documents do not get replicated</li>
+<li>Local Documents will not be found on queries</li>
+<li>Local Documents can not have attachments</li>
+<li>Local Documents will not get handled by the <a href="data-migration.html">data-migration</a></li>
+</ul>
+<h2 id="insertlocal">insertLocal()</h2>
+<p>Creates a local document for the database or collection. Throws if a local document with the same id already exists. Returns a Promise which resolves the new <code>RxLocalDocument</code>.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.insertLocal(
+    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
+    {           <span class="hljs-comment">// data</span>
+        foo: <span class="hljs-string">&apos;bar&apos;</span>
     }
-  }
-});
+);
 
-<span class="hljs-built_in">console</span>.log(heroes.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
-</code></pre>
-<p>You can also use the this-keyword which resolves to the collection:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  statics: {
-    whoAmI: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">this</span>.name;
+<span class="hljs-comment">// you can also use local-documents on a database</span>
+<span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myDatabase.insertLocal(
+    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
+    {           <span class="hljs-comment">// data</span>
+        foo: <span class="hljs-string">&apos;bar&apos;</span>
     }
-  }
-});
-<span class="hljs-built_in">console</span>.log(heroes.whoAmI());
-<span class="hljs-comment">// &apos;heroes&apos;</span>
+);
 </code></pre>
-<h2 id="instance-methods">instance-methods</h2>
-<p>Instance-methods are defined collection-wide. They can be called on the RxDocuments of the collection.</p>
-<h3 id="add-instance-methods-to-a-collection">Add instance-methods to a collection</h3>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  methods: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
+<h2 id="upsertlocal">upsertLocal()</h2>
+<p>Creates a local document for the database or collection if not exists. Overwrites the if exists. Returns a Promise which resolves the <code>RxLocalDocument</code>.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.upsertLocal(
+    <span class="hljs-string">&apos;foobar&apos;</span>,   <span class="hljs-comment">// id</span>
+    {           <span class="hljs-comment">// data</span>
+        foo: <span class="hljs-string">&apos;bar&apos;</span>
     }
-  }
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-built_in">console</span>.log(doc.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
+);
 </code></pre>
-<p>Here you can also use the this-keyword:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  methods: {
-    whoAmI: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;I am &apos;</span> + <span class="hljs-keyword">this</span>.name + <span class="hljs-string">&apos;!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">await</span> heroes.insert({
-  name: <span class="hljs-string">&apos;Skeletor&apos;</span>
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-built_in">console</span>.log(doc.whoAmI());
-<span class="hljs-comment">// &apos;I am Skeletor!!&apos;</span>
+<h2 id="getlocal">getLocal()</h2>
+<p>Find a <code>RxLocalDocument</code> by it&apos;s id. Returns a Promise which resolves the <code>RxLocalDocument</code> or <code>null</code> if not exists.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
 </code></pre>
-<h2 id="attachment-methods">attachment-methods</h2>
-<p>Attachment-methods are defined collection-wide. They can be called on the RxAttachemnts of the RxDocuments of the collection.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  attachments: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-keyword">const</span> attachment = <span class="hljs-keyword">await</span> doc.putAttachment({
-    id: <span class="hljs-string">&apos;cat.txt&apos;</span>,
-    data: <span class="hljs-string">&apos;meow I am a kitty&apos;</span>,
-    type: <span class="hljs-string">&apos;text/plain&apos;</span>
-});
-<span class="hljs-built_in">console</span>.log(attachment.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
+<h2 id="rxlocaldocument">RxLocalDocument</h2>
+<p>A <code>RxLocalDocument</code> behaves like a normal <code>RxDocument</code>.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> localDoc = <span class="hljs-keyword">await</span> myCollection.getLocal(<span class="hljs-string">&apos;foobar&apos;</span>);
+
+<span class="hljs-comment">// access data</span>
+<span class="hljs-keyword">const</span> foo = localDoc.get(<span class="hljs-string">&apos;foo&apos;</span>);
+
+<span class="hljs-comment">// change data</span>
+localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar2&apos;</span>);
+<span class="hljs-keyword">await</span> localDoc.save();
+
+<span class="hljs-comment">// observe data</span>
+localDoc.get$(<span class="hljs-string">&apos;foo&apos;</span>).subscribe(value =&gt; { <span class="hljs-comment">/* .. */</span> });
+
+<span class="hljs-comment">// remove it</span>
+<span class="hljs-keyword">await</span> localDoc.remove();
+</code></pre>
+<h2 id="notice-because-the-local-document-does-not-have-a-schema-acessing-the-documents-data-fields-via-pseudo-proxy-will-not-work">NOTICE: Because the local document does not have a schema, acessing the documents data-fields via pseudo-proxy will not work.</h2>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> foo = localDoc.foo; <span class="hljs-comment">// undefined</span>
+<span class="hljs-keyword">const</span> foo = localDoc.get(<span class="hljs-string">&apos;foo&apos;</span>); <span class="hljs-comment">// works!</span>
+
+localDoc.foo = <span class="hljs-string">&apos;bar&apos;</span>; <span class="hljs-comment">// does not work!</span>
+localDoc.set(<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar&apos;</span>); <span class="hljs-comment">// works</span>
 </code></pre>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="population.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="custom-build.html">here</a></p>
 
                                 
                                 </section>
@@ -1262,12 +1242,12 @@
 
             
                 
-                <a href="middleware.html" class="navigation navigation-prev " aria-label="Previous page: Middleware-hooks">
+                <a href="in-memory.html" class="navigation navigation-prev " aria-label="Previous page: InMemory">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="population.html" class="navigation navigation-next " aria-label="Next page: Population">
+                <a href="custom-build.html" class="navigation navigation-next " aria-label="Next page: Custom Build">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1278,7 +1258,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ORM/DRM","level":"3.3","depth":1,"next":{"title":"Population","level":"3.4","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"previous":{"title":"Middleware-hooks","level":"3.2","depth":1,"path":"middleware.md","ref":"./middleware.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"orm.md","mtime":"2017-11-09T10:35:31.879Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"LocalDocuments","level":"3.10","depth":1,"next":{"title":"Custom Build","level":"3.11","depth":1,"path":"custom-build.md","ref":"./custom-build.md","articles":[]},"previous":{"title":"InMemory","level":"3.9","depth":1,"path":"in-memory.md","ref":"./in-memory.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-local-document.md","mtime":"2017-11-14T08:58:51.154Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

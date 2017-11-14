@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>ORM/DRM · RxDB - Documentation</title>
+        <title>RxAttachment · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="population.html" />
+    <link rel="next" href="middleware.html" />
     
     
-    <link rel="prev" href="middleware.html" />
+    <link rel="prev" href="rx-query.html" />
     
 
     </head>
@@ -934,7 +934,7 @@
         
         
     
-        <li class="chapter " data-level="3.1" data-path="rx-attachment.html">
+        <li class="chapter active" data-level="3.1" data-path="rx-attachment.html">
             
                 <a href="rx-attachment.html">
             
@@ -960,7 +960,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.3" data-path="orm.html">
+        <li class="chapter " data-level="3.3" data-path="orm.html">
             
                 <a href="orm.html">
             
@@ -1133,7 +1133,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >ORM/DRM</a>
+        <a href="." >RxAttachment</a>
     </h1>
 </div>
 
@@ -1148,93 +1148,83 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="object-data-relational-mapping">Object-Data-Relational-Mapping</h1>
-<p>Like <a href="http://mongoosejs.com/docs/guide.html#methods" target="_blank">mongoose</a>, RxDB has ORM-capabilities which can be used to add specific behavior to documents and collections.</p>
-<h2 id="statics">statics</h2>
-<p>Statics are defined collection-wide and can be called on the collection.</p>
-<h3 id="add-statics-to-a-collection">Add statics to a collection</h3>
-<p>To add static functions, pass a <code>statics</code>-object when you create your collection. The object contains functions, mapped to their function-names.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  statics: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
+                                <h1 id="attachments">Attachments</h1>
+<p>Like <a href="https://pouchdb.com/guides/attachments.html" target="_blank">pouchdb</a>, RxDB can store attachments which has a better performance and a higher <a href="https://www.html5rocks.com/en/tutorials/offline/quota-research/" target="_blank">quota-limit</a> then regular data.</p>
+<p>You can store string, binary files, images and whaterver you want side by side with your documents.</p>
+<p>Before you can use attachments, you have to ensure that the attachments-object is set in the schema of your <code>RxCollection</code>.</p>
+<pre><code class="lang-javascript">
+<span class="hljs-keyword">const</span> mySchema = {
+    version: <span class="hljs-number">0</span>,
+    type: <span class="hljs-string">&apos;object&apos;</span>,
+    properties: {
+        <span class="hljs-comment">// .</span>
+        <span class="hljs-comment">// .</span>
+        <span class="hljs-comment">// .</span>
+    },
+    attachments: {
+        encrypted: <span class="hljs-literal">true</span> <span class="hljs-comment">// if true, the attachment-data will be encrypted with the db-password</span>
     }
-  }
-});
+};
 
-<span class="hljs-built_in">console</span>.log(heroes.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
+<span class="hljs-keyword">const</span> myCollection = <span class="hljs-keyword">await</span> myDatabase.collection({
+    name: <span class="hljs-string">&apos;humans&apos;</span>,
+    schema: mySchema
+});
 </code></pre>
-<p>You can also use the this-keyword which resolves to the collection:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  statics: {
-    whoAmI: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">this</span>.name;
-    }
-  }
+<h2 id="putattachment">putAttachment()</h2>
+<p>Adds an attachment to a <code>RxDocument</code>. Returns a Promise with the new attachment.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachment = <span class="hljs-keyword">await</span> myDocument.putAttachment({
+    id,     <span class="hljs-comment">// string, name of the attachment like &apos;cat.jpg&apos;</span>
+    data,   <span class="hljs-comment">// (string|Blob|Buffer) data of the attachment</span>
+    type    <span class="hljs-comment">// (string) type of the attachment-data like &apos;image/jpeg&apos;</span>
 });
-<span class="hljs-built_in">console</span>.log(heroes.whoAmI());
-<span class="hljs-comment">// &apos;heroes&apos;</span>
 </code></pre>
-<h2 id="instance-methods">instance-methods</h2>
-<p>Instance-methods are defined collection-wide. They can be called on the RxDocuments of the collection.</p>
-<h3 id="add-instance-methods-to-a-collection">Add instance-methods to a collection</h3>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  methods: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-built_in">console</span>.log(doc.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
+<h2 id="getattachment">getAttachment()</h2>
+<p>Returns an <code>RxAttachment</code> by its id. Returns <code>null</code> when the attachment does not exist.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachment = myDocument.getAttachment(<span class="hljs-string">&apos;cat.jpg&apos;</span>);
 </code></pre>
-<p>Here you can also use the this-keyword:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  methods: {
-    whoAmI: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;I am &apos;</span> + <span class="hljs-keyword">this</span>.name + <span class="hljs-string">&apos;!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">await</span> heroes.insert({
-  name: <span class="hljs-string">&apos;Skeletor&apos;</span>
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-built_in">console</span>.log(doc.whoAmI());
-<span class="hljs-comment">// &apos;I am Skeletor!!&apos;</span>
+<h2 id="allattachments">allAttachments()</h2>
+<p>Returns an array of all attachments of the <code>RxDocument</code>.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachments = myDocument.allAttachments();
 </code></pre>
-<h2 id="attachment-methods">attachment-methods</h2>
-<p>Attachment-methods are defined collection-wide. They can be called on the RxAttachemnts of the RxDocuments of the collection.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  attachments: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-keyword">const</span> attachment = <span class="hljs-keyword">await</span> doc.putAttachment({
-    id: <span class="hljs-string">&apos;cat.txt&apos;</span>,
-    data: <span class="hljs-string">&apos;meow I am a kitty&apos;</span>,
-    type: <span class="hljs-string">&apos;text/plain&apos;</span>
-});
-<span class="hljs-built_in">console</span>.log(attachment.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
+<h2 id="allattachments">allAttachments$</h2>
+<p>Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the RxDocument.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> all = [];
+myDocument.allAttachments$.subscribe(
+    attachments =&gt; all = attachments
+);
+</code></pre>
+<h2 id="rxattachment">RxAttachment</h2>
+<p>The attachments of RxDB are represented by the type <code>RxAttachment</code> which has the following attributes/methods.</p>
+<h3 id="doc">doc</h3>
+<p>The <code>RxDocument</code> which the attachement is assigned to.</p>
+<h3 id="id">id</h3>
+<p>The id as <code>string</code> of the attachment.</p>
+<h3 id="type">type</h3>
+<p>The type as <code>string</code> of the attachment.</p>
+<h3 id="length">length</h3>
+<p>The length of the data of the attachment as <code>number</code>.</p>
+<h3 id="digest">digest</h3>
+<p>The md5-sum of the attachments data as <code>string</code>.</p>
+<h3 id="rev">rev</h3>
+<p>The revision-number of the attachment as <code>number</code>.</p>
+<h3 id="remove">remove()</h3>
+<p>Removes the attachment. Returns a Promise that resolves when done.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachment = myDocument.getAttachment(<span class="hljs-string">&apos;cat.jpg&apos;</span>);
+<span class="hljs-keyword">await</span> attachment.remove();
+</code></pre>
+<h2 id="getdata">getData()</h2>
+<p>Returns a Promise which resolves the attachment&apos;s data as <code>Blob</code> or <code>Buffer</code>. (async)</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachment = myDocument.getAttachment(<span class="hljs-string">&apos;cat.jpg&apos;</span>);
+<span class="hljs-keyword">const</span> blobBuffer = <span class="hljs-keyword">await</span> attachment.getData();
+</code></pre>
+<h2 id="getstringdata">getStringData()</h2>
+<p>Returns a Promise which resolves the attachment&apos;s data as <code>string</code>.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachment = <span class="hljs-keyword">await</span> myDocument.getAttachment(<span class="hljs-string">&apos;cat.jpg&apos;</span>);
+<span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> attachment.getStringData();
 </code></pre>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="population.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="middleware.html">here</a></p>
 
                                 
                                 </section>
@@ -1262,12 +1252,12 @@
 
             
                 
-                <a href="middleware.html" class="navigation navigation-prev " aria-label="Previous page: Middleware-hooks">
+                <a href="rx-query.html#update" class="navigation navigation-prev " aria-label="Previous page: update()">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="population.html" class="navigation navigation-next " aria-label="Next page: Population">
+                <a href="middleware.html" class="navigation navigation-next " aria-label="Next page: Middleware-hooks">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1278,7 +1268,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ORM/DRM","level":"3.3","depth":1,"next":{"title":"Population","level":"3.4","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"previous":{"title":"Middleware-hooks","level":"3.2","depth":1,"path":"middleware.md","ref":"./middleware.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"orm.md","mtime":"2017-11-09T10:35:31.879Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxAttachment","level":"3.1","depth":1,"next":{"title":"Middleware-hooks","level":"3.2","depth":1,"path":"middleware.md","ref":"./middleware.md","articles":[]},"previous":{"title":"update()","level":"2.3.2","depth":2,"anchor":"#update","path":"rx-query.md","ref":"./rx-query.md#update","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-attachment.md","mtime":"2017-11-14T08:58:51.154Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

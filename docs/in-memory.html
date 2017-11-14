@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>ORM/DRM · RxDB - Documentation</title>
+        <title>InMemory · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="population.html" />
+    <link rel="next" href="rx-local-document.html" />
     
     
-    <link rel="prev" href="middleware.html" />
+    <link rel="prev" href="query-change-detection.html" />
     
 
     </head>
@@ -960,7 +960,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.3" data-path="orm.html">
+        <li class="chapter " data-level="3.3" data-path="orm.html">
             
                 <a href="orm.html">
             
@@ -1038,7 +1038,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.9" data-path="in-memory.html">
+        <li class="chapter active" data-level="3.9" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1133,7 +1133,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >ORM/DRM</a>
+        <a href="." >InMemory</a>
     </h1>
 </div>
 
@@ -1148,93 +1148,35 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="object-data-relational-mapping">Object-Data-Relational-Mapping</h1>
-<p>Like <a href="http://mongoosejs.com/docs/guide.html#methods" target="_blank">mongoose</a>, RxDB has ORM-capabilities which can be used to add specific behavior to documents and collections.</p>
-<h2 id="statics">statics</h2>
-<p>Statics are defined collection-wide and can be called on the collection.</p>
-<h3 id="add-statics-to-a-collection">Add statics to a collection</h3>
-<p>To add static functions, pass a <code>statics</code>-object when you create your collection. The object contains functions, mapped to their function-names.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  statics: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
-    }
-  }
-});
+                                <h1 id="in-memory">in-memory</h1>
+<p>When you do a heavy amount of operations on a <code>RxCollection</code>, you might want to optimize this by using the in-memory-replication of the collection. The in-memory-replication behaves equal to the original collection but is stored in the Ram of your computer.</p>
+<h2 id="rxcollectioninmemory">RxCollection().inMemory();</h2>
+<p>Returns a promise that resolves with another <code>RxCollection</code> that is the in-memory-replicated version of the original collection. The memory-collection has the same documents as it&apos;s parent and also shares the same event-stream.</p>
+<pre><code class="lang-javascript">
+<span class="hljs-keyword">const</span> memCol = <span class="hljs-keyword">await</span> myCollection.inMemory();
 
-<span class="hljs-built_in">console</span>.log(heroes.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
+<span class="hljs-comment">// now u can use memCol as it would be myCollection</span>
+
+<span class="hljs-keyword">const</span> docs = <span class="hljs-keyword">await</span> memCol.find().exec(); <span class="hljs-comment">// has same result as on the original collection</span>
 </code></pre>
-<p>You can also use the this-keyword which resolves to the collection:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  statics: {
-    whoAmI: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">this</span>.name;
-    }
-  }
-});
-<span class="hljs-built_in">console</span>.log(heroes.whoAmI());
-<span class="hljs-comment">// &apos;heroes&apos;</span>
-</code></pre>
-<h2 id="instance-methods">instance-methods</h2>
-<p>Instance-methods are defined collection-wide. They can be called on the RxDocuments of the collection.</p>
-<h3 id="add-instance-methods-to-a-collection">Add instance-methods to a collection</h3>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  methods: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-built_in">console</span>.log(doc.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
-</code></pre>
-<p>Here you can also use the this-keyword:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  methods: {
-    whoAmI: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;I am &apos;</span> + <span class="hljs-keyword">this</span>.name + <span class="hljs-string">&apos;!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">await</span> heroes.insert({
-  name: <span class="hljs-string">&apos;Skeletor&apos;</span>
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-built_in">console</span>.log(doc.whoAmI());
-<span class="hljs-comment">// &apos;I am Skeletor!!&apos;</span>
-</code></pre>
-<h2 id="attachment-methods">attachment-methods</h2>
-<p>Attachment-methods are defined collection-wide. They can be called on the RxAttachemnts of the RxDocuments of the collection.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> heroes = <span class="hljs-keyword">await</span> myDatabase.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema,
-  attachments: {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&apos;AAAH!!&apos;</span>;
-    }
-  }
-});
-<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> heroes.findOne().exec();
-<span class="hljs-keyword">const</span> attachment = <span class="hljs-keyword">await</span> doc.putAttachment({
-    id: <span class="hljs-string">&apos;cat.txt&apos;</span>,
-    data: <span class="hljs-string">&apos;meow I am a kitty&apos;</span>,
-    type: <span class="hljs-string">&apos;text/plain&apos;</span>
-});
-<span class="hljs-built_in">console</span>.log(attachment.scream());
-<span class="hljs-comment">// &apos;AAAH!!&apos;</span>
-</code></pre>
+<h3 id="encryption">encryption</h3>
+<p>Encrypted fields are automatically decrypted inside of the memory-collection. This means you can do queries over encrypted fields.</p>
+<h3 id="replication">replication</h3>
+<p>The memory-collection is two-way-replicated with its original collection. This means when you change documents on one of them, the update and the change-event will fire on both.</p>
+<h2 id="pros">Pros:</h2>
+<ul>
+<li>Faster queries</li>
+<li>Faster writes</li>
+<li>Querying works over encrypted fields</li>
+</ul>
+<h2 id="cons">Cons:</h2>
+<ul>
+<li>The original collection has to be small enough to fit into the memory</li>
+<li>No attachment-support</li>
+<li>Initial creation takes longer (all data is loaded from disc into the memory)</li>
+</ul>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="population.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="local-documents.md">here</a></p>
 
                                 
                                 </section>
@@ -1262,12 +1204,12 @@
 
             
                 
-                <a href="middleware.html" class="navigation navigation-prev " aria-label="Previous page: Middleware-hooks">
+                <a href="query-change-detection.html" class="navigation navigation-prev " aria-label="Previous page: QueryChangeDetection">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="population.html" class="navigation navigation-next " aria-label="Next page: Population">
+                <a href="rx-local-document.html" class="navigation navigation-next " aria-label="Next page: LocalDocuments">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1278,7 +1220,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ORM/DRM","level":"3.3","depth":1,"next":{"title":"Population","level":"3.4","depth":1,"path":"population.md","ref":"./population.md","articles":[]},"previous":{"title":"Middleware-hooks","level":"3.2","depth":1,"path":"middleware.md","ref":"./middleware.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"orm.md","mtime":"2017-11-09T10:35:31.879Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"InMemory","level":"3.9","depth":1,"next":{"title":"LocalDocuments","level":"3.10","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"previous":{"title":"QueryChangeDetection","level":"3.8","depth":1,"path":"query-change-detection.md","ref":"./query-change-detection.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"in-memory.md","mtime":"2017-11-14T08:58:51.154Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

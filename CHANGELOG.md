@@ -1,16 +1,16 @@
 # Changelog
 
-## 7.0.0 (coming soon)
+## 7.0.0 (November 14, 2017)
+
+Breaking:
+  - Renamed `ingoreDuplicate` to `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
+  - Improved typings [#329](https://github.com/pubkey/rxdb/pull/329) by @ihadeed
 
 Features:
   - Added [attachments](https://pubkey.github.io/rxdb/rx-attachment.html)
   - Added [final fields](https://pubkey.github.io/rxdb/rx-schema.html#final)
   - Added [inMemory](https://pubkey.github.io/rxdb/in-memory.html)-collections
   - Added [local documents](https://pubkey.github.io/rxdb/rx-local-document.html)
-
-Breaking:
-  - Renamed `ingoreDuplicate` to `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
-  - Improved typings [#329](https://github.com/pubkey/rxdb/pull/329) by @ihadeed
 
 Bugfixes:
   - Added error-message when you json-import on a non-existing collection [#319](https://github.com/pubkey/rxdb/issues/319)
