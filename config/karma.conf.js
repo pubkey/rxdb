@@ -62,8 +62,15 @@ const configuration = {
     singleRun: true
 };
 
-if (process.env.TRAVIS)
+if (process.env.TRAVIS) {
     configuration.browsers = ['Chrome_travis_ci'];
+
+    /**
+     * overwrite reporters-default
+     * So no big list will be shown at log
+     */
+    configuration.reporters = [];
+}
 
 module.exports = function(config) {
     config.set(configuration);
