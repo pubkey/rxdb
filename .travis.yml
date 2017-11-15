@@ -5,6 +5,10 @@ os:
 node_js:
   - "7"
 
+cache:
+  directories:
+  - node_modules # NPM packages
+
 before_install:
   - export CHROME_BIN=chromium-browser
   - export DISPLAY=:99.0
