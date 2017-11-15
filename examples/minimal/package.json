@@ -13,6 +13,7 @@
     "preinstall": "npm run preinstall:rmlock && npm run preinstall:peers"
   },
   "dependencies": {
+    "babel-runtime": "^6.26.0",
     "pouchdb-adapter-node-websql": "6.3.4",
     "rxjs": "5.5.2",
     "rxdb": "file:../../"
