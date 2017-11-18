@@ -28,35 +28,35 @@ export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOption
     $and: RxQueryObject<T>[];
 };
 
-export declare class RxQuery<RxDocumentType> {
+export declare class RxQuery<RxDocumentType, RxQueryResult> {
     readonly collection: RxCollection<RxDocumentType>;
 
-    where(queryObj: RxQueryObject<RxDocumentType>): RxQuery<RxDocumentType>;
-    equals(queryObj: any): RxQuery<RxDocumentType>;
-    eq(queryObj: any): RxQuery<RxDocumentType>;
-    or(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
-    nor(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
-    and(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
-    gt(queryObj: any): RxQuery<RxDocumentType>;
-    gte(queryObj: any): RxQuery<RxDocumentType>;
-    lt(queryObj: any): RxQuery<RxDocumentType>;
-    lte(queryObj: any): RxQuery<RxDocumentType>;
-    ne(queryObj: any): RxQuery<RxDocumentType>;
-    in(queryObj: any[]): RxQuery<RxDocumentType>;
-    nin(queryObj: any[]): RxQuery<RxDocumentType>;
-    all(queryObj: any): RxQuery<RxDocumentType>;
-    regex(queryObj: RegExp): RxQuery<RxDocumentType>;
-    exists(queryObj: any): RxQuery<RxDocumentType>;
-    elemMatch(queryObj: any): RxQuery<RxDocumentType>;
-    sort(params: any): RxQuery<RxDocumentType>;
-    limit(amount: number): RxQuery<RxDocumentType>;
-    skip(amount: number): RxQuery<RxDocumentType>;
+    where(queryObj: RxQueryObject<RxDocumentType>): RxQuery<RxDocumentType, RxQueryResult>;
+    equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    or(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
+    nor(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
+    and(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
+    gt(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    gte(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    lt(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    lte(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    ne(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    in(queryObj: any[]): RxQuery<RxDocumentType, RxQueryResult>;
+    nin(queryObj: any[]): RxQuery<RxDocumentType, RxQueryResult>;
+    all(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    regex(queryObj: RegExp): RxQuery<RxDocumentType, RxQueryResult>;
+    exists(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
+    sort(params: any): RxQuery<RxDocumentType, RxQueryResult>;
+    limit(amount: number): RxQuery<RxDocumentType, RxQueryResult>;
+    skip(amount: number): RxQuery<RxDocumentType, RxQueryResult>;
 
     // TODO fix attribute-types of this function
-    mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType>;
+    mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult>;
 
-    exec(): Promise<RxDocumentType>;
-    readonly $: Observable<RxDocumentType>;
-    remove(): Promise<RxDocumentType>;
-    update(updateObj: any): Promise<RxDocumentType>;
+    exec(): Promise<RxQueryResult>;
+    readonly $: Observable<RxQueryResult>;
+    remove(): Promise<RxQueryResult>;
+    update(updateObj: any): Promise<RxQueryResult>;
 }
