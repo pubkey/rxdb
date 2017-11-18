@@ -10,6 +10,7 @@ module.exports = function(options) {
         // debug: true,
         devtool: 'source-map',
         plugins: [
+            new webpack.ProgressPlugin({}),
             new webpack.HotModuleReplacementPlugin(),
             new webpack.DefinePlugin({
                 'ENV': JSON.stringify(ENV)
