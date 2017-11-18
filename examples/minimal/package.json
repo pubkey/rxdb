@@ -5,7 +5,7 @@
   "author": "pubkey",
   "private": true,
   "scripts": {
-    "test": "npm run clear && npm i --silent && npm start",
+    "travis": "npm run clear && npm i --silent && ls ../../node_modules && npm start",
     "start": "rm -rf ./db && mkdir -p db && npm run preinstall && node index.js",
     "clear": "rm -rf node_modules && rm -f package-lock.json && (cd ../../ && rm -rf node_modules )",
     "preinstall:rmlock": "(cd ../../ && rm -f package-lock.json)",
