@@ -8,6 +8,8 @@ node_js:
 cache:
   directories:
   - node_modules # NPM packages
+  - examples/angular2/node_modules
+  - examples/vue/node_modules
 
 before_install:
   - export CHROME_BIN=chromium-browser
