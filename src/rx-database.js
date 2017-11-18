@@ -13,6 +13,13 @@ import {
     runPluginHooks
 } from './hooks';
 
+import {
+    Subject
+} from 'rxjs/Subject';
+import {
+    filter
+} from 'rxjs/operators/filter';
+
 /**
  * stores the combinations
  * of used database-names with their adapters
@@ -38,9 +45,10 @@ export class RxDatabase {
         this.collections = {};
 
         // rx
-        this.subject = new util.Rx.Subject();
-        this.observable$ = this.subject.asObservable()
-            .filter(cEvent => RxChangeEvent.isInstanceOf(cEvent));
+        this.subject = new Subject();
+        this.observable$ = this.subject.asObservable().pipe(
+            filter(cEvent => RxChangeEvent.isInstanceOf(cEvent))
+        );
     }
 
     get _adminPouch() {

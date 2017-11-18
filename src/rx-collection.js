@@ -18,6 +18,11 @@ import {
 import RxSchema from './rx-schema';
 import RxDatabase from './rx-database';
 
+import {
+    filter
+} from 'rxjs/operators/filter';
+
+
 const HOOKS_WHEN = ['pre', 'post'];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 
@@ -71,8 +76,9 @@ export class RxCollection {
             () => this.pouch.info()
         );
 
-        this._observable$ = this.database.$
-            .filter(event => event.data.col === this.name);
+        this._observable$ = this.database.$.pipe(
+            filter(event => event.data.col === this.name)
+        );
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
         // INDEXES
@@ -99,7 +105,9 @@ export class RxCollection {
 
         this._subs.push(
             this._observable$
-            .filter(cE => !cE.data.isLocal)
+            .pipe(
+                filter(cE => !cE.data.isLocal)
+            )
             .subscribe(cE => {
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);

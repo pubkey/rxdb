@@ -6,12 +6,15 @@
 import PouchDB from './pouch-db';
 import clone from 'clone';
 
-import * as util from './util';
 import RxSchema from './rx-schema';
 import Crypter from './crypter';
 import RxError from './rx-error';
 import overwritable from './overwritable';
 import hooks from './hooks';
+
+import {
+    Observable
+} from 'rxjs/Observable';
 
 class DataMigrator {
     constructor(newestCollection, migrationStrategies) {
@@ -58,7 +61,7 @@ class DataMigrator {
             percent: 0 // percentage
         };
 
-        const migrationState$ = new util.Rx.Observable(async(observer) => {
+        const migrationState$ = new Observable(async (observer) => {
             const oldCols = await this._getOldCollections();
 
             const countAll = await Promise.all(
@@ -276,7 +279,7 @@ class OldCollection {
             throw new Error('migration already running');
         this._migrate = true;
 
-        const stateStream$ = new util.Rx.Observable(async(observer) => {
+        const stateStream$ = new Observable(async (observer) => {
             let batch = await this.getBatch(batchSize);
             let error;
             do {

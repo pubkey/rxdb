@@ -14,6 +14,10 @@ import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
 
+import {
+    Observable
+} from 'rxjs/Observable';
+
 let request;
 let SpawnServer;
 if (config.platform.isNode()) {
@@ -26,7 +30,7 @@ describe('replication.test.js', () => {
     if (!config.platform.isNode()) return;
 
     describe('spawnServer.js', () => {
-        it('spawn and reach a server', async() => {
+        it('spawn and reach a server', async () => {
             let path = await SpawnServer.spawn();
             path = path.split('/');
             path.pop();
@@ -36,7 +40,7 @@ describe('replication.test.js', () => {
             const json = JSON.parse(res);
             assert.equal(typeof json.uuid, 'string');
         });
-        it('spawn again', async() => {
+        it('spawn again', async () => {
             let path = await SpawnServer.spawn();
             path = path.split('/');
             path.pop();
@@ -79,7 +83,7 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c2.find().exec();
                     return docs.length === 1;
                 });
@@ -91,7 +95,7 @@ describe('replication.test.js', () => {
                 c.database.destroy();
                 c2.database.destroy();
             });
-            it('Observable.fromEvent should fire on sync-change', async() => {
+            it('Observable.fromEvent should fire on sync-change', async () => {
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, null, false);
                 const c2 = await humansCollection.create(0, null, false);
@@ -104,7 +108,7 @@ describe('replication.test.js', () => {
                 });
 
                 const e1 = [];
-                const pouch$ = util.Rx.Observable
+                const pouch$ = Observable
                     .fromEvent(c.pouch.changes({
                         since: 'now',
                         live: true,
@@ -113,7 +117,7 @@ describe('replication.test.js', () => {
                     .filter(e => !e.id.startsWith('_'))
                     .subscribe(e => e1.push(e));
                 const e2 = [];
-                const pouch2$ = util.Rx.Observable
+                const pouch2$ = Observable
                     .fromEvent(c2.pouch.changes({
                         since: 'now',
                         live: true,
@@ -139,7 +143,7 @@ describe('replication.test.js', () => {
     });
     describe('sync-directions', () => {
         describe('positive', () => {
-            it('push-only-sync', async() => {
+            it('push-only-sync', async () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
 
@@ -152,7 +156,7 @@ describe('replication.test.js', () => {
                     }
                 });
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c2.find().exec();
                     return docs.length === 20;
                 });
@@ -163,7 +167,7 @@ describe('replication.test.js', () => {
                 await c.database.destroy();
                 await c2.database.destroy();
             });
-            it('pull-only-sync', async() => {
+            it('pull-only-sync', async () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
                 c.sync({
@@ -174,7 +178,7 @@ describe('replication.test.js', () => {
                         push: false
                     }
                 });
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === 20;
                 });
@@ -187,7 +191,7 @@ describe('replication.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should not allow non-way-sync', async() => {
+            it('should not allow non-way-sync', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10, null, false);
                 await AsyncTestUtil.assertThrows(
@@ -207,7 +211,7 @@ describe('replication.test.js', () => {
     });
     describe('query-based sync', () => {
         describe('positive', () => {
-            it('should only sync documents that match the query', async() => {
+            it('should only sync documents that match the query', async () => {
                 const c = await humansCollection.create(0, null, false);
                 const c2 = await humansCollection.create(10, null, false);
                 const query = c.find().where('firstName').eq('foobar');
@@ -222,7 +226,7 @@ describe('replication.test.js', () => {
                     query: query
                 });
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === 1;
                 });
@@ -236,7 +240,7 @@ describe('replication.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should not allow queries from other collection', async() => {
+            it('should not allow queries from other collection', async () => {
                 const c = await humansCollection.create(0, null, false);
                 const c2 = await humansCollection.create(10, null, false);
                 const otherCollection = await humansCollection.create(0, null, false);
@@ -260,7 +264,7 @@ describe('replication.test.js', () => {
 
     describe('RxReplicationState', () => {
         describe('change$', () => {
-            it('should emit change-events', async() => {
+            it('should emit change-events', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
                 const repState = await c.sync({
@@ -278,7 +282,7 @@ describe('replication.test.js', () => {
             });
         });
         describe('active$', () => {
-            it('should be active', async() => {
+            it('should be active', async () => {
                 const c = await humansCollection.create();
                 const c2 = await humansCollection.create(10);
                 const repState = await c.sync({
@@ -294,7 +298,7 @@ describe('replication.test.js', () => {
             });
         });
         describe('complete$', () => {
-            it('should always be false on live-replication', async() => {
+            it('should always be false on live-replication', async () => {
                 const c = await humansCollection.create();
                 const c2 = await humansCollection.create(10);
                 const repState = await c.sync({
@@ -307,7 +311,7 @@ describe('replication.test.js', () => {
                 c.database.destroy();
                 c2.database.destroy();
             });
-            it('should emit true on non-live-replication when done', async() => {
+            it('should emit true on non-live-replication when done', async () => {
                 const c = await humansCollection.create(10);
                 const c2 = await humansCollection.create(10);
                 const repState = await c.sync({
@@ -342,7 +346,7 @@ describe('replication.test.js', () => {
             });
         });
         describe('docs$', () => {
-            it('should emit one event per doc', async() => {
+            it('should emit one event per doc', async () => {
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(10);
                 const repState = await c.sync({
@@ -363,7 +367,7 @@ describe('replication.test.js', () => {
 
     describe('events', () => {
         describe('positive', () => {
-            it('collection: should get an event when a doc syncs', async() => {
+            it('collection: should get an event when a doc syncs', async () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC.pouch;
 
@@ -394,7 +398,7 @@ describe('replication.test.js', () => {
                 c2.database.destroy();
             });
 
-            it('query: should re-find when a docs syncs', async() => {
+            it('query: should re-find when a docs syncs', async () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC.pouch;
 
@@ -427,7 +431,7 @@ describe('replication.test.js', () => {
                 c.database.destroy();
                 c2.database.destroy();
             });
-            it('document: should change field when doc saves', async() => {
+            it('document: should change field when doc saves', async () => {
                 const syncC = await humansCollection.create(0);
                 const syncPouch = syncC.pouch;
 

@@ -5,6 +5,15 @@
 
 import clone from 'clone';
 import PouchReplicationPlugin from 'pouchdb-replication';
+import {
+    Observable
+} from 'rxjs/Observable';
+import {
+    Subject
+} from 'rxjs/Subject';
+import {
+    BehaviorSubject
+} from 'rxjs/BehaviorSubject';
 
 import * as util from '../util';
 import Core from '../core';
@@ -20,11 +29,11 @@ export class RxReplicationState {
         this.collection = collection;
         this._pouchEventEmitterObject = null;
         this._subjects = {
-            change: new util.Rx.Subject(),
-            docs: new util.Rx.Subject(),
-            active: new util.Rx.BehaviorSubject(false),
-            complete: new util.Rx.BehaviorSubject(false),
-            error: new util.Rx.Subject(),
+            change: new Subject(),
+            docs: new Subject(),
+            active: new BehaviorSubject(false),
+            complete: new BehaviorSubject(false),
+            error: new Subject(),
         };
 
         // create getters
@@ -43,14 +52,14 @@ export class RxReplicationState {
 
         // change
         this._subs.push(
-            util.Rx.Observable
+            Observable
             .fromEvent(evEmitter, 'change')
             .subscribe(ev => this._subjects.change.next(ev))
         );
 
         // docs
         this._subs.push(
-            util.Rx.Observable
+            Observable
             .fromEvent(evEmitter, 'change')
             .subscribe(ev => {
                 if (
@@ -66,26 +75,26 @@ export class RxReplicationState {
 
         // error
         this._subs.push(
-            util.Rx.Observable
+            Observable
             .fromEvent(evEmitter, 'error')
             .subscribe(ev => this._subjects.error.next(ev))
         );
 
         // active
         this._subs.push(
-            util.Rx.Observable
+            Observable
             .fromEvent(evEmitter, 'active')
             .subscribe(() => this._subjects.active.next(true))
         );
         this._subs.push(
-            util.Rx.Observable
+            Observable
             .fromEvent(evEmitter, 'paused')
             .subscribe(() => this._subjects.active.next(false))
         );
 
         // complete
         this._subs.push(
-            util.Rx.Observable
+            Observable
             .fromEvent(evEmitter, 'complete')
             .subscribe(info => this._subjects.complete.next(info))
         );
@@ -116,7 +125,7 @@ export function watchForChanges() {
      * this is to ensure that changes from 'synced' dbs will be published
      */
     const sendChanges = {};
-    const pouch$ = util.Rx.Observable
+    const pouch$ = Observable
         .fromEvent(
             this.pouch.changes({
                 since: 'now',
@@ -180,7 +189,7 @@ export function sync({
     const repState = createRxReplicationState(this);
 
     // run internal so .sync() does not have to be async
-    (async() => {
+    (async () => {
         if (waitForLeadership)
             await this.database.waitForLeadership();
         else // ensure next-tick

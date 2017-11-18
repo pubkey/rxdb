@@ -8,6 +8,23 @@ import {
     runPluginHooks
 } from './hooks';
 
+import {
+    merge
+} from 'rxjs/observable/merge';
+import {
+    BehaviorSubject
+} from 'rxjs/BehaviorSubject';
+import {
+    mergeMap
+} from 'rxjs/operators/mergeMap';
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    map
+} from 'rxjs/operators/map';
+
+
 let _queryCount = 0;
 const newQueryID = function() {
     return ++_queryCount;
@@ -26,7 +43,7 @@ export class RxQuery {
 
         this._queryChangeDetector = QueryChangeDetector.create(this);
         this._resultsData = null;
-        this._results$ = new util.Rx.BehaviorSubject(null);
+        this._results$ = new BehaviorSubject(null);
         this._latestChangeEvent = -1;
         this._runningPromise = Promise.resolve(true);
 
@@ -177,33 +194,38 @@ export class RxQuery {
     get $() {
         if (!this._$) {
             const res$ = this._results$
-                .mergeMap(results => {
-                    return this
-                        ._ensureEqual()
-                        .then(hasChanged => {
-                            if (hasChanged) return 'WAITFORNEXTEMIT';
-                            else return results;
-                        });
-                })
-                .filter(results => results !== 'WAITFORNEXTEMIT')
+                .pipe(
+                    mergeMap(results => {
+                        return this
+                            ._ensureEqual()
+                            .then(hasChanged => {
+                                if (hasChanged) return 'WAITFORNEXTEMIT';
+                                else return results;
+                            });
+                    }),
+                    filter(results => results !== 'WAITFORNEXTEMIT')
+                )
                 .asObservable();
 
             const changeEvents$ = this.collection.$
-                .filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
-                .mergeMap(async() => this._ensureEqual())
-                .filter(() => false);
-
-            this._$ = util.Rx.Observable
-                .merge(
+                .pipe(
+                    filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op)),
+                    mergeMap(async () => this._ensureEqual()),
+                    filter(() => false)
+                );
+            this._$ =
+                merge(
                     res$,
                     changeEvents$
                 )
-                .filter(x => x !== null)
-                .map(results => {
-                    if (this.op !== 'findOne') return results;
-                    else if (results.length === 0) return null;
-                    else return results[0];
-                });
+                .pipe(
+                    filter(x => x !== null),
+                    map(results => {
+                        if (this.op !== 'findOne') return results;
+                        else if (results.length === 0) return null;
+                        else return results[0];
+                    })
+                );
         }
         return this._$;
     }

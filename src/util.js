@@ -5,43 +5,6 @@
 import randomToken from 'random-token';
 import RxError from './rx-error';
 
-// rxjs cherry-pick
-import {
-    Observable
-} from 'rxjs/Observable';
-import {
-    Subject
-} from 'rxjs/Subject';
-import {
-    BehaviorSubject
-} from 'rxjs/BehaviorSubject';
-import 'rxjs/add/observable/merge';
-import 'rxjs/add/observable/interval';
-import 'rxjs/add/observable/from';
-import 'rxjs/add/observable/fromEvent';
-import 'rxjs/add/observable/defer';
-
-import 'rxjs/add/operator/publishReplay';
-import 'rxjs/add/operator/publish';
-import 'rxjs/add/operator/timeout';
-import 'rxjs/add/operator/delay';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/mergeMap';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/first';
-import 'rxjs/add/operator/startWith';
-import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/distinctUntilChanged';
-import 'rxjs/add/operator/distinct';
-
-export const Rx = {
-    Observable,
-    Subject,
-    BehaviorSubject
-};
-
-
 /**
  * check if the given module is a leveldown-adapter
  * throws if not

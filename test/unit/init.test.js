@@ -1,6 +1,7 @@
 console.log('######## init.test.js ########');
 
 import 'babel-polyfill';
+import 'rxjs';
 import config from './config';
 
 // set faker seed

@@ -1,5 +1,10 @@
 # Changelog
 
+## X.X.X (coming soon)
+
+Other:
+  - Reduced build-size by using [rxjs-lettable-operators](https://github.com/ReactiveX/rxjs/blob/master/doc/lettable-operators.md)
+
 ## 7.0.1 (November 14, 2017)
 
 Bugfixes:

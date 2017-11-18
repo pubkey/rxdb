@@ -4,6 +4,10 @@
  * So you can do faster queries and also query over encrypted fields
  */
 
+import {
+    Subject
+} from 'rxjs/Subject';
+
 import RxCollection from '../rx-collection';
 import Core from '../core';
 import * as util from '../util';
@@ -57,7 +61,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             util.adapterObject('memory'), {}
         );
 
-        this._observable$ = new util.Rx.Subject();
+        this._observable$ = new Subject();
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
         // INDEXES

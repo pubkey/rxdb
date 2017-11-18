@@ -5,6 +5,11 @@ import RxBroadcastChannel from './rx-broadcast-channel';
 const EVENT_TTL = 5000; // after this age, events will be deleted
 const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
+import {
+    Subject
+} from 'rxjs/Subject';
+
+
 class Socket {
     constructor(database) {
         this._destroyed = false;
@@ -18,7 +23,7 @@ class Socket {
         this.receivedEvents = {};
 
         this.bc = RxBroadcastChannel.create(this.database, 'socket');
-        this.messages$ = new util.Rx.Subject();
+        this.messages$ = new Subject();
     }
 
     /**
@@ -47,7 +52,7 @@ class Socket {
         }
 
         // pull on intervall
-        (async() => {
+        (async () => {
             while (!this._destroyed) {
                 await util.promiseWait(PULL_TIME);
                 if (this.messages$.observers.length > 0 && !this._destroyed)

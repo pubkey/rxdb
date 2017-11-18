@@ -9,6 +9,10 @@ import {
     runPluginHooks
 } from './hooks';
 
+import {
+    BehaviorSubject
+} from 'rxjs/BehaviorSubject';
+
 export class RxDocument {
     constructor(collection, jsonData) {
         this.collection = collection;
@@ -17,7 +21,7 @@ export class RxDocument {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new util.Rx.BehaviorSubject(clone(jsonData));
+        this._dataSync$ = new BehaviorSubject(clone(jsonData));
 
         // current doc-data, changes when setting values etc
         this._data = clone(jsonData);
@@ -29,8 +33,8 @@ export class RxDocument {
         this._atomicUpdatesResolveFunctions = new WeakMap();
 
         // false when _data !== _dataSync
-        this._synced$ = new util.Rx.BehaviorSubject(true);
-        this._deleted$ = new util.Rx.BehaviorSubject(false);
+        this._synced$ = new BehaviorSubject(true);
+        this._deleted$ = new BehaviorSubject(false);
     }
     prepare() {
         // set getter/setter/observable

@@ -9,6 +9,11 @@ import RxBroadcastChannel from '../rx-broadcast-channel';
 
 export const documentID = '_local/leader';
 
+import {
+    BehaviorSubject
+} from 'rxjs/BehaviorSubject';
+
+
 
 /**
  * This time defines how 'fast' the communication between the instances is.
@@ -30,7 +35,7 @@ class LeaderElector {
         this.token = this.database.token;
 
         this.isLeader = false;
-        this.becomeLeader$ = new util.Rx.BehaviorSubject({
+        this.becomeLeader$ = new BehaviorSubject({
             isLeader: false
         });
 
