@@ -20,8 +20,8 @@ script:
 - npm run test:node
 - npm run test:browser
 - npm run test:typings
+- npm run test:deps
 - npm run build
 - npm run lint
 - (cd ./examples/angular2 && npm install --silent && npm run build && npm run test:build)
 - (cd ./examples/vue && npm install --silent && npm run lint && npm run build && npm run test)
-- (cd ./examples/minimal && npm run travis)
