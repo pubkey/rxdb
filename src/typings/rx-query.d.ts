@@ -31,7 +31,7 @@ export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOption
 export declare class RxQuery<RxDocumentType> {
     readonly collection: RxCollection<RxDocumentType>;
 
-    where(queryObj: RxQueryObject<RxDocumentType>): RxQuery<RxDocumentType>;
+    where(queryObj: RxQueryObject<RxDocumentType> | keyof RxDocumentType): RxQuery<RxDocumentType>;
     equals(queryObj: any): RxQuery<RxDocumentType>;
     eq(queryObj: any): RxQuery<RxDocumentType>;
     or(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType>;
