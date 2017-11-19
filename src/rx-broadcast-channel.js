@@ -1,4 +1,6 @@
-import * as util from './util';
+import {
+    fromEvent
+} from 'rxjs/observable/fromEvent';
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS
@@ -30,8 +32,7 @@ class RxBroadcastChannel {
      */
     get $() {
         if (!this._$) {
-            this._$ = util.Rx.Observable
-                .fromEvent(this.bc, 'message')
+            this._$ = fromEvent(this.bc, 'message')
                 .map(msg => msg.data)
                 .map(strMsg => JSON.parse(strMsg))
                 .filter(msg => msg.it !== this.token);
