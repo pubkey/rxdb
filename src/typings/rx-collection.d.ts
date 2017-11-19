@@ -62,7 +62,7 @@ export interface SyncOptions {
     },
     // for options see https://pouchdb.com/api.html#replication
     options?: PouchReplicationOptions,
-    query?: RxQuery<any>
+    query?: RxQuery<any, any>
 }
 
 export declare class RxCollection<RxDocumentType> {
