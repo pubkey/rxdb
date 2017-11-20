@@ -31,12 +31,12 @@ export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOption
 export declare class RxQuery<RxDocumentType, RxQueryResult> {
     readonly collection: RxCollection<RxDocumentType>;
 
-    where(queryObj: RxQueryObject<RxDocumentType> | keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
+    where(queryObj: RxQueryObject<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
-    or(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
-    nor(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
-    and(queryObj: keyof RxDocumentType): RxQuery<RxDocumentType, RxQueryResult>;
+    or(queryObj: keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
+    nor(queryObj: keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
+    and(queryObj: keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     gt(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     gte(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     lt(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
