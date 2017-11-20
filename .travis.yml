@@ -21,5 +21,8 @@ script:
 - npm run test:deps
 - npm run build
 - npm run lint
+- (cd ./examples/angular2 && npm install --silent)
+- (cd ./examples/angular2 && npm run build)
+- (cd ./examples/angular2 && npm run test:build)
 - (cd ./examples/angular2 && npm install --silent && npm run build && npm run test:build)
 - (cd ./examples/vue && npm install --silent && npm run lint && npm run build && npm run test)
