@@ -11,10 +11,13 @@ import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
 
 import * as LeaderElector from '../../dist/lib/plugins/leader-election';
 
+import {
+    filter
+} from 'rxjs/operators/filter';
 
 describe('leader-election.test.js', () => {
     describe('leaderObject', () => {
-        it('should not have a leaderObject', async() => {
+        it('should not have a leaderObject', async () => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const db = c.database;
             await AsyncTestUtil.assertThrows(
@@ -23,7 +26,7 @@ describe('leader-election.test.js', () => {
             );
             db.destroy();
         });
-        it('should get an empty leaderObject', async() => {
+        it('should get an empty leaderObject', async () => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             const obj = await leaderElector.getLeaderObject();
@@ -39,7 +42,7 @@ describe('leader-election.test.js', () => {
         });
     });
     describe('.beLeader()', () => {
-        it('.leaderSignal()', async() => {
+        it('.leaderSignal()', async () => {
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -52,7 +55,7 @@ describe('leader-election.test.js', () => {
             assert.ok(dbObj.t > new Date().getTime() - 1000);
             c.database.destroy();
         });
-        it('assign self to leader', async() => {
+        it('assign self to leader', async () => {
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -65,7 +68,7 @@ describe('leader-election.test.js', () => {
             assert.equal(dbObj.is, leaderElector.token);
             c.database.destroy();
         });
-        it('should signal after time', async() => {
+        it('should signal after time', async () => {
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -76,7 +79,7 @@ describe('leader-election.test.js', () => {
             const t = dbObj.t;
 
             let dbObj2;
-            await AsyncTestUtil.waitUntil(async() => {
+            await AsyncTestUtil.waitUntil(async () => {
                 dbObj2 = await c.database._adminPouch.get(LeaderElector.documentID);
                 return dbObj2.t > t;
             });
@@ -86,14 +89,14 @@ describe('leader-election.test.js', () => {
         });
     });
     describe('.applyOnce()', () => {
-        it('should apply', async() => {
+        it('should apply', async () => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             const is = await leaderElector.applyOnce();
             assert.ok(is);
             c.database.destroy();
         });
-        it('should assign self to leader', async() => {
+        it('should assign self to leader', async () => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));
             const leaderElector = c.database.leaderElector;
             await leaderElector.applyOnce();
@@ -101,7 +104,7 @@ describe('leader-election.test.js', () => {
             assert.ok(leaderElector.isLeader);
             c.database.destroy();
         });
-        it('should not apply when other is leader', async() => {
+        it('should not apply when other is leader', async () => {
             const name = util.randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector;
@@ -116,7 +119,7 @@ describe('leader-election.test.js', () => {
     });
 
     describe('.die()', () => {
-        it('leader: write status on death', async() => {
+        it('leader: write status on death', async () => {
             // not run on BroadcastChannel
             if (RxBroadcastChannel.canIUse()) return;
 
@@ -130,7 +133,7 @@ describe('leader-election.test.js', () => {
             assert.equal(dbObj.t, 0);
             c.database.destroy();
         });
-        it('leader: send message on death', async() => {
+        it('leader: send message on death', async () => {
             if (!RxBroadcastChannel.canIUse()) return;
 
             const name = util.randomCouchString(10);
@@ -142,7 +145,9 @@ describe('leader-election.test.js', () => {
 
             const msgs = [];
             const sub = leaderElector2.bc.$
-                .filter(msg => msg.type === 'death')
+                .pipe(
+                    filter(msg => msg.type === 'death')
+                )
                 .subscribe(msg => msgs.push(msg));
             const is = await leaderElector.die();
             assert.ok(is);
@@ -154,7 +159,7 @@ describe('leader-election.test.js', () => {
             c.database.destroy();
             c2.database.destroy();
         });
-        it('other instance applies on death of leader', async() => {
+        it('other instance applies on death of leader', async () => {
             const name = util.randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
             const leaderElector = c.database.leaderElector;
@@ -171,7 +176,7 @@ describe('leader-election.test.js', () => {
     });
 
     describe('election', () => {
-        it('a single instance should always elect itself as leader', async() => {
+        it('a single instance should always elect itself as leader', async () => {
             const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const db1 = c1.database;
@@ -179,7 +184,7 @@ describe('leader-election.test.js', () => {
             assert.equal(db1.leaderElector.isLeader, true);
             c1.database.destroy();
         });
-        it('should not elect as leader if other instance is leader', async() => {
+        it('should not elect as leader if other instance is leader', async () => {
             const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
@@ -193,7 +198,7 @@ describe('leader-election.test.js', () => {
             c1.database.destroy();
             c2.database.destroy();
         });
-        it('when 2 instances apply at the same time, one should win', async() => {
+        it('when 2 instances apply at the same time, one should win', async () => {
             if (!config.platform.isNode()) return;
 
             // run often
@@ -212,7 +217,7 @@ describe('leader-election.test.js', () => {
                 await db2.destroy();
             }
         });
-        it('when many instances apply, one should win', async() => {
+        it('when many instances apply, one should win', async () => {
             const name = util.randomCouchString(10);
             const dbs = [];
             while (dbs.length < 10) {
@@ -243,7 +248,7 @@ describe('leader-election.test.js', () => {
             );
 
             let leaderCount;
-            await AsyncTestUtil.waitUntil(async() => {
+            await AsyncTestUtil.waitUntil(async () => {
                 leaderCount = dbs
                     .filter(db => db.leaderElector.isLeader === true)
                     .length;
@@ -258,7 +263,7 @@ describe('leader-election.test.js', () => {
             await leader.destroy();
 
             // noone should be leader
-            await AsyncTestUtil.waitUntil(async() => {
+            await AsyncTestUtil.waitUntil(async () => {
                 leaderCount = dbs
                     .filter(db => db.leaderElector.isLeader === true)
                     .length;
@@ -271,7 +276,7 @@ describe('leader-election.test.js', () => {
                 dbs.map(db => db.leaderElector.applyOnce())
             );
 
-            await AsyncTestUtil.waitUntil(async() => {
+            await AsyncTestUtil.waitUntil(async () => {
                 leaderCount = dbs
                     .filter(db => db.leaderElector.isLeader === true)
                     .length;
@@ -288,7 +293,7 @@ describe('leader-election.test.js', () => {
         });
     });
     describe('integration', () => {
-        it('non-multiInstance should always be leader', async() => {
+        it('non-multiInstance should always be leader', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
@@ -302,14 +307,14 @@ describe('leader-election.test.js', () => {
             assert.equal(db.isLeader, true);
             db.destroy();
         });
-        it('non-multiInstance: waitForLeadership should instant', async() => {
+        it('non-multiInstance: waitForLeadership should instant', async () => {
             const c = await humansCollection.create(0);
             const db = c.database;
             await db.waitForLeadership();
             db.destroy();
         });
 
-        it('waitForLeadership: run once when instance becomes leader', async() => {
+        it('waitForLeadership: run once when instance becomes leader', async () => {
             const name = util.randomCouchString(10);
             const cols = await Promise.all(
                 new Array(5)
