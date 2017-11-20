@@ -9,6 +9,9 @@ import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
 
 import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
+import {
+    first
+} from 'rxjs/operators/first';
 
 let SpawnServer;
 if (config.platform.isNode()) {
@@ -23,14 +26,14 @@ QueryChangeDetector.enable();
 
 describe('query-change-detector.test.js', () => {
     describe('.doesDocMatchQuery()', () => {
-        it('should match', async() => {
+        it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
             const docData = schemaObjects.human();
             assert.ok(q._queryChangeDetector.doesDocMatchQuery(docData));
             col.database.destroy();
         });
-        it('should not match', async() => {
+        it('should not match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
             const docData = schemaObjects.human();
@@ -38,7 +41,7 @@ describe('query-change-detector.test.js', () => {
             assert.equal(false, q._queryChangeDetector.doesDocMatchQuery(docData));
             col.database.destroy();
         });
-        it('should match ($gt)', async() => {
+        it('should match ($gt)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('age').gt(1);
             const docData = schemaObjects.human();
@@ -46,7 +49,7 @@ describe('query-change-detector.test.js', () => {
             assert.ok(q._queryChangeDetector.doesDocMatchQuery(docData));
             col.database.destroy();
         });
-        it('should not match ($gt)', async() => {
+        it('should not match ($gt)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('age').gt(100);
             const docData = schemaObjects.human();
@@ -54,7 +57,7 @@ describe('query-change-detector.test.js', () => {
             assert.equal(false, q._queryChangeDetector.doesDocMatchQuery(docData));
             col.database.destroy();
         });
-        it('BUG: this should match', async() => {
+        it('BUG: this should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find();
 
@@ -70,8 +73,8 @@ describe('query-change-detector.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('._isDocInResultData()', async() => {
-        it('should return true', async() => {
+    describe('._isDocInResultData()', async () => {
+        it('should return true', async () => {
             const col = await humansCollection.create(5);
             const q = col.find();
             await q.exec();
@@ -81,7 +84,7 @@ describe('query-change-detector.test.js', () => {
             assert.equal(is, true);
             col.database.destroy();
         });
-        it('should return false', async() => {
+        it('should return false', async () => {
             const col = await humansCollection.create(5);
             const q = col.find();
             await q.exec();
@@ -95,7 +98,7 @@ describe('query-change-detector.test.js', () => {
         });
     });
     describe('._isSortedBefore()', () => {
-        it('should return true', async() => {
+        it('should return true', async () => {
             const col = await humansCollection.createPrimary(0);
             const q = col.find().sort('age');
             const docData1 = schemaObjects.human();
@@ -106,7 +109,7 @@ describe('query-change-detector.test.js', () => {
             assert.equal(res, true);
             col.database.destroy();
         });
-        it('should return false', async() => {
+        it('should return false', async () => {
             const col = await humansCollection.createPrimary(0);
             const q = col.find().sort('age');
             const docData1 = schemaObjects.human();
@@ -119,7 +122,7 @@ describe('query-change-detector.test.js', () => {
             assert.equal(res, false);
             col.database.destroy();
         });
-        it('should return true (sort by _id when equal)', async() => {
+        it('should return true (sort by _id when equal)', async () => {
             const col = await humansCollection.createPrimary(0);
             const q = col.find().sort('age');
             const docData1 = schemaObjects.human();
@@ -134,7 +137,7 @@ describe('query-change-detector.test.js', () => {
         });
     });
     describe('._resortDocData()', () => {
-        it('should return resorted doc-data', async() => {
+        it('should return resorted doc-data', async () => {
             const col = await humansCollection.createAgeIndex(3);
             const q = col.find().sort('age');
             const docData1 = schemaObjects.human();
@@ -156,7 +159,7 @@ describe('query-change-detector.test.js', () => {
         });
     });
     describe('._sortFieldChanged()', () => {
-        it('should return true', async() => {
+        it('should return true', async () => {
             const col = await humansCollection.createAgeIndex(0);
 
             const q = col.find().sort('age');
@@ -169,7 +172,7 @@ describe('query-change-detector.test.js', () => {
             assert.equal(changed, true);
             col.database.destroy();
         });
-        it('should return false', async() => {
+        it('should return false', async () => {
             const col = await humansCollection.createAgeIndex(0);
 
             const q = col.find().sort('age');
@@ -183,7 +186,7 @@ describe('query-change-detector.test.js', () => {
     });
     describe('.handleSingleChange()', () => {
         describe('R1 (removed and never matched)', () => {
-            it('should jump in and return false', async() => {
+            it('should jump in and return false', async () => {
                 const col = await humansCollection.createPrimary(0);
                 const q = col.find().where('firstName').ne('Alice');
                 const changeEvents = [];
@@ -191,7 +194,14 @@ describe('query-change-detector.test.js', () => {
                 docData.passportId = 'foobar';
                 docData.firstName = 'Alice';
                 await col.insert(docData);
-                col.$.first().toPromise().then(cE => changeEvents.push(cE));
+
+                col.$
+                    .pipe(
+                        first()
+                    )
+                    .toPromise()
+                    .then(cE => changeEvents.push(cE));
+
                 await col.findOne('foobar').remove();
                 await AsyncTestUtil.waitUntil(() => changeEvents.length === 1);
                 const res = q._queryChangeDetector.handleSingleChange([], changeEvents[0]);
@@ -202,7 +212,7 @@ describe('query-change-detector.test.js', () => {
     });
     describe('runChangeDetection()', () => {
         describe('no change', () => {
-            it('should detect that change is not relevant for result', async() => {
+            it('should detect that change is not relevant for result', async () => {
                 const col = await humansCollection.create(5);
                 const q = col.find().where('name').eq('foobar');
                 const res = await q.exec();
@@ -223,7 +233,7 @@ describe('query-change-detector.test.js', () => {
          */
         describe('all constellations', () => {
             describe('R1', () => {
-                it('R1: doc which did not match, was removed', async() => {
+                it('R1: doc which did not match, was removed', async () => {
                     const col = await humansCollection.create(1);
                     const q = col.find().where('name').eq('foobar');
                     let results = await q.exec();
@@ -240,7 +250,7 @@ describe('query-change-detector.test.js', () => {
                 });
             });
             describe('R2', () => {
-                it('R2: doc which was before first result was removed', async() => {
+                it('R2: doc which was before first result was removed', async () => {
                     const col = await humansCollection.create(5);
                     const q = col.find().skip(1).limit(10);
                     let results = await q.exec();
@@ -258,7 +268,7 @@ describe('query-change-detector.test.js', () => {
                 });
             });
             describe('R3', () => {
-                it('R3: doc which was in results got removed', async() => {
+                it('R3: doc which was in results got removed', async () => {
                     const col = await humansCollection.create(5);
                     const q = col.find().limit(10);
                     let results = await q.exec();
@@ -273,7 +283,7 @@ describe('query-change-detector.test.js', () => {
 
                     col.database.destroy();
                 });
-                it('BUG: R3: does not work when no limit and no skip', async() => {
+                it('BUG: R3: does not work when no limit and no skip', async () => {
                     const col = await humansCollection.create(5);
                     const q = col.find();
                     let results = await q.exec();
@@ -289,7 +299,7 @@ describe('query-change-detector.test.js', () => {
                 });
             });
             describe('R4', () => {
-                it('R4: sorted after and got removed', async() => {
+                it('R4: sorted after and got removed', async () => {
                     const col = await humansCollection.create(5);
 
                     const q = col.find().limit(4);
@@ -310,7 +320,7 @@ describe('query-change-detector.test.js', () => {
                 });
             });
             describe('U1', () => {
-                it('U1: not matched and not matches now', async() => {
+                it('U1: not matched and not matches now', async () => {
                     const col = await humansCollection.create(4);
 
                     const other = schemaObjects.human();
@@ -334,7 +344,7 @@ describe('query-change-detector.test.js', () => {
                 });
             });
             describe('U2', () => {
-                it('U2: still matching', async() => {
+                it('U2: still matching', async () => {
                     const col = await humansCollection.createAgeIndex(5);
                     const q = col.find().sort('age');
                     let results = await q.exec();
@@ -353,7 +363,7 @@ describe('query-change-detector.test.js', () => {
                 });
             });
             describe('U3', () => {
-                it('U3: not matched, but matches now, no.skip, limit < length', async() => {
+                it('U3: not matched, but matches now, no.skip, limit < length', async () => {
                     const col = await humansCollection.createAgeIndex(5);
                     const q = col.find().sort('passportId');
                     let results = await q.exec();
@@ -370,7 +380,7 @@ describe('query-change-detector.test.js', () => {
                     assert.equal(results[0].passportId, '000aaaaa');
                     col.database.destroy();
                 });
-                it('U3: BUG: does not resort when sorted by primary', async() => {
+                it('U3: BUG: does not resort when sorted by primary', async () => {
                     const col = await humansCollection.createPrimary(5);
                     const q = col.find().sort('passportId');
                     let results = await q.exec();
@@ -399,7 +409,7 @@ describe('query-change-detector.test.js', () => {
         });
     });
     describe('BUGS', () => {
-        it('SYNC and Observe does not work with R3 - resort', async() => {
+        it('SYNC and Observe does not work with R3 - resort', async () => {
             if (!config.platform.isNode()) return;
             const serverURL = await SpawnServer.spawn();
             const col = await humansCollection.createPrimary(5);

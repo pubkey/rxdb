@@ -12,6 +12,12 @@ import {
 import {
     BehaviorSubject
 } from 'rxjs/BehaviorSubject';
+import {
+    distinctUntilChanged
+} from 'rxjs/operators/distinctUntilChanged';
+import {
+    map
+} from 'rxjs/operators/map';
 
 export class RxDocument {
     constructor(collection, jsonData) {
@@ -56,7 +62,10 @@ export class RxDocument {
         return this._deleted$.getValue();
     }
     get synced$() {
-        return this._synced$.asObservable().distinctUntilChanged();
+        return this._synced$
+            .pipe(
+                distinctUntilChanged()
+            ).asObservable();
     }
     get synced() {
         return this._synced$.getValue();
@@ -153,9 +162,10 @@ export class RxDocument {
         if (!schemaObj) throw new Error(`cannot observe a non-existed field (${path})`);
 
         return this._dataSync$
-            .map(data => objectPath.get(data, path))
-            .distinctUntilChanged()
-            .asObservable();
+            .pipe(
+                map(data => objectPath.get(data, path)),
+                distinctUntilChanged()
+            ).asObservable();
     }
 
     /**

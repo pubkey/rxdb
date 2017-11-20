@@ -5,10 +5,17 @@ import * as schemas from '../helper/schemas';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 
+import {
+    first
+} from 'rxjs/operators/first';
+import {
+    filter
+} from 'rxjs/operators/filter';
+
 describe('reactive-database.test.js', () => {
     describe('.collection()', () => {
         describe('positive', () => {
-            it('emit when collection is created', async() => {
+            it('emit when collection is created', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -18,8 +25,10 @@ describe('reactive-database.test.js', () => {
                     schema: schemas.human
                 });
                 const changeEvent = await db.$
-                    .filter(cEvent => cEvent.data.op === 'RxDatabase.collection')
-                    .first().toPromise();
+                    .pipe(
+                        filter(cEvent => cEvent.data.op === 'RxDatabase.collection'),
+                        first()
+                    ).toPromise();
                 assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.equal(changeEvent.data.v, 'myname');
                 db.destroy();

@@ -15,6 +15,11 @@ import RxChangeEvent from '../rx-change-event';
 import DocCache from '../doc-cache';
 import RxError from '../rx-error';
 
+
+import {
+    filter
+} from 'rxjs/operators/filter';
+
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = parent => {
     if (!DOC_CACHE_BY_PARENT.has(parent)) {
@@ -29,7 +34,9 @@ const CHANGE_SUB_BY_PARENT = new WeakMap();
 const _getChangeSub = parent => {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
         const sub = parent.$
-            .filter(cE => cE.data.isLocal)
+            .pipe(
+                filter(cE => cE.data.isLocal)
+            )
             .subscribe(cE => {
                 const docCache = _getDocCache(parent);
                 const doc = docCache.get(cE.data.doc);

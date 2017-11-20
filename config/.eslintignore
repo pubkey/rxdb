@@ -1,1 +1,3 @@
 test/playground/hashVSdeepequal/node_modules
+test_tmp/
+tmp/

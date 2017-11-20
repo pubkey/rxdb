@@ -6,9 +6,16 @@ import * as humansCollection from '../helper/humans-collection';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    tap
+} from 'rxjs/operators/tap';
+
 describe('reactive-query.test.js', () => {
     describe('positive', () => {
-        it('get results of array when .subscribe() and filled array later', async() => {
+        it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = null;
@@ -23,7 +30,7 @@ describe('reactive-query.test.js', () => {
             assert.equal(count, 1);
             c.database.destroy();
         });
-        it('get the updated docs on Collection.insert()', async() => {
+        it('get the updated docs on Collection.insert()', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = [];
@@ -49,7 +56,7 @@ describe('reactive-query.test.js', () => {
             assert.ok(isHere);
             c.database.destroy();
         });
-        it('get the value twice when subscribing 2 times', async() => {
+        it('get the value twice when subscribing 2 times', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = [];
@@ -66,7 +73,7 @@ describe('reactive-query.test.js', () => {
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();
         });
-        it('get the base-value when subscribing again later', async() => {
+        it('get the base-value when subscribing again later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = [];
@@ -84,7 +91,7 @@ describe('reactive-query.test.js', () => {
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();
         });
-        it('get new values on Document.save', async() => {
+        it('get new values on Document.save', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             let pw8 = AsyncTestUtil.waitResolveable(500);
@@ -114,7 +121,7 @@ describe('reactive-query.test.js', () => {
         /**
          * @link https://github.com/pubkey/rxdb/issues/31
          */
-        it('do not fire on doc-change when result-doc not affected', async() => {
+        it('do not fire on doc-change when result-doc not affected', async () => {
             const c = await humansCollection.createAgeIndex(10);
             // take only 9 of 10
             const valuesAr = [];
@@ -123,8 +130,10 @@ describe('reactive-query.test.js', () => {
                 .limit(9)
                 .sort('age')
                 .$
-                .do(() => pw8.resolve())
-                .filter(x => x !== null)
+                .pipe(
+                    tap(() => pw8.resolve()),
+                    filter(x => x !== null)
+                )
                 .subscribe(newV => valuesAr.push(newV));
 
             // get the 10th
@@ -149,7 +158,7 @@ describe('reactive-query.test.js', () => {
             c.database.destroy();
         });
 
-        it('BUG: should have the document in DocCache when getting it from observe', async() => {
+        it('BUG: should have the document in DocCache when getting it from observe', async () => {
             const name = util.randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
@@ -169,7 +178,7 @@ describe('reactive-query.test.js', () => {
             c2.database.destroy();
         });
 
-        it('BUG #136 : findOne(string).$ streams all documents (_id as primary)', async() => {
+        it('BUG #136 : findOne(string).$ streams all documents (_id as primary)', async () => {
             const subs = [];
             const col = await humansCollection.create(3);
             const docData = schemaObjects.human();
@@ -178,7 +187,9 @@ describe('reactive-query.test.js', () => {
             const streamed = [];
             subs.push(
                 col.findOne(_id).$
-                .filter(doc => doc !== null)
+                .pipe(
+                    filter(doc => doc !== null)
+                )
                 .subscribe(doc => {
                     streamed.push(doc);
                 })
@@ -190,7 +201,9 @@ describe('reactive-query.test.js', () => {
             const streamed2 = [];
             subs.push(
                 col.findOne().where('_id').eq(_id).$
-                .filter(doc => doc !== null)
+                .pipe(
+                    filter(doc => doc !== null)
+                )
                 .subscribe(doc => {
                     streamed2.push(doc);
                 })
@@ -204,11 +217,13 @@ describe('reactive-query.test.js', () => {
             col.database.destroy();
         });
 
-        it('BUG #138 : findOne().$ returns every doc if no id given', async() => {
+        it('BUG #138 : findOne().$ returns every doc if no id given', async () => {
             const col = await humansCollection.create(3);
             const streamed = [];
             const sub = col.findOne().$
-                .filter(doc => doc !== null)
+                .pipe(
+                    filter(doc => doc !== null)
+                )
                 .subscribe(doc => {
                     streamed.push(doc);
                 });
@@ -220,7 +235,7 @@ describe('reactive-query.test.js', () => {
         });
     });
     describe('negative', () => {
-        it('get no change when nothing happens', async() => {
+        it('get no change when nothing happens', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let recieved = 0;

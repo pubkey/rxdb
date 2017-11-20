@@ -6,6 +6,13 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    first
+} from 'rxjs/operators/first';
+
 
 describe('local-documents.test.js', () => {
     describe('.insertLocal()', () => {
@@ -219,7 +226,12 @@ describe('local-documents.test.js', () => {
 
             doc1.remove();
 
-            await doc2.deleted$.filter(d => d === true).first().toPromise();
+            await doc2.deleted$
+            .pipe(
+                filter(d => d === true),
+                first()
+            )
+            .toPromise();
 
             db.destroy();
             db2.destroy();

@@ -7,7 +7,9 @@ import * as humansCollection from '../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-
+import {
+    first
+} from 'rxjs/operators/first';
 
 describe('hooks.test.js', () => {
     describe('get/set', () => {
@@ -241,7 +243,7 @@ describe('hooks.test.js', () => {
                         failC++;
                     }
                     assert.equal(failC, 1);
-                    const syncValue = await doc.firstName$.first().toPromise();
+                    const syncValue = await doc.firstName$.pipe(first()).toPromise();
                     assert.equal(syncValue, 'test');
                     c.database.destroy();
                 });

@@ -23,6 +23,9 @@ import {
 import {
     map
 } from 'rxjs/operators/map';
+import {
+    first
+} from 'rxjs/operators/first';
 
 
 let _queryCount = 0;
@@ -352,7 +355,9 @@ export class RxQuery {
      */
     exec() {
         return this.$
-            .first()
+            .pipe(
+                first()
+            )
             .toPromise();
     }
 

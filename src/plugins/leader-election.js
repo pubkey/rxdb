@@ -12,7 +12,12 @@ export const documentID = '_local/leader';
 import {
     BehaviorSubject
 } from 'rxjs/BehaviorSubject';
-
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    first
+} from 'rxjs/operators/first';
 
 
 /**
@@ -150,44 +155,50 @@ class LeaderElector {
         const subs = [];
         const errors = [];
 
-        const whileNoError = async() => {
+        const whileNoError = async () => {
             subs.push(this.bc.$
-                .filter(() => !!this.isApplying)
-                .filter(msg => msg.t >= applyTime)
-                .filter(msg => msg.type === 'apply')
-                .filter(msg => {
-                    if (
-                        msg.data < applyTime ||
-                        (
-                            msg.data === applyTime &&
-                            msg.it > this.token
-                        )
-                    ) return true;
-                    else return false;
-                })
-                .filter(() => errors.length < 1)
+                .pipe(
+                    filter(() => !!this.isApplying),
+                    filter(msg => msg.t >= applyTime),
+                    filter(msg => msg.type === 'apply'),
+                    filter(msg => {
+                        if (
+                            msg.data < applyTime ||
+                            (
+                                msg.data === applyTime &&
+                                msg.it > this.token
+                            )
+                        ) return true;
+                        else return false;
+                    }),
+                    filter(() => errors.length < 1)
+                )
                 .subscribe(msg => errors.push('other is applying:' + msg.it))
             );
             subs.push(this.bc.$
-                .filter(() => !!this.isApplying)
-                .filter(msg => msg.t >= applyTime)
-                .filter(msg => msg.type === 'tell')
-                .filter(() => errors.length < 1)
+                .pipe(
+                    filter(() => !!this.isApplying),
+                    filter(msg => msg.t >= applyTime),
+                    filter(msg => msg.type === 'tell'),
+                    filter(() => errors.length < 1)
+                )
                 .subscribe(msg => errors.push('other is leader' + msg.it))
             );
             subs.push(this.bc.$
-                .filter(() => !!this.isApplying)
-                .filter(msg => msg.type === 'apply')
-                .filter(msg => {
-                    if (
-                        msg.data > applyTime ||
-                        (
-                            msg.data === applyTime &&
-                            msg.it > this.token
-                        )
-                    ) return true;
-                    else return false;
-                })
+                .pipe(
+                    filter(() => !!this.isApplying),
+                    filter(msg => msg.type === 'apply'),
+                    filter(msg => {
+                        if (
+                            msg.data > applyTime ||
+                            (
+                                msg.data === applyTime &&
+                                msg.it > this.token
+                            )
+                        ) return true;
+                        else return false;
+                    })
+                )
                 .subscribe(() => this.bc.write('apply', applyTime))
             );
 
@@ -252,14 +263,16 @@ class LeaderElector {
         switch (this.electionChannel) {
             case 'broadcast':
                 this.signalLeadership = this.bc.$
-                    .filter(() => !!this.isLeader)
-                    // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                    .filter(msg => msg.type !== 'tell')
+                    .pipe(
+                        filter(() => !!this.isLeader),
+                        // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
+                        filter(msg => msg.type !== 'tell')
+                    )
                     .subscribe(() => this.leaderSignal());
                 this.subs.push(this.signalLeadership);
                 break;
             case 'socket':
-                (async() => {
+                (async () => {
                     while (!this.destroyed) {
                         await util.promiseWait(SIGNAL_TIME);
                         if (!this.isLeader) return;
@@ -327,7 +340,9 @@ class LeaderElector {
                     // apply when leader dies
                     this.subs.push(
                         this.bc.$
-                        .filter(msg => msg.type === 'death')
+                        .pipe(
+                            filter(msg => msg.type === 'death')
+                        )
                         .subscribe(() => this.applyOnce())
                     );
                     break;
@@ -338,7 +353,7 @@ class LeaderElector {
             }
 
             // apply on interval incase leader dies without notification
-            (async() => {
+            (async () => {
                 while (!this.destroyed && !this.isLeader) {
                     await util.promiseWait(fallbackIntervalTime);
 
@@ -357,8 +372,10 @@ class LeaderElector {
 
         return this.becomeLeader$
             .asObservable()
-            .filter(i => i.isLeader === true)
-            .first()
+            .pipe(
+                filter(i => i.isLeader === true),
+                first()
+            )
             .toPromise();
     }
 

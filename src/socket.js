@@ -8,7 +8,9 @@ const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 import {
     Subject
 } from 'rxjs/Subject';
-
+import {
+    filter
+} from 'rxjs/operators/filter';
 
 class Socket {
     constructor(database) {
@@ -46,7 +48,9 @@ class Socket {
         if (this.bc) {
             this.subs.push(
                 this.bc.$
-                .filter(msg => msg.type === 'pull')
+                .pipe(
+                    filter(msg => msg.type === 'pull')
+                )
                 .subscribe(() => this.pull())
             );
         }

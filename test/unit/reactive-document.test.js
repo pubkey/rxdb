@@ -10,6 +10,9 @@ import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import RxDB from '../../dist/lib';
+import {
+    first
+} from 'rxjs/operators/first';
 
 describe('reactive-document.test.js', () => {
     describe('.save()', () => {
@@ -19,7 +22,7 @@ describe('reactive-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 doc.set('firstName', util.randomCouchString(8));
                 doc.save();
-                const changeEvent = await doc.$.first().toPromise();
+                const changeEvent = await doc.$.pipe(first()).toPromise();
                 assert.equal(changeEvent._id, doc.primary);
                 c.database.destroy();
             });
@@ -114,7 +117,7 @@ describe('reactive-document.test.js', () => {
                 assert.deepEqual(doc.firstName, doc2.firstName);
                 assert.notEqual(doc, doc2);
 
-                const ok = await doc.synced$.first().toPromise();
+                const ok = await doc.synced$.pipe(first()).toPromise();
                 assert.ok(ok);
 
                 doc2.firstName = 'foobar';
@@ -127,7 +130,7 @@ describe('reactive-document.test.js', () => {
                 });
                 assert.equal(doc.firstName, 'foobar');
 
-                const ok2 = await doc.synced$.first().toPromise();
+                const ok2 = await doc.synced$.pipe(first()).toPromise();
                 assert.ok(ok2);
 
                 c1.database.destroy();
@@ -154,10 +157,10 @@ describe('reactive-document.test.js', () => {
                 assert.equal(doc.firstName, 'foobar1');
 
                 await AsyncTestUtil.waitUntil(async() => {
-                    const notOk = await doc.synced$.first().toPromise();
+                    const notOk = await doc.synced$.pipe(first()).toPromise();
                     return !notOk;
                 });
-                const notOk = await doc.synced$.first().toPromise();
+                const notOk = await doc.synced$.pipe(first()).toPromise();
                 assert.ok(!notOk);
 
                 c1.database.destroy();
@@ -181,7 +184,7 @@ describe('reactive-document.test.js', () => {
                 await AsyncTestUtil.waitUntil(async() => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
-                    const notOk = await doc.synced$.first().toPromise();
+                    const notOk = await doc.synced$.pipe(first()).toPromise();
                     return !notOk;
                 });
 
@@ -191,7 +194,7 @@ describe('reactive-document.test.js', () => {
                 await AsyncTestUtil.waitUntil(async() => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
-                    const ok = await doc.synced$.first().toPromise();
+                    const ok = await doc.synced$.pipe(first()).toPromise();
                     return ok;
                 });
 

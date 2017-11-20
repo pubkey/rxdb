@@ -2,6 +2,10 @@ import IdleQueue from 'custom-idle-queue';
 import RxChangeEvent from './../rx-change-event';
 import * as util from './../util';
 
+import {
+    map
+} from 'rxjs/operators/map';
+
 /**
  * to not have update-conflicts,
  * we use atomic inserts (per document) on putAttachment()
@@ -173,7 +177,7 @@ export async function putAttachment({
 
     await queue.requestIdlePromise();
     const ret = await queue.wrapCall(
-        async() => {
+        async () => {
             await this.collection.pouch.putAttachment(
                 this.primary,
                 id,
@@ -275,24 +279,26 @@ export const prototypes = {
         Object.defineProperty(proto, 'allAttachments$', {
             get: function allAttachments$() {
                 return this._dataSync$
-                    .map(data => {
-                        if (!data._attachments)
-                            return {};
-                        return data._attachments;
-                    })
-                    .map(attachmentsData => Object.entries(attachmentsData))
-                    .map(entries => {
-                        return entries
-                            .map(entry => {
-                                const id = entry[0];
-                                const attachmentData = entry[1];
-                                return RxAttachment.fromPouchDocument(
-                                    id,
-                                    attachmentData,
-                                    this
-                                );
-                            });
-                    });
+                    .pipe(
+                        map(data => {
+                            if (!data._attachments)
+                                return {};
+                            return data._attachments;
+                        }),
+                        map(attachmentsData => Object.entries(attachmentsData)),
+                        map(entries => {
+                            return entries
+                                .map(entry => {
+                                    const id = entry[0];
+                                    const attachmentData = entry[1];
+                                    return RxAttachment.fromPouchDocument(
+                                        id,
+                                        attachmentData,
+                                        this
+                                    );
+                                });
+                        })
+                    );
             }
         });
     }

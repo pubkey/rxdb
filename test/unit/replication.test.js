@@ -15,8 +15,14 @@ import AsyncTestUtil from 'async-test-util';
 import * as RxDB from '../../dist/lib/index';
 
 import {
-    Observable
-} from 'rxjs/Observable';
+    fromEvent
+} from 'rxjs/observable/fromEvent';
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    first
+} from 'rxjs/operators/first';
 
 let request;
 let SpawnServer;
@@ -108,22 +114,27 @@ describe('replication.test.js', () => {
                 });
 
                 const e1 = [];
-                const pouch$ = Observable
-                    .fromEvent(c.pouch.changes({
-                        since: 'now',
-                        live: true,
-                        include_docs: true
-                    }), 'change')
-                    .filter(e => !e.id.startsWith('_'))
+                const pouch$ =
+                    fromEvent(
+                        c.pouch.changes({
+                            since: 'now',
+                            live: true,
+                            include_docs: true
+                        }), 'change')
+                    .pipe(
+                        filter(e => !e.id.startsWith('_'))
+                    )
                     .subscribe(e => e1.push(e));
                 const e2 = [];
-                const pouch2$ = Observable
-                    .fromEvent(c2.pouch.changes({
+                const pouch2$ =
+                    fromEvent(c2.pouch.changes({
                         since: 'now',
                         live: true,
                         include_docs: true
                     }), 'change')
-                    .filter(e => !e.id.startsWith('_'))
+                    .pipe(
+                        filter(e => !e.id.startsWith('_'))
+                    )
                     .subscribe(e => e2.push(e));
 
                 const obj = schemaObjects.human();
@@ -305,7 +316,7 @@ describe('replication.test.js', () => {
                     remote: c2,
                     waitForLeadership: false
                 });
-                const beFalse = await repState.complete$.first().toPromise();
+                const beFalse = await repState.complete$.pipe(first()).toPromise();
                 assert.equal(beFalse, false);
 
                 c.database.destroy();

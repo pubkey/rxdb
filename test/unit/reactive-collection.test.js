@@ -7,12 +7,14 @@ import * as humansCollection from '../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-
+import {
+    first
+} from 'rxjs/operators/first';
 
 describe('reactive-collection.test.js', () => {
     describe('.insert()', () => {
         describe('positive', () => {
-            it('should get a valid event on insert', async() => {
+            it('should get a valid event on insert', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -24,7 +26,7 @@ describe('reactive-collection.test.js', () => {
                 });
 
                 c.insert(schemaObjects.human());
-                const changeEvent = await c.$.first().toPromise();
+                const changeEvent = await c.$.pipe(first()).toPromise();
                 assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.equal(changeEvent.data.col, colName);
                 assert.equal(typeof changeEvent.data.doc, 'string');
@@ -33,7 +35,7 @@ describe('reactive-collection.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should get no event on non-succes-insert', async() => {
+            it('should get no event on non-succes-insert', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -60,7 +62,7 @@ describe('reactive-collection.test.js', () => {
     });
     describe('.remove()', () => {
         describe('positive', () => {
-            it('should fire on remove', async() => {
+            it('should fire on remove', async () => {
                 const c = await humansCollection.create(0);
                 const q = c.find();
                 const ar = [];

@@ -5,7 +5,6 @@
 
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import 'rxjs';
 import * as util from '../../dist/lib/util';
 
 import Core from '../../dist/lib/core';

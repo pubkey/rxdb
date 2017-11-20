@@ -6,14 +6,23 @@
 import clone from 'clone';
 import PouchReplicationPlugin from 'pouchdb-replication';
 import {
-    Observable
-} from 'rxjs/Observable';
-import {
     Subject
 } from 'rxjs/Subject';
 import {
     BehaviorSubject
 } from 'rxjs/BehaviorSubject';
+import {
+    fromEvent
+} from 'rxjs/observable/fromEvent';
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    map
+} from 'rxjs/operators/map';
+import {
+    delay
+} from 'rxjs/operators/delay';
 
 import * as util from '../util';
 import Core from '../core';
@@ -52,15 +61,13 @@ export class RxReplicationState {
 
         // change
         this._subs.push(
-            Observable
-            .fromEvent(evEmitter, 'change')
+            fromEvent(evEmitter, 'change')
             .subscribe(ev => this._subjects.change.next(ev))
         );
 
         // docs
         this._subs.push(
-            Observable
-            .fromEvent(evEmitter, 'change')
+            fromEvent(evEmitter, 'change')
             .subscribe(ev => {
                 if (
                     this._subjects.docs.observers.length === 0 ||
@@ -75,27 +82,23 @@ export class RxReplicationState {
 
         // error
         this._subs.push(
-            Observable
-            .fromEvent(evEmitter, 'error')
+            fromEvent(evEmitter, 'error')
             .subscribe(ev => this._subjects.error.next(ev))
         );
 
         // active
         this._subs.push(
-            Observable
-            .fromEvent(evEmitter, 'active')
+            fromEvent(evEmitter, 'active')
             .subscribe(() => this._subjects.active.next(true))
         );
         this._subs.push(
-            Observable
-            .fromEvent(evEmitter, 'paused')
+            fromEvent(evEmitter, 'paused')
             .subscribe(() => this._subjects.active.next(false))
         );
 
         // complete
         this._subs.push(
-            Observable
-            .fromEvent(evEmitter, 'complete')
+            fromEvent(evEmitter, 'complete')
             .subscribe(info => this._subjects.complete.next(info))
         );
     }
@@ -125,26 +128,29 @@ export function watchForChanges() {
      * this is to ensure that changes from 'synced' dbs will be published
      */
     const sendChanges = {};
-    const pouch$ = Observable
-        .fromEvent(
+    const pouch$ =
+        fromEvent(
             this.pouch.changes({
                 since: 'now',
                 live: true,
                 include_docs: true
-            }), 'change'
+            }),
+            'change'
         )
-        .filter(c => c.id.charAt(0) !== '_')
-        .map(c => c.doc)
-        .filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev))
-        .filter(doc => sendChanges[doc._rev] = 'YES')
-        .delay(10)
-        .map(doc => {
-            let ret = null;
-            if (sendChanges[doc._rev] === 'YES') ret = doc;
-            delete sendChanges[doc._rev];
-            return ret;
-        })
-        .filter(doc => doc !== null)
+        .pipe(
+            filter(c => c.id.charAt(0) !== '_'),
+            map(c => c.doc),
+            filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev)),
+            filter(doc => sendChanges[doc._rev] = 'YES'),
+            delay(10),
+            map(doc => {
+                let ret = null;
+                if (sendChanges[doc._rev] === 'YES') ret = doc;
+                delete sendChanges[doc._rev];
+                return ret;
+            }),
+            filter(doc => doc !== null)
+        )
         .subscribe(doc => {
             this.$emit(RxChangeEvent.fromPouchChange(doc, this));
         });
@@ -152,10 +158,12 @@ export function watchForChanges() {
     this._subs.push(pouch$);
 
     const ob2 = this.$
-        .map(cE => cE.data.v)
-        .map(doc => {
-            if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-        })
+        .pipe(
+            map(cE => cE.data.v),
+            map(doc => {
+                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
+            })
+        )
         .subscribe();
     this._subs.push(ob2);
 

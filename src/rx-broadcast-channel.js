@@ -1,6 +1,12 @@
 import {
     fromEvent
 } from 'rxjs/observable/fromEvent';
+import {
+    map
+} from 'rxjs/operators/map';
+import {
+    filter
+} from 'rxjs/operators/filter';
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS
@@ -33,9 +39,11 @@ class RxBroadcastChannel {
     get $() {
         if (!this._$) {
             this._$ = fromEvent(this.bc, 'message')
-                .map(msg => msg.data)
-                .map(strMsg => JSON.parse(strMsg))
-                .filter(msg => msg.it !== this.token);
+                .pipe(
+                    map(msg => msg.data),
+                    map(strMsg => JSON.parse(strMsg)),
+                    filter(msg => msg.it !== this.token)
+                );
         }
         return this._$;
     }
