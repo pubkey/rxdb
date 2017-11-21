@@ -200,6 +200,8 @@ var _rxDatabase = require('./rx-database');
 
 var _rxDatabase2 = _interopRequireDefault(_rxDatabase);
 
+var _filter = require('rxjs/operators/filter');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -273,9 +275,9 @@ var RxCollection = exports.RxCollection = function () {
 
                             case 5:
 
-                                this._observable$ = this.database.$.filter(function (event) {
+                                this._observable$ = this.database.$.pipe((0, _filter.filter)(function (event) {
                                     return event.data.col === _this2.name;
-                                });
+                                }));
                                 this._changeEventBuffer = _changeEventBuffer2['default'].create(this);
 
                                 // INDEXES
@@ -296,9 +298,9 @@ var RxCollection = exports.RxCollection = function () {
 
                             case 9:
 
-                                this._subs.push(this._observable$.filter(function (cE) {
+                                this._subs.push(this._observable$.pipe((0, _filter.filter)(function (cE) {
                                     return !cE.data.isLocal;
-                                }).subscribe(function (cE) {
+                                })).subscribe(function (cE) {
                                     // when data changes, send it to RxDocument in docCache
                                     var doc = _this2._docCache.get(cE.data.doc);
                                     if (doc) doc._handleChangeEvent(cE);

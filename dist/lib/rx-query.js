@@ -54,6 +54,18 @@ var _rxError2 = _interopRequireDefault(_rxError);
 
 var _hooks = require('./hooks');
 
+var _merge = require('rxjs/observable/merge');
+
+var _BehaviorSubject = require('rxjs/BehaviorSubject');
+
+var _mergeMap = require('rxjs/operators/mergeMap');
+
+var _filter = require('rxjs/operators/filter');
+
+var _map = require('rxjs/operators/map');
+
+var _first = require('rxjs/operators/first');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -77,7 +89,7 @@ var RxQuery = exports.RxQuery = function () {
 
         this._queryChangeDetector = _queryChangeDetector2['default'].create(this);
         this._resultsData = null;
-        this._results$ = new util.Rx.BehaviorSubject(null);
+        this._results$ = new _BehaviorSubject.BehaviorSubject(null);
         this._latestChangeEvent = -1;
         this._runningPromise = Promise.resolve(true);
 
@@ -429,7 +441,7 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: 'exec',
         value: function exec() {
-            return this.$.first().toPromise();
+            return this.$.pipe((0, _first.first)()).toPromise();
         }
 
         /**
@@ -507,17 +519,17 @@ var RxQuery = exports.RxQuery = function () {
             var _this3 = this;
 
             if (!this._$) {
-                var res$ = this._results$.mergeMap(function (results) {
+                var res$ = this._results$.pipe((0, _mergeMap.mergeMap)(function (results) {
                     return _this3._ensureEqual().then(function (hasChanged) {
                         if (hasChanged) return 'WAITFORNEXTEMIT';else return results;
                     });
-                }).filter(function (results) {
+                }), (0, _filter.filter)(function (results) {
                     return results !== 'WAITFORNEXTEMIT';
-                }).asObservable();
+                })).asObservable();
 
-                var changeEvents$ = this.collection.$.filter(function (cEvent) {
+                var changeEvents$ = this.collection.$.pipe((0, _filter.filter)(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
-                }).mergeMap((0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
+                }), (0, _mergeMap.mergeMap)((0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                     return _regenerator2['default'].wrap(function _callee2$(_context2) {
                         while (1) {
                             switch (_context2.prev = _context2.next) {
@@ -530,15 +542,14 @@ var RxQuery = exports.RxQuery = function () {
                             }
                         }
                     }, _callee2, _this3);
-                }))).filter(function () {
+                }))), (0, _filter.filter)(function () {
                     return false;
-                });
-
-                this._$ = util.Rx.Observable.merge(res$, changeEvents$).filter(function (x) {
+                }));
+                this._$ = (0, _merge.merge)(res$, changeEvents$).pipe((0, _filter.filter)(function (x) {
                     return x !== null;
-                }).map(function (results) {
+                }), (0, _map.map)(function (results) {
                     if (_this3.op !== 'findOne') return results;else if (results.length === 0) return null;else return results[0];
-                });
+                }));
             }
             return this._$;
         }

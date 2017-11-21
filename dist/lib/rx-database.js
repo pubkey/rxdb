@@ -224,6 +224,10 @@ var _overwritable2 = _interopRequireDefault(_overwritable);
 
 var _hooks = require('./hooks');
 
+var _Subject = require('rxjs/Subject');
+
+var _filter = require('rxjs/operators/filter');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -254,10 +258,10 @@ var RxDatabase = exports.RxDatabase = function () {
         this.collections = {};
 
         // rx
-        this.subject = new util.Rx.Subject();
-        this.observable$ = this.subject.asObservable().filter(function (cEvent) {
+        this.subject = new _Subject.Subject();
+        this.observable$ = this.subject.asObservable().pipe((0, _filter.filter)(function (cEvent) {
             return _rxChangeEvent2['default'].isInstanceOf(cEvent);
-        });
+        }));
     }
 
     (0, _createClass3['default'])(RxDatabase, [{

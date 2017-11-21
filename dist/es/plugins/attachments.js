@@ -36,6 +36,8 @@ import IdleQueue from 'custom-idle-queue';
 import RxChangeEvent from './../rx-change-event';
 import * as util from './../util';
 
+import { map } from 'rxjs/operators/map';
+
 /**
  * to not have update-conflicts,
  * we use atomic inserts (per document) on putAttachment()
@@ -460,18 +462,18 @@ export var prototypes = {
             get: function allAttachments$() {
                 var _this3 = this;
 
-                return this._dataSync$.map(function (data) {
+                return this._dataSync$.pipe(map(function (data) {
                     if (!data._attachments) return {};
                     return data._attachments;
-                }).map(function (attachmentsData) {
+                }), map(function (attachmentsData) {
                     return Object.entries(attachmentsData);
-                }).map(function (entries) {
+                }), map(function (entries) {
                     return entries.map(function (entry) {
                         var id = entry[0];
                         var attachmentData = entry[1];
                         return RxAttachment.fromPouchDocument(id, attachmentData, _this3);
                     });
-                });
+                }));
             }
         });
     }

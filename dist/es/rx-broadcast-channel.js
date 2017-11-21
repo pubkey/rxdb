@@ -1,6 +1,8 @@
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
-import * as util from './util';
+import { fromEvent } from 'rxjs/observable/fromEvent';
+import { map } from 'rxjs/operators/map';
+import { filter } from 'rxjs/operators/filter';
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS
@@ -59,13 +61,13 @@ var RxBroadcastChannel = function () {
             var _this = this;
 
             if (!this._$) {
-                this._$ = util.Rx.Observable.fromEvent(this.bc, 'message').map(function (msg) {
+                this._$ = fromEvent(this.bc, 'message').pipe(map(function (msg) {
                     return msg.data;
-                }).map(function (strMsg) {
+                }), map(function (strMsg) {
                     return JSON.parse(strMsg);
-                }).filter(function (msg) {
+                }), filter(function (msg) {
                     return msg.it !== _this.token;
-                });
+                }));
             }
             return this._$;
         }

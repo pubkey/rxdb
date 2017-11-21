@@ -10,12 +10,13 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import PouchDB from './pouch-db';
 import clone from 'clone';
 
-import * as util from './util';
 import RxSchema from './rx-schema';
 import Crypter from './crypter';
 import RxError from './rx-error';
 import overwritable from './overwritable';
 import hooks from './hooks';
+
+import { Observable } from 'rxjs/Observable';
 
 var DataMigrator = function () {
     function DataMigrator(newestCollection, migrationStrategies) {
@@ -76,7 +77,7 @@ var DataMigrator = function () {
             percent: 0 // percentage
         };
 
-        var migrationState$ = new util.Rx.Observable(function () {
+        var migrationState$ = new Observable(function () {
             var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(observer) {
                 var oldCols, countAll, totalCount, currentCol, _loop;
 
@@ -444,7 +445,7 @@ var OldCollection = function () {
         if (this._migrate) throw new Error('migration already running');
         this._migrate = true;
 
-        var stateStream$ = new util.Rx.Observable(function () {
+        var stateStream$ = new Observable(function () {
             var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(observer) {
                 var batch, error;
                 return _regeneratorRuntime.wrap(function _callee5$(_context6) {

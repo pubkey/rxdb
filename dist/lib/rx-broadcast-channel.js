@@ -19,11 +19,11 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 exports.canIUse = canIUse;
 exports.create = create;
 
-var _util = require('./util');
+var _fromEvent = require('rxjs/observable/fromEvent');
 
-var util = _interopRequireWildcard(_util);
+var _map = require('rxjs/operators/map');
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+var _filter = require('rxjs/operators/filter');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -87,13 +87,13 @@ var RxBroadcastChannel = function () {
             var _this = this;
 
             if (!this._$) {
-                this._$ = util.Rx.Observable.fromEvent(this.bc, 'message').map(function (msg) {
+                this._$ = (0, _fromEvent.fromEvent)(this.bc, 'message').pipe((0, _map.map)(function (msg) {
                     return msg.data;
-                }).map(function (strMsg) {
+                }), (0, _map.map)(function (strMsg) {
                     return JSON.parse(strMsg);
-                }).filter(function (msg) {
+                }), (0, _filter.filter)(function (msg) {
                     return msg.it !== _this.token;
-                });
+                }));
             }
             return this._$;
         }

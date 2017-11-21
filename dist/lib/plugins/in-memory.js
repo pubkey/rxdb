@@ -87,6 +87,8 @@ var spawnInMemory = exports.spawnInMemory = function () {
     };
 }();
 
+var _Subject = require('rxjs/Subject');
+
 var _rxCollection = require('../rx-collection');
 
 var _rxCollection2 = _interopRequireDefault(_rxCollection);
@@ -127,12 +129,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var collectionCacheMap = new WeakMap(); /**
-                                         * This plugin adds RxCollection.inMemory()
-                                         * Which replicates the collection into an in-memory-collection
-                                         * So you can do faster queries and also query over encrypted fields
-                                         */
+/**
+ * This plugin adds RxCollection.inMemory()
+ * Which replicates the collection into an in-memory-collection
+ * So you can do faster queries and also query over encrypted fields
+ */
 
+var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
     new_edits: false
@@ -184,7 +187,7 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
 
                                 this.pouch = new _pouchDb2['default']('rxdb-in-memory-' + util.randomCouchString(10), util.adapterObject('memory'), {});
 
-                                this._observable$ = new util.Rx.Subject();
+                                this._observable$ = new _Subject.Subject();
                                 this._changeEventBuffer = _changeEventBuffer2['default'].create(this);
 
                                 // INDEXES

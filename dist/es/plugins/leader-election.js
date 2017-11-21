@@ -12,6 +12,10 @@ import RxBroadcastChannel from '../rx-broadcast-channel';
 
 export var documentID = '_local/leader';
 
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { filter } from 'rxjs/operators/filter';
+import { first } from 'rxjs/operators/first';
+
 /**
  * This time defines how 'fast' the communication between the instances is.
  * If this time is too low, it's possible that more than one instance becomes leader
@@ -34,7 +38,7 @@ var LeaderElector = function () {
         this.token = this.database.token;
 
         this.isLeader = false;
-        this.becomeLeader$ = new util.Rx.BehaviorSubject({
+        this.becomeLeader$ = new BehaviorSubject({
             isLeader: false
         });
 
@@ -308,37 +312,37 @@ var LeaderElector = function () {
                                         while (1) {
                                             switch (_context4.prev = _context4.next) {
                                                 case 0:
-                                                    subs.push(_this.bc.$.filter(function () {
+                                                    subs.push(_this.bc.$.pipe(filter(function () {
                                                         return !!_this.isApplying;
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         return msg.t >= applyTime;
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         return msg.type === 'apply';
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         if (msg.data < applyTime || msg.data === applyTime && msg.it > _this.token) return true;else return false;
-                                                    }).filter(function () {
+                                                    }), filter(function () {
                                                         return errors.length < 1;
-                                                    }).subscribe(function (msg) {
+                                                    })).subscribe(function (msg) {
                                                         return errors.push('other is applying:' + msg.it);
                                                     }));
-                                                    subs.push(_this.bc.$.filter(function () {
+                                                    subs.push(_this.bc.$.pipe(filter(function () {
                                                         return !!_this.isApplying;
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         return msg.t >= applyTime;
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         return msg.type === 'tell';
-                                                    }).filter(function () {
+                                                    }), filter(function () {
                                                         return errors.length < 1;
-                                                    }).subscribe(function (msg) {
+                                                    })).subscribe(function (msg) {
                                                         return errors.push('other is leader' + msg.it);
                                                     }));
-                                                    subs.push(_this.bc.$.filter(function () {
+                                                    subs.push(_this.bc.$.pipe(filter(function () {
                                                         return !!_this.isApplying;
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         return msg.type === 'apply';
-                                                    }).filter(function (msg) {
+                                                    }), filter(function (msg) {
                                                         if (msg.data > applyTime || msg.data === applyTime && msg.it > _this.token) return true;else return false;
-                                                    }).subscribe(function () {
+                                                    })).subscribe(function () {
                                                         return _this.bc.write('apply', applyTime);
                                                     }));
 
@@ -550,13 +554,13 @@ var LeaderElector = function () {
                             break;
 
                         case 11:
-                            this.signalLeadership = this.bc.$.filter(function () {
+                            this.signalLeadership = this.bc.$.pipe(filter(function () {
                                 return !!_this2.isLeader;
-                            })
+                            }),
                             // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                            .filter(function (msg) {
+                            filter(function (msg) {
                                 return msg.type !== 'tell';
-                            }).subscribe(function () {
+                            })).subscribe(function () {
                                 return _this2.leaderSignal();
                             });
                             this.subs.push(this.signalLeadership);
@@ -758,9 +762,9 @@ var LeaderElector = function () {
 
                         case 9:
                             // apply when leader dies
-                            this.subs.push(this.bc.$.filter(function (msg) {
+                            this.subs.push(this.bc.$.pipe(filter(function (msg) {
                                 return msg.type === 'death';
-                            }).subscribe(function () {
+                            })).subscribe(function () {
                                 return _this3.applyOnce();
                             }));
                             return _context11.abrupt('break', 13);
@@ -822,9 +826,9 @@ var LeaderElector = function () {
                             }))();
 
                         case 14:
-                            return _context11.abrupt('return', this.becomeLeader$.asObservable().filter(function (i) {
+                            return _context11.abrupt('return', this.becomeLeader$.asObservable().pipe(filter(function (i) {
                                 return i.isLeader === true;
-                            }).first().toPromise());
+                            }), first()).toPromise());
 
                         case 15:
                         case 'end':

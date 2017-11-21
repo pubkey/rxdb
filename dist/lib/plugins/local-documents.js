@@ -65,14 +65,17 @@ var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
+var _filter = require('rxjs/operators/filter');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var DOC_CACHE_BY_PARENT = new WeakMap(); /**
-                                          * This plugin adds the local-documents-support
-                                          * Local documents behave equal then with pouchdb
-                                          * @link https://pouchdb.com/guides/local-documents.html
-                                          */
+/**
+ * This plugin adds the local-documents-support
+ * Local documents behave equal then with pouchdb
+ * @link https://pouchdb.com/guides/local-documents.html
+ */
 
+var DOC_CACHE_BY_PARENT = new WeakMap();
 var _getDocCache = function _getDocCache(parent) {
     if (!DOC_CACHE_BY_PARENT.has(parent)) {
         DOC_CACHE_BY_PARENT.set(parent, _docCache2['default'].create());
@@ -82,9 +85,9 @@ var _getDocCache = function _getDocCache(parent) {
 var CHANGE_SUB_BY_PARENT = new WeakMap();
 var _getChangeSub = function _getChangeSub(parent) {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
-        var sub = parent.$.filter(function (cE) {
+        var sub = parent.$.pipe((0, _filter.filter)(function (cE) {
             return cE.data.isLocal;
-        }).subscribe(function (cE) {
+        })).subscribe(function (cE) {
             var docCache = _getDocCache(parent);
             var doc = docCache.get(cE.data.doc);
             if (doc) doc._handleChangeEvent(cE);

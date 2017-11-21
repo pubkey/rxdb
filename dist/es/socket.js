@@ -9,6 +9,9 @@ import RxBroadcastChannel from './rx-broadcast-channel';
 var EVENT_TTL = 5000; // after this age, events will be deleted
 var PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
+import { Subject } from 'rxjs/Subject';
+import { filter } from 'rxjs/operators/filter';
+
 var Socket = function () {
     function Socket(database) {
         _classCallCheck(this, Socket);
@@ -24,7 +27,7 @@ var Socket = function () {
         this.receivedEvents = {};
 
         this.bc = RxBroadcastChannel.create(this.database, 'socket');
-        this.messages$ = new util.Rx.Subject();
+        this.messages$ = new Subject();
     }
 
     /**
@@ -48,9 +51,9 @@ var Socket = function () {
 
                             // pull on BroadcastChannel-message
                             if (this.bc) {
-                                this.subs.push(this.bc.$.filter(function (msg) {
+                                this.subs.push(this.bc.$.pipe(filter(function (msg) {
                                     return msg.type === 'pull';
-                                }).subscribe(function () {
+                                })).subscribe(function () {
                                     return _this.pull();
                                 }));
                             }

@@ -60,6 +60,12 @@ var _rxError2 = _interopRequireDefault(_rxError);
 
 var _hooks = require('./hooks');
 
+var _BehaviorSubject = require('rxjs/BehaviorSubject');
+
+var _distinctUntilChanged = require('rxjs/operators/distinctUntilChanged');
+
+var _map = require('rxjs/operators/map');
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -74,7 +80,7 @@ var RxDocument = exports.RxDocument = function () {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new util.Rx.BehaviorSubject((0, _clone2['default'])(jsonData));
+        this._dataSync$ = new _BehaviorSubject.BehaviorSubject((0, _clone2['default'])(jsonData));
 
         // current doc-data, changes when setting values etc
         this._data = (0, _clone2['default'])(jsonData);
@@ -86,8 +92,8 @@ var RxDocument = exports.RxDocument = function () {
         this._atomicUpdatesResolveFunctions = new WeakMap();
 
         // false when _data !== _dataSync
-        this._synced$ = new util.Rx.BehaviorSubject(true);
-        this._deleted$ = new util.Rx.BehaviorSubject(false);
+        this._synced$ = new _BehaviorSubject.BehaviorSubject(true);
+        this._deleted$ = new _BehaviorSubject.BehaviorSubject(false);
     }
 
     (0, _createClass3['default'])(RxDocument, [{
@@ -187,9 +193,9 @@ var RxDocument = exports.RxDocument = function () {
             var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
             if (!schemaObj) throw new Error('cannot observe a non-existed field (' + path + ')');
 
-            return this._dataSync$.map(function (data) {
+            return this._dataSync$.pipe((0, _map.map)(function (data) {
                 return _objectPath2['default'].get(data, path);
-            }).distinctUntilChanged().asObservable();
+            }), (0, _distinctUntilChanged.distinctUntilChanged)()).asObservable();
         }
 
         /**
@@ -763,7 +769,7 @@ var RxDocument = exports.RxDocument = function () {
     }, {
         key: 'synced$',
         get: function get() {
-            return this._synced$.asObservable().distinctUntilChanged();
+            return this._synced$.pipe((0, _distinctUntilChanged.distinctUntilChanged)()).asObservable();
         }
     }, {
         key: 'synced',

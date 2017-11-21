@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.requestIdlePromise = exports.promiseWait = exports.Rx = undefined;
+exports.requestIdlePromise = exports.promiseWait = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
@@ -116,67 +116,16 @@ var _rxError = require('./rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
-var _Observable = require('rxjs/Observable');
-
-var _Subject = require('rxjs/Subject');
-
-var _BehaviorSubject = require('rxjs/BehaviorSubject');
-
-require('rxjs/add/observable/merge');
-
-require('rxjs/add/observable/interval');
-
-require('rxjs/add/observable/from');
-
-require('rxjs/add/observable/fromEvent');
-
-require('rxjs/add/observable/defer');
-
-require('rxjs/add/operator/publishReplay');
-
-require('rxjs/add/operator/publish');
-
-require('rxjs/add/operator/timeout');
-
-require('rxjs/add/operator/delay');
-
-require('rxjs/add/operator/do');
-
-require('rxjs/add/operator/map');
-
-require('rxjs/add/operator/mergeMap');
-
-require('rxjs/add/operator/filter');
-
-require('rxjs/add/operator/first');
-
-require('rxjs/add/operator/startWith');
-
-require('rxjs/add/operator/toPromise');
-
-require('rxjs/add/operator/distinctUntilChanged');
-
-require('rxjs/add/operator/distinct');
-
 var _sparkMd = require('spark-md5');
 
 var _sparkMd2 = _interopRequireDefault(_sparkMd);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var Rx = exports.Rx = {
-    Observable: _Observable.Observable,
-    Subject: _Subject.Subject,
-    BehaviorSubject: _BehaviorSubject.BehaviorSubject
-};
-
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
  */
-
-
-// rxjs cherry-pick
 /**
  * this contains a mapping to basic dependencies
  * which should be easy to change

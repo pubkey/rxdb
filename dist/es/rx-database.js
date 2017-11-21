@@ -15,6 +15,9 @@ import Socket from './socket';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
 
+import { Subject } from 'rxjs/Subject';
+import { filter } from 'rxjs/operators/filter';
+
 /**
  * stores the combinations
  * of used database-names with their adapters
@@ -41,10 +44,10 @@ export var RxDatabase = function () {
         this.collections = {};
 
         // rx
-        this.subject = new util.Rx.Subject();
-        this.observable$ = this.subject.asObservable().filter(function (cEvent) {
+        this.subject = new Subject();
+        this.observable$ = this.subject.asObservable().pipe(filter(function (cEvent) {
             return RxChangeEvent.isInstanceOf(cEvent);
-        });
+        }));
     }
 
     /**

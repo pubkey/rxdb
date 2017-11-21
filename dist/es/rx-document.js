@@ -11,6 +11,10 @@ import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
 
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
+import { map } from 'rxjs/operators/map';
+
 export var RxDocument = function () {
     function RxDocument(collection, jsonData) {
         _classCallCheck(this, RxDocument);
@@ -21,7 +25,7 @@ export var RxDocument = function () {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new util.Rx.BehaviorSubject(clone(jsonData));
+        this._dataSync$ = new BehaviorSubject(clone(jsonData));
 
         // current doc-data, changes when setting values etc
         this._data = clone(jsonData);
@@ -33,8 +37,8 @@ export var RxDocument = function () {
         this._atomicUpdatesResolveFunctions = new WeakMap();
 
         // false when _data !== _dataSync
-        this._synced$ = new util.Rx.BehaviorSubject(true);
-        this._deleted$ = new util.Rx.BehaviorSubject(false);
+        this._synced$ = new BehaviorSubject(true);
+        this._deleted$ = new BehaviorSubject(false);
     }
 
     RxDocument.prototype.prepare = function prepare() {
@@ -126,9 +130,9 @@ export var RxDocument = function () {
         var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) throw new Error('cannot observe a non-existed field (' + path + ')');
 
-        return this._dataSync$.map(function (data) {
+        return this._dataSync$.pipe(map(function (data) {
             return objectPath.get(data, path);
-        }).distinctUntilChanged().asObservable();
+        }), distinctUntilChanged()).asObservable();
     };
 
     /**
@@ -684,7 +688,7 @@ export var RxDocument = function () {
     }, {
         key: 'synced$',
         get: function get() {
-            return this._synced$.asObservable().distinctUntilChanged();
+            return this._synced$.pipe(distinctUntilChanged()).asObservable();
         }
     }, {
         key: 'synced',

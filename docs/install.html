@@ -1156,8 +1156,7 @@
 <p>You also need to install the peer-dependency <code>rxjs</code> if you not have installed it before.</p>
 <p><code>npm i rxjs --save</code></p>
 <h2 id="polyfills">polyfills</h2>
-<p>RxDB is coded with es8 and transpiled to es5.
-This means you have to install polyfills to support older browsers.</p>
+<p>RxDB is coded with es8 and transpiled to es5. This means you have to install polyfills to support older browsers.</p>
 <p><code>npm i babel-polyfill --save</code></p>
 <h2 id="latest">Latest</h2>
 <p>If you need the latest develop-state of RxDB, add it as git-dependency into your <code>package.json</code>.</p>
@@ -1168,18 +1167,34 @@ This means you have to install polyfills to support older browsers.</p>
 <p>Replace <code>commitHash</code> with the hash of the latest <a href="https://github.com/pubkey/rxdb/search?q=build&amp;type=Commits" target="_blank">build-commit</a>.</p>
 <h2 id="import">Import</h2>
 <p>To import <code>rxdb</code>, add this to your javascript file:</p>
-<pre><code class="lang-js"><span class="hljs-comment">// es6</span>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6</span>
 <span class="hljs-keyword">import</span> RxDB <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
 
 <span class="hljs-comment">// es5</span>
 <span class="hljs-keyword">var</span> rxdb = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb&apos;</span>);
 </code></pre>
 <p>If you have not included es8-polyfills, you also have to import <code>babel-polyfill</code>.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// es6</span>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6</span>
 <span class="hljs-keyword">import</span> <span class="hljs-string">&apos;babel-polyfill&apos;</span>;
 
 <span class="hljs-comment">// es5</span>
 <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;babel-polyfill&apos;</span>);
+</code></pre>
+<h2 id="rxjs">rxjs</h2>
+<p>To reduce the build-size, RxDB is using rxjs&apos;s <a href="https://github.com/ReactiveX/rxjs/blob/master/doc/lettable-operators.md" target="_blank">lettable-operators</a>. This means that by default only some parts of rxjs are included into RxDB. If you want to use additional operators, you either have to require the whole rxjs-lib, or also use the lettable-operators. Another alternative is to cherry-pick the needed operators.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// full import</span>
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;rxjs&apos;</span>; <span class="hljs-comment">// es6</span>
+<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxjs&apos;</span>); <span class="hljs-comment">// es5</span>
+
+<span class="hljs-comment">// lettable</span>
+<span class="hljs-keyword">import</span> { Subject } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxjs/Subject&apos;</span>;
+<span class="hljs-keyword">import</span> { filter } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxjs/operators/filter&apos;</span>;
+
+<span class="hljs-comment">// cherry-pick</span>
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;rxjs/add/operator/map&apos;</span>;        
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;rxjs/add/operator/mergeMap&apos;</span>;        
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;rxjs/add/operator/filter&apos;</span>;        
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;rxjs/add/operator/first&apos;</span>;
 </code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="rx-database.html">here</a></p>
@@ -1226,7 +1241,7 @@ This means you have to install polyfills to support older browsers.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Install","level":"1.2","depth":1,"next":{"title":"npm","level":"1.2.1","depth":2,"anchor":"#npm","path":"install.md","ref":"./install.md#npm","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"install.md","mtime":"2017-11-14T08:58:51.154Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-14T10:10:19.602Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Install","level":"1.2","depth":1,"next":{"title":"npm","level":"1.2.1","depth":2,"anchor":"#npm","path":"install.md","ref":"./install.md#npm","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"install.md","mtime":"2017-11-21T20:21:49.015Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-21T23:15:36.904Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

@@ -10,6 +10,13 @@ import QueryChangeDetector from './query-change-detector';
 import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
 
+import { merge } from 'rxjs/observable/merge';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { mergeMap } from 'rxjs/operators/mergeMap';
+import { filter } from 'rxjs/operators/filter';
+import { map } from 'rxjs/operators/map';
+import { first } from 'rxjs/operators/first';
+
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
     return ++_queryCount;
@@ -29,7 +36,7 @@ export var RxQuery = function () {
 
         this._queryChangeDetector = QueryChangeDetector.create(this);
         this._resultsData = null;
-        this._results$ = new util.Rx.BehaviorSubject(null);
+        this._results$ = new BehaviorSubject(null);
         this._latestChangeEvent = -1;
         this._runningPromise = Promise.resolve(true);
 
@@ -368,7 +375,7 @@ export var RxQuery = function () {
 
 
     RxQuery.prototype.exec = function exec() {
-        return this.$.first().toPromise();
+        return this.$.pipe(first()).toPromise();
     };
 
     /**
@@ -442,17 +449,17 @@ export var RxQuery = function () {
             var _this3 = this;
 
             if (!this._$) {
-                var res$ = this._results$.mergeMap(function (results) {
+                var res$ = this._results$.pipe(mergeMap(function (results) {
                     return _this3._ensureEqual().then(function (hasChanged) {
                         if (hasChanged) return 'WAITFORNEXTEMIT';else return results;
                     });
-                }).filter(function (results) {
+                }), filter(function (results) {
                     return results !== 'WAITFORNEXTEMIT';
-                }).asObservable();
+                })).asObservable();
 
-                var changeEvents$ = this.collection.$.filter(function (cEvent) {
+                var changeEvents$ = this.collection.$.pipe(filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
-                }).mergeMap(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
+                }), mergeMap(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
                     return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                         while (1) {
                             switch (_context2.prev = _context2.next) {
@@ -465,15 +472,14 @@ export var RxQuery = function () {
                             }
                         }
                     }, _callee2, _this3);
-                }))).filter(function () {
+                }))), filter(function () {
                     return false;
-                });
-
-                this._$ = util.Rx.Observable.merge(res$, changeEvents$).filter(function (x) {
+                }));
+                this._$ = merge(res$, changeEvents$).pipe(filter(function (x) {
                     return x !== null;
-                }).map(function (results) {
+                }), map(function (results) {
                     if (_this3.op !== 'findOne') return results;else if (results.length === 0) return null;else return results[0];
-                });
+                }));
             }
             return this._$;
         }
