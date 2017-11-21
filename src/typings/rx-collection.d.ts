@@ -62,7 +62,7 @@ export interface SyncOptions {
     },
     // for options see https://pouchdb.com/api.html#replication
     options?: PouchReplicationOptions,
-    query?: RxQuery<any>
+    query?: RxQuery<any, any>
 }
 
 export declare class RxCollection<RxDocumentType> {
@@ -75,8 +75,8 @@ export declare class RxCollection<RxDocumentType> {
     newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType>;
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
-    find(queryObj?: any): RxQuery<RxDocument<RxDocumentType>[]>;
-    findOne(queryObj?: any): RxQuery<RxDocument<RxDocumentType>>;
+    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType>[]>;
+    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType>>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
