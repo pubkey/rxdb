@@ -175,6 +175,35 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
+    describe('query', () => {
+        it('should know the where-fields', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+
+                    type DocType = {
+                        age: number,
+                        firstName: string,
+                        lastName: string,
+                        passportId: string,
+                        nestedObject: {
+                            foo: string,
+                            bar: number
+                        }
+                    };
+
+                    const myCollection: RxCollection<DocType> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        autoMigrate: false,
+                    });
+
+                    const query = myCollection.findOne().where('nestedObject.foo').eq('foobar');
+                });
+            `;
+            await transpileCode(code);
+        });
+    });
     describe('rx-error', () => {
         it('should know the parameters of the error', async () => {
             const code = codeBase + `
