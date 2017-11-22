@@ -81,7 +81,7 @@
   },
   "devDependencies": {
     "assert": "1.4.1",
-    "async-test-util": "1.2.0",
+    "async-test-util": "1.2.1",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "babel-eslint": "8.0.2",
