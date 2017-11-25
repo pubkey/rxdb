@@ -11,7 +11,7 @@ import * as humansCollection from './../helper/humans-collection';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxDocument from '../../dist/lib/rx-document';
-
+import * as util from '../../dist/lib/util';
 import * as KeyCompressor from '../../dist/lib/plugins/key-compression';
 
 
@@ -295,7 +295,7 @@ describe('key-compression.test.js', () => {
     });
 
     describe('RxQuery().keyCompress()', () => {
-        it('transform basic search keys', async() => {
+        it('transform basic search keys', async () => {
             const c = await humansCollection.create(0);
             const query = c.find()
                 .where('firstName').eq('myFirstName')
@@ -306,7 +306,7 @@ describe('key-compression.test.js', () => {
             assert.equal(query.selector[c._keyCompressor.table['firstName']], 'myFirstName');
             c.database.destroy();
         });
-        it('primary', async() => {
+        it('primary', async () => {
             const c = await humansCollection.createPrimary(0);
             const query = c.find()
                 .where('passportId').eq('myPassportId')
@@ -317,7 +317,7 @@ describe('key-compression.test.js', () => {
             assert.equal(query.selector._id, 'myPassportId');
             c.database.destroy();
         });
-        it('nested', async() => {
+        it('nested', async () => {
             const c = await humansCollection.createNested(0);
             const query = c.find()
                 .where('mainSkill.level').eq(5)
@@ -334,7 +334,7 @@ describe('key-compression.test.js', () => {
             c.database.destroy();
         });
 
-        it('additional attribute', async() => {
+        it('additional attribute', async () => {
             const c = await humansCollection.create(0);
             const query = c.find()
                 .where('foobar').eq(5)
@@ -343,7 +343,7 @@ describe('key-compression.test.js', () => {
             assert.equal(query.selector.foobar, 5);
             c.database.destroy();
         });
-        it('additional nested attribute', async() => {
+        it('additional nested attribute', async () => {
             const c = await humansCollection.createNested(0);
             const query = c.find()
                 .where('mainSkill.foobar').eq(5)
@@ -356,7 +356,7 @@ describe('key-compression.test.js', () => {
             assert.equal(query.selector[cString], 5);
             c.database.destroy();
         });
-        it('additional deep nested attribute', async() => {
+        it('additional deep nested attribute', async () => {
             const c = await humansCollection.createDeepNested(0);
             const query = c.find()
                 .where('mainSkill.attack.foobar').eq(5)
@@ -370,14 +370,14 @@ describe('key-compression.test.js', () => {
             assert.equal(query.selector[cString], 5);
             c.database.destroy();
         });
-        it('.sort()', async() => {
+        it('.sort()', async () => {
             const c = await humansCollection.createDeepNested(0);
             const query = c.find().sort('mainSkill');
             const compressed = query.keyCompress();
             assert.equal(compressed.sort[0][c._keyCompressor.table['mainSkill']], 'asc');
             c.database.destroy();
         });
-        it('.sort() nested', async() => {
+        it('.sort() nested', async () => {
             const c = await humansCollection.createNested(0);
             const query = c.find()
                 .sort('mainSkill.level')
@@ -392,7 +392,7 @@ describe('key-compression.test.js', () => {
         });
     });
     describe('integration into pouchDB', () => {
-        it('should have saved a compressed document', async() => {
+        it('should have saved a compressed document', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);
@@ -409,21 +409,21 @@ describe('key-compression.test.js', () => {
     });
     describe('disable key-compression', () => {
         describe('.doKeyCompression()', () => {
-            it('doKeyCompression(): true', async() => {
+            it('doKeyCompression(): true', async () => {
                 const schemaJSON = clone(schemas.human);
                 schemaJSON.disableKeyCompression = true;
                 const schema = RxSchema.create(schemaJSON);
                 assert.equal(schema.doKeyCompression(), false);
             });
-            it('doKeyCompression(): false', async() => {
+            it('doKeyCompression(): false', async () => {
                 const schemaJSON = clone(schemas.human);
                 schemaJSON.disableKeyCompression = false;
                 const schema = RxSchema.create(schemaJSON);
                 assert.equal(schema.doKeyCompression(), true);
             });
         });
-        describe('.compress()', async() => {
-            it('do not compress', async() => {
+        describe('.compress()', async () => {
+            it('do not compress', async () => {
                 const col = await humansCollection.createNoCompression(0);
                 const human = schemaObjects.human();
                 const after = col._keyCompressor.compress(human);
@@ -432,8 +432,8 @@ describe('key-compression.test.js', () => {
                 col.database.destroy();
             });
         });
-        describe('.decompress()', async() => {
-            it('do not compress', async() => {
+        describe('.decompress()', async () => {
+            it('do not compress', async () => {
                 const col = await humansCollection.createNoCompression(0);
                 const human = schemaObjects.human();
                 const after = col._keyCompressor.decompress(human);
@@ -443,9 +443,8 @@ describe('key-compression.test.js', () => {
             });
         });
     });
-
-    describe('bugs', () => {
-        it('BUG: #50 compress string array properly', async() => {
+    describe('issues', () => {
+        it('#50 compress string array properly', async () => {
             const mySchema = {
                 title: 'hero schema',
                 version: 0,
@@ -476,6 +475,45 @@ describe('key-compression.test.js', () => {
             const doc = await collection.findOne().exec();
             assert.ok(RxDocument.isInstanceOf(doc));
             assert.deepEqual(doc.likes, docData.likes);
+            db.destroy();
+        });
+        it('error on nested null', async () => {
+            const mySchema = {
+                title: 'hero schema',
+                version: 0,
+                description: 'describes a simple hero',
+                type: 'object',
+                properties: {
+                    key: {
+                        type: 'string',
+                        primary: true
+                    },
+                    nested: {
+                        type: 'object'
+                    }
+                }
+            };
+
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'mycollection',
+                schema: mySchema
+            });
+
+            const docData = {
+                key: 'foobar',
+                nested: {
+                    lastProvider: null,
+                    providers: 0,
+                    sync: false,
+                    other: {}
+                }
+            };
+            await collection.insert(docData);
+
             db.destroy();
         });
     });
