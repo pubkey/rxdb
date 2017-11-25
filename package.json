@@ -44,6 +44,7 @@
     "transpile": "node scripts/transpile.js",
     "build:es": "rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es",
     "build": "npm run clear && npm run transpile && npm run build:es && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
+    "build:min": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
     "build:size": "echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./dist/rxdb.browserify.min.js",
     "docs:install": "gitbook install docs-src",
     "docs:serve": "gitbook serve docs-src",
