@@ -1,5 +1,10 @@
 # Changelog
 
+## X.X.X (coming soon)
+
+Bugfixes:
+  - Error on key-compression when nested value is null
+
 ## 7.1.0 (November 22, 2017)
 
 Other:
