@@ -1,6 +1,6 @@
 # Changelog
 
-## X.X.X (coming soon)
+## 7.1.1 (November 27, 2017)
 
 Bugfixes:
   - Error on key-compression when nested value is null
