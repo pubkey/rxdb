@@ -2,6 +2,14 @@ import {
     RxDocument
 } from './rx-document';
 
+declare type Buffer = any;
+
+export type RxAttachmentCreator = {
+    id: string,
+    data: string | Blob | Buffer,
+    type: string
+};
+
 export declare class RxAttachment<RxDocumentType> {
     readonly doc: RxDocument<RxDocumentType>;
     readonly id: string;

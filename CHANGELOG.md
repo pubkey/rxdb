@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Error on key-compression when nested value is null
+  - Fix typings of `RxDocument.putAttachment()`
 
 ## 7.1.0 (November 22, 2017)
 

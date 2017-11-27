@@ -7,7 +7,8 @@ import {
     RxDatabase
 } from './rx-database';
 import {
-    RxAttachment
+    RxAttachment,
+    RxAttachmentCreator
 } from './rx-attachment';
 
 export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
@@ -32,7 +33,7 @@ export declare class RxDocumentBase<RxDocumentType> {
     update(updateObj: any): Promise<any>;
     atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType>>;
 
-    putAttachment(id: string, data: string, type?: string): Promise<RxAttachment<RxDocumentType>>;
+    putAttachment(RxAttachmentCreator): Promise<RxAttachment<RxDocumentType>>;
     getAttachment(id: string): Promise<RxAttachment<RxDocumentType>>;
     allAttachments(): Promise<RxAttachment<RxDocumentType>[]>;
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;

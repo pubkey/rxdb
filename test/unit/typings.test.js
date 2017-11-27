@@ -13,7 +13,8 @@ describe('typings.test.js', () => {
             RxCollection,
             RxDocument,
             RxJsonSchema,
-            RxError
+            RxError,
+            RxAttachment
         } from '../';
     `;
     const transpileCode = async (code) => {
@@ -170,6 +171,34 @@ describe('typings.test.js', () => {
 
                     const otherDoc = await myCollection.findOne().exec();
                     const id2 = otherDoc.passportId;
+                });
+            `;
+            await transpileCode(code);
+        });
+        it('.putAttachment()', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+
+                    type DocType = {
+                        age: number,
+                        firstName: string,
+                        lastName: string,
+                        passportId: string
+                    };
+
+                    const myCollection: RxCollection<DocType> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        autoMigrate: false,
+                    });
+
+                    const oneDoc: RxDocument<DocType> = await myCollection.findOne().exec();
+                    const attachment: RxAttachment<DocType> = await oneDoc.putAttachment({
+                        id: 'cat.txt',
+                        data: 'foo bar',
+                        type: 'text/plain'
+                    });
                 });
             `;
             await transpileCode(code);
