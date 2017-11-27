@@ -15,9 +15,9 @@
   <a href="https://twitter.com/rxdbjs">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/twitter_follow.png" width="111px" />
   </a>
-  <a href="https://www.patreon.com/rxdb">
+<!--  <a href="https://www.patreon.com/rxdb">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
-  </a>
+  </a> -->
 </p>
 
 <br/><br/><br/>

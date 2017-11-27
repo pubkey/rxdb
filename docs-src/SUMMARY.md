@@ -65,8 +65,8 @@
     * [remove()](./rx-query.md#remove)
     * [update()](./rx-query.md#update)
 
-
 * [RxAttachment](./rx-attachment.md)
+
 
 * [Middleware-hooks](./middleware.md)
 
