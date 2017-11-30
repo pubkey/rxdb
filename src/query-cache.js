@@ -5,7 +5,7 @@
 class QueryCache {
     constructor() {
         this.subs = [];
-        this._map = {};
+        this._map = {}; // TODO use new Map()
     }
 
     /**

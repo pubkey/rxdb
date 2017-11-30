@@ -9,7 +9,7 @@ var QueryCache = function () {
         _classCallCheck(this, QueryCache);
 
         this.subs = [];
-        this._map = {};
+        this._map = {}; // TODO use new Map()
     }
 
     /**

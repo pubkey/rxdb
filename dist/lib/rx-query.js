@@ -291,7 +291,8 @@ var RxQuery = exports.RxQuery = function () {
         value: function _execOverDatabase() {
             var _this2 = this;
 
-            this._execOverDatabaseCount++;
+            //        console.log('query(' + this.id + ')._execOverDatabase(' + this._execOverDatabaseCount + '):' + this.toString());
+            this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
             var docsPromise = void 0;
             switch (this.op) {
@@ -440,9 +441,28 @@ var RxQuery = exports.RxQuery = function () {
 
     }, {
         key: 'exec',
-        value: function exec() {
-            return this.$.pipe((0, _first.first)()).toPromise();
-        }
+        value: function () {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                return _context2.abrupt('return', this.$.pipe((0, _first.first)()).toPromise());
+
+                            case 1:
+                            case 'end':
+                                return _context2.stop();
+                        }
+                    }
+                }, _callee2, this);
+            }));
+
+            function exec() {
+                return _ref3.apply(this, arguments);
+            }
+
+            return exec;
+        }()
 
         /**
          * regex cannot run on primary _id
@@ -529,19 +549,19 @@ var RxQuery = exports.RxQuery = function () {
 
                 var changeEvents$ = this.collection.$.pipe((0, _filter.filter)(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
-                }), (0, _mergeMap.mergeMap)((0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
-                    return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                }), (0, _mergeMap.mergeMap)((0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
+                    return _regenerator2['default'].wrap(function _callee3$(_context3) {
                         while (1) {
-                            switch (_context2.prev = _context2.next) {
+                            switch (_context3.prev = _context3.next) {
                                 case 0:
-                                    return _context2.abrupt('return', _this3._ensureEqual());
+                                    return _context3.abrupt('return', _this3._ensureEqual());
 
                                 case 1:
                                 case 'end':
-                                    return _context2.stop();
+                                    return _context3.stop();
                             }
                         }
-                    }, _callee2, _this3);
+                    }, _callee3, _this3);
                 }))), (0, _filter.filter)(function () {
                     return false;
                 }));
@@ -581,10 +601,13 @@ var protoMerge = function protoMerge(rxQueryProto, mQueryProtoKeys) {
 
 var protoMerged = false;
 function create(op, queryObj, collection) {
+    // checks
     if (queryObj && (typeof queryObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(queryObj)) !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
     var ret = new RxQuery(op, queryObj, collection);
+    // ensure when created with same params, only one is created
+    ret = ret._tunnelQueryCache();
 
     if (!protoMerged) {
         protoMerged = true;

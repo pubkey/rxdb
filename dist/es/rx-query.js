@@ -232,7 +232,8 @@ export var RxQuery = function () {
     RxQuery.prototype._execOverDatabase = function _execOverDatabase() {
         var _this2 = this;
 
-        this._execOverDatabaseCount++;
+        //        console.log('query(' + this.id + ')._execOverDatabase(' + this._execOverDatabaseCount + '):' + this.toString());
+        this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         var docsPromise = void 0;
         switch (this.op) {
@@ -374,9 +375,28 @@ export var RxQuery = function () {
      */
 
 
-    RxQuery.prototype.exec = function exec() {
-        return this.$.pipe(first()).toPromise();
-    };
+    RxQuery.prototype.exec = function () {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
+            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            return _context2.abrupt('return', this.$.pipe(first()).toPromise());
+
+                        case 1:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        }));
+
+        function exec() {
+            return _ref3.apply(this, arguments);
+        }
+
+        return exec;
+    }();
 
     /**
      * regex cannot run on primary _id
@@ -459,19 +479,19 @@ export var RxQuery = function () {
 
                 var changeEvents$ = this.collection.$.pipe(filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
-                }), mergeMap(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-                    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                }), mergeMap(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
+                    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
                         while (1) {
-                            switch (_context2.prev = _context2.next) {
+                            switch (_context3.prev = _context3.next) {
                                 case 0:
-                                    return _context2.abrupt('return', _this3._ensureEqual());
+                                    return _context3.abrupt('return', _this3._ensureEqual());
 
                                 case 1:
                                 case 'end':
-                                    return _context2.stop();
+                                    return _context3.stop();
                             }
                         }
-                    }, _callee2, _this3);
+                    }, _callee3, _this3);
                 }))), filter(function () {
                     return false;
                 }));
@@ -510,10 +530,13 @@ var protoMerge = function protoMerge(rxQueryProto, mQueryProtoKeys) {
 
 var protoMerged = false;
 export function create(op, queryObj, collection) {
+    // checks
     if (queryObj && typeof queryObj !== 'object') throw new TypeError('query must be an object');
     if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
 
     var ret = new RxQuery(op, queryObj, collection);
+    // ensure when created with same params, only one is created
+    ret = ret._tunnelQueryCache();
 
     if (!protoMerged) {
         protoMerged = true;

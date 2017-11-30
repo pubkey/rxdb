@@ -25,10 +25,17 @@ var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
+var _rxChangeEvent = require('../rx-change-event');
+
+var _rxChangeEvent2 = _interopRequireDefault(_rxChangeEvent);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+/**
+ * this plugin adds the json export/import capabilities to RxDB
+ */
 var dumpRxDatabase = function () {
     var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
         var _this = this;
@@ -81,10 +88,7 @@ var dumpRxDatabase = function () {
     return function dumpRxDatabase() {
         return _ref.apply(this, arguments);
     };
-}(); /**
-      * this plugin adds the json export/import capabilities to RxDB
-      */
-
+}();
 
 var importDumpRxDatabase = function () {
     var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(dump) {
@@ -182,16 +186,16 @@ var dumpRxCollection = function () {
 }();
 
 var importDumpRxCollection = function () {
-    var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(exportedJSON) {
+    var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(exportedJSON) {
         var _this3 = this;
 
         var importFns;
-        return _regenerator2['default'].wrap(function _callee4$(_context4) {
+        return _regenerator2['default'].wrap(function _callee5$(_context5) {
             while (1) {
-                switch (_context4.prev = _context4.next) {
+                switch (_context5.prev = _context5.next) {
                     case 0:
                         if (!(exportedJSON.schemaHash !== this.schema.hash)) {
-                            _context4.next = 2;
+                            _context5.next = 2;
                             break;
                         }
 
@@ -199,7 +203,7 @@ var importDumpRxCollection = function () {
 
                     case 2:
                         if (!(exportedJSON.encrypted && exportedJSON.passwordHash !== util.hash(this.database.password))) {
-                            _context4.next = 4;
+                            _context5.next = 4;
                             break;
                         }
 
@@ -216,17 +220,45 @@ var importDumpRxCollection = function () {
                             return _this3.schema.validate(doc);
                         })
                         // import
-                        .map(function (doc) {
-                            return _this3._pouchPut(doc);
-                        });
-                        return _context4.abrupt('return', Promise.all(importFns));
+                        .map(function () {
+                            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(doc) {
+                                var primary, emitEvent;
+                                return _regenerator2['default'].wrap(function _callee4$(_context4) {
+                                    while (1) {
+                                        switch (_context4.prev = _context4.next) {
+                                            case 0:
+                                                _context4.next = 2;
+                                                return _this3._pouchPut(doc);
+
+                                            case 2:
+                                                primary = doc[_this3.schema.primaryPath];
+                                                // emit changeEvents
+
+                                                emitEvent = _rxChangeEvent2['default'].create('INSERT', _this3.database, _this3, null, doc);
+
+                                                emitEvent.data.doc = primary;
+                                                _this3.$emit(emitEvent);
+
+                                            case 6:
+                                            case 'end':
+                                                return _context4.stop();
+                                        }
+                                    }
+                                }, _callee4, _this3);
+                            }));
+
+                            return function (_x6) {
+                                return _ref5.apply(this, arguments);
+                            };
+                        }());
+                        return _context5.abrupt('return', Promise.all(importFns));
 
                     case 6:
                     case 'end':
-                        return _context4.stop();
+                        return _context5.stop();
                 }
             }
-        }, _callee4, this);
+        }, _callee5, this);
     }));
 
     return function importDumpRxCollection(_x5) {

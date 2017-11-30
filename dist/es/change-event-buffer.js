@@ -29,6 +29,7 @@ var ChangeEventBuffer = function () {
     }
 
     ChangeEventBuffer.prototype._handleChangeEvent = function _handleChangeEvent(changeEvent) {
+        // console.log('changeEventBuffer()._handleChangeEvent()');
         this.counter++;
         this.buffer.push(changeEvent);
         this.eventCounterMap.set(changeEvent, this.counter);
