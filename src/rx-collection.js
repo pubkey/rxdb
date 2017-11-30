@@ -367,14 +367,23 @@ export class RxCollection {
      * @param  {any}  json
      * @return {Promise} promise that resolves when finished
      */
-    _atomicUpsertEnsureRxDocumentExists(primary, json) {
-        return this
-            .findOne(primary)
-            .exec()
-            .then(doc => {
-                if (!doc)
-                    return this.insert(json);
-            });
+    async _atomicUpsertEnsureRxDocumentExists(primary, json) {
+        const doc = await this.findOne(primary).exec();
+        if (!doc) {
+            await this.insert(json);
+            return true;
+        } else
+            return false;
+    }
+
+    async _atomicUpsertUpdate(primary, json) {
+        await this.findOne(primary).exec(); // TODO i dont know why we have to call this, but the tests fail otherwise
+        const doc = await this.findOne(primary).exec();
+        await doc.atomicUpdate(innerDoc => {
+            json._rev = innerDoc._rev;
+            innerDoc._data = json;
+        });
+        return doc;
     }
 
     /**
@@ -382,22 +391,27 @@ export class RxCollection {
      * @param  {object}  json
      * @return {Promise}
      */
-    atomicUpsert(json) {
+    async atomicUpsert(json) {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) throw new Error('RxCollection.atomicUpsert() does not work without primary');
 
         // ensure that it wont try 2 parallel inserts
-        if (!this._atomicUpsertLocks[primary])
+        if (!this._atomicUpsertLocks[primary]) {
             this._atomicUpsertLocks[primary] = this._atomicUpsertEnsureRxDocumentExists(primary, json);
-
-        return this
-            ._atomicUpsertLocks[primary]
-            .then(() => this.findOne(primary).exec())
-            .then(doc => doc.atomicUpdate(innerDoc => {
-                json._rev = innerDoc._rev;
-                innerDoc._data = json;
-            }));
+            const wasInserted = await this._atomicUpsertLocks[primary];
+            if (!wasInserted) {
+                const doc = await this._atomicUpsertUpdate(primary, json);
+                return doc;
+            } else {
+                const doc = await this.findOne(primary).exec();
+                return doc;
+            }
+        } else {
+            await this._atomicUpsertLocks[primary];
+            const doc = await this._atomicUpsertUpdate(primary, json);
+            return doc;
+        }
     }
 
     /**

@@ -107,12 +107,12 @@ export class RxQuery {
      * @return {Promise<boolean>} true if results have changed
      */
     async _ensureEqual() {
+        // console.log('ensureEqual: ' + this._latestChangeEvent + ' - ' + this.collection._changeEventBuffer.counter);
         // do nothing if nothing happend between the last exec-run and now
         if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
             return false;
 
         let ret = false;
-
 
         // make sure it does not run in parallel
         await this._runningPromise;
@@ -173,7 +173,8 @@ export class RxQuery {
      * @return {Promise<{}[]>} results-array with document-data
      */
     _execOverDatabase() {
-        this._execOverDatabaseCount++;
+        //        console.log('query(' + this.id + ')._execOverDatabase(' + this._execOverDatabaseCount + '):' + this.toString());
+        this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         let docsPromise;
         switch (this.op) {
@@ -353,7 +354,7 @@ export class RxQuery {
      * execute the query
      * @return {Promise<RxDocument|RxDocument[]>} found documents
      */
-    exec() {
+    async exec() {
         return this.$
             .pipe(
                 first()
@@ -449,12 +450,16 @@ const protoMerge = function(rxQueryProto, mQueryProtoKeys) {
 
 let protoMerged = false;
 export function create(op, queryObj, collection) {
+    // checks
     if (queryObj && typeof queryObj !== 'object')
         throw new TypeError('query must be an object');
     if (Array.isArray(queryObj))
         throw new TypeError('query cannot be an array');
 
-    const ret = new RxQuery(op, queryObj, collection);
+
+    let ret = new RxQuery(op, queryObj, collection);
+    // ensure when created with same params, only one is created
+    ret = ret._tunnelQueryCache();
 
     if (!protoMerged) {
         protoMerged = true;

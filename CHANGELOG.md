@@ -1,5 +1,10 @@
 # Changelog
 
+## X.X.X (coming soon)
+
+Bugfixes:
+  - Query-Cache not used when declaring queries without mango-chain
+
 ## 7.1.1 (November 27, 2017)
 
 Bugfixes:

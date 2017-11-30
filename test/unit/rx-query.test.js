@@ -13,7 +13,7 @@ import AsyncTestUtil from 'async-test-util';
 describe('rx-query.test.js', () => {
     describe('mquery', () => {
         describe('basic', () => {
-            it('should distinguish between different sort-orders', async() => {
+            it('should distinguish between different sort-orders', async () => {
                 // TODO I don't know if this is defined in the couchdb-spec
                 return;
                 const q1 = new MQuery();
@@ -30,7 +30,7 @@ describe('rx-query.test.js', () => {
             });
         });
         describe('.clone()', () => {
-            it('should clone the mquery', async() => {
+            it('should clone the mquery', async () => {
                 const col = await humansCollection.create(0);
                 const q = col.find()
                     .where('name').ne('Alice')
@@ -49,7 +49,7 @@ describe('rx-query.test.js', () => {
         });
     });
     describe('.toJSON()', () => {
-        it('should produce the correct selector-object', async() => {
+        it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -79,7 +79,7 @@ describe('rx-query.test.js', () => {
         });
     });
     describe('._clone()', () => {
-        it('should deep-clone the query', async() => {
+        it('should deep-clone the query', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -97,7 +97,7 @@ describe('rx-query.test.js', () => {
         });
     });
     describe('.toString()', () => {
-        it('should get a valid string-representation', async() => {
+        it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -112,7 +112,7 @@ describe('rx-query.test.js', () => {
 
             col.database.destroy();
         });
-        it('ISSUE #190: should contain the regex', async() => {
+        it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
             const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
@@ -121,7 +121,7 @@ describe('rx-query.test.js', () => {
             assert.ok(queryString.includes('foobar'));
             col.database.destroy();
         });
-        it('same queries should return the same string', async() => {
+        it('same queries should return the same string', async () => {
             const col1 = await humansCollection.create(0);
             const col2 = await humansCollection.create(0);
 
@@ -139,7 +139,7 @@ describe('rx-query.test.js', () => {
             col1.database.destroy();
             col2.database.destroy();
         });
-        it('same queries should return the same string even if on same collection', async() => {
+        it('same queries should return the same string even if on same collection', async () => {
             const col = await humansCollection.create(0);
 
             const query1 = col.find()
@@ -155,7 +155,7 @@ describe('rx-query.test.js', () => {
             assert.equal(query1, query2);
             col.database.destroy();
         });
-        it('same queries should have same string even when in different-selector-order', async() => {
+        it('same queries should have same string even when in different-selector-order', async () => {
             const col = await humansCollection.create(0);
 
             const query1 = col.find()
@@ -174,7 +174,7 @@ describe('rx-query.test.js', () => {
     });
 
     describe('immutable', () => {
-        it('should not be the same object (sort)', async() => {
+        it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -186,7 +186,7 @@ describe('rx-query.test.js', () => {
             assert.notEqual(q, q2);
             col.database.destroy();
         });
-        it('should not be the same object (where)', async() => {
+        it('should not be the same object (where)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -202,7 +202,7 @@ describe('rx-query.test.js', () => {
     });
 
     describe('QueryCache.js', () => {
-        it('return the same object', async() => {
+        it('return the same object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -219,7 +219,18 @@ describe('rx-query.test.js', () => {
             assert.equal(q.id, q2.id);
             col.database.destroy();
         });
-        it('should have the correct amount of cached queries', async() => {
+        it('should return the same object after exec', async () => {
+            const col = await humansCollection.createPrimary(0);
+            const docData = schemaObjects.simpleHuman();
+            await col.insert(docData);
+            const query = col.findOne(docData.passportId);
+            await query.exec();
+            const query2 = col.findOne(docData.passportId);
+            await query2.exec();
+            assert.equal(query.id, query2.id);
+            col.database.destroy();
+        });
+        it('should have the correct amount of cached queries', async () => {
             const col = await humansCollection.create(0);
             const q3 = col.find()
                 .where('name').ne('Bob');
@@ -230,10 +241,10 @@ describe('rx-query.test.js', () => {
             const q2 = col.find()
                 .where('name').ne('Bob');
             assert.ok(q2);
-            assert.equal(Object.keys(col._queryCache._map).length, 3);
+            assert.equal(Object.keys(col._queryCache._map).length, 4);
             col.database.destroy();
         });
-        it('return another object', async() => {
+        it('return another object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
                 .where('name').ne('Alice')
@@ -250,7 +261,7 @@ describe('rx-query.test.js', () => {
             assert.notEqual(q.id, q2.id);
             col.database.destroy();
         });
-        it('ISSUE: ensure its the same query', async() => {
+        it('ISSUE: ensure its the same query', async () => {
             const col = await humansCollection.create(0);
 
             const query1 = col.find()
@@ -266,7 +277,7 @@ describe('rx-query.test.js', () => {
             assert.ok(query1 === query2);
             col.database.destroy();
         });
-        it('ensure its the same query when selector-order is different', async() => {
+        it('ensure its the same query when selector-order is different', async () => {
             const col = await humansCollection.create(0);
 
             const query1 = col.find()
@@ -283,7 +294,7 @@ describe('rx-query.test.js', () => {
             col.database.destroy();
         });
 
-        it('TODO should distinguish between different sort-orders', async() => {
+        it('TODO should distinguish between different sort-orders', async () => {
             // TODO I don't know if this is defined in the couchdb-spec
             return;
 
@@ -311,7 +322,7 @@ describe('rx-query.test.js', () => {
     });
 
     describe('.exec()', () => {
-        it('reusing exec should not make a execOverDatabase', async() => {
+        it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
             const q = col.find().where('name').ne('Alice');
 
@@ -327,7 +338,7 @@ describe('rx-query.test.js', () => {
 
             col.database.destroy();
         });
-        it('should execOverDatabase when still subscribed and changeEvent comes in', async() => {
+        it('should execOverDatabase when still subscribed and changeEvent comes in', async () => {
             const col = await humansCollection.create(2);
 
             // it is assumed that this query can never handled by the QueryChangeDetector
@@ -352,7 +363,7 @@ describe('rx-query.test.js', () => {
             assert.equal(fired[1].pop().passportId, addObj.passportId);
             col.database.destroy();
         });
-        it('reusing exec should execOverDatabase when change happened', async() => {
+        it('reusing exec should execOverDatabase when change happened', async () => {
             const col = await humansCollection.create(2);
 
             // it is assumed that this query can never handled by the QueryChangeDetector
@@ -377,7 +388,7 @@ describe('rx-query.test.js', () => {
 
             col.database.destroy();
         });
-        it('querying fast should still return the same RxDocument', async() => {
+        it('querying fast should still return the same RxDocument', async () => {
             if (!config.platform.isNode()) return;
             // use a 'slow' adapter because memory might be to fast
             RxDB.plugin(require('pouchdb-adapter-node-websql'));
@@ -401,10 +412,98 @@ describe('rx-query.test.js', () => {
 
             db.destroy();
         });
-    });
+        it('should not make more requests then needed', async () => {
+            const col = await humansCollection.createPrimary(0);
+            const docData = schemaObjects.simpleHuman();
+            const otherData = () => {
+                const data = clone(docData);
+                data.firstName = AsyncTestUtil.randomString();
+                return data;
+            };
+            await col.insert(docData);
+
+
+            const emitted = [];
+            const query = col.findOne(docData.pass);
+            query.$.subscribe(doc => emitted.push(doc.toJSON()));
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            const doc = await query.exec();
+            assert.ok(doc);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            await col.upsert(otherData());
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            await col.atomicUpsert(otherData());
+            await AsyncTestUtil.waitUntil(() => emitted.length === 3);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            await Promise.all(
+                new Array(2)
+                .fill(0)
+                .map(() => otherData())
+                .map(data => col.atomicUpsert(data))
+            );
+            await AsyncTestUtil.waitUntil(() => emitted.length === 5);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            await Promise.all(
+                new Array(10)
+                .fill(0)
+                .map(() => otherData())
+                .map(data => col.atomicUpsert(data))
+            );
+            await AsyncTestUtil.waitUntil(() => emitted.length === 15);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            col.database.destroy();
+        });
+    /*    it('should not make more requests then needed on atomic upsert', async () => {
+            console.log('--------------------');
+            const col = await humansCollection.createPrimary(0);
+            const docData = schemaObjects.simpleHuman();
+            let count = 0;
+            const otherData = () => {
+                const data = clone(docData);
+                data.firstName = '' + count;
+                count++;
+                return data;
+            };
+
+            const emitted = [];
+            const query = col.findOne(docData.pass);
+            query.$.subscribe(doc => {
+                if (!doc) emitted.push(null);
+                else emitted.push(doc.toJSON());
+            });
+
+            await Promise.all(
+                new Array(10)
+                .fill(0)
+                .map(() => otherData())
+                .map(data => col.atomicUpsert(data))
+            );
+
+            //            await AsyncTestUtil.waitUntil(() => emitted.length === 5);
+            //
+            //
+
+            await AsyncTestUtil.wait(1000);
+            console.log('emitted(' + query._execOverDatabaseCount + '):');
+            console.dir(emitted);
+            assert.equal(query._execOverDatabaseCount, 1);
+
+            col.database.destroy();
+            process.exit();
+        });
+    */});
 
     describe('update', () => {
-        it('updates a value on a query', async() => {
+        it('updates a value on a query', async () => {
             const c = await humansCollection.create(2);
             const query = c.find();
             await query.update({
@@ -417,7 +516,7 @@ describe('rx-query.test.js', () => {
                 assert.equal(doc._data.firstName, 'new first name');
             c.database.destroy();
         });
-        it('$unset a value on a query', async() => {
+        it('$unset a value on a query', async () => {
             const c = await humansCollection.create(2);
             const query = c.find();
             await query.update({
@@ -430,7 +529,7 @@ describe('rx-query.test.js', () => {
                 assert.equal(doc._data.age, undefined);
             c.database.destroy();
         });
-        it('dont crash when findOne with no result', async() => {
+        it('dont crash when findOne with no result', async () => {
             const c = await humansCollection.create(2);
             const query = c.findOne().where('agt').gt(1000000);
             await query.update({
@@ -445,7 +544,7 @@ describe('rx-query.test.js', () => {
     });
 
     describe('issues', () => {
-        it('#157 Cannot sort on field(s) "XXX" when using the default index', async() => {
+        it('#157 Cannot sort on field(s) "XXX" when using the default index', async () => {
             const schema = {
                 'disableKeyCompression': true,
                 'version': 0,
@@ -495,7 +594,7 @@ describe('rx-query.test.js', () => {
             assert.equal(resultsAll.length, 0);
             db.destroy();
         });
-        it('#164 Sort error, pouchdb-find/mango "unknown operator"', async() => {
+        it('#164 Sort error, pouchdb-find/mango "unknown operator"', async () => {
             const db = await RxDB.create({
                 adapter: 'memory',
                 name: util.randomCouchString(12),
@@ -535,7 +634,7 @@ describe('rx-query.test.js', () => {
 
             db.destroy();
         });
-        it('#267 query for null-fields', async() => {
+        it('#267 query for null-fields', async () => {
             const c = await humansCollection.create(2);
             const foundDocs = await c.find({
                 foobar: null
@@ -543,7 +642,7 @@ describe('rx-query.test.js', () => {
             assert.ok(Array.isArray(foundDocs));
             c.database.destroy();
         });
-        it('#278 queryCache breaks when pointer out of bounds', async() => {
+        it('#278 queryCache breaks when pointer out of bounds', async () => {
             if (!config.platform.isNode()) return; // dont do this on browsers because firefox takes too long
 
             const c = await humansCollection.createPrimary(0);

@@ -118,7 +118,9 @@ describe('import-export.test.js', () => {
 
                     const docs = await emptyCol.find().exec();
                     assert.equal(docs.length, 5);
-                    col.destroy();
+
+                    col.database.destroy();
+                    emptyCol.database.destroy();
                 });
                 it('import encrypted', async() => {
                     const password = util.randomCouchString(10);

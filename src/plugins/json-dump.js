@@ -4,6 +4,7 @@
 import * as util from '../util';
 import RxQuery from '../rx-query';
 import RxError from '../rx-error';
+import RxChangeEvent from '../rx-change-event';
 
 const dumpRxDatabase = async function(decrypted = false, collections = null) {
     const json = {
@@ -97,7 +98,21 @@ const importDumpRxCollection = async function(exportedJSON) {
         // validate schema
         .map(doc => this.schema.validate(doc))
         // import
-        .map(doc => this._pouchPut(doc));
+        .map(async (doc) => {
+            await this._pouchPut(doc);
+
+            const primary = doc[this.schema.primaryPath];
+            // emit changeEvents
+            const emitEvent = RxChangeEvent.create(
+                'INSERT',
+                this.database,
+                this,
+                null,
+                doc
+            );
+            emitEvent.data.doc = primary;
+            this.$emit(emitEvent);
+        });
     return Promise.all(importFns);
 };
 
