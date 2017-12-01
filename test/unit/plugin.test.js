@@ -10,7 +10,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 describe('plugin.test.js', () => {
     describe('core.node.js', () => {
-        it('should run without errors', async() => {
+        it('should run without errors', async () => {
             if (!config.platform.isNode())
                 return;
 
@@ -36,7 +36,7 @@ describe('plugin.test.js', () => {
     });
 
     describe('full.node.js', () => {
-        it('should run without errors', async() => {
+        it('should run without errors', async () => {
             if (!config.platform.isNode())
                 return;
 
@@ -62,7 +62,7 @@ describe('plugin.test.js', () => {
     });
 
     describe('hooks', () => {
-        it('createRxDatabase', async() => {
+        it('createRxDatabase', async () => {
             const plugin = {
                 rxdb: true,
                 hooks: {
@@ -76,7 +76,7 @@ describe('plugin.test.js', () => {
             assert.equal(col.database.foo, 'bar_createRxDatabase');
             col.database.destroy();
         });
-        it('createRxCollection', async() => {
+        it('createRxCollection', async () => {
             const plugin = {
                 rxdb: true,
                 hooks: {
@@ -90,7 +90,7 @@ describe('plugin.test.js', () => {
             assert.equal(col.foo, 'bar_createRxCollection');
             col.database.destroy();
         });
-        it('createRxSchema', async() => {
+        it('createRxSchema', async () => {
             const plugin = {
                 rxdb: true,
                 hooks: {
@@ -104,7 +104,7 @@ describe('plugin.test.js', () => {
             assert.equal(col.schema.foo, 'bar_createRxSchema');
             col.database.destroy();
         });
-        it('createRxQuery', async() => {
+        it('createRxQuery', async () => {
             const plugin = {
                 rxdb: true,
                 hooks: {
@@ -119,7 +119,7 @@ describe('plugin.test.js', () => {
             assert.equal(query.foo, 'bar_createRxQuery');
             col.database.destroy();
         });
-        it('createRxDocument', async() => {
+        it('createRxDocument', async () => {
             const plugin = {
                 rxdb: true,
                 hooks: {
@@ -134,7 +134,7 @@ describe('plugin.test.js', () => {
             assert.equal(doc.foo, 'bar_createRxDocument');
             col.database.destroy();
         });
-        it('preCreatePouchDb', async() => {
+        it('preCreatePouchDb', async () => {
             const collectionName = util.randomCouchString(10);
             const plugin = {
                 rxdb: true,

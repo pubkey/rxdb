@@ -12,7 +12,7 @@ import * as util from '../../dist/lib/util';
 describe('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
-            it('get an encrypted path', async() => {
+            it('get an encrypted path', async () => {
                 const schema = RxSchema.create(schemas.encryptedHuman);
                 const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 1);
@@ -22,7 +22,7 @@ describe('encryption.test.js', () => {
                     encrypted: true
                 });
             });
-            it('get all encrypted paths', async() => {
+            it('get all encrypted paths', async () => {
                 const schema = RxSchema.create(schemas.encryptedDeepHuman);
                 const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 4);
@@ -31,7 +31,7 @@ describe('encryption.test.js', () => {
                 assert.equal(Object.keys(encPaths)[2], 'deepSecret.darkhole.pw');
                 assert.equal(Object.keys(encPaths)[3], 'nestedSecret.darkhole');
             });
-            it('get no encrypted path', async() => {
+            it('get no encrypted path', async () => {
                 const schema = RxSchema.create(schemas.human);
                 const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 0);
@@ -130,7 +130,7 @@ describe('encryption.test.js', () => {
     });
     describe('Collection.insert()', () => {
         describe('positive', () => {
-            it('should insert one encrypted value (string)', async() => {
+            it('should insert one encrypted value (string)', async () => {
                 const c = await humansCollection.createEncrypted(0);
                 const agent = schemaObjects.encryptedHuman();
                 await c.insert(agent);
@@ -139,7 +139,7 @@ describe('encryption.test.js', () => {
                 assert.equal(agent.secret, secret);
                 c.database.destroy();
             });
-            it('should insert one encrypted value (object)', async() => {
+            it('should insert one encrypted value (object)', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
@@ -162,7 +162,7 @@ describe('encryption.test.js', () => {
     });
     describe('Document.save()', () => {
         describe('positive', () => {
-            it('should save one encrypted value (string)', async() => {
+            it('should save one encrypted value (string)', async () => {
                 const c = await humansCollection.createEncrypted(0);
                 const agent = schemaObjects.encryptedHuman();
                 await c.insert(agent);
@@ -176,7 +176,7 @@ describe('encryption.test.js', () => {
                 assert.equal(newSecret, docNew.get('secret'));
                 c.database.destroy();
             });
-            it('should save one encrypted value (object)', async() => {
+            it('should save one encrypted value (object)', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory',

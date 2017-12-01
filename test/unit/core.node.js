@@ -34,14 +34,14 @@ const schema = {
 
 describe('Core.test.js', () => {
     describe('creation', () => {
-        it('create database', async() => {
+        it('create database', async () => {
             const db = await Core.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
             db.destroy();
         });
-        it('should not be able to create a encrypted database', async() => {
+        it('should not be able to create a encrypted database', async () => {
             await AsyncTestUtil.assertThrows(
                 () => Core.create({
                     name: util.randomCouchString(10),
@@ -52,7 +52,7 @@ describe('Core.test.js', () => {
                 'plugin'
             );
         });
-        it('create collection', async() => {
+        it('create collection', async () => {
             const db = await Core.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
@@ -65,7 +65,7 @@ describe('Core.test.js', () => {
         });
     });
     describe('document interaction', () => {
-        it('insert and find a document', async() => {
+        it('insert and find a document', async () => {
             const db = await Core.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'

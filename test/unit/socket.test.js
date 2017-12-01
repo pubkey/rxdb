@@ -6,7 +6,7 @@ import * as RxChangeEvent from '../../dist/lib/rx-change-event';
 import * as util from '../../dist/lib/util';
 
 describe('socket.test.js', () => {
-    it('socket should be able to fetch self-inserted event', async() => {
+    it('socket should be able to fetch self-inserted event', async () => {
         const db = await RxDatabase.create({
             name: util.randomCouchString(10),
             adapter: 'memory',
@@ -22,7 +22,7 @@ describe('socket.test.js', () => {
         db.destroy();
     });
 
-    it('socket2 should be able to get docs inserted from socket1', async() => {
+    it('socket2 should be able to get docs inserted from socket1', async () => {
         const name = util.randomCouchString(10);
         const db = await RxDatabase.create({
             name,
@@ -42,7 +42,7 @@ describe('socket.test.js', () => {
         await socket2.destroy();
     });
 
-    it('socket-observable should emit changeEvent on pull', async() => {
+    it('socket-observable should emit changeEvent on pull', async () => {
         const name = util.randomCouchString(10);
         const db = await RxDatabase.create({
             name,

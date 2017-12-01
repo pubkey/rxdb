@@ -15,14 +15,14 @@ describe('rx-document.test.js', () => {
     describe('statics', () => {});
     describe('.get()', () => {
         describe('positive', () => {
-            it('get a value', async() => {
+            it('get a value', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 const value = doc.get('passportId');
                 assert.equal(typeof value, 'string');
                 c.database.destroy();
             });
-            it('get a nested value', async() => {
+            it('get a nested value', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const value = doc.get('mainSkill.name');
@@ -31,7 +31,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(typeof value2, 'number');
                 c.database.destroy();
             });
-            it('get null on undefined value', async() => {
+            it('get null on undefined value', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const value = doc.get('foobar');
@@ -40,7 +40,7 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('throw if no string', async() => {
+            it('throw if no string', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const path = {
@@ -56,7 +56,7 @@ describe('rx-document.test.js', () => {
     });
     describe('.set()', () => {
         describe('positive', () => {
-            it('set the value', async() => {
+            it('set the value', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
@@ -65,7 +65,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(doc.get('passportId'), val);
                 c.database.destroy();
             });
-            it('set object', async() => {
+            it('set object', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = {
@@ -79,7 +79,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(doc.get('mainSkill.level'), val.level);
                 c.database.destroy();
             });
-            it('set nested', async() => {
+            it('set nested', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'newSkill';
@@ -90,7 +90,7 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('throw if no string', async() => {
+            it('throw if no string', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const path = {
@@ -102,7 +102,7 @@ describe('rx-document.test.js', () => {
                 );
                 c.database.destroy();
             });
-            it('throw if not validates schema', async() => {
+            it('throw if not validates schema', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = {
@@ -114,7 +114,7 @@ describe('rx-document.test.js', () => {
                 );
                 c.database.destroy();
             });
-            it('throw if not validates schema (additional property)', async() => {
+            it('throw if not validates schema (additional property)', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
@@ -124,7 +124,7 @@ describe('rx-document.test.js', () => {
                 );
                 c.database.destroy();
             });
-            it('cannot modifiy _id', async() => {
+            it('cannot modifiy _id', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
@@ -134,7 +134,7 @@ describe('rx-document.test.js', () => {
                 );
                 c.database.destroy();
             });
-            it('cannot modify final fields', async() => {
+            it('cannot modify final fields', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -161,7 +161,7 @@ describe('rx-document.test.js', () => {
     });
     describe('.save()', () => {
         describe('positive', () => {
-            it('save', async() => {
+            it('save', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val = 'bliebla';
@@ -171,7 +171,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(docNew.get('passportId'), val);
                 c.database.destroy();
             });
-            it('save object', async() => {
+            it('save object', async () => {
                 const c = await humansCollection.createNested(10);
                 const doc = await c.findOne().exec();
                 const val = {
@@ -185,7 +185,7 @@ describe('rx-document.test.js', () => {
                 assert.deepEqual(doc2.get('mainSkill.level'), val.level);
                 c.database.destroy();
             });
-            it('save twice', async() => {
+            it('save twice', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const val1 = 'bliebla1';
@@ -202,14 +202,14 @@ describe('rx-document.test.js', () => {
                 assert.equal(docNew2.get('passportId'), val2);
                 c.database.destroy();
             });
-            it('.save() returns false when data not changed', async() => {
+            it('.save() returns false when data not changed', async () => {
                 const c = await humansCollection.create(10);
                 const doc = await c.findOne().exec();
                 const r = await doc.save();
                 assert.equal(r, false);
                 c.database.destroy();
             });
-            it('.save() returns true data changed', async() => {
+            it('.save() returns true data changed', async () => {
                 const c = await humansCollection.create(10);
                 const doc = await c.findOne().exec();
                 doc.passportId = util.randomCouchString(20);
@@ -219,7 +219,7 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('save deleted', async() => {
+            it('save deleted', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 await doc.remove();
@@ -234,7 +234,7 @@ describe('rx-document.test.js', () => {
     });
     describe('.remove()', () => {
         describe('positive', () => {
-            it('delete 1 document', async() => {
+            it('delete 1 document', async () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();
                 assert.ok(docs.length > 1);
@@ -247,7 +247,7 @@ describe('rx-document.test.js', () => {
                 });
                 c.database.destroy();
             });
-            it('delete all in parrallel', async() => {
+            it('delete all in parrallel', async () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();
                 const fns = [];
@@ -257,7 +257,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(docsAfter.length, 0);
                 c.database.destroy();
             });
-            it('save and then remove', async() => {
+            it('save and then remove', async () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();
                 assert.ok(docs.length > 1);
@@ -276,7 +276,7 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('delete doc twice', async() => {
+            it('delete doc twice', async () => {
                 const c = await humansCollection.create(5);
                 const doc = await c.findOne().exec();
                 await doc.remove();
@@ -289,7 +289,7 @@ describe('rx-document.test.js', () => {
         });
     });
     describe('.update()', () => {
-        it('$set a value with a mongo like query', async() => {
+        it('$set a value with a mongo like query', async () => {
             const c = await humansCollection.createPrimary(1);
             const doc = await c.findOne().exec();
             await doc.update({
@@ -303,7 +303,7 @@ describe('rx-document.test.js', () => {
             assert.equal(updatedDoc.firstName, 'new first name');
             c.database.destroy();
         });
-        it('$unset a value with a mongo like query', async() => {
+        it('$unset a value with a mongo like query', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             await doc.update({
@@ -315,7 +315,7 @@ describe('rx-document.test.js', () => {
             assert.equal(updatedDoc.age, undefined);
             c.database.destroy();
         });
-        it('$inc a value with a mongo like query', async() => {
+        it('$inc a value with a mongo like query', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             const agePrev = doc.age;
@@ -333,7 +333,7 @@ describe('rx-document.test.js', () => {
     });
     describe('.atomicUpdate()', () => {
         describe('positive', () => {
-            it('run one update', async() => {
+            it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
 
@@ -344,7 +344,7 @@ describe('rx-document.test.js', () => {
                 assert.ok(doc === returnedDoc);
                 c.database.destroy();
             });
-            it('run two updates (last write wins)', async() => {
+            it('run two updates (last write wins)', async () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
 
@@ -357,7 +357,7 @@ describe('rx-document.test.js', () => {
                 assert.equal('foobar2', doc.firstName);
                 c.database.destroy();
             });
-            it('do many updates (last write wins)', async() => {
+            it('do many updates (last write wins)', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 let lastPromise;
@@ -374,7 +374,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(t, doc.age);
                 c.database.destroy();
             });
-            it('run async functions', async() => {
+            it('run async functions', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 let lastPromise;
@@ -384,7 +384,7 @@ describe('rx-document.test.js', () => {
                         t++;
                         return t;
                     })
-                    .forEach(x => lastPromise = doc.atomicUpdate(async(innerDoc) => {
+                    .forEach(x => lastPromise = doc.atomicUpdate(async (innerDoc) => {
                         await util.promiseWait(1);
                         innerDoc.age = x;
                     }));
@@ -392,7 +392,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(t, doc.age);
                 c.database.destroy();
             });
-            it('should work when inserting on a slow storage', async() => {
+            it('should work when inserting on a slow storage', async () => {
                 if (!config.platform.isNode()) return;
                 // use a 'slow' adapter because memory might be to fast
                 RxDB.plugin(require('pouchdb-adapter-node-websql'));
@@ -420,7 +420,7 @@ describe('rx-document.test.js', () => {
 
                 db.destroy();
             });
-            it('should be persistent when re-creating the database', async() => {
+            it('should be persistent when re-creating the database', async () => {
                 if (!config.platform.isNode()) return;
                 // use a 'slow' adapter because memory might be to fast
                 RxDB.plugin(require('pouchdb-adapter-node-websql'));
@@ -460,7 +460,7 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should throw when not matching schema', async() => {
+            it('should throw when not matching schema', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 await doc.atomicUpdate(innerDoc => {
@@ -481,27 +481,27 @@ describe('rx-document.test.js', () => {
     });
     describe('pseudo-Proxy', () => {
         describe('get', () => {
-            it('top-value', async() => {
+            it('top-value', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 const passportId = doc.get('passportId');
                 assert.equal(doc.passportId, passportId);
                 c.database.destroy();
             });
-            it('hidden properties should not show up', async() => {
+            it('hidden properties should not show up', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 assert.ok(!Object.keys(doc).includes('lastName_'));
                 c.database.destroy();
             });
-            it('nested-value', async() => {
+            it('nested-value', async () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
                 const mainSkillLevel = doc.get('mainSkill.level');
                 assert.equal(doc.mainSkill.level, mainSkillLevel);
                 c.database.destroy();
             });
-            it('deep-nested-value', async() => {
+            it('deep-nested-value', async () => {
                 const c = await humansCollection.createDeepNested(1);
                 const doc = await c.findOne().exec();
                 const value = doc.get('mainSkill.attack.count');
@@ -511,7 +511,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(doc.mainSkill.attack.good, value2);
                 c.database.destroy();
             });
-            it('top-value-observable', async() => {
+            it('top-value-observable', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 const obs = doc.firstName$;
@@ -535,7 +535,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(value2, 'foobar');
                 c.database.destroy();
             });
-            it('nested-value-observable', async() => {
+            it('nested-value-observable', async () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
                 const obs = doc.mainSkill.level$;
@@ -551,7 +551,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(value, 10);
                 c.database.destroy();
             });
-            it('deep-nested-value-observable', async() => {
+            it('deep-nested-value-observable', async () => {
                 const c = await humansCollection.createDeepNested(1);
                 const doc = await c.findOne().exec();
                 const obs = doc.mainSkill.attack.good$;
@@ -569,7 +569,7 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('set', () => {
-            it('top value', async() => {
+            it('top value', async () => {
                 const c = await humansCollection.createPrimary(1);
                 const doc = await c.findOne().exec();
                 doc.firstName = 'foobar';
@@ -579,7 +579,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(doc2.firstName, 'foobar');
                 c.database.destroy();
             });
-            it('nested value', async() => {
+            it('nested value', async () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
                 doc.mainSkill.level = 10;
@@ -590,7 +590,7 @@ describe('rx-document.test.js', () => {
                 assert.equal(doc2.mainSkill.level, 10);
                 c.database.destroy();
             });
-            it('deep nested value', async() => {
+            it('deep nested value', async () => {
                 const c = await humansCollection.createDeepNested(1);
                 const doc = await c.findOne().exec();
                 doc.mainSkill.attack.good = true;
@@ -604,7 +604,7 @@ describe('rx-document.test.js', () => {
         });
     });
     describe('issues', () => {
-        it('BUG #66 - insert -> remove -> upsert does not give new state', async() => {
+        it('BUG #66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
@@ -626,7 +626,7 @@ describe('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('BUG #66 - insert -> remove -> insert does not give new state', async() => {
+        it('BUG #66 - insert -> remove -> insert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
@@ -647,7 +647,7 @@ describe('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('BUG #76 - deepEqual does not work correctly for Arrays', async() => {
+        it('BUG #76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'

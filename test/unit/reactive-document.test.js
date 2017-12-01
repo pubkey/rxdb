@@ -17,7 +17,7 @@ import {
 describe('reactive-document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {
-            it('should fire on save', async() => {
+            it('should fire on save', async () => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
                 doc.set('firstName', util.randomCouchString(8));
@@ -26,7 +26,7 @@ describe('reactive-document.test.js', () => {
                 assert.equal(changeEvent._id, doc.primary);
                 c.database.destroy();
             });
-            it('should observe a single field', async() => {
+            it('should observe a single field', async () => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
                 const valueObj = {
@@ -42,7 +42,7 @@ describe('reactive-document.test.js', () => {
                 assert.equal(valueObj.v, setName);
                 c.database.destroy();
             });
-            it('should observe a nested field', async() => {
+            it('should observe a nested field', async () => {
                 const c = await humansCollection.createNested();
                 const doc = await c.findOne().exec();
                 const valueObj = {
@@ -58,7 +58,7 @@ describe('reactive-document.test.js', () => {
                 assert.equal(valueObj.v, setName);
                 c.database.destroy();
             });
-            it('get equal values when subscribing again later', async() => {
+            it('get equal values when subscribing again later', async () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 let v1;
@@ -78,7 +78,7 @@ describe('reactive-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('cannot observe non-existend field', async() => {
+            it('cannot observe non-existend field', async () => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
                 await AsyncTestUtil.assertThrows(
@@ -91,7 +91,7 @@ describe('reactive-document.test.js', () => {
     });
     describe('.deleted$', () => {
         describe('positive', () => {
-            it('deleted$ is true, on delete', async() => {
+            it('deleted$ is true, on delete', async () => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
                 let deleted = null;
@@ -108,7 +108,7 @@ describe('reactive-document.test.js', () => {
     });
     describe('synced$', () => {
         describe('positive', () => {
-            it('should be in sync when unchanged document gets changed by other instance', async() => {
+            it('should be in sync when unchanged document gets changed by other instance', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name, 1);
                 const c2 = await humansCollection.createMultiInstance(name, 0);
@@ -123,7 +123,7 @@ describe('reactive-document.test.js', () => {
                 doc2.firstName = 'foobar';
                 await doc2.save();
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     return doc.firstName === 'foobar';
@@ -136,7 +136,7 @@ describe('reactive-document.test.js', () => {
                 c1.database.destroy();
                 c2.database.destroy();
             });
-            it('should not be in sync when changed document gets changed by other instance', async() => {
+            it('should not be in sync when changed document gets changed by other instance', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name, 1);
                 const c2 = await humansCollection.createMultiInstance(name, 0);
@@ -149,14 +149,14 @@ describe('reactive-document.test.js', () => {
                 doc2.firstName = 'foobar2';
                 await doc2.save();
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     return doc.firstName === 'foobar1';
                 });
                 assert.equal(doc.firstName, 'foobar1');
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     const notOk = await doc.synced$.pipe(first()).toPromise();
                     return !notOk;
                 });
@@ -166,7 +166,7 @@ describe('reactive-document.test.js', () => {
                 c1.database.destroy();
                 c2.database.destroy();
             });
-            it('should be in sync again when unsync doc saves', async() => {
+            it('should be in sync again when unsync doc saves', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name, 1);
                 const c2 = await humansCollection.createMultiInstance(name, 0);
@@ -181,7 +181,7 @@ describe('reactive-document.test.js', () => {
                 doc2.firstName = 'foobar2';
                 await doc2.save();
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     const notOk = await doc.synced$.pipe(first()).toPromise();
@@ -191,7 +191,7 @@ describe('reactive-document.test.js', () => {
                 // resync
                 await doc.save();
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     await c1.database.socket.pull();
                     await c2.database.socket.pull();
                     const ok = await doc.synced$.pipe(first()).toPromise();
@@ -205,7 +205,7 @@ describe('reactive-document.test.js', () => {
         describe('negative', () => {});
     });
     describe('.resync()', () => {
-        it('should have the original state after resync()', async() => {
+        it('should have the original state after resync()', async () => {
             const c = await humansCollection.create();
             const doc = await c.findOne().exec();
             const orig = doc.firstName;
@@ -214,7 +214,7 @@ describe('reactive-document.test.js', () => {
             assert.equal(orig, doc.firstName);
             c.database.destroy();
         });
-        it('should work when resyncing two times', async() => {
+        it('should work when resyncing two times', async () => {
             const c = await humansCollection.create();
             const doc = await c.findOne().exec();
             const orig = doc.firstName;
@@ -234,7 +234,7 @@ describe('reactive-document.test.js', () => {
 
         });
         describe('negative', () => {
-            it('primary cannot be observed', async() => {
+            it('primary cannot be observed', async () => {
                 const c = await humansCollection.createPrimary();
                 const doc = await c.findOne().exec();
                 await AsyncTestUtil.assertThrows(
@@ -244,7 +244,7 @@ describe('reactive-document.test.js', () => {
                 );
                 c.database.destroy();
             });
-            it('final fields cannot be observed', async() => {
+            it('final fields cannot be observed', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'

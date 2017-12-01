@@ -10,7 +10,7 @@ describe('orm.test.js', () => {
     describe('statics', () => {
         describe('create', () => {
             describe('positive', () => {
-                it('create a collection with static-methods', async() => {
+                it('create a collection with static-methods', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -28,7 +28,7 @@ describe('orm.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('crash when name not allowed (startsWith(_))', async() => {
+                it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -47,7 +47,7 @@ describe('orm.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('crash when name not allowed (name reserved)', async() => {
+                it('crash when name not allowed (name reserved)', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -80,7 +80,7 @@ describe('orm.test.js', () => {
             });
         });
         describe('run', () => {
-            it('should be able to run the method', async() => {
+            it('should be able to run the method', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -98,7 +98,7 @@ describe('orm.test.js', () => {
                 assert.equal(res, 'test');
                 db.destroy();
             });
-            it('should have the right this-context', async() => {
+            it('should have the right this-context', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -116,7 +116,7 @@ describe('orm.test.js', () => {
                 assert.equal(res, 'humans');
                 db.destroy();
             });
-            it('should be able to use this.insert()', async() => {
+            it('should be able to use this.insert()', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -140,7 +140,7 @@ describe('orm.test.js', () => {
     describe('instance-methods', () => {
         describe('create', () => {
             describe('positive', () => {
-                it('create a collection with instance-methods', async() => {
+                it('create a collection with instance-methods', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -158,7 +158,7 @@ describe('orm.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('crash when name not allowed (startsWith(_))', async() => {
+                it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -177,7 +177,7 @@ describe('orm.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('crash when name not allowed (name reserved)', async() => {
+                it('crash when name not allowed (name reserved)', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -204,7 +204,7 @@ describe('orm.test.js', () => {
                     }
                     db.destroy();
                 });
-                it('crash when name not allowed (name is top-level field in schema)', async() => {
+                it('crash when name not allowed (name is top-level field in schema)', async () => {
                     const db = await RxDB.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
@@ -236,7 +236,7 @@ describe('orm.test.js', () => {
         });
 
         describe('run', () => {
-            it('should be able to run the method', async() => {
+            it('should be able to run the method', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -256,7 +256,7 @@ describe('orm.test.js', () => {
                 assert.equal(res, 'test');
                 db.destroy();
             });
-            it('should have the right this-context', async() => {
+            it('should have the right this-context', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -277,7 +277,7 @@ describe('orm.test.js', () => {
                 assert.equal(res, obj.passportId);
                 db.destroy();
             });
-            it('should not be confused with many collections', async() => {
+            it('should not be confused with many collections', async () => {
                 const db = await RxDB.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'

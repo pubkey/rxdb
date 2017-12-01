@@ -226,7 +226,7 @@ describe('rx-schema.test.js', () => {
                         }
                     }), Error);
                 });
-                it('throw when defaults on non-first-level field', async() => {
+                it('throw when defaults on non-first-level field', async () => {
                     assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,
@@ -503,18 +503,18 @@ describe('rx-schema.test.js', () => {
         });
         describe('.getSchemaByObjectPath()', () => {
             describe('positive', () => {
-                it('get firstLevel', async() => {
+                it('get firstLevel', async () => {
                     const schema = RxSchema.create(schemas.human);
                     const schemaObj = schema.getSchemaByObjectPath('passportId');
                     assert.equal(schemaObj.index, true);
                     assert.equal(schemaObj.type, 'string');
                 });
-                it('get deeper', async() => {
+                it('get deeper', async () => {
                     const schema = RxSchema.create(schemas.nestedHuman);
                     const schemaObj = schema.getSchemaByObjectPath('mainSkill');
                     assert.ok(schemaObj.properties);
                 });
-                it('get nested', async() => {
+                it('get nested', async () => {
                     const schema = RxSchema.create(schemas.nestedHuman);
                     const schemaObj = schema.getSchemaByObjectPath('mainSkill.name');
                     assert.equal(schemaObj.type, 'string');
@@ -553,7 +553,7 @@ describe('rx-schema.test.js', () => {
         });
     });
     describe('performance', () => {
-        it('validate object often', async() => {
+        it('validate object often', async () => {
             return; // comment out to run speed-test
             const schema = RxSchema.create(schemas.human);
             const obj = schemaObjects.human();
@@ -569,7 +569,7 @@ describe('rx-schema.test.js', () => {
         });
     });
     describe('wait a bit', () => {
-        it('w8 a bit', async() => {
+        it('w8 a bit', async () => {
             await AsyncTestUtil.wait(0);
         });
     });

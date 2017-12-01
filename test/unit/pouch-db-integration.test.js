@@ -12,12 +12,12 @@ import AsyncTestUtil from 'async-test-util';
 
 describe('pouch-db-integration.test.js', () => {
     describe('init', () => {
-        it('should export the pouchDB-module', async() => {
+        it('should export the pouchDB-module', async () => {
             assert.equal(typeof RxDB.PouchDB, 'function');
         });
     });
     describe('memdown', () => {
-        it('should not allow leveldown-adapters without the plugin', async() => {
+        it('should not allow leveldown-adapters without the plugin', async () => {
             await AsyncTestUtil.assertThrows(
                 () => RxDB.create({
                     name: util.randomCouchString(10),
@@ -26,7 +26,7 @@ describe('pouch-db-integration.test.js', () => {
                 Error
             );
         });
-        it('should work after adding the leveldb-plugin', async() => {
+        it('should work after adding the leveldb-plugin', async () => {
             if (!config.platform.isNode()) return;
             RxDB.PouchDB.plugin(leveldb);
             const db = await RxDB.create({
@@ -39,7 +39,7 @@ describe('pouch-db-integration.test.js', () => {
     });
 
     describe('pouchdb-adapter-memory', () => {
-        it('should not create a db without adding the adapter', async() => {
+        it('should not create a db without adding the adapter', async () => {
             await AsyncTestUtil.assertThrows(
                 () => RxDB.create({
                     name: util.randomCouchString(10),
@@ -48,7 +48,7 @@ describe('pouch-db-integration.test.js', () => {
                 Error
             );
         });
-        it('should work when adapter was added', async() => {
+        it('should work when adapter was added', async () => {
             RxDB.plugin(require('pouchdb-adapter-memory'));
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
@@ -59,7 +59,7 @@ describe('pouch-db-integration.test.js', () => {
         });
     });
     describe('localstorage', () => {
-        it('should crash because nodejs has no localstorage', async() => {
+        it('should crash because nodejs has no localstorage', async () => {
             if (!config.platform.isNode()) return;
             RxDB.PouchDB.plugin(require('pouchdb-adapter-localstorage'));
             await AsyncTestUtil.assertThrows(
@@ -73,7 +73,7 @@ describe('pouch-db-integration.test.js', () => {
     });
     describe('websql', () => {
         describe('negative', () => {
-            it('should fail when no adapter was added', async() => {
+            it('should fail when no adapter was added', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => RxDB.create({
                         name: util.randomCouchString(10),
@@ -84,7 +84,7 @@ describe('pouch-db-integration.test.js', () => {
             });
         });
         describe('positive', () => {
-            it('should work after adding the adapter', async() => {
+            it('should work after adding the adapter', async () => {
                 // test websql on chrome only
                 if (config.platform.name !== 'chrome') return;
 
@@ -101,7 +101,7 @@ describe('pouch-db-integration.test.js', () => {
     });
     describe('own pouchdb functions', () => {
         describe('.countAllUndeleted()', () => {
-            it('should return 0', async() => {
+            it('should return 0', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -111,7 +111,7 @@ describe('pouch-db-integration.test.js', () => {
                 const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
                 assert.deepEqual(count, 0);
             });
-            it('should return 1', async() => {
+            it('should return 1', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -124,7 +124,7 @@ describe('pouch-db-integration.test.js', () => {
                 const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
                 assert.deepEqual(count, 1);
             });
-            it('should not count deleted docs', async() => {
+            it('should not count deleted docs', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -145,7 +145,7 @@ describe('pouch-db-integration.test.js', () => {
                 const count = await RxDB.PouchDB.countAllUndeleted(pouchdb);
                 assert.deepEqual(count, 0);
             });
-            it('should count a big amount with one deleted doc', async() => {
+            it('should count a big amount with one deleted doc', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -176,7 +176,7 @@ describe('pouch-db-integration.test.js', () => {
             });
         });
         describe('.getBatch()', () => {
-            it('should return empty array', async() => {
+            it('should return empty array', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -186,7 +186,7 @@ describe('pouch-db-integration.test.js', () => {
                 const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
                 assert.deepEqual(docs, []);
             });
-            it('should not return deleted', async() => {
+            it('should not return deleted', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -209,7 +209,7 @@ describe('pouch-db-integration.test.js', () => {
                 const docs = await RxDB.PouchDB.getBatch(pouchdb, 10);
                 assert.deepEqual(docs, []);
             });
-            it('should return one document in array', async() => {
+            it('should return one document in array', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -227,7 +227,7 @@ describe('pouch-db-integration.test.js', () => {
                 assert.equal(docs[0]._id, _id);
             });
 
-            it('should max return batchSize', async() => {
+            it('should max return batchSize', async () => {
                 const name = util.randomCouchString(10);
                 const pouchdb = new RxDB.PouchDB(
                     name, {
@@ -254,7 +254,7 @@ describe('pouch-db-integration.test.js', () => {
     });
 
     describe('BUGS: pouchdb', () => {
-        it('_local documents should not be cached by pouchdb', async() => {
+        it('_local documents should not be cached by pouchdb', async () => {
             const name = util.randomCouchString(10);
             const _id = '_local/foobar';
             const createPouch = () => {

@@ -18,7 +18,7 @@ import * as humansCollection from '../helper/humans-collection';
 describe('rx-database.test.js', () => {
     describe('.create()', () => {
         describe('positive', () => {
-            it('memdown', async() => {
+            it('memdown', async () => {
                 if (!config.platform.isNode()) return;
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
@@ -27,7 +27,7 @@ describe('rx-database.test.js', () => {
                 assert.equal(db.constructor.name, 'RxDatabase');
                 db.destroy();
             });
-            it('leveldown', async() => {
+            it('leveldown', async () => {
                 if (!config.platform.isNode()) return;
                 if (path.join('..', 'x') !== '..\\x') { // leveldown does not work on windows
                     const db = await RxDatabase.create({
@@ -38,7 +38,7 @@ describe('rx-database.test.js', () => {
                     db.destroy();
                 }
             });
-            it('with password', async() => {
+            it('with password', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
@@ -47,7 +47,7 @@ describe('rx-database.test.js', () => {
                 assert.equal(db.constructor.name, 'RxDatabase');
                 db.destroy();
             });
-            it('2 instances on same adapter (if ignoreDuplicate is true)', async() => {
+            it('2 instances on same adapter (if ignoreDuplicate is true)', async () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
@@ -62,7 +62,7 @@ describe('rx-database.test.js', () => {
                 db.destroy();
                 db2.destroy();
             });
-            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets destroyed', async() => {
+            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets destroyed', async () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
@@ -75,7 +75,7 @@ describe('rx-database.test.js', () => {
                 });
                 db2.destroy();
             });
-            it('2 password-instances on same adapter', async() => {
+            it('2 password-instances on same adapter', async () => {
                 const name = util.randomCouchString(10);
                 const password = util.randomCouchString(12);
                 const db = await RxDatabase.create({
@@ -95,7 +95,7 @@ describe('rx-database.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should crash with invalid token', async() => {
+            it('should crash with invalid token', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => RxDatabase.create({
                         name: null,
@@ -104,7 +104,7 @@ describe('rx-database.test.js', () => {
                     TypeError
                 );
             });
-            it('should crash with invalid adapter', async() => {
+            it('should crash with invalid adapter', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => RxDatabase.create({
                         name: util.randomCouchString(10),
@@ -113,7 +113,7 @@ describe('rx-database.test.js', () => {
                     Error
                 );
             });
-            it('should crash with invalid password (no string)', async() => {
+            it('should crash with invalid password (no string)', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => RxDatabase.create({
                         name: util.randomCouchString(10),
@@ -123,7 +123,7 @@ describe('rx-database.test.js', () => {
                     TypeError
                 );
             });
-            it('should crash with invalid password (too short)', async() => {
+            it('should crash with invalid password (too short)', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => RxDatabase.create({
                         name: util.randomCouchString(10),
@@ -133,7 +133,7 @@ describe('rx-database.test.js', () => {
                     Error
                 );
             });
-            it('BUG: should have a pwHash-doc after creating the database', async() => {
+            it('BUG: should have a pwHash-doc after creating the database', async () => {
                 const name = util.randomCouchString(10);
                 const password = util.randomCouchString(10);
                 const db = await RxDatabase.create({
@@ -157,7 +157,7 @@ describe('rx-database.test.js', () => {
                 db.destroy();
                 db2.destroy();
             });
-            it('prevent 2 instances with different passwords on same adapter', async() => {
+            it('prevent 2 instances with different passwords on same adapter', async () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
@@ -174,7 +174,7 @@ describe('rx-database.test.js', () => {
                 );
                 db.destroy();
             });
-            it('do not allow 2 databases with same name and adapter', async() => {
+            it('do not allow 2 databases with same name and adapter', async () => {
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
                     name,
@@ -194,7 +194,7 @@ describe('rx-database.test.js', () => {
     });
     describe('.collection()', () => {
         describe('positive', () => {
-            it('human', async() => {
+            it('human', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -210,7 +210,7 @@ describe('rx-database.test.js', () => {
 
                 db.destroy();
             });
-            it('the schema-object should be saved in the collectionsCollection', async() => {
+            it('the schema-object should be saved in the collectionsCollection', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -223,7 +223,7 @@ describe('rx-database.test.js', () => {
                 const compareSchema = RxSchema.create(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
             });
-            it('use Schema-Object', async() => {
+            it('use Schema-Object', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -236,7 +236,7 @@ describe('rx-database.test.js', () => {
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
-            it('use encrypted db', async() => {
+            it('use encrypted db', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
@@ -249,7 +249,7 @@ describe('rx-database.test.js', () => {
                 assert.equal(collection.constructor.name, 'RxCollection');
                 db.destroy();
             });
-            it('collectionsCollection should contain schema.version', async() => {
+            it('collectionsCollection should contain schema.version', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -264,7 +264,7 @@ describe('rx-database.test.js', () => {
                 assert.deepEqual(internalDoc.version, version);
                 db.destroy();
             });
-            it('create 2 times on same adapter', async() => {
+            it('create 2 times on same adapter', async () => {
                 const name = util.randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await RxDatabase.create({
@@ -290,7 +290,7 @@ describe('rx-database.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('broken schema (nostringIndex)', async() => {
+            it('broken schema (nostringIndex)', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -304,7 +304,7 @@ describe('rx-database.test.js', () => {
                 );
                 db.destroy();
             });
-            it('call 2 times on same name', async() => {
+            it('call 2 times on same name', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -322,7 +322,7 @@ describe('rx-database.test.js', () => {
                 );
                 db.destroy();
             });
-            it('crypt-schema without db-password', async() => {
+            it('crypt-schema without db-password', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -336,7 +336,7 @@ describe('rx-database.test.js', () => {
                 );
                 db.destroy();
             });
-            it('2 different schemas on same collection', async() => {
+            it('2 different schemas on same collection', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -354,7 +354,7 @@ describe('rx-database.test.js', () => {
                 );
                 db.destroy();
             });
-            it('not allow collectionNames starting with lodash', async() => {
+            it('not allow collectionNames starting with lodash', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -368,7 +368,7 @@ describe('rx-database.test.js', () => {
                 );
                 db.destroy();
             });
-            it('not allow collectionNames which are properties of RxDatabase', async() => {
+            it('not allow collectionNames which are properties of RxDatabase', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -396,7 +396,7 @@ describe('rx-database.test.js', () => {
                 }
                 db.destroy();
             });
-            it('create 2 times on same adapter with different schema', async() => {
+            it('create 2 times on same adapter with different schema', async () => {
                 const name = util.randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await RxDatabase.create({
@@ -427,7 +427,7 @@ describe('rx-database.test.js', () => {
     });
     describe('.destroy()', () => {
         describe('positive', () => {
-            it('should not crash on destroy', async() => {
+            it('should not crash on destroy', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -440,7 +440,7 @@ describe('rx-database.test.js', () => {
                 assert.equal(db.destroyed, true);
                 db.destroy();
             });
-            it('should not crash if destroy is called twice', async() => {
+            it('should not crash if destroy is called twice', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -456,11 +456,11 @@ describe('rx-database.test.js', () => {
         });
     });
     describe('.remove()', () => {
-        it('should not crash', async() => {
+        it('should not crash', async () => {
             const c = await humansCollection.create(10);
             await c.database.remove();
         });
-        it('should be possible to recreate the database with other password', async() => {
+        it('should be possible to recreate the database with other password', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory',

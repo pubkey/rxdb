@@ -16,7 +16,7 @@ import AsyncTestUtil from 'async-test-util';
 
 describe('cross-instance.test.js', () => {
     describe('create database', () => {
-        it('create a multiInstance database', async() => {
+        it('create a multiInstance database', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
@@ -25,7 +25,7 @@ describe('cross-instance.test.js', () => {
             assert.equal(db.constructor.name, 'RxDatabase');
             db.destroy();
         });
-        it('create a 2 multiInstance databases', async() => {
+        it('create a 2 multiInstance databases', async () => {
             const name = util.randomCouchString(10);
             const db = await RxDatabase.create({
                 name,
@@ -47,7 +47,7 @@ describe('cross-instance.test.js', () => {
     });
     describe('RxDatabase.$', () => {
         describe('positive', () => {
-            it('get event on db2 when db1 fires', async() => {
+            it('get event on db2 when db1 fires', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -60,7 +60,7 @@ describe('cross-instance.test.js', () => {
                     assert.equal(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     await db2.socket.pull();
                     return recieved > 0;
                 });
@@ -70,7 +70,7 @@ describe('cross-instance.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should not get the same events twice', async() => {
+            it('should not get the same events twice', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -83,7 +83,7 @@ describe('cross-instance.test.js', () => {
                 });
                 await c1.insert(schemaObjects.human());
 
-                await AsyncTestUtil.waitUntil(async() => {
+                await AsyncTestUtil.waitUntil(async () => {
                     await db2.socket.pull();
                     await db2.socket.pull();
                     return recieved === 1;
@@ -95,7 +95,7 @@ describe('cross-instance.test.js', () => {
         });
     });
     describe('Collection.$', () => {
-        it('get event on db2 when db1 fires', async() => {
+        it('get event on db2 when db1 fires', async () => {
             const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
@@ -106,7 +106,7 @@ describe('cross-instance.test.js', () => {
             });
             await c1.insert(schemaObjects.human());
 
-            await AsyncTestUtil.waitUntil(async() => {
+            await AsyncTestUtil.waitUntil(async () => {
                 await c2.database.socket.pull();
                 return recieved > 0;
             });
@@ -114,7 +114,7 @@ describe('cross-instance.test.js', () => {
             c1.database.destroy();
             c2.database.destroy();
         });
-        it('get no changes via pouchdb on different dbs', async() => {
+        it('get no changes via pouchdb on different dbs', async () => {
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
             let got;
@@ -136,7 +136,7 @@ describe('cross-instance.test.js', () => {
     });
 
     describe('Document.$', () => {
-        it('get event on doc2 when doc1 is changed', async() => {
+        it('get event on doc2 when doc1 is changed', async () => {
             const name = util.randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
@@ -166,7 +166,7 @@ describe('cross-instance.test.js', () => {
             c1.database.destroy();
             c2.database.destroy();
         });
-        it('should work with encrypted fields', async() => {
+        it('should work with encrypted fields', async () => {
             const name = util.randomCouchString(10);
             const password = util.randomCouchString(10);
             const db1 = await RxDatabase.create({
@@ -221,7 +221,7 @@ describe('cross-instance.test.js', () => {
             db1.destroy();
             db2.destroy();
         });
-        it('should work with nested encrypted fields', async() => {
+        it('should work with nested encrypted fields', async () => {
             const name = util.randomCouchString(10);
             const password = util.randomCouchString(10);
             const db1 = await RxDatabase.create({
@@ -285,7 +285,7 @@ describe('cross-instance.test.js', () => {
     });
     describe('AutoPull', () => {
         describe('positive', () => {
-            it('should recieve events without calling .socket.pull()', async() => {
+            it('should recieve events without calling .socket.pull()', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
@@ -304,7 +304,7 @@ describe('cross-instance.test.js', () => {
                 c1.database.destroy();
                 c2.database.destroy();
             });
-            it('should recieve 2 events', async() => {
+            it('should recieve 2 events', async () => {
                 const name = util.randomCouchString(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);

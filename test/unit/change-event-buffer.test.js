@@ -6,12 +6,12 @@ import AsyncTestUtil from 'async-test-util';
 
 describe('change-event-buffer.test.js', () => {
     describe('basic', () => {
-        it('should contains some events', async() => {
+        it('should contains some events', async () => {
             const col = await humansCollection.create(10);
             assert.equal(col._changeEventBuffer.buffer.length, 10);
             col.database.destroy();
         });
-        it('should delete older events when buffer get over limit', async() => {
+        it('should delete older events when buffer get over limit', async () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
@@ -26,7 +26,7 @@ describe('change-event-buffer.test.js', () => {
 
             col.database.destroy();
         });
-        it('check if correct events get removed', async() => {
+        it('check if correct events get removed', async () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
 
@@ -43,7 +43,7 @@ describe('change-event-buffer.test.js', () => {
         });
     });
     describe('.getArrayIndexByPointer()', () => {
-        it('return null if pointer is no more in buffer (too low)', async() => {
+        it('return null if pointer is no more in buffer (too low)', async () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
@@ -62,7 +62,7 @@ describe('change-event-buffer.test.js', () => {
 
             col.database.destroy();
         });
-        it('return the right pointer', async() => {
+        it('return the right pointer', async () => {
             const col = await humansCollection.create(0);
             let got;
             col._changeEventBuffer.limit = 10;
@@ -92,7 +92,7 @@ describe('change-event-buffer.test.js', () => {
 
             col.database.destroy();
         });
-        it('return the correct pointer', async() => {
+        it('return the correct pointer', async () => {
             const col = await humansCollection.create(10);
             col._changeEventBuffer.limit = 10;
 
@@ -106,7 +106,7 @@ describe('change-event-buffer.test.js', () => {
         });
     });
     describe('.runFrom()', () => {
-        it('should run from correctly', async() => {
+        it('should run from correctly', async () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
 
@@ -124,7 +124,7 @@ describe('change-event-buffer.test.js', () => {
 
             col.database.destroy();
         });
-        it('should throw if pointer to low', async() => {
+        it('should throw if pointer to low', async () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
 
@@ -141,7 +141,7 @@ describe('change-event-buffer.test.js', () => {
         });
     });
     describe('.getFrom()', () => {
-        it('should getFrom correctly', async() => {
+        it('should getFrom correctly', async () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
 
@@ -156,7 +156,7 @@ describe('change-event-buffer.test.js', () => {
 
             col.database.destroy();
         });
-        it('should run correct on remove', async() => {
+        it('should run correct on remove', async () => {
             const col = await humansCollection.create(0);
             const q = col.find();
             await q.exec();
@@ -176,7 +176,7 @@ describe('change-event-buffer.test.js', () => {
         });
     });
     describe('.reduceByLastOfDoc()', () => {
-        it('should only have the last changeEvent for the doc', async() => {
+        it('should only have the last changeEvent for the doc', async () => {
             const col = await humansCollection.create(5);
             const q = col.find();
             await q.exec();

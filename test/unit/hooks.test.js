@@ -13,12 +13,12 @@ import {
 
 describe('hooks.test.js', () => {
     describe('get/set', () => {
-        it('should set a hook', async() => {
+        it('should set a hook', async () => {
             const c = await humansCollection.create(0);
             c.preSave(function() {}, false);
             c.database.destroy();
         });
-        it('should get a hook', async() => {
+        it('should get a hook', async () => {
             const c = await humansCollection.create(0);
             c.preSave(function() {}, false);
             const hooks = c.getHooks('pre', 'save');
@@ -26,7 +26,7 @@ describe('hooks.test.js', () => {
             assert.equal(hooks.series.length, 1);
             c.database.destroy();
         });
-        it('should get a parallel hook', async() => {
+        it('should get a parallel hook', async () => {
             const c = await humansCollection.create(0);
             c.preSave(function() {}, true);
             const hooks = c.getHooks('pre', 'save');
@@ -38,7 +38,7 @@ describe('hooks.test.js', () => {
     describe('insert', () => {
         describe('pre', () => {
             describe('positive', () => {
-                it('series', async() => {
+                it('series', async () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
@@ -50,7 +50,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('parallel', async() => {
+                it('parallel', async () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
@@ -68,7 +68,7 @@ describe('hooks.test.js', () => {
                     assert.equal(countp, 1);
                     c.database.destroy();
                 });
-                it('should save a modified document', async() => {
+                it('should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
 
@@ -81,7 +81,7 @@ describe('hooks.test.js', () => {
                     assert.equal(doc.get('lastName'), 'foobar');
                     c.database.destroy();
                 });
-                it('async: should save a modified document', async() => {
+                it('async: should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
 
@@ -95,7 +95,7 @@ describe('hooks.test.js', () => {
                     assert.equal(doc.get('lastName'), 'foobar');
                     c.database.destroy();
                 });
-                it('should not insert if hook throws', async() => {
+                it('should not insert if hook throws', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     c.preInsert(() => {
@@ -115,7 +115,7 @@ describe('hooks.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('should throw if hook invalidates schema', async() => {
+                it('should throw if hook invalidates schema', async () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
 
@@ -133,7 +133,7 @@ describe('hooks.test.js', () => {
         });
         describe('post', () => {
             describe('positive', () => {
-                it('series', async() => {
+                it('series', async () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
@@ -145,7 +145,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('parallel', async() => {
+                it('parallel', async () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
@@ -163,7 +163,7 @@ describe('hooks.test.js', () => {
     describe('save', () => {
         describe('pre', () => {
             describe('positive', () => {
-                it('series', async() => {
+                it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -178,7 +178,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('parallel', async() => {
+                it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -193,7 +193,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('should save a modified document', async() => {
+                it('should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -208,7 +208,7 @@ describe('hooks.test.js', () => {
                     assert.equal(doc2.get('lastName'), 'foobar');
                     c.database.destroy();
                 });
-                it('async: should save a modified document', async() => {
+                it('async: should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -224,7 +224,7 @@ describe('hooks.test.js', () => {
                     assert.equal(doc2.get('lastName'), 'foobar');
                     c.database.destroy();
                 });
-                it('should not save if hook throws', async() => {
+                it('should not save if hook throws', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     human.firstName = 'test';
@@ -249,7 +249,7 @@ describe('hooks.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('should throw if hook invalidates schema', async() => {
+                it('should throw if hook invalidates schema', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -271,7 +271,7 @@ describe('hooks.test.js', () => {
         });
         describe('post', () => {
             describe('positive', () => {
-                it('series', async() => {
+                it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -286,7 +286,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('parallel', async() => {
+                it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -308,7 +308,7 @@ describe('hooks.test.js', () => {
     describe('remove', () => {
         describe('pre', () => {
             describe('positive', () => {
-                it('series', async() => {
+                it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -322,7 +322,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('parallel', async() => {
+                it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -336,7 +336,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('should not remove if hook throws', async() => {
+                it('should not remove if hook throws', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -363,7 +363,7 @@ describe('hooks.test.js', () => {
         });
         describe('post', () => {
             describe('positive', () => {
-                it('series', async() => {
+                it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -377,7 +377,7 @@ describe('hooks.test.js', () => {
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
-                it('parallel', async() => {
+                it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
                     await c.insert(human);
@@ -397,7 +397,7 @@ describe('hooks.test.js', () => {
     });
     describe('postCreate', () => {
         describe('positive', () => {
-            it('should define a getter', async() => {
+            it('should define a getter', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
@@ -422,7 +422,7 @@ describe('hooks.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should throw when adding an async-hook', async() => {
+            it('should throw when adding an async-hook', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
@@ -445,7 +445,7 @@ describe('hooks.test.js', () => {
         });
     });
     describe('issues', () => {
-        it('BUG #158 : Throwing error in async preInsert does not prevent insert', async() => {
+        it('BUG #158 : Throwing error in async preInsert does not prevent insert', async () => {
             const c = await humansCollection.create(0);
             c.preInsert(async function() {
                 await util.promiseWait(1);

@@ -11,7 +11,7 @@ import * as util from '../../dist/lib/util';
 describe('population.test.js', () => {
     describe('RxSchema.create', () => {
         describe('positive', () => {
-            it('should allow to create a schema with a relation', async() => {
+            it('should allow to create a schema with a relation', async () => {
                 const schema = RxSchema.create({
                     version: 0,
                     properties: {
@@ -23,7 +23,7 @@ describe('population.test.js', () => {
                 });
                 assert.equal(schema.constructor.name, 'RxSchema');
             });
-            it('should allow to create a schema with a relation in nested', async() => {
+            it('should allow to create a schema with a relation in nested', async () => {
                 const schema = RxSchema.create({
                     version: 0,
                     properties: {
@@ -40,7 +40,7 @@ describe('population.test.js', () => {
                 });
                 assert.equal(schema.constructor.name, 'RxSchema');
             });
-            it('should allow to create relation of array', async() => {
+            it('should allow to create relation of array', async () => {
                 const schema = RxSchema.create({
                     version: 0,
                     properties: {
@@ -105,7 +105,7 @@ describe('population.test.js', () => {
     });
     describe('RxDocument().populate()', () => {
         describe('positive', () => {
-            it('populate top-level-field', async() => {
+            it('populate top-level-field', async () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('bestFriend');
@@ -113,7 +113,7 @@ describe('population.test.js', () => {
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
-            it('populate nested field', async() => {
+            it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('foo.bestFriend');
@@ -121,7 +121,7 @@ describe('population.test.js', () => {
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
-            it('populate string-array', async() => {
+            it('populate string-array', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -171,7 +171,7 @@ describe('population.test.js', () => {
     });
     describe('RxDocument populate via pseudo-proxy', () => {
         describe('positive', () => {
-            it('populate top-level-field', async() => {
+            it('populate top-level-field', async () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.bestFriend_;
@@ -179,7 +179,7 @@ describe('population.test.js', () => {
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
-            it('populate nested field', async() => {
+            it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
                 const friend = await doc.foo.bestFriend_;
@@ -190,7 +190,7 @@ describe('population.test.js', () => {
         });
     });
     describe('issues', () => {
-        it('#222 population not working when multiInstance: false', async() => {
+        it('#222 population not working when multiInstance: false', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory',

@@ -10,7 +10,7 @@ import * as AttachmentPlugin from '../../dist/lib/plugins/attachments';
 
 describe('attachments.test.js', () => {
     describe('.putAttachment()', () => {
-        it('should insert one attachment', async() => {
+        it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             const attachment = await doc.putAttachment({
@@ -23,7 +23,7 @@ describe('attachments.test.js', () => {
             assert.equal(attachment.type, 'text/plain');
             c.database.destroy();
         });
-        it('should insert two attachments', async() => {
+        it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -38,7 +38,7 @@ describe('attachments.test.js', () => {
             });
             c.database.destroy();
         });
-        it('should insert 4 attachments in parallel', async() => {
+        it('should insert 4 attachments in parallel', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             const attachments = await Promise.all(
@@ -54,7 +54,7 @@ describe('attachments.test.js', () => {
             assert.ok(attachments[1].id);
             c.database.destroy();
         });
-        it('should insert an attachment with a big content', async() => {
+        it('should insert an attachment with a big content', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -70,7 +70,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('.getAttachment()', () => {
-        it('should get the attachment', async() => {
+        it('should get the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -83,7 +83,7 @@ describe('attachments.test.js', () => {
             assert.equal(attachment.rev, 2);
             c.database.destroy();
         });
-        it('should find the attachment after another doc-update', async() => {
+        it('should find the attachment after another doc-update', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -100,7 +100,7 @@ describe('attachments.test.js', () => {
             assert.equal(attachment.type, 'text/plain');
             c.database.destroy();
         });
-        it('should find the attachment after database is re-created', async() => {
+        it('should find the attachment after database is re-created', async () => {
             const name = util.randomCouchString(10);
             const db = await RxDatabase.create({
                 name,
@@ -142,7 +142,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('RxAttachment.getData()', () => {
-        it('should get the data', async() => {
+        it('should get the data', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
@@ -159,7 +159,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('RxAttachment.getStringData()', () => {
-        it('should get the data as string', async() => {
+        it('should get the data as string', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
@@ -175,7 +175,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('RxAttachment.remove()', () => {
-        it('should remove the attachment', async() => {
+        it('should remove the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -196,7 +196,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('.allAttachments()', () => {
-        it('should find all attachments', async() => {
+        it('should find all attachments', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await Promise.all(
@@ -212,7 +212,7 @@ describe('attachments.test.js', () => {
             assert.equal(attachments.length, 10);
             c.database.destroy();
         });
-        it('should lazy-load the data for the attachment', async() => {
+        it('should lazy-load the data for the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -230,7 +230,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('schema', () => {
-        it('should throw when attachments not defined in the schema', async() => {
+        it('should throw when attachments not defined in the schema', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
             await AsyncTestUtil.assertThrows(
@@ -244,7 +244,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('encryption', () => {
-        it('should store the data encrypted', async() => {
+        it('should store the data encrypted', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
             const doc = await c.findOne().exec();
             const attachment = await doc.putAttachment({
@@ -264,7 +264,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('.allAttachments$', () => {
-        it('should emit on subscription', async() => {
+        it('should emit on subscription', async () => {
             const c = await humansCollection.createEncryptedAttachments(1);
             const doc = await c.findOne().exec();
             await doc.putAttachment({
@@ -285,7 +285,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('multiInstance', () => {
-        it('should emit on other instance', async() => {
+        it('should emit on other instance', async () => {
             const name = util.randomCouchString(10);
             const db = await RxDatabase.create({
                 name,
@@ -348,7 +348,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('data-migration', () => {
-        it('should also migrate the attachments', async() => {
+        it('should also migrate the attachments', async () => {
             const name = util.randomCouchString(10);
             const db = await RxDatabase.create({
                 name,
@@ -410,7 +410,7 @@ describe('attachments.test.js', () => {
         });
     });
     describe('orm', () => {
-        it('should be able to call the defined function', async() => {
+        it('should be able to call the defined function', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory',

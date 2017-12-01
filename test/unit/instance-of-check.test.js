@@ -4,7 +4,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as RxDB from '../../dist/lib/index';
 
 describe('instance-of-check.test.js', () => {
-    it('positive', async() => {
+    it('positive', async () => {
         const c = await humansCollection.create(1);
         const query = c.findOne();
         const doc = await query.exec();
@@ -15,7 +15,7 @@ describe('instance-of-check.test.js', () => {
         assert.ok(RxDB.isRxSchema(c.schema));
         c.database.destroy();
     });
-    it('negative', async() => {
+    it('negative', async () => {
         const anyObj = {};
         assert.equal(false, RxDB.isRxDatabase(anyObj));
         assert.equal(false, RxDB.isRxCollection(anyObj));

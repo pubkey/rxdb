@@ -10,13 +10,13 @@ import * as humansCollection from '../helper/humans-collection';
 
 describe('temporary-document.test.js', () => {
     describe('RxCollection.newDocument()', () => {
-        it('should create a new document', async() => {
+        it('should create a new document', async () => {
             const c = await humansCollection.create(0);
             const newDoc = c.newDocument();
             assert.ok(newDoc);
             c.database.destroy();
         });
-        it('should have initial data', async() => {
+        it('should have initial data', async () => {
             const c = await humansCollection.create(0);
             const newDoc = c.newDocument({
                 firstName: 'foobar'
@@ -24,7 +24,7 @@ describe('temporary-document.test.js', () => {
             assert.equal(newDoc.firstName, 'foobar');
             c.database.destroy();
         });
-        it('should not check the schema on changing values', async() => {
+        it('should not check the schema on changing values', async () => {
             const c = await humansCollection.create(0);
             const newDoc = c.newDocument({
                 firstName: 'foobar'
@@ -33,14 +33,14 @@ describe('temporary-document.test.js', () => {
             assert.equal(newDoc.firstName, 'foobar');
             c.database.destroy();
         });
-        it('should be possible to set the primary', async() => {
+        it('should be possible to set the primary', async () => {
             const c = await humansCollection.createPrimary(0);
             const newDoc = c.newDocument();
             newDoc.passportId = 'foobar';
             assert.equal(newDoc.passportId, 'foobar');
             c.database.destroy();
         });
-        it('should have default-values', async() => {
+        it('should have default-values', async () => {
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
@@ -57,13 +57,13 @@ describe('temporary-document.test.js', () => {
     });
     describe('.save()', () => {
         describe('positive', () => {
-            it('should save the document', async() => {
+            it('should save the document', async () => {
                 const c = await humansCollection.create(0);
                 const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
                 c.database.destroy();
             });
-            it('should have cached the new doc', async() => {
+            it('should have cached the new doc', async () => {
                 const c = await humansCollection.create(0);
                 const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
@@ -71,7 +71,7 @@ describe('temporary-document.test.js', () => {
                 assert.ok(newDoc === sameDoc);
                 c.database.destroy();
             });
-            it('should be able to save again', async() => {
+            it('should be able to save again', async () => {
                 const c = await humansCollection.create(0);
                 const newDoc = c.newDocument(schemaObjects.human());
                 await newDoc.save();
@@ -84,7 +84,7 @@ describe('temporary-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('throw if schema missmatch', async() => {
+            it('throw if schema missmatch', async () => {
                 const c = await humansCollection.create(0);
                 const docData = schemaObjects.human();
                 docData.foo = 'bar';
@@ -98,7 +98,7 @@ describe('temporary-document.test.js', () => {
         });
     });
     describe('ORM', () => {
-        it('should be able to use ORM-functions', async() => {
+        it('should be able to use ORM-functions', async () => {
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
@@ -118,7 +118,7 @@ describe('temporary-document.test.js', () => {
         });
     });
     describe('reactive', () => {
-        it('should be emit the correct values', async() => {
+        it('should be emit the correct values', async () => {
             const c = await humansCollection.create(0);
             const newDoc = c.newDocument(schemaObjects.human());
             await newDoc.save();
@@ -136,7 +136,7 @@ describe('temporary-document.test.js', () => {
     });
     describe('ISSUES', () => {
         describe('#215 setting field to null throws', () => {
-            it('reproduce', async() => {
+            it('reproduce', async () => {
                 const c = await humansCollection.create(0);
                 const newDoc = c.newDocument();
                 newDoc.age = null;

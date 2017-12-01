@@ -5,12 +5,12 @@ import * as schemaObjects from '../helper/schema-objects';
 
 describe('idle-queue.test.js', () => {
     describe('integration', () => {
-        it('should be able to call queue on database', async() => {
+        it('should be able to call queue on database', async () => {
             const c = await humansCollection.create(0);
             await c.database.requestIdlePromise();
             c.database.destroy();
         });
-        it('inserts should always be faster than idle-call', async() => {
+        it('inserts should always be faster than idle-call', async () => {
             const c = await humansCollection.create(0);
             const data = new Array(10).fill(0).map(() => schemaObjects.human());
             const order = [];

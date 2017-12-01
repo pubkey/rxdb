@@ -12,7 +12,7 @@ import AsyncTestUtil from 'async-test-util';
 describe('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
-            it('ok to create with strategies', async() => {
+            it('ok to create with strategies', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -31,7 +31,7 @@ describe('data-migration.test.js', () => {
                 });
                 db.destroy();
             });
-            it('create same collection with different schema-versions', async() => {
+            it('create same collection with different schema-versions', async () => {
                 const colName = 'human';
                 const name = util.randomCouchString(10);
                 const db = await RxDatabase.create({
@@ -67,7 +67,7 @@ describe('data-migration.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('should throw when array', async() => {
+            it('should throw when array', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -85,7 +85,7 @@ describe('data-migration.test.js', () => {
                 );
                 db.destroy();
             });
-            it('should throw when property no number', async() => {
+            it('should throw when property no number', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -105,7 +105,7 @@ describe('data-migration.test.js', () => {
                 );
                 db.destroy();
             });
-            it('should throw when property no non-float-number', async() => {
+            it('should throw when property no non-float-number', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -125,7 +125,7 @@ describe('data-migration.test.js', () => {
                 );
                 db.destroy();
             });
-            it('should throw when property-value no function', async() => {
+            it('should throw when property-value no function', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -145,7 +145,7 @@ describe('data-migration.test.js', () => {
                 );
                 db.destroy();
             });
-            it('throw when strategy missing', async() => {
+            it('throw when strategy missing', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
@@ -170,7 +170,7 @@ describe('data-migration.test.js', () => {
     });
     describe('DataMigrator.js', () => {
         describe('._getOldCollections()', () => {
-            it('should NOT get an older version', async() => {
+            it('should NOT get an older version', async () => {
                 const colName = 'human';
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
@@ -190,7 +190,7 @@ describe('data-migration.test.js', () => {
                 assert.deepEqual(old, []);
                 db.destroy();
             });
-            it('should get an older version', async() => {
+            it('should get an older version', async () => {
                 const name = util.randomCouchString(10);
                 const colName = 'human';
                 const db = await RxDatabase.create({
@@ -231,7 +231,7 @@ describe('data-migration.test.js', () => {
         });
         describe('OldCollection', () => {
             describe('create', () => {
-                it('create', async() => {
+                it('create', async () => {
                     const col = await humansCollection.createMigrationCollection();
 
                     const old = await col._dataMigrator._getOldCollections();
@@ -246,7 +246,7 @@ describe('data-migration.test.js', () => {
                 });
             });
             describe('.migrateDocumentData()', () => {
-                it('get a valid migrated document', async() => {
+                it('get a valid migrated document', async () => {
                     const col = await humansCollection.createMigrationCollection(1, {
                         3: doc => {
                             doc.age = parseInt(doc.age);
@@ -262,9 +262,9 @@ describe('data-migration.test.js', () => {
                     assert.deepEqual(newDoc.age, parseInt(oldDocs[0].age));
                     col.database.destroy();
                 });
-                it('get a valid migrated document from async strategy', async() => {
+                it('get a valid migrated document from async strategy', async () => {
                     const col = await humansCollection.createMigrationCollection(1, {
-                        3: async(doc) => {
+                        3: async (doc) => {
                             await util.promiseWait(10);
                             doc.age = parseInt(doc.age);
                             return doc;
@@ -281,7 +281,7 @@ describe('data-migration.test.js', () => {
                 });
             });
             describe('.delete()', () => {
-                it('should delete the pouchdb with all its content', async() => {
+                it('should delete the pouchdb with all its content', async () => {
                     const dbName = util.randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
                     const olds = await col._dataMigrator._getOldCollections();
@@ -333,7 +333,7 @@ describe('data-migration.test.js', () => {
                  * 4. it will throw since a document is inserted in to new collection, but not deleted from old
                  * 5. it should not do this
                  */
-                it('should not crash when doc already at new collection', async() => {
+                it('should not crash when doc already at new collection', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: doc => {
                             doc.age = parseInt(doc.age);
@@ -355,7 +355,7 @@ describe('data-migration.test.js', () => {
                 });
             });
             describe('.migrate()', () => {
-                it('should resolve finished when no docs', async() => {
+                it('should resolve finished when no docs', async () => {
                     const col = await humansCollection.createMigrationCollection(0);
                     const olds = await col._dataMigrator._getOldCollections();
                     const oldCol = olds.pop();
@@ -363,7 +363,7 @@ describe('data-migration.test.js', () => {
                     await oldCol.migratePromise();
                     col.database.destroy();
                 });
-                it('should resolve finished when some docs', async() => {
+                it('should resolve finished when some docs', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: doc => {
                             doc.age = parseInt(doc.age);
@@ -387,9 +387,9 @@ describe('data-migration.test.js', () => {
                     assert.equal(docs.length, 10);
                     col.database.destroy();
                 });
-                it('should emit status for every handled document', async() => {
+                it('should emit status for every handled document', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async(doc) => {
+                        3: async (doc) => {
                             await util.promiseWait(10);
                             doc.age = parseInt(doc.age);
                             return doc;
@@ -416,9 +416,9 @@ describe('data-migration.test.js', () => {
                     col.database.destroy();
                 });
 
-                it('should emit "deleted" when migration-strategy returns null', async() => {
+                it('should emit "deleted" when migration-strategy returns null', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async() => {
+                        3: async () => {
                             return null;
                         }
                     });
@@ -439,9 +439,9 @@ describe('data-migration.test.js', () => {
                     assert.equal(states.length, 10);
                     col.database.destroy();
                 });
-                it('should throw when document cannot be migrated', async() => {
+                it('should throw when document cannot be migrated', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async() => {
+                        3: async () => {
                             throw new Error('foobar');
                         }
                     });
@@ -458,7 +458,7 @@ describe('data-migration.test.js', () => {
 
         describe('.migrate()', () => {
             describe('positive', () => {
-                it('should not crash when nothing to migrate', async() => {
+                it('should not crash when nothing to migrate', async () => {
                     const col = await humansCollection.createMigrationCollection(0, {});
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const states = [];
@@ -478,7 +478,7 @@ describe('data-migration.test.js', () => {
                     col.database.destroy();
                 });
 
-                it('should not crash when migrating data', async() => {
+                it('should not crash when migrating data', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
                         3: doc => {
                             doc.age = parseInt(doc.age);
@@ -515,7 +515,7 @@ describe('data-migration.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('should .error when strategy fails', async() => {
+                it('should .error when strategy fails', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
                         3: () => {
                             throw new Error('foobar');
@@ -532,13 +532,13 @@ describe('data-migration.test.js', () => {
         });
         describe('.migratePromise()', () => {
             describe('positive', () => {
-                it('should resolve when nothing to migrate', async() => {
+                it('should resolve when nothing to migrate', async () => {
                     const col = await humansCollection.createMigrationCollection(0, {});
                     await col.migratePromise();
                     col.database.destroy();
                 });
 
-                it('should resolve when migrating data', async() => {
+                it('should resolve when migrating data', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
                         3: doc => {
                             doc.age = parseInt(doc.age);
@@ -550,7 +550,7 @@ describe('data-migration.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('should reject when migration fails', async() => {
+                it('should reject when migration fails', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
                         3: () => {
                             throw new Error('foobar');
@@ -566,7 +566,7 @@ describe('data-migration.test.js', () => {
     });
     describe('integration into collection', () => {
         describe('run', () => {
-            it('should auto-run on creation', async() => {
+            it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
                         3: doc => {
@@ -582,10 +582,10 @@ describe('data-migration.test.js', () => {
                 assert.equal(typeof docs.pop().age, 'number');
                 col.database.destroy();
             });
-            it('should auto-run on creation (async)', async() => {
+            it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                        3: async(doc) => {
+                        3: async (doc) => {
                             util.promiseWait(10);
                             doc.age = parseInt(doc.age);
                             return doc;
@@ -602,13 +602,13 @@ describe('data-migration.test.js', () => {
         });
 
         describe('.migrationNeeded()', () => {
-            it('return true if schema-version is 0', async() => {
+            it('return true if schema-version is 0', async () => {
                 const col = await humansCollection.create();
                 const needed = await col.migrationNeeded();
                 assert.equal(needed, false);
                 col.database.destroy();
             });
-            it('return false if nothing to migrate', async() => {
+            it('return false if nothing to migrate', async () => {
                 const col = await humansCollection.createMigrationCollection(5, {
                     3: doc => {
                         doc.age = parseInt(doc.age);
@@ -620,7 +620,7 @@ describe('data-migration.test.js', () => {
                 assert.equal(needed, false);
                 col.database.destroy();
             });
-            it('return true if something to migrate', async() => {
+            it('return true if something to migrate', async () => {
                 const col = await humansCollection.createMigrationCollection(5, {
                     3: doc => {
                         doc.age = parseInt(doc.age);
@@ -635,7 +635,7 @@ describe('data-migration.test.js', () => {
     });
     describe('issues', () => {
         describe('#212 migration runs into infinity-loop', () => {
-            it('reproduce and fix', async() => {
+            it('reproduce and fix', async () => {
                 const dbName = util.randomCouchString(10);
                 const schema0 = {
                     title: 'hero schema',
