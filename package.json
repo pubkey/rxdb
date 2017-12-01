@@ -105,7 +105,7 @@
     "babel-preset-latest": "6.24.1",
     "brfs": "1.4.3",
     "browserify": "14.5.0",
-    "check-node-version": "3.1.0",
+    "check-node-version": "3.1.1",
     "child-process-promise": "2.2.1",
     "concurrently": "3.5.1",
     "cross-env": "5.1.1",
