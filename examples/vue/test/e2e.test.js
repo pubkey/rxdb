@@ -62,7 +62,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
 
     // wait until at least one becomes leader
     let currentLeader = null;
-    await AsyncTestUtil.waitUntil(async() => {
+    await AsyncTestUtil.waitUntil(async () => {
         let ret = false;
         for (let i = 0; i < 6; i++) {
             await t.switchToIframe('#frame_' + i);
@@ -98,7 +98,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact 
     // wait until next one becomes leader
     await AsyncTestUtil.wait(200);
     const leaders = [];
-    await AsyncTestUtil.waitUntil(async() => {
+    await AsyncTestUtil.waitUntil(async () => {
         let ret = false;
         for (let i = 0; i < 6; i++) {
             if (i !== currentLeader) {
