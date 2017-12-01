@@ -462,8 +462,7 @@ describe('rx-query.test.js', () => {
 
             col.database.destroy();
         });
-    /*    it('should not make more requests then needed on atomic upsert', async () => {
-            console.log('--------------------');
+        it('should not make more requests then needed on atomic upsert', async () => {
             const col = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             let count = 0;
@@ -488,20 +487,10 @@ describe('rx-query.test.js', () => {
                 .map(data => col.atomicUpsert(data))
             );
 
-            //            await AsyncTestUtil.waitUntil(() => emitted.length === 5);
-            //
-            //
-
-            await AsyncTestUtil.wait(1000);
-            console.log('emitted(' + query._execOverDatabaseCount + '):');
-            console.dir(emitted);
             assert.equal(query._execOverDatabaseCount, 1);
-
             col.database.destroy();
-            process.exit();
         });
-    */});
-
+    });
     describe('update', () => {
         it('updates a value on a query', async () => {
             const c = await humansCollection.create(2);
