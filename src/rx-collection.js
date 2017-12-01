@@ -1,4 +1,5 @@
 import clone from 'clone';
+import IdleQueue from 'custom-idle-queue';
 
 import * as util from './util';
 import RxDocument from './rx-document';
@@ -45,7 +46,7 @@ export class RxCollection {
         this._pouchSettings = pouchSettings;
         this._methods = methods; // orm of documents
         this._attachments = attachments; // orm of attachments
-        this._atomicUpsertLocks = {};
+        this._atomicUpsertQueues = {};
 
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
@@ -365,20 +366,25 @@ export class RxCollection {
      * ensures that the given document exists
      * @param  {string}  primary
      * @param  {any}  json
-     * @return {Promise} promise that resolves when finished
+     * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
      */
     async _atomicUpsertEnsureRxDocumentExists(primary, json) {
         const doc = await this.findOne(primary).exec();
         if (!doc) {
-            await this.insert(json);
-            return true;
-        } else
-            return false;
+            const newDoc = await this.insert(json);
+            return {
+                doc: newDoc,
+                inserted: true
+            };
+        } else {
+            return {
+                doc,
+                inserted: false
+            };
+        }
     }
 
-    async _atomicUpsertUpdate(primary, json) {
-//        await this.findOne(primary).exec(); // TODO i dont know why we have to call this, but the tests fail otherwise
-        const doc = await this.findOne(primary).exec();
+    async _atomicUpsertUpdate(doc, json) {
         await doc.atomicUpdate(innerDoc => {
             json._rev = innerDoc._rev;
             innerDoc._data = json;
@@ -396,22 +402,22 @@ export class RxCollection {
         const primary = json[this.schema.primaryPath];
         if (!primary) throw new Error('RxCollection.atomicUpsert() does not work without primary');
 
-        // ensure that it wont try 2 parallel inserts
-        if (!this._atomicUpsertLocks[primary]) {
-            this._atomicUpsertLocks[primary] = this._atomicUpsertEnsureRxDocumentExists(primary, json);
-            const wasInserted = await this._atomicUpsertLocks[primary];
-            if (!wasInserted) {
-                const doc = await this._atomicUpsertUpdate(primary, json);
-                return doc;
-            } else {
-                const doc = await this.findOne(primary).exec();
-                return doc;
+        // ensure that it wont try 2 parallel runs
+        if (!this._atomicUpsertQueues[primary]) this._atomicUpsertQueues[primary] = new IdleQueue();
+        const queue = this._atomicUpsertQueues[primary];
+
+        await queue.requestIdlePromise();
+        const ret = await queue.wrapCall(
+            async () => {
+                const wasInserted = await this._atomicUpsertEnsureRxDocumentExists(primary, json);
+                if (!wasInserted.inserted) {
+                    await this._atomicUpsertUpdate(wasInserted.doc, json);
+                    return wasInserted.doc;
+                } else
+                    return wasInserted.doc;
             }
-        } else {
-            await this._atomicUpsertLocks[primary];
-            const doc = await this._atomicUpsertUpdate(primary, json);
-            return doc;
-        }
+        );
+        return ret;
     }
 
     /**

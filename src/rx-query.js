@@ -1,6 +1,6 @@
 import deepEqual from 'deep-equal';
-import MQuery from './mquery/mquery';
 import IdleQueue from 'custom-idle-queue';
+import MQuery from './mquery/mquery';
 
 import * as util from './util';
 import QueryChangeDetector from './query-change-detector';
@@ -21,18 +21,6 @@ import {
 import {
     filter
 } from 'rxjs/operators/filter';
-import {
-    map
-} from 'rxjs/operators/map';
-import {
-    first
-} from 'rxjs/operators/first';
-import {
-    distinctUntilChanged
-} from 'rxjs/operators/distinctUntilChanged';
-import {
-    tap
-} from 'rxjs/operators/tap';
 
 let _queryCount = 0;
 const newQueryID = function() {
@@ -45,24 +33,13 @@ export class RxQuery {
         this.op = op;
         this.collection = collection;
         this.id = newQueryID();
-        this._ensureEqualQueue = new IdleQueue();
-
         if (!queryObj) queryObj = this._defaultQuery();
-
         this.mquery = new MQuery(queryObj);
-
         this._queryChangeDetector = QueryChangeDetector.create(this);
+
         this._resultsData = null;
         this._results$ = new BehaviorSubject(null);
         this._latestChangeEvent = -1;
-        this._runningPromise = Promise.resolve(true);
-
-        /**
-         * if this is true, the results-state is not equal to the database
-         * which means that the query must run against the database again
-         * @type {Boolean}
-         */
-        this._mustReExec = true;
 
         /**
          * counts how often the execution on the whole db was done
@@ -70,6 +47,12 @@ export class RxQuery {
          * @type {Number}
          */
         this._execOverDatabaseCount = 0;
+    }
+
+    get _ensureEqualQueue() {
+        if (!this.__ensureEqualQueue)
+            this.__ensureEqualQueue = new IdleQueue();
+        return this.__ensureEqualQueue;
     }
 
     _defaultQuery() {
@@ -108,6 +91,15 @@ export class RxQuery {
         return this.stringRep;
     }
 
+    /**
+     * check if the current results-state is in sync with the database
+     * @return {Boolean} false if not which means it should re-execute
+     */
+    _isResultsInSync() {
+        if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
+            return true;
+        else return false;
+    }
 
     async _ensureEqual() {
         await this._ensureEqualQueue.requestIdlePromise();
@@ -117,96 +109,69 @@ export class RxQuery {
         return ret;
     }
 
+
     /**
      * ensures that the results of this query is equal to the results which a query over the database would give
      * @return {Promise<boolean>} true if results have changed
      */
     async __ensureEqual() {
-        const runKey = util.randomCouchString(5);
-        console.log('ensureEqual(' + runKey + ')');
-
-        // make sure it does not run in parallel
-        /*        console.log('ensureEqual(' + runKey + '): await _runningPromise(' + this._runningPromise.runKey + ')');
-                await this._runningPromise;
-                console.log('ensureEqual(' + runKey + '): run now!');
-                let resolve;
-                this._runningPromise = new Promise(res => {
-                    resolve = () => {
-                        console.log('resolve(' + runKey + ')');
-                        res();
-                    };
-                });
-                this._runningPromise.runKey = runKey;
-        */
         let ret = false;
+        if (this._isResultsInSync()) return false; // nothing happend
 
 
-        console.log('ensureEqual(' + runKey + '): ' + this._latestChangeEvent + ' - ' + this.collection._changeEventBuffer.counter);
-        // do nothing if nothing happend between the last exec-run and now
-        if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter) {
-            //    resolve(true);
-            return false;
-        }
+        let mustReExec = false; // if this becomes true, a whole execution over the database is made
+        if (this._latestChangeEvent === -1) mustReExec = true;
 
-        console.log('ensureEqual(' + runKey + '): diff in own and eventBuffer -> make results equal again');
-
-        // console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
-        if (!this._mustReExec) {
+        /**
+         * try to use the queryChangeDetector to calculate the new results
+         */
+        if (!mustReExec) {
             const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
             if (missedChangeEvents === null) {
-                console.log('ensureEqual(' + runKey + '):missed change-events ouf of bounds -> _mustReExec: true');
-                // out of bounds -> reExec
-                this._mustReExec = true;
+                // changeEventBuffer is of bounds -> we must re-execute over the database
+                mustReExec = true;
             } else {
-                // console.dir(missedChangeEvents);
                 this._latestChangeEvent = this.collection._changeEventBuffer.counter;
                 const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
                 const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
-                // console.log('ensureEqual(' + runKey + '):changeResult:');
-                // console.dir(changeResult);
-                if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
+
+                if (!Array.isArray(changeResult) && changeResult) {
+                    // could not calculate the new results, execute must be done
+                    mustReExec = true;
+                }
                 if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
-                    ret = true;
-                    await this._setResultData(changeResult, runKey);
+                    // we got the new results, we do not have to re-execute, mustReExec stays false
+                    ret = true; // true because results changed
+                    await this._setResultData(changeResult);
                 }
             }
         }
 
-        if (this._mustReExec) {
-            console.log('ensureEqual(' + runKey + '):this._mustReExec: true');
-            // counter can change while _execOverDatabase() is running
+        // oh no we have to re-execute the whole query over the database
+        if (mustReExec) {
+            // counter can change while _execOverDatabase() is running so we save it here
             const latestAfter = this.collection._changeEventBuffer.counter;
-
             const newResultData = await this._execOverDatabase();
             this._latestChangeEvent = latestAfter;
             if (!deepEqual(newResultData, this._resultsData)) {
-                ret = true;
-                await this._setResultData(newResultData, runKey);
+                ret = true; // true because results changed
+                await this._setResultData(newResultData);
             }
         }
-
-        // console.log('_ensureEqual DONE (' + this.toString() + ')');
-
-        //    resolve(true);
-        console.log('ensureEqual(' + runKey + '): return: ' + ret);
-        return ret;
+        return ret; // true if results have changed
     }
 
-    async _setResultData(newResultData, key = '') {
-        console.log('_setResultData(' + key + ')');
-        console.dir(newResultData);
+    async _setResultData(newResultData) {
         this._resultsData = newResultData;
 
         const docs = await this.collection._createDocuments(this._resultsData);
-        console.log('_setResultData(' + key + '): got docs');
+        let newResultDocs = docs;
+        if (this.op === 'findOne') {
+            if (docs.length === 0) newResultDocs = null;
+            else newResultDocs = docs[0];
+        }
 
-        console.log('_setResultData(' + key + '): new Results:');
-        console.dir(docs.map(doc => JSON.stringify(doc)));
-        this._results$.next(docs);
-        console.log('_setResultData(' + key + '): done');
-        await new Promise(res => setTimeout(res, 10)); // TODO remove
-        //        const nextValue = await this.$.pipe(first()).toPromise();
-        //        console.dir(nextValue);
+        this._results$.next(newResultDocs);
     }
 
     /**
@@ -214,7 +179,6 @@ export class RxQuery {
      * @return {Promise<{}[]>} results-array with document-data
      */
     _execOverDatabase() {
-        console.log('query(' + this.id + ')._execOverDatabase(' + this._execOverDatabaseCount + '):' + this.toString());
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         let docsPromise;
@@ -231,8 +195,6 @@ export class RxQuery {
 
         return docsPromise
             .then(docsData => {
-                console.log('_execOverDatabase():got:');
-                console.dir(docsData);
                 this._mustReExec = false;
                 return docsData;
             });
@@ -240,17 +202,13 @@ export class RxQuery {
 
     get $() {
         if (!this._$) {
+            // use results$ to emit new results
             const res$ = this._results$
                 .pipe(
-                    tap(results => {
-                        console.log('results$ emitted');
-                        if (results !== null)
-                            console.dir(results.map(doc => JSON.stringify(doc)));
-                    }),
+                    // whe run _ensureEqual() on each subscription
+                    // to ensure it triggers a re-run when subscribing after some time
                     mergeMap(async (results) => {
-                        console.log('mergeMap:');
                         const hasChanged = await this._ensureEqual();
-                        console.log('has Changed: ' + hasChanged);
                         if (hasChanged) return 'WAITFORNEXTEMIT';
                         else return results;
                     }),
@@ -258,26 +216,20 @@ export class RxQuery {
                 )
                 .asObservable();
 
+            // we also subscribe to the changeEvent-stream so it detects changed if it has subscribers
             const changeEvents$ = this.collection.$
                 .pipe(
                     filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op)),
-                    tap(async () => this._ensureEqual()),
-                    filter(() => false)
+                    filter(() => {
+                        this._ensureEqual();
+                        return false;
+                    })
                 );
+
             this._$ =
                 merge(
                     res$,
                     changeEvents$
-                )
-                .pipe(
-                    filter(x => x !== null),
-                    map(results => {
-                        console.log('pipeMe:');
-                        console.dir(results.map(doc => JSON.stringify(doc)));
-                        if (this.op !== 'findOne') return results;
-                        else if (results.length === 0) return null;
-                        else return results[0];
-                    })
                 );
         }
         return this._$;
@@ -404,17 +356,14 @@ export class RxQuery {
      * @return {Promise<RxDocument|RxDocument[]>} found documents
      */
     async exec() {
-        console.log('.exec(' + this.id + '): ' + this.toString());
-        return this.$
-            .pipe(
-                first(),
-                map(doc => {
-                    console.log('exec returns:');
-                    console.dir(JSON.stringify(doc));
-                    return doc;
-                })
-            )
-            .toPromise();
+        let changed = true;
+
+        // we run _ensureEqual() until we are in sync with the database-state
+        while (changed)
+            changed = await this._ensureEqual();
+
+        // than return the current results
+        return this._results$.getValue();
     }
 
     /**

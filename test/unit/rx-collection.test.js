@@ -634,8 +634,6 @@ describe('rx-collection.test.js', () => {
                         });
                         assert.equal(all.docs.length, 10);
 
-                        // console.log('NATIVE POUCH WORKED');
-
                         // with RxQuery
                         const query = collection.find({}).sort({
                             'other.age': 1
@@ -996,18 +994,14 @@ describe('rx-collection.test.js', () => {
                     const insertedDoc = await c.insert(docData);
                     assert.ok(RxDocument.isInstanceOf(insertedDoc));
 
-                    await AsyncTestUtil.wait(400);
-                    console.log('----------------------');
                     const results = await Promise.all([
                         c.findOne(primary).exec(),
                         c.findOne(primary).exec()
                     ]);
                     assert.ok(RxDocument.isInstanceOf(results[0]));
 
-                    console.log('results:');
-                    console.dir(results.map(doc => JSON.stringify(doc)));
                     assert.ok(results[0] === results[1]);
-                    process.exit();
+                    // process.exit();
 
                     results[0].firstName = 'foobar';
                     await results[0].save();
@@ -1018,8 +1012,6 @@ describe('rx-collection.test.js', () => {
                     ]);
                     assert.ok(RxDocument.isInstanceOf(results2[0]));
                     assert.ok(results2[0] === results2[1]);
-
-                    console.dir(results);
 
                     c.database.destroy();
                 });
@@ -1038,10 +1030,7 @@ describe('rx-collection.test.js', () => {
                         const human = schemaObjects.human();
                         const passportId = human.passportId;
                         await collection.insert(human);
-                        const docs = await collection.find().exec();
-                        if (!docs[0]) console.log('docs[0]: null');
                         const doc = await collection.findOne().exec();
-                        if (!doc) console.log('doc: null');
                         assert.equal(passportId, doc._data.passportId);
                         db.destroy();
                     }
@@ -1192,7 +1181,6 @@ describe('rx-collection.test.js', () => {
                 });
                 it('should not crash when upserting the same doc in parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    console.log('------------------------');
                     const docData = schemaObjects.simpleHuman();
                     const docs = await Promise.all([
                         c.atomicUpsert(docData),
@@ -1248,10 +1236,11 @@ describe('rx-collection.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const order = [];
-                    c.atomicUpsert(docData).then(() => order.push(0));
-                    c.atomicUpsert(docData).then(() => order.push(1));
-                    c.atomicUpsert(docData).then(() => order.push(2));
-                    await AsyncTestUtil.waitUntil(() => order.length === 3);
+                    await Promise.all([
+                        c.atomicUpsert(docData).then(() => order.push(0)),
+                        c.atomicUpsert(docData).then(() => order.push(1)),
+                        c.atomicUpsert(docData).then(() => order.push(2))
+                    ]);
                     assert.deepEqual(order, [0, 1, 2]);
 
                     c.database.destroy();
