@@ -1,162 +1,164 @@
 {
-    "parser": "babel-eslint",
-    "env": {
-        "browser": true,
-        "es6": true,
-        "node": true
-    },
-    "parserOptions": {
-        "sourceType": "module"
-    },
-    "plugins": [
-        "spellcheck",
-        "disable"
-    ],
-    "settings": {
-        "eslint-plugin-disable": {
-            "paths": {
-                "spellcheck": ["**/test/**/*.js"]
-            }
-        }
-    },
-    "rules": {
-        "indent": [
-            "error",
-            4, {
-                "MemberExpression": "off",
-                "SwitchCase": 1
-            }
-        ],
-        "camelcase": ["error", {"properties": "never"}],
-        "eqeqeq": ["error", "always"],
-        "padded-blocks": ["error", "never"],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ],
-        "no-console": "off",
-        "curly": ["error", "multi-or-nest"],
-        "no-var": "error",
-        "no-throw-literal": "error",
-        "prefer-const": "error",
-        "no-unused-vars": "error",
-        "no-implicit-globals": "error",
-        "no-global-assign": "error",
-        "space-before-function-paren": ["error", {
-            "anonymous": "never",
-            "named": "never",
-            "asyncArrow": "always"
-        }],
-        "spellcheck/spell-checker": [
-            1,
-            {
-                "comments": false,
-                "strings": false,
-                "identifiers": true,
-                "templates": false,
-                "lang": "en_US",
-                "skipWords": [
-                    "rxdb",
-                    "async",
-                    "util",
-                    "assign",
-                    "bc",
-                    "msg",
-                    "chr",
-                    "stringify",
-                    "leveldown",
-                    "leveldb",
-                    "nr",
-                    "md5",
-                    "Md5",
-                    "substr",
-                    "rxjs",
-                    "rx",
-                    "src",
-                    "len",
-                    "str",
-                    "ret",
-                    "ucfirst",
-                    "pre",
-                    "pos",
-                    "concat",
-                    "params",
-                    "mquery",
-                    "proto",
-                    "del",
-                    "repull",
-                    "dir",
-                    "param",
-                    "desc",
-                    "arg",
-                    "args",
-                    "getter",
-                    "prev",
-                    "els",
-                    "resync",
-                    "html",
-                    "pubkey",
-                    "https",
-                    "pw",
-                    "pouchdb",
-                    "overwritable",
-                    "migrator",
-                    "crypter",
-                    "asc",
-                    "ne",
-                    "ok",
-                    "unsecure",
-                    "utf8",
-                    "io",
-                    "fieldname",
-                    "strat",
-                    "childpath",
-                    "upsert",
-                    "decrypt",
-                    "validator",
-                    "validators",
-                    "modifyjs",
-                    "fn",
-                    "idx",
-                    "substring",
-                    "github",
-                    "ev",
-                    "ar",
-                    "decrypted",
-                    "fns",
-                    "utils",
-                    "orm",
-                    "methods",
-                    "conds",
-                    "funs",
-                    "undeleted",
-                    "rej",
-                    "eq",
-                    "el",
-                    "aes",
-                    "hostname",
-                    "vue",
-                    "revpos",
-                    "preprocessors",
-                    "travis",
-                    "ci",
-                    "init",
-                    "typings"
-                ],
-                "skipIfMatch": [
-                    "^[.]{1,3}$",
-                    "abcdefgh",
-                    "Md5"
-                ]
-            }
-        ]
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "plugins": [
+    "spellcheck",
+    "disable"
+  ],
+  "settings": {
+    "eslint-plugin-disable": {
+      "paths": {
+        "spellcheck": ["**/test/**/*.js"]
+      }
     }
+  },
+  "rules": {
+    "indent": [
+      "error",
+      4, {
+        "MemberExpression": "off",
+        "SwitchCase": 1
+      }
+    ],
+    "camelcase": ["error", {
+      "properties": "never"
+    }],
+    "eqeqeq": ["error", "always"],
+    "padded-blocks": ["error", "never"],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "no-console": "off",
+    "curly": ["error", "multi-or-nest"],
+    "no-var": "error",
+    "no-throw-literal": "error",
+    "prefer-const": "error",
+    "no-unused-vars": "error",
+    "no-implicit-globals": "error",
+    "no-global-assign": "error",
+    "space-before-function-paren": ["error", {
+      "anonymous": "never",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "spellcheck/spell-checker": [
+      1,
+      {
+        "comments": false,
+        "strings": false,
+        "identifiers": true,
+        "templates": false,
+        "lang": "en_US",
+        "skipWords": [
+          "rxdb",
+          "async",
+          "util",
+          "assign",
+          "bc",
+          "msg",
+          "chr",
+          "stringify",
+          "leveldown",
+          "leveldb",
+          "nr",
+          "md5",
+          "Md5",
+          "substr",
+          "rxjs",
+          "rx",
+          "src",
+          "len",
+          "str",
+          "ret",
+          "ucfirst",
+          "pre",
+          "pos",
+          "concat",
+          "params",
+          "mquery",
+          "proto",
+          "del",
+          "repull",
+          "dir",
+          "param",
+          "desc",
+          "arg",
+          "args",
+          "getter",
+          "prev",
+          "els",
+          "resync",
+          "html",
+          "pubkey",
+          "https",
+          "pw",
+          "pouchdb",
+          "overwritable",
+          "migrator",
+          "crypter",
+          "asc",
+          "ne",
+          "ok",
+          "unsecure",
+          "utf8",
+          "io",
+          "fieldname",
+          "strat",
+          "childpath",
+          "upsert",
+          "decrypt",
+          "validator",
+          "validators",
+          "modifyjs",
+          "fn",
+          "idx",
+          "substring",
+          "github",
+          "ev",
+          "ar",
+          "decrypted",
+          "fns",
+          "utils",
+          "orm",
+          "methods",
+          "conds",
+          "funs",
+          "undeleted",
+          "rej",
+          "eq",
+          "el",
+          "aes",
+          "hostname",
+          "vue",
+          "revpos",
+          "preprocessors",
+          "travis",
+          "ci",
+          "init",
+          "typings"
+        ],
+        "skipIfMatch": [
+          "^[.]{1,3}$",
+          "abcdefgh",
+          "Md5"
+        ]
+      }
+    ]
+  }
 }

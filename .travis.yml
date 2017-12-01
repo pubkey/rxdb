@@ -1,5 +1,5 @@
-language: node_js
-sudo: required
+language:        node_js
+sudo:            required
 os:
   - linux
 node_js:
