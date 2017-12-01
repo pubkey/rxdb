@@ -241,7 +241,7 @@ describe('rx-query.test.js', () => {
             const q2 = col.find()
                 .where('name').ne('Bob');
             assert.ok(q2);
-            assert.equal(Object.keys(col._queryCache._map).length, 4);
+            assert.equal(col._queryCache._map.size, 4);
             col.database.destroy();
         });
         it('return another object', async () => {

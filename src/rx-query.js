@@ -192,12 +192,7 @@ export class RxQuery {
             default:
                 throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
         }
-
-        return docsPromise
-            .then(docsData => {
-                this._mustReExec = false;
-                return docsData;
-            });
+        return docsPromise;
     }
 
     get $() {

@@ -5,7 +5,7 @@
 class QueryCache {
     constructor() {
         this.subs = [];
-        this._map = {}; // TODO use new Map()
+        this._map = new Map();
     }
 
     /**
@@ -17,16 +17,14 @@ class QueryCache {
      */
     getByQuery(query) {
         const stringRep = query.toString();
-        const has = this._map[stringRep];
-        if (!has) {
-            this._map[stringRep] = query;
-            return query;
-        } else return has;
+        if (!this._map.has(stringRep))
+            this._map.set(stringRep, query);
+        return this._map.get(stringRep);
     }
 
     destroy() {
         this.subs.forEach(sub => sub.unsubscribe());
-        this._map = {};
+        this._map = new Map();
     }
 };
 
