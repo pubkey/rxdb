@@ -604,7 +604,7 @@ describe('rx-document.test.js', () => {
         });
     });
     describe('issues', () => {
-        it('BUG #66 - insert -> remove -> upsert does not give new state', async () => {
+        it('ISSUE #66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
@@ -626,7 +626,7 @@ describe('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('BUG #66 - insert -> remove -> insert does not give new state', async () => {
+        it('ISSUE #66 - insert -> remove -> insert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
@@ -647,7 +647,7 @@ describe('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('BUG #76 - deepEqual does not work correctly for Arrays', async () => {
+        it('ISSUE #76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'

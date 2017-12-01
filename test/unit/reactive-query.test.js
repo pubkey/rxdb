@@ -158,7 +158,7 @@ describe('reactive-query.test.js', () => {
             c.database.destroy();
         });
 
-        it('BUG: should have the document in DocCache when getting it from observe', async () => {
+        it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
             const name = util.randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
@@ -178,7 +178,7 @@ describe('reactive-query.test.js', () => {
             c2.database.destroy();
         });
 
-        it('BUG #136 : findOne(string).$ streams all documents (_id as primary)', async () => {
+        it('ISSUE #136 : findOne(string).$ streams all documents (_id as primary)', async () => {
             const subs = [];
             const col = await humansCollection.create(3);
             const docData = schemaObjects.human();
@@ -217,7 +217,7 @@ describe('reactive-query.test.js', () => {
             col.database.destroy();
         });
 
-        it('BUG #138 : findOne().$ returns every doc if no id given', async () => {
+        it('ISSUE #138 : findOne().$ returns every doc if no id given', async () => {
             const col = await humansCollection.create(3);
             const streamed = [];
             const sub = col.findOne().$

@@ -284,7 +284,7 @@ describe('key-compression.test.js', () => {
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
-        it('BUG: _rev gets undefined', () => {
+        it('ISSUE: _rev gets undefined', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.heroArray));
             const human = schemaObjects.heroArray();
             const compressed = k.compress(human);

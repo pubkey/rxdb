@@ -445,7 +445,7 @@ describe('hooks.test.js', () => {
         });
     });
     describe('issues', () => {
-        it('BUG #158 : Throwing error in async preInsert does not prevent insert', async () => {
+        it('ISSUE #158 : Throwing error in async preInsert does not prevent insert', async () => {
             const c = await humansCollection.create(0);
             c.preInsert(async function() {
                 await util.promiseWait(1);
