@@ -984,6 +984,45 @@ describe('rx-collection.test.js', () => {
                     assert.deepEqual(docById.data, doc.data);
                     c.database.destroy();
                 });
+                it('find by primary in parallel', async () => {
+                    const c = await humansCollection.createPrimary(0);
+
+                    const docData = schemaObjects.simpleHuman();
+                    const primary = docData.passportId;
+
+                    const notExist = await c.findOne(primary).exec();
+                    assert.equal(notExist, null);
+
+                    const insertedDoc = await c.insert(docData);
+                    assert.ok(RxDocument.isInstanceOf(insertedDoc));
+
+                    await AsyncTestUtil.wait(400);
+                    console.log('----------------------');
+                    const results = await Promise.all([
+                        c.findOne(primary).exec(),
+                        c.findOne(primary).exec()
+                    ]);
+                    assert.ok(RxDocument.isInstanceOf(results[0]));
+
+                    console.log('results:');
+                    console.dir(results.map(doc => JSON.stringify(doc)));
+                    assert.ok(results[0] === results[1]);
+                    process.exit();
+
+                    results[0].firstName = 'foobar';
+                    await results[0].save();
+
+                    const results2 = await Promise.all([
+                        c.findOne(primary).exec(),
+                        c.findOne(primary).exec()
+                    ]);
+                    assert.ok(RxDocument.isInstanceOf(results2[0]));
+                    assert.ok(results2[0] === results2[1]);
+
+                    console.dir(results);
+
+                    c.database.destroy();
+                });
                 it('BUG: insert and find very often', async function() {
                     this.timeout(5000);
                     const amount = 10;
@@ -1152,6 +1191,18 @@ describe('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('should not crash when upserting the same doc in parallel', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    console.log('------------------------');
+                    const docData = schemaObjects.simpleHuman();
+                    const docs = await Promise.all([
+                        c.atomicUpsert(docData),
+                        c.atomicUpsert(docData)
+                    ]);
+                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(RxDocument.isInstanceOf(docs[0]));
+                    c.database.destroy();
+                });
+                it('should not crash when upserting the same doc in parallel 3 times', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const docs = await Promise.all([

@@ -377,7 +377,7 @@ export class RxCollection {
     }
 
     async _atomicUpsertUpdate(primary, json) {
-        await this.findOne(primary).exec(); // TODO i dont know why we have to call this, but the tests fail otherwise
+//        await this.findOne(primary).exec(); // TODO i dont know why we have to call this, but the tests fail otherwise
         const doc = await this.findOne(primary).exec();
         await doc.atomicUpdate(innerDoc => {
             json._rev = innerDoc._rev;
