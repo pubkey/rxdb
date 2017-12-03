@@ -25,7 +25,7 @@ var QueryCache = function () {
         (0, _classCallCheck3["default"])(this, QueryCache);
 
         this.subs = [];
-        this._map = {};
+        this._map = new Map();
     }
 
     /**
@@ -41,11 +41,8 @@ var QueryCache = function () {
         key: "getByQuery",
         value: function getByQuery(query) {
             var stringRep = query.toString();
-            var has = this._map[stringRep];
-            if (!has) {
-                this._map[stringRep] = query;
-                return query;
-            } else return has;
+            if (!this._map.has(stringRep)) this._map.set(stringRep, query);
+            return this._map.get(stringRep);
         }
     }, {
         key: "destroy",
@@ -53,7 +50,7 @@ var QueryCache = function () {
             this.subs.forEach(function (sub) {
                 return sub.unsubscribe();
             });
-            this._map = {};
+            this._map = new Map();
         }
     }]);
     return QueryCache;

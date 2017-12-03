@@ -3,6 +3,7 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import clone from 'clone';
+import IdleQueue from 'custom-idle-queue';
 
 import * as util from './util';
 import RxDocument from './rx-document';
@@ -15,7 +16,7 @@ import DocCache from './doc-cache';
 import QueryCache from './query-cache';
 import ChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
-import { runPluginHooks } from './hooks';
+import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 
 import RxSchema from './rx-schema';
 import RxDatabase from './rx-database';
@@ -29,11 +30,12 @@ export var RxCollection = function () {
     function RxCollection(database, name, schema) {
         var pouchSettings = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
         var migrationStrategies = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+        var methods = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 
         var _this = this;
 
-        var methods = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
         var attachments = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
+        var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
 
         _classCallCheck(this, RxCollection);
 
@@ -46,7 +48,8 @@ export var RxCollection = function () {
         this._pouchSettings = pouchSettings;
         this._methods = methods; // orm of documents
         this._attachments = attachments; // orm of attachments
-        this._atomicUpsertLocks = {};
+        this.options = options;
+        this._atomicUpsertQueues = {};
 
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
@@ -268,7 +271,7 @@ export var RxCollection = function () {
             }, _callee2, this, [[2, 8]]);
         }));
 
-        function _pouchPut(_x8) {
+        function _pouchPut(_x9) {
             return _ref2.apply(this, arguments);
         }
 
@@ -333,7 +336,7 @@ export var RxCollection = function () {
             }, _callee3, this);
         }));
 
-        function _pouchFind(_x10, _x11) {
+        function _pouchFind(_x11, _x12) {
             return _ref3.apply(this, arguments);
         }
 
@@ -388,9 +391,13 @@ export var RxCollection = function () {
                             this._docCache.set(id, doc);
                             this._runHooksSync('post', 'create', doc);
 
+                            _context4.next = 10;
+                            return runAsyncPluginHooks('postCreateRxDocument', doc);
+
+                        case 10:
                             return _context4.abrupt('return', doc);
 
-                        case 9:
+                        case 11:
                         case 'end':
                             return _context4.stop();
                     }
@@ -398,7 +405,7 @@ export var RxCollection = function () {
             }, _callee4, this);
         }));
 
-        function _createDocument(_x13) {
+        function _createDocument(_x14) {
             return _ref4.apply(this, arguments);
         }
 
@@ -430,7 +437,7 @@ export var RxCollection = function () {
             }, _callee5, this);
         }));
 
-        function _createDocuments(_x14) {
+        function _createDocuments(_x15) {
             return _ref5.apply(this, arguments);
         }
 
@@ -553,7 +560,7 @@ export var RxCollection = function () {
             }, _callee6, this);
         }));
 
-        function insert(_x15) {
+        function insert(_x16) {
             return _ref6.apply(this, arguments);
         }
 
@@ -621,7 +628,7 @@ export var RxCollection = function () {
             }, _callee7, this);
         }));
 
-        function upsert(_x16) {
+        function upsert(_x17) {
             return _ref7.apply(this, arguments);
         }
 
@@ -632,13 +639,13 @@ export var RxCollection = function () {
      * ensures that the given document exists
      * @param  {string}  primary
      * @param  {any}  json
-     * @return {Promise} promise that resolves when finished
+     * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
      */
 
 
     RxCollection.prototype._atomicUpsertEnsureRxDocumentExists = function () {
         var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(primary, json) {
-            var doc;
+            var doc, newDoc;
             return _regeneratorRuntime.wrap(function _callee8$(_context8) {
                 while (1) {
                     switch (_context8.prev = _context8.next) {
@@ -650,7 +657,7 @@ export var RxCollection = function () {
                             doc = _context8.sent;
 
                             if (doc) {
-                                _context8.next = 9;
+                                _context8.next = 10;
                                 break;
                             }
 
@@ -658,12 +665,19 @@ export var RxCollection = function () {
                             return this.insert(json);
 
                         case 6:
-                            return _context8.abrupt('return', true);
-
-                        case 9:
-                            return _context8.abrupt('return', false);
+                            newDoc = _context8.sent;
+                            return _context8.abrupt('return', {
+                                doc: newDoc,
+                                inserted: true
+                            });
 
                         case 10:
+                            return _context8.abrupt('return', {
+                                doc: doc,
+                                inserted: false
+                            });
+
+                        case 11:
                         case 'end':
                             return _context8.stop();
                     }
@@ -671,7 +685,7 @@ export var RxCollection = function () {
             }, _callee8, this);
         }));
 
-        function _atomicUpsertEnsureRxDocumentExists(_x17, _x18) {
+        function _atomicUpsertEnsureRxDocumentExists(_x18, _x19) {
             return _ref8.apply(this, arguments);
         }
 
@@ -679,31 +693,21 @@ export var RxCollection = function () {
     }();
 
     RxCollection.prototype._atomicUpsertUpdate = function () {
-        var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(primary, json) {
-            var doc;
+        var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9(doc, json) {
             return _regeneratorRuntime.wrap(function _callee9$(_context9) {
                 while (1) {
                     switch (_context9.prev = _context9.next) {
                         case 0:
                             _context9.next = 2;
-                            return this.findOne(primary).exec();
-
-                        case 2:
-                            _context9.next = 4;
-                            return this.findOne(primary).exec();
-
-                        case 4:
-                            doc = _context9.sent;
-                            _context9.next = 7;
                             return doc.atomicUpdate(function (innerDoc) {
                                 json._rev = innerDoc._rev;
                                 innerDoc._data = json;
                             });
 
-                        case 7:
+                        case 2:
                             return _context9.abrupt('return', doc);
 
-                        case 8:
+                        case 3:
                         case 'end':
                             return _context9.stop();
                     }
@@ -711,7 +715,7 @@ export var RxCollection = function () {
             }, _callee9, this);
         }));
 
-        function _atomicUpsertUpdate(_x19, _x20) {
+        function _atomicUpsertUpdate(_x20, _x21) {
             return _ref9.apply(this, arguments);
         }
 
@@ -726,81 +730,81 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype.atomicUpsert = function () {
-        var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10(json) {
-            var primary, wasInserted, doc, _doc, _doc2;
+        var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee11(json) {
+            var _this7 = this;
 
-            return _regeneratorRuntime.wrap(function _callee10$(_context10) {
+            var primary, queue, ret;
+            return _regeneratorRuntime.wrap(function _callee11$(_context11) {
                 while (1) {
-                    switch (_context10.prev = _context10.next) {
+                    switch (_context11.prev = _context11.next) {
                         case 0:
                             json = clone(json);
                             primary = json[this.schema.primaryPath];
 
                             if (primary) {
-                                _context10.next = 4;
+                                _context11.next = 4;
                                 break;
                             }
 
                             throw new Error('RxCollection.atomicUpsert() does not work without primary');
 
                         case 4:
-                            if (this._atomicUpsertLocks[primary]) {
-                                _context10.next = 22;
-                                break;
-                            }
 
-                            this._atomicUpsertLocks[primary] = this._atomicUpsertEnsureRxDocumentExists(primary, json);
-                            _context10.next = 8;
-                            return this._atomicUpsertLocks[primary];
+                            // ensure that it wont try 2 parallel runs
+                            if (!this._atomicUpsertQueues[primary]) this._atomicUpsertQueues[primary] = new IdleQueue();
+                            queue = this._atomicUpsertQueues[primary];
+                            _context11.next = 8;
+                            return queue.requestIdlePromise();
 
                         case 8:
-                            wasInserted = _context10.sent;
+                            _context11.next = 10;
+                            return queue.wrapCall(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee10() {
+                                var wasInserted;
+                                return _regeneratorRuntime.wrap(function _callee10$(_context10) {
+                                    while (1) {
+                                        switch (_context10.prev = _context10.next) {
+                                            case 0:
+                                                _context10.next = 2;
+                                                return _this7._atomicUpsertEnsureRxDocumentExists(primary, json);
 
-                            if (wasInserted) {
-                                _context10.next = 16;
-                                break;
-                            }
+                                            case 2:
+                                                wasInserted = _context10.sent;
 
-                            _context10.next = 12;
-                            return this._atomicUpsertUpdate(primary, json);
+                                                if (wasInserted.inserted) {
+                                                    _context10.next = 9;
+                                                    break;
+                                                }
+
+                                                _context10.next = 6;
+                                                return _this7._atomicUpsertUpdate(wasInserted.doc, json);
+
+                                            case 6:
+                                                return _context10.abrupt('return', wasInserted.doc);
+
+                                            case 9:
+                                                return _context10.abrupt('return', wasInserted.doc);
+
+                                            case 10:
+                                            case 'end':
+                                                return _context10.stop();
+                                        }
+                                    }
+                                }, _callee10, _this7);
+                            })));
+
+                        case 10:
+                            ret = _context11.sent;
+                            return _context11.abrupt('return', ret);
 
                         case 12:
-                            doc = _context10.sent;
-                            return _context10.abrupt('return', doc);
-
-                        case 16:
-                            _context10.next = 18;
-                            return this.findOne(primary).exec();
-
-                        case 18:
-                            _doc = _context10.sent;
-                            return _context10.abrupt('return', _doc);
-
-                        case 20:
-                            _context10.next = 28;
-                            break;
-
-                        case 22:
-                            _context10.next = 24;
-                            return this._atomicUpsertLocks[primary];
-
-                        case 24:
-                            _context10.next = 26;
-                            return this._atomicUpsertUpdate(primary, json);
-
-                        case 26:
-                            _doc2 = _context10.sent;
-                            return _context10.abrupt('return', _doc2);
-
-                        case 28:
                         case 'end':
-                            return _context10.stop();
+                            return _context11.stop();
                     }
                 }
-            }, _callee10, this);
+            }, _callee11, this);
         }));
 
-        function atomicUpsert(_x21) {
+        function atomicUpsert(_x22) {
             return _ref10.apply(this, arguments);
         }
 
@@ -852,23 +856,23 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype.importDump = function () {
-        var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee11() {
-            return _regeneratorRuntime.wrap(function _callee11$(_context11) {
+        var _ref12 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee12() {
+            return _regeneratorRuntime.wrap(function _callee12$(_context12) {
                 while (1) {
-                    switch (_context11.prev = _context11.next) {
+                    switch (_context12.prev = _context12.next) {
                         case 0:
                             throw RxError.pluginMissing('json-dump');
 
                         case 1:
                         case 'end':
-                            return _context11.stop();
+                            return _context12.stop();
                     }
                 }
-            }, _callee11, this);
+            }, _callee12, this);
         }));
 
         function importDump() {
-            return _ref11.apply(this, arguments);
+            return _ref12.apply(this, arguments);
         }
 
         return importDump;
@@ -941,54 +945,54 @@ export var RxCollection = function () {
     };
 
     RxCollection.prototype._runHooks = function () {
-        var _ref12 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee12(when, key, doc) {
+        var _ref13 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee13(when, key, doc) {
             var hooks, i;
-            return _regeneratorRuntime.wrap(function _callee12$(_context12) {
+            return _regeneratorRuntime.wrap(function _callee13$(_context13) {
                 while (1) {
-                    switch (_context12.prev = _context12.next) {
+                    switch (_context13.prev = _context13.next) {
                         case 0:
                             hooks = this.getHooks(when, key);
 
                             if (hooks) {
-                                _context12.next = 3;
+                                _context13.next = 3;
                                 break;
                             }
 
-                            return _context12.abrupt('return');
+                            return _context13.abrupt('return');
 
                         case 3:
                             i = 0;
 
                         case 4:
                             if (!(i < hooks.series.length)) {
-                                _context12.next = 10;
+                                _context13.next = 10;
                                 break;
                             }
 
-                            _context12.next = 7;
+                            _context13.next = 7;
                             return hooks.series[i](doc);
 
                         case 7:
                             i++;
-                            _context12.next = 4;
+                            _context13.next = 4;
                             break;
 
                         case 10:
-                            _context12.next = 12;
+                            _context13.next = 12;
                             return Promise.all(hooks.parallel.map(function (hook) {
                                 return hook(doc);
                             }));
 
                         case 12:
                         case 'end':
-                            return _context12.stop();
+                            return _context13.stop();
                     }
                 }
-            }, _callee12, this);
+            }, _callee13, this);
         }));
 
-        function _runHooks(_x23, _x24, _x25) {
-            return _ref12.apply(this, arguments);
+        function _runHooks(_x24, _x25, _x26) {
+            return _ref13.apply(this, arguments);
         }
 
         return _runHooks;
@@ -1032,17 +1036,17 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype.destroy = function () {
-        var _ref13 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee13() {
-            return _regeneratorRuntime.wrap(function _callee13$(_context13) {
+        var _ref14 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee14() {
+            return _regeneratorRuntime.wrap(function _callee14$(_context14) {
                 while (1) {
-                    switch (_context13.prev = _context13.next) {
+                    switch (_context14.prev = _context14.next) {
                         case 0:
                             if (!this.destroyed) {
-                                _context13.next = 2;
+                                _context14.next = 2;
                                 break;
                             }
 
-                            return _context13.abrupt('return');
+                            return _context14.abrupt('return');
 
                         case 2:
 
@@ -1060,14 +1064,14 @@ export var RxCollection = function () {
 
                         case 9:
                         case 'end':
-                            return _context13.stop();
+                            return _context14.stop();
                     }
                 }
-            }, _callee13, this);
+            }, _callee14, this);
         }));
 
         function destroy() {
-            return _ref13.apply(this, arguments);
+            return _ref14.apply(this, arguments);
         }
 
         return destroy;
@@ -1097,10 +1101,10 @@ export var RxCollection = function () {
     }, {
         key: 'onDestroy',
         get: function get() {
-            var _this7 = this;
+            var _this8 = this;
 
             if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-                return _this7._onDestroyCall = res;
+                return _this8._onDestroyCall = res;
             });
             return this._onDestroy;
         }
@@ -1185,29 +1189,31 @@ var checkOrmMethods = function checkOrmMethods(statics) {
  * @return {Promise.<RxCollection>} promise with collection
  */
 export var create = function () {
-    var _ref14 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee14(_ref15) {
-        var database = _ref15.database,
-            name = _ref15.name,
-            schema = _ref15.schema,
-            _ref15$pouchSettings = _ref15.pouchSettings,
-            pouchSettings = _ref15$pouchSettings === undefined ? {} : _ref15$pouchSettings,
-            _ref15$migrationStrat = _ref15.migrationStrategies,
-            migrationStrategies = _ref15$migrationStrat === undefined ? {} : _ref15$migrationStrat,
-            _ref15$autoMigrate = _ref15.autoMigrate,
-            autoMigrate = _ref15$autoMigrate === undefined ? true : _ref15$autoMigrate,
-            _ref15$statics = _ref15.statics,
-            statics = _ref15$statics === undefined ? {} : _ref15$statics,
-            _ref15$methods = _ref15.methods,
-            methods = _ref15$methods === undefined ? {} : _ref15$methods,
-            _ref15$attachments = _ref15.attachments,
-            attachments = _ref15$attachments === undefined ? {} : _ref15$attachments;
+    var _ref15 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee15(_ref16) {
+        var database = _ref16.database,
+            name = _ref16.name,
+            schema = _ref16.schema,
+            _ref16$pouchSettings = _ref16.pouchSettings,
+            pouchSettings = _ref16$pouchSettings === undefined ? {} : _ref16$pouchSettings,
+            _ref16$migrationStrat = _ref16.migrationStrategies,
+            migrationStrategies = _ref16$migrationStrat === undefined ? {} : _ref16$migrationStrat,
+            _ref16$autoMigrate = _ref16.autoMigrate,
+            autoMigrate = _ref16$autoMigrate === undefined ? true : _ref16$autoMigrate,
+            _ref16$statics = _ref16.statics,
+            statics = _ref16$statics === undefined ? {} : _ref16$statics,
+            _ref16$methods = _ref16.methods,
+            methods = _ref16$methods === undefined ? {} : _ref16$methods,
+            _ref16$attachments = _ref16.attachments,
+            attachments = _ref16$attachments === undefined ? {} : _ref16$attachments,
+            _ref16$options = _ref16.options,
+            options = _ref16$options === undefined ? {} : _ref16$options;
         var collection;
-        return _regeneratorRuntime.wrap(function _callee14$(_context14) {
+        return _regeneratorRuntime.wrap(function _callee15$(_context15) {
             while (1) {
-                switch (_context14.prev = _context14.next) {
+                switch (_context15.prev = _context15.next) {
                     case 0:
                         if (RxSchema.isInstanceOf(schema)) {
-                            _context14.next = 2;
+                            _context15.next = 2;
                             break;
                         }
 
@@ -1215,7 +1221,7 @@ export var create = function () {
 
                     case 2:
                         if (RxDatabase.isInstanceOf(database)) {
-                            _context14.next = 4;
+                            _context15.next = 4;
                             break;
                         }
 
@@ -1223,7 +1229,7 @@ export var create = function () {
 
                     case 4:
                         if (!(typeof autoMigrate !== 'boolean')) {
-                            _context14.next = 6;
+                            _context15.next = 6;
                             break;
                         }
 
@@ -1244,8 +1250,8 @@ export var create = function () {
                             throw new Error('collection-method not allowed because fieldname is in the schema ' + funName);
                         });
 
-                        collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments);
-                        _context14.next = 15;
+                        collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options);
+                        _context15.next = 15;
                         return collection.prepare();
 
                     case 15:
@@ -1260,28 +1266,28 @@ export var create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context14.next = 19;
+                            _context15.next = 19;
                             break;
                         }
 
-                        _context14.next = 19;
+                        _context15.next = 19;
                         return collection.migratePromise();
 
                     case 19:
 
                         runPluginHooks('createRxCollection', collection);
-                        return _context14.abrupt('return', collection);
+                        return _context15.abrupt('return', collection);
 
                     case 21:
                     case 'end':
-                        return _context14.stop();
+                        return _context15.stop();
                 }
             }
-        }, _callee14, this);
+        }, _callee15, this);
     }));
 
-    return function create(_x27) {
-        return _ref14.apply(this, arguments);
+    return function create(_x28) {
+        return _ref15.apply(this, arguments);
     };
 }();
 

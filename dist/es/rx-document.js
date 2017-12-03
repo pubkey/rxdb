@@ -710,6 +710,12 @@ export var RxDocument = function () {
     return RxDocument;
 }();
 
+/**
+ * createas an RxDocument from the jsonData
+ * @param  {RxCollection} collection
+ * @param  {[type]} jsonData   [description]
+ * @return {RxDocument}
+ */
 export function create(collection, jsonData) {
     if (jsonData[collection.schema.primaryPath] && jsonData[collection.schema.primaryPath].startsWith('_design')) return null;
 

@@ -3,6 +3,7 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import deepEqual from 'deep-equal';
+import IdleQueue from 'custom-idle-queue';
 import MQuery from './mquery/mquery';
 
 import * as util from './util';
@@ -14,8 +15,6 @@ import { merge } from 'rxjs/observable/merge';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { mergeMap } from 'rxjs/operators/mergeMap';
 import { filter } from 'rxjs/operators/filter';
-import { map } from 'rxjs/operators/map';
-import { first } from 'rxjs/operators/first';
 
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
@@ -29,23 +28,13 @@ export var RxQuery = function () {
         this.op = op;
         this.collection = collection;
         this.id = newQueryID();
-
         if (!queryObj) queryObj = this._defaultQuery();
-
         this.mquery = new MQuery(queryObj);
-
         this._queryChangeDetector = QueryChangeDetector.create(this);
+
         this._resultsData = null;
         this._results$ = new BehaviorSubject(null);
         this._latestChangeEvent = -1;
-        this._runningPromise = Promise.resolve(true);
-
-        /**
-         * if this is true, the results-state is not equal to the database
-         * which means that the query must run against the database again
-         * @type {Boolean}
-         */
-        this._mustReExec = true;
 
         /**
          * counts how often the execution on the whole db was done
@@ -96,110 +85,38 @@ export var RxQuery = function () {
     };
 
     /**
-     * ensures that the results of this query is equal to the results which a query over the database would give
-     * @return {Promise<boolean>} true if results have changed
+     * check if the current results-state is in sync with the database
+     * @return {Boolean} false if not which means it should re-execute
      */
 
 
+    RxQuery.prototype._isResultsInSync = function _isResultsInSync() {
+        if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter) return true;else return false;
+    };
+
     RxQuery.prototype._ensureEqual = function () {
         var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-            var ret, resolve, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
+            var _this = this;
+
+            var ret;
             return _regeneratorRuntime.wrap(function _callee$(_context) {
                 while (1) {
                     switch (_context.prev = _context.next) {
                         case 0:
-                            if (!(this._latestChangeEvent >= this.collection._changeEventBuffer.counter)) {
-                                _context.next = 2;
-                                break;
-                            }
-
-                            return _context.abrupt('return', false);
+                            _context.next = 2;
+                            return this._ensureEqualQueue.requestIdlePromise();
 
                         case 2:
-                            ret = false;
-
-                            // make sure it does not run in parallel
-
-                            _context.next = 5;
-                            return this._runningPromise;
-
-                        case 5:
-
-                            // console.log('_ensureEqual(' + this.toString() + ') '+ this._mustReExec);
-
-                            resolve = void 0;
-
-                            this._runningPromise = new Promise(function (res) {
-                                resolve = res;
+                            _context.next = 4;
+                            return this._ensureEqualQueue.wrapCall(function () {
+                                return _this.__ensureEqual();
                             });
 
-                            if (this._mustReExec) {
-                                _context.next = 21;
-                                break;
-                            }
-
-                            missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
-
-                            if (!(missedChangeEvents === null)) {
-                                _context.next = 13;
-                                break;
-                            }
-
-                            // out of bounds -> reExec
-                            this._mustReExec = true;
-                            _context.next = 21;
-                            break;
-
-                        case 13:
-                            // console.dir(missedChangeEvents);
-                            this._latestChangeEvent = this.collection._changeEventBuffer.counter;
-                            runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-                            changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
-
-                            if (!Array.isArray(changeResult) && changeResult) this._mustReExec = true;
-
-                            if (!(Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData))) {
-                                _context.next = 21;
-                                break;
-                            }
-
-                            ret = true;
-                            _context.next = 21;
-                            return this._setResultData(changeResult);
-
-                        case 21:
-                            if (!this._mustReExec) {
-                                _context.next = 31;
-                                break;
-                            }
-
-                            // counter can change while _execOverDatabase() is running
-                            latestAfter = this.collection._changeEventBuffer.counter;
-                            _context.next = 25;
-                            return this._execOverDatabase();
-
-                        case 25:
-                            newResultData = _context.sent;
-
-                            this._latestChangeEvent = latestAfter;
-
-                            if (deepEqual(newResultData, this._resultsData)) {
-                                _context.next = 31;
-                                break;
-                            }
-
-                            ret = true;
-                            _context.next = 31;
-                            return this._setResultData(newResultData);
-
-                        case 31:
-
-                            // console.log('_ensureEqual DONE (' + this.toString() + ')');
-
-                            resolve(true);
+                        case 4:
+                            ret = _context.sent;
                             return _context.abrupt('return', ret);
 
-                        case 33:
+                        case 6:
                         case 'end':
                             return _context.stop();
                     }
@@ -214,14 +131,157 @@ export var RxQuery = function () {
         return _ensureEqual;
     }();
 
-    RxQuery.prototype._setResultData = function _setResultData(newResultData) {
-        var _this = this;
+    /**
+     * ensures that the results of this query is equal to the results which a query over the database would give
+     * @return {Promise<boolean>} true if results have changed
+     */
 
-        this._resultsData = newResultData;
-        return this.collection._createDocuments(this._resultsData).then(function (newResults) {
-            return _this._results$.next(newResults);
-        });
-    };
+
+    RxQuery.prototype.__ensureEqual = function () {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
+            var ret, mustReExec, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
+            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            ret = false;
+
+                            if (!this._isResultsInSync()) {
+                                _context2.next = 3;
+                                break;
+                            }
+
+                            return _context2.abrupt('return', false);
+
+                        case 3:
+                            // nothing happend
+
+
+                            mustReExec = false; // if this becomes true, a whole execution over the database is made
+
+                            if (this._latestChangeEvent === -1) mustReExec = true;
+
+                            /**
+                             * try to use the queryChangeDetector to calculate the new results
+                             */
+
+                            if (mustReExec) {
+                                _context2.next = 19;
+                                break;
+                            }
+
+                            missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
+
+                            if (!(missedChangeEvents === null)) {
+                                _context2.next = 11;
+                                break;
+                            }
+
+                            // changeEventBuffer is of bounds -> we must re-execute over the database
+                            mustReExec = true;
+                            _context2.next = 19;
+                            break;
+
+                        case 11:
+                            this._latestChangeEvent = this.collection._changeEventBuffer.counter;
+                            runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+                            changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
+
+
+                            if (!Array.isArray(changeResult) && changeResult) {
+                                // could not calculate the new results, execute must be done
+                                mustReExec = true;
+                            }
+
+                            if (!(Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData))) {
+                                _context2.next = 19;
+                                break;
+                            }
+
+                            // we got the new results, we do not have to re-execute, mustReExec stays false
+                            ret = true; // true because results changed
+                            _context2.next = 19;
+                            return this._setResultData(changeResult);
+
+                        case 19:
+                            if (!mustReExec) {
+                                _context2.next = 29;
+                                break;
+                            }
+
+                            // counter can change while _execOverDatabase() is running so we save it here
+                            latestAfter = this.collection._changeEventBuffer.counter;
+                            _context2.next = 23;
+                            return this._execOverDatabase();
+
+                        case 23:
+                            newResultData = _context2.sent;
+
+                            this._latestChangeEvent = latestAfter;
+
+                            if (deepEqual(newResultData, this._resultsData)) {
+                                _context2.next = 29;
+                                break;
+                            }
+
+                            ret = true; // true because results changed
+                            _context2.next = 29;
+                            return this._setResultData(newResultData);
+
+                        case 29:
+                            return _context2.abrupt('return', ret);
+
+                        case 30:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        }));
+
+        function __ensureEqual() {
+            return _ref3.apply(this, arguments);
+        }
+
+        return __ensureEqual;
+    }();
+
+    RxQuery.prototype._setResultData = function () {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(newResultData) {
+            var docs, newResultDocs;
+            return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                while (1) {
+                    switch (_context3.prev = _context3.next) {
+                        case 0:
+                            this._resultsData = newResultData;
+
+                            _context3.next = 3;
+                            return this.collection._createDocuments(this._resultsData);
+
+                        case 3:
+                            docs = _context3.sent;
+                            newResultDocs = docs;
+
+                            if (this.op === 'findOne') {
+                                if (docs.length === 0) newResultDocs = null;else newResultDocs = docs[0];
+                            }
+
+                            this._results$.next(newResultDocs);
+
+                        case 7:
+                        case 'end':
+                            return _context3.stop();
+                    }
+                }
+            }, _callee3, this);
+        }));
+
+        function _setResultData(_x) {
+            return _ref4.apply(this, arguments);
+        }
+
+        return _setResultData;
+    }();
 
     /**
      * executes the query on the database
@@ -230,9 +290,6 @@ export var RxQuery = function () {
 
 
     RxQuery.prototype._execOverDatabase = function _execOverDatabase() {
-        var _this2 = this;
-
-        //        console.log('query(' + this.id + ')._execOverDatabase(' + this._execOverDatabaseCount + '):' + this.toString());
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         var docsPromise = void 0;
@@ -246,11 +303,7 @@ export var RxQuery = function () {
             default:
                 throw new Error('RxQuery.exec(): op (' + this.op + ') not known');
         }
-
-        return docsPromise.then(function (docsData) {
-            _this2._mustReExec = false;
-            return docsData;
-        });
+        return docsPromise;
     };
 
     RxQuery.prototype.toJSON = function toJSON() {
@@ -376,23 +429,43 @@ export var RxQuery = function () {
 
 
     RxQuery.prototype.exec = function () {
-        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
+            var changed;
+            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
-                    switch (_context2.prev = _context2.next) {
+                    switch (_context4.prev = _context4.next) {
                         case 0:
-                            return _context2.abrupt('return', this.$.pipe(first()).toPromise());
+                            changed = true;
+
+                            // we run _ensureEqual() until we are in sync with the database-state
 
                         case 1:
+                            if (!changed) {
+                                _context4.next = 7;
+                                break;
+                            }
+
+                            _context4.next = 4;
+                            return this._ensureEqual();
+
+                        case 4:
+                            changed = _context4.sent;
+                            _context4.next = 1;
+                            break;
+
+                        case 7:
+                            return _context4.abrupt('return', this._results$.getValue());
+
+                        case 8:
                         case 'end':
-                            return _context2.stop();
+                            return _context4.stop();
                     }
                 }
-            }, _callee2, this);
+            }, _callee4, this);
         }));
 
         function exec() {
-            return _ref3.apply(this, arguments);
+            return _ref5.apply(this, arguments);
         }
 
         return exec;
@@ -464,42 +537,68 @@ export var RxQuery = function () {
     };
 
     _createClass(RxQuery, [{
+        key: '_ensureEqualQueue',
+        get: function get() {
+            if (!this.__ensureEqualQueue) this.__ensureEqualQueue = new IdleQueue();
+            return this.__ensureEqualQueue;
+        }
+    }, {
         key: '$',
         get: function get() {
-            var _this3 = this;
+            var _this2 = this;
 
             if (!this._$) {
-                var res$ = this._results$.pipe(mergeMap(function (results) {
-                    return _this3._ensureEqual().then(function (hasChanged) {
-                        if (hasChanged) return 'WAITFORNEXTEMIT';else return results;
-                    });
-                }), filter(function (results) {
+                // use results$ to emit new results
+                var res$ = this._results$.pipe(
+                // whe run _ensureEqual() on each subscription
+                // to ensure it triggers a re-run when subscribing after some time
+                mergeMap(function () {
+                    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(results) {
+                        var hasChanged;
+                        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+                            while (1) {
+                                switch (_context5.prev = _context5.next) {
+                                    case 0:
+                                        _context5.next = 2;
+                                        return _this2._ensureEqual();
+
+                                    case 2:
+                                        hasChanged = _context5.sent;
+
+                                        if (!hasChanged) {
+                                            _context5.next = 7;
+                                            break;
+                                        }
+
+                                        return _context5.abrupt('return', 'WAITFORNEXTEMIT');
+
+                                    case 7:
+                                        return _context5.abrupt('return', results);
+
+                                    case 8:
+                                    case 'end':
+                                        return _context5.stop();
+                                }
+                            }
+                        }, _callee5, _this2);
+                    }));
+
+                    return function (_x2) {
+                        return _ref6.apply(this, arguments);
+                    };
+                }()), filter(function (results) {
                     return results !== 'WAITFORNEXTEMIT';
                 })).asObservable();
 
+                // we also subscribe to the changeEvent-stream so it detects changed if it has subscribers
                 var changeEvents$ = this.collection.$.pipe(filter(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
-                }), mergeMap(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
-                    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-                        while (1) {
-                            switch (_context3.prev = _context3.next) {
-                                case 0:
-                                    return _context3.abrupt('return', _this3._ensureEqual());
-
-                                case 1:
-                                case 'end':
-                                    return _context3.stop();
-                            }
-                        }
-                    }, _callee3, _this3);
-                }))), filter(function () {
+                }), filter(function () {
+                    _this2._ensureEqual();
                     return false;
                 }));
-                this._$ = merge(res$, changeEvents$).pipe(filter(function (x) {
-                    return x !== null;
-                }), map(function (results) {
-                    if (_this3.op !== 'findOne') return results;else if (results.length === 0) return null;else return results[0];
-                }));
+
+                this._$ = merge(res$, changeEvents$);
             }
             return this._$;
         }

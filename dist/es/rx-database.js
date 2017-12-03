@@ -27,13 +27,14 @@ import { filter } from 'rxjs/operators/filter';
 var USED_COMBINATIONS = {};
 
 export var RxDatabase = function () {
-    function RxDatabase(name, adapter, password, multiInstance) {
+    function RxDatabase(name, adapter, password, multiInstance, options) {
         _classCallCheck(this, RxDatabase);
 
         this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
+        this.options = options;
         this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
@@ -738,7 +739,9 @@ export var create = function () {
             _ref8$multiInstance = _ref8.multiInstance,
             multiInstance = _ref8$multiInstance === undefined ? true : _ref8$multiInstance,
             _ref8$ignoreDuplicate = _ref8.ignoreDuplicate,
-            ignoreDuplicate = _ref8$ignoreDuplicate === undefined ? false : _ref8$ignoreDuplicate;
+            ignoreDuplicate = _ref8$ignoreDuplicate === undefined ? false : _ref8$ignoreDuplicate,
+            _ref8$options = _ref8.options,
+            options = _ref8$options === undefined ? {} : _ref8$options;
         var db;
         return _regeneratorRuntime.wrap(function _callee7$(_context7) {
             while (1) {
@@ -785,7 +788,7 @@ export var create = function () {
                         if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
                         USED_COMBINATIONS[name].push(adapter);
 
-                        db = new RxDatabase(name, adapter, password, multiInstance);
+                        db = new RxDatabase(name, adapter, password, multiInstance, options);
                         _context7.next = 16;
                         return db.prepare();
 

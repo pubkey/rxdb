@@ -23,6 +23,12 @@ export var HOOKS = {
   createRxQuery: [],
   createRxDocument: [],
   /**
+   * runs after a RxDocument is created,
+   * async
+   * @type {Array}
+   */
+  postCreateRxDocument: [],
+  /**
    * runs before a pouchdb-instance is created
    * gets pouchParameters as attribute so you can manipulate them
    * {

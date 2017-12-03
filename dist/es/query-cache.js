@@ -9,7 +9,7 @@ var QueryCache = function () {
         _classCallCheck(this, QueryCache);
 
         this.subs = [];
-        this._map = {}; // TODO use new Map()
+        this._map = new Map();
     }
 
     /**
@@ -23,18 +23,15 @@ var QueryCache = function () {
 
     QueryCache.prototype.getByQuery = function getByQuery(query) {
         var stringRep = query.toString();
-        var has = this._map[stringRep];
-        if (!has) {
-            this._map[stringRep] = query;
-            return query;
-        } else return has;
+        if (!this._map.has(stringRep)) this._map.set(stringRep, query);
+        return this._map.get(stringRep);
     };
 
     QueryCache.prototype.destroy = function destroy() {
         this.subs.forEach(function (sub) {
             return sub.unsubscribe();
         });
-        this._map = {};
+        this._map = new Map();
     };
 
     return QueryCache;
