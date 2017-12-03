@@ -2,6 +2,9 @@
 
 ## X.X.X (coming soon)
 
+Features:
+  - Added [options-parameter](https://pubkey.github.io/rxdb/plugins.html#options)
+
 Bugfixes:
   - Query-Cache not used when declaring queries without mango-chain
 

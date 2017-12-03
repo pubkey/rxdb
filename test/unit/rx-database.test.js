@@ -93,6 +93,21 @@ describe('rx-database.test.js', () => {
                 db.destroy();
                 db2.destroy();
             });
+            it('should not forget the options', async () => {
+                const name = util.randomCouchString(10);
+                const password = util.randomCouchString(12);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: 'memory',
+                    password,
+                    ignoreDuplicate: true,
+                    options: {
+                        foo: 'bar'
+                    }
+                });
+                assert.equal(db.options.foo, 'bar');
+                db.destroy();
+            });
         });
         describe('negative', () => {
             it('should crash with invalid token', async () => {

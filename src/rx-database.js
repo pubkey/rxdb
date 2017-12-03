@@ -29,11 +29,12 @@ import {
 const USED_COMBINATIONS = {};
 
 export class RxDatabase {
-    constructor(name, adapter, password, multiInstance) {
+    constructor(name, adapter, password, multiInstance, options) {
         this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
+        this.options = options;
         this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
@@ -434,7 +435,8 @@ export async function create({
     adapter,
     password,
     multiInstance = true,
-    ignoreDuplicate = false
+    ignoreDuplicate = false,
+    options = {}
 }) {
     util.validateCouchDBString(name);
 
@@ -468,7 +470,7 @@ export async function create({
     USED_COMBINATIONS[name].push(adapter);
 
 
-    const db = new RxDatabase(name, adapter, password, multiInstance);
+    const db = new RxDatabase(name, adapter, password, multiInstance, options);
     await db.prepare();
 
     runPluginHooks('createRxDatabase', db);

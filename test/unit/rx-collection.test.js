@@ -122,6 +122,23 @@ describe('rx-collection.test.js', () => {
                     assert.ok(collection.pouch.name.includes('-' + schema.version + '-'));
                     db.destroy();
                 });
+                it('should not forget the options', async () => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const schema = RxSchema.create(schemas.human);
+                    const collection = await db.collection({
+                        database: db,
+                        name: 'human',
+                        schema,
+                        options: {
+                            foo: 'bar'
+                        }
+                    });
+                    assert.equal(collection.options.foo, 'bar');
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('crash if no Schema-instance', async () => {

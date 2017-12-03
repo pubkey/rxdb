@@ -35,7 +35,8 @@ export class RxCollection {
         pouchSettings = {},
         migrationStrategies = {},
         methods = {},
-        attachments = {}
+        attachments = {},
+        options = {}
     ) {
         this._isInMemory = false;
         this.destroyed = false;
@@ -46,6 +47,7 @@ export class RxCollection {
         this._pouchSettings = pouchSettings;
         this._methods = methods; // orm of documents
         this._attachments = attachments; // orm of attachments
+        this.options = options;
         this._atomicUpsertQueues = {};
 
         this._docCache = DocCache.create();
@@ -685,7 +687,8 @@ export async function create({
     autoMigrate = true,
     statics = {},
     methods = {},
-    attachments = {}
+    attachments = {},
+    options = {}
 }) {
     if (!RxSchema.isInstanceOf(schema))
         throw new TypeError('given schema is no Schema-object');
@@ -709,7 +712,16 @@ export async function create({
             throw new Error(`collection-method not allowed because fieldname is in the schema ${funName}`);
         });
 
-    const collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments);
+    const collection = new RxCollection(
+        database,
+        name,
+        schema,
+        pouchSettings,
+        migrationStrategies,
+        methods,
+        attachments,
+        options
+    );
     await collection.prepare();
 
     // ORM add statics

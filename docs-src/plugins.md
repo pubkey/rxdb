@@ -69,6 +69,24 @@ Some of RxDB's functions are not inside of a class-prototype but are static. You
 
 Sometimes you don't want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks here [here](https://github.com/pubkey/rxdb/blob/master/src/hooks.js).
 
+# options
+
+RxDatabase and RxCollection have an additional options-paramter, which can be filled with anny data required be the plugin.
+
+```javascript
+const collection = myDatabase.collection({
+    name: 'foo'.
+    schema: mySchema,
+    options: { // anything can be passed into the options
+        foo: ()=>'bar'
+    }
+})
+
+// Afterwards you can use theses options in your plugin.
+
+collection.options.foo(); // 'bar'
+```
+
 --------------------------------------------------------------------------------
 
 If you are new to RxDB, you should continue [here](https://github.com/pubkey/rxdb/tree/master/examples)
