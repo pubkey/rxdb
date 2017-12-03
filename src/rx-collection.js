@@ -13,7 +13,8 @@ import QueryCache from './query-cache';
 import ChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
 import {
-    runPluginHooks
+    runPluginHooks,
+    runAsyncPluginHooks
 } from './hooks';
 
 import RxSchema from './rx-schema';
@@ -261,6 +262,8 @@ export class RxCollection {
         this._assignMethodsToDocument(doc);
         this._docCache.set(id, doc);
         this._runHooksSync('post', 'create', doc);
+
+        await runAsyncPluginHooks('postCreateRxDocument', doc);
 
         return doc;
     }
