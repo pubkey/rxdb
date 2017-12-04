@@ -12,6 +12,7 @@ Bugfixes:
 Other:
   - Do not throw errors if the same plugin is added multiple times
   - Allow getting the collection via `RxDatabase().collection(name: string)`
+  - Allow recreating the collection with different schema, if it has no documents
 
 ## 7.1.1 (November 27, 2017)
 

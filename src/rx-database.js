@@ -228,18 +228,32 @@ export class RxDatabase {
      * @return {Collection}
      */
     async collection(args) {
-        if(typeof args === 'string') return this.collections[args];
+        if (typeof args === 'string') return this.collections[args];
 
         args.database = this;
 
-        if (args.name.charAt(0) === '_')
-            throw new Error(`collection(${args.name}): collection-names cannot start with underscore _`);
-
-        if (this.collections[args.name])
-            throw new Error(`collection(${args.name}) already exists. use myDatabase.${args.name} to get it`);
-
-        if (!args.schema)
-            throw new Error(`collection(${args.name}): schema is missing`);
+        if (args.name.charAt(0) === '_') {
+            throw RxError.newRxError(
+                'RxDatabase.collection(): collection-names cannot start with underscore _', {
+                    name: args.name
+                }
+            );
+        }
+        if (this.collections[args.name]) {
+            throw RxError.newRxError(
+                `RxDatabase.collection(): collection already exists. use myDatabase.${args.name} to get it`, {
+                    name: args.name
+                }
+            );
+        }
+        if (!args.schema) {
+            throw RxError.newRxError(
+                'RxDatabase.collection(): schema is missing', {
+                    name: args.name,
+                    args
+                }
+            );
+        }
 
         if (!RxSchema.isInstanceOf(args.schema))
             args.schema = RxSchema.create(args.schema);
@@ -259,10 +273,31 @@ export class RxDatabase {
             );
         } catch (e) {}
 
-        if (collectionDoc && collectionDoc.schemaHash !== schemaHash)
-            throw new Error(`collection(${args.name}): another instance created this collection with a different schema`);
+        if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
+            // collection already exists with different schema, check if it has documents
+            const pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
+            const oneDoc = await pouch.find({
+                selector: {
+                    language: {
+                        $ne: 'query'
+                    }
+                },
+                limit: 1
+            });
+            if (oneDoc.docs.length !== 0) {
+                // we have one document
+                throw RxError.newRxError(
+                    'RxDatabase.collection(): another instance created this collection with a different schema', {
+                        name: args.name,
+                        previousSchemaHash: collectionDoc.schemaHash,
+                        schemaHash
+                    }
+                );
+            }
+        }
 
         const collection = await RxCollection.create(args);
+
         if (
             Object.keys(collection.schema.encryptedPaths).length > 0 &&
             !this.password

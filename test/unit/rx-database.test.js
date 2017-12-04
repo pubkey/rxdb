@@ -14,6 +14,7 @@ import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects';
 
 describe('rx-database.test.js', () => {
     describe('.create()', () => {
@@ -303,6 +304,31 @@ describe('rx-database.test.js', () => {
                 db1.destroy();
                 db2.destroy();
             });
+            it('create 2 time with different schema should work when no docs exist', async () => {
+                const name = util.randomCouchString(10);
+                const collectionName = 'foobar';
+                const db1 = await RxDatabase.create({
+                    name,
+                    adapter: 'memory',
+                    ignoreDuplicate: true
+                });
+                const db2 = await RxDatabase.create({
+                    name,
+                    adapter: 'memory',
+                    ignoreDuplicate: true
+                });
+                await db1.collection({
+                    name: collectionName,
+                    schema: schemas.human
+                });
+                await db2.collection({
+                    name: collectionName,
+                    schema: schemas.humanFinal
+                });
+
+                db1.destroy();
+                db2.destroy();
+            });
             it('get the collection by passing the name', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),
@@ -369,10 +395,11 @@ describe('rx-database.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                await db.collection({
+                const col = await db.collection({
                     name: 'human8',
                     schema: schemas.human
                 });
+                await col.insert(schemaObjects.human());
                 await AsyncTestUtil.assertThrows(
                     () => db.collection({
                         name: 'human8',
@@ -437,10 +464,11 @@ describe('rx-database.test.js', () => {
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                await db1.collection({
+                const col1 =await db1.collection({
                     name: collectionName,
                     schema: schemas.human
                 });
+                await col1.insert(schemaObjects.human());
                 await AsyncTestUtil.assertThrows(
                     () => db2.collection({
                         name: collectionName,
