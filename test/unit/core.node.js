@@ -32,7 +32,7 @@ const schema = {
     required: ['firstName', 'lastName']
 };
 
-describe('Core.test.js', () => {
+describe('core.node.js', () => {
     describe('creation', () => {
         it('create database', async () => {
             const db = await Core.create({

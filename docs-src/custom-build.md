@@ -20,7 +20,8 @@ Some parts of RxDB are not in the core, but are required. This means they must a
 
 ### validate
 
-The validation-module does the schema-validation when you insert or update a `RxDocument`. Currently we have only one validation-module, which is using [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) but you can also use your own validator instead. To import the default validation-module, do this:
+The validation-module does the schema-validation when you insert or update a `RxDocument`. To use RxDB you always have to add a validation-module.
+This one is using [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) but you can also use your own validator instead. To import the default validation-module, do this:
 
 ```javascript
 // es6-import
@@ -30,6 +31,21 @@ RxDB.plugin(RxDBValidateModule);
 // es5-require
 RxDB.plugin(require('rxdb/plugins/validate'));
 ```
+
+### no-validate
+
+A validation module that does nothing at handles all data as valid. Use this as an alternative for the normal validator when you can rely on the input of the database.
+This is meant for production to reduce the build-size, do not use this in dev-mode.
+
+```javascript
+// es6-import
+import RxDBNoValidateModule from 'rxdb/plugins/no-validate';
+RxDB.plugin(RxDBNoValidateModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/no-validate'));
+```
+
 
 ## optional modules
 

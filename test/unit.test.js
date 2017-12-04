@@ -38,7 +38,8 @@ const nodeAndBrowser = [
 ];
 
 const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js'
+    '../test_tmp/unit/plugin.test.js',
+    '../test_tmp/unit/no-validate.test.js'
 ];
 
 const typings = [

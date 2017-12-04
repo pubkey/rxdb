@@ -5,6 +5,7 @@
 Features:
   - Added [options-parameter](https://pubkey.github.io/rxdb/plugins.html#options)
   - Added `postCreateRxDocument` [plugin-hook](https://github.com/pubkey/rxdb/blob/master/src/hooks.js)
+  - Added [no-validate-plugin](https://pubkey.github.io/rxdb/custom-build.html#no-validate)
 
 Bugfixes:
   - Query-Cache not used when declaring queries without mango-chain
