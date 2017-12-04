@@ -190,7 +190,11 @@ export class RxQuery {
                 docsPromise = this.collection._pouchFind(this, 1);
                 break;
             default:
-                throw new Error(`RxQuery.exec(): op (${this.op}) not known`);
+                throw RxError.newRxError(
+                    'RxQuery._execOverDatabase(): op not known', {
+                        op: this.op
+                    }
+                );
         }
         return docsPromise;
     }
@@ -368,8 +372,13 @@ export class RxQuery {
     regex(params) {
         const clonedThis = this._clone();
 
-        if (this.mquery._path === this.collection.schema.primaryPath)
-            throw new Error(`You cannot use .regex() on the primary field '${this.mquery._path}'`);
+        if (this.mquery._path === this.collection.schema.primaryPath) {
+            throw RxError.newRxError(
+                'RxQuery.regex(): You cannot use .regex() on the primary field', {
+                    path: this.mquery._path
+                }
+            );
+        }
 
         clonedThis.mquery.regex(params);
         return clonedThis._tunnelQueryCache();
@@ -381,7 +390,11 @@ export class RxQuery {
      */
     sort(params) {
         const throwNotInSchema = (key) => {
-            throw new Error(`RxQuery.sort(${key}) does not work because ${key} is not defined in the schema`);
+            throw RxError.newRxError(
+                'RxQuery.sort(): does not work because key is not defined in the schema', {
+                    key
+                }
+            );
         };
         const clonedThis = this._clone();
 
@@ -419,7 +432,7 @@ export class RxQuery {
 
     limit(amount) {
         if (this.op === 'findOne')
-            throw new Error('.limit() cannot be called on .findOne()');
+            throw RxError.newRxError('RxQuery.limit(): cannot be called on .findOne()');
         else {
             const clonedThis = this._clone();
             clonedThis.mquery.limit(amount);

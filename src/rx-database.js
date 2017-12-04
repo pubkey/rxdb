@@ -91,8 +91,14 @@ export class RxDatabase {
                     );
                 } catch (e) {}
             }
-            if (pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value)
-                throw new Error('another instance on this adapter has a different password');
+            if (pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value) {
+                throw RxError.newRxError(
+                    'RxDocument.prepare(): another instance on this adapter has a different password', {
+                        passwordHash: util.hash(this.password),
+                        existingPasswordHash: pwHashDoc.value
+                    }
+                );
+            }
         }
 
         if (this.multiInstance) {
@@ -261,8 +267,13 @@ export class RxDatabase {
         const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
         // check unallowed collection-names
-        if (properties().includes(args.name))
-            throw new Error(`Collection-name ${args.name} not allowed`);
+        if (properties().includes(args.name)) {
+            throw RxError.newRxError(
+                'RxDatabase.collection(): collection-name not allowed', {
+                    name: args.name
+                }
+            );
+        }
 
         // check schemaHash
         const schemaHash = args.schema.hash;
@@ -301,7 +312,13 @@ export class RxDatabase {
         if (
             Object.keys(collection.schema.encryptedPaths).length > 0 &&
             !this.password
-        ) throw new Error(`collection(${args.name}): schema encrypted but no password given`);
+        ) {
+            throw RxError.newRxError(
+                'RxDatabase.collection(): schema encrypted but no password given', {
+                    name: args.name
+                }
+            );
+        }
 
         if (!collectionDoc) {
             try {
@@ -480,17 +497,21 @@ export async function create({
     // check if pouchdb-adapter
     if (typeof adapter === 'string') {
         if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
-            throw new Error(
-                `Adapter ${adapter} not added.
-                 Use RxDB.plugin(require('pouchdb-adapter-${adapter}');`
+            throw RxError.newRxError(
+                `RxDatabase.create(): Adapter not added. \n Use RxDB.plugin(require('pouchdb-adapter-${adapter}');`, {
+                    adapter
+                }
             );
         }
     } else {
         util.isLevelDown(adapter);
         if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
-            throw new Error(
-                `To use leveldown-adapters, you have to add the leveldb-plugin.
-                 Use RxDB.plugin(require('pouchdb-adapter-leveldb'));`);
+            throw RxError.newRxError(
+                `RxDatabase.create(): To use leveldown-adapters, you have to add the leveldb-plugin.\n'+
+                ' Use RxDB.plugin(require('pouchdb-adapter-leveldb'));`, {
+                    adapter
+                }
+            );
         }
     }
 

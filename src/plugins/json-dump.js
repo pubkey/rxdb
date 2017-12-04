@@ -82,15 +82,27 @@ const dumpRxCollection = async function(decrypted = false) {
 
 const importDumpRxCollection = async function(exportedJSON) {
     // check schemaHash
-    if (exportedJSON.schemaHash !== this.schema.hash)
-        throw new Error('the imported json relies on a different schema');
+    if (exportedJSON.schemaHash !== this.schema.hash){
+        throw RxError.newRxError(
+            'RxCollection.importDump(): the imported json relies on a different schema', {
+                schemaHash: exportedJSON.schemaHash,
+                own: this.schema.hash
+            }
+        );
+    }
 
     // check if passwordHash matches own
     if (
         exportedJSON.encrypted &&
         exportedJSON.passwordHash !== util.hash(this.database.password)
-    ) throw new Error('json.passwordHash does not match the own');
-
+    ) {
+        throw RxError.newRxError(
+            'RxCollection.importDump(): json.passwordHash does not match the own', {
+                passwordHash: exportedJSON.passwordHash,
+                own: util.hash(this.database.password)
+            }
+        );
+    }
 
     const importFns = exportedJSON.docs
         // decrypt

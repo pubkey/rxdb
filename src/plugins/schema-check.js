@@ -21,8 +21,13 @@ import {
 export function checkFieldNameRegex(fieldName) {
     if (fieldName === '') return;
 
-    if (['properties', 'language'].includes(fieldName))
-        throw new Error(`fieldname is not allowed: ${fieldName}`);
+    if (['properties', 'language'].includes(fieldName)) {
+        throw RxError.newRxError(
+            'SchemaCheck: fieldname is not allowed', {
+                fieldName
+            }
+        );
+    }
 
     const regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
     const regex = new RegExp(regexStr);
@@ -50,8 +55,13 @@ export function validateFieldsDeep(jsonSchema) {
         ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
-        if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array')
-            throw new Error(`name 'item' reserved for array-fields: ${fieldName}`);
+        if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
+            throw RxError.newRxError(
+                'SchemaCheck: name \'item\' reserved for array-fields', {
+                    fieldName
+                }
+            );
+        }
 
         // if ref given, must be type=='string' or type=='array' with string-items
         if (schemaObj.hasOwnProperty('ref')) {
@@ -59,36 +69,66 @@ export function validateFieldsDeep(jsonSchema) {
                 case 'string':
                     break;
                 case 'array':
-                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string')
-                        throw new Error(`fieldname ${fieldName} has a ref-array but items-type is not string`);
+                    if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
+                        throw RxError.newRxError(
+                            'SchemaCheck: fieldname has a ref-array but items-type is not string', {
+                                fieldName
+                            }
+                        );
+                    }
                     break;
                 default:
-                    throw new Error(`fieldname ${fieldName} has a ref but is not type string or array<string>`);
+                    throw RxError.newRxError(
+                        'SchemaCheck: fieldname has a ref but is not type string or array<string>', {
+                            fieldName
+                        }
+                    );
                     break;
             }
         }
 
         // if primary is ref, throw
-        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary)
-            throw new Error(`fieldname ${fieldName} cannot be primary and ref at same time`);
+        if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
+            throw RxError.newRxError(
+                'SchemaCheck: fieldname cannot be primary and ref at same time', {
+                    fieldName
+                }
+            );
+        }
 
 
         const isNested = path.split('.').length >= 2;
 
         // nested only
         if (isNested) {
-            if (schemaObj.primary)
-                throw new Error('primary can only be defined at top-level');
+            if (schemaObj.primary) {
+                throw RxError.newRxError(
+                    'SchemaCheck: primary can only be defined at top-level', {
+                        path,
+                        primary: schemaObj.primary
+                    }
+                );
+            }
 
-            if (schemaObj.default)
-                throw new Error('default-values can only be defined at top-level');
+            if (schemaObj.default) {
+                throw RxError.newRxError(
+                    'SchemaCheck: default-values can only be defined at top-level', {
+                        path
+                    }
+                );
+            }
         }
 
         // first level
         if (!isNested) {
             // check underscore fields
-            if (fieldName.charAt(0) === '_')
-                throw new Error(`first level-fields cannot start with underscore _ ${fieldName}`);
+            if (fieldName.charAt(0) === '_') {
+                throw RxError.newRxError(
+                    'SchemaCheck: first level-fields cannot start with underscore _', {
+                        fieldName
+                    }
+                );
+            }
         }
     }
 
@@ -119,20 +159,34 @@ export function validateFieldsDeep(jsonSchema) {
  */
 export function checkSchema(jsonID) {
     // check _id
-    if (jsonID.properties._id)
-        throw new Error('schema defines ._id, this will be done automatically');
+    if (jsonID.properties._id) {
+        throw RxError.newRxError(
+            'SchemaCheck: schema defines ._id, this will be done automatically', {
+                schema: jsonID
+            }
+        );
+    }
 
     // check _rev
-    if (jsonID.properties._rev)
-        throw new Error('schema defines ._rev, this will be done automatically');
-
+    if (jsonID.properties._rev) {
+        throw RxError.newRxError(
+            'SchemaCheck: schema defines ._rev, this will be done automatically', {
+                schema: jsonID
+            }
+        );
+    }
 
     // check version
     if (!jsonID.hasOwnProperty('version') ||
         typeof jsonID.version !== 'number' ||
         jsonID.version < 0
-    ) throw new Error(`schema need an number>=0 as version; given: ${jsonID.version}`);
-
+    ) {
+        throw RxError.newRxError(
+            'SchemaCheck: schema need an number>=0 as version', {
+                version: jsonID.version
+            }
+        );
+    }
 
     validateFieldsDeep(jsonID);
 
@@ -141,41 +195,82 @@ export function checkSchema(jsonID) {
         const value = jsonID.properties[key];
         // check primary
         if (value.primary) {
-            if (primaryPath)
-                throw new Error('primary can only be defined once');
+            if (primaryPath) {
+                throw RxError.newRxError(
+                    'SchemaCheck: primary can only be defined once', {
+                        value
+                    }
+                );
+            }
 
             primaryPath = key;
 
-            if (value.index)
-                throw new Error('primary is always index, do not declare it as index');
-            if (value.unique)
-                throw new Error('primary is always unique, do not declare it as unique');
-            if (value.encrypted)
-                throw new Error('primary cannot be encrypted');
-            if (value.type !== 'string')
-                throw new Error('primary must have type: string');
+            if (value.index) {
+                throw RxError.newRxError(
+                    'SchemaCheck: primary is always index, do not declare it as index', {
+                        value
+                    }
+                );
+            }
+            if (value.unique) {
+                throw RxError.newRxError(
+                    'SchemaCheck: primary is always unique, do not declare it as index', {
+                        value
+                    }
+                );
+            }
+            if (value.encrypted) {
+                throw RxError.newRxError(
+                    'SchemaCheck: primary cannot be encrypted', {
+                        value
+                    }
+                );
+            }
+            if (value.type !== 'string') {
+                throw RxError.newRxError(
+                    'SchemaCheck: primary must have type: string', {
+                        value
+                    }
+                );
+            }
         }
 
         // check if RxDocument-property
-        if (RxDocument.properties().includes(key))
-            throw new Error(`top-level fieldname is not allowed: ${key}`);
+        if (RxDocument.properties().includes(key)) {
+            throw RxError.newRxError(
+                'SchemaCheck: top-level fieldname is not allowed', {
+                    key
+                }
+            );
+        }
     });
-
-    //    if (primaryPath && jsonID && jsonID.required && jsonID.required.includes(primaryPath))
-    //        throw new Error('primary is always required, do not declare it as required');
-
 
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
-        if (!Array.isArray(jsonID.compoundIndexes))
-            throw new Error('compoundIndexes must be an array');
+        if (!Array.isArray(jsonID.compoundIndexes)) {
+            throw RxError.newRxError(
+                'SchemaCheck: compoundIndexes must be an array', {
+                    compoundIndexes: jsonID.compoundIndexes
+                }
+            );
+        }
         jsonID.compoundIndexes.forEach(ar => {
-            if (!Array.isArray(ar))
-                throw new Error('compoundIndexes must contain arrays');
+            if (!Array.isArray(ar)) {
+                throw RxError.newRxError(
+                    'SchemaCheck: compoundIndexes must contain arrays', {
+                        compoundIndexes: jsonID.compoundIndexes
+                    }
+                );
+            }
 
             ar.forEach(str => {
-                if (typeof str !== 'string')
-                    throw new Error('compoundIndexes.array must contains strings');
+                if (typeof str !== 'string') {
+                    throw RxError.newRxError(
+                        'SchemaCheck: compoundIndexes.array must contains strings', {
+                            compoundIndexes: jsonID.compoundIndexes
+                        }
+                    );
+                }
             });
         });
     }
@@ -186,8 +281,13 @@ export function checkSchema(jsonID) {
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .map(key => {
             const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
-            if (!schemaObj || typeof schemaObj !== 'object')
-                throw new Error(`given index(${key}) is not defined in schema`);
+            if (!schemaObj || typeof schemaObj !== 'object') {
+                throw RxError.newRxError(
+                    'SchemaCheck: given index is not defined in schema', {
+                        key
+                    }
+                );
+            }
             return {
                 key,
                 schemaObj
@@ -198,9 +298,11 @@ export function checkSchema(jsonID) {
             index.schemaObj.type !== 'integer'
         )
         .forEach(index => {
-            throw new Error(
-                `given indexKey (${index.key}) is not type:string but
-                 ${index.schemaObj.type}`
+            throw RxError.newRxError(
+                'given indexKey is not type:string', {
+                    key: index.key,
+                    type: index.schemaObj.type
+                }
             );
         });
 };

@@ -3,6 +3,7 @@
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
 import * as utils from './mquery_utils';
+import RxError from '../rx-error';
 import clone from 'clone';
 
 class MQuery {
@@ -383,10 +384,11 @@ class MQuery {
      */
     _ensurePath(method) {
         if (!this._path) {
-            throw new Error(`
-              ${method}() must be used after where()
-              when called with these arguments
-            `);
+            throw RxError.newRxError(
+                'method must be used after where() when called with these arguments', {
+                    method
+                }
+            );
         }
     }
 }

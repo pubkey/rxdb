@@ -6,6 +6,7 @@ import unload from 'unload';
 
 import * as util from '../util';
 import RxBroadcastChannel from '../rx-broadcast-channel';
+import RxError from '../rx-error';
 
 export const documentID = '_local/leader';
 
@@ -92,7 +93,8 @@ class LeaderElector {
             return this.applySocket.bind(this);
         if (electionChannel === 'broadcast')
             return this.applyBroadcast.bind(this);
-        throw new Error('this should not happen');
+
+        throw RxError.newRxError('LeaderElection: this should not happen :( please contact the maintainer');
     }
 
     /**
@@ -126,7 +128,7 @@ class LeaderElector {
             const minTime = new Date().getTime() - SIGNAL_TIME * 2;
 
             if (leaderObj.t >= minTime)
-                throw new Error('someone else is applying/leader');
+                throw RxError.newRxError('LeaderElection: someone else is applying/leader');
             // write applying to db
             leaderObj.apply = this.token;
             leaderObj.t = new Date().getTime();
@@ -138,7 +140,7 @@ class LeaderElector {
             // check if someone overwrote it
             leaderObj = await this.getLeaderObject();
             if (leaderObj.apply !== this.token)
-                throw new Error('someone else overwrote apply');
+                throw RxError.newRxError('LeaderElection: someone else overwrote apply');
 
             return true;
         } catch (e) {

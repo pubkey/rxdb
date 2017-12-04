@@ -115,7 +115,11 @@ export class RxLocalDocument extends RxDocument.RxDocument {
 
     get allAttachments$() {
         // this is overwritte here because we cannot re-set getters on the prototype
-        throw new Error('cant use attachments on local documents');
+        throw RxError.newRxError(
+            'RxDocument.allAttachments$ cant use attachments on local documents', {
+                document: this
+            }
+        );
     }
 
     get primaryPath() {
@@ -140,8 +144,13 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         return valueObj;
     }
     get$(path) {
-        if (path.includes('.item.'))
-            throw new Error(`cannot get observable of in-array fields because order cannot be guessed: ${path}`);
+        if (path.includes('.item.')) {
+            throw RxError.newRxError(
+                'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed', {
+                    path
+                }
+            );
+        }
         if (path === this.primaryPath)
             throw RxError.newRxError('cannot observe primary path');
 
@@ -158,8 +167,14 @@ export class RxLocalDocument extends RxDocument.RxDocument {
             this._data = data;
             return this;
         }
-        if (objPath === '_id')
-            throw new Error('id cannot be modified');
+        if (objPath === '_id') {
+            throw RxError.newRxError(
+                'RxDocument.set() id cannot be modified', {
+                    objPath,
+                    value
+                }
+            );
+        }
         if (Object.is(this.get(objPath), value)) return;
         objectPath.set(this._data, objPath, value);
         return this;
@@ -207,7 +222,11 @@ const _init = () => {
      * with throwing function
      */
     const getThrowingFun = k => () => {
-        throw new Error('Function ' + k + ' is not useable on local documents');
+        throw RxError.newRxError(
+            'LocalDocument: Function is not useable on local documents', {
+                functionName: k
+            }
+        );
     };
     [
         'populate',

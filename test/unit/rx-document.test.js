@@ -39,20 +39,7 @@ describe('rx-document.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {
-            it('throw if no string', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const path = {
-                    foo: 'bar'
-                };
-                await AsyncTestUtil.assertThrows(
-                    () => doc.get(path),
-                    TypeError
-                );
-                c.database.destroy();
-            });
-        });
+        describe('negative', () => {});
     });
     describe('.set()', () => {
         describe('positive', () => {

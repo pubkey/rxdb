@@ -49,7 +49,7 @@ class DataMigrator {
      */
     migrate(batchSize = 10) {
         if (this._migrated)
-            throw new Error('Migration has already run');
+            throw RxError.newRxError('migrate() Migration has already run');
         this._migrated = true;
 
         const state = {
@@ -276,7 +276,7 @@ class OldCollection {
      */
     migrate(batchSize = 10) {
         if (this._migrate)
-            throw new Error('migration already running');
+            throw RxError.newRxError('migration already running');
         this._migrate = true;
 
         const stateStream$ = new Observable(async (observer) => {

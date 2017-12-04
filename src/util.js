@@ -12,8 +12,13 @@ import RxError from './rx-error';
 export function isLevelDown(adapter) {
     if (!adapter ||
         typeof adapter.super_ !== 'function' ||
-        typeof adapter.destroy !== 'function')
-        throw new Error('given leveldown is no valid adapter');
+        typeof adapter.destroy !== 'function') {
+        throw RxError.newRxError(
+            'given leveldown is no valid adapter', {
+                adapter
+            }
+        );
+    }
 }
 
 
@@ -265,8 +270,14 @@ export function pouchReplicationFunction(pouch, {
     if (pull && push) return pouch.sync.bind(pouch);
     if (!pull && push) return pouch.replicate.to.bind(pouch);
     if (pull && !push) return pouch.replicate.from.bind(pouch);
-    if (!pull && !push)
-        throw new Error('replication-direction must either be push or pull or both. But not none.');
+    if (!pull && !push) {
+        throw RxError.newRxError(
+            'replication-direction must either be push or pull or both. But not none.', {
+                pull,
+                push
+            }
+        );
+    }
 }
 
 /**

@@ -1,10 +1,13 @@
 import IdleQueue from 'custom-idle-queue';
-import RxChangeEvent from './../rx-change-event';
-import * as util from './../util';
-
 import {
     map
 } from 'rxjs/operators/map';
+
+
+import RxChangeEvent from './../rx-change-event';
+import * as util from './../util';
+import RxError from '../rx-error';
+
 
 /**
  * to not have update-conflicts,
@@ -16,8 +19,13 @@ const ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
 
 function ensureSchemaSupportsAttachments(doc) {
     const schemaJson = doc.collection.schema.jsonID;
-    if (!schemaJson.attachments)
-        throw new Error('to use attachments, please define this in your schema');
+    if (!schemaJson.attachments) {
+        throw RxError.newRxError(
+            'to use attachments, please define this in your schema', {
+                link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
+            }
+        );
+    }
 }
 
 async function resyncRxDocument(doc) {

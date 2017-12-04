@@ -295,16 +295,26 @@ export class RxCollection {
         let tempDoc = null;
         if (RxDocument.isInstanceOf(json)) {
             tempDoc = json;
-            if (!json._isTemporary)
-                throw new Error('You cannot insert an existing document');
+            if (!json._isTemporary) {
+                throw RxError.newRxError(
+                    'RxDocument.insert() You cannot insert an existing document', {
+                        data: json
+                    }
+                );
+            }
             json = json.toJSON();
         }
 
         json = clone(json);
         json = this.schema.fillObjectWithDefaults(json);
 
-        if (json._id)
-            throw new Error('do not provide ._id, it will be generated');
+        if (json._id) {
+            throw RxError.newRxError(
+                'RxCollection.insert() do not provide ._id, it will be generated', {
+                    data: json
+                }
+            );
+        }
 
         // fill _id
         if (
@@ -405,7 +415,13 @@ export class RxCollection {
     async atomicUpsert(json) {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
-        if (!primary) throw new Error('RxCollection.atomicUpsert() does not work without primary');
+        if (!primary) {
+            throw RxError.newRxError(
+                'RxCollection.atomicUpsert() does not work without primary', {
+                    data: json
+                }
+            );
+        }
 
         // ensure that it wont try 2 parallel runs
         if (!this._atomicUpsertQueues[primary]) this._atomicUpsertQueues[primary] = new IdleQueue();
@@ -431,8 +447,13 @@ export class RxCollection {
      * @return {RxDocument[]} found documents
      */
     find(queryObj) {
-        if (typeof queryObj === 'string')
-            throw new Error('if you want to search by _id, use .findOne(_id)');
+        if (typeof queryObj === 'string') {
+            throw RxError.newRxError(
+                'RxCollection.find() if you want to search by _id, use .findOne(_id)', {
+                    queryObj
+                }
+            );
+        }
 
         const query = RxQuery.create('find', queryObj, this);
         return query;
@@ -505,11 +526,23 @@ export class RxCollection {
         if (!HOOKS_WHEN.includes(when))
             throw new TypeError('hooks-when not known');
 
-        if (!HOOKS_KEYS.includes(key))
-            throw new Error('hook-name ' + key + 'not known');
+        if (!HOOKS_KEYS.includes(key)) {
+            throw RxError.newRxError(
+                'RxCollection.addHook() hook-name not known', {
+                    key
+                }
+            );
+        }
 
-        if (when === 'post' && key === 'create' && parallel === true)
-            throw new Error('.postCreate-hooks cannot be async');
+        if (when === 'post' && key === 'create' && parallel === true) {
+            throw RxError.newRxError(
+                'RxCollection .postCreate-hooks cannot be async', {
+                    when,
+                    key,
+                    parallel
+                }
+            );
+        }
 
         const runName = parallel ? 'parallel' : 'series';
 
@@ -667,8 +700,13 @@ const checkOrmMethods = function(statics) {
         if (typeof entry[1] !== 'function')
             throw new TypeError(`given static method (${entry[0]}) is not a function but ${typeof entry[1]}`);
 
-        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0]))
-            throw new Error(`statics-name not allowed: ${entry[0]}`);
+        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) {
+            throw RxError.newRxError(
+                'RxCollection.ORM: statics-name not allowed', {
+                    name: entry[0]
+                }
+            );
+        }
     });
 };
 
@@ -712,7 +750,11 @@ export async function create({
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
-            throw new Error(`collection-method not allowed because fieldname is in the schema ${funName}`);
+            throw RxError.newRxError(
+                'collection-method not allowed because fieldname is in the schema', {
+                    funName
+                }
+            );
         });
 
     const collection = new RxCollection(
