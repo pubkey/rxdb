@@ -11,6 +11,7 @@ Bugfixes:
 
 Other:
   - Do not throw errors if the same plugin is added multiple times
+  - Allow getting the collection via `RxDatabase().collection(name: string)`
 
 ## 7.1.1 (November 27, 2017)
 

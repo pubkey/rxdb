@@ -303,6 +303,19 @@ describe('rx-database.test.js', () => {
                 db1.destroy();
                 db2.destroy();
             });
+            it('get the collection by passing the name', async () => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const collection = await db.collection({
+                    name: 'human',
+                    schema: schemas.human
+                });
+                const col2 = await db.collection('human');
+                assert.ok(collection === col2);
+                db.destroy();
+            });
         });
         describe('negative', () => {
             it('broken schema (nostringIndex)', async () => {

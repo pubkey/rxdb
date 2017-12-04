@@ -228,6 +228,8 @@ export class RxDatabase {
      * @return {Collection}
      */
     async collection(args) {
+        if(typeof args === 'string') return this.collections[args];
+
         args.database = this;
 
         if (args.name.charAt(0) === '_')
