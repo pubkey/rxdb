@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-error-messages",
+  "main": "../../dist/lib/plugins/error-messages.js",
+  "jsnext:main": "../../dist/es/plugins/error-messages.js",
+  "module": "../../dist/es/plugins/error-messages.js"
+}

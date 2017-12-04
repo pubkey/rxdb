@@ -38,11 +38,9 @@ PouchDB.countAllUndeleted = function(pouchdb) {
  */
 PouchDB.getBatch = function(pouchdb, limit) {
     if (limit <= 1) {
-        throw RxError.newRxError(
-            'PouchDB.getBatch: limit must be > 2', {
-                limit
-            }
-        );
+        throw RxError.newRxError('P1', {
+            limit
+        });
     }
 
     return pouchdb

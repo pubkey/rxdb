@@ -42,11 +42,9 @@ const importDumpRxDatabase = async function(dump) {
         .filter(col => !this.collections[col.name])
         .map(col => col.name);
     if (missingCollections.length > 0) {
-        throw RxError.newRxError(
-            'You must create the collections before you can import their data', {
-                missingCollections
-            }
-        );
+        throw RxError.newRxError('JD1', {
+            missingCollections
+        });
     }
 
     return Promise.all(
@@ -82,13 +80,11 @@ const dumpRxCollection = async function(decrypted = false) {
 
 const importDumpRxCollection = async function(exportedJSON) {
     // check schemaHash
-    if (exportedJSON.schemaHash !== this.schema.hash){
-        throw RxError.newRxError(
-            'RxCollection.importDump(): the imported json relies on a different schema', {
-                schemaHash: exportedJSON.schemaHash,
-                own: this.schema.hash
-            }
-        );
+    if (exportedJSON.schemaHash !== this.schema.hash) {
+        throw RxError.newRxError('JD2', {
+            schemaHash: exportedJSON.schemaHash,
+            own: this.schema.hash
+        });
     }
 
     // check if passwordHash matches own
@@ -96,12 +92,10 @@ const importDumpRxCollection = async function(exportedJSON) {
         exportedJSON.encrypted &&
         exportedJSON.passwordHash !== util.hash(this.database.password)
     ) {
-        throw RxError.newRxError(
-            'RxCollection.importDump(): json.passwordHash does not match the own', {
-                passwordHash: exportedJSON.passwordHash,
-                own: util.hash(this.database.password)
-            }
-        );
+        throw RxError.newRxError('JD3', {
+            passwordHash: exportedJSON.passwordHash,
+            own: util.hash(this.database.password)
+        });
     }
 
     const importFns = exportedJSON.docs

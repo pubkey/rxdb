@@ -94,7 +94,7 @@ class LeaderElector {
         if (electionChannel === 'broadcast')
             return this.applyBroadcast.bind(this);
 
-        throw RxError.newRxError('LeaderElection: this should not happen :( please contact the maintainer');
+        throw RxError.newRxError('LE1');
     }
 
     /**
@@ -128,7 +128,7 @@ class LeaderElector {
             const minTime = new Date().getTime() - SIGNAL_TIME * 2;
 
             if (leaderObj.t >= minTime)
-                throw RxError.newRxError('LeaderElection: someone else is applying/leader');
+                throw RxError.newRxError('LE2');
             // write applying to db
             leaderObj.apply = this.token;
             leaderObj.t = new Date().getTime();
@@ -140,7 +140,7 @@ class LeaderElector {
             // check if someone overwrote it
             leaderObj = await this.getLeaderObject();
             if (leaderObj.apply !== this.token)
-                throw RxError.newRxError('LeaderElection: someone else overwrote apply');
+                throw RxError.newRxError('LE3');
 
             return true;
         } catch (e) {

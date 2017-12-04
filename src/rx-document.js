@@ -144,32 +144,26 @@ export class RxDocument {
      */
     get$(path) {
         if (path.includes('.item.')) {
-            throw RxError.newRxError(
-                'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed', {
-                    path
-                }
-            );
+            throw RxError.newRxError('DOC1', {
+                path
+            });
         }
 
         if (path === this.primaryPath)
-            throw RxError.newRxError('cannot observe primary path');
+            throw RxError.newRxError('DOC2');
 
         // final fields cannot be modified and so also not observed
         if (this.collection.schema.finalFields.includes(path)) {
-            throw RxError.newRxError(
-                'final fields cannot be observed', {
-                    path
-                }
-            );
+            throw RxError.newRxError('DOC3', {
+                path
+            });
         }
 
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) {
-            throw RxError.newRxError(
-                'RxDocument.get$ cannot observe a non-existed field', {
-                    path
-                }
-            );
+            throw RxError.newRxError('DOC4', {
+                path
+            });
         }
 
         return this._dataSync$
@@ -188,30 +182,24 @@ export class RxDocument {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!schemaObj) {
-            throw RxError.newRxError(
-                'RxDocument.populate() cannot populate a non-existed field', {
-                    path
-                }
-            );
+            throw RxError.newRxError('DOC5', {
+                path
+            });
         }
         if (!schemaObj.ref) {
-            throw RxError.newRxError(
-                'RxDocument.populate() cannot populate because path has no ref', {
-                    path,
-                    schemaObj
-                }
-            );
+            throw RxError.newRxError('DOC6', {
+                path,
+                schemaObj
+            });
         }
 
         const refCollection = this.collection.database.collections[schemaObj.ref];
         if (!refCollection) {
-            throw RxError.newRxError(
-                'RxDocument.populate() ref-collection not in database', {
-                    ref: schemaObj.ref,
-                    path,
-                    schemaObj
-                }
-            );
+            throw RxError.newRxError('DOC7', {
+                ref: schemaObj.ref,
+                path,
+                schemaObj
+            });
         }
 
         if (schemaObj.type === 'array')
@@ -285,7 +273,7 @@ export class RxDocument {
      */
     set(objPath, value) {
         if (typeof objPath !== 'string') {
-            throw RxError.newRxTypeError('query cannot be an array', {
+            throw RxError.newRxTypeError('DOC15', {
                 objPath,
                 value
             });
@@ -293,23 +281,19 @@ export class RxDocument {
 
         // primary cannot be modified
         if (!this._isTemporary && objPath === this.primaryPath) {
-            throw RxError.newRxError(
-                'RxDocument.set(): primary-key cannot be modified', {
-                    objPath,
-                    value,
-                    primaryPath: this.primaryPath
-                }
-            );
+            throw RxError.newRxError('DOC8', {
+                objPath,
+                value,
+                primaryPath: this.primaryPath
+            });
         }
 
         // final fields cannot be modified
         if (!this._isTemporary && this.collection.schema.finalFields.includes(objPath)) {
-            throw RxError.newRxError(
-                'final fields cannot be modified', {
-                    path: objPath,
-                    value
-                }
-            );
+            throw RxError.newRxError('DOC9', {
+                path: objPath,
+                value
+            });
         }
 
         // check if equal
@@ -320,12 +304,10 @@ export class RxDocument {
         pathEls.pop();
         const rootPath = pathEls.join('.');
         if (typeof objectPath.get(this._data, rootPath) === 'undefined') {
-            throw RxError.newRxError(
-                'RxDocument.set(): cannot set childpath when rootPath not selected', {
-                    childpath: objPath,
-                    rootPath
-                }
-            );
+            throw RxError.newRxError('DOC10', {
+                childpath: objPath,
+                rootPath
+            });
         }
 
         // check schema of changed field
@@ -404,12 +386,10 @@ export class RxDocument {
         if (this._isTemporary) return this._saveTemporary();
 
         if (this._deleted$.getValue()) {
-            throw RxError.newRxError(
-                'RxDocument.save(): cant save deleted document', {
-                    id: this.primary,
-                    document: this
-                }
-            );
+            throw RxError.newRxError('DOC11', {
+                id: this.primary,
+                document: this
+            });
         }
 
         // check if different
@@ -424,11 +404,9 @@ export class RxDocument {
 
         const ret = await this.collection._pouchPut(clone(this._data));
         if (!ret.ok) {
-            throw RxError.newRxError(
-                'RxDocument.save(): error', {
-                    data: ret
-                }
-            );
+            throw RxError.newRxError('DOC12', {
+                data: ret
+            });
         }
 
         const emitValue = clone(this._data);
@@ -473,12 +451,10 @@ export class RxDocument {
 
     async remove() {
         if (this.deleted) {
-            throw RxError.newRxError(
-                'RxDocument.remove(): Document is already deleted', {
-                    document: this,
-                    id: this.primary
-                }
-            );
+            throw RxError.newRxError('DOC13', {
+                document: this,
+                id: this.primary
+            });
         }
 
         await this.collection._runHooks('pre', 'remove', this);
@@ -501,7 +477,7 @@ export class RxDocument {
     }
 
     destroy() {
-        throw RxError.newRxError('RxDocument.destroy() does not exist');
+        throw RxError.newRxError('DOC14');
     }
 }
 

@@ -13,11 +13,9 @@ export function isLevelDown(adapter) {
     if (!adapter ||
         typeof adapter.super_ !== 'function' ||
         typeof adapter.destroy !== 'function') {
-        throw RxError.newRxError(
-            'given leveldown is no valid adapter', {
-                adapter
-            }
-        );
+        throw RxError.newRxError('UT4', {
+            adapter
+        });
     }
 }
 
@@ -179,7 +177,7 @@ export function validateCouchDBString(name) {
         typeof name !== 'string' ||
         name.length === 0
     ) {
-        throw RxError.newRxTypeError('given name is no string or empty', {
+        throw RxError.newRxTypeError('UT1', {
             name
         });
     }
@@ -195,15 +193,10 @@ export function validateCouchDBString(name) {
     const regStr = '^[a-z][a-z0-9]*$';
     const reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new RxError.newRxError(
-            `collection- and database-names must match the regex
-            info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'
-            `, {
-                regex: regStr,
-                givenName: name,
-
-            }
-        );
+        throw new RxError.newRxError('UT2', {
+            regex: regStr,
+            givenName: name,
+        });
     }
 
     return true;
@@ -275,12 +268,10 @@ export function pouchReplicationFunction(pouch, {
     if (!pull && push) return pouch.replicate.to.bind(pouch);
     if (pull && !push) return pouch.replicate.from.bind(pouch);
     if (!pull && !push) {
-        throw RxError.newRxError(
-            'replication-direction must either be push or pull or both. But not none.', {
-                pull,
-                push
-            }
-        );
+        throw RxError.newRxError('UT3', {
+            pull,
+            push
+        });
     }
 }
 

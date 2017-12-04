@@ -292,11 +292,9 @@ export class RxCollection {
         if (RxDocument.isInstanceOf(json)) {
             tempDoc = json;
             if (!json._isTemporary) {
-                throw RxError.newRxError(
-                    'RxDocument.insert() You cannot insert an existing document', {
-                        data: json
-                    }
-                );
+                throw RxError.newRxError('COL1', {
+                    data: json
+                });
             }
             json = json.toJSON();
         }
@@ -305,11 +303,9 @@ export class RxCollection {
         json = this.schema.fillObjectWithDefaults(json);
 
         if (json._id) {
-            throw RxError.newRxError(
-                'RxCollection.insert() do not provide ._id, it will be generated', {
-                    data: json
-                }
-            );
+            throw RxError.newRxError('COL2', {
+                data: json
+            });
         }
 
         // fill _id
@@ -353,12 +349,10 @@ export class RxCollection {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
-            throw RxError.newRxError(
-                'RxCollection.upsert() does not work without primary', {
-                    primaryPath: this.schema.primaryPath,
-                    data: json
-                }
-            );
+            throw RxError.newRxError('COL3', {
+                primaryPath: this.schema.primaryPath,
+                data: json
+            });
         }
 
         const existing = await this.findOne(primary).exec();
@@ -412,11 +406,9 @@ export class RxCollection {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
-            throw RxError.newRxError(
-                'RxCollection.atomicUpsert() does not work without primary', {
-                    data: json
-                }
-            );
+            throw RxError.newRxError('COL4', {
+                data: json
+            });
         }
 
         // ensure that it wont try 2 parallel runs
@@ -444,11 +436,9 @@ export class RxCollection {
      */
     find(queryObj) {
         if (typeof queryObj === 'string') {
-            throw RxError.newRxError(
-                'RxCollection.find() if you want to search by _id, use .findOne(_id)', {
-                    queryObj
-                }
-            );
+            throw RxError.newRxError('COL5', {
+                queryObj
+            });
         }
 
         const query = RxQuery.create('find', queryObj, this);
@@ -468,7 +458,7 @@ export class RxCollection {
             typeof queryObj === 'number' ||
             Array.isArray(queryObj)
         ) {
-            throw RxError.newRxTypeError('RxCollection.findOne() needs a queryObject or string', {
+            throw RxError.newRxTypeError('COL6', {
                 queryObj
             });
         }
@@ -521,35 +511,31 @@ export class RxCollection {
      */
     addHook(when, key, fun, parallel = false) {
         if (typeof fun !== 'function') {
-            throw RxError.newRxTypeError('hook must be a function', {
+            throw RxError.newRxTypeError('COL7', {
                 key,
                 when
             });
         }
 
         if (!HOOKS_WHEN.includes(when)) {
-            throw RxError.newRxTypeError('hooks-when not known', {
+            throw RxError.newRxTypeError('COL8', {
                 key,
                 when
             });
         }
 
         if (!HOOKS_KEYS.includes(key)) {
-            throw RxError.newRxError(
-                'RxCollection.addHook() hook-name not known', {
-                    key
-                }
-            );
+            throw RxError.newRxError('COL9', {
+                key
+            });
         }
 
         if (when === 'post' && key === 'create' && parallel === true) {
-            throw RxError.newRxError(
-                'RxCollection .postCreate-hooks cannot be async', {
-                    when,
-                    key,
-                    parallel
-                }
-            );
+            throw RxError.newRxError('COL10', {
+                when,
+                key,
+                parallel
+            });
         }
 
         const runName = parallel ? 'parallel' : 'series';
@@ -651,19 +637,17 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
         typeof migrationStrategies !== 'object' ||
         Array.isArray(migrationStrategies)
     ) {
-        throw RxError.newRxTypeError('migrationStrategies must be an object', {
+        throw RxError.newRxTypeError('COL11', {
             schema
         });
     }
 
     // for every previousVersion there must be strategy
     if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-        throw RxError.newRxError(
-            'A migrationStrategy is missing or too much', {
-                have: Object.keys(migrationStrategies),
-                should: schema.previousVersions
-            }
-        );
+        throw RxError.newRxError('COL12', {
+            have: Object.keys(migrationStrategies),
+            should: schema.previousVersions
+        });
     }
 
     // every strategy must have number as property and be a function
@@ -674,7 +658,7 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
         }))
         .filter(strat => typeof strat.s !== 'function')
         .forEach(strat => {
-            throw RxError.newRxTypeError('migrationStrategy must be a function', {
+            throw RxError.newRxTypeError('COL13', {
                 version: strat.v,
                 type: typeof strat,
                 schema
@@ -708,30 +692,28 @@ export function properties() {
 const checkOrmMethods = function(statics) {
     Object.entries(statics).forEach(entry => {
         if (typeof entry[0] !== 'string') {
-            throw RxError.newRxTypeError('given static method-name is not a string', {
+            throw RxError.newRxTypeError('COL14', {
                 name: entry[0]
             });
         }
 
         if (entry[0].startsWith('_')) {
-            throw RxError.newRxTypeError('static method-names cannot start with underscore _', {
+            throw RxError.newRxTypeError('COL15', {
                 name: entry[0]
             });
         }
 
         if (typeof entry[1] !== 'function') {
-            throw RxError.newRxTypeError('given static method is not a function', {
+            throw RxError.newRxTypeError('COL16', {
                 name: entry[0],
                 type: typeof entry[1]
             });
         }
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) {
-            throw RxError.newRxError(
-                'RxCollection.ORM: statics-name not allowed', {
-                    name: entry[0]
-                }
-            );
+            throw RxError.newRxError('COL17', {
+                name: entry[0]
+            });
         }
     });
 };
@@ -767,11 +749,9 @@ export async function create({
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
-            throw RxError.newRxError(
-                'collection-method not allowed because fieldname is in the schema', {
-                    funName
-                }
-            );
+            throw RxError.newRxError('COL18', {
+                funName
+            });
         });
 
     const collection = new RxCollection(

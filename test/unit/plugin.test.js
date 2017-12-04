@@ -20,7 +20,8 @@ describe('plugin.test.js', () => {
         });
     });
     describe('core.node.js', () => {
-        it('should run without errors', async () => {
+        it('should run without errors', async function() {
+            this.timeout(10000);
             if (!config.platform.isNode())
                 return;
 
@@ -29,7 +30,11 @@ describe('plugin.test.js', () => {
             const stderr = [];
             const promise = spawn('mocha', ['../test_tmp/unit/core.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => stdout.push(data.toString()));
+            childProcess.stdout.on('data', data => {
+                // comment in to debug
+                //                console.log(':: ' + data.toString());
+                stdout.push(data.toString());
+            });
             childProcess.stderr.on('data', data => stderr.push(data.toString()));
             try {
                 await promise;
@@ -44,7 +49,6 @@ describe('plugin.test.js', () => {
             }
         });
     });
-
     describe('full.node.js', () => {
         it('should run without errors', async () => {
             if (!config.platform.isNode())

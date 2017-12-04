@@ -20,11 +20,9 @@ const ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
 function ensureSchemaSupportsAttachments(doc) {
     const schemaJson = doc.collection.schema.jsonID;
     if (!schemaJson.attachments) {
-        throw RxError.newRxError(
-            'to use attachments, please define this in your schema', {
-                link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
-            }
-        );
+        throw RxError.newRxError('AT1', {
+            link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
+        });
     }
 }
 

@@ -49,7 +49,7 @@ class DataMigrator {
      */
     migrate(batchSize = 10) {
         if (this._migrated)
-            throw RxError.newRxError('migrate() Migration has already run');
+            throw RxError.newRxError('DM1');
         this._migrated = true;
 
         const state = {
@@ -207,12 +207,11 @@ class OldCollection {
         try {
             this.newestCollection.schema.validate(doc);
         } catch (e) {
-            throw RxError.newRxError(
-                `migration of document from v${this.version} to v${this.newestCollection.schema.version} failed
-                final document does not match final schema`, {
-                    finalDoc: doc
-                }
-            );
+            throw RxError.newRxError('DM2', {
+                fromVersion: this.version,
+                toVersion: this.newestCollection.schema.version,
+                finalDoc: doc
+            });
         }
         return doc;
     }
@@ -276,7 +275,7 @@ class OldCollection {
      */
     migrate(batchSize = 10) {
         if (this._migrate)
-            throw RxError.newRxError('migration already running');
+            throw RxError.newRxError('DM3');
         this._migrate = true;
 
         const stateStream$ = new Observable(async (observer) => {

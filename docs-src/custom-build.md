@@ -35,7 +35,21 @@ RxDB.plugin(require('rxdb/plugins/validate'));
 
 Some modules are optional and only needed if you use their functionality.
 
-### schemacheck
+### error-messages
+
+Because error-messages are hard to compress, RxDB will throw error-codes by default. In developement you should always include this plugin so full messages will be thrown.
+
+```javascript
+// es6-import
+import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
+RxDB.plugin(RxDBSchemaCheckModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/error-messages'));
+```
+
+
+### schema-check
 
 The schemacheck-module does additional checks on your jsonschema before you create a RxCollection. This ensure that your collection-schema is correctly working with rxdb. You should always enable this plugin on dev-mode.
 

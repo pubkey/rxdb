@@ -3,6 +3,7 @@
  */
 
 import * as util from './util';
+import overwritable from './overwritable';
 
 /**
  * transform an object of parameters to a presentable string
@@ -34,9 +35,10 @@ const messageForError = (message, parameters) => {
 };
 
 export class RxError extends Error {
-    constructor(message, parameters = {}) {
+    constructor(code, message, parameters = {}) {
         const mes = messageForError(message, parameters);
         super(mes);
+        this.code = code;
         this.message = mes;
         this.parameters = parameters;
         this.rxdb = true; // tag them as internal
@@ -53,10 +55,10 @@ export class RxError extends Error {
 };
 
 export class RxTypeError extends TypeError {
-    constructor(message, parameters = {}) {
+    constructor(code, message, parameters = {}) {
         const mes = messageForError(message, parameters);
         super(mes);
-
+        this.code = code;
         this.message = mes;
         this.parameters = parameters;
         this.rxdb = true; // tag them as internal
@@ -75,6 +77,7 @@ export class RxTypeError extends TypeError {
 
 export function pluginMissing(pluginKey) {
     return new RxError(
+        'PU',
         `You are using a function which must be overwritten by a plugin.
         You should either prevent the usage of this function or add the plugin via:
           - es5-require:
@@ -91,9 +94,8 @@ export function pluginMissing(pluginKey) {
 // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
-export const newRxError = (message, parameters) => new RxError(message, parameters);
-export const newRxTypeError = (message, parameters) => new RxTypeError(message, parameters);
-
+export const newRxError = (code, parameters) => new RxError(code, overwritable.tunnelErrorMessage(code), parameters);
+export const newRxTypeError = (code, parameters) => new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
 
 export default {
     newRxError,

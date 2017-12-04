@@ -115,11 +115,9 @@ export class RxLocalDocument extends RxDocument.RxDocument {
 
     get allAttachments$() {
         // this is overwritte here because we cannot re-set getters on the prototype
-        throw RxError.newRxError(
-            'RxDocument.allAttachments$ cant use attachments on local documents', {
-                document: this
-            }
-        );
+        throw RxError.newRxError('LD1', {
+            document: this
+        });
     }
 
     get primaryPath() {
@@ -137,7 +135,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
     get(objPath) {
         if (!this._data) return undefined;
         if (typeof objPath !== 'string') {
-            throw RxError.newRxTypeError('RxDocument.get(): objPath must be a string', {
+            throw RxError.newRxTypeError('LD2', {
                 objPath
             });
         }
@@ -148,14 +146,12 @@ export class RxLocalDocument extends RxDocument.RxDocument {
     }
     get$(path) {
         if (path.includes('.item.')) {
-            throw RxError.newRxError(
-                'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed', {
-                    path
-                }
-            );
+            throw RxError.newRxError('LD3', {
+                path
+            });
         }
         if (path === this.primaryPath)
-            throw RxError.newRxError('cannot observe primary path');
+            throw RxError.newRxError('LD4');
 
         return this._dataSync$
             .map(data => objectPath.get(data, path))
@@ -171,12 +167,10 @@ export class RxLocalDocument extends RxDocument.RxDocument {
             return this;
         }
         if (objPath === '_id') {
-            throw RxError.newRxError(
-                'RxDocument.set() id cannot be modified', {
-                    objPath,
-                    value
-                }
-            );
+            throw RxError.newRxError('LD5', {
+                objPath,
+                value
+            });
         }
         if (Object.is(this.get(objPath), value)) return;
         objectPath.set(this._data, objPath, value);
@@ -225,11 +219,9 @@ const _init = () => {
      * with throwing function
      */
     const getThrowingFun = k => () => {
-        throw RxError.newRxError(
-            'LocalDocument: Function is not useable on local documents', {
-                functionName: k
-            }
-        );
+        throw RxError.newRxError('LD6', {
+            functionName: k
+        });
     };
     [
         'populate',
@@ -266,12 +258,10 @@ const insertLocal = async function(id, data) {
     data = clone(data);
     const existing = await this.getLocal(id);
     if (existing) {
-        throw RxError.newRxError(
-            'Local document already exists', {
-                id,
-                data
-            }
-        );
+        throw RxError.newRxError('LD7', {
+            id,
+            data
+        });
     }
 
     // create new one

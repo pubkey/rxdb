@@ -190,11 +190,9 @@ export class RxQuery {
                 docsPromise = this.collection._pouchFind(this, 1);
                 break;
             default:
-                throw RxError.newRxError(
-                    'RxQuery._execOverDatabase(): op not known', {
-                        op: this.op
-                    }
-                );
+                throw RxError.newRxError('QU1', {
+                    op: this.op
+                });
         }
         return docsPromise;
     }
@@ -271,7 +269,7 @@ export class RxQuery {
 
         if (options.limit) {
             if (typeof options.limit !== 'number') {
-                throw RxError.newRxTypeError('limit() must get a number', {
+                throw RxError.newRxTypeError('QU2', {
                     limit: options.limit
                 });
             }
@@ -280,7 +278,7 @@ export class RxQuery {
 
         if (options.skip) {
             if (typeof options.skip !== 'number') {
-                throw RxError.newRxTypeError('skip() must get a number', {
+                throw RxError.newRxTypeError('QU3', {
                     skip: options.skip
                 });
             }
@@ -381,11 +379,9 @@ export class RxQuery {
         const clonedThis = this._clone();
 
         if (this.mquery._path === this.collection.schema.primaryPath) {
-            throw RxError.newRxError(
-                'RxQuery.regex(): You cannot use .regex() on the primary field', {
-                    path: this.mquery._path
-                }
-            );
+            throw RxError.newRxError('QU4', {
+                path: this.mquery._path
+            });
         }
 
         clonedThis.mquery.regex(params);
@@ -398,11 +394,9 @@ export class RxQuery {
      */
     sort(params) {
         const throwNotInSchema = (key) => {
-            throw RxError.newRxError(
-                'RxQuery.sort(): does not work because key is not defined in the schema', {
-                    key
-                }
-            );
+            throw RxError.newRxError('QU5', {
+                key
+            });
         };
         const clonedThis = this._clone();
 
@@ -440,7 +434,7 @@ export class RxQuery {
 
     limit(amount) {
         if (this.op === 'findOne')
-            throw RxError.newRxError('RxQuery.limit(): cannot be called on .findOne()');
+            throw RxError.newRxError('QU6');
         else {
             const clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
@@ -472,12 +466,12 @@ let protoMerged = false;
 export function create(op, queryObj, collection) {
     // checks
     if (queryObj && typeof queryObj !== 'object') {
-        throw RxError.newRxTypeError('query must be an object', {
+        throw RxError.newRxTypeError('QU7', {
             queryObj
         });
     }
     if (Array.isArray(queryObj)) {
-        throw RxError.newRxTypeError('query cannot be an array', {
+        throw RxError.newRxTypeError('QU8', {
             queryObj
         });
     }

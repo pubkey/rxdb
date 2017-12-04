@@ -57,7 +57,7 @@ export class RxReplicationState {
     }
     setPouchEventEmitter(evEmitter) {
         if (this._pouchEventEmitterObject)
-            throw RxError.newRxError('Replication: already added');
+            throw RxError.newRxError('RC1');
         this._pouchEventEmitterObject = evEmitter;
 
         // change
@@ -190,11 +190,9 @@ export function sync({
         remote = remote.pouch;
 
     if (query && this !== query.collection) {
-        throw RxError.newRxError(
-            'RxCollection.sync() query must be from the same RxCollection', {
-                query
-            }
-        );
+        throw RxError.newRxError('RC2', {
+            query
+        });
     }
 
     const syncFun = util.pouchReplicationFunction(this.pouch, direction);

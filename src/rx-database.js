@@ -92,12 +92,10 @@ export class RxDatabase {
                 } catch (e) {}
             }
             if (pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value) {
-                throw RxError.newRxError(
-                    'RxDocument.prepare(): another instance on this adapter has a different password', {
-                        passwordHash: util.hash(this.password),
-                        existingPasswordHash: pwHashDoc.value
-                    }
-                );
+                throw RxError.newRxError('DB1', {
+                    passwordHash: util.hash(this.password),
+                    existingPasswordHash: pwHashDoc.value
+                });
             }
         }
 
@@ -239,26 +237,20 @@ export class RxDatabase {
         args.database = this;
 
         if (args.name.charAt(0) === '_') {
-            throw RxError.newRxError(
-                'RxDatabase.collection(): collection-names cannot start with underscore _', {
-                    name: args.name
-                }
-            );
+            throw RxError.newRxError('DB2', {
+                name: args.name
+            });
         }
         if (this.collections[args.name]) {
-            throw RxError.newRxError(
-                `RxDatabase.collection(): collection already exists. use myDatabase.${args.name} to get it`, {
-                    name: args.name
-                }
-            );
+            throw RxError.newRxError('DB3', {
+                name: args.name
+            });
         }
         if (!args.schema) {
-            throw RxError.newRxError(
-                'RxDatabase.collection(): schema is missing', {
-                    name: args.name,
-                    args
-                }
-            );
+            throw RxError.newRxError('DB4', {
+                name: args.name,
+                args
+            });
         }
 
         if (!RxSchema.isInstanceOf(args.schema))
@@ -268,11 +260,9 @@ export class RxDatabase {
 
         // check unallowed collection-names
         if (properties().includes(args.name)) {
-            throw RxError.newRxError(
-                'RxDatabase.collection(): collection-name not allowed', {
-                    name: args.name
-                }
-            );
+            throw RxError.newRxError('DB5', {
+                name: args.name
+            });
         }
 
         // check schemaHash
@@ -297,13 +287,11 @@ export class RxDatabase {
             });
             if (oneDoc.docs.length !== 0) {
                 // we have one document
-                throw RxError.newRxError(
-                    'RxDatabase.collection(): another instance created this collection with a different schema', {
-                        name: args.name,
-                        previousSchemaHash: collectionDoc.schemaHash,
-                        schemaHash
-                    }
-                );
+                throw RxError.newRxError('DB6', {
+                    name: args.name,
+                    previousSchemaHash: collectionDoc.schemaHash,
+                    schemaHash
+                });
             }
         }
 
@@ -313,11 +301,9 @@ export class RxDatabase {
             Object.keys(collection.schema.encryptedPaths).length > 0 &&
             !this.password
         ) {
-            throw RxError.newRxError(
-                'RxDatabase.collection(): schema encrypted but no password given', {
-                    name: args.name
-                }
-            );
+            throw RxError.newRxError('DB7', {
+                name: args.name
+            });
         }
 
         if (!collectionDoc) {
@@ -465,14 +451,11 @@ function _isNameAdapterUsed(name, adapter) {
             used = true;
     });
     if (used) {
-        throw RxError.newRxError(
-            'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
-            'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional', {
-                name,
-                adapter,
-                link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
-            }
-        );
+        throw RxError.newRxError('DB8', {
+            name,
+            adapter,
+            link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
+        });
     }
 }
 
@@ -497,21 +480,16 @@ export async function create({
     // check if pouchdb-adapter
     if (typeof adapter === 'string') {
         if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
-            throw RxError.newRxError(
-                `RxDatabase.create(): Adapter not added. \n Use RxDB.plugin(require('pouchdb-adapter-${adapter}');`, {
-                    adapter
-                }
-            );
+            throw RxError.newRxError('DB9', {
+                adapter
+            });
         }
     } else {
         util.isLevelDown(adapter);
         if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
-            throw RxError.newRxError(
-                `RxDatabase.create(): To use leveldown-adapters, you have to add the leveldb-plugin.\n'+
-                ' Use RxDB.plugin(require('pouchdb-adapter-leveldb'));`, {
-                    adapter
-                }
-            );
+            throw RxError.newRxError('DB10', {
+                adapter
+            });
         }
     }
 

@@ -87,4 +87,27 @@ describe('Core.test.js', () => {
             db.destroy();
         });
     });
+    describe('error-codes', () => {
+        it('should throw error-codes instead of messages', async () => {
+            const db = await Core.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const col = await db.collection({
+                name: 'humans',
+                schema
+            });
+            let error;
+            try {
+                await col.insert({
+                    foo: 'bar'
+                });
+            } catch (e) {
+                error = e;
+            }
+            assert.ok(error);
+            assert.equal(error.code, 'VD2');
+            db.destroy();
+        });
+    });
 });
