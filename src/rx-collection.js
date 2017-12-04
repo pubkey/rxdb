@@ -1,5 +1,8 @@
 import clone from 'clone';
 import IdleQueue from 'custom-idle-queue';
+import {
+    filter
+} from 'rxjs/operators/filter';
 
 import * as util from './util';
 import RxDocument from './rx-document';
@@ -16,13 +19,6 @@ import {
     runPluginHooks,
     runAsyncPluginHooks
 } from './hooks';
-
-import RxSchema from './rx-schema';
-import RxDatabase from './rx-database';
-
-import {
-    filter
-} from 'rxjs/operators/filter';
 
 
 const HOOKS_WHEN = ['pre', 'post'];
@@ -471,7 +467,11 @@ export class RxCollection {
         if (
             typeof queryObj === 'number' ||
             Array.isArray(queryObj)
-        ) throw new TypeError('.findOne() needs a queryObject or string');
+        ) {
+            throw RxError.newRxTypeError('RxCollection.findOne() needs a queryObject or string', {
+                queryObj
+            });
+        }
 
         return query;
     }
@@ -520,11 +520,19 @@ export class RxCollection {
      * HOOKS
      */
     addHook(when, key, fun, parallel = false) {
-        if (typeof fun !== 'function')
-            throw new TypeError(key + '-hook must be a function');
+        if (typeof fun !== 'function') {
+            throw RxError.newRxTypeError('hook must be a function', {
+                key,
+                when
+            });
+        }
 
-        if (!HOOKS_WHEN.includes(when))
-            throw new TypeError('hooks-when not known');
+        if (!HOOKS_WHEN.includes(when)) {
+            throw RxError.newRxTypeError('hooks-when not known', {
+                key,
+                when
+            });
+        }
 
         if (!HOOKS_KEYS.includes(key)) {
             throw RxError.newRxError(
@@ -642,7 +650,11 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
     if (
         typeof migrationStrategies !== 'object' ||
         Array.isArray(migrationStrategies)
-    ) throw new TypeError('migrationStrategies must be an object');
+    ) {
+        throw RxError.newRxTypeError('migrationStrategies must be an object', {
+            schema
+        });
+    }
 
     // for every previousVersion there must be strategy
     if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
@@ -662,7 +674,11 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
         }))
         .filter(strat => typeof strat.s !== 'function')
         .forEach(strat => {
-            throw new TypeError(`migrationStrategy(v${strat.v}) must be a function; is : ${typeof strat}`);
+            throw RxError.newRxTypeError('migrationStrategy must be a function', {
+                version: strat.v,
+                type: typeof strat,
+                schema
+            });
         });
 
     return true;
@@ -691,14 +707,24 @@ export function properties() {
  */
 const checkOrmMethods = function(statics) {
     Object.entries(statics).forEach(entry => {
-        if (typeof entry[0] !== 'string')
-            throw new TypeError(`given static method-name (${entry[0]}) is not a string`);
+        if (typeof entry[0] !== 'string') {
+            throw RxError.newRxTypeError('given static method-name is not a string', {
+                name: entry[0]
+            });
+        }
 
-        if (entry[0].startsWith('_'))
-            throw new TypeError(`static method-names cannot start with underscore _ (${entry[0]})`);
+        if (entry[0].startsWith('_')) {
+            throw RxError.newRxTypeError('static method-names cannot start with underscore _', {
+                name: entry[0]
+            });
+        }
 
-        if (typeof entry[1] !== 'function')
-            throw new TypeError(`given static method (${entry[0]}) is not a function but ${typeof entry[1]}`);
+        if (typeof entry[1] !== 'function') {
+            throw RxError.newRxTypeError('given static method is not a function', {
+                name: entry[0],
+                type: typeof entry[1]
+            });
+        }
 
         if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) {
             throw RxError.newRxError(
@@ -731,15 +757,6 @@ export async function create({
     attachments = {},
     options = {}
 }) {
-    if (!RxSchema.isInstanceOf(schema))
-        throw new TypeError('given schema is no Schema-object');
-
-    if (!RxDatabase.isInstanceOf(database))
-        throw new TypeError('given database is no Database-object');
-
-    if (typeof autoMigrate !== 'boolean')
-        throw new TypeError('autoMigrate must be boolean');
-
     util.validateCouchDBString(name);
     checkMigrationStrategies(schema, migrationStrategies);
 

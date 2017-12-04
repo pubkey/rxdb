@@ -60,7 +60,9 @@ class MQuery {
         if ('object' === type && !Array.isArray(arguments[0]))
             return this.merge(arguments[0]);
 
-        throw new TypeError('path must be a string or object');
+        throw RxError.newRxTypeError('path must be a string or object', {
+            path: arguments[0]
+        });
     }
 
     /**
@@ -223,7 +225,7 @@ class MQuery {
      */
     elemMatch() {
         if (null === arguments[0])
-            throw new TypeError('Invalid argument');
+            throw RxError.newRxTypeError('Invalid argument');
 
         let fn;
         let path;
@@ -244,7 +246,8 @@ class MQuery {
             path = arguments[0];
             criteria = arguments[1];
         } else
-            throw new TypeError('Invalid argument');
+            throw RxError.newRxTypeError('Invalid argument');
+
         if (fn) {
             criteria = new MQuery;
             fn(criteria);
@@ -302,7 +305,9 @@ class MQuery {
             return this;
         }
 
-        throw new TypeError('Invalid sort() argument. Must be a string, object, or array.');
+        throw RxError.newRxTypeError('Invalid sort() argument. Must be a string, object, or array.', {
+            args: arguments
+        });
     }
 
     /**
@@ -317,8 +322,11 @@ class MQuery {
         if (!source)
             return this;
 
-        if (!MQuery.canMerge(source))
-            throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
+        if (!MQuery.canMerge(source)) {
+            throw RxError.newRxTypeError('Invalid argument. Expected instanceof mquery or plain object', {
+                source
+            });
+        }
 
         if (source instanceof MQuery) {
             // if source has a feature, apply it to ourselves
@@ -425,9 +433,11 @@ class MQuery {
  */
 function push(opts, field, value) {
     if (Array.isArray(opts.sort)) {
-        throw new TypeError('Can\'t mix sort syntaxes. Use either array or object:' +
-            '\n- `.sort([[\'field\', 1], [\'test\', -1]])`' +
-            '\n- `.sort({ field: 1, test: -1 })`');
+        throw RxError.newRxTypeError('Can\'t mix sort syntaxes. Use either array or object | .sort([[\'field\', 1], [\'test\', -1]]) | .sort({ field: 1, test: -1 })', {
+            opts,
+            field,
+            value
+        });
     }
 
     if (value && value.$meta) {
@@ -441,7 +451,10 @@ function push(opts, field, value) {
     const val = String(value || 1).toLowerCase();
     if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
         if (Array.isArray(value)) value = '[' + value + ']';
-        throw new TypeError('Invalid sort value: {' + field + ': ' + value + ' }');
+        throw RxError.newRxTypeError('Invalid sort value', {
+            field,
+            value
+        });
     }
     // store `sort` in a sane format
     const s = opts.sort || (opts.sort = {});
@@ -456,10 +469,11 @@ function push(opts, field, value) {
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
     if (!Array.isArray(opts.sort)) {
-        throw new TypeError(`
-          Can't mix sort syntaxes. Use either array or object:
-            \n- .sort([['field', 1], ['test', -1]])
-            \n- .sort({ field: 1, test: -1 })`);
+        throw RxError.newRxTypeError('Can\'t mix sort syntaxes. Use either array or object', {
+            opts,
+            field,
+            value
+        });
     }
 
     /*    const valueStr = value.toString()

@@ -44,8 +44,11 @@ export const prototypes = {
 };
 export const overwritable = {
     validatePassword: function(password) {
-        if (password && typeof password !== 'string')
-            throw new TypeError('password is no string');
+        if (password && typeof password !== 'string'){
+            throw RxError.newRxTypeError('password is no string', {
+                password
+            });
+        }
         if (password && password.length < minPassLength) {
             throw RxError.newRxError(
                 'validatePassword: min-length of password not complied', {

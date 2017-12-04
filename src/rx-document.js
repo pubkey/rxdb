@@ -284,8 +284,12 @@ export class RxDocument {
      * @param {object} value
      */
     set(objPath, value) {
-        if (typeof objPath !== 'string')
-            throw new TypeError('RxDocument.set(): objPath must be a string');
+        if (typeof objPath !== 'string') {
+            throw RxError.newRxTypeError('query cannot be an array', {
+                objPath,
+                value
+            });
+        }
 
         // primary cannot be modified
         if (!this._isTemporary && objPath === this.primaryPath) {

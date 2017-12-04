@@ -270,12 +270,20 @@ export class RxQuery {
         }
 
         if (options.limit) {
-            if (typeof options.limit !== 'number') throw new TypeError('limit() must get a number');
+            if (typeof options.limit !== 'number') {
+                throw RxError.newRxTypeError('limit() must get a number', {
+                    limit: options.limit
+                });
+            }
             json.limit = options.limit;
         }
 
         if (options.skip) {
-            if (typeof options.skip !== 'number') throw new TypeError('skip() must get a number');
+            if (typeof options.skip !== 'number') {
+                throw RxError.newRxTypeError('skip() must get a number', {
+                    skip: options.skip
+                });
+            }
             json.skip = options.skip;
         }
 
@@ -463,10 +471,16 @@ const protoMerge = function(rxQueryProto, mQueryProtoKeys) {
 let protoMerged = false;
 export function create(op, queryObj, collection) {
     // checks
-    if (queryObj && typeof queryObj !== 'object')
-        throw new TypeError('query must be an object');
-    if (Array.isArray(queryObj))
-        throw new TypeError('query cannot be an array');
+    if (queryObj && typeof queryObj !== 'object') {
+        throw RxError.newRxTypeError('query must be an object', {
+            queryObj
+        });
+    }
+    if (Array.isArray(queryObj)) {
+        throw RxError.newRxTypeError('query cannot be an array', {
+            queryObj
+        });
+    }
 
 
     let ret = new RxQuery(op, queryObj, collection);

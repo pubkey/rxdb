@@ -136,8 +136,11 @@ export class RxLocalDocument extends RxDocument.RxDocument {
     }
     get(objPath) {
         if (!this._data) return undefined;
-        if (typeof objPath !== 'string')
-            throw new TypeError('RxDocument.get(): objPath must be a string');
+        if (typeof objPath !== 'string') {
+            throw RxError.newRxTypeError('RxDocument.get(): objPath must be a string', {
+                objPath
+            });
+        }
 
         let valueObj = objectPath.get(this._data, objPath);
         valueObj = clone(valueObj);

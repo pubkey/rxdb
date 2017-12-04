@@ -47,6 +47,29 @@ export class RxError extends Error {
     toString() {
         return this.message;
     }
+    get typeError() {
+        return false;
+    }
+};
+
+export class RxTypeError extends TypeError {
+    constructor(message, parameters = {}) {
+        const mes = messageForError(message, parameters);
+        super(mes);
+
+        this.message = mes;
+        this.parameters = parameters;
+        this.rxdb = true; // tag them as internal
+    }
+    get name() {
+        return 'RxError';
+    }
+    toString() {
+        return this.message;
+    }
+    get typeError() {
+        return true;
+    }
 };
 
 
@@ -69,9 +92,11 @@ export function pluginMissing(pluginKey) {
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
 export const newRxError = (message, parameters) => new RxError(message, parameters);
+export const newRxTypeError = (message, parameters) => new RxTypeError(message, parameters);
 
 
 export default {
     newRxError,
+    newRxTypeError,
     pluginMissing
 };

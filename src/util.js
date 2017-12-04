@@ -178,7 +178,11 @@ export function validateCouchDBString(name) {
     if (
         typeof name !== 'string' ||
         name.length === 0
-    ) throw new TypeError('given name is no string or empty');
+    ) {
+        throw RxError.newRxTypeError('given name is no string or empty', {
+            name
+        });
+    }
 
 
     // do not check, if foldername is given
