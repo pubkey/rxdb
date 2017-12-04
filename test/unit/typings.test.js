@@ -109,10 +109,35 @@ describe('typings.test.js', () => {
                         });
                         const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
                         const myCollection: RxCollection<any> = await myDb.collection({
-                            name: 'humans',
-                            schema: mySchema,
+                            name: 'humans',                            schema: mySchema,
                             autoMigrate: false,
                         });
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('use options', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false,
+                            options: {
+                                foo1: 'bar1'
+                            }
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        const myCollection: RxCollection<any> = await myDb.collection({
+                            name: 'humans',                            schema: mySchema,
+                            autoMigrate: false,
+                            options: {
+                                foo2: 'bar2'
+                            }
+                        });
+                        const x: string = myDb.options.foo1;
+                        const y: string = myCollection.options.foo2;
                     })();
                 `;
                 await transpileCode(code);

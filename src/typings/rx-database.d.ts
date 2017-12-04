@@ -17,6 +17,7 @@ export interface RxDatabaseCreator {
     password?: string;
     multiInstance?: boolean;
     ignoreDuplicate?: boolean;
+    options?: any;
 }
 
 export declare class RxDatabase {
@@ -25,6 +26,7 @@ export declare class RxDatabase {
     readonly multiInstance: boolean;
     readonly password: string;
     readonly collections: any;
+    options?: any;
 
     readonly $: Observable<RxChangeEvent>;
 

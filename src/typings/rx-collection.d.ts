@@ -39,6 +39,7 @@ export interface RxCollectionCreator {
     attachments?: {
         [key: string]: Function
     };
+    options?: any;
 }
 
 export declare class RxReplicationState {
@@ -69,6 +70,7 @@ export declare class RxCollection<RxDocumentType> {
     readonly database: RxDatabase;
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
+    options?: any;
 
     readonly $: Observable<RxChangeEvent>;
     insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
