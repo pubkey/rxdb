@@ -62,7 +62,14 @@ var PROTOTYPES = {
     * basically it changes the internal prototypes
     * by passing them to the plugins-functions
     */
+
+
+var ADDED_PLUGINS = new Set();
+
 function addPlugin(plugin) {
+    // do nothing if added before
+    if (ADDED_PLUGINS.has(plugin)) return;else ADDED_PLUGINS.add(plugin);
+
     if (!plugin.rxdb) {
         // pouchdb-plugin
         if ((typeof plugin === 'undefined' ? 'undefined' : (0, _typeof3['default'])(plugin)) === 'object' && plugin['default']) plugin = plugin['default'];

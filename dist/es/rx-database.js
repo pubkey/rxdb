@@ -329,37 +329,53 @@ export var RxDatabase = function () {
         var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(args) {
             var _this4 = this;
 
-            var internalPrimary, schemaHash, collectionDoc, collection, cEvent;
+            var internalPrimary, schemaHash, collectionDoc, pouch, oneDoc, collection, cEvent;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
                     switch (_context4.prev = _context4.next) {
                         case 0:
-                            args.database = this;
-
-                            if (!(args.name.charAt(0) === '_')) {
-                                _context4.next = 3;
+                            if (!(typeof args === 'string')) {
+                                _context4.next = 2;
                                 break;
                             }
 
-                            throw new Error('collection(' + args.name + '): collection-names cannot start with underscore _');
+                            return _context4.abrupt('return', this.collections[args]);
 
-                        case 3:
-                            if (!this.collections[args.name]) {
+                        case 2:
+
+                            args.database = this;
+
+                            if (!(args.name.charAt(0) === '_')) {
                                 _context4.next = 5;
                                 break;
                             }
 
-                            throw new Error('collection(' + args.name + ') already exists. use myDatabase.' + args.name + ' to get it');
+                            throw RxError.newRxError('RxDatabase.collection(): collection-names cannot start with underscore _', {
+                                name: args.name
+                            });
 
                         case 5:
-                            if (args.schema) {
+                            if (!this.collections[args.name]) {
                                 _context4.next = 7;
                                 break;
                             }
 
-                            throw new Error('collection(' + args.name + '): schema is missing');
+                            throw RxError.newRxError('RxDatabase.collection(): collection already exists. use myDatabase.' + args.name + ' to get it', {
+                                name: args.name
+                            });
 
                         case 7:
+                            if (args.schema) {
+                                _context4.next = 9;
+                                break;
+                            }
+
+                            throw RxError.newRxError('RxDatabase.collection(): schema is missing', {
+                                name: args.name,
+                                args: args
+                            });
+
+                        case 9:
 
                             if (!RxSchema.isInstanceOf(args.schema)) args.schema = RxSchema.create(args.schema);
 
@@ -368,62 +384,86 @@ export var RxDatabase = function () {
                             // check unallowed collection-names
 
                             if (!properties().includes(args.name)) {
-                                _context4.next = 11;
+                                _context4.next = 13;
                                 break;
                             }
 
                             throw new Error('Collection-name ' + args.name + ' not allowed');
 
-                        case 11:
+                        case 13:
 
                             // check schemaHash
                             schemaHash = args.schema.hash;
                             collectionDoc = null;
-                            _context4.prev = 13;
-                            _context4.next = 16;
+                            _context4.prev = 15;
+                            _context4.next = 18;
                             return this.lockedRun(function () {
                                 return _this4._collectionsPouch.get(internalPrimary);
                             });
 
-                        case 16:
+                        case 18:
                             collectionDoc = _context4.sent;
-                            _context4.next = 21;
+                            _context4.next = 23;
                             break;
 
-                        case 19:
-                            _context4.prev = 19;
-                            _context4.t0 = _context4['catch'](13);
-
                         case 21:
+                            _context4.prev = 21;
+                            _context4.t0 = _context4['catch'](15);
+
+                        case 23:
                             if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
-                                _context4.next = 23;
+                                _context4.next = 30;
                                 break;
                             }
 
-                            throw new Error('collection(' + args.name + '): another instance created this collection with a different schema');
+                            // collection already exists with different schema, check if it has documents
+                            pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
+                            _context4.next = 27;
+                            return pouch.find({
+                                selector: {
+                                    language: {
+                                        $ne: 'query'
+                                    }
+                                },
+                                limit: 1
+                            });
 
-                        case 23:
-                            _context4.next = 25;
+                        case 27:
+                            oneDoc = _context4.sent;
+
+                            if (!(oneDoc.docs.length !== 0)) {
+                                _context4.next = 30;
+                                break;
+                            }
+
+                            throw RxError.newRxError('RxDatabase.collection(): another instance created this collection with a different schema', {
+                                name: args.name,
+                                previousSchemaHash: collectionDoc.schemaHash,
+                                schemaHash: schemaHash
+                            });
+
+                        case 30:
+                            _context4.next = 32;
                             return RxCollection.create(args);
 
-                        case 25:
+                        case 32:
                             collection = _context4.sent;
 
                             if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
-                                _context4.next = 28;
+                                _context4.next = 35;
                                 break;
                             }
 
                             throw new Error('collection(' + args.name + '): schema encrypted but no password given');
 
-                        case 28:
+                        case 35:
                             if (collectionDoc) {
-                                _context4.next = 36;
+                                _context4.next = 43;
                                 break;
                             }
 
-                            _context4.prev = 29;
-                            _context4.next = 32;
+                            _context4.prev = 36;
+                            _context4.next = 39;
                             return this.lockedRun(function () {
                                 return _this4._collectionsPouch.put({
                                     _id: internalPrimary,
@@ -433,15 +473,15 @@ export var RxDatabase = function () {
                                 });
                             });
 
-                        case 32:
-                            _context4.next = 36;
+                        case 39:
+                            _context4.next = 43;
                             break;
 
-                        case 34:
-                            _context4.prev = 34;
-                            _context4.t1 = _context4['catch'](29);
+                        case 41:
+                            _context4.prev = 41;
+                            _context4.t1 = _context4['catch'](36);
 
-                        case 36:
+                        case 43:
                             cEvent = RxChangeEvent.create('RxDatabase.collection', this);
 
                             cEvent.data.v = collection.name;
@@ -455,12 +495,12 @@ export var RxDatabase = function () {
 
                             return _context4.abrupt('return', collection);
 
-                        case 43:
+                        case 50:
                         case 'end':
                             return _context4.stop();
                     }
                 }
-            }, _callee4, this, [[13, 19], [29, 34]]);
+            }, _callee4, this, [[15, 21], [36, 41]]);
         }));
 
         function collection(_x3) {
