@@ -33,10 +33,11 @@ var resyncRxDocument = function () {
 }();
 
 import IdleQueue from 'custom-idle-queue';
+import { map } from 'rxjs/operators/map';
+
 import RxChangeEvent from './../rx-change-event';
 import * as util from './../util';
-
-import { map } from 'rxjs/operators/map';
+import RxError from '../rx-error';
 
 /**
  * to not have update-conflicts,
@@ -47,7 +48,11 @@ var ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
 
 function ensureSchemaSupportsAttachments(doc) {
     var schemaJson = doc.collection.schema.jsonID;
-    if (!schemaJson.attachments) throw new Error('to use attachments, please define this in your schema');
+    if (!schemaJson.attachments) {
+        throw RxError.newRxError('AT1', {
+            link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
+        });
+    }
 }
 
 export var blobBufferUtil = {

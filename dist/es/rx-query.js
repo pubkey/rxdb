@@ -301,7 +301,9 @@ export var RxQuery = function () {
                 docsPromise = this.collection._pouchFind(this, 1);
                 break;
             default:
-                throw new Error('RxQuery.exec(): op (' + this.op + ') not known');
+                throw RxError.newRxError('QU1', {
+                    op: this.op
+                });
         }
         return docsPromise;
     };
@@ -341,12 +343,20 @@ export var RxQuery = function () {
         }
 
         if (options.limit) {
-            if (typeof options.limit !== 'number') throw new TypeError('limit() must get a number');
+            if (typeof options.limit !== 'number') {
+                throw RxError.newRxTypeError('QU2', {
+                    limit: options.limit
+                });
+            }
             json.limit = options.limit;
         }
 
         if (options.skip) {
-            if (typeof options.skip !== 'number') throw new TypeError('skip() must get a number');
+            if (typeof options.skip !== 'number') {
+                throw RxError.newRxTypeError('QU3', {
+                    skip: options.skip
+                });
+            }
             json.skip = options.skip;
         }
 
@@ -480,7 +490,11 @@ export var RxQuery = function () {
     RxQuery.prototype.regex = function regex(params) {
         var clonedThis = this._clone();
 
-        if (this.mquery._path === this.collection.schema.primaryPath) throw new Error('You cannot use .regex() on the primary field \'' + this.mquery._path + '\'');
+        if (this.mquery._path === this.collection.schema.primaryPath) {
+            throw RxError.newRxError('QU4', {
+                path: this.mquery._path
+            });
+        }
 
         clonedThis.mquery.regex(params);
         return clonedThis._tunnelQueryCache();
@@ -492,7 +506,9 @@ export var RxQuery = function () {
      */
     RxQuery.prototype.sort = function sort(params) {
         var throwNotInSchema = function throwNotInSchema(key) {
-            throw new Error('RxQuery.sort(' + key + ') does not work because ' + key + ' is not defined in the schema');
+            throw RxError.newRxError('QU5', {
+                key: key
+            });
         };
         var clonedThis = this._clone();
 
@@ -529,7 +545,7 @@ export var RxQuery = function () {
     };
 
     RxQuery.prototype.limit = function limit(amount) {
-        if (this.op === 'findOne') throw new Error('.limit() cannot be called on .findOne()');else {
+        if (this.op === 'findOne') throw RxError.newRxError('QU6');else {
             var clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
             return clonedThis._tunnelQueryCache();
@@ -630,8 +646,16 @@ var protoMerge = function protoMerge(rxQueryProto, mQueryProtoKeys) {
 var protoMerged = false;
 export function create(op, queryObj, collection) {
     // checks
-    if (queryObj && typeof queryObj !== 'object') throw new TypeError('query must be an object');
-    if (Array.isArray(queryObj)) throw new TypeError('query cannot be an array');
+    if (queryObj && typeof queryObj !== 'object') {
+        throw RxError.newRxTypeError('QU7', {
+            queryObj: queryObj
+        });
+    }
+    if (Array.isArray(queryObj)) {
+        throw RxError.newRxTypeError('QU8', {
+            queryObj: queryObj
+        });
+    }
 
     var ret = new RxQuery(op, queryObj, collection);
     // ensure when created with same params, only one is created

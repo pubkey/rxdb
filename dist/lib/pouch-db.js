@@ -12,6 +12,10 @@ var _pouchdbFind = require('pouchdb-find');
 
 var _pouchdbFind2 = _interopRequireDefault(_pouchdbFind);
 
+var _rxError = require('./rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
@@ -22,14 +26,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  */
 _pouchdbCore2['default'].plugin(_pouchdbFind2['default']);
 
+// pouchdb-find
+
+
 /**
  * get the number of all undeleted documents
  * @param  {PouchDB}  pouchdb instance
  * @return {Promise<number>} number of documents
  */
-
-
-// pouchdb-find
 _pouchdbCore2['default'].countAllUndeleted = function (pouchdb) {
     return pouchdb.allDocs({
         include_docs: false,
@@ -48,7 +52,11 @@ _pouchdbCore2['default'].countAllUndeleted = function (pouchdb) {
  * @return {Promise<{}[]>} array with documents
  */
 _pouchdbCore2['default'].getBatch = function (pouchdb, limit) {
-    if (limit <= 1) throw new Error('PouchDB.getBatch: limit must be > 2');
+    if (limit <= 1) {
+        throw _rxError2['default'].newRxError('P1', {
+            limit: limit
+        });
+    }
 
     return pouchdb.allDocs({
         include_docs: true,

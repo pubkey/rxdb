@@ -19,6 +19,7 @@ import * as util from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
 import RxChangeEvent from '../rx-change-event';
+import RxError from '../rx-error';
 
 // add pouchdb-replication-plugin
 Core.plugin(PouchReplicationPlugin);
@@ -53,7 +54,7 @@ export var RxReplicationState = function () {
     RxReplicationState.prototype.setPouchEventEmitter = function setPouchEventEmitter(evEmitter) {
         var _this2 = this;
 
-        if (this._pouchEventEmitterObject) throw new Error('already added');
+        if (this._pouchEventEmitterObject) throw RxError.newRxError('RC1');
         this._pouchEventEmitterObject = evEmitter;
 
         // change
@@ -202,7 +203,11 @@ export function sync(_ref2) {
     // if remote is RxCollection, get internal pouchdb
     if (RxCollection.isInstanceOf(remote)) remote = remote.pouch;
 
-    if (query && this !== query.collection) throw new Error('RxCollection.sync() query must be from the same RxCollection');
+    if (query && this !== query.collection) {
+        throw RxError.newRxError('RC2', {
+            query: query
+        });
+    }
 
     var syncFun = util.pouchReplicationFunction(this.pouch, direction);
     if (query) options.selector = query.keyCompress().selector;

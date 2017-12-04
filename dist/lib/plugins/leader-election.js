@@ -35,6 +35,10 @@ var _rxBroadcastChannel = require('../rx-broadcast-channel');
 
 var _rxBroadcastChannel2 = _interopRequireDefault(_rxBroadcastChannel);
 
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
 var _BehaviorSubject = require('rxjs/BehaviorSubject');
 
 var _filter = require('rxjs/operators/filter');
@@ -45,9 +49,11 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var documentID = exports.documentID = '_local/leader'; /**
-                                                        * this plugin adds the leader-election-capabilities to rxdb
-                                                        */
+/**
+ * this plugin adds the leader-election-capabilities to rxdb
+ */
+
+var documentID = exports.documentID = '_local/leader';
 
 /**
  * This time defines how 'fast' the communication between the instances is.
@@ -165,7 +171,8 @@ var LeaderElector = function () {
         value: function getApplyFunction(electionChannel) {
             if (electionChannel === 'socket') return this.applySocket.bind(this);
             if (electionChannel === 'broadcast') return this.applyBroadcast.bind(this);
-            throw new Error('this should not happen');
+
+            throw _rxError2['default'].newRxError('LE1');
         }
 
         /**
@@ -276,7 +283,7 @@ var LeaderElector = function () {
                                     break;
                                 }
 
-                                throw new Error('someone else is applying/leader');
+                                throw _rxError2['default'].newRxError('LE2');
 
                             case 7:
                                 // write applying to db
@@ -301,7 +308,7 @@ var LeaderElector = function () {
                                     break;
                                 }
 
-                                throw new Error('someone else overwrote apply');
+                                throw _rxError2['default'].newRxError('LE3');
 
                             case 18:
                                 return _context3.abrupt('return', true);

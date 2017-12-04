@@ -13,6 +13,10 @@ var _schemaCheck = require('./plugins/schema-check');
 
 var _schemaCheck2 = _interopRequireDefault(_schemaCheck);
 
+var _errorMessages = require('./plugins/error-messages');
+
+var _errorMessages2 = _interopRequireDefault(_errorMessages);
+
 var _validate = require('./plugins/validate');
 
 var _validate2 = _interopRequireDefault(_validate);
@@ -68,6 +72,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 _core2['default'].plugin(_schemaCheck2['default']);
 
 // default plugins
+
+_core2['default'].plugin(_errorMessages2['default']);
 
 _core2['default'].plugin(_validate2['default']);
 

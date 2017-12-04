@@ -131,7 +131,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  * which should be easy to change
  */
 function isLevelDown(adapter) {
-    if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') throw new Error('given leveldown is no valid adapter');
+    if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') {
+        throw _rxError2['default'].newRxError('UT4', {
+            adapter: adapter
+        });
+    }
 }
 
 /**
@@ -247,7 +251,11 @@ function trimDots(str) {
  * @return {boolean} true
  */
 function validateCouchDBString(name) {
-    if (typeof name !== 'string' || name.length === 0) throw new TypeError('given name is no string or empty');
+    if (typeof name !== 'string' || name.length === 0) {
+        throw _rxError2['default'].newRxTypeError('UT1', {
+            name: name
+        });
+    }
 
     // do not check, if foldername is given
     if (name.includes('/') || // unix
@@ -257,10 +265,9 @@ function validateCouchDBString(name) {
     var regStr = '^[a-z][a-z0-9]*$';
     var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new _rxError2['default'].newRxError('collection- and database-names must match the regex\n            info: if your database-name specifies a folder, the name must contain the slash-char \'/\' or \'\\\'\n            ', {
+        throw new _rxError2['default'].newRxError('UT2', {
             regex: regStr,
             givenName: name
-
         });
     }
 
@@ -330,7 +337,12 @@ function pouchReplicationFunction(pouch, _ref3) {
     if (pull && push) return pouch.sync.bind(pouch);
     if (!pull && push) return pouch.replicate.to.bind(pouch);
     if (pull && !push) return pouch.replicate.from.bind(pouch);
-    if (!pull && !push) throw new Error('replication-direction must either be push or pull or both. But not none.');
+    if (!pull && !push) {
+        throw _rxError2['default'].newRxError('UT3', {
+            pull: pull,
+            push: push
+        });
+    }
 }
 
 /**

@@ -4,6 +4,7 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import clone from 'clone';
 import IdleQueue from 'custom-idle-queue';
+import { filter } from 'rxjs/operators/filter';
 
 import * as util from './util';
 import RxDocument from './rx-document';
@@ -17,11 +18,6 @@ import QueryCache from './query-cache';
 import ChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
 import { runPluginHooks, runAsyncPluginHooks } from './hooks';
-
-import RxSchema from './rx-schema';
-import RxDatabase from './rx-database';
-
-import { filter } from 'rxjs/operators/filter';
 
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
@@ -482,7 +478,9 @@ export var RxCollection = function () {
                                 break;
                             }
 
-                            throw new Error('You cannot insert an existing document');
+                            throw RxError.newRxError('COL1', {
+                                data: json
+                            });
 
                         case 5:
                             json = json.toJSON();
@@ -497,7 +495,9 @@ export var RxCollection = function () {
                                 break;
                             }
 
-                            throw new Error('do not provide ._id, it will be generated');
+                            throw RxError.newRxError('COL2', {
+                                data: json
+                            });
 
                         case 10:
 
@@ -587,7 +587,7 @@ export var RxCollection = function () {
                                 break;
                             }
 
-                            throw RxError.newRxError('RxCollection.upsert() does not work without primary', {
+                            throw RxError.newRxError('COL3', {
                                 primaryPath: this.schema.primaryPath,
                                 data: json
                             });
@@ -746,7 +746,9 @@ export var RxCollection = function () {
                                 break;
                             }
 
-                            throw new Error('RxCollection.atomicUpsert() does not work without primary');
+                            throw RxError.newRxError('COL4', {
+                                data: json
+                            });
 
                         case 4:
 
@@ -819,7 +821,11 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype.find = function find(queryObj) {
-        if (typeof queryObj === 'string') throw new Error('if you want to search by _id, use .findOne(_id)');
+        if (typeof queryObj === 'string') {
+            throw RxError.newRxError('COL5', {
+                queryObj: queryObj
+            });
+        }
 
         var query = RxQuery.create('find', queryObj, this);
         return query;
@@ -834,7 +840,11 @@ export var RxCollection = function () {
             }, this);
         } else query = RxQuery.create('findOne', queryObj, this);
 
-        if (typeof queryObj === 'number' || Array.isArray(queryObj)) throw new TypeError('.findOne() needs a queryObject or string');
+        if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
+            throw RxError.newRxTypeError('COL6', {
+                queryObj: queryObj
+            });
+        }
 
         return query;
     };
@@ -915,13 +925,33 @@ export var RxCollection = function () {
     RxCollection.prototype.addHook = function addHook(when, key, fun) {
         var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
-        if (typeof fun !== 'function') throw new TypeError(key + '-hook must be a function');
+        if (typeof fun !== 'function') {
+            throw RxError.newRxTypeError('COL7', {
+                key: key,
+                when: when
+            });
+        }
 
-        if (!HOOKS_WHEN.includes(when)) throw new TypeError('hooks-when not known');
+        if (!HOOKS_WHEN.includes(when)) {
+            throw RxError.newRxTypeError('COL8', {
+                key: key,
+                when: when
+            });
+        }
 
-        if (!HOOKS_KEYS.includes(key)) throw new Error('hook-name ' + key + 'not known');
+        if (!HOOKS_KEYS.includes(key)) {
+            throw RxError.newRxError('COL9', {
+                key: key
+            });
+        }
 
-        if (when === 'post' && key === 'create' && parallel === true) throw new Error('.postCreate-hooks cannot be async');
+        if (when === 'post' && key === 'create' && parallel === true) {
+            throw RxError.newRxError('COL10', {
+                when: when,
+                key: key,
+                parallel: parallel
+            });
+        }
 
         var runName = parallel ? 'parallel' : 'series';
 
@@ -1122,11 +1152,15 @@ export var RxCollection = function () {
  */
 var checkMigrationStrategies = function checkMigrationStrategies(schema, migrationStrategies) {
     // migrationStrategies must be object not array
-    if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) throw new TypeError('migrationStrategies must be an object');
+    if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
+        throw RxError.newRxTypeError('COL11', {
+            schema: schema
+        });
+    }
 
     // for every previousVersion there must be strategy
     if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-        throw RxError.newRxError('A migrationStrategy is missing or too much', {
+        throw RxError.newRxError('COL12', {
             have: Object.keys(migrationStrategies),
             should: schema.previousVersions
         });
@@ -1141,7 +1175,11 @@ var checkMigrationStrategies = function checkMigrationStrategies(schema, migrati
     }).filter(function (strat) {
         return typeof strat.s !== 'function';
     }).forEach(function (strat) {
-        throw new TypeError('migrationStrategy(v' + strat.v + ') must be a function; is : ' + typeof strat);
+        throw RxError.newRxTypeError('COL13', {
+            version: strat.v,
+            type: typeof strat,
+            schema: schema
+        });
     });
 
     return true;
@@ -1169,13 +1207,30 @@ export function properties() {
  */
 var checkOrmMethods = function checkOrmMethods(statics) {
     Object.entries(statics).forEach(function (entry) {
-        if (typeof entry[0] !== 'string') throw new TypeError('given static method-name (' + entry[0] + ') is not a string');
+        if (typeof entry[0] !== 'string') {
+            throw RxError.newRxTypeError('COL14', {
+                name: entry[0]
+            });
+        }
 
-        if (entry[0].startsWith('_')) throw new TypeError('static method-names cannot start with underscore _ (' + entry[0] + ')');
+        if (entry[0].startsWith('_')) {
+            throw RxError.newRxTypeError('COL15', {
+                name: entry[0]
+            });
+        }
 
-        if (typeof entry[1] !== 'function') throw new TypeError('given static method (' + entry[0] + ') is not a function but ' + typeof entry[1]);
+        if (typeof entry[1] !== 'function') {
+            throw RxError.newRxTypeError('COL16', {
+                name: entry[0],
+                type: typeof entry[1]
+            });
+        }
 
-        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) throw new Error('statics-name not allowed: ' + entry[0]);
+        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) {
+            throw RxError.newRxError('COL17', {
+                name: entry[0]
+            });
+        }
     });
 };
 
@@ -1212,31 +1267,6 @@ export var create = function () {
             while (1) {
                 switch (_context15.prev = _context15.next) {
                     case 0:
-                        if (RxSchema.isInstanceOf(schema)) {
-                            _context15.next = 2;
-                            break;
-                        }
-
-                        throw new TypeError('given schema is no Schema-object');
-
-                    case 2:
-                        if (RxDatabase.isInstanceOf(database)) {
-                            _context15.next = 4;
-                            break;
-                        }
-
-                        throw new TypeError('given database is no Database-object');
-
-                    case 4:
-                        if (!(typeof autoMigrate !== 'boolean')) {
-                            _context15.next = 6;
-                            break;
-                        }
-
-                        throw new TypeError('autoMigrate must be boolean');
-
-                    case 6:
-
                         util.validateCouchDBString(name);
                         checkMigrationStrategies(schema, migrationStrategies);
 
@@ -1247,14 +1277,16 @@ export var create = function () {
                         Object.keys(methods).filter(function (funName) {
                             return schema.topLevelFields.includes(funName);
                         }).forEach(function (funName) {
-                            throw new Error('collection-method not allowed because fieldname is in the schema ' + funName);
+                            throw RxError.newRxError('COL18', {
+                                funName: funName
+                            });
                         });
 
                         collection = new RxCollection(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options);
-                        _context15.next = 15;
+                        _context15.next = 9;
                         return collection.prepare();
 
-                    case 15:
+                    case 9:
 
                         // ORM add statics
                         Object.entries(statics).forEach(function (entry) {
@@ -1266,19 +1298,19 @@ export var create = function () {
                         });
 
                         if (!autoMigrate) {
-                            _context15.next = 19;
+                            _context15.next = 13;
                             break;
                         }
 
-                        _context15.next = 19;
+                        _context15.next = 13;
                         return collection.migratePromise();
 
-                    case 19:
+                    case 13:
 
                         runPluginHooks('createRxCollection', collection);
                         return _context15.abrupt('return', collection);
 
-                    case 21:
+                    case 15:
                     case 'end':
                         return _context15.stop();
                 }

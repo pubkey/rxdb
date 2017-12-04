@@ -65,7 +65,7 @@ var DataMigrator = function () {
 
         var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
 
-        if (this._migrated) throw new Error('Migration has already run');
+        if (this._migrated) throw RxError.newRxError('DM1');
         this._migrated = true;
 
         var state = {
@@ -312,7 +312,9 @@ var OldCollection = function () {
                         case 15:
                             _context4.prev = 15;
                             _context4.t0 = _context4['catch'](11);
-                            throw RxError.newRxError('migration of document from v' + this.version + ' to v' + this.newestCollection.schema.version + ' failed\n                final document does not match final schema', {
+                            throw RxError.newRxError('DM2', {
+                                fromVersion: this.version,
+                                toVersion: this.newestCollection.schema.version,
                                 finalDoc: doc
                             });
 
@@ -442,7 +444,7 @@ var OldCollection = function () {
 
         var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
 
-        if (this._migrate) throw new Error('migration already running');
+        if (this._migrate) throw RxError.newRxError('DM3');
         this._migrate = true;
 
         var stateStream$ = new Observable(function () {

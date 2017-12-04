@@ -11,6 +11,9 @@ import Core from './core';
 import SchemaCheckPlugin from './plugins/schema-check';
 Core.plugin(SchemaCheckPlugin);
 
+import ErrorMessagesPlugin from './plugins/error-messages';
+Core.plugin(ErrorMessagesPlugin);
+
 import ValidatePlugin from './plugins/validate';
 Core.plugin(ValidatePlugin);
 

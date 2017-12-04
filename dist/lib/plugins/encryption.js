@@ -15,15 +15,19 @@ var _encUtf = require('crypto-js/enc-utf8');
 
 var cryptoEnc = _interopRequireWildcard(_encUtf);
 
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-/**
- * this plugin adds the encrpytion-capabilities to rxdb
- * It's using crypto-js/aes for password-encryption
- * @link https://github.com/brix/crypto-js
- */
-
-var minPassLength = 8;
+var minPassLength = 8; /**
+                        * this plugin adds the encrpytion-capabilities to rxdb
+                        * It's using crypto-js/aes for password-encryption
+                        * @link https://github.com/brix/crypto-js
+                        */
 
 function encrypt(value, password) {
     var encrypted = cryptoAes.encrypt(value, password);
@@ -57,8 +61,17 @@ var prototypes = exports.prototypes = {
 };
 var overwritable = exports.overwritable = {
     validatePassword: function validatePassword(password) {
-        if (password && typeof password !== 'string') throw new TypeError('password is no string');
-        if (password && password.length < minPassLength) throw new Error('password must have at least ' + minPassLength + ' chars (given: ' + password + ')');
+        if (password && typeof password !== 'string') {
+            throw _rxError2['default'].newRxTypeError('EN1', {
+                password: password
+            });
+        }
+        if (password && password.length < minPassLength) {
+            throw _rxError2['default'].newRxError('EN2', {
+                minPassLength: minPassLength,
+                password: password
+            });
+        }
     }
 };
 

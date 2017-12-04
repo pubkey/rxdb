@@ -20,6 +20,10 @@ var _mquery_utils = require('./mquery_utils');
 
 var utils = _interopRequireWildcard(_mquery_utils);
 
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
 var _clone2 = require('clone');
 
 var _clone3 = _interopRequireDefault(_clone2);
@@ -28,10 +32,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-/**
- * this is based on
- * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
- */
 var MQuery = function () {
     /**
      * MQuery constructor used for building queries.
@@ -90,7 +90,9 @@ var MQuery = function () {
 
             if ('object' === type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
 
-            throw new TypeError('path must be a string or object');
+            throw _rxError2['default'].newRxTypeError('MQ1', {
+                path: arguments[0]
+            });
         }
 
         /**
@@ -276,7 +278,7 @@ var MQuery = function () {
     }, {
         key: 'elemMatch',
         value: function elemMatch() {
-            if (null === arguments[0]) throw new TypeError('Invalid argument');
+            if (null === arguments[0]) throw _rxError2['default'].newRxTypeError('MQ2');
 
             var fn = void 0;
             var path = void 0;
@@ -296,7 +298,8 @@ var MQuery = function () {
             } else if (arguments[1] && utils.isObject(arguments[1])) {
                 path = arguments[0];
                 criteria = arguments[1];
-            } else throw new TypeError('Invalid argument');
+            } else throw _rxError2['default'].newRxTypeError('MQ2');
+
             if (fn) {
                 criteria = new MQuery();
                 fn(criteria);
@@ -360,7 +363,9 @@ var MQuery = function () {
                 return this;
             }
 
-            throw new TypeError('Invalid sort() argument. Must be a string, object, or array.');
+            throw _rxError2['default'].newRxTypeError('MQ3', {
+                args: arguments
+            });
         }
 
         /**
@@ -377,7 +382,11 @@ var MQuery = function () {
         value: function merge(source) {
             if (!source) return this;
 
-            if (!MQuery.canMerge(source)) throw new TypeError('Invalid argument. Expected instanceof mquery or plain object');
+            if (!MQuery.canMerge(source)) {
+                throw _rxError2['default'].newRxTypeError('MQ4', {
+                    source: source
+                });
+            }
 
             if (source instanceof MQuery) {
                 // if source has a feature, apply it to ourselves
@@ -449,7 +458,9 @@ var MQuery = function () {
         key: '_ensurePath',
         value: function _ensurePath(method) {
             if (!this._path) {
-                throw new Error('\n              ' + method + '() must be used after where()\n              when called with these arguments\n            ');
+                throw _rxError2['default'].newRxError('MQ5', {
+                    method: method
+                });
             }
         }
     }]);
@@ -460,6 +471,10 @@ var MQuery = function () {
  * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
  *
  *     Thing.where('type').nin(array)
+ */
+/**
+ * this is based on
+ * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
 
 
@@ -487,7 +502,11 @@ var MQuery = function () {
  */
 function push(opts, field, value) {
     if (Array.isArray(opts.sort)) {
-        throw new TypeError('Can\'t mix sort syntaxes. Use either array or object:' + '\n- `.sort([[\'field\', 1], [\'test\', -1]])`' + '\n- `.sort({ field: 1, test: -1 })`');
+        throw _rxError2['default'].newRxTypeError('MQ6', {
+            opts: opts,
+            field: field,
+            value: value
+        });
     }
 
     if (value && value.$meta) {
@@ -501,7 +520,10 @@ function push(opts, field, value) {
     var val = String(value || 1).toLowerCase();
     if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
         if (Array.isArray(value)) value = '[' + value + ']';
-        throw new TypeError('Invalid sort value: {' + field + ': ' + value + ' }');
+        throw _rxError2['default'].newRxTypeError('MQ7', {
+            field: field,
+            value: value
+        });
     }
     // store `sort` in a sane format
     var s = opts.sort || (opts.sort = {});
@@ -512,7 +534,11 @@ function push(opts, field, value) {
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
     if (!Array.isArray(opts.sort)) {
-        throw new TypeError('\n          Can\'t mix sort syntaxes. Use either array or object:\n            \n- .sort([[\'field\', 1], [\'test\', -1]])\n            \n- .sort({ field: 1, test: -1 })');
+        throw _rxError2['default'].newRxTypeError('MQ8', {
+            opts: opts,
+            field: field,
+            value: value
+        });
     }
 
     /*    const valueStr = value.toString()

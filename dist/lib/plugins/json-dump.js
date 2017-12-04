@@ -114,7 +114,7 @@ var importDumpRxDatabase = function () {
                             break;
                         }
 
-                        throw _rxError2['default'].newRxError('You must create the collections before you can import their data', {
+                        throw _rxError2['default'].newRxError('JD1', {
                             missingCollections: missingCollections
                         });
 
@@ -199,7 +199,10 @@ var importDumpRxCollection = function () {
                             break;
                         }
 
-                        throw new Error('the imported json relies on a different schema');
+                        throw _rxError2['default'].newRxError('JD2', {
+                            schemaHash: exportedJSON.schemaHash,
+                            own: this.schema.hash
+                        });
 
                     case 2:
                         if (!(exportedJSON.encrypted && exportedJSON.passwordHash !== util.hash(this.database.password))) {
@@ -207,7 +210,10 @@ var importDumpRxCollection = function () {
                             break;
                         }
 
-                        throw new Error('json.passwordHash does not match the own');
+                        throw _rxError2['default'].newRxError('JD3', {
+                            passwordHash: exportedJSON.passwordHash,
+                            own: util.hash(this.database.password)
+                        });
 
                     case 4:
                         importFns = exportedJSON.docs

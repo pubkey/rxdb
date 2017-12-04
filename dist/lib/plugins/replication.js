@@ -61,17 +61,19 @@ var _rxChangeEvent = require('../rx-change-event');
 
 var _rxChangeEvent2 = _interopRequireDefault(_rxChangeEvent);
 
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 // add pouchdb-replication-plugin
-/**
- * this plugin adds the RxCollection.sync()-function to rxdb
- * you can use it to sync collections with remote or local couchdb-instances
- */
-
-_core2['default'].plugin(_pouchdbReplication2['default']);
+_core2['default'].plugin(_pouchdbReplication2['default']); /**
+                                                            * this plugin adds the RxCollection.sync()-function to rxdb
+                                                            * you can use it to sync collections with remote or local couchdb-instances
+                                                            */
 
 var RxReplicationState = exports.RxReplicationState = function () {
     function RxReplicationState(collection) {
@@ -105,7 +107,7 @@ var RxReplicationState = exports.RxReplicationState = function () {
         value: function setPouchEventEmitter(evEmitter) {
             var _this2 = this;
 
-            if (this._pouchEventEmitterObject) throw new Error('already added');
+            if (this._pouchEventEmitterObject) throw _rxError2['default'].newRxError('RC1');
             this._pouchEventEmitterObject = evEmitter;
 
             // change
@@ -255,7 +257,11 @@ function sync(_ref2) {
     // if remote is RxCollection, get internal pouchdb
     if (_rxCollection2['default'].isInstanceOf(remote)) remote = remote.pouch;
 
-    if (query && this !== query.collection) throw new Error('RxCollection.sync() query must be from the same RxCollection');
+    if (query && this !== query.collection) {
+        throw _rxError2['default'].newRxError('RC2', {
+            query: query
+        });
+    }
 
     var syncFun = util.pouchReplicationFunction(this.pouch, direction);
     if (query) options.selector = query.keyCompress().selector;

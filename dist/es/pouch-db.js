@@ -10,6 +10,8 @@ import PouchDB from 'pouchdb-core';
 import PouchDBFind from 'pouchdb-find';
 PouchDB.plugin(PouchDBFind);
 
+import RxError from './rx-error';
+
 /**
  * get the number of all undeleted documents
  * @param  {PouchDB}  pouchdb instance
@@ -33,7 +35,11 @@ PouchDB.countAllUndeleted = function (pouchdb) {
  * @return {Promise<{}[]>} array with documents
  */
 PouchDB.getBatch = function (pouchdb, limit) {
-    if (limit <= 1) throw new Error('PouchDB.getBatch: limit must be > 2');
+    if (limit <= 1) {
+        throw RxError.newRxError('P1', {
+            limit: limit
+        });
+    }
 
     return pouchdb.allDocs({
         include_docs: true,

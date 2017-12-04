@@ -47,7 +47,7 @@ var _getValidator = function _getValidator() {
     if (!validatorsOfHash[schemaPath]) {
         var schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
         if (!schemaPart) {
-            throw _rxError2['default'].newRxError('Sub-schema not found, does the schemaPath exists in your schema?', {
+            throw _rxError2['default'].newRxError('VD1', {
                 schemaPath: schemaPath
             });
         }
@@ -69,7 +69,7 @@ var validate = function validate(obj) {
     var useValidator = this._getValidator(schemaPath);
     var isValid = useValidator(obj);
     if (isValid) return obj;else {
-        throw _rxError2['default'].newRxError('object does not match schema', {
+        throw _rxError2['default'].newRxError('VD2', {
             errors: useValidator.errors,
             schemaPath: schemaPath,
             obj: obj,

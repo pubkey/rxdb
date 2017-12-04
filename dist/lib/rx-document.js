@@ -179,19 +179,27 @@ var RxDocument = exports.RxDocument = function () {
     }, {
         key: 'get$',
         value: function get$(path) {
-            if (path.includes('.item.')) throw new Error('cannot get observable of in-array fields because order cannot be guessed: ' + path);
+            if (path.includes('.item.')) {
+                throw _rxError2['default'].newRxError('DOC1', {
+                    path: path
+                });
+            }
 
-            if (path === this.primaryPath) throw _rxError2['default'].newRxError('cannot observe primary path');
+            if (path === this.primaryPath) throw _rxError2['default'].newRxError('DOC2');
 
             // final fields cannot be modified and so also not observed
             if (this.collection.schema.finalFields.includes(path)) {
-                throw _rxError2['default'].newRxError('final fields cannot be observed', {
+                throw _rxError2['default'].newRxError('DOC3', {
                     path: path
                 });
             }
 
             var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
-            if (!schemaObj) throw new Error('cannot observe a non-existed field (' + path + ')');
+            if (!schemaObj) {
+                throw _rxError2['default'].newRxError('DOC4', {
+                    path: path
+                });
+            }
 
             return this._dataSync$.pipe((0, _map.map)(function (data) {
                 return _objectPath2['default'].get(data, path);
@@ -209,11 +217,26 @@ var RxDocument = exports.RxDocument = function () {
         value: function populate(path) {
             var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
             var value = this.get(path);
-            if (!schemaObj) throw new Error('cannot populate a non-existed field (' + path + ')');
-            if (!schemaObj.ref) throw new Error('cannot populate because path has no ref (' + path + ')');
+            if (!schemaObj) {
+                throw _rxError2['default'].newRxError('DOC5', {
+                    path: path
+                });
+            }
+            if (!schemaObj.ref) {
+                throw _rxError2['default'].newRxError('DOC6', {
+                    path: path,
+                    schemaObj: schemaObj
+                });
+            }
 
             var refCollection = this.collection.database.collections[schemaObj.ref];
-            if (!refCollection) throw new Error('ref-collection (' + schemaObj.ref + ') not in database');
+            if (!refCollection) {
+                throw _rxError2['default'].newRxError('DOC7', {
+                    ref: schemaObj.ref,
+                    path: path,
+                    schemaObj: schemaObj
+                });
+            }
 
             if (schemaObj.type === 'array') return Promise.all(value.map(function (id) {
                 return refCollection.findOne(id).exec();
@@ -230,9 +253,6 @@ var RxDocument = exports.RxDocument = function () {
         key: 'get',
         value: function get(objPath) {
             if (!this._data) return undefined;
-
-            if (typeof objPath !== 'string') throw new TypeError('RxDocument.get(): objPath must be a string');
-
             var valueObj = _objectPath2['default'].get(this._data, objPath);
             valueObj = (0, _clone2['default'])(valueObj);
 
@@ -298,16 +318,25 @@ var RxDocument = exports.RxDocument = function () {
     }, {
         key: 'set',
         value: function set(objPath, value) {
-            if (typeof objPath !== 'string') throw new TypeError('RxDocument.set(): objPath must be a string');
+            if (typeof objPath !== 'string') {
+                throw _rxError2['default'].newRxTypeError('DOC15', {
+                    objPath: objPath,
+                    value: value
+                });
+            }
 
             // primary cannot be modified
             if (!this._isTemporary && objPath === this.primaryPath) {
-                throw new Error('RxDocument.set(): primary-key (' + this.primaryPath + ')\n                cannot be modified');
+                throw _rxError2['default'].newRxError('DOC8', {
+                    objPath: objPath,
+                    value: value,
+                    primaryPath: this.primaryPath
+                });
             }
 
             // final fields cannot be modified
             if (!this._isTemporary && this.collection.schema.finalFields.includes(objPath)) {
-                throw _rxError2['default'].newRxError('final fields cannot be modified', {
+                throw _rxError2['default'].newRxError('DOC9', {
                     path: objPath,
                     value: value
                 });
@@ -321,7 +350,10 @@ var RxDocument = exports.RxDocument = function () {
             pathEls.pop();
             var rootPath = pathEls.join('.');
             if (typeof _objectPath2['default'].get(this._data, rootPath) === 'undefined') {
-                throw new Error('cannot set childpath ' + objPath + '\n                 when rootPath ' + rootPath + ' not selected');
+                throw _rxError2['default'].newRxError('DOC10', {
+                    childpath: objPath,
+                    rootPath: rootPath
+                });
             }
 
             // check schema of changed field
@@ -572,7 +604,10 @@ var RxDocument = exports.RxDocument = function () {
                                     break;
                                 }
 
-                                throw new Error('RxDocument.save(): cant save deleted document');
+                                throw _rxError2['default'].newRxError('DOC11', {
+                                    id: this.primary,
+                                    document: this
+                                });
 
                             case 4:
                                 if (!(0, _deepEqual2['default'])(this._data, this._dataSync$.getValue())) {
@@ -602,7 +637,9 @@ var RxDocument = exports.RxDocument = function () {
                                     break;
                                 }
 
-                                throw new Error('RxDocument.save(): error ' + JSON.stringify(ret));
+                                throw _rxError2['default'].newRxError('DOC12', {
+                                    data: ret
+                                });
 
                             case 15:
                                 emitValue = (0, _clone2['default'])(this._data);
@@ -696,7 +733,10 @@ var RxDocument = exports.RxDocument = function () {
                                     break;
                                 }
 
-                                throw new Error('RxDocument.remove(): Document is already deleted');
+                                throw _rxError2['default'].newRxError('DOC13', {
+                                    document: this,
+                                    id: this.primary
+                                });
 
                             case 2:
                                 _context9.next = 4;
@@ -739,7 +779,7 @@ var RxDocument = exports.RxDocument = function () {
     }, {
         key: 'destroy',
         value: function destroy() {
-            throw new Error('RxDocument.destroy() does not exist');
+            throw _rxError2['default'].newRxError('DOC14');
         }
     }, {
         key: 'primaryPath',

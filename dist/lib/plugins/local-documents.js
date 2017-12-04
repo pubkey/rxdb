@@ -172,7 +172,11 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
         key: 'get',
         value: function get(objPath) {
             if (!this._data) return undefined;
-            if (typeof objPath !== 'string') throw new TypeError('RxDocument.get(): objPath must be a string');
+            if (typeof objPath !== 'string') {
+                throw _rxError2['default'].newRxTypeError('LD2', {
+                    objPath: objPath
+                });
+            }
 
             var valueObj = _objectPath2['default'].get(this._data, objPath);
             valueObj = (0, _clone2['default'])(valueObj);
@@ -181,8 +185,12 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
     }, {
         key: 'get$',
         value: function get$(path) {
-            if (path.includes('.item.')) throw new Error('cannot get observable of in-array fields because order cannot be guessed: ' + path);
-            if (path === this.primaryPath) throw _rxError2['default'].newRxError('cannot observe primary path');
+            if (path.includes('.item.')) {
+                throw _rxError2['default'].newRxError('LD3', {
+                    path: path
+                });
+            }
+            if (path === this.primaryPath) throw _rxError2['default'].newRxError('LD4');
 
             return this._dataSync$.map(function (data) {
                 return _objectPath2['default'].get(data, path);
@@ -198,7 +206,12 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
                 this._data = data;
                 return this;
             }
-            if (objPath === '_id') throw new Error('id cannot be modified');
+            if (objPath === '_id') {
+                throw _rxError2['default'].newRxError('LD5', {
+                    objPath: objPath,
+                    value: value
+                });
+            }
             if (Object.is(this.get(objPath), value)) return;
             _objectPath2['default'].set(this._data, objPath, value);
             return this;
@@ -288,7 +301,9 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
         key: 'allAttachments$',
         get: function get() {
             // this is overwritte here because we cannot re-set getters on the prototype
-            throw new Error('cant use attachments on local documents');
+            throw _rxError2['default'].newRxError('LD1', {
+                document: this
+            });
         }
     }, {
         key: 'primaryPath',
@@ -321,7 +336,9 @@ var _init = function _init() {
      */
     var getThrowingFun = function getThrowingFun(k) {
         return function () {
-            throw new Error('Function ' + k + ' is not useable on local documents');
+            throw _rxError2['default'].newRxError('LD6', {
+                functionName: k
+            });
         };
     };
     ['populate', 'update', 'putAttachment', 'getAttachment', 'allAttachments'].forEach(function (k) {
@@ -375,7 +392,7 @@ var insertLocal = function () {
                             break;
                         }
 
-                        throw _rxError2['default'].newRxError('Local document already exists', {
+                        throw _rxError2['default'].newRxError('LD7', {
                             id: id,
                             data: data
                         });

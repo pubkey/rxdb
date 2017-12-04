@@ -119,7 +119,10 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw new Error('another instance on this adapter has a different password');
+                            throw RxError.newRxError('DB1', {
+                                passwordHash: util.hash(this.password),
+                                existingPasswordHash: pwHashDoc.value
+                            });
 
                         case 22:
                             if (!this.multiInstance) {
@@ -350,7 +353,7 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw RxError.newRxError('RxDatabase.collection(): collection-names cannot start with underscore _', {
+                            throw RxError.newRxError('DB2', {
                                 name: args.name
                             });
 
@@ -360,7 +363,7 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw RxError.newRxError('RxDatabase.collection(): collection already exists. use myDatabase.' + args.name + ' to get it', {
+                            throw RxError.newRxError('DB3', {
                                 name: args.name
                             });
 
@@ -370,7 +373,7 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw RxError.newRxError('RxDatabase.collection(): schema is missing', {
+                            throw RxError.newRxError('DB4', {
                                 name: args.name,
                                 args: args
                             });
@@ -388,7 +391,9 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw new Error('Collection-name ' + args.name + ' not allowed');
+                            throw RxError.newRxError('DB5', {
+                                name: args.name
+                            });
 
                         case 13:
 
@@ -436,7 +441,7 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw RxError.newRxError('RxDatabase.collection(): another instance created this collection with a different schema', {
+                            throw RxError.newRxError('DB6', {
                                 name: args.name,
                                 previousSchemaHash: collectionDoc.schemaHash,
                                 schemaHash: schemaHash
@@ -454,7 +459,9 @@ export var RxDatabase = function () {
                                 break;
                             }
 
-                            throw new Error('collection(' + args.name + '): schema encrypted but no password given');
+                            throw RxError.newRxError('DB7', {
+                                name: args.name
+                            });
 
                         case 35:
                             if (collectionDoc) {
@@ -756,7 +763,7 @@ function _isNameAdapterUsed(name, adapter) {
         if (ad === adapter) used = true;
     });
     if (used) {
-        throw RxError.newRxError('RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional', {
+        throw RxError.newRxError('DB8', {
             name: name,
             adapter: adapter,
             link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
@@ -801,7 +808,9 @@ export var create = function () {
                             break;
                         }
 
-                        throw new Error('Adapter ' + adapter + ' not added.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-' + adapter + '\');');
+                        throw RxError.newRxError('DB9', {
+                            adapter: adapter
+                        });
 
                     case 4:
                         _context7.next = 9;
@@ -815,7 +824,9 @@ export var create = function () {
                             break;
                         }
 
-                        throw new Error('To use leveldown-adapters, you have to add the leveldb-plugin.\n                 Use RxDB.plugin(require(\'pouchdb-adapter-leveldb\'));');
+                        throw RxError.newRxError('DB10', {
+                            adapter: adapter
+                        });
 
                     case 9:
 

@@ -221,6 +221,8 @@ var _customIdleQueue = require('custom-idle-queue');
 
 var _customIdleQueue2 = _interopRequireDefault(_customIdleQueue);
 
+var _map = require('rxjs/operators/map');
+
 var _rxChangeEvent = require('./../rx-change-event');
 
 var _rxChangeEvent2 = _interopRequireDefault(_rxChangeEvent);
@@ -229,7 +231,9 @@ var _util = require('./../util');
 
 var util = _interopRequireWildcard(_util);
 
-var _map = require('rxjs/operators/map');
+var _rxError = require('../rx-error');
+
+var _rxError2 = _interopRequireDefault(_rxError);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -244,7 +248,11 @@ var ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
 
 function ensureSchemaSupportsAttachments(doc) {
     var schemaJson = doc.collection.schema.jsonID;
-    if (!schemaJson.attachments) throw new Error('to use attachments, please define this in your schema');
+    if (!schemaJson.attachments) {
+        throw _rxError2['default'].newRxError('AT1', {
+            link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
+        });
+    }
 }
 
 var blobBufferUtil = exports.blobBufferUtil = {

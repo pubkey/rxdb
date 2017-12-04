@@ -9,6 +9,7 @@ import unload from 'unload';
 
 import * as util from '../util';
 import RxBroadcastChannel from '../rx-broadcast-channel';
+import RxError from '../rx-error';
 
 export var documentID = '_local/leader';
 
@@ -127,7 +128,8 @@ var LeaderElector = function () {
     LeaderElector.prototype.getApplyFunction = function getApplyFunction(electionChannel) {
         if (electionChannel === 'socket') return this.applySocket.bind(this);
         if (electionChannel === 'broadcast') return this.applyBroadcast.bind(this);
-        throw new Error('this should not happen');
+
+        throw RxError.newRxError('LE1');
     };
 
     /**
@@ -236,7 +238,7 @@ var LeaderElector = function () {
                                 break;
                             }
 
-                            throw new Error('someone else is applying/leader');
+                            throw RxError.newRxError('LE2');
 
                         case 7:
                             // write applying to db
@@ -261,7 +263,7 @@ var LeaderElector = function () {
                                 break;
                             }
 
-                            throw new Error('someone else overwrote apply');
+                            throw RxError.newRxError('LE3');
 
                         case 18:
                             return _context3.abrupt('return', true);
