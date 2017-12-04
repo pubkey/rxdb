@@ -4,6 +4,7 @@
 
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
 import RxDB from '../../dist/lib/index';
@@ -11,6 +12,13 @@ import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 
 describe('plugin.test.js', () => {
+    describe('.plugin()', () => {
+        it('should not crash when the same plugin is added multiple times', async () => {
+            RxDB.plugin(PouchReplicationPlugin);
+            RxDB.plugin(PouchReplicationPlugin);
+            RxDB.plugin(PouchReplicationPlugin);
+        });
+    });
     describe('core.node.js', () => {
         it('should run without errors', async () => {
             if (!config.platform.isNode())

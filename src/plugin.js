@@ -29,7 +29,13 @@ const PROTOTYPES = {
     RxDatabase: RxDatabase.RxDatabase.prototype
 };
 
+const ADDED_PLUGINS = new Set();
+
 export function addPlugin(plugin) {
+    // do nothing if added before
+    if (ADDED_PLUGINS.has(plugin)) return;
+    else ADDED_PLUGINS.add(plugin);
+
     if (!plugin.rxdb) {
         // pouchdb-plugin
         if (typeof plugin === 'object' && plugin.default) plugin = plugin.default;
