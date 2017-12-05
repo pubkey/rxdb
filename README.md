@@ -422,7 +422,6 @@ You can test out RxDB in the browser with [WebpackBin](https://www.webpackbin.co
 ## Follow up
 - Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
 - Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
-- Support RxDB at [patreon](https://www.patreon.com/rxdb)
 
 # Thank you
-A big **Thank you** to every [patreon-supporter](https://github.com/pubkey/rxdb/blob/master/SUPPORTER.md) and every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
+A big **Thank you** to every [supporter](https://github.com/pubkey/rxdb/blob/master/SUPPORTER.md) and every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.

@@ -16,5 +16,7 @@
 </a>
 
 
+<!--
 ## Your name here?
 Support us on [patreon](https://www.patreon.com/rxdb).
+-->
