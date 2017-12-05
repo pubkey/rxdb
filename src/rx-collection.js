@@ -421,6 +421,7 @@ export class RxCollection {
                 const wasInserted = await this._atomicUpsertEnsureRxDocumentExists(primary, json);
                 if (!wasInserted.inserted) {
                     await this._atomicUpsertUpdate(wasInserted.doc, json);
+                    await util.nextTick(); // tick here so the event can propagate
                     return wasInserted.doc;
                 } else
                     return wasInserted.doc;

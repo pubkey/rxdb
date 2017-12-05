@@ -234,6 +234,27 @@ describe('rx-document.test.js', () => {
                 });
                 c.database.destroy();
             });
+            it('should remove all revisions', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                assert.ok(doc);
+
+                // update some times to generate revisions
+                doc.age = doc.age + 1;
+                await doc.save();
+                doc.age = doc.age + 1;
+                await doc.save();
+                doc.age = 100;
+                await doc.save();
+                const doc2 = await c.findOne().exec();
+                assert.equal(doc2.age, 100);
+
+                await doc2.remove();
+                const doc3 = await c.findOne().exec();
+                assert.equal(doc3, null);
+
+                c.database.destroy();
+            });
             it('delete all in parrallel', async () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();

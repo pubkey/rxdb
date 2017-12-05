@@ -1,14 +1,19 @@
 import assert from 'assert';
+import clone from 'clone';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
+import RxDB from '../../dist/lib/';
 
 import {
     filter
 } from 'rxjs/operators/filter';
+import {
+    map
+} from 'rxjs/operators/map';
 import {
     tap
 } from 'rxjs/operators/tap';
@@ -116,12 +121,22 @@ describe('reactive-query.test.js', () => {
             querySub.unsubscribe();
             c.database.destroy();
         });
-
-
-        /**
-         * @link https://github.com/pubkey/rxdb/issues/31
-         */
-        it('do not fire on doc-change when result-doc not affected', async () => {
+    });
+    describe('negative', () => {
+        it('get no change when nothing happens', async () => {
+            const c = await humansCollection.create(1);
+            const query = c.find();
+            let recieved = 0;
+            const querySub = query.$.subscribe(() => {
+                recieved++;
+            });
+            await AsyncTestUtil.waitUntil(() => recieved === 1);
+            querySub.unsubscribe();
+            c.database.destroy();
+        });
+    });
+    describe('ISSUES', () => {
+        it('#31 do not fire on doc-change when result-doc not affected', async () => {
             const c = await humansCollection.createAgeIndex(10);
             // take only 9 of 10
             const valuesAr = [];
@@ -157,7 +172,6 @@ describe('reactive-query.test.js', () => {
             querySub.unsubscribe();
             c.database.destroy();
         });
-
         it('ISSUE: should have the document in DocCache when getting it from observe', async () => {
             const name = util.randomCouchString(10);
             const c = await humansCollection.createPrimary(1, name);
@@ -177,8 +191,7 @@ describe('reactive-query.test.js', () => {
             c.database.destroy();
             c2.database.destroy();
         });
-
-        it('ISSUE #136 : findOne(string).$ streams all documents (_id as primary)', async () => {
+        it('#136 : findOne(string).$ streams all documents (_id as primary)', async () => {
             const subs = [];
             const col = await humansCollection.create(3);
             const docData = schemaObjects.human();
@@ -216,8 +229,7 @@ describe('reactive-query.test.js', () => {
             subs.forEach(sub => sub.unsubscribe());
             col.database.destroy();
         });
-
-        it('ISSUE #138 : findOne().$ returns every doc if no id given', async () => {
+        it('#138 : findOne().$ returns every doc if no id given', async () => {
             const col = await humansCollection.create(3);
             const streamed = [];
             const sub = col.findOne().$
@@ -233,18 +245,113 @@ describe('reactive-query.test.js', () => {
             sub.unsubscribe();
             col.database.destroy();
         });
-    });
-    describe('negative', () => {
-        it('get no change when nothing happens', async () => {
-            const c = await humansCollection.create(1);
-            const query = c.find();
-            let recieved = 0;
-            const querySub = query.$.subscribe(() => {
-                recieved++;
+        it('ISSUE emitted-order working when doing many atomicUpserts', async () => {
+            const crawlStateSchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    key: {
+                        type: 'string',
+                        primary: true
+                    },
+                    state: {
+                        type: 'object',
+                        required: true
+                    }
+                }
+            };
+            const name = util.randomCouchString(10);
+            const db = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
             });
-            await AsyncTestUtil.waitUntil(() => recieved === 1);
-            querySub.unsubscribe();
-            c.database.destroy();
+            await db.collection({
+                name: 'crawlstate',
+                schema: crawlStateSchema
+            });
+            const db2 = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            await db2.collection({
+                name: 'crawlstate',
+                schema: crawlStateSchema
+            });
+
+            const emitted = [];
+            const sub = db.crawlstate
+                .findOne('registry').$
+                .pipe(
+                    filter(doc => doc !== null),
+                    map(doc => doc.toJSON())
+                ).subscribe(data => emitted.push(data));
+
+            const emittedOwn = [];
+            const sub2 = db2.crawlstate
+                .findOne('registry').$
+                .pipe(
+                    filter(doc => doc !== null),
+                    map(doc => doc.toJSON())
+                ).subscribe(data => emittedOwn.push(data));
+
+            const baseData = {
+                lastProvider: null,
+                providers: 0,
+                sync: false,
+                other: {}
+            };
+            let count = 0;
+            const getData = () => {
+                const d2 = clone(baseData);
+                d2.providers = count;
+                count++;
+                return d2;
+            };
+
+            await Promise.all(
+                new Array(5)
+                .fill(0)
+                .map(() => ({
+                    key: 'registry',
+                    state: getData()
+                }))
+                .map(data => db2.crawlstate.atomicUpsert(data))
+            );
+            await AsyncTestUtil.waitUntil(() => {
+                if (!emitted.length) return false;
+                const last = emitted[emitted.length - 1];
+                return last.state.providers === 4;
+            });
+
+            await Promise.all(
+                new Array(5)
+                .fill(0)
+                .map(() => ({
+                    key: 'registry',
+                    state: getData()
+                }))
+                .map(data => db2.crawlstate.atomicUpsert(data))
+            );
+
+            await AsyncTestUtil.waitUntil(() => {
+                if (!emitted.length) return false;
+                const last = emitted[emitted.length - 1];
+                return last.state.providers === 9;
+            });
+            await AsyncTestUtil.wait(50);
+
+            const last = emitted[emitted.length - 1];
+            assert.equal(last.state.providers, 9);
+
+            // on own collection, all events should have propagated
+            assert.equal(emittedOwn.length, 10);
+
+            sub.unsubscribe();
+            sub2.unsubscribe();
+            db.destroy();
+            db2.destroy();
         });
     });
 });
