@@ -14,7 +14,9 @@ describe('typings.test.js', () => {
             RxDocument,
             RxJsonSchema,
             RxError,
-            RxAttachment
+            RxAttachment,
+            RxPlugin,
+            plugin
         } from '../';
     `;
     const transpileCode = async (code) => {
@@ -278,6 +280,22 @@ describe('typings.test.js', () => {
                             // handle regular Error class
                         }
                     }
+                });
+            `;
+            await transpileCode(code);
+        });
+    });
+    describe('plugin', () => {
+        it('should be a valid RxPlugin', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myPlugin: RxPlugin = {
+                        rxdb: true,
+                        prototypes: {
+                            RxDocument: () => {}
+                        }
+                    }
+                    plugin(myPlugin);
                 });
             `;
             await transpileCode(code);

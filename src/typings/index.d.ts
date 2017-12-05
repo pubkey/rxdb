@@ -48,6 +48,12 @@ import {
 } from './rx-attachment';
 export * from './rx-attachment';
 
+import {
+    RxPlugin
+} from './rx-plugin';
+export * from './rx-plugin';
+
+
 export function create(creator: RxDatabaseCreator): Promise<RxDatabase>;
 export function removeDatabase(databaseName: string, adapter: any): Promise<void>;
 export function checkAdapter(adapter: any | string): Promise<boolean>;
@@ -57,7 +63,7 @@ export const QueryChangeDetector: {
     enableDebugging(set?: boolean): void;
 };
 
-export function plugin(mod: any): void;
+export function plugin(mod: RxPlugin | any): void;
 
 export function isRxDatabase(obj: any): boolean;
 export function isRxCollection(obj: any): boolean;
@@ -68,7 +74,8 @@ export function isRxSchema(obj: any): boolean;
 declare const _default: {
     create,
     removeDatabase,
-    plugin
+    plugin,
+    RxPlugin,
 
     // database
     isRxDatabase,
