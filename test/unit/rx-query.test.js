@@ -1,4 +1,5 @@
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import clone from 'clone';
 
@@ -8,7 +9,6 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 
 describe('rx-query.test.js', () => {
     describe('mquery', () => {
