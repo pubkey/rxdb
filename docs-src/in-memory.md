@@ -8,11 +8,16 @@ Returns a promise that resolves with another `RxCollection` that is the in-memor
 
 ```javascript
 
+// IMPORTANT: You have to add the memory-adapter before you can use inMemory-Collections
+// RUN 'npm install pouchdb-adapter-memory --save'
+import PouchAdapterMemory from 'pouchdb-adapter-memory';
+RxDB.plugin(PouchAdapterMemory);
+
 const memCol = await myCollection.inMemory();
 
 // now u can use memCol as it would be myCollection
-
 const docs = await memCol.find().exec(); // has same result as on the original collection
+
 ```
 
 ### encryption

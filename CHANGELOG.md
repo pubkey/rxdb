@@ -2,6 +2,9 @@
 
 ## X.X.X (coming soon)
 
+Warning:
+  - Removed automatic import of `pouchdb-adapter-memory` for in-memory-collections. Read [this](https://pubkey.github.io/rxdb/in-memory.html)
+
 Features:
   - Added [options-parameter](https://pubkey.github.io/rxdb/plugins.html#options)
   - Added `postCreateRxDocument` [plugin-hook](https://github.com/pubkey/rxdb/blob/master/src/hooks.js)

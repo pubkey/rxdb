@@ -3,6 +3,7 @@
  */
 import assert from 'assert';
 
+import config from './config';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
@@ -12,6 +13,35 @@ import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
 describe('in-memory.test.js', () => {
+    describe('basic', () => {
+        it('in-memory.node.js', async () => {
+            if (!config.platform.isNode())
+                return;
+
+            const spawn = require('child-process-promise').spawn;
+            const stdout = [];
+            const stderr = [];
+            const promise = spawn('mocha', ['../test_tmp/unit/in-memory.node.js']);
+            const childProcess = promise.childProcess;
+            childProcess.stdout.on('data', data => {
+                // comment in to debug
+                // console.log(':: ' + data.toString());
+                stdout.push(data.toString());
+            });
+            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            try {
+                await promise;
+            } catch (err) {
+                console.log('errrrr');
+                console.dir(stdout);
+                throw new Error(`could not run in-memory.node.js.
+                        # Error: ${err}
+                        # Output: ${stdout}
+                        # ErrOut: ${stderr}
+                        `);
+            }
+        });
+    });
     describe('.inMemory()', () => {
         it('should spawn an in-memory collection', async () => {
             const col = await humansCollection.create(5);

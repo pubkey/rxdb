@@ -24,7 +24,7 @@ const heroSchema = {
 
 const SYNC_URL = 'http://localhost:10102/';
 
-const create = async() => {
+const create = async () => {
     const database = await RxDB
         .create({
             name: 'heroesdb',
@@ -51,7 +51,7 @@ const create = async() => {
 };
 
 let createPromise = null;
-Database.get = async() => {
+Database.get = async () => {
     if (!createPromise) createPromise = create();
     return createPromise;
 };

@@ -4,27 +4,24 @@
  * So you can do faster queries and also query over encrypted fields
  */
 
+import clone from 'clone';
 import {
     Subject
 } from 'rxjs/Subject';
 
 import RxCollection from '../rx-collection';
-import Core from '../core';
 import * as util from '../util';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
 import RxSchema from '../rx-schema';
 import PouchDB from '../pouch-db';
-
-import clone from 'clone';
-import PouchAdapterMemory from 'pouchdb-adapter-memory';
+import RxError from '../rx-error';
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
 const BULK_DOC_OPTIONS = {
     new_edits: false
 };
-
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
     constructor(parentCollection, pouchSettings) {
@@ -189,7 +186,8 @@ export async function spawnInMemory() {
     if (!INIT_DONE) {
         INIT_DONE = true;
         // ensure memory-adapter is added
-        Core.plugin(PouchAdapterMemory);
+        if (!PouchDB.adapters || !PouchDB.adapters.memory)
+            throw RxError.newRxError('IM1');
     }
 
     if (collectionCacheMap.has(this)) {
