@@ -161,10 +161,9 @@ class Socket {
         await util.requestIdlePromise(EVENT_TTL / 2);
         if (this._destroyed) return;
 
-        const info = await this.pouch.info();
-        // only run if something happened
-        if (info.update_seq > this._lastSeq) {
-            this._lastSeq = info.update_seq;
+        const lastSeq = await getLastSeq(this.pouch);
+        if (lastSeq > this._lastSeq) {
+            this._lastSeq = lastSeq;
 
             const minTime = this.lastPull - 100; // TODO evaluate this value (100)
             const docs = await this.fetchDocs();
@@ -213,6 +212,15 @@ class Socket {
     }
 }
 
+
+/**
+ * returns the seq-number of the pouchdb-instance
+ * @param  {PouchDB} pouch
+ * @return {Promise<number>} seq
+ */
+async function getLastSeq(pouch) {
+    return new Promise(res => pouch._info((err, i) => res(i.update_seq)));
+}
 
 /**
  * creates a socket
