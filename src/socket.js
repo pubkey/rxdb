@@ -194,9 +194,9 @@ class Socket {
             const maxAge = new Date().getTime() - EVENT_TTL;
             const delDocs = docs.filter(doc => doc.t < maxAge);
             this._cleanupDocs(delDocs);
+            this.lastPull = new Date().getTime();
         }
 
-        this.lastPull = new Date().getTime();
         this.isPulling = false;
         if (this._repull) {
             this._repull = false;
