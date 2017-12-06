@@ -44,6 +44,10 @@ class Socket {
             auto_compaction: false, // this is false because its done manually at .pull()
             revs_limit: 1
         });
+        await this.pouch.info();
+
+        // get last seq-number so we know from where to start pulling
+        this._lastSeq = await getLastSeq(this.pouch);
 
         // pull on BroadcastChannel-message
         if (this.bc) {
@@ -161,6 +165,8 @@ class Socket {
         await util.requestIdlePromise(EVENT_TTL / 2);
         if (this._destroyed) return;
 
+
+        // check last seq-number and only do things if has changed
         const lastSeq = await getLastSeq(this.pouch);
         if (lastSeq > this._lastSeq) {
             this._lastSeq = lastSeq;
