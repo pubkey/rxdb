@@ -1,3 +1,8 @@
+/**
+ * Check if the no-validate-plugin works
+ * @nodeOnly
+ */
+
 import config from './config';
 
 describe('no-validate.test.js', () => {

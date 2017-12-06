@@ -1,5 +1,6 @@
 /**
  * this checks if the plugin-method and functionality works as expected
+ * @nodeOnly
  */
 
 import assert from 'assert';
@@ -74,7 +75,35 @@ describe('plugin.test.js', () => {
             }
         });
     });
+    describe('in-memory.node.js', () => {
+        it('should run without errors', async () => {
+            if (!config.platform.isNode())
+                return;
 
+            const spawn = require('child-process-promise').spawn;
+            const stdout = [];
+            const stderr = [];
+            const promise = spawn('mocha', ['../test_tmp/unit/in-memory.node.js']);
+            const childProcess = promise.childProcess;
+            childProcess.stdout.on('data', data => {
+                // comment in to debug
+                // console.log(':: ' + data.toString());
+                stdout.push(data.toString());
+            });
+            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            try {
+                await promise;
+            } catch (err) {
+                console.log('errrrr');
+                console.dir(stdout);
+                throw new Error(`could not run in-memory.node.js.
+                        # Error: ${err}
+                        # Output: ${stdout}
+                        # ErrOut: ${stderr}
+                        `);
+            }
+        });
+    });
     describe('hooks', () => {
         it('createRxDatabase', async () => {
             const plugin = {
