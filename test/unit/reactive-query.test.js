@@ -340,7 +340,8 @@ describe('reactive-query.test.js', () => {
                 const last = emitted[emitted.length - 1];
                 return last.state.providers === 9;
             });
-            await AsyncTestUtil.wait(50);
+
+            await AsyncTestUtil.waitUntil(() => emittedOwn.length === 10);
 
             const last = emitted[emitted.length - 1];
             assert.equal(last.state.providers, 9);
