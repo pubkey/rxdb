@@ -297,46 +297,85 @@ describe('rx-document.test.js', () => {
         });
     });
     describe('.update()', () => {
-        it('$set a value with a mongo like query', async () => {
-            const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec();
-            await doc.update({
-                $set: {
+        describe('positive', () => {
+            it('$set a value with a mongo like query', async () => {
+                const c = await humansCollection.createPrimary(1);
+                const doc = await c.findOne().exec();
+                await doc.update({
+                    $set: {
+                        firstName: 'new first name'
+                    }
+                });
+                const updatedDoc = await c.findOne({
                     firstName: 'new first name'
-                }
+                }).exec();
+                assert.equal(updatedDoc.firstName, 'new first name');
+                c.database.destroy();
             });
-            const updatedDoc = await c.findOne({
-                firstName: 'new first name'
-            }).exec();
-            assert.equal(updatedDoc.firstName, 'new first name');
-            c.database.destroy();
+            it('$unset a value with a mongo like query', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                await doc.update({
+                    $unset: {
+                        age: ''
+                    }
+                });
+                const updatedDoc = await c.findOne().exec();
+                assert.equal(updatedDoc.age, undefined);
+                c.database.destroy();
+            });
+            it('$inc a value with a mongo like query', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec();
+                const agePrev = doc.age;
+                await doc.update({
+                    $inc: {
+                        age: 1
+                    }
+                });
+                assert.equal(doc.age, agePrev + 1);
+                await doc.save;
+                const updatedDoc = await c.findOne().exec();
+                assert.equal(updatedDoc.age, agePrev + 1);
+                c.database.destroy();
+            });
         });
-        it('$unset a value with a mongo like query', async () => {
-            const c = await humansCollection.create(1);
-            const doc = await c.findOne().exec();
-            await doc.update({
-                $unset: {
-                    age: ''
-                }
+        describe('negative', () => {
+            it('should throw if schema does not match', async () => {
+                const schema = {
+                    $id: '#child-def',
+                    version: 0,
+                    properties: {
+                        childProperty: {
+                            type: 'string',
+                            enum: ['A', 'B', 'C']
+                        }
+                    }
+                };
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema
+                });
+
+                // on doc
+                const doc = await col.insert({
+                    childProperty: 'A'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.update({
+                        $set: {
+                            childProperty: 'Z'
+                        }
+                    }),
+                    Error,
+                    'schema'
+                );
+                db.destroy();
             });
-            const updatedDoc = await c.findOne().exec();
-            assert.equal(updatedDoc.age, undefined);
-            c.database.destroy();
-        });
-        it('$inc a value with a mongo like query', async () => {
-            const c = await humansCollection.create(1);
-            const doc = await c.findOne().exec();
-            const agePrev = doc.age;
-            await doc.update({
-                $inc: {
-                    age: 1
-                }
-            });
-            assert.equal(doc.age, agePrev + 1);
-            await doc.save;
-            const updatedDoc = await c.findOne().exec();
-            assert.equal(updatedDoc.age, agePrev + 1);
-            c.database.destroy();
         });
     });
     describe('.atomicUpdate()', () => {

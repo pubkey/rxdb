@@ -492,43 +492,80 @@ describe('rx-query.test.js', () => {
         });
     });
     describe('update', () => {
-        it('updates a value on a query', async () => {
-            const c = await humansCollection.create(2);
-            const query = c.find();
-            await query.update({
-                $set: {
-                    firstName: 'new first name'
-                }
+        describe('positive', () => {
+            it('updates a value on a query', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                await query.update({
+                    $set: {
+                        firstName: 'new first name'
+                    }
+                });
+                const docs = await query.exec();
+                for (const doc of docs)
+                    assert.equal(doc._data.firstName, 'new first name');
+                c.database.destroy();
             });
-            const docs = await query.exec();
-            for (const doc of docs)
-                assert.equal(doc._data.firstName, 'new first name');
-            c.database.destroy();
+            it('$unset a value on a query', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                await query.update({
+                    $unset: {
+                        age: ''
+                    }
+                });
+                const docs = await query.exec();
+                for (const doc of docs)
+                    assert.equal(doc._data.age, undefined);
+                c.database.destroy();
+            });
+            it('dont crash when findOne with no result', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.findOne().where('agt').gt(1000000);
+                await query.update({
+                    $set: {
+                        firstName: 'new first name'
+                    }
+                });
+                const doc = await query.exec();
+                assert.equal(doc, null);
+                c.database.destroy();
+            });
         });
-        it('$unset a value on a query', async () => {
-            const c = await humansCollection.create(2);
-            const query = c.find();
-            await query.update({
-                $unset: {
-                    age: ''
-                }
+        describe('negative', () => {
+            it('should throw if schema does not match', async () => {
+                const schema = {
+                    $id: '#child-def',
+                    version: 0,
+                    properties: {
+                        childProperty: {
+                            type: 'string',
+                            enum: ['A', 'B', 'C']
+                        }
+                    }
+                };
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema
+                });
+                await col.insert({
+                    childProperty: 'A'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => col.find().update({
+                        $set: {
+                            childProperty: 'Z'
+                        }
+                    }),
+                    Error,
+                    'schema'
+                );
+                db.destroy();
             });
-            const docs = await query.exec();
-            for (const doc of docs)
-                assert.equal(doc._data.age, undefined);
-            c.database.destroy();
-        });
-        it('dont crash when findOne with no result', async () => {
-            const c = await humansCollection.create(2);
-            const query = c.findOne().where('agt').gt(1000000);
-            await query.update({
-                $set: {
-                    firstName: 'new first name'
-                }
-            });
-            const doc = await query.exec();
-            assert.equal(doc, null);
-            c.database.destroy();
         });
     });
 
