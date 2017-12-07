@@ -9,18 +9,16 @@ import _inherits from 'babel-runtime/helpers/inherits';
  * So you can do faster queries and also query over encrypted fields
  */
 
+import clone from 'clone';
 import { Subject } from 'rxjs/Subject';
 
 import RxCollection from '../rx-collection';
-import Core from '../core';
 import * as util from '../util';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
 import RxSchema from '../rx-schema';
 import PouchDB from '../pouch-db';
-
-import clone from 'clone';
-import PouchAdapterMemory from 'pouchdb-adapter-memory';
+import RxError from '../rx-error';
 
 var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
@@ -292,37 +290,47 @@ export var spawnInMemory = function () {
             while (1) {
                 switch (_context5.prev = _context5.next) {
                     case 0:
-                        if (!INIT_DONE) {
-                            INIT_DONE = true;
-                            // ensure memory-adapter is added
-                            Core.plugin(PouchAdapterMemory);
-                        }
-
-                        if (!collectionCacheMap.has(this)) {
-                            _context5.next = 5;
+                        if (INIT_DONE) {
+                            _context5.next = 4;
                             break;
                         }
 
-                        _context5.next = 4;
-                        return collectionPromiseCacheMap.get(this);
+                        INIT_DONE = true;
+                        // ensure memory-adapter is added
+
+                        if (!(!PouchDB.adapters || !PouchDB.adapters.memory)) {
+                            _context5.next = 4;
+                            break;
+                        }
+
+                        throw RxError.newRxError('IM1');
 
                     case 4:
+                        if (!collectionCacheMap.has(this)) {
+                            _context5.next = 8;
+                            break;
+                        }
+
+                        _context5.next = 7;
+                        return collectionPromiseCacheMap.get(this);
+
+                    case 7:
                         return _context5.abrupt('return', collectionCacheMap.get(this));
 
-                    case 5:
+                    case 8:
                         col = new InMemoryRxCollection(this);
                         preparePromise = col.prepare();
 
                         collectionCacheMap.set(this, col);
                         collectionPromiseCacheMap.set(this, preparePromise);
 
-                        _context5.next = 11;
+                        _context5.next = 14;
                         return preparePromise;
 
-                    case 11:
+                    case 14:
                         return _context5.abrupt('return', col);
 
-                    case 12:
+                    case 15:
                     case 'end':
                         return _context5.stop();
                 }

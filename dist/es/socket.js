@@ -390,8 +390,8 @@ var Socket = function () {
                             });
 
                             this._cleanupDocs(delDocs);
-
                             this.lastPull = new Date().getTime();
+
                             this.isPulling = false;
                             if (this._repull) {
                                 this._repull = false;

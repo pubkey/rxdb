@@ -1,6 +1,6 @@
 # Changelog
 
-## X.X.X (coming soon)
+## 7.2.0 (December 7, 2017)
 
 Warning:
   - Removed automatic import of `pouchdb-adapter-memory` for in-memory-collections. Read [this](https://pubkey.github.io/rxdb/in-memory.html)

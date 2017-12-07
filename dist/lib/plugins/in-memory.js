@@ -44,37 +44,47 @@ var spawnInMemory = exports.spawnInMemory = function () {
             while (1) {
                 switch (_context5.prev = _context5.next) {
                     case 0:
-                        if (!INIT_DONE) {
-                            INIT_DONE = true;
-                            // ensure memory-adapter is added
-                            _core2['default'].plugin(_pouchdbAdapterMemory2['default']);
-                        }
-
-                        if (!collectionCacheMap.has(this)) {
-                            _context5.next = 5;
+                        if (INIT_DONE) {
+                            _context5.next = 4;
                             break;
                         }
 
-                        _context5.next = 4;
-                        return collectionPromiseCacheMap.get(this);
+                        INIT_DONE = true;
+                        // ensure memory-adapter is added
+
+                        if (!(!_pouchDb2['default'].adapters || !_pouchDb2['default'].adapters.memory)) {
+                            _context5.next = 4;
+                            break;
+                        }
+
+                        throw _rxError2['default'].newRxError('IM1');
 
                     case 4:
+                        if (!collectionCacheMap.has(this)) {
+                            _context5.next = 8;
+                            break;
+                        }
+
+                        _context5.next = 7;
+                        return collectionPromiseCacheMap.get(this);
+
+                    case 7:
                         return _context5.abrupt('return', collectionCacheMap.get(this));
 
-                    case 5:
+                    case 8:
                         col = new InMemoryRxCollection(this);
                         preparePromise = col.prepare();
 
                         collectionCacheMap.set(this, col);
                         collectionPromiseCacheMap.set(this, preparePromise);
 
-                        _context5.next = 11;
+                        _context5.next = 14;
                         return preparePromise;
 
-                    case 11:
+                    case 14:
                         return _context5.abrupt('return', col);
 
-                    case 12:
+                    case 15:
                     case 'end':
                         return _context5.stop();
                 }
@@ -87,15 +97,15 @@ var spawnInMemory = exports.spawnInMemory = function () {
     };
 }();
 
+var _clone = require('clone');
+
+var _clone2 = _interopRequireDefault(_clone);
+
 var _Subject = require('rxjs/Subject');
 
 var _rxCollection = require('../rx-collection');
 
 var _rxCollection2 = _interopRequireDefault(_rxCollection);
-
-var _core = require('../core');
-
-var _core2 = _interopRequireDefault(_core);
 
 var _util = require('../util');
 
@@ -117,25 +127,20 @@ var _pouchDb = require('../pouch-db');
 
 var _pouchDb2 = _interopRequireDefault(_pouchDb);
 
-var _clone = require('clone');
+var _rxError = require('../rx-error');
 
-var _clone2 = _interopRequireDefault(_clone);
-
-var _pouchdbAdapterMemory = require('pouchdb-adapter-memory');
-
-var _pouchdbAdapterMemory2 = _interopRequireDefault(_pouchdbAdapterMemory);
+var _rxError2 = _interopRequireDefault(_rxError);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-/**
- * This plugin adds RxCollection.inMemory()
- * Which replicates the collection into an in-memory-collection
- * So you can do faster queries and also query over encrypted fields
- */
+var collectionCacheMap = new WeakMap(); /**
+                                         * This plugin adds RxCollection.inMemory()
+                                         * Which replicates the collection into an in-memory-collection
+                                         * So you can do faster queries and also query over encrypted fields
+                                         */
 
-var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
     new_edits: false

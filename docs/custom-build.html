@@ -98,11 +98,6 @@
             <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
         </li>
     
-        
-        <li>
-            <a href="https://www.patreon.com/rxdb" target="_blank" class="custom-link">Support @patreon</a>
-        </li>
-    
     
 
     
@@ -1161,7 +1156,8 @@
 <h2 id="required-modules">required modules</h2>
 <p>Some parts of RxDB are not in the core, but are required. This means they must always be overwritte by at least one plugin.</p>
 <h3 id="validate">validate</h3>
-<p>The validation-module does the schema-validation when you insert or update a <code>RxDocument</code>. Currently we have only one validation-module, which is using <a href="https://www.npmjs.com/package/is-my-json-valid" target="_blank">is-my-json-valid</a> but you can also use your own validator instead. To import the default validation-module, do this:</p>
+<p>The validation-module does the schema-validation when you insert or update a <code>RxDocument</code>. To use RxDB you always have to add a validation-module.
+This one is using <a href="https://www.npmjs.com/package/is-my-json-valid" target="_blank">is-my-json-valid</a> but you can also use your own validator instead. To import the default validation-module, do this:</p>
 <pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
 <span class="hljs-keyword">import</span> RxDBValidateModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/validate&apos;</span>;
 RxDB.plugin(RxDBValidateModule);
@@ -1169,9 +1165,28 @@ RxDB.plugin(RxDBValidateModule);
 <span class="hljs-comment">// es5-require</span>
 RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/validate&apos;</span>));
 </code></pre>
+<h3 id="no-validate">no-validate</h3>
+<p>A validation module that does nothing at handles all data as valid. Use this as an alternative for the normal validator when you can rely on the input of the database.
+This is meant for production to reduce the build-size, do not use this in dev-mode.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBNoValidateModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/no-validate&apos;</span>;
+RxDB.plugin(RxDBNoValidateModule);
+
+<span class="hljs-comment">// es5-require</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/no-validate&apos;</span>));
+</code></pre>
 <h2 id="optional-modules">optional modules</h2>
 <p>Some modules are optional and only needed if you use their functionality.</p>
-<h3 id="schemacheck">schemacheck</h3>
+<h3 id="error-messages">error-messages</h3>
+<p>Because error-messages are hard to compress, RxDB will throw error-codes by default. In developement you should always include this plugin so full messages will be thrown.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBErrorMessagesModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/error-messages&apos;</span>;
+RxDB.plugin(RxDBSchemaCheckModule);
+
+<span class="hljs-comment">// es5-require</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/error-messages&apos;</span>));
+</code></pre>
+<h3 id="schema-check">schema-check</h3>
 <p>The schemacheck-module does additional checks on your jsonschema before you create a RxCollection. This ensure that your collection-schema is correctly working with rxdb. You should always enable this plugin on dev-mode.</p>
 <pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
 <span class="hljs-keyword">import</span> RxDBSchemaCheckModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/schema-check&apos;</span>;
@@ -1315,7 +1330,7 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"3.10","depth":1,"next":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"3.9","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"custom-build.md","mtime":"2017-11-20T19:19:11.902Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-27T07:12:44.886Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"3.10","depth":1,"next":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"3.9","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"custom-build.md","mtime":"2017-12-04T22:09:04.084Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-07T19:07:12.878Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

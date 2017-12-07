@@ -955,7 +955,7 @@ var RxCollection = exports.RxCollection = function () {
                                                     wasInserted = _context10.sent;
 
                                                     if (wasInserted.inserted) {
-                                                        _context10.next = 9;
+                                                        _context10.next = 11;
                                                         break;
                                                     }
 
@@ -963,12 +963,16 @@ var RxCollection = exports.RxCollection = function () {
                                                     return _this7._atomicUpsertUpdate(wasInserted.doc, json);
 
                                                 case 6:
+                                                    _context10.next = 8;
+                                                    return util.nextTick();
+
+                                                case 8:
                                                     return _context10.abrupt('return', wasInserted.doc);
 
-                                                case 9:
+                                                case 11:
                                                     return _context10.abrupt('return', wasInserted.doc);
 
-                                                case 10:
+                                                case 12:
                                                 case 'end':
                                                     return _context10.stop();
                                             }

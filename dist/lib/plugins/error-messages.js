@@ -150,7 +150,10 @@ var CODES = {
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
-    VD2: 'object does not match schema'
+    VD2: 'object does not match schema',
+
+    // plugins/in-memory.js
+    IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));'
 };
 
 var rxdb = exports.rxdb = true;

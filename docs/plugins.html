@@ -98,11 +98,6 @@
             <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
         </li>
     
-        
-        <li>
-            <a href="https://www.patreon.com/rxdb" target="_blank" class="custom-link">Support @patreon</a>
-        </li>
-    
     
 
     
@@ -1205,6 +1200,20 @@ RxDB.plugin(myPlugin);
 <p>Some of RxDB&apos;s functions are not inside of a class-prototype but are static. You can set and overwrite them with the <code>overwritable</code>-object. You can see a list of all overwriteables <a href="https://github.com/pubkey/rxdb/blob/master/src/overwritable.js" target="_blank">here</a>.</p>
 <h1 id="hooks">hooks</h1>
 <p>Sometimes you don&apos;t want to overwrite an existing RxDB-method, but extend it. You can do this by adding hooks which will be called each time the code jumps into the hooks corresponding call. You can find a list of all hooks here <a href="https://github.com/pubkey/rxdb/blob/master/src/hooks.js" target="_blank">here</a>.</p>
+<h1 id="options">options</h1>
+<p>RxDatabase and RxCollection have an additional options-paramter, which can be filled with anny data required be the plugin.</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> collection = myDatabase.collection({
+    name: <span class="hljs-string">&apos;foo&apos;</span>.
+    schema: mySchema,
+    options: { <span class="hljs-comment">// anything can be passed into the options</span>
+        foo: ()=&gt;<span class="hljs-string">&apos;bar&apos;</span>
+    }
+})
+
+<span class="hljs-comment">// Afterwards you can use theses options in your plugin.</span>
+
+collection.options.foo(); <span class="hljs-comment">// &apos;bar&apos;</span>
+</code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="https://github.com/pubkey/rxdb/tree/master/examples" target="_blank">here</a></p>
 
@@ -1250,7 +1259,7 @@ RxDB.plugin(myPlugin);
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Plugins","level":"3.11","depth":1,"next":{"title":"Contribute","level":"3.12","depth":1,"path":"contribute.md","ref":"./contribute.md","articles":[]},"previous":{"title":"Custom Build","level":"3.10","depth":1,"path":"custom-build.md","ref":"./custom-build.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Support @patreon":"https://www.patreon.com/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"plugins.md","mtime":"2017-11-20T19:19:11.938Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-11-27T07:12:44.886Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Plugins","level":"3.11","depth":1,"next":{"title":"Contribute","level":"3.12","depth":1,"path":"contribute.md","ref":"./contribute.md","articles":[]},"previous":{"title":"Custom Build","level":"3.10","depth":1,"path":"custom-build.md","ref":"./custom-build.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"plugins.md","mtime":"2017-12-03T12:42:13.262Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-07T19:07:12.878Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
