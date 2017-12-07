@@ -3,7 +3,7 @@ import RxChangeEvent from './rx-change-event';
 import RxBroadcastChannel from './rx-broadcast-channel';
 
 const EVENT_TTL = 5000; // after this age, events will be deleted
-const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 100;
+const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
 import {
     Subject
@@ -19,7 +19,6 @@ class Socket {
         this.token = database.token;
         this.subs = [];
 
-        this._lastSeq = -1;
         this.pullCount = 0;
         this.pull_running = false;
         this.lastPull = new Date().getTime();
@@ -44,10 +43,6 @@ class Socket {
             auto_compaction: false, // this is false because its done manually at .pull()
             revs_limit: 1
         });
-        await this.pouch.info();
-
-        // get last seq-number so we know from where to start pulling
-        this._lastSeq = await getLastSeq(this.pouch);
 
         // pull on BroadcastChannel-message
         if (this.bc) {
@@ -95,6 +90,15 @@ class Socket {
      * get all docs from the socket-collection
      */
     async fetchDocs() {
+        /**
+         *
+         * TODO we can optimize this by only doing a fetch when the seq-number has changed
+         * but this currently does not work on leveldown-apdaters
+         * @link https://github.com/pouchdb/pouchdb/pull/6924
+         */
+        // const lastSeq = new Promise(res => pouch._info((err, i) => res(i.update_seq)));
+        // if (lastSeq <= this._lastSeq) return [];
+
         const result = await this.database.lockedRun(
             () => this.pouch.allDocs({
                 include_docs: true
@@ -165,43 +169,36 @@ class Socket {
         await util.requestIdlePromise(EVENT_TTL / 2);
         if (this._destroyed) return;
 
+        const minTime = this.lastPull - 100; // TODO evaluate this value (100)
+        const docs = await this.fetchDocs();
+        if (this._destroyed) return;
+        docs
+            .filter(doc => doc.it !== this.token) // do not get events emitted by self
+            // do not get events older than minTime
+            .filter(doc => doc.t > minTime)
+            // sort timestamp
+            .sort((a, b) => {
+                if (a.t > b.t) return 1;
+                return -1;
+            })
+            .map(doc => RxChangeEvent.fromJSON(doc))
+            // make sure the same event is not emitted twice
+            .filter(cE => {
+                if (this.receivedEvents[cE.hash]) return false;
+                return this.receivedEvents[cE.hash] = new Date().getTime();
+            })
+            // prevent memory leak of this.receivedEvents
+            .filter(cE => setTimeout(() => delete this.receivedEvents[cE.hash], EVENT_TTL * 3))
+            // emit to messages
+            .forEach(cE => this.messages$.next(cE));
 
-        // check last seq-number and only do things if has changed
-        const lastSeq = await getLastSeq(this.pouch);
-        if (lastSeq > this._lastSeq) {
-            this._lastSeq = lastSeq;
+        if (this._destroyed) return;
 
-            const minTime = this.lastPull - 100; // TODO evaluate this value (100)
-            const docs = await this.fetchDocs();
-            if (this._destroyed) return;
-            docs
-                .filter(doc => doc.it !== this.token) // do not get events emitted by self
-                // do not get events older than minTime
-                .filter(doc => doc.t > minTime)
-                // sort timestamp
-                .sort((a, b) => {
-                    if (a.t > b.t) return 1;
-                    return -1;
-                })
-                .map(doc => RxChangeEvent.fromJSON(doc))
-                // make sure the same event is not emitted twice
-                .filter(cE => {
-                    if (this.receivedEvents[cE.hash]) return false;
-                    return this.receivedEvents[cE.hash] = new Date().getTime();
-                })
-                // prevent memory leak of this.receivedEvents
-                .filter(cE => setTimeout(() => delete this.receivedEvents[cE.hash], EVENT_TTL * 3))
-                // emit to messages
-                .forEach(cE => this.messages$.next(cE));
-
-            if (this._destroyed) return;
-
-            // delete old documents
-            const maxAge = new Date().getTime() - EVENT_TTL;
-            const delDocs = docs.filter(doc => doc.t < maxAge);
-            this._cleanupDocs(delDocs);
-            this.lastPull = new Date().getTime();
-        }
+        // delete old documents
+        const maxAge = new Date().getTime() - EVENT_TTL;
+        const delDocs = docs.filter(doc => doc.t < maxAge);
+        this._cleanupDocs(delDocs);
+        this.lastPull = new Date().getTime();
 
         this.isPulling = false;
         if (this._repull) {
@@ -216,16 +213,6 @@ class Socket {
         this.subs.map(sub => sub.unsubscribe());
         this.bc && this.bc.destroy();
     }
-}
-
-
-/**
- * returns the seq-number of the pouchdb-instance
- * @param  {PouchDB} pouch
- * @return {Promise<number>} seq
- */
-async function getLastSeq(pouch) {
-    return new Promise(res => pouch._info((err, i) => res(i.update_seq)));
 }
 
 /**
