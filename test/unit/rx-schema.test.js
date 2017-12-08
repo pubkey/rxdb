@@ -413,6 +413,50 @@ describe('rx-schema.test.js', () => {
             });
         });
         describe('.validate()', () => {
+            describe('error format', () => {
+                it('required', () => {
+                    const schema = RxSchema.create(schemas.human);
+                    const obj = schemaObjects.human();
+                    delete obj.firstName;
+                    let hasThrown = false;
+                    try {
+                        schema.validate(obj);
+                    } catch (err) {
+                        const deepParam = err.parameters.errors[0].field;
+                        assert.equal(deepParam, 'data.firstName');
+                        hasThrown = true;
+                    }
+                    assert.ok(hasThrown);
+                });
+                it('additional property', () => {
+                    const schema = RxSchema.create(schemas.human);
+                    const obj = schemaObjects.human();
+                    obj['nonExistentProperty'] = 1;
+                    let hasThrown = false;
+                    try {
+                        schema.validate(obj);
+                    } catch (err) {
+                        const deepParam = err.parameters.errors[0].field;
+                        assert.equal(deepParam, 'data');
+                        hasThrown = true;
+                    }
+                    assert.ok(hasThrown);
+                });
+                it('unique items', () => {
+                    const schema = RxSchema.create(schemas.simpleArrayHero);
+                    const obj = schemaObjects.heroArray();
+                    obj.skills.push(obj.skills[0]);
+                    let hasThrown = false;
+                    try {
+                        schema.validate(obj);
+                    } catch (err) {
+                        const deepParam = err.parameters.errors[0].field;
+                        assert.equal(deepParam, 'data.skills');
+                        hasThrown = true;
+                    }
+                    assert.ok(hasThrown);
+                });
+            });
             describe('positive', () => {
                 it('validate one human', () => {
                     const schema = RxSchema.create(schemas.human);

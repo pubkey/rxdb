@@ -21,7 +21,7 @@ Some parts of RxDB are not in the core, but are required. This means they must a
 ### validate
 
 The validation-module does the schema-validation when you insert or update a `RxDocument`. To use RxDB you always have to add a validation-module.
-This one is using [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) but you can also use your own validator instead. To import the default validation-module, do this:
+This one is using [ajv](https://www.npmjs.com/package/ajv) but you can also use your own validator instead. To import the default validation-module, do this:
 
 ```javascript
 // es6-import

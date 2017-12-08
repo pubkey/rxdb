@@ -1,9 +1,9 @@
 /**
  * this plugin validates documents before they can be inserted into the RxCollection.
- * It's using is-my-json-valid as jsonschema-validator
- * @link https://github.com/mafintosh/is-my-json-valid
+ * It's using ajv as jsonschema-validator
+ * @link https://github.com/epoberezkin/ajv
  */
-import isMyJsonValid from 'is-my-json-valid';
+import Ajv from 'ajv';
 import RxError from '../rx-error';
 import * as util from '../util';
 
@@ -16,7 +16,7 @@ const validatorsCache = {};
 
 
 /**
- * returns the parsed validator from is-my-json-valid
+ * returns the parsed validator from ajv
  * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
@@ -32,9 +32,32 @@ const _getValidator = function(schemaPath = '') {
                 schemaPath
             });
         }
-        validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart);
+
+        // const ajv = new Ajv({errorDataPath: 'property'});
+        const ajv = new Ajv();
+        validatorsOfHash[schemaPath] = ajv.compile(schemaPart);
     }
     return validatorsOfHash[schemaPath];
+};
+
+/**
+ * Return ajv errors mapped to RxErrorItem format.
+ * Method added for backwards compatibility with is-my-json-valid validator error messages
+ * @param {Array} [errors = []] Ajv validation errors.
+ * @returns {{field: string, message: string}[]} Mapped errors.
+ */
+const _parseToRxErrorItem = function(errors = []) {
+    const getField = (error) => {
+        let dataPath = error.dataPath;
+        if (error.keyword === 'required') dataPath = '.' + error.params['missingProperty'];
+        return `data${dataPath}`;
+    };
+    return errors.map(error => {
+        return {
+            field: getField(error),
+            message: error.message
+        };
+    });
 };
 
 /**
@@ -50,7 +73,7 @@ const validate = function(obj, schemaPath = '') {
     if (isValid) return obj;
     else {
         throw RxError.newRxError('VD2', {
-            errors: useValidator.errors,
+            errors: this._parseToRxErrorItem(useValidator.errors),
             schemaPath,
             obj,
             schema: this.jsonID
@@ -73,6 +96,7 @@ export const prototypes = {
      */
     RxSchema: (proto) => {
         proto._getValidator = _getValidator;
+        proto._parseToRxErrorItem = _parseToRxErrorItem;
         proto.validate = validate;
     }
 };

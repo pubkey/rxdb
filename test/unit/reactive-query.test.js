@@ -256,9 +256,9 @@ describe('reactive-query.test.js', () => {
                     },
                     state: {
                         type: 'object',
-                        required: true
                     }
-                }
+                },
+                required: ['state']
             };
             const name = util.randomCouchString(10);
             const db = await RxDB.create({

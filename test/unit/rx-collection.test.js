@@ -409,7 +409,7 @@ describe('rx-collection.test.js', () => {
                             age: 20
                         }),
                         Error,
-                        'is required'
+                        'required'
                     );
                     db.destroy();
                 });
