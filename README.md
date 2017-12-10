@@ -22,7 +22,7 @@
   <h3>
     <a href="https://pubkey.github.io/rxdb/">Documentation</a>
     <span> | </span>
-    <a href="./examples">Code Examples</a>
+    <a href="https://github.com/pubkey/rxdb/tree/master/examples">Code Examples</a>
     <span> | </span>
     <a href="https://www.webpackbin.com/bins/-Kv9UWdorylh0jzGYmZy">Live Demo</a>
   </h3>
