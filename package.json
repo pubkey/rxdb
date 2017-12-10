@@ -158,7 +158,7 @@
     "rimraf": "2.6.2",
     "rxjs": "5.5.5",
     "shelljs": "0.7.8",
-    "ts-node": "3.3.0",
+    "ts-node": "4.0.0",
     "typescript": "2.6.2",
     "uglify-js": "3.2.1",
     "walk-sync": "0.3.2",
