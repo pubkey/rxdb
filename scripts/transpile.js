@@ -1,5 +1,7 @@
 process.env['NODE_ENV'] = 'es5';
 
+console.log('# transpiling.. (this takes some time on first run)');
+
 /**
  * runs the babel-transpile
  * remembers mtime of files and only transpiles the changed ones
@@ -35,7 +37,6 @@ nconf.argv()
 
 
 async function transpileFile(srcLocation, goalLocation) {
-
     // ensure folder exists
     const folder = path.join(goalLocation, '..');
     if (!fs.existsSync(folder)) shell.mkdir('-p', folder);
@@ -47,7 +48,7 @@ async function transpileFile(srcLocation, goalLocation) {
         console.error('transpiling ' + srcLocation + ' failed');
         process.exit(1);
     }
-    console.log('transpiled: ' + srcLocation);
+    if (DEBUG) console.log('transpiled: ' + srcLocation);
 
 
     return;
@@ -73,14 +74,9 @@ const files = Object.entries(transpileFolders)
         entry.lastTime = nconf.get(entry.fullPath);
         return entry;
     })
-    .filter(entry => entry.lastTime != entry.mtime || !existsFile.sync(entry.goalPath));
+    .filter(entry => entry.lastTime !== entry.mtime || !existsFile.sync(entry.goalPath));
 
 DEBUG && console.dir(files);
-
-let test = files;
-//test = [files[0]];
-
-
 
 Promise.all(files
         .map(fileEntry => {
@@ -92,8 +88,8 @@ Promise.all(files
             });
         }))
     .then(() => {
-        nconf.save(function(err) {
+        nconf.save(function() {
             DEBUG && console.log('conf saved');
-            console.log('transpile.js: DONE');
+            console.log('# transpiling DONE');
         });
     });

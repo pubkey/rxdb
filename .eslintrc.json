@@ -15,7 +15,8 @@
   "settings": {
     "eslint-plugin-disable": {
       "paths": {
-        "spellcheck": ["**/test/**/*.js"]
+        "spellcheck": ["**/test/**/*.js"],
+        "spellcheck": ["**/scripts/**/*.js"]
       }
     }
   },
