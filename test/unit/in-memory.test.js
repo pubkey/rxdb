@@ -220,6 +220,74 @@ describe('in-memory.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('issues', () => {
+        it('#401 error: _id is required for puts', async () => {
+            // TODO fix this test
+            return;
+            
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        primary: true
+                    },
+                    color: {
+                        type: 'string'
+                    },
+                    maxHp: {
+                        type: 'number',
+                        min: 0,
+                        max: 1000
+                    }
+                },
+                required: ['color', 'maxHp']
+            };
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            const col = await db.collection({
+                name: 'heroes',
+                schema
+            });
+            await col.insert({
+                name: 'bob',
+                color: 'blue',
+                maxHp: 100
+            });
+            await db.destroy();
+
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            const col2 = await db2.collection({
+                name: 'heroes',
+                schema
+            });
+            const memCol = await col2.inMemory();
+
+            const doc = await memCol
+                .findOne()
+                .where('name').eq('bob')
+                .exec();
+            assert.ok(doc);
+            assert.equal(doc.name, 'bob');
+            assert.equal(doc.color, 'blue');
+            assert.equal(doc.maxHp, 100);
+
+            process.exit();
+
+            db2.destroy();
+        });
+    });
     describe('e', () => {
         // TODO remove this
         //        it('e', () => process.exit());
