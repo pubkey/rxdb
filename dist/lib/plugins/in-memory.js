@@ -266,6 +266,10 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
                                     .map(function (doc) {
                                         return _this3._parentCollection._handleFromPouch(doc);
                                     })
+                                    // swap back primary because disableKeyCompression:true
+                                    .map(function (doc) {
+                                        return _this3._parentCollection.schema.swapPrimaryToId(doc);
+                                    })
                                 }, BULK_DOC_OPTIONS);
 
                             case 5:
