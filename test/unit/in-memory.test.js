@@ -222,9 +222,6 @@ describe('in-memory.test.js', () => {
     });
     describe('issues', () => {
         it('#401 error: _id is required for puts', async () => {
-            // TODO fix this test
-            return;
-            
             const schema = {
                 version: 0,
                 type: 'object',
@@ -256,6 +253,11 @@ describe('in-memory.test.js', () => {
                 schema
             });
             await col.insert({
+                name: 'alice',
+                color: 'azure',
+                maxHp: 101
+            });
+            await col.insert({
                 name: 'bob',
                 color: 'blue',
                 maxHp: 100
@@ -283,7 +285,22 @@ describe('in-memory.test.js', () => {
             assert.equal(doc.color, 'blue');
             assert.equal(doc.maxHp, 100);
 
-            process.exit();
+            const docs = await memCol.find().exec();
+            assert.equal(docs.length, 2);
+
+            const alice = docs.find(doc => doc.name === 'alice');
+            assert.equal(alice.maxHp, 101);
+
+            // check if it works from mem to parent
+            alice.maxHp = 103;
+            await alice.save();
+            await AsyncTestUtil.waitUntil(async () => {
+                const aliceDoc = await col2
+                    .findOne()
+                    .where('name').eq('alice')
+                    .exec();
+                return aliceDoc.maxHp === 103;
+            });
 
             db2.destroy();
         });

@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (coming soon)
+
+Bugfixes:
+  - inMemory() throws error when using primary-key [#401](https://github.com/pubkey/rxdb/issues/401)
+
 ## 7.2.0 (December 7, 2017)
 
 Warning:

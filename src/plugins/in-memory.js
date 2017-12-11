@@ -90,7 +90,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * @return {Promise}
      */
     async _initialSync() {
-        // initial sync
+        // initial sync parent's docs to own
         const allRows = await this._parentCollection.pouch.allDocs({
             attachments: false,
             include_docs: true
@@ -101,6 +101,8 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
                 .map(row => row.doc)
                 .filter(doc => !doc.language) // do not replicate design-docs
                 .map(doc => this._parentCollection._handleFromPouch(doc))
+                // swap back primary because disableKeyCompression:true
+                .map(doc => this._parentCollection.schema.swapPrimaryToId(doc))
         }, BULK_DOC_OPTIONS);
 
         // sync from own to parent
