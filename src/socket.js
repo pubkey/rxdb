@@ -2,6 +2,7 @@ import * as util from './util';
 import RxChangeEvent from './rx-change-event';
 import RxBroadcastChannel from './rx-broadcast-channel';
 
+const TIMESTAMP_DOC_ID = '_local/last-change';
 const EVENT_TTL = 5000; // after this age, events will be deleted
 const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
@@ -22,6 +23,7 @@ class Socket {
         this.pullCount = 0;
         this.pull_running = false;
         this.lastPull = new Date().getTime();
+        this.lastTimestamp = 0;
         this.receivedEvents = {};
 
         this.bc = RxBroadcastChannel.create(this.database, 'socket');
@@ -81,10 +83,50 @@ class Socket {
         await this.database.lockedRun(
             () => this.pouch.put(socketDoc)
         );
+        await this._updateLastTimestamp();
         this.bc && await this.bc.write('pull');
         return true;
     }
 
+    async _getLastTimeDoc() {
+        try {
+            const lastTimestampDoc = await this.database.lockedRun(
+                () => this.pouch.get(TIMESTAMP_DOC_ID)
+            );
+            return lastTimestampDoc;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    async _updateLastTimestamp() {
+        const run = async () => {
+            const newTime = new Date().getTime();
+            const doc = await this._getLastTimeDoc();
+            if (!doc) {
+                return this.database.lockedRun(
+                    () => this.pouch.put({
+                        _id: TIMESTAMP_DOC_ID,
+                        time: newTime
+                    })
+                );
+            } else {
+                doc.time = newTime;
+                return this.database.lockedRun(
+                    () => this.pouch.put(doc)
+                );
+            }
+        };
+
+        // run until sucess
+        let done = false;
+        while (!done) {
+            try {
+                await run();
+                done = true;
+            } catch (e) {}
+        }
+    }
 
     /**
      * get all docs from the socket-collection
@@ -99,13 +141,21 @@ class Socket {
         // const lastSeq = new Promise(res => pouch._info((err, i) => res(i.update_seq)));
         // if (lastSeq <= this._lastSeq) return [];
 
-        const result = await this.database.lockedRun(
-            () => this.pouch.allDocs({
-                include_docs: true
-            })
-        );
-        return result.rows
-            .map(row => row.doc);
+        const lastTimeDoc = await this._getLastTimeDoc();
+        const lastTime = lastTimeDoc ? lastTimeDoc.time : 0;
+        if (this.lastTimestamp >= lastTime) {
+            // nothing has changed, return nothing
+            return [];
+        } else {
+            this.lastTimestamp = lastTime;
+            const result = await this.database.lockedRun(
+                () => this.pouch.allDocs({
+                    include_docs: true
+                })
+            );
+            return result.rows
+                .map(row => row.doc);
+        }
     }
 
 
@@ -170,6 +220,7 @@ class Socket {
         if (this._destroyed) return;
 
         const minTime = this.lastPull - 100; // TODO evaluate this value (100)
+        this.lastPull = new Date().getTime();
         const docs = await this.fetchDocs();
         if (this._destroyed) return;
         docs
@@ -198,7 +249,6 @@ class Socket {
         const maxAge = new Date().getTime() - EVENT_TTL;
         const delDocs = docs.filter(doc => doc.t < maxAge);
         this._cleanupDocs(delDocs);
-        this.lastPull = new Date().getTime();
 
         this.isPulling = false;
         if (this._repull) {

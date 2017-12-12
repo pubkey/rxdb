@@ -154,7 +154,9 @@
           "travis",
           "ci",
           "init",
-          "typings"
+          "typings",
+          "timestamp",
+          "unix"
         ],
         "skipIfMatch": [
           "^[.]{1,3}$",

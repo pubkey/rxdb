@@ -5,6 +5,9 @@
 Bugfixes:
   - inMemory() throws error when using primary-key [#401](https://github.com/pubkey/rxdb/issues/401)
 
+Other:
+  - Optimize socket-pull by comparing internal last-change-time
+
 ## 7.2.0 (December 7, 2017)
 
 Warning:
