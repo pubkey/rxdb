@@ -10,6 +10,7 @@ Bugfixes:
 
 Other:
   - Optimize socket-pull by comparing internal last-change-time
+  - do not hide fields with `value: undefined` in error-message [#403](https://github.com/pubkey/rxdb/issues/403)
 
 ## 7.2.0 (December 7, 2017)
 

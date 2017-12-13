@@ -19,7 +19,11 @@ const parametersToString = (parameters) => {
         .map(k => {
             let paramStr = '[object Object]';
             try {
-                paramStr = JSON.stringify(parameters[k], null, 2);
+                paramStr = JSON.stringify(
+                    parameters[k],
+                    (k, v) => v === undefined ? null : v,
+                    2
+                );
             } catch (e) {}
             return k + ':' + paramStr;
         })

@@ -499,6 +499,23 @@ describe('rx-schema.test.js', () => {
                     }
                     assert.ok(hasThrown);
                 });
+                it('should show fields with undefined in the error-params', async () => {
+                    const schema = RxSchema.create(schemas.humanFinal);
+                    let error = null;
+                    try {
+                        schema.validate({
+                            foo: 'bar',
+                            noval: undefined,
+                            nr: 7
+                        });
+                    } catch (err) {
+                        error = err;
+                    }
+                    assert.ok(error);
+                    assert.deepEqual(error.parameters.obj.noval, undefined);
+                    const text = error.toString();
+                    assert.ok(text.includes('noval'));
+                });
             });
         });
         describe('.getSchemaByObjectPath()', () => {
