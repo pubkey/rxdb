@@ -874,7 +874,6 @@ describe('rx-query.test.js', () => {
                 return last.length === 0;
             });
 
-            process.exit();
             sub.unsubscribe();
             db.destroy();
             db2.destroy();
