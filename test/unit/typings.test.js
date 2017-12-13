@@ -18,6 +18,8 @@ describe('typings.test.js', () => {
             RxPlugin,
             plugin
         } from '../';
+        plugin(require('pouchdb-adapter-memory'));
+        process.exit();
     `;
     const transpileCode = async (code) => {
         const spawn = require('child-process-promise').spawn;
@@ -26,6 +28,7 @@ describe('typings.test.js', () => {
         const promise = spawn('ts-node', [
             '--no-cache',
             '--compilerOptions', '{"target":"es6"}',
+            '--type-check',
             '-p', code
         ]);
         const childProcess = promise.childProcess;
