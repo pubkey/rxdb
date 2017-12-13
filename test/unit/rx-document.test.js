@@ -343,12 +343,24 @@ describe('rx-document.test.js', () => {
         describe('negative', () => {
             it('should throw if schema does not match', async () => {
                 const schema = {
-                    $id: '#child-def',
+                    $id: '/root.json',
                     version: 0,
+                    definitions: {
+                        single: {
+                            $id: '#child',
+                            type: 'object',
+                            properties: {
+                                childProperty: {
+                                    type: 'string',
+                                    enum: ['A', 'B', 'C']
+                                }
+                            }
+                        }
+                    },
                     properties: {
-                        childProperty: {
-                            type: 'string',
-                            enum: ['A', 'B', 'C']
+                        children: {
+                            type: 'array',
+                            items: { $ref: '#child' }
                         }
                     }
                 };
@@ -363,12 +375,16 @@ describe('rx-document.test.js', () => {
 
                 // on doc
                 const doc = await col.insert({
-                    childProperty: 'A'
+                    children: [
+                        { childProperty: 'A' },
+                        { childProperty: 'B' }
+                    ]
                 });
+
                 await AsyncTestUtil.assertThrows(
                     () => doc.update({
                         $set: {
-                            childProperty: 'Z'
+                            'children.0.childProperty': 'Z'
                         }
                     }),
                     Error,
