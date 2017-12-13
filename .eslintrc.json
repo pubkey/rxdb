@@ -156,7 +156,8 @@
           "init",
           "typings",
           "timestamp",
-          "unix"
+          "unix",
+          "ajv"
         ],
         "skipIfMatch": [
           "^[.]{1,3}$",

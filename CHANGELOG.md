@@ -2,6 +2,9 @@
 
 ### X.X.X (coming soon)
 
+Features:
+  - Added [ajv-validate](https://pubkey.github.io/rxdb/custom-build.html#ajv-validate)-plugin. Thx [@rybaczewa](https://github.com/rybaczewa)
+
 Bugfixes:
   - inMemory() throws error when using primary-key [#401](https://github.com/pubkey/rxdb/issues/401)
 
@@ -38,7 +41,7 @@ Bugfixes:
 
 Other:
   - Reduced build-size by using [rxjs-lettable-operators](https://github.com/ReactiveX/rxjs/blob/master/doc/lettable-operators.md). Read [this](https://github.com/pubkey/rxdb/blob/master/docs-src/install.md#rxjs) if you have problems.
-  - Improved typings [#368](https://github.com/pubkey/rxdb/pull/368) thx @FlorianKoerner
+  - Improved typings [#368](https://github.com/pubkey/rxdb/pull/368) thx [@FlorianKoerner](https://github.com/FlorianKoerner)
 
 ## 7.0.1 (November 14, 2017)
 
@@ -49,7 +52,7 @@ Bugfixes:
 
 Breaking:
   - Renamed `ingoreDuplicate` to `ingoreDuplicate` [#314](https://github.com/pubkey/rxdb/issues/314)
-  - Improved typings [#329](https://github.com/pubkey/rxdb/pull/329) by @ihadeed
+  - Improved typings [#329](https://github.com/pubkey/rxdb/pull/329) by [@ihadeed](https://github.com/ihadeed)
 
 Features:
   - Added [attachments](https://pubkey.github.io/rxdb/rx-attachment.html)

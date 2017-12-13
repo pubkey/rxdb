@@ -32,6 +32,20 @@ RxDB.plugin(RxDBValidateModule);
 RxDB.plugin(require('rxdb/plugins/validate'));
 ```
 
+### ajv-validate
+
+Another validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standart but also has a bigger build-size.
+
+```javascript
+// es6-import
+import RxDBAjvValidateModule from 'rxdb/plugins/ajv-validate';
+RxDB.plugin(RxDBAjvValidateModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/ajv-validate'));
+```
+
+
 ### no-validate
 
 A validation module that does nothing at handles all data as valid. Use this as an alternative for the normal validator when you can rely on the input of the database.
