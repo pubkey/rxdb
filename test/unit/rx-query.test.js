@@ -719,6 +719,166 @@ describe('rx-query.test.js', () => {
 
             c.database.destroy();
         });
+        it('#393 Deleting all items with a sorted subscribe throws error', async () => {
+            // QueryChangeDetector.enable();
+            const schema = {
+                primaryPath: '_id',
+                disableKeyCompression: true,
+                properties: {
+                    id: {
+                        primary: true,
+                        type: 'string'
+                    },
+                    title: {
+                        index: true,
+                        type: 'string'
+                    },
+                    integration: {
+                        type: 'string'
+                    },
+                    type: {
+                        index: true,
+                        type: 'string'
+                    },
+                    bodyTEMP: {
+                        type: 'string'
+                    },
+                    data: {
+                        type: 'object'
+                    },
+                    parentId: {
+                        type: 'string'
+                    },
+                    author: {
+                        type: 'string'
+                    },
+                    created: {
+                        index: true,
+                        type: 'string'
+                    },
+                    updated: {
+                        index: true,
+                        type: 'string'
+                    },
+                    orgName: {
+                        type: 'string'
+                    },
+                    bucket: {
+                        type: 'string'
+                    },
+                    url: {
+                        unique: true,
+                        type: 'string'
+                    },
+                    createdAt: {
+                        format: 'date-time',
+                        type: 'string',
+                        index: true
+                    },
+                    updatedAt: {
+                        format: 'date-time',
+                        type: 'string',
+                        index: true
+                    }
+                },
+                type: 'object',
+                required: [
+                    'title',
+                    'integration',
+                    'type',
+                    'created',
+                    'updated'
+                ],
+                title: 'things',
+                version: 0
+            };
+
+            const name = util.randomCouchString(10);
+            const db = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const col = await db.collection({
+                name: 'humans',
+                schema
+            });
+            const db2 = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const col2 = await db2.collection({
+                name: 'humans',
+                schema
+            });
+
+            const destroyAll = async function(collection) {
+                const remove = async item => {
+                    try {
+                        //                        console.log('remove:');
+                        //                        console.dir(item.toJSON());
+                        await item.remove();
+                    } catch (e) {
+                        // loop on document conflicts to delete all revisions
+                        console.log('err', e);
+                        await remove(item);
+                    }
+                    return true;
+                };
+                const all = await collection.find().exec();
+                if (!all) return;
+
+                return await Promise.all(all.map(remove));
+            };
+
+            const generateDocData = () => {
+                return {
+                    id: AsyncTestUtil.randomString(10),
+                    title: AsyncTestUtil.randomString(10),
+                    integration: AsyncTestUtil.randomString(10),
+                    type: AsyncTestUtil.randomString(10),
+                    created: AsyncTestUtil.randomString(10),
+                    updated: AsyncTestUtil.randomString(10),
+                    bucket: 'foobar',
+                    createdAt: '2002-10-02T10:00:00-05:00',
+                    updatedAt: '2002-10-02T10:00:00-05:00'
+                };
+            };
+
+            await Promise.all(
+                new Array(10)
+                .fill(0)
+                .map(() => generateDocData())
+                .map(data => col.insert(data))
+            );
+
+            const emitted = [];
+            const sub = col2.find()
+                .limit(8)
+                .where('bucket').eq('foobar')
+                .sort({
+                    updatedAt: 'desc'
+                })
+                .$.subscribe(res => {
+                    //        console.log('emitted:');
+                    //        console.dir(JSON.stringify(res));
+                    emitted.push(res);
+                });
+
+            await destroyAll(col);
+
+            // w8 until empty array on other tab
+            await AsyncTestUtil.waitUntil(() => {
+                const last = emitted[emitted.length - 1];
+                return last.length === 0;
+            });
+
+            process.exit();
+            sub.unsubscribe();
+            db.destroy();
+            db2.destroy();
+        });
     });
 
     describe('e', () => {

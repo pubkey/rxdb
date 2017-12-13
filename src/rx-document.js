@@ -457,6 +457,7 @@ export class RxDocument {
             });
         }
 
+        await util.promiseWait(0);
         await this.collection._runHooks('pre', 'remove', this);
 
         await this.collection.database.lockedRun(
