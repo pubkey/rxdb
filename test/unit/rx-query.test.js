@@ -871,7 +871,7 @@ describe('rx-query.test.js', () => {
             // w8 until empty array on other tab
             await AsyncTestUtil.waitUntil(() => {
                 const last = emitted[emitted.length - 1];
-                return last.length === 0;
+                return last && last.length === 0;
             });
 
             sub.unsubscribe();
