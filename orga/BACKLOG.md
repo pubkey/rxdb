@@ -2,6 +2,7 @@
 
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
+
 ## RxQuery.count()
 
 There is currently no cound-method for queries.
