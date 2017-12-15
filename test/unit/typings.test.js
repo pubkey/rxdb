@@ -18,8 +18,8 @@ describe('typings.test.js', () => {
             RxPlugin,
             plugin
         } from '../';
-        plugin(require('pouchdb-adapter-memory'));
-        process.exit();
+        import * as PouchMemAdapter from 'pouchdb-adapter-memory';
+        plugin(PouchMemAdapter);
     `;
     const transpileCode = async (code) => {
         const spawn = require('child-process-promise').spawn;
