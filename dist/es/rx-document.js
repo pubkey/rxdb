@@ -659,29 +659,33 @@ export var RxDocument = function () {
 
                         case 2:
                             _context9.next = 4;
-                            return this.collection._runHooks('pre', 'remove', this);
+                            return util.promiseWait(0);
 
                         case 4:
                             _context9.next = 6;
+                            return this.collection._runHooks('pre', 'remove', this);
+
+                        case 6:
+                            _context9.next = 8;
                             return this.collection.database.lockedRun(function () {
                                 return _this3.collection.pouch.remove(_this3.primary, _this3._data._rev);
                             });
 
-                        case 6:
+                        case 8:
 
                             this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
 
-                            _context9.next = 9;
+                            _context9.next = 11;
                             return this.collection._runHooks('post', 'remove', this);
 
-                        case 9:
-                            _context9.next = 11;
+                        case 11:
+                            _context9.next = 13;
                             return util.promiseWait(0);
 
-                        case 11:
+                        case 13:
                             return _context9.abrupt('return');
 
-                        case 12:
+                        case 14:
                         case 'end':
                             return _context9.stop();
                     }

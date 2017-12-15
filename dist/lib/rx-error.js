@@ -51,7 +51,9 @@ var parametersToString = function parametersToString(parameters) {
     ret += Object.keys(parameters).map(function (k) {
         var paramStr = '[object Object]';
         try {
-            paramStr = JSON.stringify(parameters[k], null, 2);
+            paramStr = JSON.stringify(parameters[k], function (k, v) {
+                return v === undefined ? null : v;
+            }, 2);
         } catch (e) {}
         return k + ':' + paramStr;
     }).join('\n');
