@@ -5,6 +5,7 @@ Things that have to be done before, while and after a release.
 
 - [ ] Ensure that [travis on master](https://travis-ci.org/pubkey/rxdb) successed
 - [ ] Ensure no [issues](https://github.com/pubkey/rxdb/issues) are open that should be solved before the release
+- [ ] If a major release is done, ensure [this list](./before-next-major.md) is empty
 
 ## release
 
