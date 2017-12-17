@@ -392,7 +392,7 @@ query.$.subscribe(users => {
 ```
 
 As you may detect, the query can take very long time to run, because you have thousands of users in the collection.
-When a user now logs of, the whole query will re-run over the database which takes again very long.
+When a user now logs off, the whole query will re-run over the database which takes again very long.
 
 ```js
 anyUser.loggedIn = false;
@@ -400,7 +400,7 @@ await anyUser.save();
 ```
 
 But not with the QueryChangeDetection enabled.
-Now, when one user logs of, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. The QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
+Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. The QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
 
 </details>
 
