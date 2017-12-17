@@ -147,7 +147,7 @@
     "pouchdb-adapter-indexeddb": "0.0.0",
     "pouchdb-adapter-leveldb": "6.3.4",
     "pouchdb-adapter-localstorage": "6.3.4",
-    "pouchdb-adapter-memory": "6.3.4",
+    "pouchdb-adapter-memory": "6.4.0",
     "pouchdb-adapter-node-websql": "6.3.4",
     "pouchdb-adapter-websql": "6.3.4",
     "pre-commit": "1.2.2",
