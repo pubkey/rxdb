@@ -141,7 +141,7 @@
     "memdown": "1.4.1",
     "mocha": "4.0.1",
     "nconf": "0.9.1",
-    "pouchdb": "6.3.4",
+    "pouchdb": "6.4.0",
     "pouchdb-adapter-http": "6.3.4",
     "pouchdb-adapter-idb": "6.3.4",
     "pouchdb-adapter-indexeddb": "0.0.0",
