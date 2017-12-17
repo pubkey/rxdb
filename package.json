@@ -149,7 +149,7 @@
     "pouchdb-adapter-localstorage": "6.3.4",
     "pouchdb-adapter-memory": "6.3.4",
     "pouchdb-adapter-node-websql": "6.3.4",
-    "pouchdb-adapter-websql": "6.3.4",
+    "pouchdb-adapter-websql": "6.4.0",
     "pre-commit": "1.2.2",
     "random-int": "1.0.0",
     "request": "2.83.0",
