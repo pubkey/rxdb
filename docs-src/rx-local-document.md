@@ -73,7 +73,7 @@ localDoc.get$('foo').subscribe(value => { /* .. */ });
 await localDoc.remove();
 ```
 
-## NOTICE: Because the local document does not have a schema, acessing the documents data-fields via pseudo-proxy will not work.
+## NOTICE: Because the local document does not have a schema, accessing the documents data-fields via pseudo-proxy will not work.
 
 ```javascript
 const foo = localDoc.foo; // undefined

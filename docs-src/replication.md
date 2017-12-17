@@ -1,6 +1,6 @@
 # Replication
 
-One of the most powerfull features with CouchDB, PouchDB and RxDB is **sync**.
+One of the most powerful features with CouchDB, PouchDB and RxDB is **sync**.
 You can sync every RxCollection with another RxCollection, a PouchDB-instance or a remote pouch/couch-DB.
 
 
@@ -32,7 +32,7 @@ const replicationState = myCollection.sync(
 The method `RxCollection.sync()` returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.
 
 ### change$
-Emits the change-events everytime some documents get replicated.
+Emits the change-events every time some documents get replicated.
 
 ```js
 replicationState.change$.subscribe(change => console.dir(change));
@@ -62,7 +62,7 @@ replicationState.complete$.subscribe(completed => console.dir(completed));
 ```
 
 ### error$
-If errors occur during the replication, they will get emited here.
+If errors occur during the replication, they will get emitted here.
 
 ```js
 replicationState.error$.subscribe(error => console.dir(error));
