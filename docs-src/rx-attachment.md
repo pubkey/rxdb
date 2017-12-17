@@ -2,7 +2,7 @@
 
 Like [pouchdb](https://pouchdb.com/guides/attachments.html), RxDB can store attachments which has a better performance and a higher [quota-limit](https://www.html5rocks.com/en/tutorials/offline/quota-research/) then regular data.
 
-You can store string, binary files, images and whaterver you want side by side with your documents.
+You can store string, binary files, images and whatever you want side by side with your documents.
 
 Before you can use attachments, you have to ensure that the attachments-object is set in the schema of your `RxCollection`.
 
@@ -72,7 +72,7 @@ The attachments of RxDB are represented by the type `RxAttachment` which has the
 
 ### doc
 
-The `RxDocument` which the attachement is assigned to.
+The `RxDocument` which the attachment is assigned to.
 
 ### id
 

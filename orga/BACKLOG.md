@@ -5,7 +5,7 @@ This file contains a list with things that should be implemented in the future. 
 
 ## RxQuery.count()
 
-There is currently no cound-method for queries.
+There is currently no count-method for queries.
 
 Goal-API:
 
@@ -49,7 +49,7 @@ const collection = await db.collection({name: 'http://127.0.0.1:5984/mydb', sche
 ## default and custom [conflict-strategies](https://pouchdb.com/guides/conflicts.html)
 Pouchdb requires the developer to solve [conflicts manually](https://pouchdb.com/guides/conflicts.html).
 
-A solution is to introduct a new keyword to the RxSchema conflictStrategy
+A solution is to introduce a new keyword to the RxSchema conflictStrategy
 
 Here it is describe what should happen when a document-conflict happens.
 

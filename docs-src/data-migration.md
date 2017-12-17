@@ -2,7 +2,7 @@
 
 Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make it easier to compare dates. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already saved on the user's device in the old schema?
 
-With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your exisiting data from older to newer schemas. This assures that the client's data always matches your newest code-version.
+With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
 ## Providing strategies
 
