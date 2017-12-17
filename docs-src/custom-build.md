@@ -1,6 +1,6 @@
 # Custom Build
 
-By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you dont have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.
+By default, if you import RxDB into your javascript, a full batteries-included build will be imported. This has the advantage that you don't have to choose which things you need and which not. The disadvantage is the build-size. Often you don't need most of the functionality and you could save a lot of bandwidth by cherry-picking only the things you really need. For this, RxDB supports custom builds.
 
 ## Core
 
@@ -16,7 +16,7 @@ const RxDB = require('rxdb/plugins/core');
 
 ## required modules
 
-Some parts of RxDB are not in the core, but are required. This means they must always be overwritte by at least one plugin.
+Some parts of RxDB are not in the core, but are required. This means they must always be overwrite by at least one plugin.
 
 ### validate
 
@@ -67,7 +67,7 @@ Some modules are optional and only needed if you use their functionality.
 
 ### error-messages
 
-Because error-messages are hard to compress, RxDB will throw error-codes by default. In developement you should always include this plugin so full messages will be thrown.
+Because error-messages are hard to compress, RxDB will throw error-codes by default. In development you should always include this plugin so full messages will be thrown.
 
 ```javascript
 // es6-import

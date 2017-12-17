@@ -21,7 +21,7 @@ RxDB supports the following hooks:
 ### Why is there no validate-hook?
 Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
 This means if you set the value ```lastName``` of a RxDocument, then the validation will only run on the changed field, not the whole document.
-Therefore it is not usefull to have validate-hooks when a document is written to the database.
+Therefore it is not useful to have validate-hooks when a document is written to the database.
 
 ## Use Cases
 Middleware are useful for atomizing model logic and avoiding nested blocks of async code.
@@ -37,7 +37,7 @@ Here are some other ideas:
 ## Usage
 
 ### Insert
-An insert-hook recieves the data-object of the new document.
+An insert-hook receives the data-object of the new document.
 
 
 #### lifecycle
@@ -48,7 +48,7 @@ An insert-hook recieves the data-object of the new document.
 - new document is written to database
 - postInsert series-hooks
 - postInsert parallel-hooks
-- event is emmited to RxDatabase and RxCollection
+- event is emitted to RxDatabase and RxCollection
 
 #### preInsert
 
@@ -105,7 +105,7 @@ A save-hook receives the document which is saved.
 - updated document is written to database
 - postSave series-hooks
 - postSave parallel-hooks
-- event is emmited to RxDatabase and RxCollection
+- event is emitted to RxDatabase and RxCollection
 
 #### preSave
 
@@ -154,7 +154,7 @@ myCollection.postSave(function(doc){
 
 
 ### Remove
-An remove-hook recieves the document which is removed.
+An remove-hook receives the document which is removed.
 
 #### lifecycle
 - RxDocument.remove is called
@@ -163,7 +163,7 @@ An remove-hook recieves the document which is removed.
 - deleted document is written to database
 - postRemove series-hooks
 - postRemove parallel-hooks
-- event is emmited to RxDatabase and RxCollection
+- event is emitted to RxDatabase and RxCollection
 
 #### preSave
 
@@ -211,7 +211,7 @@ myCollection.postRemove(function(doc){
 ### postCreate
 This hook is called whenever a `RxDocument` is constructed.
 You can use `postCreate` to modify every RxDocument-instance of the collection.
-This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be **asynchronous**.
+This adds a flexible way to add specify behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be **asynchronous**.
 
 
 ```js

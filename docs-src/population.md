@@ -29,7 +29,7 @@ export const refHuman = {
 ## populate()
 
 ### via method
-To get the refered RxDocument, you can use the populate()-method.
+To get the referred RxDocument, you can use the populate()-method.
 It takes the field-path as attribute and returns a Promise which resolves to the foreign document or null if not found.
 
 ```javascript

@@ -55,11 +55,11 @@ RxDB.plugin(myPlugin);
 
 ## rxdb
 
-The `rxdb`-property singals that this plugin is and rxdb-plugin and not a pouchdb-plugin. The value should always be `true`.
+The `rxdb`-property signals that this plugin is and rxdb-plugin and not a pouchdb-plugin. The value should always be `true`.
 
 ## prototypes
 
-The `prototypes`-property contains a function for each of RxDB's internal protoype that you want to manipulate. Each function gets the protoype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/master/src/plugin.js)
+The `prototypes`-property contains a function for each of RxDB's internal prototype that you want to manipulate. Each function gets the prototype-object of the corresponding class as parameter and than can modify it. You can see a list of all available prototypes [here](https://github.com/pubkey/rxdb/blob/master/src/plugin.js)
 
 ## overwritable
 
@@ -71,7 +71,7 @@ Sometimes you don't want to overwrite an existing RxDB-method, but extend it. Yo
 
 # options
 
-RxDatabase and RxCollection have an additional options-paramter, which can be filled with anny data required be the plugin.
+RxDatabase and RxCollection have an additional options-parameter, which can be filled with any data required be the plugin.
 
 ```javascript
 const collection = myDatabase.collection({

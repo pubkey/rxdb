@@ -60,8 +60,8 @@ const doc = await myCollection.insert({
 ```
 
 ### newDocument()
-Sometimes it can be helpfull to spawn and use documents before saving them into the database.
-This is usefull especially when you want to use the ORM methods or prefill values from form data.
+Sometimes it can be helpful to spawn and use documents before saving them into the database.
+This is useful especially when you want to use the ORM methods or prefill values from form data.
 You can create temporary documents by calling `RxCollection.newDocument(initalData)`.
 
 ```js
@@ -166,7 +166,7 @@ myDatabase.destroy();
 ```
 
 ### sync()
-This method allows you to replicate data between other RxCollections, pouchdb instances or remove servers which supprot the couchdb-sync-protocol.
+This method allows you to replicate data between other RxCollections, pouchdb instances or remove servers which support the couchdb-sync-protocol.
 Full documentation on how to use replication is [here](./replication.md).
 
 ### remove()
