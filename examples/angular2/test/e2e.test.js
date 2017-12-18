@@ -42,6 +42,10 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
 
     // check if in other iframe
     await t.switchToIframe('#frame_1');
+    await AsyncTestUtil.wait(100);
+    const heroElements = Selector('.hero-list-component .mat-list-item');
+    await t.expect(heroElements.count).eql(2);
+
     const heroListElement = Selector('.hero-list-component .mat-list-item:last-of-type');
     await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
 });
@@ -58,7 +62,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=' + tabsAmount)('leader-elec
 
     // wait until at least one becomes leader
     let currentLeader = null;
-    await AsyncTestUtil.waitUntil(async() => {
+    await AsyncTestUtil.waitUntil(async () => {
         let ret = false;
         for (let i = 0; i < tabsAmount; i++) {
             await t.switchToIframe('#frame_' + i);
@@ -98,7 +102,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=' + tabsAmount)('leader-elec
     // wait until next one becomes leader
     await AsyncTestUtil.wait(200);
     const leaders = [];
-    await AsyncTestUtil.waitUntil(async() => {
+    await AsyncTestUtil.waitUntil(async () => {
         let ret = false;
         for (let i = 0; i < tabsAmount; i++) {
             if (i !== currentLeader) {
