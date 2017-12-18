@@ -42,7 +42,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
 
     // check if in other iframe
     await t.switchToIframe('#frame_1');
-    const heroListElement = Selector('.hero-list-component .mat-list-item');
+    const heroListElement = Selector('.hero-list-component .mat-list-item:last-of-type');
     await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
 });
 
