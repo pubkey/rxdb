@@ -17,14 +17,14 @@
   },
   "dependencies": {
     "concurrently": "3.5.0",
+    "pouchdb-adapter-http": "6.4.0",
+    "pouchdb-adapter-idb": "6.4.0",
     "pouchdb-server": "2.3.7",
-    "pouchdb-adapter-http": "6.3.4",
-    "pouchdb-adapter-idb": "6.3.4",
     "random-int": "1.0.0",
     "vue": "2.4.2"
   },
   "devDependencies": {
-    "async-test-util": "1.2.0",
+    "async-test-util": "1.2.1",
     "babel-core": "6.26.0",
     "babel-loader": "7.1.2",
     "babel-polyfill": "6.26.0",

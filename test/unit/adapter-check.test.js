@@ -4,7 +4,7 @@ import RxDB from '../../dist/lib/index';
 
 import memdown from 'memdown';
 if (!config.platform.isNode())
-    RxDB.plugin(require('pouchdb-adapter-localstorage'));
+    RxDB.plugin(require('pouchdb-adapter-idb'));
 
 describe('adapter-check.test.js', () => {
     it('should be true on memory', async () => {
@@ -24,7 +24,7 @@ describe('adapter-check.test.js', () => {
     });
     it('localstorage should be true on browser', async () => {
         const should = config.platform.isNode() ? false : true;
-        const ok = await RxDB.checkAdapter('localstorage');
+        const ok = await RxDB.checkAdapter('idb');
         assert.equal(should, ok);
     });
 });
