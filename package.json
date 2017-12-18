@@ -68,7 +68,7 @@
     "crypto-js": "^3.1.8",
     "custom-idle-queue": "2.0.0",
     "deep-equal": "^1.0.1",
-    "is-my-json-valid": "2.16.1",
+    "is-my-json-valid": "2.17.0",
     "modifyjs": "0.3.1",
     "object-path": "0.11.4",
     "pouchdb-core": "6.4.0",
