@@ -1147,20 +1147,20 @@
 <h2 id="requirements">Requirements</h2>
 <p>Before you can start developing, do the following:</p>
 <ol>
-<li>Make shoud you have installed nodejs with version 7 or higher</li>
+<li>Make sure you have installed nodejs with version 7 or higher</li>
 <li>Clone the repository <code>git clone https://github.com/pubkey/rxdb.git</code></li>
 <li>Install the dependencies <code>cd rxdb &amp;&amp; npm install</code></li>
 <li>Make sure that the tests work for you <code>npm run test</code></li>
 </ol>
 <h2 id="flow">Flow</h2>
-<p>While developing you should run <code>npm run dev</code> and leave it open in the console. This will run the unit-tests on every file-change. If you have a slow device, you can also manually run <code>npm run test:node</code> everytime you want to check if the tests work.</p>
+<p>While developing you should run <code>npm run dev</code> and leave it open in the console. This will run the unit-tests on every file-change. If you have a slow device, you can also manually run <code>npm run test:node</code> every time you want to check if the tests work.</p>
 <h2 id="adding-tests">Adding tests</h2>
 <p>Before you start creating a bugfix or a feature, you should create a test to reproduce it. Tests are in the <code>test/unit</code>-folder.
 If you want to reproduce a bug, you can modify the test in <a href="https://github.com/pubkey/rxdb/blob/master/test/unit/bug-report.test.js" target="_blank">this file</a>.</p>
 <h2 id="making-a-pr">Making a PR</h2>
 <p>If you make a pull-request, ensure the following:</p>
 <ol>
-<li>Every feature or bugfix must be commited together with a unit-test which ensures everything works as expected.</li>
+<li>Every feature or bugfix must be committed together with a unit-test which ensures everything works as expected.</li>
 <li>Do not commit build-files (anything in the <code>dist</code>-folder)</li>
 <li>Before you add non-trivial changes, create an issue to discuss if this will be merged and you don&apos;t waste your time.</li>
 <li>To run the unit and integration-tests, do <code>npm run test</code> and ensure everything works as expected</li>
@@ -1169,7 +1169,7 @@ If you want to reproduce a bug, you can modify the test in <a href="https://gith
 <p>If you need help with your contribution, ask at <a href="https://gitter.im/pubkey/rxdb" target="_blank">gitter</a>.</p>
 <h1 id="docs">Docs</h1>
 <p>The source of the documentation is at the <code>docs-src</code>-folder.
-To read the docs locallly, run <code>npm run docs docs:install &amp;&amp; npm run docs:serve</code> and open <a href="http://localhost:4000/" target="_blank">http://localhost:4000/</a></p>
+To read the docs locally, run <code>npm run docs docs:install &amp;&amp; npm run docs:serve</code> and open <a href="http://localhost:4000/" target="_blank">http://localhost:4000/</a></p>
 <h1 id="thank-you-for-contributing">Thank you for contributing!</h1>
 
                                 
@@ -1210,7 +1210,7 @@ To read the docs locallly, run <code>npm run docs docs:install &amp;&amp; npm ru
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Contribute","level":"3.12","depth":1,"previous":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"contribute.md","mtime":"2017-11-20T19:19:11.902Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-07T19:07:12.878Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Contribute","level":"3.12","depth":1,"previous":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"contribute.md","mtime":"2017-12-18T18:53:32.275Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-18T19:29:07.977Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

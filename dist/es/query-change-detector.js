@@ -82,7 +82,7 @@ var QueryChangeDetector = function () {
         var limitAndFilled = options.limit && resultsData.length >= options.limit;
 
         if (DEBUG) {
-            console.log('!!!:!!!:   handleSingleChange()'); // TODO this should not be an error
+            console.log('QueryChangeDetector.handleSingleChange()'); // TODO this should not be an error
             this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
             console.log('changeEvent.data:');
             console.dir(changeEvent.data);

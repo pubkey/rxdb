@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (coming soon)
+### 7.3.0 (December 18, 2017)
 
 Features:
   - Added [ajv-validate](https://pubkey.github.io/rxdb/custom-build.html#ajv-validate)-plugin. Thx [@rybaczewa](https://github.com/rybaczewa)

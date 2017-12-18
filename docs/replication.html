@@ -1144,7 +1144,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="replication">Replication</h1>
-<p>One of the most powerfull features with CouchDB, PouchDB and RxDB is <strong>sync</strong>.
+<p>One of the most powerful features with CouchDB, PouchDB and RxDB is <strong>sync</strong>.
 You can sync every RxCollection with another RxCollection, a PouchDB-instance or a remote pouch/couch-DB.</p>
 <h2 id="rxcollectionsync">Rx.Collection.sync()</h2>
 <p>To replicate the collection with another instance, use <code>RxCollection.sync()</code>.
@@ -1170,7 +1170,7 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 <h2 id="rxreplicationstate">RxReplicationState</h2>
 <p>The method <code>RxCollection.sync()</code> returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.</p>
 <h3 id="change">change$</h3>
-<p>Emits the change-events everytime some documents get replicated.</p>
+<p>Emits the change-events every time some documents get replicated.</p>
 <pre><code class="lang-js">replicationState.change$.subscribe(change =&gt; <span class="hljs-built_in">console</span>.dir(change));
 </code></pre>
 <h3 id="docs">docs$</h3>
@@ -1188,7 +1188,7 @@ Only one-time-replications will complete.</p>
 <pre><code class="lang-js">replicationState.complete$.subscribe(completed =&gt; <span class="hljs-built_in">console</span>.dir(completed));
 </code></pre>
 <h3 id="error">error$</h3>
-<p>If errors occur during the replication, they will get emited here.</p>
+<p>If errors occur during the replication, they will get emitted here.</p>
 <pre><code class="lang-js">replicationState.error$.subscribe(error =&gt; <span class="hljs-built_in">console</span>.dir(error));
 </code></pre>
 <h3 id="cancel">cancel()</h3>
@@ -1240,7 +1240,7 @@ Only one-time-replications will complete.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication","level":"3.6","depth":1,"next":{"title":"QueryChangeDetection","level":"3.7","depth":1,"path":"query-change-detection.md","ref":"./query-change-detection.md","articles":[]},"previous":{"title":"LeaderElection","level":"3.5","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"replication.md","mtime":"2017-11-20T19:19:11.938Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-07T19:07:12.878Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication","level":"3.6","depth":1,"next":{"title":"QueryChangeDetection","level":"3.7","depth":1,"path":"query-change-detection.md","ref":"./query-change-detection.md","articles":[]},"previous":{"title":"LeaderElection","level":"3.5","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"replication.md","mtime":"2017-12-18T18:53:32.279Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-18T19:29:07.977Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

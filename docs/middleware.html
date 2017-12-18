@@ -1164,7 +1164,7 @@ To stop the operation at a specific hook, throw an error.</p>
 <h3 id="why-is-there-no-validate-hook">Why is there no validate-hook?</h3>
 <p>Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
 This means if you set the value <code>lastName</code> of a RxDocument, then the validation will only run on the changed field, not the whole document.
-Therefore it is not usefull to have validate-hooks when a document is written to the database.</p>
+Therefore it is not useful to have validate-hooks when a document is written to the database.</p>
 <h2 id="use-cases">Use Cases</h2>
 <p>Middleware are useful for atomizing model logic and avoiding nested blocks of async code.
 Here are some other ideas:</p>
@@ -1178,7 +1178,7 @@ Here are some other ideas:</p>
 </ul>
 <h2 id="usage">Usage</h2>
 <h3 id="insert">Insert</h3>
-<p>An insert-hook recieves the data-object of the new document.</p>
+<p>An insert-hook receives the data-object of the new document.</p>
 <h4 id="lifecycle">lifecycle</h4>
 <ul>
 <li>RxCollection.insert is called</li>
@@ -1188,7 +1188,7 @@ Here are some other ideas:</p>
 <li>new document is written to database</li>
 <li>postInsert series-hooks</li>
 <li>postInsert parallel-hooks</li>
-<li>event is emmited to RxDatabase and RxCollection</li>
+<li>event is emitted to RxDatabase and RxCollection</li>
 </ul>
 <h4 id="preinsert">preInsert</h4>
 <pre><code class="lang-js"><span class="hljs-comment">// series</span>
@@ -1237,7 +1237,7 @@ myCollection.postInsert(<span class="hljs-function"><span class="hljs-keyword">f
 <li>updated document is written to database</li>
 <li>postSave series-hooks</li>
 <li>postSave parallel-hooks</li>
-<li>event is emmited to RxDatabase and RxCollection</li>
+<li>event is emitted to RxDatabase and RxCollection</li>
 </ul>
 <h4 id="presave">preSave</h4>
 <pre><code class="lang-js"><span class="hljs-comment">// series</span>
@@ -1277,7 +1277,7 @@ myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">fun
 }, <span class="hljs-literal">false</span>);
 </code></pre>
 <h3 id="remove">Remove</h3>
-<p>An remove-hook recieves the document which is removed.</p>
+<p>An remove-hook receives the document which is removed.</p>
 <h4 id="lifecycle">lifecycle</h4>
 <ul>
 <li>RxDocument.remove is called</li>
@@ -1286,7 +1286,7 @@ myCollection.postSave(<span class="hljs-function"><span class="hljs-keyword">fun
 <li>deleted document is written to database</li>
 <li>postRemove series-hooks</li>
 <li>postRemove parallel-hooks</li>
-<li>event is emmited to RxDatabase and RxCollection</li>
+<li>event is emitted to RxDatabase and RxCollection</li>
 </ul>
 <h4 id="presave">preSave</h4>
 <pre><code class="lang-js"><span class="hljs-comment">// series</span>
@@ -1328,7 +1328,7 @@ myCollection.postRemove(<span class="hljs-function"><span class="hljs-keyword">f
 <h3 id="postcreate">postCreate</h3>
 <p>This hook is called whenever a <code>RxDocument</code> is constructed.
 You can use <code>postCreate</code> to modify every RxDocument-instance of the collection.
-This adds a flexible way to add specifiy behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be <strong>asynchronous</strong>.</p>
+This adds a flexible way to add specify behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be <strong>asynchronous</strong>.</p>
 <pre><code class="lang-js">myCollection.postCreate(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">doc</span>)</span>{
     <span class="hljs-built_in">Object</span>.defineProperty(doc, <span class="hljs-string">&apos;myField&apos;</span>, {
         get: () =&gt; <span class="hljs-string">&apos;foobar&apos;</span>,
@@ -1386,7 +1386,7 @@ This adds a flexible way to add specifiy behavior to every document. You can als
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"3.1","depth":1,"next":{"title":"ORM/DRM","level":"3.2","depth":1,"path":"orm.md","ref":"./orm.md","articles":[]},"previous":{"title":"RxAttachment","level":"2.4","depth":1,"path":"rx-attachment.md","ref":"./rx-attachment.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"middleware.md","mtime":"2017-11-20T19:19:11.938Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-07T19:07:12.878Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Middleware-hooks","level":"3.1","depth":1,"next":{"title":"ORM/DRM","level":"3.2","depth":1,"path":"orm.md","ref":"./orm.md","articles":[]},"previous":{"title":"RxAttachment","level":"2.4","depth":1,"path":"rx-attachment.md","ref":"./rx-attachment.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"middleware.md","mtime":"2017-12-18T18:53:32.279Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-12-18T19:29:07.977Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
