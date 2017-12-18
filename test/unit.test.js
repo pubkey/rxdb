@@ -37,6 +37,10 @@ const nodeAndBrowser = [
     '../test_tmp/unit/bug-report.test.js'
 ];
 
+const last = [
+    '../test_tmp/unit/last.test.js'
+];
+
 const nodeOnly = [
     '../test_tmp/unit/plugin.test.js',
     '../test_tmp/unit/no-validate.test.js',
@@ -47,7 +51,7 @@ const typings = [
     '../test_tmp/unit/typings.test.js'
 ];
 module.exports = {
-    browser: nodeAndBrowser,
-    all: nodeAndBrowser.concat(nodeOnly),
+    browser: nodeAndBrowser.concat(last),
+    all: nodeAndBrowser.concat(nodeOnly).concat(last),
     typings
 };

@@ -201,6 +201,7 @@ describe('primary.test.js', () => {
                     const doc2 = await c.findOne().where('passportId').eq(passportId).exec();
                     assert.equal(doc2.constructor.name, 'RxDocument');
                     assert.equal(doc.passportId, doc2.passportId);
+                    c.database.destroy();
                 });
             });
             describe('negative', () => {});

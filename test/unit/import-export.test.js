@@ -180,6 +180,7 @@ describe('import-export.test.js', () => {
                         Error
                     );
                     col.database.destroy();
+                    differentSchemaCol.database.destroy();
                 });
                 it('should not import encrypted if password is different', async () => {
                     const db = await RxDatabase.create({
@@ -395,6 +396,7 @@ describe('import-export.test.js', () => {
                     const docs = await col2.find().exec();
                     assert.equal(docs.length, 5);
                     db.destroy();
+                    db2.destroy();
                 });
                 it('import encrypted', async () => {
                     const password = util.randomCouchString(10);

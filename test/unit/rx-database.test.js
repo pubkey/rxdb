@@ -238,6 +238,7 @@ describe('rx-database.test.js', () => {
                 const colDoc = await db._collectionsPouch.get('human0-' + schemas.human.version);
                 const compareSchema = RxSchema.create(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
+                db.destroy();
             });
             it('use Schema-Object', async () => {
                 const db = await RxDatabase.create({

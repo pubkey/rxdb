@@ -28,8 +28,11 @@ import {
  */
 const USED_COMBINATIONS = {};
 
+let DB_COUNT = 0;
+
 export class RxDatabase {
     constructor(name, adapter, password, multiInstance, options) {
+        if (typeof name !== 'undefined') DB_COUNT++;
         this.name = name;
         this.adapter = adapter;
         this.password = password;
@@ -392,6 +395,7 @@ export class RxDatabase {
      */
     async destroy() {
         if (this.destroyed) return;
+        DB_COUNT--;
         this.destroyed = true;
         this.socket && await this.socket.destroy();
         if (this._leaderElector)
@@ -583,6 +587,10 @@ export function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
 
+export function dbCount() {
+    return DB_COUNT;
+}
+
 // TODO is this needed?
 export {
     RxSchema as RxSchema
@@ -594,5 +602,6 @@ export default {
     checkAdapter,
     isInstanceOf,
     RxDatabase,
-    RxSchema
+    RxSchema,
+    dbCount
 };

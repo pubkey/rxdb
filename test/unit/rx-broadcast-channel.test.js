@@ -83,5 +83,7 @@ describe('rx-broadcast-channel.test.js', () => {
     });
     it('cleanup', async () => {
         state.dbs.map(db => db.destroy());
+        state.otherDB.destroy();
+        assert.equal(RxDB.dbCount(), 0);
     });
 });

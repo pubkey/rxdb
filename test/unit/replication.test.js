@@ -217,6 +217,7 @@ describe('replication.test.js', () => {
                     'direction'
                 );
                 c.database.destroy();
+                c2.database.destroy();
             });
         });
     });
