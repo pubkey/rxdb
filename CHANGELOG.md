@@ -9,7 +9,7 @@ Bugfixes:
   - inMemory() throws error when using primary-key [#401](https://github.com/pubkey/rxdb/issues/401)
 
 Other:
-  - Update to pouchdb `6.4.0`
+  - Update to pouchdb [6.4.0](https://pouchdb.com/2017/12/16/pouchdb-6.4.0.html)
   - Optimize socket-pull by comparing internal last-change-time
   - do not hide fields with `value: undefined` in error-message [#403](https://github.com/pubkey/rxdb/issues/403)
 
