@@ -233,7 +233,7 @@ export function checkSchema(jsonID) {
         });
     }
 
-    // check that indexes are string
+    // check that indexes are string or number
     getIndexes(jsonID)
         .reduce((a, b) => a.concat(b), [])
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
@@ -251,7 +251,8 @@ export function checkSchema(jsonID) {
         })
         .filter(index =>
             index.schemaObj.type !== 'string' &&
-            index.schemaObj.type !== 'integer'
+            index.schemaObj.type !== 'integer' &&
+            index.schemaObj.type !== 'number'
         )
         .forEach(index => {
             throw RxError.newRxError('SC22', {

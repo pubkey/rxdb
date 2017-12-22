@@ -627,7 +627,10 @@ describe('rx-query.test.js', () => {
                     version: 0,
                     type: 'object',
                     properties: {
-                        value: {type: 'number'}
+                        value: {
+                            type: 'number',
+                            index: true
+                        }
                     }
                 };
                 const db = await RxDatabase.create({
@@ -642,7 +645,9 @@ describe('rx-query.test.js', () => {
 
                 const queryAll = collection
                     .find()
-                    .sort({value: -1});
+                    .sort({
+                        value: -1
+                    });
 
                 const resultsAll = await queryAll.exec();
                 assert.equal(resultsAll.length, 0);

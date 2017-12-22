@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (coming soon)
+
+Bugfixes:
+  - Allow `number`-fields as index [#438](https://github.com/pubkey/rxdb/pull/438)
+
 ### 7.3.0 (December 18, 2017)
 
 Features:
