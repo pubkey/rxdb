@@ -570,55 +570,84 @@ describe('rx-query.test.js', () => {
     });
 
     describe('issues', () => {
-        it('#157 Cannot sort on field(s) "XXX" when using the default index', async () => {
-            const schema = {
-                'disableKeyCompression': true,
-                'version': 0,
-                'type': 'object',
-                'properties': {
-                    'user_id': {
-                        'type': 'string',
-                        'primary': true
+        describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
+            it('schema example 1', async () => {
+                const schema = {
+                    'disableKeyCompression': true,
+                    'version': 0,
+                    'type': 'object',
+                    'properties': {
+                        'user_id': {
+                            'type': 'string',
+                            'primary': true
+                        },
+                        'user_pwd': {
+                            'type': 'string',
+                            'encrypted': true
+                        },
+                        'last_login': {
+                            'type': 'number'
+                        },
+                        'status': {
+                            'type': 'string'
+                        }
                     },
-                    'user_pwd': {
-                        'type': 'string',
-                        'encrypted': true
-                    },
-                    'last_login': {
-                        'type': 'number'
-                    },
-                    'status': {
-                        'type': 'string'
+                    'required': ['user_pwd', 'last_login', 'status']
+                };
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory',
+                    password: util.randomCouchString(20)
+                });
+                const collection = await db.collection({
+                    name: util.randomCouchString(10),
+                    schema
+                });
+
+                const query = collection
+                    .findOne()
+                    .where('status')
+                    .eq('foobar');
+
+                const resultDoc = await query.exec();
+                assert.equal(resultDoc, null);
+
+                const queryAll = collection
+                    .find()
+                    .where('status')
+                    .eq('foobar');
+
+                const resultsAll = await queryAll.exec();
+                assert.equal(resultsAll.length, 0);
+                db.destroy();
+            });
+            it('schema example 2', async () => {
+                const schema = {
+                    disableKeyCompression: true,
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        value: {type: 'number'}
                     }
-                },
-                'required': ['user_pwd', 'last_login', 'status']
-            };
-            const db = await RxDatabase.create({
-                name: util.randomCouchString(10),
-                adapter: 'memory',
-                password: util.randomCouchString(20)
+                };
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory',
+                    password: util.randomCouchString(20)
+                });
+                const collection = await db.collection({
+                    name: util.randomCouchString(10),
+                    schema
+                });
+
+                const queryAll = collection
+                    .find()
+                    .sort({value: -1});
+
+                const resultsAll = await queryAll.exec();
+                assert.equal(resultsAll.length, 0);
+                db.destroy();
             });
-            const collection = await db.collection({
-                name: util.randomCouchString(10),
-                schema
-            });
-
-            const query = collection
-                .findOne()
-                .where('status')
-                .eq('foobar');
-
-            const resultDoc = await query.exec();
-            assert.equal(resultDoc, null);
-
-            const queryAll = collection
-                .find()
-                .where('status')
-                .eq('foobar');
-
-            const resultsAll = await queryAll.exec();
-            assert.equal(resultsAll.length, 0);
-            db.destroy();
         });
         it('#164 Sort error, pouchdb-find/mango "unknown operator"', async () => {
             const db = await RxDB.create({
