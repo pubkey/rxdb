@@ -112,7 +112,7 @@
     "dependency-check": "2.9.2",
     "detect-browser": "2.0.0",
     "disc": "1.3.3",
-    "eslint": "4.13.1",
+    "eslint": "4.14.0",
     "eslint-plugin-babel": "4.1.2",
     "eslint-plugin-disable": "1.0.0",
     "eslint-plugin-spellcheck": "0.0.8",
