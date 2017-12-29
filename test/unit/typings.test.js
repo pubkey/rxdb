@@ -27,7 +27,7 @@ describe('typings.test.js', () => {
         const stderr = [];
         const promise = spawn('ts-node', [
             '--no-cache',
-            '--compilerOptions', '{"target":"es6"}',
+            '--compilerOptions', '{"target":"es6", "strict": true}',
             '--type-check',
             '-p', code
         ]);

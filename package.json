@@ -81,6 +81,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
+    "@types/pouchdb-adapter-memory": "6.1.2",
     "assert": "1.4.1",
     "async-test-util": "1.2.1",
     "babel-cli": "6.26.0",
