@@ -140,7 +140,7 @@
     "karma-safari-launcher": "1.0.0",
     "leveldown": "2.1.1",
     "memdown": "1.4.1",
-    "mocha": "4.0.1",
+    "mocha": "4.1.0",
     "nconf": "0.10.0",
     "pouchdb": "6.4.1",
     "pouchdb-adapter-http": "6.4.1",

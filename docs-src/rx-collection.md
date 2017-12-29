@@ -176,7 +176,7 @@ This removes the documents, the schemas, and older schemaVersions.
 
 ```js
 await myCollection.remove();
-// collection is no removed and can be re-created
+// collection is now removed and can be re-created
 ```
 
 ### isRxCollection
