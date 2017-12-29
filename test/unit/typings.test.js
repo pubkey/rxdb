@@ -63,6 +63,16 @@ describe('typings.test.js', () => {
             assert.ok(thrown);
         });
     });
+    describe('import', () => {
+        it('import default with strict:true', async () => {
+            const code = `
+                import rxdb from '../';
+                import * as PouchMemAdapter from 'pouchdb-adapter-memory';
+                rxdb.plugin(PouchMemAdapter);
+            `;
+            await transpileCode(code);
+        });
+    });
     describe('database', () => {
         describe('positive', () => {
             it('should create the database', async () => {
