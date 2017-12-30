@@ -33,7 +33,7 @@ export declare class RxDocumentBase<RxDocumentType> {
     update(updateObj: any): Promise<any>;
     atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType>>;
 
-    putAttachment(RxAttachmentCreator): Promise<RxAttachment<RxDocumentType>>;
+    putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType>>;
     getAttachment(id: string): Promise<RxAttachment<RxDocumentType>>;
     allAttachments(): Promise<RxAttachment<RxDocumentType>[]>;
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;

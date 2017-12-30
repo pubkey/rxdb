@@ -21,7 +21,7 @@ import {
     RxCollectionCreator,
     RxReplicationState,
     SyncOptions,
-    RxCollection
+    RxCollection as RxCollectionClass
 } from './rx-collection';
 export * from './rx-collection';
 
@@ -54,8 +54,18 @@ import {
 export * from './rx-plugin';
 
 
-export function create(creator: RxDatabaseCreator): Promise<RxDatabase>;
-export function removeDatabase(databaseName: string, adapter: any): Promise<void>;
+type createType = (creator: RxDatabaseCreator) => Promise<RxDatabase>;
+export const create: createType;
+
+type removeDatabaseType = (databaseName: string, adapter: any) => Promise<void>;
+export const removeDatabase: removeDatabaseType;
+
+type QueryChangeDetector = {
+    enableDebugging: () => void,
+    enable: (to: boolean) => void
+};
+
+
 export function checkAdapter(adapter: any | string): Promise<boolean>;
 
 export const QueryChangeDetector: {
@@ -63,50 +73,37 @@ export const QueryChangeDetector: {
     enableDebugging(set?: boolean): void;
 };
 
-export function plugin(mod: RxPlugin | any): void;
+type pluginType = (mod: RxPlugin | any) => void;
+export const plugin: pluginType;
 
-export function isRxDatabase(obj: any): boolean;
-export function isRxCollection(obj: any): boolean;
-export function isRxDocument(obj: any): boolean;
-export function isRxQuery(obj: any): boolean;
-export function isRxSchema(obj: any): boolean;
+type isInstanceOfType = (obj: any) => boolean;
+
+export const isRxDatabase: isInstanceOfType;
+export const isRxCollection: isInstanceOfType;
+export const isRxDocument: isInstanceOfType;
+export const isRxQuery: isInstanceOfType;
+export const isRxSchema: isInstanceOfType;
+
+
+type Test<RxDocumentType> = {
+    readonly doc: RxDocument<RxDocumentType>;
+}
 
 declare const _default: {
-    create,
-    removeDatabase,
-    plugin,
-    RxPlugin,
-
-    // database
-    isRxDatabase,
-    RxDatabaseCreator,
-    RxDatabase,
-
-    // collection
-    isRxCollection,
-    RxCollectionCreator,
-    RxCollection,
-
-    // document
-    isRxDocument,
-    RxDocument,
-
-    // query
-    isRxQuery,
-    RxQuery,
-
-    // attachment
-    RxAttachment,
-
-    // schema
-    isRxSchema,
-    RxSchema,
-    RxJsonSchema,
-
-    // other
-    PouchDB,
-    QueryChangeDetector,
-    RxError
+    create: createType,
+    checkAdapter: (adapter: any) => Promise<boolean>,
+    removeDatabase: removeDatabaseType,
+    plugin: pluginType,
+    dbCount: () => number,
+    isRxDatabase: isInstanceOfType,
+    isRxCollection: isInstanceOfType,
+    isRxDocument: isInstanceOfType,
+    isRxQuery: isInstanceOfType,
+    isRxSchema: isInstanceOfType,
+    RxSchema: RxSchema,
+    PouchDB: PouchDB,
+    QueryChangeDetector: QueryChangeDetector,
+    RxDatabase: RxDatabase
 };
 
 export default _default;

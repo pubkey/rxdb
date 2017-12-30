@@ -314,4 +314,26 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
+    describe('issues', () => {
+        it('#448 strict:true not working', async () => {
+            /*
+             * TODO we currently have to set "skipLibCheck": true
+             * because of a rxjs-typings problem
+             * @link https://github.com/ReactiveX/rxjs/issues/3031
+             */
+            const exec = require('child_process').exec;
+            await new Promise((res, rej) => {
+                exec('tsc --p "../test/helper/issue-448/tsconfig.json"', (err, stdout, stderr) => {
+                    if (err || stderr !== '') {
+                        // console.log('sterr:'); console.dir(stderr);
+                        // console.log('err:'); console.dir(err);
+                        rej(err);
+                    } else {
+                        // console.log('out:'); console.log(stdout);
+                        res(stdout);
+                    }
+                });
+            });
+        });
+    });
 });
