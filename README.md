@@ -21,7 +21,7 @@
   <h3>
     <a href="https://pubkey.github.io/rxdb/">Documentation</a>
     <span> | </span>
-    <a href="https://github.com/pubkey/rxdb/tree/master/examples">Code Examples</a>
+    <a href="https://github.com/pubkey/rxdb/tree/master/examples">Example-Projects</a>
   </h3>
 </div>
 
@@ -132,7 +132,7 @@ RxDB.create({
   <b>Mango-Query</b>
   <p>
 
-To find data in your collection, [use the mquery api](https://github.com/aheckmann/mquery) to create chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
+To find data in your collection, use the [mquery](https://github.com/aheckmann/mquery) api to create chained mango-queries, which you maybe know from **mongoDB** or **mongoose**.
   </p>
 </summary>
 
