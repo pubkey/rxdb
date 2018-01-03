@@ -440,8 +440,46 @@ describe('attachments.test.js', () => {
             db.destroy();
         });
     });
-    describe('integration', () => {
-        // TODO remove this line
-        // it('e', () => process.exit());
+    describe('issues', () => {
+        it('#455 attachments not working', async () => {
+            const myschema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        primary: true,
+                    },
+                },
+                attachments: {
+                    encrypted: false,
+                },
+            };
+            const myDB = await RxDatabase.create({
+                name: 'mylocaldb' + util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true
+            });
+            const myCollection = await myDB.collection({
+                name: 'mycollection',
+                schema: myschema
+            });
+            const mydoc = myCollection.newDocument({
+                name: 'mydoc'
+            });
+            await mydoc.save();
+            const doc = await myCollection.findOne('mydoc').exec();
+            await doc.putAttachment({
+                id: 'sampledata',
+                data: 'foo bar',
+                type: 'application/octet-stream'
+            });
+
+            const doc2 = await myCollection.findOne('mydoc').exec();
+            const attachment2 = doc2.getAttachment('sampledata');
+            const data = await attachment2.getStringData();
+            assert.equal(data, 'foo bar');
+            await myDB.destroy();
+        });
     });
 });
