@@ -15,7 +15,7 @@ Things that have to be done before, while and after a release.
 - [ ] Run `npm run docs:build` to update the docs-page
 - [ ] Run `git add .` and `git commit -m '${newVersion}'` and `git push origin master` to push the new release to the github-repo
 - [ ] Run `npm publish` to push the new release to npm
-- [ ] Create a new tag at the [github-repo](https://github.com/pubkey/rxdb/releases)
+- [ ] Create a new tag at the [github-repo](https://github.com/pubkey/rxdb/releases/new)
 
 
 ## post-release
