@@ -19,6 +19,7 @@ export var checkAdapter = RxDatabase.checkAdapter;
 export var plugin = Plugin.addPlugin;
 
 export var isRxDatabase = RxDatabase.isInstanceOf;
+export var dbCount = RxDatabase.dbCount;
 export var isRxCollection = RxCollection.isInstanceOf;
 export var isRxDocument = RxDocument.isInstanceOf;
 export var isRxQuery = RxQuery.isInstanceOf;
@@ -29,6 +30,7 @@ export default {
     removeDatabase: removeDatabase,
     checkAdapter: checkAdapter,
     plugin: plugin,
+    dbCount: dbCount,
     isRxDatabase: isRxDatabase,
     isRxCollection: isRxCollection,
     isRxDocument: isRxDocument,

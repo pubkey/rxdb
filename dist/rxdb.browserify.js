@@ -167,7 +167,7 @@ exports["default"] = {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = undefined;
+exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.dbCount = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = undefined;
 
 var _rxDatabase = require('./rx-database');
 
@@ -215,6 +215,7 @@ var checkAdapter = exports.checkAdapter = _rxDatabase2['default'].checkAdapter;
 var plugin = exports.plugin = _plugin2['default'].addPlugin;
 
 var isRxDatabase = exports.isRxDatabase = _rxDatabase2['default'].isInstanceOf;
+var dbCount = exports.dbCount = _rxDatabase2['default'].dbCount;
 var isRxCollection = exports.isRxCollection = _rxCollection2['default'].isInstanceOf;
 var isRxDocument = exports.isRxDocument = _rxDocument2['default'].isInstanceOf;
 var isRxQuery = exports.isRxQuery = _rxQuery2['default'].isInstanceOf;
@@ -225,6 +226,7 @@ exports['default'] = {
     removeDatabase: removeDatabase,
     checkAdapter: checkAdapter,
     plugin: plugin,
+    dbCount: dbCount,
     isRxDatabase: isRxDatabase,
     isRxCollection: isRxCollection,
     isRxDocument: isRxDocument,
@@ -1146,7 +1148,7 @@ exports["default"] = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.checkAdapter = exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.removeDatabase = exports.create = undefined;
+exports.checkAdapter = exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.dbCount = exports.plugin = exports.removeDatabase = exports.create = undefined;
 
 var _core = require('./core');
 
@@ -1262,6 +1264,7 @@ var removeDatabase = exports.removeDatabase = _core2['default'].removeDatabase;
  * add a plugin for rxdb or pouchdb
  */
 var plugin = exports.plugin = _core2['default'].plugin;
+var dbCount = exports.dbCount = _core2['default'].dbCount;
 var isRxDatabase = exports.isRxDatabase = _core2['default'].isRxDatabase;
 var isRxCollection = exports.isRxCollection = _core2['default'].isRxCollection;
 var isRxDocument = exports.isRxDocument = _core2['default'].isRxDocument;
@@ -1278,6 +1281,7 @@ exports['default'] = {
   checkAdapter: checkAdapter,
   removeDatabase: removeDatabase,
   plugin: plugin,
+  dbCount: dbCount,
   isRxDatabase: isRxDatabase,
   isRxCollection: isRxCollection,
   isRxDocument: isRxDocument,
@@ -6152,7 +6156,7 @@ function checkSchema(jsonID) {
         });
     }
 
-    // check that indexes are string
+    // check that indexes are string or number
     (0, _rxSchema.getIndexes)(jsonID).reduce(function (a, b) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
@@ -6170,7 +6174,7 @@ function checkSchema(jsonID) {
             schemaObj: schemaObj
         };
     }).filter(function (index) {
-        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer';
+        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
     }).forEach(function (index) {
         throw _rxError2['default'].newRxError('SC22', {
             key: index.key,
@@ -8843,6 +8847,7 @@ var checkAdapter = exports.checkAdapter = function () {
 
 exports.properties = properties;
 exports.isInstanceOf = isInstanceOf;
+exports.dbCount = dbCount;
 
 var _randomToken = require('random-token');
 
@@ -8902,10 +8907,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  */
 var USED_COMBINATIONS = {};
 
+var DB_COUNT = 0;
+
 var RxDatabase = exports.RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance, options) {
         (0, _classCallCheck3['default'])(this, RxDatabase);
 
+        if (typeof name !== 'undefined') DB_COUNT++;
         this.name = name;
         this.adapter = adapter;
         this.password = password;
@@ -9531,45 +9539,46 @@ var RxDatabase = exports.RxDatabase = function () {
                                 return _context6.abrupt('return');
 
                             case 2:
+                                DB_COUNT--;
                                 this.destroyed = true;
                                 _context6.t0 = this.socket;
 
                                 if (!_context6.t0) {
-                                    _context6.next = 7;
+                                    _context6.next = 8;
                                     break;
                                 }
 
-                                _context6.next = 7;
+                                _context6.next = 8;
                                 return this.socket.destroy();
 
-                            case 7:
+                            case 8:
                                 if (!this._leaderElector) {
-                                    _context6.next = 10;
+                                    _context6.next = 11;
                                     break;
                                 }
 
-                                _context6.next = 10;
+                                _context6.next = 11;
                                 return this._leaderElector.destroy();
 
-                            case 10:
+                            case 11:
                                 this._subs.map(function (sub) {
                                     return sub.unsubscribe();
                                 });
 
                                 // destroy all collections
-                                _context6.next = 13;
+                                _context6.next = 14;
                                 return Promise.all(Object.keys(this.collections).map(function (key) {
                                     return _this6.collections[key];
                                 }).map(function (col) {
                                     return col.destroy();
                                 }));
 
-                            case 13:
+                            case 14:
 
                                 // remove combination from USED_COMBINATIONS-map
                                 _removeUsedCombination(this.name, this.adapter);
 
-                            case 14:
+                            case 15:
                             case 'end':
                                 return _context6.stop();
                         }
@@ -9710,6 +9719,10 @@ function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
 
+function dbCount() {
+    return DB_COUNT;
+}
+
 // TODO is this needed?
 exports.RxSchema = _rxSchema2['default'];
 exports['default'] = {
@@ -9718,7 +9731,8 @@ exports['default'] = {
     checkAdapter: checkAdapter,
     isInstanceOf: isInstanceOf,
     RxDatabase: RxDatabase,
-    RxSchema: _rxSchema2['default']
+    RxSchema: _rxSchema2['default'],
+    dbCount: dbCount
 };
 
 },{"./hooks":7,"./overwritable":11,"./pouch-db":26,"./rx-change-event":30,"./rx-collection":31,"./rx-error":34,"./rx-schema":36,"./socket":37,"./util":38,"babel-runtime/helpers/asyncToGenerator":49,"babel-runtime/helpers/classCallCheck":50,"babel-runtime/helpers/createClass":51,"babel-runtime/helpers/toConsumableArray":55,"babel-runtime/regenerator":57,"custom-idle-queue":487,"random-token":547,"rxjs/Subject":557,"rxjs/operators/filter":569}],33:[function(require,module,exports){
@@ -42977,7 +42991,7 @@ var Observable = (function () {
             operator.call(sink, this.source);
         }
         else {
-            sink.add(this.source ? this._subscribe(sink) : this._trySubscribe(sink));
+            sink.add(this.source || !sink.syncErrorThrowable ? this._subscribe(sink) : this._trySubscribe(sink));
         }
         if (sink.syncErrorThrowable) {
             sink.syncErrorThrowable = false;
@@ -43471,6 +43485,7 @@ var Subscriber = (function (_super) {
                 }
                 if (typeof destinationOrNext === 'object') {
                     if (destinationOrNext instanceof Subscriber) {
+                        this.syncErrorThrowable = destinationOrNext.syncErrorThrowable;
                         this.destination = destinationOrNext;
                         this.destination.add(this);
                     }

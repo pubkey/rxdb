@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.checkAdapter = exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.removeDatabase = exports.create = undefined;
+exports.checkAdapter = exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.dbCount = exports.plugin = exports.removeDatabase = exports.create = undefined;
 
 var _core = require('./core');
 
@@ -119,6 +119,7 @@ var removeDatabase = exports.removeDatabase = _core2['default'].removeDatabase;
  * add a plugin for rxdb or pouchdb
  */
 var plugin = exports.plugin = _core2['default'].plugin;
+var dbCount = exports.dbCount = _core2['default'].dbCount;
 var isRxDatabase = exports.isRxDatabase = _core2['default'].isRxDatabase;
 var isRxCollection = exports.isRxCollection = _core2['default'].isRxCollection;
 var isRxDocument = exports.isRxDocument = _core2['default'].isRxDocument;
@@ -135,6 +136,7 @@ exports['default'] = {
   checkAdapter: checkAdapter,
   removeDatabase: removeDatabase,
   plugin: plugin,
+  dbCount: dbCount,
   isRxDatabase: isRxDatabase,
   isRxCollection: isRxCollection,
   isRxDocument: isRxDocument,

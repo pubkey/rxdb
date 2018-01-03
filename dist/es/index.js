@@ -69,6 +69,7 @@ export var removeDatabase = Core.removeDatabase;
  * add a plugin for rxdb or pouchdb
  */
 export var plugin = Core.plugin;
+export var dbCount = Core.dbCount;
 export var isRxDatabase = Core.isRxDatabase;
 export var isRxCollection = Core.isRxCollection;
 export var isRxDocument = Core.isRxDocument;
@@ -85,6 +86,7 @@ export default {
   checkAdapter: checkAdapter,
   removeDatabase: removeDatabase,
   plugin: plugin,
+  dbCount: dbCount,
   isRxDatabase: isRxDatabase,
   isRxCollection: isRxCollection,
   isRxDocument: isRxDocument,

@@ -26,10 +26,13 @@ import { filter } from 'rxjs/operators/filter';
  */
 var USED_COMBINATIONS = {};
 
+var DB_COUNT = 0;
+
 export var RxDatabase = function () {
     function RxDatabase(name, adapter, password, multiInstance, options) {
         _classCallCheck(this, RxDatabase);
 
+        if (typeof name !== 'undefined') DB_COUNT++;
         this.name = name;
         this.adapter = adapter;
         this.password = password;
@@ -633,45 +636,46 @@ export var RxDatabase = function () {
                             return _context6.abrupt('return');
 
                         case 2:
+                            DB_COUNT--;
                             this.destroyed = true;
                             _context6.t0 = this.socket;
 
                             if (!_context6.t0) {
-                                _context6.next = 7;
+                                _context6.next = 8;
                                 break;
                             }
 
-                            _context6.next = 7;
+                            _context6.next = 8;
                             return this.socket.destroy();
 
-                        case 7:
+                        case 8:
                             if (!this._leaderElector) {
-                                _context6.next = 10;
+                                _context6.next = 11;
                                 break;
                             }
 
-                            _context6.next = 10;
+                            _context6.next = 11;
                             return this._leaderElector.destroy();
 
-                        case 10:
+                        case 11:
                             this._subs.map(function (sub) {
                                 return sub.unsubscribe();
                             });
 
                             // destroy all collections
-                            _context6.next = 13;
+                            _context6.next = 14;
                             return Promise.all(Object.keys(this.collections).map(function (key) {
                                 return _this6.collections[key];
                             }).map(function (col) {
                                 return col.destroy();
                             }));
 
-                        case 13:
+                        case 14:
 
                             // remove combination from USED_COMBINATIONS-map
                             _removeUsedCombination(this.name, this.adapter);
 
-                        case 14:
+                        case 15:
                         case 'end':
                             return _context6.stop();
                     }
@@ -967,6 +971,10 @@ export function isInstanceOf(obj) {
     return obj instanceof RxDatabase;
 }
 
+export function dbCount() {
+    return DB_COUNT;
+}
+
 // TODO is this needed?
 export { RxSchema };
 
@@ -976,5 +984,6 @@ export default {
     checkAdapter: checkAdapter,
     isInstanceOf: isInstanceOf,
     RxDatabase: RxDatabase,
-    RxSchema: RxSchema
+    RxSchema: RxSchema,
+    dbCount: dbCount
 };

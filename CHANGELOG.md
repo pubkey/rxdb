@@ -1,11 +1,10 @@
 # Changelog
 
-### X.X.X (coming soon)
+### 7.3.1 (January 3, 2018)
 
 Bugfixes:
   - Allow `number`-fields as index [#438](https://github.com/pubkey/rxdb/pull/438)
   - Ensure typescript `strict: true` works [#448](https://github.com/pubkey/rxdb/issues/448)
-
 
 ### 7.3.0 (December 18, 2017)
 

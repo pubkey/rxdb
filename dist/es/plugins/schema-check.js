@@ -218,7 +218,7 @@ export function checkSchema(jsonID) {
         });
     }
 
-    // check that indexes are string
+    // check that indexes are string or number
     getIndexes(jsonID).reduce(function (a, b) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
@@ -236,7 +236,7 @@ export function checkSchema(jsonID) {
             schemaObj: schemaObj
         };
     }).filter(function (index) {
-        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer';
+        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
     }).forEach(function (index) {
         throw RxError.newRxError('SC22', {
             key: index.key,

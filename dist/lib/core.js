@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = undefined;
+exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.dbCount = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = undefined;
 
 var _rxDatabase = require('./rx-database');
 
@@ -51,6 +51,7 @@ var checkAdapter = exports.checkAdapter = _rxDatabase2['default'].checkAdapter;
 var plugin = exports.plugin = _plugin2['default'].addPlugin;
 
 var isRxDatabase = exports.isRxDatabase = _rxDatabase2['default'].isInstanceOf;
+var dbCount = exports.dbCount = _rxDatabase2['default'].dbCount;
 var isRxCollection = exports.isRxCollection = _rxCollection2['default'].isInstanceOf;
 var isRxDocument = exports.isRxDocument = _rxDocument2['default'].isInstanceOf;
 var isRxQuery = exports.isRxQuery = _rxQuery2['default'].isInstanceOf;
@@ -61,6 +62,7 @@ exports['default'] = {
     removeDatabase: removeDatabase,
     checkAdapter: checkAdapter,
     plugin: plugin,
+    dbCount: dbCount,
     isRxDatabase: isRxDatabase,
     isRxCollection: isRxCollection,
     isRxDocument: isRxDocument,

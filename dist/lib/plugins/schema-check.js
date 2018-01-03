@@ -243,7 +243,7 @@ function checkSchema(jsonID) {
         });
     }
 
-    // check that indexes are string
+    // check that indexes are string or number
     (0, _rxSchema.getIndexes)(jsonID).reduce(function (a, b) {
         return a.concat(b);
     }, []).filter(function (elem, pos, arr) {
@@ -261,7 +261,7 @@ function checkSchema(jsonID) {
             schemaObj: schemaObj
         };
     }).filter(function (index) {
-        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer';
+        return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
     }).forEach(function (index) {
         throw _rxError2['default'].newRxError('SC22', {
             key: index.key,
