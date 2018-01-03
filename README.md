@@ -6,14 +6,13 @@
 | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **6.0.0** is now released, read the [CHANGELOG](./CHANGELOG.md#600-september-19-2017) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 -->
 
-<h1 align="center">RxDB</h1>
-
 <p align="center">
   <a href="https://github.com/pubkey/rxdb">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/ba7c9b80/docs/files/logo/logo_text.svg" width="380px" />
   </a>
 </p>
 
+<h1 align="center">RxDB</h1>
 <p align="center">
   <strong>A reactive, offline-first Database for JavaScript</strong>
 </p>
@@ -23,8 +22,6 @@
     <a href="https://pubkey.github.io/rxdb/">Documentation</a>
     <span> | </span>
     <a href="https://github.com/pubkey/rxdb/tree/master/examples">Code Examples</a>
-    <span> | </span>
-    <a href="https://www.webpackbin.com/bins/-Kv9UWdorylh0jzGYmZy">Live Demo</a>
   </h3>
 </div>
 
@@ -413,8 +410,6 @@ As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.c
 ## Getting started
 
 Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or exploring the [example-projects](./examples).
-
-You can test out RxDB in the browser with [WebpackBin](https://www.webpackbin.com/bins/-Kl_UJwIRc7wysOY96PZ).
 
 ## Contribute
 [Check out how you can contribute to this project](./docs-src/contribute.md).
