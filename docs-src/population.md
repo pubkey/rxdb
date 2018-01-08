@@ -47,7 +47,7 @@ console.dir(bestFriend); //> RxDocument[Alice]
 ```
 
 ### via getter
-You can also get the populated RxDocument with the direct getter. Therefore you have to add the underscore `_` to the fieldname.
+You can also get the populated RxDocument with the direct getter. Therefore you have to add an underscore suffix `_` to the fieldname.
 This works also on nested values.
 
 ```javascript
