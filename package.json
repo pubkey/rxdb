@@ -125,7 +125,7 @@
     "gulp": "3.9.1",
     "gulp-mocha": "5.0.0",
     "gzip-size-cli": "2.1.0",
-    "http-server": "0.10.0",
+    "http-server": "0.11.0",
     "karma": "2.0.0",
     "karma-babel-preprocessor": "7.0.0",
     "karma-browserify": "5.1.3",
