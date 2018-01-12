@@ -8,7 +8,21 @@ gulp.task('test', function() {
         .pipe(mocha({
             bail: true,
             timeout: 6000,
-            exit: true
+            exit: true,
+        }))
+        .once('end', function() {
+            process.exit();
+        });
+});
+
+gulp.task('profile', function() {
+    return gulp
+        .src(tests.all)
+        .pipe(mocha({
+            bail: false,
+            timeout: 6000,
+            exit: true,
+            prof: true
         }))
         .once('end', function() {
             process.exit();

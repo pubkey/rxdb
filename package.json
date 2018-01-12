@@ -37,6 +37,7 @@
     "test:typings": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test:typings",
     "test:deps": "dependency-check ./package.json --no-dev",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
+    "profile": "npm run pretest && gulp --gulpfile ./config/gulpfile.js profile && node scripts/profile.js",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
     "lint": "eslint --ignore-path ./config/.eslintignore src test ./config/gulpfile.js",
     "transpile:clean": "rimraf dist/lib",

@@ -9,3 +9,6 @@ config.json
 .config.json
 .transpile_state.json
 .idea
+processed.txt
+config/isolate-*
+config/log.txt
