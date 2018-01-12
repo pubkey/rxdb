@@ -1,18 +1,18 @@
 const heroSchema = {
-    'version': 0,
-    'title': 'hero schema',
-    'description': 'describes a simple hero',
-    'type': 'object',
-    'properties': {
-        'name': {
-            'type': 'string',
-            'primary': true
+    version: 0,
+    title: 'hero schema',
+    description: 'describes a simple hero',
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string',
+            primary: true,
         },
-        'color': {
-            'type': 'string'
-        }
+        color: {
+            type: 'string',
+        },
     },
-    'required': ['color']
+    required: ['color'],
 };
 
 export default heroSchema;
