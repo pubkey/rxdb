@@ -205,11 +205,15 @@ describe('typings.test.js', () => {
                         autoMigrate: false,
                     });
 
-                    const oneDoc: RxDocument<DocType> = await myCollection.findOne().exec();
+                    const result = await myCollection.findOne().exec();
+                    if(result === null) throw new Error('got no document');
+                    const oneDoc: RxDocument<DocType> = result;
                     const id: string = oneDoc.passportId;
                     const prim: string = oneDoc.primary;
 
-                    const otherDoc = await myCollection.findOne().exec();
+                    const otherResult = await myCollection.findOne().exec();
+                    if(otherResult === null) throw new Error('got no other document');
+                    const otherDoc: RxDocument<DocType> = otherResult;
                     const id2 = otherDoc.passportId;
                 });
             `;
@@ -233,7 +237,9 @@ describe('typings.test.js', () => {
                         autoMigrate: false,
                     });
 
-                    const oneDoc: RxDocument<DocType> = await myCollection.findOne().exec();
+                    const result = await myCollection.findOne().exec();
+                    if(!result) throw new Error('got no doc');
+                    const oneDoc: RxDocument<DocType> = result;
                     const attachment: RxAttachment<DocType> = await oneDoc.putAttachment({
                         id: 'cat.txt',
                         data: 'foo bar',

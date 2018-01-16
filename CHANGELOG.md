@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (coming soon)
+
+Typings:
+  - Fix `RxCollection.findOne()` can return `null`
+
 ### 7.3.1 (January 3, 2018)
 
 Bugfixes:

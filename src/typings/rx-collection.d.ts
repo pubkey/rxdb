@@ -78,7 +78,7 @@ export declare class RxCollection<RxDocumentType> {
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType>[]>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType>>;
+    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType> | null>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
