@@ -63,7 +63,7 @@
     "rxjs": "^5.5.2"
   },
   "dependencies": {
-    "@types/core-js": "0.9.44",
+    "@types/core-js": "0.9.45",
     "babel-runtime": "^6.26.0",
     "clone": "^2.1.1",
     "crypto-js": "^3.1.8",
