@@ -1,5 +1,6 @@
 import assert from 'assert';
 import * as util from '../../dist/lib/util';
+import config from './config';
 
 import Core from '../../dist/lib/core';
 Core.plugin(require('../../plugins/no-validate'));
@@ -26,7 +27,7 @@ const schema = {
     required: ['firstName', 'lastName']
 };
 
-describe('no-validate.node.js', () => {
+config.parallel('no-validate.node.js', () => {
     it('should allow to insert everything', async () => {
         const db = await Core.create({
             name: util.randomCouchString(10),

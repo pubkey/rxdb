@@ -1,6 +1,7 @@
 import assert from 'assert';
 import clone from 'clone';
 
+import config from './config';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
@@ -9,7 +10,7 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import * as SchemaCheck from '../../dist/lib/plugins/schema-check.js';
 
-describe('rx-schema.test.js', () => {
+config.parallel('rx-schema.test.js', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {

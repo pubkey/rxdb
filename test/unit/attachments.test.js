@@ -1,4 +1,5 @@
 import assert from 'assert';
+import config from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
@@ -8,7 +9,7 @@ import * as util from '../../dist/lib/util';
 import RxDatabase from '../../dist/lib/rx-database';
 import * as AttachmentPlugin from '../../dist/lib/plugins/attachments';
 
-describe('attachments.test.js', () => {
+config.parallel('attachments.test.js', () => {
     describe('.putAttachment()', () => {
         it('should insert one attachment', async () => {
             const c = await humansCollection.createAttachments(1);

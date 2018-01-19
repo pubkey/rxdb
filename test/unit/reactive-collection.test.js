@@ -1,4 +1,5 @@
 import assert from 'assert';
+import config from './config';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -11,7 +12,7 @@ import {
     first
 } from 'rxjs/operators/first';
 
-describe('reactive-collection.test.js', () => {
+config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async () => {

@@ -1,5 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
+import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -18,7 +19,7 @@ import {
     tap
 } from 'rxjs/operators/tap';
 
-describe('reactive-query.test.js', () => {
+config.parallel('reactive-query.test.js', () => {
     describe('positive', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);

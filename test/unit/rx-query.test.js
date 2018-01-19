@@ -10,7 +10,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
 
-describe('rx-query.test.js', () => {
+config.parallel('rx-query.test.js', () => {
     describe('mquery', () => {
         describe('basic', () => {
             it('should distinguish between different sort-orders', async () => {

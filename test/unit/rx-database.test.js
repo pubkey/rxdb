@@ -16,7 +16,7 @@ import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
-describe('rx-database.test.js', () => {
+config.parallel('rx-database.test.js', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('memdown', async () => {

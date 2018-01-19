@@ -57,7 +57,7 @@ describe('replication.test.js', () => {
             assert.equal(typeof json.uuid, 'string');
         });
     });
-    describe('test pouch-sync to ensure nothing broke', () => {
+    config.parallel('test pouch-sync to ensure nothing broke', () => {
         describe('positive', () => {
             it('sync two collections over server', async function() {
                 const serverURL = await SpawnServer.spawn();
@@ -157,7 +157,6 @@ describe('replication.test.js', () => {
             it('push-only-sync', async () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
-
                 c.sync({
                     remote: c2.pouch,
                     waitForLeadership: false,
@@ -166,12 +165,11 @@ describe('replication.test.js', () => {
                         push: true
                     }
                 });
-
                 await AsyncTestUtil.waitUntil(async () => {
                     const docs = await c2.find().exec();
                     return docs.length === 20;
                 });
-                await util.promiseWait(10);
+                await AsyncTestUtil.wait(10);
                 const nonSyncedDocs = await c.find().exec();
                 assert.equal(nonSyncedDocs.length, 10);
 
@@ -273,8 +271,7 @@ describe('replication.test.js', () => {
             });
         });
     });
-
-    describe('RxReplicationState', () => {
+    config.parallel('RxReplicationState', () => {
         describe('change$', () => {
             it('should emit change-events', async () => {
                 const c = await humansCollection.create(0);
@@ -377,7 +374,7 @@ describe('replication.test.js', () => {
         });
     });
 
-    describe('events', () => {
+    config.parallel('events', () => {
         describe('positive', () => {
             it('collection: should get an event when a doc syncs', async () => {
                 const syncC = await humansCollection.create(0);

@@ -25,7 +25,6 @@ class DataMigrator {
         this.name = newestCollection.name;
     }
 
-
     /**
      * get an array with OldCollection-instances from all existing old pouchdb-instance
      * @return {Promise<OldCollection[]>}

@@ -24,7 +24,7 @@ if (config.platform.isNode()) {
 QueryChangeDetector.enable();
 
 
-describe('query-change-detector.test.js', () => {
+config.parallel('query-change-detector.test.js', () => {
     describe('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);

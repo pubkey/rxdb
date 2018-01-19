@@ -3,6 +3,7 @@
  */
 import assert from 'assert';
 import clone from 'clone';
+import config from './config';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
@@ -15,7 +16,7 @@ import * as util from '../../dist/lib/util';
 import * as KeyCompressor from '../../dist/lib/plugins/key-compression';
 
 
-describe('key-compression.test.js', () => {
+config.parallel('key-compression.test.js', () => {
     describe('create table', () => {
         it('get a valid table', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.human));

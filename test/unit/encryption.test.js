@@ -1,4 +1,5 @@
 import assert from 'assert';
+import config from './config';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -9,7 +10,7 @@ import * as RxSchema from '../../dist/lib/rx-schema';
 import * as Crypter from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
 
-describe('encryption.test.js', () => {
+config.parallel('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
             it('get an encrypted path', async () => {

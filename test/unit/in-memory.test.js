@@ -7,11 +7,12 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
+import config from './config';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
-describe('in-memory.test.js', () => {
+config.parallel('in-memory.test.js', () => {
     describe('.inMemory()', () => {
         it('should spawn an in-memory collection', async () => {
             const col = await humansCollection.create(5);

@@ -1,5 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import config from './config';
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -8,7 +9,7 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-describe('temporary-document.test.js', () => {
+config.parallel('temporary-document.test.js', () => {
     describe('RxCollection.newDocument()', () => {
         it('should create a new document', async () => {
             const c = await humansCollection.create(0);

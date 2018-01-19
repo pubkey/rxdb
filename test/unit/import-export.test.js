@@ -10,8 +10,9 @@ import * as humansCollection from './../helper/humans-collection';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
+import config from './config';
 
-describe('import-export.test.js', () => {
+config.parallel('import-export.test.js', () => {
     describe('Collection', () => {
         describe('.dump()', () => {
             it('export the collection', async () => {
@@ -107,15 +108,19 @@ describe('import-export.test.js', () => {
         describe('.importDump()', () => {
             describe('positive', () => {
                 it('import json', async () => {
-                    const col = await humansCollection.createMultiInstance('pref1', 5);
+                    const col = await humansCollection.createMultiInstance(
+                        util.randomCouchString(10),
+                        5
+                    );
                     const json = await col.dump();
-
-                    const emptyCol = await humansCollection.createMultiInstance('pref2', 0);
+                    const emptyCol = await humansCollection.createMultiInstance(
+                        util.randomCouchString(10),
+                        0
+                    );
                     const noDocs = await emptyCol.find().exec();
                     assert.equal(noDocs.length, 0);
 
                     await emptyCol.importDump(json);
-
                     const docs = await emptyCol.find().exec();
                     assert.equal(docs.length, 5);
 

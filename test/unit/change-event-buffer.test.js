@@ -1,10 +1,11 @@
 import assert from 'assert';
 
+import config from './config';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import AsyncTestUtil from 'async-test-util';
 
-describe('change-event-buffer.test.js', () => {
+config.parallel('change-event-buffer.test.js', () => {
     describe('basic', () => {
         it('should contains some events', async () => {
             const col = await humansCollection.create(10);

@@ -31,6 +31,7 @@
   "scripts": {
     "pretest": "npm run transpile",
     "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
+    "test:fast": "npm run pretest && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test",
     "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test",
     "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
@@ -53,7 +54,7 @@
     "docs:copy": "cp -r docs-src/files docs/files",
     "disc": "npm run transpile && browserify dist/lib/index.js --full-paths | uglifyjs --compress --mangle | discify --open --full-paths",
     "preversion": "npm run lint && npm run test",
-    "dev": "watch 'npm run test:node' src/ test/",
+    "dev": "watch 'npm run test:fast' src/ test/",
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"
   },
   "pre-commit": [
@@ -142,6 +143,7 @@
     "leveldown": "2.1.1",
     "memdown": "1.4.1",
     "mocha": "5.0.0",
+    "mocha.parallel": "0.15.3",
     "nconf": "0.10.0",
     "pouchdb": "6.4.1",
     "pouchdb-adapter-http": "6.4.1",

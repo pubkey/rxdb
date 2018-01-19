@@ -15,7 +15,7 @@ import {
     filter
 } from 'rxjs/operators/filter';
 
-describe('leader-election.test.js', () => {
+config.parallel('leader-election.test.js', () => {
     describe('leaderObject', () => {
         it('should not have a leaderObject', async () => {
             const c = await humansCollection.createMultiInstance(util.randomCouchString(10));

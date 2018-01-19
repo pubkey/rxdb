@@ -1,4 +1,5 @@
 import assert from 'assert';
+import config from './config';
 import PouchDB from '../../dist/lib/pouch-db';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
@@ -9,7 +10,7 @@ import * as RxSchema from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
-describe('data-migration.test.js', () => {
+config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {

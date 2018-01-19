@@ -1,11 +1,12 @@
 import assert from 'assert';
+import config from './config';
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as Socket from '../../dist/lib/socket';
 import * as RxChangeEvent from '../../dist/lib/rx-change-event';
 import * as util from '../../dist/lib/util';
 
-describe('socket.test.js', () => {
+config.parallel('socket.test.js', () => {
     it('socket should be able to fetch self-inserted event', async () => {
         const db = await RxDatabase.create({
             name: util.randomCouchString(10),

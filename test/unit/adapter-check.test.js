@@ -6,7 +6,7 @@ import memdown from 'memdown';
 if (!config.platform.isNode())
     RxDB.plugin(require('pouchdb-adapter-idb'));
 
-describe('adapter-check.test.js', () => {
+config.parallel('adapter-check.test.js', () => {
     it('should be true on memory', async () => {
         const ok = await RxDB.checkAdapter('memory');
         assert.ok(ok);

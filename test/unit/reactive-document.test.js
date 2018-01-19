@@ -5,6 +5,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
+import config from './config';
 import * as humansCollection from '../helper/humans-collection';
 import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
@@ -14,7 +15,7 @@ import {
     first
 } from 'rxjs/operators/first';
 
-describe('reactive-document.test.js', () => {
+config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {
             it('should fire on save', async () => {

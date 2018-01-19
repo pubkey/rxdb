@@ -1,12 +1,13 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
+import config from './config';
 import * as util from '../../dist/lib/util';
 import * as RxDB from '../../dist/lib/index';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 
-describe('orm.test.js', () => {
+config.parallel('orm.test.js', () => {
     describe('statics', () => {
         describe('create', () => {
             describe('positive', () => {

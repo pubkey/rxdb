@@ -12,6 +12,7 @@ before_install:
 script:
 - npm install --depth 0 --silent
 - npm run test:node
+- npm run test:fast
 - travis_retry npm run test:browser
 - npm run test:typings
 - npm run test:deps

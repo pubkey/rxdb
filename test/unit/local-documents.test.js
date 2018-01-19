@@ -6,6 +6,7 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
+import config from './config';
 import {
     filter
 } from 'rxjs/operators/filter';
@@ -14,7 +15,7 @@ import {
 } from 'rxjs/operators/first';
 
 
-describe('local-documents.test.js', () => {
+config.parallel('local-documents.test.js', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
             it('should create a local document', async () => {

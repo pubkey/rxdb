@@ -4,6 +4,7 @@
  */
 
 import assert from 'assert';
+import config from './config';
 import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
 
@@ -32,7 +33,7 @@ const schema = {
     required: ['firstName', 'lastName']
 };
 
-describe('core.node.js', () => {
+config.parallel('core.node.js', () => {
     describe('creation', () => {
         it('create database', async () => {
             const db = await Core.create({

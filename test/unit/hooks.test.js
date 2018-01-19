@@ -1,4 +1,5 @@
 import assert from 'assert';
+import config from './config';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -11,7 +12,7 @@ import {
     first
 } from 'rxjs/operators/first';
 
-describe('hooks.test.js', () => {
+config.parallel('hooks.test.js', () => {
     describe('get/set', () => {
         it('should set a hook', async () => {
             const c = await humansCollection.create(0);

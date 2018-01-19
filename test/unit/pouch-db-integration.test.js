@@ -10,7 +10,7 @@ import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
-describe('pouch-db-integration.test.js', () => {
+config.parallel('pouch-db-integration.test.js', () => {
     describe('init', () => {
         it('should export the pouchDB-module', async () => {
             assert.equal(typeof RxDB.PouchDB, 'function');

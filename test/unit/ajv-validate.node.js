@@ -1,5 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
@@ -11,7 +12,7 @@ Core.plugin(require('../../plugins/key-compression'));
 Core.plugin(require('../../plugins/error-messages'));
 Core.plugin(require('pouchdb-adapter-memory'));
 
-describe('ajv-validate.node.js', () => {
+config.parallel('ajv-validate.node.js', () => {
     describe('validation', () => {
         describe('positive', () => {
             it('should not throw', async () => {

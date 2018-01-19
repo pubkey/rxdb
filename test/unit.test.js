@@ -42,9 +42,7 @@ const last = [
 ];
 
 const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js',
-    '../test_tmp/unit/no-validate.test.js',
-    '../test_tmp/unit/ajv-validate.test.js'
+    '../test_tmp/unit/plugin.test.js'
 ];
 
 const typings = [

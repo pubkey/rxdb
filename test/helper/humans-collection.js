@@ -24,10 +24,11 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < size; i++)
-        fns.push(collection.insert(schemaObjects.human()));
-    await Promise.all(fns);
+    await Promise.all(
+        new Array(size)
+        .fill(0)
+        .map(() => collection.insert(schemaObjects.human()))
+    );
 
     return collection;
 }

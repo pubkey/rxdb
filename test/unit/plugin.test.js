@@ -12,7 +12,7 @@ import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 
-describe('plugin.test.js', () => {
+config.parallel('plugin.test.js', () => {
     describe('.plugin()', () => {
         it('should not crash when the same plugin is added multiple times', async () => {
             RxDB.plugin(PouchReplicationPlugin);
@@ -76,7 +76,7 @@ describe('plugin.test.js', () => {
         });
     });
     describe('in-memory.node.js', () => {
-        it('should run without errors', async () => {
+        it('in-memory should run without errors', async () => {
             if (!config.platform.isNode())
                 return;
 
@@ -101,6 +101,64 @@ describe('plugin.test.js', () => {
                         # Output: ${stdout}
                         # ErrOut: ${stderr}
                         `);
+            }
+        });
+    });
+    describe('ajv-validate.node.js', () => {
+        it('should allow everything', async () => {
+            if (!config.platform.isNode())
+                return;
+
+            const spawn = require('child-process-promise').spawn;
+            const stdout = [];
+            const stderr = [];
+            const promise = spawn('mocha', ['../test_tmp/unit/ajv-validate.node.js']);
+            const childProcess = promise.childProcess;
+            childProcess.stdout.on('data', data => {
+                // comment in to debug
+                // console.log(':: ' + data.toString());
+                stdout.push(data.toString());
+            });
+            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            try {
+                await promise;
+            } catch (err) {
+                console.log('errrrr');
+                console.dir(stdout);
+                throw new Error(`could not run ajv-validate.node.js.
+                            # Error: ${err}
+                            # Output: ${stdout}
+                            # ErrOut: ${stderr}
+                            `);
+            }
+        });
+    });
+    describe('no-validate.node.js', () => {
+        it('should allow everything', async () => {
+            if (!config.platform.isNode())
+                return;
+
+            const spawn = require('child-process-promise').spawn;
+            const stdout = [];
+            const stderr = [];
+            const promise = spawn('mocha', ['../test_tmp/unit/no-validate.node.js']);
+            const childProcess = promise.childProcess;
+            childProcess.stdout.on('data', data => {
+                // comment in to debug
+                // console.log(':: ' + data.toString());
+                stdout.push(data.toString());
+            });
+            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            try {
+                await promise;
+            } catch (err) {
+                console.log('errrrr');
+                console.dir(stdout);
+                throw new Error(`could not run no-validate.node.js.
+                            # Error: ${err}
+                            # Output: ${stdout}
+                            # ErrOut: ${stderr}
+                            `);
             }
         });
     });

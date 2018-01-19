@@ -1,4 +1,5 @@
 import assert from 'assert';
+import config from './config';
 import * as faker from 'faker';
 
 import * as humansCollection from '../helper/humans-collection';
@@ -8,7 +9,7 @@ import * as RxSchema from '../../dist/lib/rx-schema';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
 
-describe('population.test.js', () => {
+config.parallel('population.test.js', () => {
     describe('RxSchema.create', () => {
         describe('positive', () => {
             it('should allow to create a schema with a relation', async () => {

@@ -1,9 +1,10 @@
 import assert from 'assert';
+import config from './config';
 
 import * as humansCollection from '../helper/humans-collection';
 import * as RxDB from '../../dist/lib/index';
 
-describe('instance-of-check.test.js', () => {
+config.parallel('instance-of-check.test.js', () => {
     it('positive', async () => {
         const c = await humansCollection.create(1);
         const query = c.findOne();

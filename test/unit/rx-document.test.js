@@ -11,7 +11,7 @@ import * as RxDB from '../../dist/lib/index';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as RxDatabase from '../../dist/lib/index';
 
-describe('rx-document.test.js', () => {
+config.parallel('rx-document.test.js', () => {
     describe('statics', () => {});
     describe('.get()', () => {
         describe('positive', () => {

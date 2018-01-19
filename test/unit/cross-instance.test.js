@@ -6,6 +6,7 @@
  */
 
 import assert from 'assert';
+import config from './config';
 
 import * as RxDatabase from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -14,7 +15,7 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 import AsyncTestUtil from 'async-test-util';
 
-describe('cross-instance.test.js', () => {
+config.parallel('cross-instance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async () => {
             const db = await RxDatabase.create({

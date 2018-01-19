@@ -12,6 +12,7 @@
 import assert from 'assert';
 import clone from 'clone';
 
+import config from './config';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
@@ -19,7 +20,7 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-describe('primary.test.js', () => {
+config.parallel('primary.test.js', () => {
     describe('Schema', () => {
         describe('.create()', () => {
             describe('positive', () => {
@@ -306,6 +307,8 @@ describe('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c1.insert(obj);
                     const doc = await c1.findOne().exec();
+
+
                     let value;
                     let count = 0;
                     const pW8 = AsyncTestUtil.waitResolveable(1000);
@@ -318,7 +321,7 @@ describe('primary.test.js', () => {
                     doc2.set('firstName', 'foobar');
                     await doc2.save();
                     await pW8.promise;
-                    assert.equal(value, 'foobar');
+                    await AsyncTestUtil.waitUntil(() => value === 'foobar');
                     assert.equal(count, 2);
                     c1.database.destroy();
                     c2.database.destroy();

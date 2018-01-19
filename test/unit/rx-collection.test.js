@@ -17,7 +17,7 @@ import * as RxCollection from '../../dist/lib/rx-collection';
 import * as util from '../../dist/lib/util';
 
 
-describe('rx-collection.test.js', () => {
+config.parallel('rx-collection.test.js', () => {
     describe('static', () => {
         describe('.create()', () => {
             describe('positive', () => {
