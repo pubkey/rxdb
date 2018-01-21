@@ -163,7 +163,7 @@
     "shelljs": "0.8.0",
     "ts-node": "4.1.0",
     "typescript": "2.6.2",
-    "uglify-js": "3.3.7",
+    "uglify-js": "3.3.8",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.9.0",
