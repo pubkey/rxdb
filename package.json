@@ -149,7 +149,7 @@
     "pouchdb-adapter-http": "6.4.1",
     "pouchdb-adapter-idb": "6.4.1",
     "pouchdb-adapter-leveldb": "6.4.1",
-    "pouchdb-adapter-localstorage": "6.4.1",
+    "pouchdb-adapter-localstorage": "6.4.2",
     "pouchdb-adapter-memory": "6.4.1",
     "pouchdb-adapter-node-websql": "6.4.1",
     "pouchdb-adapter-websql": "6.4.1",
