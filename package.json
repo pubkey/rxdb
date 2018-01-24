@@ -73,7 +73,7 @@
     "is-my-json-valid": "2.17.1",
     "modifyjs": "0.3.1",
     "object-path": "0.11.4",
-    "pouchdb-core": "6.4.1",
+    "pouchdb-core": "6.4.2",
     "pouchdb-find": "6.4.1",
     "pouchdb-replication": "6.4.1",
     "pouchdb-selector-core": "6.4.2",
