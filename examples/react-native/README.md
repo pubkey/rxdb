@@ -1,21 +1,21 @@
 # RxDB React example
+
 This is an example usage of RxDB with React-native. It implements a simple heroes-list which can be filled by the user.
 
+## Syncing
 
-# Try it out
+For database replication and syncing you will need to input a public ip address as the app simulators will have a different context for `localhost`. One simple way is to run a server locally and expose the port via [ngrok](https://ngrok.com/).
+
+## Try it out
+
 1. [follow installation instructions](https://facebook.github.io/react-native/docs/getting-started.html#content) to setup your react-native environment
-2. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
-3. go to this folder `cd examples/react-native`
-4. run `npm install`
-5. run `react-native run-ios` or `react-native run-android`
+1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
+1. go to this folder `cd examples/react-native`
+1. run `npm install`
+1. run `npm start`
+   * to run on ios or android specific emulators use `npm run ios` and `npm run android` respectively
 
-# Developing with android
-1. Import `react-native/android` as project into Android-Studio
-2. Start an emulation-device
-3. Run `react-native start` in Terminal 1
-4. run `react-native run-android` in Terminal 2
-
-# Screenshot
+## Screenshot
 
 ![Screenshot](docfiles/screenshot.png?raw=true)
 ![Android](docfiles/android.png?raw=true)

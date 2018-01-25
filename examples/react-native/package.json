@@ -1,38 +1,39 @@
 {
-  "name": "reactNative",
-  "version": "0.0.1",
+  "name": "react-native2",
+  "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "build": "(cd android/ && ./gradlew assembleDebug)",
-    "start": "node node_modules/react-native/local-cli/cli.js start",
-    "bundle-android": "react-native bundle --platform android --dev false --entry-file index.android.js --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output android/app/src/main/assets/index.android.map --assets-dest android/app/src/main/res/",
-    "test": "jest",
-    "lint": "eslint src"
-  },
-  "dependencies": {
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-polyfill": "^6.20.0",
-    "babel-preset-es2015-native-modules": "6.9.4",
-    "babel-runtime": "^6.23.0",
-    "es6-symbol": "^3.1.1",
-    "fbjs": "^0.8.8",
-    "pouchdb-adapter-asyncstorage": "^6.2.6",
-    "random-token": "0.0.8",
-    "react": "^15.6.1",
-    "react-native": "^0.46.3",
-    "rxdb": "*",
-    "rxjs": "^5.2.1-smooth"
-  },
   "devDependencies": {
-    "babel-jest": "^20.0.3",
-    "babel-preset-react-native": "^2.1.0",
-    "eslint": "^4.2.0",
-    "eslint-plugin-react": "^7.1.0",
-    "eslint-plugin-react-native": "^2.3.2",
-    "jest": "^20.0.4",
-    "react-test-renderer": "^15.6.1"
+    "eslint": "^4.15.0",
+    "eslint-plugin-react": "^7.5.1",
+    "eslint-plugin-react-native": "^3.2.1",
+    "jest-expo": "23.0.0",
+    "react-native-scripts": "1.8.1",
+    "react-test-renderer": "^16.2.0"
+  },
+  "main": "./node_modules/react-native-scripts/build/bin/crna-entry.js",
+  "scripts": {
+    "start": "react-native-scripts start",
+    "eject": "react-native-scripts eject",
+    "android": "react-native-scripts android",
+    "ios": "react-native-scripts ios",
+    "test": "node node_modules/jest/bin/jest.js --watch"
   },
   "jest": {
-    "preset": "react-native"
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-native|pouchdb-adapter-asyncstorage)/)"
+    ]
+  },
+  "dependencies": {
+    "expo": "^23.0.4",
+    "fbjs": "^0.8.16",
+    "pouchdb-adapter-asyncstorage": "^6.4.0",
+    "pouchdb-adapter-http": "^6.4.1",
+    "random-token": "^0.0.8",
+    "react": "16.0.0",
+    "react-native": "0.50.3",
+    "rxdb": "*",
+    "rxjs": "^5.5.6",
+    "util": "^0.10.3"
   }
 }
