@@ -157,7 +157,8 @@
           "typings",
           "timestamp",
           "unix",
-          "ajv"
+          "ajv",
+          "dbs"
         ],
         "skipIfMatch": [
           "^[.]{1,3}$",
