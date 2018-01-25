@@ -1,9 +1,15 @@
 # Changelog
 
-### X.X.X (coming soon)
+### 7.3.2 (January 25, 2018)
+
+Features:
+  - Upgraded to pouchdb 6.4.2. [Read this](https://pouchdb.com/2018/01/23/pouchdb-6.4.2.html)
 
 Typings:
   - Fix `RxCollection.findOne()` can return `null`
+
+Other:
+  - Improved [react-native-example](https://github.com/pubkey/rxdb/tree/master/examples/react-native) thx [@Darkbladecr](https://github.com/Darkbladecr)
 
 ### 7.3.1 (January 3, 2018)
 
