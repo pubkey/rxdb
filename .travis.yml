@@ -20,4 +20,5 @@ script:
 - npm run lint
 - (cd ./examples/angular2 && npm install --depth 0 --silent && npm run build && npm run test:build)
 - (cd ./examples/vue && npm install --depth 0 --silent && npm run lint && npm run build && npm run test)
+- (cd ./examples/react-native && npm install --depth 0 --silent && npm run test),
 - npm run build:size
