@@ -1,4 +1,3 @@
-import clone from 'clone';
 import IdleQueue from 'custom-idle-queue';
 import {
     filter
@@ -155,7 +154,7 @@ export class RxCollection {
      * wrappers for Pouch.put/get to handle keycompression etc
      */
     _handleToPouch(docData) {
-        let data = clone(docData);
+        let data = util.clone(docData);
         data = this._crypter.encrypt(data);
         data = this.schema.swapPrimaryToId(data);
         if (this.schema.doKeyCompression())
@@ -163,7 +162,7 @@ export class RxCollection {
         return data;
     }
     _handleFromPouch(docData, noDecrypt = false) {
-        let data = clone(docData);
+        let data = util.clone(docData);
         data = this.schema.swapIdToPrimary(data);
         if (this.schema.doKeyCompression())
             data = this._keyCompressor.decompress(data);
@@ -220,7 +219,6 @@ export class RxCollection {
     async _pouchFind(rxQuery, limit, noDecrypt = false) {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
-
         const docsCompressed = await this.database.lockedRun(
             () => this.pouch.find(compressedQueryJSON)
         );
@@ -299,7 +297,7 @@ export class RxCollection {
             json = json.toJSON();
         }
 
-        json = clone(json);
+        json = util.clone(json);
         json = this.schema.fillObjectWithDefaults(json);
 
         if (json._id) {
@@ -346,7 +344,7 @@ export class RxCollection {
      * same as insert but overwrites existing document with same primary
      */
     async upsert(json) {
-        json = clone(json);
+        json = util.clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
             throw RxError.newRxError('COL3', {
@@ -403,7 +401,7 @@ export class RxCollection {
      * @return {Promise}
      */
     async atomicUpsert(json) {
-        json = clone(json);
+        json = util.clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
             throw RxError.newRxError('COL4', {

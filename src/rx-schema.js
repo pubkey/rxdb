@@ -1,5 +1,4 @@
 import objectPath from 'object-path';
-import clone from 'clone';
 
 import * as util from './util';
 import RxError from './rx-error';
@@ -131,7 +130,7 @@ export class RxSchema {
      * @return {object}
      */
     fillObjectWithDefaults(obj) {
-        obj = clone(obj);
+        obj = util.clone(obj);
         Object
             .entries(this.defaultValues)
             .filter(entry => !obj.hasOwnProperty(entry[0]))
@@ -260,7 +259,7 @@ export function getFinalFields(jsonId) {
  */
 export function normalize(jsonSchema) {
     return util.sortObject(
-        clone(jsonSchema)
+        util.clone(jsonSchema)
     );
 }
 
@@ -270,7 +269,7 @@ export function normalize(jsonSchema) {
  * @return {Object} cloned schemaObj
  */
 const fillWithDefaultSettings = function(schemaObj) {
-    schemaObj = clone(schemaObj);
+    schemaObj = util.clone(schemaObj);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;

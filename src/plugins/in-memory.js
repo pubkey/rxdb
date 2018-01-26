@@ -4,7 +4,6 @@
  * So you can do faster queries and also query over encrypted fields
  */
 
-import clone from 'clone';
 import {
     Subject
 } from 'rxjs/Subject';
@@ -161,7 +160,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
 
 
 function toCleanSchema(rxSchema) {
-    const newSchemaJson = clone(rxSchema.jsonID);
+    const newSchemaJson = util.clone(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;

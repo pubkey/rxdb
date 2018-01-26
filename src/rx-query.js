@@ -383,8 +383,8 @@ export class RxQuery {
                 path: this.mquery._path
             });
         }
-
         clonedThis.mquery.regex(params);
+
         return clonedThis._tunnelQueryCache();
     };
 

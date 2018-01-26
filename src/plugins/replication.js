@@ -3,7 +3,6 @@
  * you can use it to sync collections with remote or local couchdb-instances
  */
 
-import clone from 'clone';
 import PouchReplicationPlugin from 'pouchdb-replication';
 import {
     Subject
@@ -184,7 +183,7 @@ export function sync({
     },
     query
 }) {
-    options = clone(options);
+    options = util.clone(options);
     // if remote is RxCollection, get internal pouchdb
     if (RxCollection.isInstanceOf(remote))
         remote = remote.pouch;

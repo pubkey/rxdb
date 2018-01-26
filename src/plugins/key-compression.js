@@ -3,9 +3,7 @@
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import clone from 'clone';
 import * as util from '../util';
-
 
 class KeyCompressor {
     /**
@@ -94,7 +92,7 @@ class KeyCompressor {
      * @param {Object} compressed obj
      */
     compress(obj) {
-        if (!this.schema.doKeyCompression()) return clone(obj);
+        if (!this.schema.doKeyCompression()) return util.clone(obj);
         return this._compressObj(obj);
     }
 
@@ -129,7 +127,7 @@ class KeyCompressor {
     };
 
     decompress(obj) {
-        if (!this.schema.doKeyCompression()) return clone(obj);
+        if (!this.schema.doKeyCompression()) return util.clone(obj);
         const returnObj = this._decompressObj(obj);
         return returnObj;
     }
@@ -165,7 +163,7 @@ class KeyCompressor {
      * @return {{selector: {}}} compressed queryJSON
      */
     compressQuery(queryJSON) {
-        queryJSON = clone(queryJSON);
+        queryJSON = util.clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
 
         // selector

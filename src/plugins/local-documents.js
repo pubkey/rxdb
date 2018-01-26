@@ -4,7 +4,6 @@
  * @link https://pouchdb.com/guides/local-documents.html
  */
 
-import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -14,6 +13,7 @@ import RxCollection from '../rx-collection';
 import RxChangeEvent from '../rx-change-event';
 import DocCache from '../doc-cache';
 import RxError from '../rx-error';
+import * as util from '../util';
 
 
 import {
@@ -66,7 +66,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         this.parent = parent;
     }
     toPouchJson() {
-        const data = clone(this._data);
+        const data = util.clone(this._data);
         data._id = LOCAL_PREFIX + this.id;
     }
     get isLocal() {
@@ -84,7 +84,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         if (changeEvent.data.doc !== this.primary) return;
         switch (changeEvent.data.op) {
             case 'UPDATE':
-                const newData = clone(changeEvent.data.v);
+                const newData = util.clone(changeEvent.data.v);
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 
@@ -102,7 +102,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
                     // overwrite _rev of data
                     this._data._rev = newData._rev;
                 }
-                this._dataSync$.next(clone(newData));
+                this._dataSync$.next(util.clone(newData));
                 break;
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -141,7 +141,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         }
 
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
+        valueObj = util.clone(valueObj);
         return valueObj;
     }
     get$(path) {
@@ -161,7 +161,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
     set(objPath, value) {
         if (!value) {
             // object path not set, overwrite whole data
-            const data = clone(objPath);
+            const data = util.clone(objPath);
             data._rev = this._data._rev;
             this._data = data;
             return this;
@@ -177,7 +177,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         return this;
     }
     async save() {
-        const saveData = clone(this._data);
+        const saveData = util.clone(this._data);
         saveData._id = LOCAL_PREFIX + this.id;
         const res = await this.parentPouch.put(saveData);
         this._data._rev = res.rev;
@@ -187,7 +187,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
             RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
             RxCollection.isInstanceOf(this.parent) ? this.parent : null,
             this,
-            clone(this._data),
+            util.clone(this._data),
             true
         );
         this.$emit(changeEvent);
@@ -201,7 +201,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
             RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
             RxCollection.isInstanceOf(this.parent) ? this.parent : null,
             this,
-            clone(this._data),
+            util.clone(this._data),
             true
         );
         this.$emit(changeEvent);
@@ -255,7 +255,7 @@ const insertLocal = async function(id, data) {
     if (RxCollection.isInstanceOf(this) && this._isInMemory)
         return this._parentCollection.insertLocal(id, data);
 
-    data = clone(data);
+    data = util.clone(data);
     const existing = await this.getLocal(id);
     if (existing) {
         throw RxError.newRxError('LD7', {
@@ -266,7 +266,7 @@ const insertLocal = async function(id, data) {
 
     // create new one
     const pouch = _getPouchByParent(this);
-    const saveData = clone(data);
+    const saveData = util.clone(data);
     saveData._id = LOCAL_PREFIX + id;
 
     const res = await pouch.put(saveData);

@@ -869,6 +869,20 @@ config.parallel('rx-collection.test.js', () => {
                         assert.equal(first.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
+                    it('case sensitive regex', async () => {
+                        const c = await humansCollection.create(10);
+                        const matchHuman = schemaObjects.human();
+                        matchHuman.firstName = 'FooMatchBar';
+                        await c.insert(matchHuman);
+                        const docs = await c.find()
+                            .where('firstName').regex(/match/i)
+                            .exec();
+
+                        assert.equal(docs.length, 1);
+                        const first = docs[0];
+                        assert.equal(first.get('firstName'), matchHuman.firstName);
+                        c.database.destroy();
+                    });
                     it('regex on index', async () => {
                         const c = await humansCollection.create(10);
                         const matchHuman = schemaObjects.human();

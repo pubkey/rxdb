@@ -1,4 +1,3 @@
-import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -27,10 +26,10 @@ export class RxDocument {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(clone(jsonData));
+        this._dataSync$ = new BehaviorSubject(util.clone(jsonData));
 
         // current doc-data, changes when setting values etc
-        this._data = clone(jsonData);
+        this._data = util.clone(jsonData);
 
         // atomic-update-functions that have not run yes
         this._atomicUpdates = [];
@@ -75,7 +74,7 @@ export class RxDocument {
         if (this._synced$.getValue() && deepEqual(syncedData, this._data))
             return;
         else {
-            this._data = clone(this._dataSync$.getValue());
+            this._data = util.clone(this._dataSync$.getValue());
             this._synced$.next(true);
         }
     }
@@ -101,7 +100,7 @@ export class RxDocument {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = clone(changeEvent.data.v);
+                const newData = util.clone(changeEvent.data.v);
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 
@@ -119,7 +118,7 @@ export class RxDocument {
                     // overwrite _rev of data
                     this._data._rev = newData._rev;
                 }
-                this._dataSync$.next(clone(newData));
+                this._dataSync$.next(util.clone(newData));
                 break;
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -216,7 +215,7 @@ export class RxDocument {
     get(objPath) {
         if (!this._data) return undefined;
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
+        valueObj = util.clone(valueObj);
 
         // direct return if array or non-object
         if (
@@ -263,7 +262,7 @@ export class RxDocument {
     }
 
     toJSON() {
-        return clone(this._data);
+        return util.clone(this._data);
     }
 
     /**
@@ -402,14 +401,14 @@ export class RxDocument {
 
         this.collection.schema.validate(this._data);
 
-        const ret = await this.collection._pouchPut(clone(this._data));
+        const ret = await this.collection._pouchPut(util.clone(this._data));
         if (!ret.ok) {
             throw RxError.newRxError('DOC12', {
                 data: ret
             });
         }
 
-        const emitValue = clone(this._data);
+        const emitValue = util.clone(this._data);
         emitValue._rev = ret.rev;
 
         this._data = emitValue;
@@ -418,7 +417,7 @@ export class RxDocument {
 
         // event
         this._synced$.next(true);
-        this._dataSync$.next(clone(emitValue));
+        this._dataSync$.next(util.clone(emitValue));
 
 
         const changeEvent = RxChangeEvent.create(
@@ -444,7 +443,7 @@ export class RxDocument {
 
         // internal events
         this._synced$.next(true);
-        this._dataSync$.next(clone(this._data));
+        this._dataSync$.next(util.clone(this._data));
 
         return true;
     }

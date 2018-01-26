@@ -2,7 +2,7 @@
  * this is copied from
  * @link https://github.com/aheckmann/mquery/blob/master/lib/utils.js
  */
-import clone from 'clone';
+import * as util from '../util';
 
 /**
  * Merges `from` into `to` without overwriting existing properties.
@@ -44,7 +44,7 @@ export function mergeClone(to, from) {
         if ('undefined' === typeof to[key]) {
             // make sure to retain key order here because of a bug handling the $each
             // operator in mongodb 2.4.4
-            to[key] = clone(from[key], {
+            to[key] = util.clone(from[key], {
                 retainKeyOrder: 1
             });
         } else {
@@ -53,7 +53,7 @@ export function mergeClone(to, from) {
             else {
                 // make sure to retain key order here because of a bug handling the
                 // $each operator in mongodb 2.4.4
-                to[key] = clone(from[key], {
+                to[key] = util.clone(from[key], {
                     retainKeyOrder: 1
                 });
             }

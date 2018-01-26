@@ -4,7 +4,7 @@
  */
 import * as utils from './mquery_utils';
 import RxError from '../rx-error';
-import clone from 'clone';
+import * as util from '../util';
 
 class MQuery {
     /**
@@ -19,8 +19,8 @@ class MQuery {
     constructor(criteria) {
         const proto = this.constructor.prototype;
         this.options = {};
-        this._conditions = proto._conditions ? clone(proto._conditions) : {};
-        this._fields = proto._fields ? clone(proto._fields) : undefined;
+        this._conditions = proto._conditions ? util.clone(proto._conditions) : {};
+        this._fields = proto._fields ? util.clone(proto._fields) : undefined;
         this._path = proto._path || undefined;
 
         if (criteria)
@@ -35,7 +35,7 @@ class MQuery {
         const same = new MQuery();
         Object.entries(this)
             .forEach(entry => {
-                same[entry[0]] = clone(entry[1]);
+                same[entry[0]] = util.clone(entry[1]);
             });
         return same;
     }
@@ -381,7 +381,7 @@ class MQuery {
      * @return {Object}
      */
     _optionsForExec() {
-        const options = clone(this.options);
+        const options = util.clone(this.options);
         return options;
     }
 
