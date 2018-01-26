@@ -11,7 +11,7 @@ const run = async () => {
     const configPath = path.join(__dirname, '../config');
     const files = walkSync(configPath);
     const isolateFile = files.find(name => name.startsWith('isolate-'));
-    if (isolateFile) throw new Error('no isolate-* file found');
+    if (!isolateFile) throw new Error('no isolate-* file found');
     const isolatePath = configPath + '/' + isolateFile;
     const cmd = 'node --prof-process ' + isolatePath + ' > processed.txt';
     if (shell.exec(cmd).code !== 0) {

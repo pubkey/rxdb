@@ -88,41 +88,35 @@ class Socket {
         return true;
     }
 
-    async _getLastTimeDoc() {
-        try {
-            const lastTimestampDoc = await this.database.lockedRun(
-                () => this.pouch.get(TIMESTAMP_DOC_ID)
-            );
-            return lastTimestampDoc;
-        } catch (err) {
-            return null;
-        }
+    _getLastTimeDoc() {
+        return this
+            .pouch.get(TIMESTAMP_DOC_ID)
+            .catch(() => null);
+    }
+
+    _updateLastTimestampRun() {
+        const newTime = new Date().getTime();
+        return this
+            ._getLastTimeDoc()
+            .then(doc => {
+                if (!doc) {
+                    return this.pouch.put({
+                        _id: TIMESTAMP_DOC_ID,
+                        time: newTime
+                    });
+                } else {
+                    doc.time = newTime;
+                    return this.pouch.put(doc);
+                }
+            });
     }
 
     async _updateLastTimestamp() {
-        const run = async () => {
-            const newTime = new Date().getTime();
-            const doc = await this._getLastTimeDoc();
-            if (!doc) {
-                return this.database.lockedRun(
-                    () => this.pouch.put({
-                        _id: TIMESTAMP_DOC_ID,
-                        time: newTime
-                    })
-                );
-            } else {
-                doc.time = newTime;
-                return this.database.lockedRun(
-                    () => this.pouch.put(doc)
-                );
-            }
-        };
-
         // run until sucess
         let done = false;
         while (!done) {
             try {
-                await run();
+                await this._updateLastTimestampRun();
                 done = true;
             } catch (e) {}
         }
