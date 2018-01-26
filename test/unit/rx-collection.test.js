@@ -1314,7 +1314,7 @@ config.parallel('rx-collection.test.js', () => {
                     ]);
                     const docData2 = clone(docData);
                     docData2.firstName = 1337;
-                    AsyncTestUtil.assertThrows(
+                    await AsyncTestUtil.assertThrows(
                         () => c.atomicUpsert(docData2),
                         Error,
                         'schema'
