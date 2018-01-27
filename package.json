@@ -121,7 +121,7 @@
     "eslint-plugin-spellcheck": "0.0.8",
     "exists-file": "3.0.2",
     "express": "4.16.2",
-    "express-pouchdb": "2.3.7",
+    "express-pouchdb": "4.0.0",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",
     "gulp": "3.9.1",
