@@ -33,15 +33,8 @@ RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.QueryChangeDetector.enable();
 RxDB.QueryChangeDetector.enableDebugging();
 
-const adapters = {
-    localstorage: require('pouchdb-adapter-localstorage'),
-    websql: require('pouchdb-adapter-websql'),
-    idb: require('pouchdb-adapter-idb')
-};
-
+RxDB.plugin(require('pouchdb-adapter-idb'));
 const useAdapter = 'idb';
-RxDB.plugin(adapters[useAdapter]);
-
 
 
 let collections = [
