@@ -24,6 +24,7 @@ declare interface RxHeroDocumentType {
 export type RxHeroDocument = RxDocument<RxHeroDocumentType>;
 
 declare class RxHeroCollection extends RxCollection<RxHeroDocumentType> {
+    pouch: any;
 }
 
 export class RxHeroesDatabase extends RxDatabase {

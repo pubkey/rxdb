@@ -33,7 +33,8 @@ RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.QueryChangeDetector.enable();
 RxDB.QueryChangeDetector.enableDebugging();
 
-RxDB.plugin(require('pouchdb-adapter-idb'));
+import PouchdbAdapterIdb from 'pouchdb-adapter-idb';
+RxDB.plugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
 
 
