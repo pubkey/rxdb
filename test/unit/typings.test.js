@@ -3,6 +3,7 @@
  */
 import assert from 'assert';
 import * as schemas from './../helper/schemas';
+import config from './config';
 
 describe('typings.test.js', () => {
     const codeBase = `
@@ -45,7 +46,7 @@ describe('typings.test.js', () => {
         }
     };
 
-    describe('basic', () => {
+    config.parallel('basic', () => {
         it('should sucess on basic test', async () => {
             await transpileCode('console.log("Hello, world!")');
         });
@@ -63,7 +64,7 @@ describe('typings.test.js', () => {
             assert.ok(thrown);
         });
     });
-    describe('import', () => {
+    config.parallel('import', () => {
         it('import default with strict:true', async () => {
             const code = `
                 import rxdb from '../';
@@ -73,7 +74,7 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
-    describe('database', () => {
+    config.parallel('database', () => {
         describe('positive', () => {
             it('should create the database', async () => {
                 const code = codeBase + `
@@ -112,7 +113,7 @@ describe('typings.test.js', () => {
         });
     });
     describe('collection', () => {
-        describe('positive', () => {
+        config.parallel('positive', () => {
             it('collection-creation', async () => {
                 const code = codeBase + `
                     (async() => {
@@ -157,8 +158,40 @@ describe('typings.test.js', () => {
                 `;
                 await transpileCode(code);
             });
+            it('use underlaying pouchdb', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false,
+                            options: {
+                                foo1: 'bar1'
+                            }
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        type docType = {
+                                foo: string
+                        };
+                        const myCollection: RxCollection<docType> = await myDb.collection({
+                            name: 'humans',                            schema: mySchema,
+                            autoMigrate: false,
+                            options: {
+                                foo2: 'bar2'
+                            }
+                        });
+                        const result = await myCollection.pouch.put({
+                            _id: 'foobar',
+                            foo: 'bar'
+                        });
+                        const docs = await myCollection.pouch.allDocs();
+                    })();
+                `;
+                await transpileCode(code);
+            });
         });
-        describe('negative', () => {
+        config.parallel('negative', () => {
             it('should not allow wrong collection-settings', async () => {
                 const brokenCode = codeBase + `
                     (async() => {
@@ -186,7 +219,7 @@ describe('typings.test.js', () => {
             });
         });
     });
-    describe('document', () => {
+    config.parallel('document', () => {
         it('should know the fields of the document', async () => {
             const code = codeBase + `
                 (async() => {

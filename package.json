@@ -35,7 +35,7 @@
     "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test",
     "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
-    "test:typings": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test:typings",
+    "test:typings": "npm run pretest && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test:typings",
     "test:deps": "dependency-check ./package.json --no-dev",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "profile": "npm run pretest && gulp --gulpfile ./config/gulpfile.js profile && node scripts/profile.js",

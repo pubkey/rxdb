@@ -1,5 +1,11 @@
 # Changelog
 
+### X.X.X (coming soon)
+
+Other:
+  - Improve performance by using the profiler
+  - Added typings for internal `pouchdb`-instance
+
 ### 7.3.2 (January 25, 2018)
 
 Features:

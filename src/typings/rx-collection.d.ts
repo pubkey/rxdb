@@ -1,6 +1,10 @@
 import { Observable } from 'rxjs';
 
 import {
+    PouchDB
+} from './pouch';
+
+import {
     RxSchema,
     RxJsonSchema
 } from './rx-schema';
@@ -71,6 +75,7 @@ export declare class RxCollection<RxDocumentType> {
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
     options?: any;
+    readonly pouch: PouchDB;
 
     readonly $: Observable<RxChangeEvent>;
     insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
