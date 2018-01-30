@@ -34,7 +34,7 @@ gulp.task('test:typings', function() {
         .src(tests.typings)
         .pipe(mocha({
             bail: true,
-            timeout: 6000,
+            timeout: 12000,
             exit: true
         }))
         .once('end', function() {
