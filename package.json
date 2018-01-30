@@ -105,7 +105,7 @@
     "babel-preset-es2016": "6.24.1",
     "babel-preset-es2017": "6.24.1",
     "babel-preset-latest": "6.24.1",
-    "brfs": "1.4.3",
+    "brfs": "1.4.4",
     "browserify": "15.2.0",
     "check-node-version": "3.2.0",
     "child-process-promise": "2.2.1",
