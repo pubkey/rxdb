@@ -147,7 +147,7 @@
     "nconf": "0.10.0",
     "pouchdb": "6.4.2",
     "pouchdb-adapter-http": "6.4.2",
-    "pouchdb-adapter-idb": "6.4.2",
+    "pouchdb-adapter-idb": "6.4.3",
     "pouchdb-adapter-leveldb": "6.4.2",
     "pouchdb-adapter-localstorage": "6.4.2",
     "pouchdb-adapter-memory": "6.4.2",
