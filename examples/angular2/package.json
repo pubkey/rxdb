@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "",
   "scripts": {
-    "// preinstall": "node ./scripts/ensure-equal-versions.js",
+    "preinstall": "node ./scripts/ensure-equal-versions.js",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "npm-run-all --parallel dev:serve",
