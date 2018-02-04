@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.requestIdlePromise = exports.promiseWait = undefined;
+exports.clone = exports.requestIdlePromise = exports.promiseWait = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
@@ -116,6 +116,10 @@ var _rxError = require('./rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
+var _clone = require('clone');
+
+var _clone2 = _interopRequireDefault(_clone);
+
 var _sparkMd = require('spark-md5');
 
 var _sparkMd2 = _interopRequireDefault(_sparkMd);
@@ -125,10 +129,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
- */
-/**
- * this contains a mapping to basic dependencies
- * which should be easy to change
  */
 function isLevelDown(adapter) {
     if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') {
@@ -143,6 +143,10 @@ function isLevelDown(adapter) {
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
  * @param  {object} obj
  * @return {number} a number as hash-result
+ */
+/**
+ * this contains a mapping to basic dependencies
+ * which should be easy to change
  */
 function fastUnsecureHash(obj) {
     if (typeof obj !== 'string') obj = JSON.stringify(obj);
@@ -388,3 +392,10 @@ function adapterObject(adapter) {
     }
     return adapterObj;
 };
+
+function recursiveDeepCopy(o) {
+    if (!o) return o;
+    return (0, _clone2['default'])(o, false);
+}
+
+var clone = exports.clone = recursiveDeepCopy;

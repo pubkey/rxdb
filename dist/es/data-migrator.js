@@ -8,7 +8,7 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
  */
 
 import PouchDB from './pouch-db';
-import clone from 'clone';
+import * as util from './util';
 
 import RxSchema from './rx-schema';
 import Crypter from './crypter';
@@ -103,7 +103,7 @@ var DataMigrator = function () {
 
 
                                 state.total = totalCount;
-                                observer.next(clone(state));
+                                observer.next(util.clone(state));
 
                                 currentCol = null;
                                 _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop() {
@@ -119,7 +119,7 @@ var DataMigrator = function () {
                                                             state.handled++;
                                                             state[subState.type] = state[subState.type] + 1;
                                                             state.percent = Math.round(state.handled / state.total * 100);
-                                                            observer.next(clone(state));
+                                                            observer.next(util.clone(state));
                                                         }, function (e) {
                                                             sub.unsubscribe();
                                                             observer.error(e);
@@ -153,7 +153,7 @@ var DataMigrator = function () {
 
                                 state.done = true;
                                 state.percent = 100;
-                                observer.next(clone(state));
+                                observer.next(util.clone(state));
 
                                 observer.complete();
 
@@ -237,7 +237,7 @@ var OldCollection = function () {
 
 
     OldCollection.prototype._handleFromPouch = function _handleFromPouch(docData) {
-        var data = clone(docData);
+        var data = util.clone(docData);
         data = this.schema.swapIdToPrimary(docData);
         if (this.schema.doKeyCompression()) data = this.keyCompressor.decompress(data);
         data = this.crypter.decrypt(data);
@@ -250,7 +250,7 @@ var OldCollection = function () {
 
 
     OldCollection.prototype._handleToPouch = function _handleToPouch(docData) {
-        var data = clone(docData);
+        var data = util.clone(docData);
         data = this.crypter.encrypt(data);
         data = this.schema.swapPrimaryToId(data);
         if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
@@ -272,7 +272,7 @@ var OldCollection = function () {
                 while (1) {
                     switch (_context4.prev = _context4.next) {
                         case 0:
-                            doc = clone(doc);
+                            doc = util.clone(doc);
                             nextVersion = this.version + 1;
 
                             // run throught migrationStrategies

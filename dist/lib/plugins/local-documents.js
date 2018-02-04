@@ -29,10 +29,6 @@ var _inherits2 = require('babel-runtime/helpers/inherits');
 
 var _inherits3 = _interopRequireDefault(_inherits2);
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _objectPath = require('object-path');
 
 var _objectPath2 = _interopRequireDefault(_objectPath);
@@ -65,7 +61,13 @@ var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
+var _util = require('../util');
+
+var util = _interopRequireWildcard(_util);
+
 var _filter = require('rxjs/operators/filter');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -122,7 +124,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
     (0, _createClass3['default'])(RxLocalDocument, [{
         key: 'toPouchJson',
         value: function toPouchJson() {
-            var data = (0, _clone2['default'])(this._data);
+            var data = util.clone(this._data);
             data._id = LOCAL_PREFIX + this.id;
         }
     }, {
@@ -137,7 +139,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
             if (changeEvent.data.doc !== this.primary) return;
             switch (changeEvent.data.op) {
                 case 'UPDATE':
-                    var newData = (0, _clone2['default'])(changeEvent.data.v);
+                    var newData = util.clone(changeEvent.data.v);
                     var prevSyncData = this._dataSync$.getValue();
                     var prevData = this._data;
 
@@ -153,7 +155,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
                         // overwrite _rev of data
                         this._data._rev = newData._rev;
                     }
-                    this._dataSync$.next((0, _clone2['default'])(newData));
+                    this._dataSync$.next(util.clone(newData));
                     break;
                 case 'REMOVE':
                     // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -179,7 +181,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
             }
 
             var valueObj = _objectPath2['default'].get(this._data, objPath);
-            valueObj = (0, _clone2['default'])(valueObj);
+            valueObj = util.clone(valueObj);
             return valueObj;
         }
     }, {
@@ -201,7 +203,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
         value: function set(objPath, value) {
             if (!value) {
                 // object path not set, overwrite whole data
-                var data = (0, _clone2['default'])(objPath);
+                var data = util.clone(objPath);
                 data._rev = this._data._rev;
                 this._data = data;
                 return this;
@@ -225,7 +227,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
                     while (1) {
                         switch (_context.prev = _context.next) {
                             case 0:
-                                saveData = (0, _clone2['default'])(this._data);
+                                saveData = util.clone(this._data);
 
                                 saveData._id = LOCAL_PREFIX + this.id;
                                 _context.next = 4;
@@ -236,7 +238,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
 
                                 this._data._rev = res.rev;
 
-                                changeEvent = _rxChangeEvent2['default'].create('UPDATE', _rxDatabase2['default'].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection2['default'].isInstanceOf(this.parent) ? this.parent : null, this, (0, _clone2['default'])(this._data), true);
+                                changeEvent = _rxChangeEvent2['default'].create('UPDATE', _rxDatabase2['default'].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection2['default'].isInstanceOf(this.parent) ? this.parent : null, this, util.clone(this._data), true);
 
                                 this.$emit(changeEvent);
 
@@ -269,7 +271,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
 
                             case 3:
                                 _getDocCache(this.parent)['delete'](this.id);
-                                changeEvent = _rxChangeEvent2['default'].create('REMOVE', _rxDatabase2['default'].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection2['default'].isInstanceOf(this.parent) ? this.parent : null, this, (0, _clone2['default'])(this._data), true);
+                                changeEvent = _rxChangeEvent2['default'].create('REMOVE', _rxDatabase2['default'].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection2['default'].isInstanceOf(this.parent) ? this.parent : null, this, util.clone(this._data), true);
 
                                 this.$emit(changeEvent);
 
@@ -380,7 +382,7 @@ var insertLocal = function () {
 
                     case 2:
 
-                        data = (0, _clone2['default'])(data);
+                        data = util.clone(data);
                         _context3.next = 5;
                         return this.getLocal(id);
 
@@ -401,7 +403,7 @@ var insertLocal = function () {
 
                         // create new one
                         pouch = _getPouchByParent(this);
-                        saveData = (0, _clone2['default'])(data);
+                        saveData = util.clone(data);
 
                         saveData._id = LOCAL_PREFIX + id;
 

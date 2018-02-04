@@ -10,7 +10,6 @@ import _inherits from 'babel-runtime/helpers/inherits';
  * @link https://pouchdb.com/guides/local-documents.html
  */
 
-import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -20,6 +19,7 @@ import RxCollection from '../rx-collection';
 import RxChangeEvent from '../rx-change-event';
 import DocCache from '../doc-cache';
 import RxError from '../rx-error';
+import * as util from '../util';
 
 import { filter } from 'rxjs/operators/filter';
 
@@ -68,7 +68,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
     }
 
     RxLocalDocument.prototype.toPouchJson = function toPouchJson() {
-        var data = clone(this._data);
+        var data = util.clone(this._data);
         data._id = LOCAL_PREFIX + this.id;
     };
 
@@ -80,7 +80,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
         if (changeEvent.data.doc !== this.primary) return;
         switch (changeEvent.data.op) {
             case 'UPDATE':
-                var newData = clone(changeEvent.data.v);
+                var newData = util.clone(changeEvent.data.v);
                 var prevSyncData = this._dataSync$.getValue();
                 var prevData = this._data;
 
@@ -96,7 +96,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
                     // overwrite _rev of data
                     this._data._rev = newData._rev;
                 }
-                this._dataSync$.next(clone(newData));
+                this._dataSync$.next(util.clone(newData));
                 break;
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -120,7 +120,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
         }
 
         var valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
+        valueObj = util.clone(valueObj);
         return valueObj;
     };
 
@@ -140,7 +140,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
     RxLocalDocument.prototype.set = function set(objPath, value) {
         if (!value) {
             // object path not set, overwrite whole data
-            var data = clone(objPath);
+            var data = util.clone(objPath);
             data._rev = this._data._rev;
             this._data = data;
             return this;
@@ -163,7 +163,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
                 while (1) {
                     switch (_context.prev = _context.next) {
                         case 0:
-                            saveData = clone(this._data);
+                            saveData = util.clone(this._data);
 
                             saveData._id = LOCAL_PREFIX + this.id;
                             _context.next = 4;
@@ -174,7 +174,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
 
                             this._data._rev = res.rev;
 
-                            changeEvent = RxChangeEvent.create('UPDATE', RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database, RxCollection.isInstanceOf(this.parent) ? this.parent : null, this, clone(this._data), true);
+                            changeEvent = RxChangeEvent.create('UPDATE', RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database, RxCollection.isInstanceOf(this.parent) ? this.parent : null, this, util.clone(this._data), true);
 
                             this.$emit(changeEvent);
 
@@ -206,7 +206,7 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
 
                         case 3:
                             _getDocCache(this.parent)['delete'](this.id);
-                            changeEvent = RxChangeEvent.create('REMOVE', RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database, RxCollection.isInstanceOf(this.parent) ? this.parent : null, this, clone(this._data), true);
+                            changeEvent = RxChangeEvent.create('REMOVE', RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database, RxCollection.isInstanceOf(this.parent) ? this.parent : null, this, util.clone(this._data), true);
 
                             this.$emit(changeEvent);
 
@@ -317,7 +317,7 @@ var insertLocal = function () {
 
                     case 2:
 
-                        data = clone(data);
+                        data = util.clone(data);
                         _context3.next = 5;
                         return this.getLocal(id);
 
@@ -338,7 +338,7 @@ var insertLocal = function () {
 
                         // create new one
                         pouch = _getPouchByParent(this);
-                        saveData = clone(data);
+                        saveData = util.clone(data);
 
                         saveData._id = LOCAL_PREFIX + id;
 

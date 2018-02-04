@@ -6,7 +6,6 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
  * you can use it to sync collections with remote or local couchdb-instances
  */
 
-import clone from 'clone';
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { Subject } from 'rxjs/Subject';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -199,7 +198,7 @@ export function sync(_ref2) {
     } : _ref2$options,
         query = _ref2.query;
 
-    options = clone(options);
+    options = util.clone(options);
     // if remote is RxCollection, get internal pouchdb
     if (RxCollection.isInstanceOf(remote)) remote = remote.pouch;
 

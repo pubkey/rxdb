@@ -9,7 +9,6 @@ import _inherits from 'babel-runtime/helpers/inherits';
  * So you can do faster queries and also query over encrypted fields
  */
 
-import clone from 'clone';
 import { Subject } from 'rxjs/Subject';
 
 import RxCollection from '../rx-collection';
@@ -263,7 +262,7 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
 }(RxCollection.RxCollection);;
 
 function toCleanSchema(rxSchema) {
-    var newSchemaJson = clone(rxSchema.jsonID);
+    var newSchemaJson = util.clone(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;

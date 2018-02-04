@@ -5,7 +5,7 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
  */
 import * as utils from './mquery_utils';
 import RxError from '../rx-error';
-import _clone from 'clone';
+import * as util from '../util';
 
 var MQuery = function () {
     /**
@@ -22,8 +22,8 @@ var MQuery = function () {
 
         var proto = this.constructor.prototype;
         this.options = {};
-        this._conditions = proto._conditions ? _clone(proto._conditions) : {};
-        this._fields = proto._fields ? _clone(proto._fields) : undefined;
+        this._conditions = proto._conditions ? util.clone(proto._conditions) : {};
+        this._fields = proto._fields ? util.clone(proto._fields) : undefined;
         this._path = proto._path || undefined;
 
         if (criteria) this.find(criteria);
@@ -38,7 +38,7 @@ var MQuery = function () {
     MQuery.prototype.clone = function clone() {
         var same = new MQuery();
         Object.entries(this).forEach(function (entry) {
-            same[entry[0]] = _clone(entry[1]);
+            same[entry[0]] = util.clone(entry[1]);
         });
         return same;
     };
@@ -404,7 +404,7 @@ var MQuery = function () {
 
 
     MQuery.prototype._optionsForExec = function _optionsForExec() {
-        var options = _clone(this.options);
+        var options = util.clone(this.options);
         return options;
     };
 

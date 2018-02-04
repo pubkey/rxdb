@@ -97,10 +97,6 @@ var spawnInMemory = exports.spawnInMemory = function () {
     };
 }();
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _Subject = require('rxjs/Subject');
 
 var _rxCollection = require('../rx-collection');
@@ -135,12 +131,13 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var collectionCacheMap = new WeakMap(); /**
-                                         * This plugin adds RxCollection.inMemory()
-                                         * Which replicates the collection into an in-memory-collection
-                                         * So you can do faster queries and also query over encrypted fields
-                                         */
+/**
+ * This plugin adds RxCollection.inMemory()
+ * Which replicates the collection into an in-memory-collection
+ * So you can do faster queries and also query over encrypted fields
+ */
 
+var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
     new_edits: false
@@ -389,7 +386,7 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
 ;
 
 function toCleanSchema(rxSchema) {
-    var newSchemaJson = (0, _clone2['default'])(rxSchema.jsonID);
+    var newSchemaJson = util.clone(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;

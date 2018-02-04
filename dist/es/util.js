@@ -6,6 +6,7 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
  */
 import randomToken from 'random-token';
 import RxError from './rx-error';
+import { default as deepClone } from 'clone';
 
 /**
  * check if the given module is a leveldown-adapter
@@ -344,3 +345,10 @@ export function adapterObject(adapter) {
     }
     return adapterObj;
 };
+
+function recursiveDeepCopy(o) {
+    if (!o) return o;
+    return deepClone(o, false);
+}
+
+export var clone = recursiveDeepCopy;

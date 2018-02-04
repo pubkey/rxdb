@@ -2,7 +2,6 @@ import _regeneratorRuntime from 'babel-runtime/regenerator';
 import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
-import clone from 'clone';
 import IdleQueue from 'custom-idle-queue';
 import { filter } from 'rxjs/operators/filter';
 
@@ -177,7 +176,7 @@ export var RxCollection = function () {
 
 
     RxCollection.prototype._handleToPouch = function _handleToPouch(docData) {
-        var data = clone(docData);
+        var data = util.clone(docData);
         data = this._crypter.encrypt(data);
         data = this.schema.swapPrimaryToId(data);
         if (this.schema.doKeyCompression()) data = this._keyCompressor.compress(data);
@@ -187,7 +186,7 @@ export var RxCollection = function () {
     RxCollection.prototype._handleFromPouch = function _handleFromPouch(docData) {
         var noDecrypt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-        var data = clone(docData);
+        var data = util.clone(docData);
         data = this.schema.swapIdToPrimary(data);
         if (this.schema.doKeyCompression()) data = this._keyCompressor.decompress(data);
         if (noDecrypt) return data;
@@ -311,7 +310,6 @@ export var RxCollection = function () {
                             compressedQueryJSON = rxQuery.keyCompress();
 
                             if (limit) compressedQueryJSON.limit = limit;
-
                             _context3.next = 4;
                             return this.database.lockedRun(function () {
                                 return _this5.pouch.find(compressedQueryJSON);
@@ -487,7 +485,7 @@ export var RxCollection = function () {
 
                         case 6:
 
-                            json = clone(json);
+                            json = util.clone(json);
                             json = this.schema.fillObjectWithDefaults(json);
 
                             if (!json._id) {
@@ -579,7 +577,7 @@ export var RxCollection = function () {
                 while (1) {
                     switch (_context7.prev = _context7.next) {
                         case 0:
-                            json = clone(json);
+                            json = util.clone(json);
                             primary = json[this.schema.primaryPath];
 
                             if (primary) {
@@ -738,7 +736,7 @@ export var RxCollection = function () {
                 while (1) {
                     switch (_context11.prev = _context11.next) {
                         case 0:
-                            json = clone(json);
+                            json = util.clone(json);
                             primary = json[this.schema.primaryPath];
 
                             if (primary) {

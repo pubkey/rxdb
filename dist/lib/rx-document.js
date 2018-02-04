@@ -34,10 +34,6 @@ exports.createAr = createAr;
 exports.properties = properties;
 exports.isInstanceOf = isInstanceOf;
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _objectPath = require('object-path');
 
 var _objectPath2 = _interopRequireDefault(_objectPath);
@@ -80,10 +76,10 @@ var RxDocument = exports.RxDocument = function () {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new _BehaviorSubject.BehaviorSubject((0, _clone2['default'])(jsonData));
+        this._dataSync$ = new _BehaviorSubject.BehaviorSubject(util.clone(jsonData));
 
         // current doc-data, changes when setting values etc
-        this._data = (0, _clone2['default'])(jsonData);
+        this._data = util.clone(jsonData);
 
         // atomic-update-functions that have not run yes
         this._atomicUpdates = [];
@@ -107,7 +103,7 @@ var RxDocument = exports.RxDocument = function () {
         value: function resync() {
             var syncedData = this._dataSync$.getValue();
             if (this._synced$.getValue() && (0, _deepEqual2['default'])(syncedData, this._data)) return;else {
-                this._data = (0, _clone2['default'])(this._dataSync$.getValue());
+                this._data = util.clone(this._dataSync$.getValue());
                 this._synced$.next(true);
             }
         }
@@ -133,7 +129,7 @@ var RxDocument = exports.RxDocument = function () {
                 case 'INSERT':
                     break;
                 case 'UPDATE':
-                    var newData = (0, _clone2['default'])(changeEvent.data.v);
+                    var newData = util.clone(changeEvent.data.v);
                     var prevSyncData = this._dataSync$.getValue();
                     var prevData = this._data;
 
@@ -149,7 +145,7 @@ var RxDocument = exports.RxDocument = function () {
                         // overwrite _rev of data
                         this._data._rev = newData._rev;
                     }
-                    this._dataSync$.next((0, _clone2['default'])(newData));
+                    this._dataSync$.next(util.clone(newData));
                     break;
                 case 'REMOVE':
                     // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -254,7 +250,7 @@ var RxDocument = exports.RxDocument = function () {
         value: function get(objPath) {
             if (!this._data) return undefined;
             var valueObj = _objectPath2['default'].get(this._data, objPath);
-            valueObj = (0, _clone2['default'])(valueObj);
+            valueObj = util.clone(valueObj);
 
             // direct return if array or non-object
             if ((typeof valueObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(valueObj)) !== 'object' || Array.isArray(valueObj)) return valueObj;
@@ -306,7 +302,7 @@ var RxDocument = exports.RxDocument = function () {
     }, {
         key: 'toJSON',
         value: function toJSON() {
-            return (0, _clone2['default'])(this._data);
+            return util.clone(this._data);
         }
 
         /**
@@ -627,7 +623,7 @@ var RxDocument = exports.RxDocument = function () {
                                 this.collection.schema.validate(this._data);
 
                                 _context7.next = 12;
-                                return this.collection._pouchPut((0, _clone2['default'])(this._data));
+                                return this.collection._pouchPut(util.clone(this._data));
 
                             case 12:
                                 ret = _context7.sent;
@@ -642,7 +638,7 @@ var RxDocument = exports.RxDocument = function () {
                                 });
 
                             case 15:
-                                emitValue = (0, _clone2['default'])(this._data);
+                                emitValue = util.clone(this._data);
 
                                 emitValue._rev = ret.rev;
 
@@ -655,7 +651,7 @@ var RxDocument = exports.RxDocument = function () {
 
                                 // event
                                 this._synced$.next(true);
-                                this._dataSync$.next((0, _clone2['default'])(emitValue));
+                                this._dataSync$.next(util.clone(emitValue));
 
                                 changeEvent = _rxChangeEvent2['default'].create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
@@ -700,7 +696,7 @@ var RxDocument = exports.RxDocument = function () {
 
                                 // internal events
                                 this._synced$.next(true);
-                                this._dataSync$.next((0, _clone2['default'])(this._data));
+                                this._dataSync$.next(util.clone(this._data));
 
                                 return _context8.abrupt('return', true);
 

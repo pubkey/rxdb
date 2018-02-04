@@ -24,9 +24,9 @@ var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
-var _clone2 = require('clone');
+var _util = require('../util');
 
-var _clone3 = _interopRequireDefault(_clone2);
+var util = _interopRequireWildcard(_util);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -47,8 +47,8 @@ var MQuery = function () {
 
         var proto = this.constructor.prototype;
         this.options = {};
-        this._conditions = proto._conditions ? (0, _clone3['default'])(proto._conditions) : {};
-        this._fields = proto._fields ? (0, _clone3['default'])(proto._fields) : undefined;
+        this._conditions = proto._conditions ? util.clone(proto._conditions) : {};
+        this._fields = proto._fields ? util.clone(proto._fields) : undefined;
         this._path = proto._path || undefined;
 
         if (criteria) this.find(criteria);
@@ -65,7 +65,7 @@ var MQuery = function () {
         value: function clone() {
             var same = new MQuery();
             Object.entries(this).forEach(function (entry) {
-                same[entry[0]] = (0, _clone3['default'])(entry[1]);
+                same[entry[0]] = util.clone(entry[1]);
             });
             return same;
         }
@@ -444,7 +444,7 @@ var MQuery = function () {
     }, {
         key: '_optionsForExec',
         value: function _optionsForExec() {
-            var options = (0, _clone3['default'])(this.options);
+            var options = util.clone(this.options);
             return options;
         }
 

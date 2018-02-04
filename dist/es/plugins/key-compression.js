@@ -5,7 +5,6 @@ import _createClass from 'babel-runtime/helpers/createClass';
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import clone from 'clone';
 import * as util from '../util';
 
 var KeyCompressor = function () {
@@ -52,7 +51,7 @@ var KeyCompressor = function () {
 
 
     KeyCompressor.prototype.compress = function compress(obj) {
-        if (!this.schema.doKeyCompression()) return clone(obj);
+        if (!this.schema.doKeyCompression()) return util.clone(obj);
         return this._compressObj(obj);
     };
 
@@ -83,7 +82,7 @@ var KeyCompressor = function () {
     };
 
     KeyCompressor.prototype.decompress = function decompress(obj) {
-        if (!this.schema.doKeyCompression()) return clone(obj);
+        if (!this.schema.doKeyCompression()) return util.clone(obj);
         var returnObj = this._decompressObj(obj);
         return returnObj;
     };
@@ -119,7 +118,7 @@ var KeyCompressor = function () {
     KeyCompressor.prototype.compressQuery = function compressQuery(queryJSON) {
         var _this3 = this;
 
-        queryJSON = clone(queryJSON);
+        queryJSON = util.clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
 
         // selector

@@ -2,7 +2,6 @@ import _regeneratorRuntime from 'babel-runtime/regenerator';
 import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
-import clone from 'clone';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -25,10 +24,10 @@ export var RxDocument = function () {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(clone(jsonData));
+        this._dataSync$ = new BehaviorSubject(util.clone(jsonData));
 
         // current doc-data, changes when setting values etc
-        this._data = clone(jsonData);
+        this._data = util.clone(jsonData);
 
         // atomic-update-functions that have not run yes
         this._atomicUpdates = [];
@@ -49,7 +48,7 @@ export var RxDocument = function () {
     RxDocument.prototype.resync = function resync() {
         var syncedData = this._dataSync$.getValue();
         if (this._synced$.getValue() && deepEqual(syncedData, this._data)) return;else {
-            this._data = clone(this._dataSync$.getValue());
+            this._data = util.clone(this._dataSync$.getValue());
             this._synced$.next(true);
         }
     };
@@ -72,7 +71,7 @@ export var RxDocument = function () {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                var newData = clone(changeEvent.data.v);
+                var newData = util.clone(changeEvent.data.v);
                 var prevSyncData = this._dataSync$.getValue();
                 var prevData = this._data;
 
@@ -88,7 +87,7 @@ export var RxDocument = function () {
                     // overwrite _rev of data
                     this._data._rev = newData._rev;
                 }
-                this._dataSync$.next(clone(newData));
+                this._dataSync$.next(util.clone(newData));
                 break;
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -189,7 +188,7 @@ export var RxDocument = function () {
     RxDocument.prototype.get = function get(objPath) {
         if (!this._data) return undefined;
         var valueObj = objectPath.get(this._data, objPath);
-        valueObj = clone(valueObj);
+        valueObj = util.clone(valueObj);
 
         // direct return if array or non-object
         if (typeof valueObj !== 'object' || Array.isArray(valueObj)) return valueObj;
@@ -239,7 +238,7 @@ export var RxDocument = function () {
     };
 
     RxDocument.prototype.toJSON = function toJSON() {
-        return clone(this._data);
+        return util.clone(this._data);
     };
 
     /**
@@ -548,7 +547,7 @@ export var RxDocument = function () {
                             this.collection.schema.validate(this._data);
 
                             _context7.next = 12;
-                            return this.collection._pouchPut(clone(this._data));
+                            return this.collection._pouchPut(util.clone(this._data));
 
                         case 12:
                             ret = _context7.sent;
@@ -563,7 +562,7 @@ export var RxDocument = function () {
                             });
 
                         case 15:
-                            emitValue = clone(this._data);
+                            emitValue = util.clone(this._data);
 
                             emitValue._rev = ret.rev;
 
@@ -576,7 +575,7 @@ export var RxDocument = function () {
 
                             // event
                             this._synced$.next(true);
-                            this._dataSync$.next(clone(emitValue));
+                            this._dataSync$.next(util.clone(emitValue));
 
                             changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
@@ -620,7 +619,7 @@ export var RxDocument = function () {
 
                             // internal events
                             this._synced$.next(true);
-                            this._dataSync$.next(clone(this._data));
+                            this._dataSync$.next(util.clone(this._data));
 
                             return _context8.abrupt('return', true);
 

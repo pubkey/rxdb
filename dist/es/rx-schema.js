@@ -1,7 +1,6 @@
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import objectPath from 'object-path';
-import clone from 'clone';
 
 import * as util from './util';
 import RxError from './rx-error';
@@ -80,7 +79,7 @@ export var RxSchema = function () {
      * @return {object}
      */
     RxSchema.prototype.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
-        obj = clone(obj);
+        obj = util.clone(obj);
         Object.entries(this.defaultValues).filter(function (entry) {
             return !obj.hasOwnProperty(entry[0]);
         }).forEach(function (entry) {
@@ -286,7 +285,7 @@ export function getFinalFields(jsonId) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    return util.sortObject(clone(jsonSchema));
+    return util.sortObject(util.clone(jsonSchema));
 }
 
 /**
@@ -295,7 +294,7 @@ export function normalize(jsonSchema) {
  * @return {Object} cloned schemaObj
  */
 var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
-    schemaObj = clone(schemaObj);
+    schemaObj = util.clone(schemaObj);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;

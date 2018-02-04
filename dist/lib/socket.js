@@ -209,138 +209,74 @@ var Socket = function () {
         }()
     }, {
         key: '_getLastTimeDoc',
+        value: function _getLastTimeDoc() {
+            return this.pouch.get(TIMESTAMP_DOC_ID)['catch'](function () {
+                return null;
+            });
+        }
+    }, {
+        key: '_updateLastTimestampRun',
+        value: function _updateLastTimestampRun() {
+            var _this3 = this;
+
+            var newTime = new Date().getTime();
+            return this._getLastTimeDoc().then(function (doc) {
+                if (!doc) {
+                    return _this3.pouch.put({
+                        _id: TIMESTAMP_DOC_ID,
+                        time: newTime
+                    });
+                } else {
+                    doc.time = newTime;
+                    return _this3.pouch.put(doc);
+                }
+            });
+        }
+    }, {
+        key: '_updateLastTimestamp',
         value: function () {
             var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
-                var _this3 = this;
-
-                var lastTimestampDoc;
+                var done;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
-                                _context4.prev = 0;
-                                _context4.next = 3;
-                                return this.database.lockedRun(function () {
-                                    return _this3.pouch.get(TIMESTAMP_DOC_ID);
-                                });
+                                // run until sucess
+                                done = false;
 
-                            case 3:
-                                lastTimestampDoc = _context4.sent;
-                                return _context4.abrupt('return', lastTimestampDoc);
+                            case 1:
+                                if (done) {
+                                    _context4.next = 12;
+                                    break;
+                                }
 
-                            case 7:
-                                _context4.prev = 7;
-                                _context4.t0 = _context4['catch'](0);
-                                return _context4.abrupt('return', null);
+                                _context4.prev = 2;
+                                _context4.next = 5;
+                                return this._updateLastTimestampRun();
+
+                            case 5:
+                                done = true;
+                                _context4.next = 10;
+                                break;
+
+                            case 8:
+                                _context4.prev = 8;
+                                _context4.t0 = _context4['catch'](2);
 
                             case 10:
+                                _context4.next = 1;
+                                break;
+
+                            case 12:
                             case 'end':
                                 return _context4.stop();
                         }
                     }
-                }, _callee4, this, [[0, 7]]);
-            }));
-
-            function _getLastTimeDoc() {
-                return _ref4.apply(this, arguments);
-            }
-
-            return _getLastTimeDoc;
-        }()
-    }, {
-        key: '_updateLastTimestamp',
-        value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6() {
-                var _this4 = this;
-
-                var run, done;
-                return _regenerator2['default'].wrap(function _callee6$(_context6) {
-                    while (1) {
-                        switch (_context6.prev = _context6.next) {
-                            case 0:
-                                run = function () {
-                                    var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5() {
-                                        var newTime, doc;
-                                        return _regenerator2['default'].wrap(function _callee5$(_context5) {
-                                            while (1) {
-                                                switch (_context5.prev = _context5.next) {
-                                                    case 0:
-                                                        newTime = new Date().getTime();
-                                                        _context5.next = 3;
-                                                        return _this4._getLastTimeDoc();
-
-                                                    case 3:
-                                                        doc = _context5.sent;
-
-                                                        if (doc) {
-                                                            _context5.next = 8;
-                                                            break;
-                                                        }
-
-                                                        return _context5.abrupt('return', _this4.database.lockedRun(function () {
-                                                            return _this4.pouch.put({
-                                                                _id: TIMESTAMP_DOC_ID,
-                                                                time: newTime
-                                                            });
-                                                        }));
-
-                                                    case 8:
-                                                        doc.time = newTime;
-                                                        return _context5.abrupt('return', _this4.database.lockedRun(function () {
-                                                            return _this4.pouch.put(doc);
-                                                        }));
-
-                                                    case 10:
-                                                    case 'end':
-                                                        return _context5.stop();
-                                                }
-                                            }
-                                        }, _callee5, _this4);
-                                    }));
-
-                                    return function run() {
-                                        return _ref6.apply(this, arguments);
-                                    };
-                                }();
-
-                                // run until sucess
-
-
-                                done = false;
-
-                            case 2:
-                                if (done) {
-                                    _context6.next = 13;
-                                    break;
-                                }
-
-                                _context6.prev = 3;
-                                _context6.next = 6;
-                                return run();
-
-                            case 6:
-                                done = true;
-                                _context6.next = 11;
-                                break;
-
-                            case 9:
-                                _context6.prev = 9;
-                                _context6.t0 = _context6['catch'](3);
-
-                            case 11:
-                                _context6.next = 2;
-                                break;
-
-                            case 13:
-                            case 'end':
-                                return _context6.stop();
-                        }
-                    }
-                }, _callee6, this, [[3, 9]]);
+                }, _callee4, this, [[2, 8]]);
             }));
 
             function _updateLastTimestamp() {
-                return _ref5.apply(this, arguments);
+                return _ref4.apply(this, arguments);
             }
 
             return _updateLastTimestamp;
@@ -353,53 +289,53 @@ var Socket = function () {
     }, {
         key: 'fetchDocs',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7() {
-                var _this5 = this;
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5() {
+                var _this4 = this;
 
                 var lastTimeDoc, lastTime, result;
-                return _regenerator2['default'].wrap(function _callee7$(_context7) {
+                return _regenerator2['default'].wrap(function _callee5$(_context5) {
                     while (1) {
-                        switch (_context7.prev = _context7.next) {
+                        switch (_context5.prev = _context5.next) {
                             case 0:
-                                _context7.next = 2;
+                                _context5.next = 2;
                                 return this._getLastTimeDoc();
 
                             case 2:
-                                lastTimeDoc = _context7.sent;
+                                lastTimeDoc = _context5.sent;
                                 lastTime = lastTimeDoc ? lastTimeDoc.time : 0;
 
                                 if (!(this.lastTimestamp >= lastTime)) {
-                                    _context7.next = 8;
+                                    _context5.next = 8;
                                     break;
                                 }
 
-                                return _context7.abrupt('return', []);
+                                return _context5.abrupt('return', []);
 
                             case 8:
                                 this.lastTimestamp = lastTime;
-                                _context7.next = 11;
+                                _context5.next = 11;
                                 return this.database.lockedRun(function () {
-                                    return _this5.pouch.allDocs({
+                                    return _this4.pouch.allDocs({
                                         include_docs: true
                                     });
                                 });
 
                             case 11:
-                                result = _context7.sent;
-                                return _context7.abrupt('return', result.rows.map(function (row) {
+                                result = _context5.sent;
+                                return _context5.abrupt('return', result.rows.map(function (row) {
                                     return row.doc;
                                 }));
 
                             case 13:
                             case 'end':
-                                return _context7.stop();
+                                return _context5.stop();
                         }
                     }
-                }, _callee7, this);
+                }, _callee5, this);
             }));
 
             function fetchDocs() {
-                return _ref7.apply(this, arguments);
+                return _ref5.apply(this, arguments);
             }
 
             return fetchDocs;
@@ -415,44 +351,44 @@ var Socket = function () {
     }, {
         key: 'deleteDoc',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(doc) {
-                var _this6 = this;
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(doc) {
+                var _this5 = this;
 
                 var success;
-                return _regenerator2['default'].wrap(function _callee8$(_context8) {
+                return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
-                        switch (_context8.prev = _context8.next) {
+                        switch (_context6.prev = _context6.next) {
                             case 0:
                                 success = true;
-                                _context8.prev = 1;
-                                _context8.next = 4;
+                                _context6.prev = 1;
+                                _context6.next = 4;
                                 return this.database.lockedRun(function () {
-                                    return _this6.pouch.remove(doc);
+                                    return _this5.pouch.remove(doc);
                                 });
 
                             case 4:
-                                _context8.next = 9;
+                                _context6.next = 9;
                                 break;
 
                             case 6:
-                                _context8.prev = 6;
-                                _context8.t0 = _context8['catch'](1);
+                                _context6.prev = 6;
+                                _context6.t0 = _context6['catch'](1);
 
                                 success = false;
 
                             case 9:
-                                return _context8.abrupt('return', success);
+                                return _context6.abrupt('return', success);
 
                             case 10:
                             case 'end':
-                                return _context8.stop();
+                                return _context6.stop();
                         }
                     }
-                }, _callee8, this, [[1, 6]]);
+                }, _callee6, this, [[1, 6]]);
             }));
 
             function deleteDoc(_x2) {
-                return _ref8.apply(this, arguments);
+                return _ref6.apply(this, arguments);
             }
 
             return deleteDoc;
@@ -467,22 +403,22 @@ var Socket = function () {
     }, {
         key: '_cleanupDocs',
         value: function _cleanupDocs(docsData) {
-            var _this7 = this;
+            var _this6 = this;
 
             // delete docs on idle
             docsData.forEach(function (docData) {
-                _this7.database.requestIdlePromise().then(function () {
-                    if (_this7._destroyed) return;
-                    _this7.deleteDoc(docData);
+                _this6.database.requestIdlePromise().then(function () {
+                    if (_this6._destroyed) return;
+                    _this6.deleteDoc(docData);
                 });
             });
 
             // run a compaction if more than one doc was deleted
             if (docsData.length > 0) {
                 this.database.requestIdlePromise().then(function () {
-                    if (_this7._destroyed) return;
-                    _this7.database.lockedRun(function () {
-                        return _this7.pouch.compact();
+                    if (_this6._destroyed) return;
+                    _this6.database.lockedRun(function () {
+                        return _this6.pouch.compact();
                     });
                 });
             }
@@ -496,58 +432,58 @@ var Socket = function () {
     }, {
         key: 'pull',
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee9() {
-                var _this8 = this;
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7() {
+                var _this7 = this;
 
                 var minTime, docs, maxAge, delDocs;
-                return _regenerator2['default'].wrap(function _callee9$(_context9) {
+                return _regenerator2['default'].wrap(function _callee7$(_context7) {
                     while (1) {
-                        switch (_context9.prev = _context9.next) {
+                        switch (_context7.prev = _context7.next) {
                             case 0:
                                 if (!this.isPulling) {
-                                    _context9.next = 3;
+                                    _context7.next = 3;
                                     break;
                                 }
 
                                 this._repullAfter = true;
-                                return _context9.abrupt('return', false);
+                                return _context7.abrupt('return', false);
 
                             case 3:
                                 this.isPulling = true;
                                 this.pullCount++;
 
                                 // w8 for idle-time because this is a non-prio-task
-                                _context9.next = 7;
+                                _context7.next = 7;
                                 return util.requestIdlePromise(EVENT_TTL / 2);
 
                             case 7:
                                 if (!this._destroyed) {
-                                    _context9.next = 9;
+                                    _context7.next = 9;
                                     break;
                                 }
 
-                                return _context9.abrupt('return');
+                                return _context7.abrupt('return');
 
                             case 9:
                                 minTime = this.lastPull - 100; // TODO evaluate this value (100)
 
                                 this.lastPull = new Date().getTime();
-                                _context9.next = 13;
+                                _context7.next = 13;
                                 return this.fetchDocs();
 
                             case 13:
-                                docs = _context9.sent;
+                                docs = _context7.sent;
 
                                 if (!this._destroyed) {
-                                    _context9.next = 16;
+                                    _context7.next = 16;
                                     break;
                                 }
 
-                                return _context9.abrupt('return');
+                                return _context7.abrupt('return');
 
                             case 16:
                                 docs.filter(function (doc) {
-                                    return doc.it !== _this8.token;
+                                    return doc.it !== _this7.token;
                                 }) // do not get events emitted by self
                                 // do not get events older than minTime
                                 .filter(function (doc) {
@@ -562,26 +498,26 @@ var Socket = function () {
                                 })
                                 // make sure the same event is not emitted twice
                                 .filter(function (cE) {
-                                    if (_this8.receivedEvents[cE.hash]) return false;
-                                    return _this8.receivedEvents[cE.hash] = new Date().getTime();
+                                    if (_this7.receivedEvents[cE.hash]) return false;
+                                    return _this7.receivedEvents[cE.hash] = new Date().getTime();
                                 })
                                 // prevent memory leak of this.receivedEvents
                                 .filter(function (cE) {
                                     return setTimeout(function () {
-                                        return delete _this8.receivedEvents[cE.hash];
+                                        return delete _this7.receivedEvents[cE.hash];
                                     }, EVENT_TTL * 3);
                                 })
                                 // emit to messages
                                 .forEach(function (cE) {
-                                    return _this8.messages$.next(cE);
+                                    return _this7.messages$.next(cE);
                                 });
 
                                 if (!this._destroyed) {
-                                    _context9.next = 19;
+                                    _context7.next = 19;
                                     break;
                                 }
 
-                                return _context9.abrupt('return');
+                                return _context7.abrupt('return');
 
                             case 19:
 
@@ -598,18 +534,18 @@ var Socket = function () {
                                     this._repull = false;
                                     this.pull();
                                 }
-                                return _context9.abrupt('return', true);
+                                return _context7.abrupt('return', true);
 
                             case 25:
                             case 'end':
-                                return _context9.stop();
+                                return _context7.stop();
                         }
                     }
-                }, _callee9, this);
+                }, _callee7, this);
             }));
 
             function pull() {
-                return _ref9.apply(this, arguments);
+                return _ref7.apply(this, arguments);
             }
 
             return pull;
@@ -617,10 +553,10 @@ var Socket = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee10() {
-                return _regenerator2['default'].wrap(function _callee10$(_context10) {
+            var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8() {
+                return _regenerator2['default'].wrap(function _callee8$(_context8) {
                     while (1) {
-                        switch (_context10.prev = _context10.next) {
+                        switch (_context8.prev = _context8.next) {
                             case 0:
                                 this._destroyed = true;
                                 this.subs.map(function (sub) {
@@ -630,14 +566,14 @@ var Socket = function () {
 
                             case 3:
                             case 'end':
-                                return _context10.stop();
+                                return _context8.stop();
                         }
                     }
-                }, _callee10, this);
+                }, _callee8, this);
             }));
 
             function destroy() {
-                return _ref10.apply(this, arguments);
+                return _ref8.apply(this, arguments);
             }
 
             return destroy;

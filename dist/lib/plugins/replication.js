@@ -25,10 +25,6 @@ exports.createRxReplicationState = createRxReplicationState;
 exports.watchForChanges = watchForChanges;
 exports.sync = sync;
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _pouchdbReplication = require('pouchdb-replication');
 
 var _pouchdbReplication2 = _interopRequireDefault(_pouchdbReplication);
@@ -70,10 +66,12 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 // add pouchdb-replication-plugin
-_core2['default'].plugin(_pouchdbReplication2['default']); /**
-                                                            * this plugin adds the RxCollection.sync()-function to rxdb
-                                                            * you can use it to sync collections with remote or local couchdb-instances
-                                                            */
+/**
+ * this plugin adds the RxCollection.sync()-function to rxdb
+ * you can use it to sync collections with remote or local couchdb-instances
+ */
+
+_core2['default'].plugin(_pouchdbReplication2['default']);
 
 var RxReplicationState = exports.RxReplicationState = function () {
     function RxReplicationState(collection) {
@@ -253,7 +251,7 @@ function sync(_ref2) {
     } : _ref2$options,
         query = _ref2.query;
 
-    options = (0, _clone2['default'])(options);
+    options = util.clone(options);
     // if remote is RxCollection, get internal pouchdb
     if (_rxCollection2['default'].isInstanceOf(remote)) remote = remote.pouch;
 

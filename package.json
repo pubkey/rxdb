@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "Offline-first database with Reactive, Sync, Schema, Promises, Mongo-Query, Encryption, LevelDown",
-  "version": "7.3.2",
+  "version": "7.3.3",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -21,7 +21,8 @@
     "rxjs",
     "encryption",
     "nosql",
-    "pouchdb"
+    "pouchdb",
+    "rx"
   ],
   "license": "Apache-2.0",
   "main": "./dist/lib/index.js",

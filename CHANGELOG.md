@@ -1,8 +1,9 @@
 # Changelog
 
-### X.X.X (coming soon)
+### 7.3.3 (February 4, 2018)
 
 Other:
+  - Update to pouchdb version 6.4.3
   - Improve performance by using the profiler
   - Added typings for internal `pouchdb`-instance
 

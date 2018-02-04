@@ -19,10 +19,6 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.create = create;
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _util = require('../util');
 
 var util = _interopRequireWildcard(_util);
@@ -30,11 +26,6 @@ var util = _interopRequireWildcard(_util);
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-/**
- * this plugin adds the keycompression-capabilities to rxdb
- * if you dont use this, ensure that you set disableKeyComression to false in your schema
- */
 
 var KeyCompressor = function () {
     /**
@@ -83,7 +74,7 @@ var KeyCompressor = function () {
     }, {
         key: 'compress',
         value: function compress(obj) {
-            if (!this.schema.doKeyCompression()) return (0, _clone2['default'])(obj);
+            if (!this.schema.doKeyCompression()) return util.clone(obj);
             return this._compressObj(obj);
         }
     }, {
@@ -116,7 +107,7 @@ var KeyCompressor = function () {
     }, {
         key: 'decompress',
         value: function decompress(obj) {
-            if (!this.schema.doKeyCompression()) return (0, _clone2['default'])(obj);
+            if (!this.schema.doKeyCompression()) return util.clone(obj);
             var returnObj = this._decompressObj(obj);
             return returnObj;
         }
@@ -154,7 +145,7 @@ var KeyCompressor = function () {
         value: function compressQuery(queryJSON) {
             var _this3 = this;
 
-            queryJSON = (0, _clone2['default'])(queryJSON);
+            queryJSON = util.clone(queryJSON);
             if (!this.schema.doKeyCompression()) return queryJSON;
 
             // selector
@@ -246,7 +237,10 @@ var KeyCompressor = function () {
         }
     }]);
     return KeyCompressor;
-}();
+}(); /**
+      * this plugin adds the keycompression-capabilities to rxdb
+      * if you dont use this, ensure that you set disableKeyComression to false in your schema
+      */
 
 function create(schema) {
     return new KeyCompressor(schema);

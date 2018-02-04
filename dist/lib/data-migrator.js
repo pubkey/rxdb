@@ -26,9 +26,9 @@ var _pouchDb = require('./pouch-db');
 
 var _pouchDb2 = _interopRequireDefault(_pouchDb);
 
-var _clone = require('clone');
+var _util = require('./util');
 
-var _clone2 = _interopRequireDefault(_clone);
+var util = _interopRequireWildcard(_util);
 
 var _rxSchema = require('./rx-schema');
 
@@ -51,6 +51,8 @@ var _hooks = require('./hooks');
 var _hooks2 = _interopRequireDefault(_hooks);
 
 var _Observable = require('rxjs/Observable');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -147,7 +149,7 @@ var DataMigrator = function () {
 
 
                                     state.total = totalCount;
-                                    observer.next((0, _clone2['default'])(state));
+                                    observer.next(util.clone(state));
 
                                     currentCol = null;
                                     _loop = /*#__PURE__*/_regenerator2['default'].mark(function _loop() {
@@ -163,7 +165,7 @@ var DataMigrator = function () {
                                                                 state.handled++;
                                                                 state[subState.type] = state[subState.type] + 1;
                                                                 state.percent = Math.round(state.handled / state.total * 100);
-                                                                observer.next((0, _clone2['default'])(state));
+                                                                observer.next(util.clone(state));
                                                             }, function (e) {
                                                                 sub.unsubscribe();
                                                                 observer.error(e);
@@ -197,7 +199,7 @@ var DataMigrator = function () {
 
                                     state.done = true;
                                     state.percent = 100;
-                                    observer.next((0, _clone2['default'])(state));
+                                    observer.next(util.clone(state));
 
                                     observer.complete();
 
@@ -286,7 +288,7 @@ var OldCollection = function () {
     }, {
         key: '_handleFromPouch',
         value: function _handleFromPouch(docData) {
-            var data = (0, _clone2['default'])(docData);
+            var data = util.clone(docData);
             data = this.schema.swapIdToPrimary(docData);
             if (this.schema.doKeyCompression()) data = this.keyCompressor.decompress(data);
             data = this.crypter.decrypt(data);
@@ -300,7 +302,7 @@ var OldCollection = function () {
     }, {
         key: '_handleToPouch',
         value: function _handleToPouch(docData) {
-            var data = (0, _clone2['default'])(docData);
+            var data = util.clone(docData);
             data = this.crypter.encrypt(data);
             data = this.schema.swapPrimaryToId(data);
             if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
@@ -323,7 +325,7 @@ var OldCollection = function () {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
                             case 0:
-                                doc = (0, _clone2['default'])(doc);
+                                doc = util.clone(doc);
                                 nextVersion = this.version + 1;
 
                                 // run throught migrationStrategies

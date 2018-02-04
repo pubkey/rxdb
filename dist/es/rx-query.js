@@ -495,8 +495,8 @@ export var RxQuery = function () {
                 path: this.mquery._path
             });
         }
-
         clonedThis.mquery.regex(params);
+
         return clonedThis._tunnelQueryCache();
     };
 

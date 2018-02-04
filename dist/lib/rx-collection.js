@@ -121,10 +121,6 @@ var create = exports.create = function () {
 exports.properties = properties;
 exports.isInstanceOf = isInstanceOf;
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _customIdleQueue = require('custom-idle-queue');
 
 var _customIdleQueue2 = _interopRequireDefault(_customIdleQueue);
@@ -346,7 +342,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_handleToPouch',
         value: function _handleToPouch(docData) {
-            var data = (0, _clone2['default'])(docData);
+            var data = util.clone(docData);
             data = this._crypter.encrypt(data);
             data = this.schema.swapPrimaryToId(data);
             if (this.schema.doKeyCompression()) data = this._keyCompressor.compress(data);
@@ -357,7 +353,7 @@ var RxCollection = exports.RxCollection = function () {
         value: function _handleFromPouch(docData) {
             var noDecrypt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-            var data = (0, _clone2['default'])(docData);
+            var data = util.clone(docData);
             data = this.schema.swapIdToPrimary(data);
             if (this.schema.doKeyCompression()) data = this._keyCompressor.decompress(data);
             if (noDecrypt) return data;
@@ -484,7 +480,6 @@ var RxCollection = exports.RxCollection = function () {
                                 compressedQueryJSON = rxQuery.keyCompress();
 
                                 if (limit) compressedQueryJSON.limit = limit;
-
                                 _context3.next = 4;
                                 return this.database.lockedRun(function () {
                                     return _this5.pouch.find(compressedQueryJSON);
@@ -665,7 +660,7 @@ var RxCollection = exports.RxCollection = function () {
 
                             case 6:
 
-                                json = (0, _clone2['default'])(json);
+                                json = util.clone(json);
                                 json = this.schema.fillObjectWithDefaults(json);
 
                                 if (!json._id) {
@@ -758,7 +753,7 @@ var RxCollection = exports.RxCollection = function () {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
                             case 0:
-                                json = (0, _clone2['default'])(json);
+                                json = util.clone(json);
                                 primary = json[this.schema.primaryPath];
 
                                 if (primary) {
@@ -920,7 +915,7 @@ var RxCollection = exports.RxCollection = function () {
                     while (1) {
                         switch (_context11.prev = _context11.next) {
                             case 0:
-                                json = (0, _clone2['default'])(json);
+                                json = util.clone(json);
                                 primary = json[this.schema.primaryPath];
 
                                 if (primary) {

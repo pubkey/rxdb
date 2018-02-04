@@ -7,11 +7,11 @@ exports.merge = merge;
 exports.mergeClone = mergeClone;
 exports.isObject = isObject;
 
-var _clone = require('clone');
+var _util = require('../util');
 
-var _clone2 = _interopRequireDefault(_clone);
+var util = _interopRequireWildcard(_util);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 /**
  * Merges `from` into `to` without overwriting existing properties.
@@ -52,14 +52,14 @@ function mergeClone(to, from) {
         if ('undefined' === typeof to[key]) {
             // make sure to retain key order here because of a bug handling the $each
             // operator in mongodb 2.4.4
-            to[key] = (0, _clone2['default'])(from[key], {
+            to[key] = util.clone(from[key], {
                 retainKeyOrder: 1
             });
         } else {
             if (isObject(from[key])) mergeClone(to[key], from[key]);else {
                 // make sure to retain key order here because of a bug handling the
                 // $each operator in mongodb 2.4.4
-                to[key] = (0, _clone2['default'])(from[key], {
+                to[key] = util.clone(from[key], {
                     retainKeyOrder: 1
                 });
             }

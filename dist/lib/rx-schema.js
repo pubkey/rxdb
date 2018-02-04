@@ -30,10 +30,6 @@ var _objectPath = require('object-path');
 
 var _objectPath2 = _interopRequireDefault(_objectPath);
 
-var _clone = require('clone');
-
-var _clone2 = _interopRequireDefault(_clone);
-
 var _util = require('./util');
 
 var util = _interopRequireWildcard(_util);
@@ -129,7 +125,7 @@ var RxSchema = exports.RxSchema = function () {
          * @return {object}
          */
         value: function fillObjectWithDefaults(obj) {
-            obj = (0, _clone2['default'])(obj);
+            obj = util.clone(obj);
             Object.entries(this.defaultValues).filter(function (entry) {
                 return !obj.hasOwnProperty(entry[0]);
             }).forEach(function (entry) {
@@ -338,7 +334,7 @@ function getFinalFields(jsonId) {
  * @return {Object} jsonSchema - ordered
  */
 function normalize(jsonSchema) {
-    return util.sortObject((0, _clone2['default'])(jsonSchema));
+    return util.sortObject(util.clone(jsonSchema));
 }
 
 /**
@@ -347,7 +343,7 @@ function normalize(jsonSchema) {
  * @return {Object} cloned schemaObj
  */
 var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
-    schemaObj = (0, _clone2['default'])(schemaObj);
+    schemaObj = util.clone(schemaObj);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;
