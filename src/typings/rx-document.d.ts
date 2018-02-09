@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import IdleQueue from 'custom-idle-queue';
 
 import {
     RxCollection
@@ -20,6 +21,7 @@ export declare class RxDocumentBase<RxDocumentType> {
 
     readonly $: Observable<any>;
     readonly deleted$: Observable<boolean>;
+    readonly atomicQueue: IdleQueue;
     readonly synced$: Observable<boolean>;
     resync(): void;
 

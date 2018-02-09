@@ -1,3 +1,4 @@
+import IdleQueue from 'custom-idle-queue';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -31,12 +32,6 @@ export class RxDocument {
         // current doc-data, changes when setting values etc
         this._data = util.clone(jsonData);
 
-        // atomic-update-functions that have not run yes
-        this._atomicUpdates = [];
-
-        // resolve-functions to resolve the promises of atomicUpdate
-        this._atomicUpdatesResolveFunctions = new WeakMap();
-
         // false when _data !== _dataSync
         this._synced$ = new BehaviorSubject(true);
         this._deleted$ = new BehaviorSubject(false);
@@ -59,6 +54,11 @@ export class RxDocument {
     }
     get deleted() {
         return this._deleted$.getValue();
+    }
+    get atomicQueue() {
+        if (!this._atomicQueue)
+            this._atomicQueue = new IdleQueue();
+        return this._atomicQueue;
     }
     get synced$() {
         return this._synced$
@@ -340,41 +340,20 @@ export class RxDocument {
     }
 
     /**
-     * [atomicUpdate description]
-     * @param  {[type]}  fun [description]
-     * @return {Promise<RxDocument>}     [description]
+     * runs an atomic update over the document
+     * @param  {function(RxDocument)}  fun
+     * @return {Promise<RxDocument>}
      */
     async atomicUpdate(fun) {
-        this._atomicUpdates.push(fun);
-        const retPromise = new Promise((resolve, reject) => {
-            this._atomicUpdatesResolveFunctions.set(fun, {
-                resolve,
-                reject
-            });
-        });
-        this._runAtomicUpdates();
-        return retPromise;
-    }
-
-    async _runAtomicUpdates() {
-        if (this.__runAtomicUpdates_running) return;
-        else this.__runAtomicUpdates_running = true;
-
-        if (this._atomicUpdates.length === 0) {
-            this.__runAtomicUpdates_running = false;
-            return;
-        };
-        const fun = this._atomicUpdates.shift();
-
-        try {
-            await fun(this); // run atomic
-            await this.save();
-        } catch (err) {
-            this._atomicUpdatesResolveFunctions.get(fun).reject(err);
-        }
-        this._atomicUpdatesResolveFunctions.get(fun).resolve(this); // resolve promise
-        this.__runAtomicUpdates_running = false;
-        this._runAtomicUpdates();
+        const queue = this.atomicQueue;
+        await queue.requestIdlePromise();
+        const ret = await queue.wrapCall(
+            async () => {
+                await fun(this);
+                await this.save();
+            }
+        );
+        return this;
     }
 
     /**

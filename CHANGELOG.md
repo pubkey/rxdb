@@ -1,5 +1,10 @@
 # Changelog
 
+### 7.X.X (coming soon)
+
+Features:
+  - Use `CustomIdleQueue` for atomic updates to enable [#494](https://github.com/pubkey/rxdb/issues/494)
+
 ### 7.3.3 (February 4, 2018)
 
 Other:

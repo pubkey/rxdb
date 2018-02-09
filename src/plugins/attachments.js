@@ -8,15 +8,6 @@ import RxChangeEvent from './../rx-change-event';
 import * as util from './../util';
 import RxError from '../rx-error';
 
-
-/**
- * to not have update-conflicts,
- * we use atomic inserts (per document) on putAttachment()
- * @type {WeakMap}
- */
-const ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
-
-
 function ensureSchemaSupportsAttachments(doc) {
     const schemaJson = doc.collection.schema.jsonID;
     if (!schemaJson.attachments) {
@@ -158,12 +149,6 @@ RxAttachment.fromPouchDocument = (id, pouchDocAttachment, rxDocument) => {
     });
 };
 
-export function getAtomicQueueOfDocument(doc) {
-    if (!ATTACHMENT_ATOMIC_QUEUES.has(doc))
-        ATTACHMENT_ATOMIC_QUEUES.set(doc, new IdleQueue());
-    return ATTACHMENT_ATOMIC_QUEUES.get(doc);
-};
-
 function shouldEncrypt(doc) {
     return !!doc.collection.schema.jsonID.attachments.encrypted;
 }
@@ -174,7 +159,7 @@ export async function putAttachment({
     type = 'text/plain'
 }) {
     ensureSchemaSupportsAttachments(this);
-    const queue = getAtomicQueueOfDocument(this);
+    const queue = this.atomicQueue;
 
     if (shouldEncrypt(this))
         data = this.collection._crypter._encryptValue(data);
