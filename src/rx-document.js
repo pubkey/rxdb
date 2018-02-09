@@ -347,11 +347,10 @@ export class RxDocument {
     async atomicUpdate(fun) {
         const queue = this.atomicQueue;
         await queue.requestIdlePromise();
-        const ret = await queue.wrapCall(
-            async () => {
-                await fun(this);
-                await this.save();
-            }
+        await queue.wrapCall(
+            () => Promise
+            .resolve(fun(this))
+            .then(() => this.save())
         );
         return this;
     }
