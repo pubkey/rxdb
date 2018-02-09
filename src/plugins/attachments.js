@@ -1,4 +1,3 @@
-import IdleQueue from 'custom-idle-queue';
 import {
     map
 } from 'rxjs/operators/map';
