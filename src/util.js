@@ -13,9 +13,7 @@ import {
  * throws if not
  */
 export function isLevelDown(adapter) {
-    if (!adapter ||
-        typeof adapter.super_ !== 'function' ||
-        typeof adapter.destroy !== 'function') {
+    if (!adapter || typeof adapter.super_ !== 'function') {
         throw RxError.newRxError('UT4', {
             adapter
         });

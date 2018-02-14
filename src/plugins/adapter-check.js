@@ -23,14 +23,12 @@ export async function checkAdapter(adapter) {
             value: true
         });
         recoveredDoc = await pouch.get(id);
+
+        // cleanup
+        await pouch.remove(recoveredDoc);
     } catch (err) {
         return false;
     }
-
-    // cleanup
-    try {
-        await pouch.destroy();
-    } catch (err) {}
 
     if (recoveredDoc && recoveredDoc.value)
         return true;
