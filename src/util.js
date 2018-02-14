@@ -92,7 +92,7 @@ export async function requestIdlePromise(timeout = null) {
             })
         );
     } else
-        return new Promise(res => setTimeout(res, 0));
+        return Promise.resolve();
 }
 
 /**
