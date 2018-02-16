@@ -5,6 +5,9 @@
 Features:
   - Use `CustomIdleQueue` for atomic updates to enable [#494](https://github.com/pubkey/rxdb/issues/494)
 
+Bugfixes:
+  - Default ignored when `0` [#528](https://github.com/pubkey/rxdb/pull/528)
+
 ### 7.3.3 (February 4, 2018)
 
 Other:

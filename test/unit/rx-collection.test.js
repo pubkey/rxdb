@@ -1443,6 +1443,39 @@ config.parallel('rx-collection.test.js', () => {
             });
         });
     });
+    describe('issues', () => {
+        describe('#528  default value ignored when 0', () => {
+            it('should use value when default=0', async () => {
+                const schema = {
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            primary: true
+                        },
+                        weight: {
+                            type: 'number',
+                            default: 0
+                        }
+                    }
+                };
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const collection = await db.collection({
+                    name: 'humanx',
+                    schema
+                });
+                const doc = await collection.insert({
+                    passportId: util.randomCouchString(10)
+                });
+                assert.equal(doc.weight, 0);
+                db.destroy();
+            });
+        });
+    });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {
             AsyncTestUtil.wait(20);
