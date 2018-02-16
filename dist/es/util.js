@@ -13,7 +13,7 @@ import { default as deepClone } from 'clone';
  * throws if not
  */
 export function isLevelDown(adapter) {
-    if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') {
+    if (!adapter || typeof adapter.super_ !== 'function') {
         throw RxError.newRxError('UT4', {
             adapter: adapter
         });
@@ -120,9 +120,7 @@ export var requestIdlePromise = function () {
                         }));
 
                     case 4:
-                        return _context2.abrupt('return', new Promise(function (res) {
-                            return setTimeout(res, 0);
-                        }));
+                        return _context2.abrupt('return', Promise.resolve());
 
                     case 5:
                     case 'end':

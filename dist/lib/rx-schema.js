@@ -213,7 +213,7 @@ var RxSchema = exports.RxSchema = function () {
             if (!this._defaultValues) {
                 this._defaultValues = {};
                 Object.entries(this.normalized.properties).filter(function (entry) {
-                    return entry[1]['default'];
+                    return entry[1].hasOwnProperty('default');
                 }).forEach(function (entry) {
                     return _this3._defaultValues[entry[0]] = entry[1]['default'];
                 });

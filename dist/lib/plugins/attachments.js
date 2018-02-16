@@ -65,7 +65,7 @@ var putAttachment = exports.putAttachment = function () {
                 switch (_context6.prev = _context6.next) {
                     case 0:
                         ensureSchemaSupportsAttachments(this);
-                        queue = getAtomicQueueOfDocument(this);
+                        queue = this.atomicQueue;
 
 
                         if (shouldEncrypt(this)) data = this.collection._crypter._encryptValue(data);
@@ -213,13 +213,8 @@ var postMigrateDocument = exports.postMigrateDocument = function () {
     };
 }();
 
-exports.getAtomicQueueOfDocument = getAtomicQueueOfDocument;
 exports.getAttachment = getAttachment;
 exports.allAttachments = allAttachments;
-
-var _customIdleQueue = require('custom-idle-queue');
-
-var _customIdleQueue2 = _interopRequireDefault(_customIdleQueue);
 
 var _map = require('rxjs/operators/map');
 
@@ -238,13 +233,6 @@ var _rxError2 = _interopRequireDefault(_rxError);
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-/**
- * to not have update-conflicts,
- * we use atomic inserts (per document) on putAttachment()
- * @type {WeakMap}
- */
-var ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
 
 function ensureSchemaSupportsAttachments(doc) {
     var schemaJson = doc.collection.schema.jsonID;
@@ -459,11 +447,6 @@ RxAttachment.fromPouchDocument = function (id, pouchDocAttachment, rxDocument) {
         digest: pouchDocAttachment.digest,
         rev: pouchDocAttachment.revpos
     });
-};
-
-function getAtomicQueueOfDocument(doc) {
-    if (!ATTACHMENT_ATOMIC_QUEUES.has(doc)) ATTACHMENT_ATOMIC_QUEUES.set(doc, new _customIdleQueue2['default']());
-    return ATTACHMENT_ATOMIC_QUEUES.get(doc);
 };
 
 function shouldEncrypt(doc) {

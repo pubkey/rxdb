@@ -32,19 +32,11 @@ var resyncRxDocument = function () {
     };
 }();
 
-import IdleQueue from 'custom-idle-queue';
 import { map } from 'rxjs/operators/map';
 
 import RxChangeEvent from './../rx-change-event';
 import * as util from './../util';
 import RxError from '../rx-error';
-
-/**
- * to not have update-conflicts,
- * we use atomic inserts (per document) on putAttachment()
- * @type {WeakMap}
- */
-var ATTACHMENT_ATOMIC_QUEUES = new WeakMap();
 
 function ensureSchemaSupportsAttachments(doc) {
     var schemaJson = doc.collection.schema.jsonID;
@@ -257,11 +249,6 @@ RxAttachment.fromPouchDocument = function (id, pouchDocAttachment, rxDocument) {
     });
 };
 
-export function getAtomicQueueOfDocument(doc) {
-    if (!ATTACHMENT_ATOMIC_QUEUES.has(doc)) ATTACHMENT_ATOMIC_QUEUES.set(doc, new IdleQueue());
-    return ATTACHMENT_ATOMIC_QUEUES.get(doc);
-};
-
 function shouldEncrypt(doc) {
     return !!doc.collection.schema.jsonID.attachments.encrypted;
 }
@@ -280,7 +267,7 @@ export var putAttachment = function () {
                 switch (_context6.prev = _context6.next) {
                     case 0:
                         ensureSchemaSupportsAttachments(this);
-                        queue = getAtomicQueueOfDocument(this);
+                        queue = this.atomicQueue;
 
 
                         if (shouldEncrypt(this)) data = this.collection._crypter._encryptValue(data);

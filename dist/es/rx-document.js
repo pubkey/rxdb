@@ -2,6 +2,7 @@ import _regeneratorRuntime from 'babel-runtime/regenerator';
 import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
+import IdleQueue from 'custom-idle-queue';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -28,12 +29,6 @@ export var RxDocument = function () {
 
         // current doc-data, changes when setting values etc
         this._data = util.clone(jsonData);
-
-        // atomic-update-functions that have not run yes
-        this._atomicUpdates = [];
-
-        // resolve-functions to resolve the promises of atomicUpdate
-        this._atomicUpdatesResolveFunctions = new WeakMap();
 
         // false when _data !== _dataSync
         this._synced$ = new BehaviorSubject(true);
@@ -392,31 +387,35 @@ export var RxDocument = function () {
     }();
 
     /**
-     * [atomicUpdate description]
-     * @param  {[type]}  fun [description]
-     * @return {Promise<RxDocument>}     [description]
+     * runs an atomic update over the document
+     * @param  {function(RxDocument)}  fun
+     * @return {Promise<RxDocument>}
      */
     RxDocument.prototype.atomicUpdate = function () {
         var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(fun) {
             var _this2 = this;
 
-            var retPromise;
+            var queue;
             return _regeneratorRuntime.wrap(function _callee5$(_context5) {
                 while (1) {
                     switch (_context5.prev = _context5.next) {
                         case 0:
-                            this._atomicUpdates.push(fun);
-                            retPromise = new Promise(function (resolve, reject) {
-                                _this2._atomicUpdatesResolveFunctions.set(fun, {
-                                    resolve: resolve,
-                                    reject: reject
+                            queue = this.atomicQueue;
+                            _context5.next = 3;
+                            return queue.requestIdlePromise();
+
+                        case 3:
+                            _context5.next = 5;
+                            return queue.wrapCall(function () {
+                                return Promise.resolve(fun(_this2)).then(function () {
+                                    return _this2.save();
                                 });
                             });
 
-                            this._runAtomicUpdates();
-                            return _context5.abrupt('return', retPromise);
+                        case 5:
+                            return _context5.abrupt('return', this);
 
-                        case 4:
+                        case 6:
                         case 'end':
                             return _context5.stop();
                     }
@@ -431,73 +430,6 @@ export var RxDocument = function () {
         return atomicUpdate;
     }();
 
-    RxDocument.prototype._runAtomicUpdates = function () {
-        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6() {
-            var fun;
-            return _regeneratorRuntime.wrap(function _callee6$(_context6) {
-                while (1) {
-                    switch (_context6.prev = _context6.next) {
-                        case 0:
-                            if (!this.__runAtomicUpdates_running) {
-                                _context6.next = 4;
-                                break;
-                            }
-
-                            return _context6.abrupt('return');
-
-                        case 4:
-                            this.__runAtomicUpdates_running = true;
-
-                        case 5:
-                            if (!(this._atomicUpdates.length === 0)) {
-                                _context6.next = 8;
-                                break;
-                            }
-
-                            this.__runAtomicUpdates_running = false;
-                            return _context6.abrupt('return');
-
-                        case 8:
-                            ;
-                            fun = this._atomicUpdates.shift();
-                            _context6.prev = 10;
-                            _context6.next = 13;
-                            return fun(this);
-
-                        case 13:
-                            _context6.next = 15;
-                            return this.save();
-
-                        case 15:
-                            _context6.next = 20;
-                            break;
-
-                        case 17:
-                            _context6.prev = 17;
-                            _context6.t0 = _context6['catch'](10);
-
-                            this._atomicUpdatesResolveFunctions.get(fun).reject(_context6.t0);
-
-                        case 20:
-                            this._atomicUpdatesResolveFunctions.get(fun).resolve(this); // resolve promise
-                            this.__runAtomicUpdates_running = false;
-                            this._runAtomicUpdates();
-
-                        case 23:
-                        case 'end':
-                            return _context6.stop();
-                    }
-                }
-            }, _callee6, this, [[10, 17]]);
-        }));
-
-        function _runAtomicUpdates() {
-            return _ref6.apply(this, arguments);
-        }
-
-        return _runAtomicUpdates;
-    }();
-
     /**
      * save document if its data has changed
      * @return {boolean} false if nothing to save
@@ -505,22 +437,22 @@ export var RxDocument = function () {
 
 
     RxDocument.prototype.save = function () {
-        var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7() {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6() {
             var ret, emitValue, changeEvent;
-            return _regeneratorRuntime.wrap(function _callee7$(_context7) {
+            return _regeneratorRuntime.wrap(function _callee6$(_context6) {
                 while (1) {
-                    switch (_context7.prev = _context7.next) {
+                    switch (_context6.prev = _context6.next) {
                         case 0:
                             if (!this._isTemporary) {
-                                _context7.next = 2;
+                                _context6.next = 2;
                                 break;
                             }
 
-                            return _context7.abrupt('return', this._saveTemporary());
+                            return _context6.abrupt('return', this._saveTemporary());
 
                         case 2:
                             if (!this._deleted$.getValue()) {
-                                _context7.next = 4;
+                                _context6.next = 4;
                                 break;
                             }
 
@@ -531,29 +463,29 @@ export var RxDocument = function () {
 
                         case 4:
                             if (!deepEqual(this._data, this._dataSync$.getValue())) {
-                                _context7.next = 7;
+                                _context6.next = 7;
                                 break;
                             }
 
                             this._synced$.next(true);
-                            return _context7.abrupt('return', false);
+                            return _context6.abrupt('return', false);
 
                         case 7:
-                            _context7.next = 9;
+                            _context6.next = 9;
                             return this.collection._runHooks('pre', 'save', this);
 
                         case 9:
 
                             this.collection.schema.validate(this._data);
 
-                            _context7.next = 12;
+                            _context6.next = 12;
                             return this.collection._pouchPut(util.clone(this._data));
 
                         case 12:
-                            ret = _context7.sent;
+                            ret = _context6.sent;
 
                             if (ret.ok) {
-                                _context7.next = 15;
+                                _context6.next = 15;
                                 break;
                             }
 
@@ -568,7 +500,7 @@ export var RxDocument = function () {
 
                             this._data = emitValue;
 
-                            _context7.next = 20;
+                            _context6.next = 20;
                             return this.collection._runHooks('post', 'save', this);
 
                         case 20:
@@ -580,18 +512,18 @@ export var RxDocument = function () {
                             changeEvent = RxChangeEvent.create('UPDATE', this.collection.database, this.collection, this, emitValue);
 
                             this.$emit(changeEvent);
-                            return _context7.abrupt('return', true);
+                            return _context6.abrupt('return', true);
 
                         case 25:
                         case 'end':
-                            return _context7.stop();
+                            return _context6.stop();
                     }
                 }
-            }, _callee7, this);
+            }, _callee6, this);
         }));
 
         function save() {
-            return _ref7.apply(this, arguments);
+            return _ref6.apply(this, arguments);
         }
 
         return save;
@@ -605,12 +537,12 @@ export var RxDocument = function () {
 
 
     RxDocument.prototype._saveTemporary = function () {
-        var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8() {
-            return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+        var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7() {
+            return _regeneratorRuntime.wrap(function _callee7$(_context7) {
                 while (1) {
-                    switch (_context8.prev = _context8.next) {
+                    switch (_context7.prev = _context7.next) {
                         case 0:
-                            _context8.next = 2;
+                            _context7.next = 2;
                             return this.collection.insert(this);
 
                         case 2:
@@ -621,33 +553,33 @@ export var RxDocument = function () {
                             this._synced$.next(true);
                             this._dataSync$.next(util.clone(this._data));
 
-                            return _context8.abrupt('return', true);
+                            return _context7.abrupt('return', true);
 
                         case 7:
                         case 'end':
-                            return _context8.stop();
+                            return _context7.stop();
                     }
                 }
-            }, _callee8, this);
+            }, _callee7, this);
         }));
 
         function _saveTemporary() {
-            return _ref8.apply(this, arguments);
+            return _ref7.apply(this, arguments);
         }
 
         return _saveTemporary;
     }();
 
     RxDocument.prototype.remove = function () {
-        var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee9() {
+        var _ref8 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8() {
             var _this3 = this;
 
-            return _regeneratorRuntime.wrap(function _callee9$(_context9) {
+            return _regeneratorRuntime.wrap(function _callee8$(_context8) {
                 while (1) {
-                    switch (_context9.prev = _context9.next) {
+                    switch (_context8.prev = _context8.next) {
                         case 0:
                             if (!this.deleted) {
-                                _context9.next = 2;
+                                _context8.next = 2;
                                 break;
                             }
 
@@ -657,15 +589,15 @@ export var RxDocument = function () {
                             });
 
                         case 2:
-                            _context9.next = 4;
+                            _context8.next = 4;
                             return util.promiseWait(0);
 
                         case 4:
-                            _context9.next = 6;
+                            _context8.next = 6;
                             return this.collection._runHooks('pre', 'remove', this);
 
                         case 6:
-                            _context9.next = 8;
+                            _context8.next = 8;
                             return this.collection.database.lockedRun(function () {
                                 return _this3.collection.pouch.remove(_this3.primary, _this3._data._rev);
                             });
@@ -674,26 +606,26 @@ export var RxDocument = function () {
 
                             this.$emit(RxChangeEvent.create('REMOVE', this.collection.database, this.collection, this, this._data));
 
-                            _context9.next = 11;
+                            _context8.next = 11;
                             return this.collection._runHooks('post', 'remove', this);
 
                         case 11:
-                            _context9.next = 13;
+                            _context8.next = 13;
                             return util.promiseWait(0);
 
                         case 13:
-                            return _context9.abrupt('return');
+                            return _context8.abrupt('return');
 
                         case 14:
                         case 'end':
-                            return _context9.stop();
+                            return _context8.stop();
                     }
                 }
-            }, _callee9, this);
+            }, _callee8, this);
         }));
 
         function remove() {
-            return _ref9.apply(this, arguments);
+            return _ref8.apply(this, arguments);
         }
 
         return remove;
@@ -727,6 +659,12 @@ export var RxDocument = function () {
         key: 'deleted',
         get: function get() {
             return this._deleted$.getValue();
+        }
+    }, {
+        key: 'atomicQueue',
+        get: function get() {
+            if (!this._atomicQueue) this._atomicQueue = new IdleQueue();
+            return this._atomicQueue;
         }
     }, {
         key: 'synced$',

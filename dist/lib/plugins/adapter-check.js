@@ -49,44 +49,35 @@ var checkAdapter = exports.checkAdapter = function () {
 
                     case 11:
                         recoveredDoc = _context.sent;
-                        _context.next = 17;
-                        break;
+                        _context.next = 14;
+                        return pouch.remove(recoveredDoc);
 
                     case 14:
-                        _context.prev = 14;
+                        _context.next = 19;
+                        break;
+
+                    case 16:
+                        _context.prev = 16;
                         _context.t0 = _context['catch'](3);
                         return _context.abrupt('return', false);
 
-                    case 17:
-                        _context.prev = 17;
-                        _context.next = 20;
-                        return pouch.destroy();
-
-                    case 20:
-                        _context.next = 24;
-                        break;
-
-                    case 22:
-                        _context.prev = 22;
-                        _context.t1 = _context['catch'](17);
-
-                    case 24:
+                    case 19:
                         if (!(recoveredDoc && recoveredDoc.value)) {
-                            _context.next = 28;
+                            _context.next = 23;
                             break;
                         }
 
                         return _context.abrupt('return', true);
 
-                    case 28:
+                    case 23:
                         return _context.abrupt('return', false);
 
-                    case 29:
+                    case 24:
                     case 'end':
                         return _context.stop();
                 }
             }
-        }, _callee, this, [[3, 14], [17, 22]]);
+        }, _callee, this, [[3, 16]]);
     }));
 
     return function checkAdapter(_x) {

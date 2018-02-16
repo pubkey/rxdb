@@ -65,9 +65,7 @@ var requestIdlePromise = exports.requestIdlePromise = function () {
                         }));
 
                     case 4:
-                        return _context2.abrupt('return', new Promise(function (res) {
-                            return setTimeout(res, 0);
-                        }));
+                        return _context2.abrupt('return', Promise.resolve());
 
                     case 5:
                     case 'end':
@@ -131,7 +129,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  * throws if not
  */
 function isLevelDown(adapter) {
-    if (!adapter || typeof adapter.super_ !== 'function' || typeof adapter.destroy !== 'function') {
+    if (!adapter || typeof adapter.super_ !== 'function') {
         throw _rxError2['default'].newRxError('UT4', {
             adapter: adapter
         });
