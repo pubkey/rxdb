@@ -35,6 +35,10 @@ describe('bug-report.test.js', () => {
                     type: 'integer',
                     minimum: 0,
                     maximum: 150
+                },
+                weight: {
+                    type: 'number',
+                    default: 0
                 }
             }
         };
@@ -88,7 +92,7 @@ describe('bug-report.test.js', () => {
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.equal(myDocument.age, 56);
+        assert.equal(myDocument.weight, 0);
 
         // you can also wait for events
         const emitted = [];
