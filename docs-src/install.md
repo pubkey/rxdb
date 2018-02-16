@@ -54,14 +54,14 @@ require('babel-polyfill');
 
 ## rxjs
 
-To reduce the build-size, RxDB is using rxjs's [lettable-operators](https://github.com/ReactiveX/rxjs/blob/master/doc/lettable-operators.md). This means that by default only some parts of rxjs are included into RxDB. If you want to use additional operators, you either have to require the whole rxjs-lib, or also use the lettable-operators. Another alternative is to cherry-pick the needed operators.
+To reduce the build-size, RxDB is using rxjs's [pipeable-operators](https://github.com/ReactiveX/rxjs/blob/master/doc/pipeable-operators.md). This means that by default only some parts of rxjs are included into RxDB. If you want to use additional operators, you either have to require the whole rxjs-lib, or also use the lettable-operators. Another alternative is to cherry-pick the needed operators.
 
 ```javascript
 // full import
 import 'rxjs'; // es6
 require('rxjs'); // es5
 
-// lettable
+// pipeable
 import { Subject } from 'rxjs/Subject';
 import { filter } from 'rxjs/operators/filter';
 

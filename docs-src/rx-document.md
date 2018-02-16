@@ -117,7 +117,7 @@ Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/ov
 
 ```js
 // get all changeEvents
-myDocument.$()
+myDocument.$
   .subscribe(changeEvent => console.dir(changeEvent));
 ```
 
