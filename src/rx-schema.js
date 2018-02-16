@@ -90,7 +90,7 @@ export class RxSchema {
         if (!this._defaultValues) {
             this._defaultValues = {};
             Object.entries(this.normalized.properties)
-                .filter(entry => entry[1].default)
+                .filter(entry => entry[1].default !== null)
                 .forEach(entry => this._defaultValues[entry[0]] = entry[1].default);
         }
         return this._defaultValues;
