@@ -30,7 +30,7 @@
   "module": "./dist/es/index.js",
   "types": "./src/typings/index.d.ts",
   "scripts": {
-    "preinstall": "rimraf ./package-lock.json",
+    "preinstall": "rm -f ./package-lock.json",
     "pretest": "npm run transpile",
     "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
     "test:fast": "npm run pretest && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test",
