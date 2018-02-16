@@ -31,6 +31,10 @@ if (config.platform.name !== 'node') {
         console.error(err);
         process.exit(1);
     });
+
+    // log version
+    console.log('node -v :: ');
+    console.dir(process.versions.node);
 }
 
 
