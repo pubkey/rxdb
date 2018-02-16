@@ -119,7 +119,6 @@
     "eslint": "4.17.0",
     "eslint-plugin-babel": "4.1.2",
     "eslint-plugin-disable": "1.0.1",
-    "eslint-plugin-spellcheck": "0.0.8",
     "exists-file": "3.0.2",
     "express": "4.16.2",
     "express-pouchdb": "4.0.0",
