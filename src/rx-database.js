@@ -390,6 +390,13 @@ export class RxDatabase {
     }
 
     /**
+     * spawn server
+     */
+    server() {
+        throw RxError.pluginMissing('server');
+    }
+
+    /**
      * destroys the database-instance and all collections
      * @return {Promise}
      */
