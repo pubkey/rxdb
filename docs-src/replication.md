@@ -13,7 +13,7 @@ It basically does the same as [pouchdb-sync](https://pouchdb.com/guides/replicat
 // you need these plugins to sync
 RxDB.plugin(require('pouchdb-adapter-http')); // enable syncing over http (remote database)
 
-const replicationState = myCollection.sync(
+const replicationState = myCollection.sync({
     remote: 'http://localhost:10102/db/', // remote database. This can be the serverURL, another RxCollection or a PouchDB-instance
     waitForLeadership: true,              // (optional) [default=true] to save performance, the sync starts on leader-instance only
     direction: {                          // direction (optional) to specify sync-directions
@@ -25,7 +25,7 @@ const replicationState = myCollection.sync(
         retry: true
     },
     query: myCollection.find().where('age').gt(18) // query (optional) only documents that match that query will be synchronised
-);
+});
 ```
 
 ## RxReplicationState
