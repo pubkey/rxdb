@@ -9,98 +9,91 @@
  * - 'npm run test:browsers' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 
+const SpawnServer = require('../helper/spawn-server');
+RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
+
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
-        // create a schema
-        const mySchema = {
+        const playerSchema = {
             version: 0,
             type: 'object',
             properties: {
-                passportId: {
-                    type: 'string',
-                    primary: true
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
+                name: {type: 'string'},
+                score: {type: 'number'}
             }
         };
 
-        // generate a random database-name
-        const name = util.randomCouchString(10);
+        const monsterSchema = {
+            version: 0,
+            type: 'object',
+            properties: {
+                hitpoints: {type: 'number'},
+                size: {type: 'number'},
+                defeated: {type: 'boolean'}
+            }
+        };
+        // Prepare 'remote' database
+        const remoteDb = await SpawnServer.spawn();
 
-        // create a database
-        const db = await RxDB.create({
-            name,
+        // Prepare local database
+        const localDbName = util.randomCouchString(10);
+        let localDb = await RxDB.create({
+            name: localDbName,
             adapter: 'memory',
             ignoreDuplicate: true
         });
-        // create a collection
-        const collection = await db.collection({
-            name: 'crawlstate',
-            schema: mySchema
+
+        // Prepare collections
+        let collection1 = await localDb.collection({
+            name: 'player',
+            schema: playerSchema
+        });
+        let collection2 = await localDb.collection({
+            name: 'monster',
+            schema: monsterSchema
         });
 
-        // insert a document
-        await collection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        // Setup replication
+        collection1.pouch.sync(remoteDb, {live: true});
+        collection2.pouch.sync(remoteDb, {live: true });
+        await new Promise(res => setTimeout(res, 2000));    // 2 second wait
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await RxDB.create({
-            name,
+        // Insert doc on collection1
+        await collection1.insert({name: 'Gerard', score: 123});
+        
+        // Simulate app restart
+        await localDb.destroy();
+        localDb = null;
+
+        // Prepare local database
+        localDb = await RxDB.create({
+            name: localDbName,
             adapter: 'memory',
             ignoreDuplicate: true
         });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'crawlstate',
-            schema: mySchema
+
+        // Prepare collections
+        collection1 = await localDb.collection({
+            name: 'player',
+            schema: playerSchema
+        });
+        collection2 = await localDb.collection({
+            name: 'monster',
+            schema: monsterSchema
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // Setup replication
+        collection1.pouch.sync(remoteDb, {live: true});
+        collection2.pouch.sync(remoteDb, {live: true });
+        await new Promise(res => setTimeout(res, 2000));    // 2 second wait
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.equal(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-
-        // clean up afterwards
-        sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        // Query for all documents from collection2 (there should be none)
+        const docs = await collection2.find().exec();
+        //console.log(docs[0]._data);   // :S
+        assert.equal(docs.length, 0);
     });
 });
