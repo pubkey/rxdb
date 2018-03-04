@@ -167,7 +167,7 @@
     "uglify-js": "3.3.12",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
-    "watchify": "3.10.0",
+    "watchify": "3.11.0",
     "webpack": "4.0.1"
   },
   "// greenkeeper": [
