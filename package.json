@@ -168,7 +168,7 @@
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.10.0",
-    "webpack": "4.0.1"
+    "webpack": "4.1.0"
   },
   "// greenkeeper": [
     "// mocha.parallel is pinned because https://github.com/danielstjules/mocha.parallel/issues/38"
