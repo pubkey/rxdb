@@ -1,15 +1,21 @@
 import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
 
-// import FullPouch from 'pouchdb';
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';
+
+import Core from '../core';
+import ReplicationPlugin from './replication';
+Core.plugin(ReplicationPlugin);
 
 export async function spawnServer({
     path = '/db',
     port = 3000
 }) {
     const db = this;
+
+    db.human.watchForChanges();
+
     const pseudo = PouchDB.defaults({
         adapter: db.adapter
     });
