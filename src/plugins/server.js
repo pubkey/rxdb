@@ -32,7 +32,6 @@ export async function spawnServer({
     if (!SERVERS_OF_DB.has(db))
         SERVERS_OF_DB.set(db, []);
 
-    db.human.watchForChanges();
 
     const pseudo = PouchDB.defaults({
         adapter: db.adapter,
@@ -43,18 +42,22 @@ export async function spawnServer({
     APP_OF_DB.set(db, app);
 
     // tunnel requests so collection-names can be used as paths
-    // TODO do this for all collections that exist or come
-    app.use(path + '/human', function(req, res, next) {
-        console.log('#### one req:');
-        console.dir(req.baseUrl);
-        if (req.baseUrl === '/db/human') {
-            console.log('# tunnel:');
-            const to = normalizeDbName(db) + '-rxdb-0-human';
-            const toFull = req.originalUrl.replace('/db/human', '/db/' + to);
-            req.originalUrl = toFull;
-            console.dir(toFull);
-        }
-        next();
+    // TODO do this for all collections that get created afterwards
+    Object.keys(db.collections).forEach(colName => {
+        db[colName].watchForChanges();
+        console.log(colName);
+        app.use(path + '/' + colName, function(req, res, next) {
+            console.log('#### one req:');
+            console.dir(req.baseUrl);
+            if (req.baseUrl === '/db/' + colName) {
+                console.log('# tunnel:');
+                const to = normalizeDbName(db) + '-rxdb-0-' + colName;
+                const toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
+                req.originalUrl = toFull;
+                console.dir(toFull);
+            }
+            next();
+        });
     });
 
 

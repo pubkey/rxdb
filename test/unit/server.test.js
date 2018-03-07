@@ -88,8 +88,6 @@ describe('server.test.js', () => {
         const findDoc = col1.findOne().exec();
         assert.ok(findDoc);
 
-
-        console.log('w8 for sync');
         // both collections should have 2 documents
         await AsyncTestUtil.waitUntil(async () => {
             const serverDocs = await col1.find().exec();
@@ -99,6 +97,31 @@ describe('server.test.js', () => {
 
         db1.destroy();
         db2.destroy();
+    });
+    it('should work for dynamic collection-names', async () => {
+        const name = 'foobar';
+        const serverCollection = await humansCollection.create(0, name);
+        await serverCollection.database.server({});
+        const clientCollection = await humansCollection.create(0, name);
+
+        // sync
+        clientCollection.sync({
+            remote: 'http://localhost:3000/db/' + name
+        });
+
+        // insert one doc on each side
+        await clientCollection.insert(schemaObjects.human());
+        await serverCollection.insert(schemaObjects.human());
+
+        // both collections should have 2 documents
+        await AsyncTestUtil.waitUntil(async () => {
+            const serverDocs = await serverCollection.find().exec();
+            const clientDocs = await clientCollection.find().exec();
+            return (clientDocs.length === 2 && serverDocs.length === 2);
+        });
+
+        clientCollection.database.destroy();
+        serverCollection.database.destroy();
     });
     it('run', async function() {
         process.exit();
