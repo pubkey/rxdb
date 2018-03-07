@@ -18,18 +18,33 @@ describe('server.test.js', () => {
         // insert one doc on each side
         const data1 = schemaObjects.human();
         const data2 = schemaObjects.human();
+        // sync
+        clientCollection.sync({
+            // remote: 'http://localhost:3000/db/human', // + serverCollection.pouch.name
+            remote: 'http://localhost:3000/db/' + serverCollection.pouch.name,
+            options: {
+                live: true,
+                retry: true
+            }
+        });
+
         await clientCollection.insert(data1);
         await serverCollection.insert(data2);
 
-        // sync
-        clientCollection.sync({
-            remote: 'http://localhost:3000/db/human' // + serverCollection.pouch.name
-        });
 
         await AsyncTestUtil.waitUntil(async () => {
             const serverDocs = await serverCollection.find().exec();
             const clientDocs = await clientCollection.find().exec();
             console.log('serverDocs: ' + serverDocs.length);
+            console.dir(serverDocs.map(doc => doc.toJSON()));
+
+
+            const pDocs = await serverCollection.pouch.find({
+                selector: {}
+            });
+            console.dir(pDocs.docs);
+
+
             console.log('clientDocs: ' + clientDocs.length);
             console.dir(clientDocs.map(doc => doc.toJSON()));
             return (clientDocs.length === 2 && serverDocs.length === 2);
