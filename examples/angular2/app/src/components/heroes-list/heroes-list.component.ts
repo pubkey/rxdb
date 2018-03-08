@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, NgZone, Output, EventEmitter } from '@ang
 import { DatabaseService } from '../../services/database.service';
 import * as RxDBTypes from '../../RxDB.d';
 
+// override Observable
+import { Observable } from 'rxjs-ng-extras';
 
 @Component({
     selector: 'heroes-list',
@@ -36,13 +38,22 @@ export class HeroesListComponent implements OnInit, OnDestroy {
 
     private async _show() {
         const db = await this.databaseService.get();
-        const heroes$ = db.hero
+
+        /**
+          NOTE: Angular change detection only tracks variables within
+          an Angular `zone`.  Since rxdb's functions are defined outside
+          the zone, we need to wrap observables using observeOnZone for
+          change detection to work.
+        **/
+        const heroes$ = (<Observable>db.hero
             .find()
             .sort({ name: 1 })
-            .$;
+            .$)
+            .observeOnZone(this.zone);
+
         this.sub = heroes$.subscribe(heroes => {
+            NgZone.assertInAngularZone();  // NOTE: Validation for observeOnZone above
             this.heroes = heroes;
-            this.zone.run(() => { });
         });
     }
 
