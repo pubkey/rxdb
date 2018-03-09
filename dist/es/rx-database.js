@@ -615,6 +615,15 @@ export var RxDatabase = function () {
     };
 
     /**
+     * spawn server
+     */
+
+
+    RxDatabase.prototype.server = function server() {
+        throw RxError.pluginMissing('server');
+    };
+
+    /**
      * destroys the database-instance and all collections
      * @return {Promise}
      */
@@ -636,46 +645,47 @@ export var RxDatabase = function () {
                             return _context6.abrupt('return');
 
                         case 2:
+                            runPluginHooks('preDestroyRxDatabase', this);
                             DB_COUNT--;
                             this.destroyed = true;
                             _context6.t0 = this.socket;
 
                             if (!_context6.t0) {
-                                _context6.next = 8;
+                                _context6.next = 9;
                                 break;
                             }
 
-                            _context6.next = 8;
+                            _context6.next = 9;
                             return this.socket.destroy();
 
-                        case 8:
+                        case 9:
                             if (!this._leaderElector) {
-                                _context6.next = 11;
+                                _context6.next = 12;
                                 break;
                             }
 
-                            _context6.next = 11;
+                            _context6.next = 12;
                             return this._leaderElector.destroy();
 
-                        case 11:
+                        case 12:
                             this._subs.map(function (sub) {
                                 return sub.unsubscribe();
                             });
 
                             // destroy all collections
-                            _context6.next = 14;
+                            _context6.next = 15;
                             return Promise.all(Object.keys(this.collections).map(function (key) {
                                 return _this6.collections[key];
                             }).map(function (col) {
                                 return col.destroy();
                             }));
 
-                        case 14:
+                        case 15:
 
                             // remove combination from USED_COMBINATIONS-map
                             _removeUsedCombination(this.name, this.adapter);
 
-                        case 15:
+                        case 16:
                         case 'end':
                             return _context6.stop();
                     }

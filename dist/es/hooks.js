@@ -52,7 +52,12 @@ export var HOOKS = {
    * runs after the migration of a document has been done
    * @type {Array}
    */
-  postMigrateDocument: []
+  postMigrateDocument: [],
+  /**
+   * runs at the beginning of the destroy-process of a database
+   * @type {Array}
+   */
+  preDestroyRxDatabase: []
 };
 
 export function runPluginHooks(hookKey, obj) {

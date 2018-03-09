@@ -153,7 +153,10 @@ var CODES = {
     VD2: 'object does not match schema',
 
     // plugins/in-memory.js
-    IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));'
+    IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));',
+
+    // plugins/server.js
+    S1: 'You cannot create collections after calling RxDatabase.server()'
 };
 
 var rxdb = exports.rxdb = true;
