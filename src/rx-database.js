@@ -390,11 +390,19 @@ export class RxDatabase {
     }
 
     /**
+     * spawn server
+     */
+    server() {
+        throw RxError.pluginMissing('server');
+    }
+
+    /**
      * destroys the database-instance and all collections
      * @return {Promise}
      */
     async destroy() {
         if (this.destroyed) return;
+        runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
         this.destroyed = true;
         this.socket && await this.socket.destroy();

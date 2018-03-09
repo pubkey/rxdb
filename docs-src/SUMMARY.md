@@ -18,6 +18,7 @@
         * [waitForLeadership()](./rx-database.md#waitforleadership)
         * [dump()](./rx-database.md#dump)
         * [importDump()](./rx-database.md#importdump)
+        * [server()](./rx-database.md#server)
         * [requestIdlePromise()](./rx-database.md#requestidlepromise)
         * [destroy()](./rx-database.md#destroy)
         * [remove()](./rx-database.md#remove)
