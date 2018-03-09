@@ -95,6 +95,9 @@ emptyDatabase.importDump(json)
   .then(() => console.log('done'));
 ```
 
+### server()
+Spawns a couchdb-compatible server from the database. [Read more](./custom-build.md#server)
+
 ### requestIdlePromise()
 Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idle-ness of the database instead of the CPU.
 Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.

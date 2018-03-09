@@ -3,7 +3,6 @@ const nodeAndBrowser = [
     '../test_tmp/unit/util.test.js',
     '../test_tmp/unit/pouch-db-integration.test.js',
     '../test_tmp/unit/adapter-check.test.js',
-    '../test_tmp/unit/server.test.js', // TODO move down
     '../test_tmp/unit/rx-broadcast-channel.test.js',
     '../test_tmp/unit/instance-of-check.test.js',
     '../test_tmp/unit/rx-schema.test.js',
@@ -34,6 +33,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/mod-encryption.test.js',
     '../test_tmp/unit/local-documents.test.js',
     '../test_tmp/unit/in-memory.test.js',
+    '../test_tmp/unit/server.test.js',
     '../test_tmp/unit/attachments.test.js',
     '../test_tmp/unit/bug-report.test.js'
 ];

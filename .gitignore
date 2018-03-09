@@ -12,3 +12,4 @@ config.json
 processed.txt
 config/isolate-*
 config/log.txt
+config/pouch__all_dbs__/

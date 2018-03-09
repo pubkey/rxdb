@@ -3,6 +3,7 @@
 ### 7.X.X (coming soon)
 
 Features:
+  - Added `RxDatabase.server()` to quickly spawn couchdb-compatibe endpoint out of RxDB. Read [this](https://pubkey.github.io/rxdb/custom-build.html#server)
   - Use `CustomIdleQueue` for atomic updates to enable [#494](https://github.com/pubkey/rxdb/issues/494)
 
 Bugfixes:

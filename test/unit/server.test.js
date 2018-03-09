@@ -10,19 +10,30 @@ import * as util from '../../dist/lib/util';
 
 import NodeWebsqlAdapter from 'pouchdb-adapter-leveldb';
 
+// we have to clean up after tests so there is no stupid logging
+// @link https://github.com/pouchdb/pouchdb-server/issues/226
+import PouchDB from '../../dist/lib/pouch-db';
+import PouchdbAllDbs from 'pouchdb-all-dbs';
+PouchdbAllDbs(PouchDB);
 
 import ServerPlugin from '../../plugins/server';
 RxDB.plugin(ServerPlugin);
 
-describe('server.test.js', () => {
+config.parallel('server.test.js', () => {
+    let lastPort = 3000;
+    const nexPort = () => lastPort++;
+
     it('should run and sync', async () => {
+        const port = nexPort();
         const serverCollection = await humansCollection.create(0);
-        await serverCollection.database.server({});
+        await serverCollection.database.server({
+            port
+        });
         const clientCollection = await humansCollection.create(0);
 
         // sync
         clientCollection.sync({
-            remote: 'http://localhost:3000/db/human'
+            remote: 'http://localhost:' + port + '/db/human'
         });
 
         // insert one doc on each side
@@ -57,6 +68,7 @@ describe('server.test.js', () => {
         if (!config.platform.isNode()) return;
         RxDB.plugin(NodeWebsqlAdapter);
 
+        const port = nexPort();
         const db1 = await RxDB.create({
             name: '../test_tmp/' + util.randomCouchString(10),
             adapter: 'leveldb',
@@ -77,9 +89,11 @@ describe('server.test.js', () => {
             schema: schemas.human
         });
 
-        db1.server({});
+        db1.server({
+            port
+        });
         await col2.sync({
-            remote: 'http://localhost:3000/db/human'
+            remote: 'http://localhost:' + port + '/db/human'
         });
 
         await col1.insert(schemaObjects.human());
@@ -99,14 +113,17 @@ describe('server.test.js', () => {
         db2.destroy();
     });
     it('should work for dynamic collection-names', async () => {
+        const port = nexPort();
         const name = 'foobar';
         const serverCollection = await humansCollection.create(0, name);
-        await serverCollection.database.server({});
+        await serverCollection.database.server({
+            port
+        });
         const clientCollection = await humansCollection.create(0, name);
 
         // sync
         clientCollection.sync({
-            remote: 'http://localhost:3000/db/' + name
+            remote: 'http://localhost:' + port + '/db/' + name
         });
 
         // insert one doc on each side
@@ -123,47 +140,25 @@ describe('server.test.js', () => {
         clientCollection.database.destroy();
         serverCollection.database.destroy();
     });
-    it('run', async function() {
-        process.exit();
-        this.timeout(200 * 1000);
-
-        const serverCollection = await humansCollection.create(0);
-        console.dir(serverCollection.pouch);
-
-        const server = await serverCollection.database.server({});
-
-        const browserCollection = await humansCollection.create(0);
-
-
-        const replicationState = browserCollection.sync({
-            remote: 'http://localhost:3000/db/human' // + serverCollection.pouch.name
+    it('should throw if collections that created after server()', async () => {
+        const port = nexPort();
+        const db1 = await RxDB.create({
+            name: util.randomCouchString(10),
+            adapter: 'memory',
+            multiInstance: false
         });
-        replicationState.change$.subscribe(change => {
-            console.log('change:');
-            console.dir(change);
+        db1.server({
+            port
         });
 
-        replicationState.docs$.subscribe(docData => {
-            console.log('doc:');
-            console.dir(docData);
-        });
-        replicationState.complete$.subscribe(completed => {
-            console.log('completed:');
-            console.dir(completed);
-        });
-        replicationState.error$.subscribe(error => {
-            console.log('error:');
-            console.dir(error);
-        });
-
-        await AsyncTestUtil.wait(200);
-        await browserCollection.insert(schemaObjects.human());
-        await serverCollection.insert(schemaObjects.human());
-
-        await AsyncTestUtil.wait(200 * 1000);
-
-        process.exit();
-        browserCollection.database.destryo();
-        serverCollection.database.destroy();
+        await AsyncTestUtil.assertThrows(
+            () => db1.collection({
+                name: 'human',
+                schema: schemas.human
+            }),
+            Error,
+            'after'
+        );
+        db1.destroy();
     });
 });
