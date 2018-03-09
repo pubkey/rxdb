@@ -8,18 +8,21 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
 
-import NodeWebsqlAdapter from 'pouchdb-adapter-leveldb';
-
-// we have to clean up after tests so there is no stupid logging
-// @link https://github.com/pouchdb/pouchdb-server/issues/226
 import PouchDB from '../../dist/lib/pouch-db';
-import PouchdbAllDbs from 'pouchdb-all-dbs';
-PouchdbAllDbs(PouchDB);
-
-import ServerPlugin from '../../plugins/server';
-RxDB.plugin(ServerPlugin);
 
 config.parallel('server.test.js', () => {
+    if (!config.platform.isNode()) return;
+
+    const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
+
+    const ServerPlugin = require('../../plugins/server');
+    RxDB.plugin(ServerPlugin);
+
+    // we have to clean up after tests so there is no stupid logging
+    // @link https://github.com/pouchdb/pouchdb-server/issues/226
+    const PouchdbAllDbs = require('pouchdb-all-dbs');
+    PouchdbAllDbs(PouchDB);
+
     let lastPort = 3000;
     const nexPort = () => lastPort++;
 
@@ -65,7 +68,6 @@ config.parallel('server.test.js', () => {
         col2.database.destroy();
     });
     it('should work on filesystem-storage', async () => {
-        if (!config.platform.isNode()) return;
         RxDB.plugin(NodeWebsqlAdapter);
 
         const port = nexPort();
