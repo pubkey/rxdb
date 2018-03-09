@@ -283,7 +283,7 @@
                 <a href="rx-database.html#observe-with-">
             
                     
-                    $()
+                    $
             
                 </a>
             
@@ -332,6 +332,19 @@
     
         <li class="chapter " data-level="1.3.2.5" data-path="rx-database.html">
             
+                <a href="rx-database.html#server">
+            
+                    
+                    server()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2.6" data-path="rx-database.html">
+            
                 <a href="rx-database.html#requestidlepromise">
             
                     
@@ -343,7 +356,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.3.2.6" data-path="rx-database.html">
+        <li class="chapter " data-level="1.3.2.7" data-path="rx-database.html">
             
                 <a href="rx-database.html#destroy">
             
@@ -356,7 +369,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.3.2.7" data-path="rx-database.html">
+        <li class="chapter " data-level="1.3.2.8" data-path="rx-database.html">
             
                 <a href="rx-database.html#remove">
             
@@ -369,7 +382,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.3.2.8" data-path="rx-database.html">
+        <li class="chapter " data-level="1.3.2.9" data-path="rx-database.html">
             
                 <a href="rx-database.html#checkadapter">
             
@@ -574,7 +587,7 @@
                 <a href="rx-collection.html#observe-">
             
                     
-                    $()
+                    $
             
                 </a>
             
@@ -859,7 +872,7 @@
                 <a href="rx-document.html#observe-">
             
                     
-                    $()
+                    $
             
                 </a>
             
@@ -1294,6 +1307,26 @@ RxDB.plugin(RxDBAdapterCheckModule);
 <span class="hljs-comment">// es5-require</span>
 RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/adapter-check&apos;</span>));
 </code></pre>
+<h3 id="server">server</h3>
+<p>Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data from your electron-node to the browser-window. Or to fast setup a dev-environment.
+<strong>Do never</strong> expose this server to the internet, use a couchdb-instance at production.</p>
+<pre><code class="lang-js">
+<span class="hljs-comment">// This plugin is not included into the default RxDB-build. You have to manually add it.</span>
+<span class="hljs-keyword">import</span> RxDBServerModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/server&apos;</span>;
+RxDB.plugin(RxDBServerModule);
+
+<span class="hljs-comment">// in node.js we spawn a server from the RxDatabase</span>
+myDatabase.server({
+    path: <span class="hljs-string">&apos;/db&apos;</span>, <span class="hljs-comment">// optional, default &apos;/db&apos;</span>
+    port: <span class="hljs-number">3000</span>  <span class="hljs-comment">// optional, default 3000</span>
+});
+
+
+<span class="hljs-comment">// at the client&apos;s side we replicate one collection with the name &apos;human&apos;</span>
+<span class="hljs-keyword">await</span> myClientCollection.sync({
+    remote: <span class="hljs-string">&apos;http://localhost:3000/db/human&apos;</span>
+});
+</code></pre>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="plugins.html">here</a></p>
 
@@ -1339,7 +1372,7 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"3.10","depth":1,"next":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"3.9","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"custom-build.md","mtime":"2017-12-18T18:53:32.275Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2018-02-04T22:18:16.812Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"3.10","depth":1,"next":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"3.9","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"custom-build.md","mtime":"2018-03-09T03:45:15.152Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2018-03-09T03:47:59.459Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

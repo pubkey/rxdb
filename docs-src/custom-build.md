@@ -236,12 +236,13 @@ RxDB.plugin(RxDBServerModule);
 
 // in node.js we spawn a server from the RxDatabase
 myDatabase.server({
-    port: 3000
+    path: '/db', // optional, default '/db'
+    port: 3000  // optional, default 3000
 });
 
 
-// at the client we replicate one collection with the name 'human'
-await myCollection.sync({
+// at the client's side we replicate one collection with the name 'human'
+await myClientCollection.sync({
     remote: 'http://localhost:3000/db/human'
 });
 ```

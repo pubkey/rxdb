@@ -1,6 +1,6 @@
 # Changelog
 
-### 7.X.X (coming soon)
+### 7.4.0 (March 9, 2018)
 
 Features:
   - Added `RxDatabase.server()` to quickly spawn couchdb-compatibe endpoint out of RxDB. Read [this](https://pubkey.github.io/rxdb/custom-build.html#server)
