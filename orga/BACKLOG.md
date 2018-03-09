@@ -71,3 +71,8 @@ Add a plugin with full-text-search like
 
 See [#259](https://github.com/pubkey/rxdb/issues/259)
 
+
+
+## Upsert atomic with attachments
+
+See [#494](https://github.com/pubkey/rxdb/issues/494)
