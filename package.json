@@ -169,10 +169,8 @@
     "watchify": "3.11.0",
     "webpack": "4.1.1"
   },
-  "// greenkeeper": [
-  ],
+  "// greenkeeper": [],
   "greenkeeper": {
-    "ignore": [
-    ]
+    "ignore": []
   }
 }
