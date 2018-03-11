@@ -3,7 +3,7 @@
 ### 7.4.1 (March 11, 2018)
 
 Bugfixes:
-  - Remove preinstall-script (#558)[https://github.com/pubkey/rxdb/issues/558] thx [@adam-lebon](https://github.com/adam-lebon)
+  - Remove preinstall-script [#558](https://github.com/pubkey/rxdb/issues/558) thx [@adam-lebon](https://github.com/adam-lebon)
 
 ### 7.4.0 (March 9, 2018)
 
