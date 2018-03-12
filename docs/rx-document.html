@@ -1189,6 +1189,21 @@
 </code></pre>
 <h3 id="proxy-set">proxy-set</h3>
 <p>As RxDocument is wrapped into a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy" target="_blank">Proxy-object</a>, you can also directly set values instead of using the set()-function.</p>
+<h4 id="notice">NOTICE</h4>
+<p>It is currently not possible to proxy-set values by mutating an array. If you have to change values of an array, it is recommended to reassign the whole array instead of it parts.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> myDocument = <span class="hljs-keyword">await</span> myCollection.insert({
+      name: <span class="hljs-string">&apos;foobar&apos;</span>,
+      nicknames: []
+});
+
+<span class="hljs-comment">// THIS DOES NOT WORK:</span>
+myDocument.nicknames.push(<span class="hljs-string">&apos;foobi&apos;</span>); <span class="hljs-comment">// direct mutation</span>
+
+<span class="hljs-comment">// THIS WORKS:</span>
+<span class="hljs-keyword">const</span> nicks = myDocument.nicknames.slice(<span class="hljs-number">0</span>); <span class="hljs-comment">// copy array</span>
+nicks.push(<span class="hljs-string">&apos;foobi&apos;</span>); <span class="hljs-comment">// modify copy</span>
+myDocument.nicknames = nicks; <span class="hljs-comment">// reassing whole array</span>
+</code></pre>
 <pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
 myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
 </code></pre>
@@ -1416,7 +1431,7 @@ myDocument.resync();
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"2.2","depth":1,"next":{"title":"Insert","level":"2.2.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"remove()","level":"2.1.2.11","depth":3,"anchor":"#clear","path":"rx-collection.md","ref":"./rx-collection.md#clear","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-document.md","mtime":"2018-02-27T19:49:20.837Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2018-03-11T22:36:02.243Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"2.2","depth":1,"next":{"title":"Insert","level":"2.2.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"remove()","level":"2.1.2.11","depth":3,"anchor":"#clear","path":"rx-collection.md","ref":"./rx-collection.md#clear","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-document.md","mtime":"2018-03-12T17:39:39.327Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2018-03-12T17:55:58.958Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
