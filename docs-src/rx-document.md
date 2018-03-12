@@ -49,6 +49,25 @@ console.log(myDocument.get('firstName')); // <- is 'foobar'
 ### proxy-set
 As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly set values instead of using the set()-function.
 
+#### NOTICE
+It is currently not possible to proxy-set values by mutating an array. If you have to change values of an array, it is recommended to reassign the whole array instead of it parts.
+
+```js
+const myDocument = await myCollection.insert({
+      name: 'foobar',
+      nicknames: []
+});
+
+// THIS DOES NOT WORK:
+myDocument.nicknames.push('foobi'); // direct mutation
+
+// THIS WORKS:
+const nicks = myDocument.nicknames.slice(0); // copy array
+nicks.push('foobi'); // modify copy
+myDocument.nicknames = nicks; // reassing whole array
+```
+
+
 ```js
 myDocument.firstName = 'foobar';
 myDocument.whatever.nestedfield = 'foobar2';
