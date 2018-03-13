@@ -29,8 +29,9 @@
   <a href="https://gitter.im/pubkey/rxdb">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/master/docs-src/files/gitter.svg" />
   </a>
-  <a href="https://twitter.com/rxdbjs">
-    <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/twitter_follow.png" width="111px" />
+  <a href="https://twitter.com/intent/follow?screen_name=rxdbjs">
+      <img src="https://img.shields.io/twitter/follow/rxdbjs.svg?style=social&logo=twitter"
+          alt="follow on Twitter"></a>
   </a>
 <!--  <a href="https://www.patreon.com/rxdb">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
