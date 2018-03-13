@@ -416,7 +416,7 @@ Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or explori
 [Check out how you can contribute to this project](./docs-src/contribute.md).
 
 ## Follow up
-- Follow RxDB on [twitter](https://twitter.com/rxdbjs) to not miss the latest enhancements.
+- Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
 - Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
 
 # Thank you
