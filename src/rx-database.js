@@ -57,13 +57,13 @@ export class RxDatabase {
 
     get _adminPouch() {
         if (!this.__adminPouch)
-            this.__adminPouch = _internalAdminPouch(this.name, this.adapter);
+            this.__adminPouch = _internalAdminPouch(this.name, this.adapter, this.options);
         return this.__adminPouch;
     }
 
     get _collectionsPouch() {
         if (!this.__collectionsPouch)
-            this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter);
+            this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter, this.options);
         return this.__collectionsPouch;
     }
 
@@ -127,7 +127,7 @@ export class RxDatabase {
      * @type {Object}
      */
     _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings);
+        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings, this.options);
     }
 
     get isLeader() {
@@ -526,33 +526,34 @@ export async function create({
 }
 
 
-function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}) {
+function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}, options = {}) {
     const pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
     const pouchDbParameters = {
         location: pouchLocation,
         adapter: util.adapterObject(adapter),
         settings: pouchSettings
     };
+    const pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, options);
     runPluginHooks('preCreatePouchDb', pouchDbParameters);
     return new PouchDB(
         pouchDbParameters.location,
-        pouchDbParameters.adapter,
+        pouchDBOptions,
         pouchDbParameters.settings
     );
 }
 
-function _internalAdminPouch(name, adapter) {
+function _internalAdminPouch(name, adapter, options = {}) {
     return _spawnPouchDB(name, adapter, '_admin', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, options);
 }
 
-function _internalCollectionsPouch(name, adapter) {
+function _internalCollectionsPouch(name, adapter, options = {}) {
     return _spawnPouchDB(name, adapter, '_collections', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, options);
 }
 
 export async function removeDatabase(databaseName, adapter) {
