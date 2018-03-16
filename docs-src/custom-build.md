@@ -72,7 +72,7 @@ Because error-messages are hard to compress, RxDB will throw error-codes by defa
 ```javascript
 // es6-import
 import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
-RxDB.plugin(RxDBSchemaCheckModule);
+RxDB.plugin(RxDBErrorMessagesModule);
 
 // es5-require
 RxDB.plugin(require('rxdb/plugins/error-messages'));
