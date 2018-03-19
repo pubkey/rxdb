@@ -35,7 +35,9 @@ var create = exports.create = function () {
             _ref7$ignoreDuplicate = _ref7.ignoreDuplicate,
             ignoreDuplicate = _ref7$ignoreDuplicate === undefined ? false : _ref7$ignoreDuplicate,
             _ref7$options = _ref7.options,
-            options = _ref7$options === undefined ? {} : _ref7$options;
+            options = _ref7$options === undefined ? {} : _ref7$options,
+            _ref7$pouchSettings = _ref7.pouchSettings,
+            pouchSettings = _ref7$pouchSettings === undefined ? {} : _ref7$pouchSettings;
         var db;
         return _regenerator2['default'].wrap(function _callee7$(_context7) {
             while (1) {
@@ -86,7 +88,7 @@ var create = exports.create = function () {
                         if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
                         USED_COMBINATIONS[name].push(adapter);
 
-                        db = new RxDatabase(name, adapter, password, multiInstance, options);
+                        db = new RxDatabase(name, adapter, password, multiInstance, options, pouchSettings);
                         _context7.next = 16;
                         return db.prepare();
 
@@ -150,7 +152,7 @@ var removeDatabase = exports.removeDatabase = function () {
         }, _callee8, this);
     }));
 
-    return function removeDatabase(_x7, _x8) {
+    return function removeDatabase(_x10, _x11) {
         return _ref9.apply(this, arguments);
     };
 }();
@@ -180,7 +182,7 @@ var checkAdapter = exports.checkAdapter = function () {
         }, _callee9, this);
     }));
 
-    return function checkAdapter(_x9) {
+    return function checkAdapter(_x12) {
         return _ref10.apply(this, arguments);
     };
 }();
@@ -250,7 +252,7 @@ var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
 
 var RxDatabase = exports.RxDatabase = function () {
-    function RxDatabase(name, adapter, password, multiInstance, options) {
+    function RxDatabase(name, adapter, password, multiInstance, options, pouchSettings) {
         (0, _classCallCheck3['default'])(this, RxDatabase);
 
         if (typeof name !== 'undefined') DB_COUNT++;
@@ -259,6 +261,7 @@ var RxDatabase = exports.RxDatabase = function () {
         this.password = password;
         this.multiInstance = multiInstance;
         this.options = options;
+        this.pouchSettings = pouchSettings;
         this.idleQueue = new _customIdleQueue2['default']();
         this.token = (0, _randomToken2['default'])(10);
 
@@ -398,7 +401,7 @@ var RxDatabase = exports.RxDatabase = function () {
         value: function _spawnPouchDB(collectionName, schemaVersion) {
             var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-            return _spawnPouchDB2(this.name, this.adapter, collectionName, schemaVersion, pouchSettings);
+            return _spawnPouchDB2(this.name, this.adapter, collectionName, schemaVersion, pouchSettings, this.pouchSettings);
         }
     }, {
         key: 'waitForLeadership',
@@ -961,13 +964,13 @@ var RxDatabase = exports.RxDatabase = function () {
     }, {
         key: '_adminPouch',
         get: function get() {
-            if (!this.__adminPouch) this.__adminPouch = _internalAdminPouch(this.name, this.adapter);
+            if (!this.__adminPouch) this.__adminPouch = _internalAdminPouch(this.name, this.adapter, this.pouchSettings);
             return this.__adminPouch;
         }
     }, {
         key: '_collectionsPouch',
         get: function get() {
-            if (!this.__collectionsPouch) this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter);
+            if (!this.__collectionsPouch) this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter, this.pouchSettings);
             return this.__collectionsPouch;
         }
     }, {
@@ -1039,6 +1042,7 @@ function _removeUsedCombination(name, adapter) {
 
 function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
     var pouchSettings = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+    var pouchSettingsFromRxDatabaseCreator = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 
     var pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
     var pouchDbParameters = {
@@ -1046,22 +1050,27 @@ function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
         adapter: util.adapterObject(adapter),
         settings: pouchSettings
     };
+    var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator);
     (0, _hooks.runPluginHooks)('preCreatePouchDb', pouchDbParameters);
-    return new _pouchDb2['default'](pouchDbParameters.location, pouchDbParameters.adapter, pouchDbParameters.settings);
+    return new _pouchDb2['default'](pouchDbParameters.location, pouchDBOptions, pouchDbParameters.settings);
 }
 
 function _internalAdminPouch(name, adapter) {
+    var pouchSettingsFromRxDatabaseCreator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     return _spawnPouchDB2(name, adapter, '_admin', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, pouchSettingsFromRxDatabaseCreator);
 }
 
 function _internalCollectionsPouch(name, adapter) {
+    var pouchSettingsFromRxDatabaseCreator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     return _spawnPouchDB2(name, adapter, '_collections', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, pouchSettingsFromRxDatabaseCreator);
 }
 
 ;

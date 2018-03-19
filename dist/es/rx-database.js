@@ -29,7 +29,7 @@ var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
 
 export var RxDatabase = function () {
-    function RxDatabase(name, adapter, password, multiInstance, options) {
+    function RxDatabase(name, adapter, password, multiInstance, options, pouchSettings) {
         _classCallCheck(this, RxDatabase);
 
         if (typeof name !== 'undefined') DB_COUNT++;
@@ -38,6 +38,7 @@ export var RxDatabase = function () {
         this.password = password;
         this.multiInstance = multiInstance;
         this.options = options;
+        this.pouchSettings = pouchSettings;
         this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
@@ -170,7 +171,7 @@ export var RxDatabase = function () {
     RxDatabase.prototype._spawnPouchDB = function _spawnPouchDB(collectionName, schemaVersion) {
         var pouchSettings = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-        return _spawnPouchDB2(this.name, this.adapter, collectionName, schemaVersion, pouchSettings);
+        return _spawnPouchDB2(this.name, this.adapter, collectionName, schemaVersion, pouchSettings, this.pouchSettings);
     };
 
     RxDatabase.prototype.waitForLeadership = function () {
@@ -717,13 +718,13 @@ export var RxDatabase = function () {
     _createClass(RxDatabase, [{
         key: '_adminPouch',
         get: function get() {
-            if (!this.__adminPouch) this.__adminPouch = _internalAdminPouch(this.name, this.adapter);
+            if (!this.__adminPouch) this.__adminPouch = _internalAdminPouch(this.name, this.adapter, this.pouchSettings);
             return this.__adminPouch;
         }
     }, {
         key: '_collectionsPouch',
         get: function get() {
-            if (!this.__collectionsPouch) this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter);
+            if (!this.__collectionsPouch) this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter, this.pouchSettings);
             return this.__collectionsPouch;
         }
     }, {
@@ -802,7 +803,9 @@ export var create = function () {
             _ref8$ignoreDuplicate = _ref8.ignoreDuplicate,
             ignoreDuplicate = _ref8$ignoreDuplicate === undefined ? false : _ref8$ignoreDuplicate,
             _ref8$options = _ref8.options,
-            options = _ref8$options === undefined ? {} : _ref8$options;
+            options = _ref8$options === undefined ? {} : _ref8$options,
+            _ref8$pouchSettings = _ref8.pouchSettings,
+            pouchSettings = _ref8$pouchSettings === undefined ? {} : _ref8$pouchSettings;
         var db;
         return _regeneratorRuntime.wrap(function _callee7$(_context7) {
             while (1) {
@@ -853,7 +856,7 @@ export var create = function () {
                         if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
                         USED_COMBINATIONS[name].push(adapter);
 
-                        db = new RxDatabase(name, adapter, password, multiInstance, options);
+                        db = new RxDatabase(name, adapter, password, multiInstance, options, pouchSettings);
                         _context7.next = 16;
                         return db.prepare();
 
@@ -877,6 +880,7 @@ export var create = function () {
 
 function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
     var pouchSettings = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+    var pouchSettingsFromRxDatabaseCreator = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 
     var pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
     var pouchDbParameters = {
@@ -884,22 +888,27 @@ function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
         adapter: util.adapterObject(adapter),
         settings: pouchSettings
     };
+    var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator);
     runPluginHooks('preCreatePouchDb', pouchDbParameters);
-    return new PouchDB(pouchDbParameters.location, pouchDbParameters.adapter, pouchDbParameters.settings);
+    return new PouchDB(pouchDbParameters.location, pouchDBOptions, pouchDbParameters.settings);
 }
 
 function _internalAdminPouch(name, adapter) {
+    var pouchSettingsFromRxDatabaseCreator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     return _spawnPouchDB2(name, adapter, '_admin', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, pouchSettingsFromRxDatabaseCreator);
 }
 
 function _internalCollectionsPouch(name, adapter) {
+    var pouchSettingsFromRxDatabaseCreator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
     return _spawnPouchDB2(name, adapter, '_collections', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, pouchSettingsFromRxDatabaseCreator);
 }
 
 export var removeDatabase = function () {
@@ -944,7 +953,7 @@ export var removeDatabase = function () {
         }, _callee8, this);
     }));
 
-    return function removeDatabase(_x7, _x8) {
+    return function removeDatabase(_x10, _x11) {
         return _ref9.apply(this, arguments);
     };
 }();
@@ -972,7 +981,7 @@ export var checkAdapter = function () {
         }, _callee9, this);
     }));
 
-    return function checkAdapter(_x9) {
+    return function checkAdapter(_x12) {
         return _ref10.apply(this, arguments);
     };
 }();;
