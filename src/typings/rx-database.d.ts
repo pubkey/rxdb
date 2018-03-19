@@ -10,6 +10,9 @@ import {
 import {
     RxChangeEvent
 } from './rx-change-event';
+import {
+    PouchSettings
+} from "./pouch";
 
 export interface RxDatabaseCreator {
     name: string;
@@ -18,6 +21,7 @@ export interface RxDatabaseCreator {
     multiInstance?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
+    pouchSettings?: PouchSettings;
 }
 
 export declare class RxDatabase {
@@ -27,6 +31,7 @@ export declare class RxDatabase {
     readonly password: string;
     readonly collections: any;
     options?: any;
+    pouchSettings?: PouchSettings;
 
     readonly $: Observable<RxChangeEvent>;
 

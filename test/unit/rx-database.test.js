@@ -109,6 +109,21 @@ config.parallel('rx-database.test.js', () => {
                 assert.equal(db.options.foo, 'bar');
                 db.destroy();
             });
+            it('should not forget the pouchSettings', async () => {
+                const name = util.randomCouchString(10);
+                const password = util.randomCouchString(12);
+                const db = await RxDatabase.create({
+                    name,
+                    adapter: 'memory',
+                    password,
+                    ignoreDuplicate: true,
+                    pouchSettings: {
+                        foo: 'bar'
+                    }
+                });
+                assert.equal(db.pouchSettings.foo, 'bar');
+                db.destroy();
+            });
         });
         describe('negative', () => {
             it('should crash with invalid token', async () => {
