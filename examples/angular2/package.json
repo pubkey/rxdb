@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "preinstall": "node ./scripts/ensure-equal-versions.js",
+    "postinstall": "rimraf ./package-lock.json",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "npm-run-all --parallel dev:serve",
@@ -82,7 +83,7 @@
     "testcafe": "0.17.1",
     "testcafe-hammerhead": "11.2.1",
     "tslint": "5.8.0",
-    "typescript": "2.6.1",
+    "typescript": "2.7.2",
     "url-loader": "0.6.2",
     "webpack": "3.8.1",
     "webpack-dev-middleware": "1.12.0",
