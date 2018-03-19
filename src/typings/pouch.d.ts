@@ -31,7 +31,9 @@ export interface PouchSettings {
     auth?: any,
     skip_setup?: boolean,
     storage?: any,
-    size?: number
+    size?: number,
+    location?: string,
+    iosDatabaseLocation?: string
 }
 
 export declare class PouchDB {

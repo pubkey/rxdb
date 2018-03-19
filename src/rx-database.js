@@ -31,13 +31,14 @@ const USED_COMBINATIONS = {};
 let DB_COUNT = 0;
 
 export class RxDatabase {
-    constructor(name, adapter, password, multiInstance, options) {
+    constructor(name, adapter, password, multiInstance, options, pouchSettings) {
         if (typeof name !== 'undefined') DB_COUNT++;
         this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
         this.options = options;
+        this.pouchSettings = pouchSettings;
         this.idleQueue = new IdleQueue();
         this.token = randomToken(10);
 
@@ -57,13 +58,13 @@ export class RxDatabase {
 
     get _adminPouch() {
         if (!this.__adminPouch)
-            this.__adminPouch = _internalAdminPouch(this.name, this.adapter);
+            this.__adminPouch = _internalAdminPouch(this.name, this.adapter, this.pouchSettings);
         return this.__adminPouch;
     }
 
     get _collectionsPouch() {
         if (!this.__collectionsPouch)
-            this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter);
+            this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter, this.pouchSettings);
         return this.__collectionsPouch;
     }
 
@@ -127,7 +128,7 @@ export class RxDatabase {
      * @type {Object}
      */
     _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings);
+        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings, this.pouchSettings);
     }
 
     get isLeader() {
@@ -485,7 +486,8 @@ export async function create({
     password,
     multiInstance = true,
     ignoreDuplicate = false,
-    options = {}
+    options = {},
+    pouchSettings = {}
 }) {
     util.validateCouchDBString(name);
 
@@ -518,7 +520,7 @@ export async function create({
     USED_COMBINATIONS[name].push(adapter);
 
 
-    const db = new RxDatabase(name, adapter, password, multiInstance, options);
+    const db = new RxDatabase(name, adapter, password, multiInstance, options, pouchSettings);
     await db.prepare();
 
     runPluginHooks('createRxDatabase', db);
@@ -526,33 +528,34 @@ export async function create({
 }
 
 
-function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}) {
+function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}, pouchSettingsFromRxDatabaseCreator = {}) {
     const pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
     const pouchDbParameters = {
         location: pouchLocation,
         adapter: util.adapterObject(adapter),
         settings: pouchSettings
     };
+    const pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator);
     runPluginHooks('preCreatePouchDb', pouchDbParameters);
     return new PouchDB(
         pouchDbParameters.location,
-        pouchDbParameters.adapter,
+        pouchDBOptions,
         pouchDbParameters.settings
     );
 }
 
-function _internalAdminPouch(name, adapter) {
+function _internalAdminPouch(name, adapter, pouchSettingsFromRxDatabaseCreator = {}) {
     return _spawnPouchDB(name, adapter, '_admin', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, pouchSettingsFromRxDatabaseCreator);
 }
 
-function _internalCollectionsPouch(name, adapter) {
+function _internalCollectionsPouch(name, adapter, pouchSettingsFromRxDatabaseCreator = {}) {
     return _spawnPouchDB(name, adapter, '_collections', 0, {
         auto_compaction: false, // no compaction because this only stores local documents
         revs_limit: 1
-    });
+    }, pouchSettingsFromRxDatabaseCreator);
 }
 
 export async function removeDatabase(databaseName, adapter) {
