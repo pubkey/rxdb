@@ -63,6 +63,9 @@ const db2 = await RxDB.create({
 });
 ```
 
+### pouchSettings
+You can pass settings directly to the [pouchdb database create options](https://pouchdb.com/api.html#options) through this property. This settings will be added to all pouchdb-instances that are created for this database.
+
 ## Functions
 
 ### Observe with $

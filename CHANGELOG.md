@@ -5,6 +5,9 @@
 Bugfixes:
   - Wrong typings with custom build [#576](https://github.com/pubkey/rxdb/issues/576)
 
+Features:
+  - Add option to add pouchSettings to all pouchdb-instances [#567](https://github.com/pubkey/rxdb/pull/567) Thx [@EugeniaM](https://github.com/EugeniaM)
+
 ### 7.4.1 (March 11, 2018)
 
 Bugfixes:
