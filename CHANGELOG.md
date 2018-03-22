@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 7.4.2 (March 22, 2018)
 
 Bugfixes:
   - Wrong typings with custom build [#576](https://github.com/pubkey/rxdb/issues/576)
