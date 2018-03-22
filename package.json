@@ -131,7 +131,7 @@
     "karma-browserify": "5.2.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.1",
-    "karma-detect-browsers": "2.2.6",
+    "karma-detect-browsers": "2.3.0",
     "karma-edge-launcher": "0.4.2",
     "karma-firefox-launcher": "1.1.0",
     "karma-ie-launcher": "1.0.0",
