@@ -916,6 +916,82 @@ config.parallel('rx-query.test.js', () => {
             db.destroy();
             db2.destroy();
         });
+        it('#585 sort by sub-path not working', async () => {
+            const schema = {
+                version: 0,
+                type: 'object',
+                disableKeyCompression: true,
+                properties: {
+                    id: {
+                        type: 'string',
+                        primary: true
+                    },
+                    info: {
+                        type: 'object',
+                        properties: {
+                            title: {
+                                type: 'string',
+                                index: true
+                            },
+                        },
+                    }
+                }
+            };
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const col = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            await col.pouch.createIndex({
+                index: {
+                    fields: ['info']
+                }
+            });
+            await col.pouch.createIndex({
+                index: {
+                    fields: ['info.title']
+                }
+            });
+
+            await col.insert({
+                id: '1',
+                info: {
+                    title: 'bbtest'
+                }
+            });
+            await col.insert({
+                id: '2',
+                info: {
+                    title: 'aatest'
+                }
+            });
+            await col.insert({
+                id: '3',
+                info: {
+                    title: 'cctest'
+                }
+            });
+
+            const foundDocs = await col
+                .find()
+                .sort('info.title')
+                .exec();
+            assert.equal(foundDocs.length, 3);
+            assert.equal(foundDocs[0].info.title, 'aatest');
+
+            const foundDocsDesc = await col
+                .find()
+                .sort('-info.title')
+                .exec();
+            assert.equal(foundDocsDesc.length, 3);
+            assert.equal(foundDocsDesc[0].info.title, 'cctest');
+
+            db.destroy();
+        });
     });
 
     describe('e', () => {

@@ -388,45 +388,57 @@ export class RxQuery {
         return clonedThis._tunnelQueryCache();
     };
 
+
+    /**
+     * adds the field of 'sort' to the search-index
+     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+     */
+    _sortAddToIndex(checkParam, clonedThis) {
+        const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
+        if (!schemaObj) this._throwNotInSchema(checkParam);
+
+
+        switch (schemaObj.type) {
+            case 'integer':
+                // TODO change back to -Infinity when issue resolved
+                // @link https://github.com/pouchdb/pouchdb/issues/6454
+                clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+                break;
+            case 'string':
+                /**
+                 * strings need an empty string, see
+                 * @link https://github.com/pubkey/rxdb/issues/585
+                 */
+                clonedThis.mquery.where(checkParam).gt('');
+                break;
+            default:
+                clonedThis.mquery.where(checkParam).gt(null);
+                break;
+        }
+    }
+
+    _throwNotInSchema(key) {
+        throw RxError.newRxError('QU5', {
+            key
+        });
+    }
+
     /**
      * make sure it searches index because of pouchdb-find bug
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */
     sort(params) {
-        const throwNotInSchema = (key) => {
-            throw RxError.newRxError('QU5', {
-                key
-            });
-        };
         const clonedThis = this._clone();
 
         // workarround because sort wont work on unused keys
         if (typeof params !== 'object') {
             const checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
-            if (!clonedThis.mquery._conditions[checkParam]) {
-                const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-                if (!schemaObj) throwNotInSchema(checkParam);
-
-                if (schemaObj.type === 'integer')
-                    // TODO change back to -Infinity when issue resolved
-                    // @link https://github.com/pouchdb/pouchdb/issues/6454
-                    clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-                else clonedThis.mquery.where(checkParam).gt(null);
-            }
+            if (!clonedThis.mquery._conditions[checkParam])
+                this._sortAddToIndex(checkParam, clonedThis);
         } else {
             Object.keys(params)
                 .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
-                .forEach(k => {
-                    const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
-                    if (!schemaObj) throwNotInSchema(k);
-
-                    if (schemaObj.type === 'integer')
-                        // TODO change back to -Infinity when issue resolved
-                        // @link https://github.com/pouchdb/pouchdb/issues/6454
-                        clonedThis.mquery.where(k).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-
-                    else clonedThis.mquery.where(k).gt(null);
-                });
+                .forEach(k => this._sortAddToIndex(k, clonedThis));
         }
         clonedThis.mquery.sort(params);
         return clonedThis._tunnelQueryCache();

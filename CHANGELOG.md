@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - Sort by sub object is not working [#585](https://github.com/pubkey/rxdb/issues/585)
+
 ### 7.4.2 (March 22, 2018)
 
 Bugfixes:
