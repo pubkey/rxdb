@@ -8,17 +8,17 @@
     "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
   },
   "dependencies": {
-    "babel-polyfill": "6.23.0",
-    "babel-runtime": "6.23.0",
-    "concurrently": "3.5.0",
-    "electron": "1.6.16",
-    "electron-tabs": "^0.7.1",
-    "electron-window-manager": "1.0.4",
-    "melanke-watchjs": "1.3.1",
-    "pouchdb-adapter-http": "6.3.4",
-    "pouchdb-adapter-websql": "6.3.4",
-    "pouchdb-replication": "6.3.4",
-    "pouchdb-server": "2.3.7",
-    "rxjs": "5.4.2"
+    "babel-polyfill": "6.26.0",
+    "babel-runtime": "6.26.0",
+    "concurrently": "3.5.1",
+    "electron": "1.8.4",
+    "electron-tabs": "0.9.1",
+    "electron-window-manager": "1.0.6",
+    "melanke-watchjs": "1.4.3",
+    "pouchdb-adapter-http": "6.4.3",
+    "pouchdb-adapter-websql": "6.4.3",
+    "pouchdb-replication": "6.4.3",
+    "pouchdb-server": "4.0.0",
+    "rxjs": "5.5.7"
   }
 }
