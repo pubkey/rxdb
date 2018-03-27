@@ -5,7 +5,8 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run electron\"",
     "electron": "electron .",
-    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true"
+    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true",
+    "test": "mocha"
   },
   "dependencies": {
     "babel-polyfill": "6.26.0",
@@ -20,5 +21,9 @@
     "pouchdb-replication": "6.4.3",
     "pouchdb-server": "4.0.0",
     "rxjs": "5.5.7"
+  },
+  "devDependencies": {
+    "mocha": "5.0.5",
+    "spectron": "3.8.0"
   }
 }
