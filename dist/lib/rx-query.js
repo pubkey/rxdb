@@ -570,47 +570,64 @@ var RxQuery = exports.RxQuery = function () {
             return clonedThis._tunnelQueryCache();
         }
     }, {
-        key: 'sort',
+        key: '_sortAddToIndex',
 
+
+        /**
+         * adds the field of 'sort' to the search-index
+         * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+         */
+        value: function _sortAddToIndex(checkParam, clonedThis) {
+            var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
+            if (!schemaObj) this._throwNotInSchema(checkParam);
+
+            switch (schemaObj.type) {
+                case 'integer':
+                    // TODO change back to -Infinity when issue resolved
+                    // @link https://github.com/pouchdb/pouchdb/issues/6454
+                    clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+                    break;
+                case 'string':
+                    /**
+                     * strings need an empty string, see
+                     * @link https://github.com/pubkey/rxdb/issues/585
+                     */
+                    clonedThis.mquery.where(checkParam).gt('');
+                    break;
+                default:
+                    clonedThis.mquery.where(checkParam).gt(null);
+                    break;
+            }
+        }
+    }, {
+        key: '_throwNotInSchema',
+        value: function _throwNotInSchema(key) {
+            throw _rxError2['default'].newRxError('QU5', {
+                key: key
+            });
+        }
 
         /**
          * make sure it searches index because of pouchdb-find bug
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
+
+    }, {
+        key: 'sort',
         value: function sort(params) {
-            var throwNotInSchema = function throwNotInSchema(key) {
-                throw _rxError2['default'].newRxError('QU5', {
-                    key: key
-                });
-            };
+            var _this2 = this;
+
             var clonedThis = this._clone();
 
             // workarround because sort wont work on unused keys
             if ((typeof params === 'undefined' ? 'undefined' : (0, _typeof3['default'])(params)) !== 'object') {
                 var checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
-                if (!clonedThis.mquery._conditions[checkParam]) {
-                    var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-                    if (!schemaObj) throwNotInSchema(checkParam);
-
-                    if (schemaObj.type === 'integer')
-                        // TODO change back to -Infinity when issue resolved
-                        // @link https://github.com/pouchdb/pouchdb/issues/6454
-                        clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-                    else clonedThis.mquery.where(checkParam).gt(null);
-                }
+                if (!clonedThis.mquery._conditions[checkParam]) this._sortAddToIndex(checkParam, clonedThis);
             } else {
                 Object.keys(params).filter(function (k) {
                     return !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt;
                 }).forEach(function (k) {
-                    var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(k);
-                    if (!schemaObj) throwNotInSchema(k);
-
-                    if (schemaObj.type === 'integer')
-                        // TODO change back to -Infinity when issue resolved
-                        // @link https://github.com/pouchdb/pouchdb/issues/6454
-                        clonedThis.mquery.where(k).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-
-                    else clonedThis.mquery.where(k).gt(null);
+                    return _this2._sortAddToIndex(k, clonedThis);
                 });
             }
             clonedThis.mquery.sort(params);
@@ -634,7 +651,7 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: '$',
         get: function get() {
-            var _this2 = this;
+            var _this3 = this;
 
             if (!this._$) {
                 // use results$ to emit new results
@@ -649,7 +666,7 @@ var RxQuery = exports.RxQuery = function () {
                                 switch (_context5.prev = _context5.next) {
                                     case 0:
                                         _context5.next = 2;
-                                        return _this2._ensureEqual();
+                                        return _this3._ensureEqual();
 
                                     case 2:
                                         hasChanged = _context5.sent;
@@ -669,7 +686,7 @@ var RxQuery = exports.RxQuery = function () {
                                         return _context5.stop();
                                 }
                             }
-                        }, _callee5, _this2);
+                        }, _callee5, _this3);
                     }));
 
                     return function (_x2) {
@@ -683,7 +700,7 @@ var RxQuery = exports.RxQuery = function () {
                 var changeEvents$ = this.collection.$.pipe((0, _filter.filter)(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }), (0, _filter.filter)(function () {
-                    _this2._ensureEqual();
+                    _this3._ensureEqual();
                     return false;
                 }));
 
