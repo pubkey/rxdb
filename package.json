@@ -166,7 +166,7 @@
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.2.0"
+    "webpack": "4.3.0"
   },
   "// greenkeeper": [],
   "greenkeeper": {
