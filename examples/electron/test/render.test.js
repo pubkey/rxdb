@@ -14,7 +14,8 @@ module.exports = (function() {
             const db = await RxDB.create({
                 name: 'foobar587' + new Date().getTime(),
                 adapter: 'idb',
-                password: 'myLongAndStupidPassword'
+                password: 'myLongAndStupidPassword',
+                multiInstance: false
             });
 
             const col = await db.collection({
