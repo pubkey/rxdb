@@ -57,6 +57,14 @@ export var blobBufferUtil = {
      */
     createBlobBuffer: function createBlobBuffer(data, type) {
         var blobBuffer = void 0;
+
+        if (util.isElectronRenderer) {
+            // if we are inside of electron-renderer, always use the node-buffer
+            return new Buffer(data, {
+                type: type
+            });
+        }
+
         try {
             // for browsers
             blobBuffer = new Blob([data], {

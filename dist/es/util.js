@@ -348,5 +348,7 @@ function recursiveDeepCopy(o) {
     if (!o) return o;
     return deepClone(o, false);
 }
-
 export var clone = recursiveDeepCopy;
+
+import isElectron from 'is-electron';
+export var isElectronRenderer = isElectron();

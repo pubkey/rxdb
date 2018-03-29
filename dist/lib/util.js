@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.clone = exports.requestIdlePromise = exports.promiseWait = undefined;
+exports.isElectronRenderer = exports.clone = exports.requestIdlePromise = exports.promiseWait = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
@@ -121,6 +121,10 @@ var _clone2 = _interopRequireDefault(_clone);
 var _sparkMd = require('spark-md5');
 
 var _sparkMd2 = _interopRequireDefault(_sparkMd);
+
+var _isElectron = require('is-electron');
+
+var _isElectron2 = _interopRequireDefault(_isElectron);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -395,5 +399,6 @@ function recursiveDeepCopy(o) {
     if (!o) return o;
     return (0, _clone2['default'])(o, false);
 }
-
 var clone = exports.clone = recursiveDeepCopy;
+
+var isElectronRenderer = exports.isElectronRenderer = (0, _isElectron2['default'])();
