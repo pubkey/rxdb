@@ -10,6 +10,8 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import * as SchemaCheck from '../../dist/lib/plugins/schema-check.js';
 
+import RxDB from '../../dist/lib/';
+
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
@@ -568,6 +570,57 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(filled2.age, 40);
                 });
             });
+        });
+    });
+    describe('issues', () => {
+        it('#590 Strange schema behavior with sub-sub-index', async () => {
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        primary: true
+                    },
+                    fileInfo: {
+                        type: 'object',
+                        properties: {
+                            watch: {
+                                type: 'object',
+                                properties: {
+                                    time: {
+                                        type: 'number',
+                                        index: true
+                                    }
+                                }
+                            }
+                        },
+                    },
+                }
+            };
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const col = await db.collection({
+                name: 'items',
+                schema
+            });
+
+            await col.insert({
+                id: '1',
+                fileInfo: {
+                    watch: {
+                        time: 1
+                    }
+                }
+            });
+
+            const found = await col.find().where('fileInfo.watch.time').gt(-9999999999999999999999999999).sort('fileInfo.watch.time').exec();
+            assert.equal(found.length, 1);
+            assert.equal(found[0].fileInfo.watch.time, 1);
+
+            db.destroy();
         });
     });
     describe('performance', () => {

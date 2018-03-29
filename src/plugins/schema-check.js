@@ -238,7 +238,7 @@ export function checkSchema(jsonID) {
         .reduce((a, b) => a.concat(b), [])
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .map(key => {
-            const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
+            const schemaObj = objectPath.get(jsonID, 'properties.' + key.replace(/\./g, '.properties.'));
             if (!schemaObj || typeof schemaObj !== 'object') {
                 throw RxError.newRxError('SC21', {
                     key
