@@ -333,8 +333,8 @@ let _isElectronRenderer = null;
 export function isElectronRenderer() {
     if (_isElectronRenderer === null) {
         if (
-            window && window.process && window.process.type &&
-            process && process.versions && process.versions.electron
+            typeof window !== 'undefined' && window.process && window.process.type &&
+            typeof process !== 'undefined' && process.versions && process.versions.electron
         ) _isElectronRenderer = true;
         else _isElectronRenderer = false;
     }
