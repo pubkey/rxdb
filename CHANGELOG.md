@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Sort by sub object is not working [#585](https://github.com/pubkey/rxdb/issues/585)
+  - Encrypted attachments not working inside of electron-renderer [#587](https://github.com/pubkey/rxdb/issues/587)
 
 ### 7.4.2 (March 22, 2018)
 
