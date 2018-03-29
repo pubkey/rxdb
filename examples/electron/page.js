@@ -1,10 +1,9 @@
+const electron = require('electron');
 const RxDB = require('../../');
 require('babel-polyfill');
 RxDB.plugin(require('pouchdb-adapter-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 
-const listBox = document.querySelector('#list-box');
-const insertBox = document.querySelector('#insert-box');
 const heroesList = document.querySelector('#heroes-list');
 
 const heroSchema = {
@@ -29,13 +28,15 @@ const syncURL = 'http://' + window.location.hostname + ':10102/';
 
 let database;
 
+const currentWindow = electron.remote.getCurrentWindow();
+
 RxDB
     .create({
-        name: 'heroesdb',
+        name: 'heroesdb' + currentWindow.custom.dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
         adapter: 'websql',
         password: 'myLongAndStupidPassword'
     })
-    .then(function(db) {
+    .then(db => {
         console.log('creating hero-collection..');
         database = db;
         return db.collection({
@@ -43,8 +44,7 @@ RxDB
             schema: heroSchema
         });
     })
-    .then(function(col) {
-
+    .then(col => {
         // sync
         console.log('starting sync');
         database.heroes.sync({
@@ -67,7 +67,7 @@ RxDB
                     .map(hero => {
                         return '<li>' +
                             '<div class="color-box" style="background:' + hero.color + '"></div>' +
-                            '<div class="name">' + hero.name + '</div>' +
+                            '<div class="name" name="' + hero.name + '">' + hero.name + '</div>' +
                             '</li>';
                     })
                     .reduce((pre, cur) => pre += cur, '');

@@ -2,11 +2,12 @@ const Application = require('spectron').Application;
 const assert = require('assert');
 const electronPath = require('electron'); // Require Electron from the binaries included in node_modules.
 const path = require('path');
+const AsyncTestUtil = require('async-test-util');
 
 describe('Application launch', function() {
     this.timeout(10000);
-
-    beforeEach(function() {
+    let app;
+    before(function() {
         this.app = new Application({
             // Your electron path can be any binary
             // i.e for OSX an example path could be '/Applications/MyApp.app/Contents/MacOS/MyApp'
@@ -28,18 +29,31 @@ describe('Application launch', function() {
             // and the package.json located 1 level above.
             args: [path.join(__dirname, '..')]
         });
+        app = this.app;
         return this.app.start();
     });
 
-    afterEach(function() {
+    after(function() {
         if (this.app && this.app.isRunning())
             return this.app.stop();
     });
 
-    it('shows an initial window', async function() {
-        const count = await this.app.client.getWindowCount();
+    it('shows an initial window', async () => {
+        await app.client.waitUntilWindowLoaded();
+        const count = await app.client.getWindowCount();
         assert.equal(count, 2);
         // Please note that getWindowCount() will return 2 if `dev tools` are opened.
         // assert.equal(count, 2)
+    });
+
+    it('insert one hero', async () => {
+        await app.client.element('#input-name').setValue('Bob Kelso');
+        await app.client.element('#input-color').setValue('blue');
+        await app.client.element('#input-submit').click();
+
+        await AsyncTestUtil.waitUntil(async () => {
+            const foundElement = await app.client.element('.name[name="Bob Kelso"]');
+            return foundElement.value;
+        });
     });
 });
