@@ -325,18 +325,7 @@ function recursiveDeepCopy(o) {
 }
 export const clone = recursiveDeepCopy;
 
-let _isElectronRenderer = null;
-/**
- * returns true if runs inside of electron-renderer
- * @return {Boolean} [description]
- */
-export function isElectronRenderer() {
-    if (_isElectronRenderer === null) {
-        if (
-            typeof window !== 'undefined' && window.process && window.process.type &&
-            typeof process !== 'undefined' && process.versions && process.versions.electron
-        ) _isElectronRenderer = true;
-        else _isElectronRenderer = false;
-    }
-    return _isElectronRenderer;
-}
+
+
+import isElectron from 'is-electron';
+export const isElectronRenderer = isElectron();
