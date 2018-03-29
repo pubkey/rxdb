@@ -91,4 +91,6 @@
 
 * [Plugins](./plugins.md)
 
+* [Questions & Answers](./questions-answers.md)
+
 * [Contribute](./contribute.md)

@@ -42,7 +42,7 @@ const CODES = {
     DB3: 'RxDatabase.collection(): collection already exists. use myDatabase.[collectionName] to get it',
     DB4: 'RxDatabase.collection(): schema is missing',
     DB5: 'RxDatabase.collection(): collection-name not allowed',
-    DB6: 'RxDatabase.collection(): another instance created this collection with a different schema',
+    DB6: 'RxDatabase.collection(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html',
     DB7: 'RxDatabase.collection(): schema encrypted but no password given',
     DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
