@@ -13,13 +13,19 @@ import RxDB from 'rxdb/plugins/core';
 
 // import modules
 import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
+import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
+
 if (ENV === 'development') {
+    // in dev-mode we show full error-messages
+    RxDB.plugin(RxDBErrorMessagesModule);
+
     // schema-checks should be used in dev-mode only
     RxDB.plugin(RxDBSchemaCheckModule);
 }
 
 import RxDBValidateModule from 'rxdb/plugins/validate';
 RxDB.plugin(RxDBValidateModule);
+
 import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
 RxDB.plugin(RxDBLeaderElectionModule);
 
