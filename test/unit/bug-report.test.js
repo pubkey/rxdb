@@ -35,6 +35,10 @@ describe('bug-report.test.js', () => {
                     type: 'integer',
                     minimum: 0,
                     maximum: 150
+                },
+                score: {
+                    type: 'integer',
+                    default: 100
                 }
             }
         };
@@ -59,7 +63,8 @@ describe('bug-report.test.js', () => {
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
-            age: 56
+            age: 56,
+            score: undefined
         });
 
         /**
@@ -88,7 +93,7 @@ describe('bug-report.test.js', () => {
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.equal(myDocument.age, 56);
+        assert.equal(myDocument.score, 100);
 
         // you can also wait for events
         const emitted = [];
