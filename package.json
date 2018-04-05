@@ -60,7 +60,7 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^5.5.2"
+    "rxjs": "^5.5.8"
   },
   "dependencies": {
     "@types/core-js": "0.9.46",
@@ -69,7 +69,7 @@
     "crypto-js": "^3.1.8",
     "custom-idle-queue": "2.0.1",
     "deep-equal": "^1.0.1",
-    "express": "4.16.2",
+    "express": "4.16.3",
     "express-pouchdb": "4.0.0",
     "is-electron": "2.1.0",
     "is-my-json-valid": "2.17.2",
@@ -85,13 +85,13 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@babel/types": "7.0.0-beta.42",
+    "@babel/types": "7.0.0-beta.44",
     "@types/pouchdb-adapter-memory": "6.1.2",
     "assert": "1.4.1",
     "async-test-util": "1.5.1",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
-    "babel-eslint": "8.2.2",
+    "babel-eslint": "7.2.3",
     "babel-loader": "7.1.4",
     "babel-plugin-transform-async-to-generator": "6.24.1",
     "babel-plugin-transform-class-properties": "6.24.1",
@@ -118,7 +118,7 @@
     "detect-browser": "2.2.0",
     "disc": "1.3.3",
     "eslint": "4.19.1",
-    "eslint-plugin-babel": "4.1.2",
+    "eslint-plugin-babel": "5.0.0",
     "eslint-plugin-disable": "1.0.1",
     "exists-file": "3.0.2",
     "faker": "4.1.0",
@@ -144,7 +144,7 @@
     "mocha": "5.0.5",
     "mocha.parallel": "0.15.5",
     "nconf": "0.10.0",
-    "node": "9.9.0",
+    "node": "9.11.0",
     "pouchdb": "6.4.3",
     "pouchdb-adapter-http": "6.4.3",
     "pouchdb-adapter-idb": "6.4.3",
@@ -159,18 +159,22 @@
     "request-promise": "4.2.2",
     "request-promise-native": "1.0.5",
     "rimraf": "2.6.2",
-    "rxjs": "5.5.6",
+    "rxjs": "5.5.8",
     "shelljs": "0.8.1",
     "ts-node": "5.0.1",
-    "typescript": "2.7.2",
-    "uglify-js": "3.3.16",
+    "typescript": "2.8.1",
+    "uglify-js": "3.3.18",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.4.0"
+    "webpack": "4.5.0"
   },
-  "// greenkeeper": [],
+  "// greenkeeper": [
+      "// babel-eslint: https://github.com/babel/babel-eslint/issues/530"
+  ],
   "greenkeeper": {
-    "ignore": []
+    "ignore": [
+        "babel-eslint"
+    ]
   }
 }
