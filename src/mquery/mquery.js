@@ -33,10 +33,9 @@ class MQuery {
      */
     clone() {
         const same = new MQuery();
-        Object.entries(this)
-            .forEach(entry => {
-                same[entry[0]] = util.clone(entry[1]);
-            });
+        Object
+            .entries(this)
+            .forEach(([k, v]) => same[k] = util.clone(v));
         return same;
     }
 

@@ -291,12 +291,13 @@ export class RxQuery {
         json.selector.language.$ne = 'query';
 
         // strip empty selectors
-        Object.entries(json.selector)
-            .filter(entry => typeof entry[1] === 'object')
-            .filter(entry => entry[1] !== null)
-            .filter(entry => !Array.isArray(entry[1]))
-            .filter(entry => Object.keys(entry[1]).length === 0)
-            .forEach(entry => delete json.selector[entry[0]]);
+        Object
+            .entries(json.selector)
+            .filter(([, v]) => typeof v === 'object')
+            .filter(([, v]) => v !== null)
+            .filter(([, v]) => !Array.isArray(v))
+            .filter(([, v]) => Object.keys(v).length === 0)
+            .forEach(([k]) => delete json.selector[k]);
 
         // primary swap
         if (

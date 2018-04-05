@@ -234,11 +234,9 @@ export class RxCollection {
      * @param {RxDocument} doc
      */
     _assignMethodsToDocument(doc) {
-        Object.entries(this._methods).forEach(entry => {
-            const funName = entry[0];
-            const fun = entry[1];
-            doc.__defineGetter__(funName, () => fun.bind(doc));
-        });
+        Object
+            .entries(this._methods)
+            .forEach(([funName, fun]) => doc.__defineGetter__(funName, () => fun.bind(doc)));
     }
 
     /**
@@ -689,32 +687,34 @@ export function properties() {
  * @throws if not allowed
  */
 const checkOrmMethods = function(statics) {
-    Object.entries(statics).forEach(entry => {
-        if (typeof entry[0] !== 'string') {
-            throw RxError.newRxTypeError('COL14', {
-                name: entry[0]
-            });
-        }
+    Object
+        .entries(statics)
+        .forEach(([k, v]) => {
+            if (typeof k !== 'string') {
+                throw RxError.newRxTypeError('COL14', {
+                    name: k
+                });
+            }
 
-        if (entry[0].startsWith('_')) {
-            throw RxError.newRxTypeError('COL15', {
-                name: entry[0]
-            });
-        }
+            if (k.startsWith('_')) {
+                throw RxError.newRxTypeError('COL15', {
+                    name: k
+                });
+            }
 
-        if (typeof entry[1] !== 'function') {
-            throw RxError.newRxTypeError('COL16', {
-                name: entry[0],
-                type: typeof entry[1]
-            });
-        }
+            if (typeof v !== 'function') {
+                throw RxError.newRxTypeError('COL16', {
+                    name: k,
+                    type: typeof k
+                });
+            }
 
-        if (properties().includes(entry[0]) || RxDocument.properties().includes(entry[0])) {
-            throw RxError.newRxError('COL17', {
-                name: entry[0]
-            });
-        }
-    });
+            if (properties().includes(k) || RxDocument.properties().includes(k)) {
+                throw RxError.newRxError('COL17', {
+                    name: k
+                });
+            }
+        });
 };
 
 /**
@@ -766,11 +766,9 @@ export async function create({
     await collection.prepare();
 
     // ORM add statics
-    Object.entries(statics).forEach(entry => {
-        const fun = entry.pop();
-        const funName = entry.pop();
-        collection.__defineGetter__(funName, () => fun.bind(collection));
-    });
+    Object
+        .entries(statics)
+        .forEach(([funName, fun]) => collection.__defineGetter__(funName, () => fun.bind(collection)));
 
     if (autoMigrate)
         await collection.migratePromise();

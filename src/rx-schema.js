@@ -89,9 +89,10 @@ export class RxSchema {
     get defaultValues() {
         if (!this._defaultValues) {
             this._defaultValues = {};
-            Object.entries(this.normalized.properties)
-                .filter(entry => entry[1].hasOwnProperty('default'))
-                .forEach(entry => this._defaultValues[entry[0]] = entry[1].default);
+            Object
+                .entries(this.normalized.properties)
+                .filter(([, v]) => v.hasOwnProperty('default'))
+                .forEach(([k, v]) => this._defaultValues[k] = v.default);
         }
         return this._defaultValues;
     }
@@ -202,19 +203,19 @@ export function hasCrypt(jsonSchema) {
 
 export function getIndexes(jsonID, prePath = '') {
     let indexes = [];
-    Object.entries(jsonID).forEach(entry => {
-        const key = entry[0];
-        const obj = entry[1];
-        const path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
+    Object
+        .entries(jsonID)
+        .forEach(([key, obj]) => {
+            const path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
 
-        if (obj.index)
-            indexes.push([path]);
+            if (obj.index)
+                indexes.push([path]);
 
-        if (typeof obj === 'object' && !Array.isArray(obj)) {
-            const add = getIndexes(obj, path);
-            indexes = indexes.concat(add);
-        }
-    });
+            if (typeof obj === 'object' && !Array.isArray(obj)) {
+                const add = getIndexes(obj, path);
+                indexes = indexes.concat(add);
+            }
+        });
 
     if (prePath === '') {
         const addCompound = jsonID.compoundIndexes || [];

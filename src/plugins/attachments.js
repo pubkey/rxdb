@@ -81,11 +81,9 @@ export const blobBufferUtil = {
 
 
 const _assignMethodsToAttachment = function(attachment) {
-    Object.entries(attachment.doc.collection._attachments).forEach(entry => {
-        const funName = entry[0];
-        const fun = entry[1];
-        attachment.__defineGetter__(funName, () => fun.bind(attachment));
-    });
+    Object
+        .entries(attachment.doc.collection._attachments)
+        .forEach(([funName, fun]) => attachment.__defineGetter__(funName, () => fun.bind(attachment)));
 };
 
 /**
@@ -286,9 +284,7 @@ export const prototypes = {
                         map(attachmentsData => Object.entries(attachmentsData)),
                         map(entries => {
                             return entries
-                                .map(entry => {
-                                    const id = entry[0];
-                                    const attachmentData = entry[1];
+                                .map(([id, attachmentData]) => {
                                     return RxAttachment.fromPouchDocument(
                                         id,
                                         attachmentData,

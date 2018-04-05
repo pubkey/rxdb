@@ -44,27 +44,21 @@ export function addPlugin(plugin) {
 
     // prototype-overwrites
     if (plugin.prototypes) {
-        Object.entries(plugin.prototypes).forEach(entry => {
-            const name = entry[0];
-            const fun = entry[1];
-            fun(PROTOTYPES[name]);
-        });
+        Object
+            .entries(plugin.prototypes)
+            .forEach(([name, fun]) => fun(PROTOTYPES[name]));
     }
     // overwritable-overwrites
     if (plugin.overwritable) {
-        Object.entries(plugin.overwritable).forEach(entry => {
-            const name = entry[0];
-            const fun = entry[1];
-            overwritable[name] = fun;
-        });
+        Object
+            .entries(plugin.overwritable)
+            .forEach(([name, fun]) => overwritable[name] = fun);
     }
     // extend-hooks
     if (plugin.hooks) {
-        Object.entries(plugin.hooks).forEach(entry => {
-            const name = entry[0];
-            const fun = entry[1];
-            HOOKS[name].push(fun);
-        });
+        Object
+            .entries(plugin.hooks)
+            .forEach(([name, fun]) => HOOKS[name].push(fun));
     }
 }
 
