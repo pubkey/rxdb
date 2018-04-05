@@ -133,10 +133,8 @@ export class RxSchema {
         obj = util.clone(obj);
         Object
             .entries(this.defaultValues)
-            .filter(entry => !obj.hasOwnProperty(entry[0]))
-            .forEach(entry => {
-                obj[entry[0]] = entry[1];
-            });
+            .filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined')
+            .forEach(([k, v]) => obj[k] = v);
         return obj;
     }
 

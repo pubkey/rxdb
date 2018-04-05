@@ -1444,36 +1444,84 @@ config.parallel('rx-collection.test.js', () => {
         });
     });
     describe('issues', () => {
-        describe('#528  default value ignored when 0', () => {
-            it('should use value when default=0', async () => {
-                const schema = {
-                    version: 0,
-                    type: 'object',
-                    properties: {
-                        passportId: {
-                            type: 'string',
-                            primary: true
-                        },
-                        weight: {
-                            type: 'number',
-                            default: 0
-                        }
+        it('#528  default value ignored when 0', async () => {
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    weight: {
+                        type: 'number',
+                        default: 0
                     }
-                };
-                const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
-                    adapter: 'memory'
-                });
-                const collection = await db.collection({
-                    name: 'humanx',
-                    schema
-                });
-                const doc = await collection.insert({
-                    passportId: util.randomCouchString(10)
-                });
-                assert.equal(doc.weight, 0);
-                db.destroy();
+                }
+            };
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
             });
+            const collection = await db.collection({
+                name: 'humanx',
+                schema
+            });
+            const doc = await collection.insert({
+                passportId: util.randomCouchString(10)
+            });
+            assert.equal(doc.weight, 0);
+            db.destroy();
+        });
+        it('#596 Default value not applied when value is undefined', async () => {
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    },
+                    score: {
+                        type: 'integer',
+                        default: 100
+                    }
+                }
+            };
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'humanx',
+                schema
+            });
+            // insert a document
+            await collection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+                score: undefined
+            });
+            const myDocument = await collection
+                .findOne()
+                .where('firstName')
+                .eq('Bob')
+                .exec();
+            assert.equal(myDocument.score, 100);
+            db.destroy();
         });
     });
     describe('wait a bit', () => {

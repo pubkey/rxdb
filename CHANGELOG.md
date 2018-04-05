@@ -6,6 +6,8 @@ Bugfixes:
   - Sort by sub object is not working [#585](https://github.com/pubkey/rxdb/issues/585)
   - Encrypted attachments not working inside of electron-renderer [#587](https://github.com/pubkey/rxdb/issues/587)
   - Schema fails with sub-sub-index [#590](https://github.com/pubkey/rxdb/issues/590)
+  - Default value not applied when the stored value is `undefined` [#596](https://github.com/pubkey/rxdb/issues/596)
+
 ### 7.4.2 (March 22, 2018)
 
 Bugfixes:
