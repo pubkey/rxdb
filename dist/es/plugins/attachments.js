@@ -98,10 +98,10 @@ export var blobBufferUtil = {
 };
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
-    Object.entries(attachment.doc.collection._attachments).forEach(function (entry) {
-        var funName = entry[0];
-        var fun = entry[1];
-        attachment.__defineGetter__(funName, function () {
+    Object.entries(attachment.doc.collection._attachments).forEach(function (_ref2) {
+        var funName = _ref2[0],
+            fun = _ref2[1];
+        return attachment.__defineGetter__(funName, function () {
             return fun.bind(attachment);
         });
     });
@@ -112,13 +112,13 @@ var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment)
  * wrapped so that you can access the attachment-data
  */
 export var RxAttachment = function () {
-    function RxAttachment(_ref2) {
-        var doc = _ref2.doc,
-            id = _ref2.id,
-            type = _ref2.type,
-            length = _ref2.length,
-            digest = _ref2.digest,
-            rev = _ref2.rev;
+    function RxAttachment(_ref3) {
+        var doc = _ref3.doc,
+            id = _ref3.id,
+            type = _ref3.type,
+            length = _ref3.length,
+            digest = _ref3.digest,
+            rev = _ref3.rev;
 
         _classCallCheck(this, RxAttachment);
 
@@ -133,7 +133,7 @@ export var RxAttachment = function () {
     }
 
     RxAttachment.prototype.remove = function () {
-        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
             return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
                     switch (_context2.prev = _context2.next) {
@@ -154,7 +154,7 @@ export var RxAttachment = function () {
         }));
 
         function remove() {
-            return _ref3.apply(this, arguments);
+            return _ref4.apply(this, arguments);
         }
 
         return remove;
@@ -167,7 +167,7 @@ export var RxAttachment = function () {
 
 
     RxAttachment.prototype.getData = function () {
-        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
             var data, dataString;
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
@@ -204,14 +204,14 @@ export var RxAttachment = function () {
         }));
 
         function getData() {
-            return _ref4.apply(this, arguments);
+            return _ref5.apply(this, arguments);
         }
 
         return getData;
     }();
 
     RxAttachment.prototype.getStringData = function () {
-        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
+        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
             var bufferBlob;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
@@ -237,7 +237,7 @@ export var RxAttachment = function () {
         }));
 
         function getStringData() {
-            return _ref5.apply(this, arguments);
+            return _ref6.apply(this, arguments);
         }
 
         return getStringData;
@@ -262,13 +262,13 @@ function shouldEncrypt(doc) {
 }
 
 export var putAttachment = function () {
-    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(_ref7) {
+    var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(_ref8) {
         var _this = this;
 
-        var id = _ref7.id,
-            data = _ref7.data,
-            _ref7$type = _ref7.type,
-            type = _ref7$type === undefined ? 'text/plain' : _ref7$type;
+        var id = _ref8.id,
+            data = _ref8.data,
+            _ref8$type = _ref8.type,
+            type = _ref8$type === undefined ? 'text/plain' : _ref8$type;
         var queue, blobBuffer, ret;
         return _regeneratorRuntime.wrap(function _callee6$(_context6) {
             while (1) {
@@ -335,7 +335,7 @@ export var putAttachment = function () {
     }));
 
     return function putAttachment(_x2) {
-        return _ref6.apply(this, arguments);
+        return _ref7.apply(this, arguments);
     };
 }();;
 
@@ -369,7 +369,7 @@ export function allAttachments() {
 };
 
 export var preMigrateDocument = function () {
-    var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(action) {
+    var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(action) {
         return _regeneratorRuntime.wrap(function _callee7$(_context7) {
             while (1) {
                 switch (_context7.prev = _context7.next) {
@@ -386,12 +386,12 @@ export var preMigrateDocument = function () {
     }));
 
     return function preMigrateDocument(_x3) {
-        return _ref9.apply(this, arguments);
+        return _ref10.apply(this, arguments);
     };
 }();
 
 export var postMigrateDocument = function () {
-    var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(action) {
+    var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(action) {
         var primaryPath, attachments, id, stubData, primary, data, res;
         return _regeneratorRuntime.wrap(function _callee8$(_context8) {
             while (1) {
@@ -448,7 +448,7 @@ export var postMigrateDocument = function () {
     }));
 
     return function postMigrateDocument(_x4) {
-        return _ref10.apply(this, arguments);
+        return _ref11.apply(this, arguments);
     };
 }();
 
@@ -468,9 +468,10 @@ export var prototypes = {
                 }), map(function (attachmentsData) {
                     return Object.entries(attachmentsData);
                 }), map(function (entries) {
-                    return entries.map(function (entry) {
-                        var id = entry[0];
-                        var attachmentData = entry[1];
+                    return entries.map(function (_ref12) {
+                        var id = _ref12[0],
+                            attachmentData = _ref12[1];
+
                         return RxAttachment.fromPouchDocument(id, attachmentData, _this3);
                     });
                 }));

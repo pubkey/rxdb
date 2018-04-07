@@ -37,8 +37,10 @@ var MQuery = function () {
 
     MQuery.prototype.clone = function clone() {
         var same = new MQuery();
-        Object.entries(this).forEach(function (entry) {
-            same[entry[0]] = util.clone(entry[1]);
+        Object.entries(this).forEach(function (_ref) {
+            var k = _ref[0],
+                v = _ref[1];
+            return same[k] = util.clone(v);
         });
         return same;
     };

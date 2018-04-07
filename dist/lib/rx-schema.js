@@ -9,6 +9,10 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
@@ -126,10 +130,17 @@ var RxSchema = exports.RxSchema = function () {
          */
         value: function fillObjectWithDefaults(obj) {
             obj = util.clone(obj);
-            Object.entries(this.defaultValues).filter(function (entry) {
-                return !obj.hasOwnProperty(entry[0]);
-            }).forEach(function (entry) {
-                obj[entry[0]] = entry[1];
+            Object.entries(this.defaultValues).filter(function (_ref) {
+                var _ref2 = (0, _slicedToArray3['default'])(_ref, 1),
+                    k = _ref2[0];
+
+                return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
+            }).forEach(function (_ref3) {
+                var _ref4 = (0, _slicedToArray3['default'])(_ref3, 2),
+                    k = _ref4[0],
+                    v = _ref4[1];
+
+                return obj[k] = v;
             });
             return obj;
         }
@@ -212,10 +223,17 @@ var RxSchema = exports.RxSchema = function () {
 
             if (!this._defaultValues) {
                 this._defaultValues = {};
-                Object.entries(this.normalized.properties).filter(function (entry) {
-                    return entry[1].hasOwnProperty('default');
-                }).forEach(function (entry) {
-                    return _this3._defaultValues[entry[0]] = entry[1]['default'];
+                Object.entries(this.normalized.properties).filter(function (_ref5) {
+                    var _ref6 = (0, _slicedToArray3['default'])(_ref5, 2),
+                        v = _ref6[1];
+
+                    return v.hasOwnProperty('default');
+                }).forEach(function (_ref7) {
+                    var _ref8 = (0, _slicedToArray3['default'])(_ref7, 2),
+                        k = _ref8[0],
+                        v = _ref8[1];
+
+                    return _this3._defaultValues[k] = v['default'];
                 });
             }
             return this._defaultValues;
@@ -281,9 +299,11 @@ function getIndexes(jsonID) {
     var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
     var indexes = [];
-    Object.entries(jsonID).forEach(function (entry) {
-        var key = entry[0];
-        var obj = entry[1];
+    Object.entries(jsonID).forEach(function (_ref9) {
+        var _ref10 = (0, _slicedToArray3['default'])(_ref9, 2),
+            key = _ref10[0],
+            obj = _ref10[1];
+
         var path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
 
         if (obj.index) indexes.push([path]);

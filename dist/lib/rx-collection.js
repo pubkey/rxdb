@@ -13,6 +13,10 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -39,24 +43,24 @@ var _createClass3 = _interopRequireDefault(_createClass2);
  * @return {Promise.<RxCollection>} promise with collection
  */
 var create = exports.create = function () {
-    var _ref16 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee15(_ref15) {
-        var database = _ref15.database,
-            name = _ref15.name,
-            schema = _ref15.schema,
-            _ref15$pouchSettings = _ref15.pouchSettings,
-            pouchSettings = _ref15$pouchSettings === undefined ? {} : _ref15$pouchSettings,
-            _ref15$migrationStrat = _ref15.migrationStrategies,
-            migrationStrategies = _ref15$migrationStrat === undefined ? {} : _ref15$migrationStrat,
-            _ref15$autoMigrate = _ref15.autoMigrate,
-            autoMigrate = _ref15$autoMigrate === undefined ? true : _ref15$autoMigrate,
-            _ref15$statics = _ref15.statics,
-            statics = _ref15$statics === undefined ? {} : _ref15$statics,
-            _ref15$methods = _ref15.methods,
-            methods = _ref15$methods === undefined ? {} : _ref15$methods,
-            _ref15$attachments = _ref15.attachments,
-            attachments = _ref15$attachments === undefined ? {} : _ref15$attachments,
-            _ref15$options = _ref15.options,
-            options = _ref15$options === undefined ? {} : _ref15$options;
+    var _ref20 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee15(_ref19) {
+        var database = _ref19.database,
+            name = _ref19.name,
+            schema = _ref19.schema,
+            _ref19$pouchSettings = _ref19.pouchSettings,
+            pouchSettings = _ref19$pouchSettings === undefined ? {} : _ref19$pouchSettings,
+            _ref19$migrationStrat = _ref19.migrationStrategies,
+            migrationStrategies = _ref19$migrationStrat === undefined ? {} : _ref19$migrationStrat,
+            _ref19$autoMigrate = _ref19.autoMigrate,
+            autoMigrate = _ref19$autoMigrate === undefined ? true : _ref19$autoMigrate,
+            _ref19$statics = _ref19.statics,
+            statics = _ref19$statics === undefined ? {} : _ref19$statics,
+            _ref19$methods = _ref19.methods,
+            methods = _ref19$methods === undefined ? {} : _ref19$methods,
+            _ref19$attachments = _ref19.attachments,
+            attachments = _ref19$attachments === undefined ? {} : _ref19$attachments,
+            _ref19$options = _ref19.options,
+            options = _ref19$options === undefined ? {} : _ref19$options;
         var collection;
         return _regenerator2['default'].wrap(function _callee15$(_context15) {
             while (1) {
@@ -84,10 +88,12 @@ var create = exports.create = function () {
                     case 9:
 
                         // ORM add statics
-                        Object.entries(statics).forEach(function (entry) {
-                            var fun = entry.pop();
-                            var funName = entry.pop();
-                            collection.__defineGetter__(funName, function () {
+                        Object.entries(statics).forEach(function (_ref21) {
+                            var _ref22 = (0, _slicedToArray3['default'])(_ref21, 2),
+                                funName = _ref22[0],
+                                fun = _ref22[1];
+
+                            return collection.__defineGetter__(funName, function () {
                                 return fun.bind(collection);
                             });
                         });
@@ -114,7 +120,7 @@ var create = exports.create = function () {
     }));
 
     return function create(_x28) {
-        return _ref16.apply(this, arguments);
+        return _ref20.apply(this, arguments);
     };
 }();
 
@@ -515,10 +521,12 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_assignMethodsToDocument',
         value: function _assignMethodsToDocument(doc) {
-            Object.entries(this._methods).forEach(function (entry) {
-                var funName = entry[0];
-                var fun = entry[1];
-                doc.__defineGetter__(funName, function () {
+            Object.entries(this._methods).forEach(function (_ref4) {
+                var _ref5 = (0, _slicedToArray3['default'])(_ref4, 2),
+                    funName = _ref5[0],
+                    fun = _ref5[1];
+
+                return doc.__defineGetter__(funName, function () {
                     return fun.bind(doc);
                 });
             });
@@ -533,7 +541,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_createDocument',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(json) {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(json) {
                 var id, cacheDoc, doc;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -572,7 +580,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function _createDocument(_x14) {
-                return _ref4.apply(this, arguments);
+                return _ref6.apply(this, arguments);
             }
 
             return _createDocument;
@@ -585,7 +593,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_createDocuments',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(docsJSON) {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(docsJSON) {
                 var _this6 = this;
 
                 return _regenerator2['default'].wrap(function _callee5$(_context5) {
@@ -605,7 +613,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function _createDocuments(_x15) {
-                return _ref5.apply(this, arguments);
+                return _ref7.apply(this, arguments);
             }
 
             return _createDocuments;
@@ -630,7 +638,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: 'insert',
         value: function () {
-            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(json) {
+            var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(json) {
                 var tempDoc, insertResult, newDoc, emitEvent;
                 return _regenerator2['default'].wrap(function _callee6$(_context6) {
                     while (1) {
@@ -734,7 +742,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function insert(_x16) {
-                return _ref6.apply(this, arguments);
+                return _ref8.apply(this, arguments);
             }
 
             return insert;
@@ -747,7 +755,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: 'upsert',
         value: function () {
-            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(json) {
+            var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(json) {
                 var primary, existing, newDoc;
                 return _regenerator2['default'].wrap(function _callee7$(_context7) {
                     while (1) {
@@ -803,7 +811,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function upsert(_x17) {
-                return _ref7.apply(this, arguments);
+                return _ref9.apply(this, arguments);
             }
 
             return upsert;
@@ -819,7 +827,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_atomicUpsertEnsureRxDocumentExists',
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(primary, json) {
+            var _ref10 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(primary, json) {
                 var doc, newDoc;
                 return _regenerator2['default'].wrap(function _callee8$(_context8) {
                     while (1) {
@@ -861,7 +869,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function _atomicUpsertEnsureRxDocumentExists(_x18, _x19) {
-                return _ref8.apply(this, arguments);
+                return _ref10.apply(this, arguments);
             }
 
             return _atomicUpsertEnsureRxDocumentExists;
@@ -869,7 +877,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_atomicUpsertUpdate',
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee9(doc, json) {
+            var _ref11 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee9(doc, json) {
                 return _regenerator2['default'].wrap(function _callee9$(_context9) {
                     while (1) {
                         switch (_context9.prev = _context9.next) {
@@ -892,7 +900,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function _atomicUpsertUpdate(_x20, _x21) {
-                return _ref9.apply(this, arguments);
+                return _ref11.apply(this, arguments);
             }
 
             return _atomicUpsertUpdate;
@@ -907,7 +915,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: 'atomicUpsert',
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee11(json) {
+            var _ref12 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee11(json) {
                 var _this7 = this;
 
                 var primary, queue, ret;
@@ -988,7 +996,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function atomicUpsert(_x22) {
-                return _ref10.apply(this, arguments);
+                return _ref12.apply(this, arguments);
             }
 
             return atomicUpsert;
@@ -1051,7 +1059,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: 'importDump',
         value: function () {
-            var _ref12 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee12() {
+            var _ref14 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee12() {
                 return _regenerator2['default'].wrap(function _callee12$(_context12) {
                     while (1) {
                         switch (_context12.prev = _context12.next) {
@@ -1067,7 +1075,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function importDump() {
-                return _ref12.apply(this, arguments);
+                return _ref14.apply(this, arguments);
             }
 
             return importDump;
@@ -1166,7 +1174,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: '_runHooks',
         value: function () {
-            var _ref13 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee13(when, key, doc) {
+            var _ref15 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee13(when, key, doc) {
                 var hooks, i;
                 return _regenerator2['default'].wrap(function _callee13$(_context13) {
                     while (1) {
@@ -1213,7 +1221,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function _runHooks(_x24, _x25, _x26) {
-                return _ref13.apply(this, arguments);
+                return _ref15.apply(this, arguments);
             }
 
             return _runHooks;
@@ -1260,7 +1268,7 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: 'destroy',
         value: function () {
-            var _ref14 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee14() {
+            var _ref16 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee14() {
                 return _regenerator2['default'].wrap(function _callee14$(_context14) {
                     while (1) {
                         switch (_context14.prev = _context14.next) {
@@ -1295,7 +1303,7 @@ var RxCollection = exports.RxCollection = function () {
             }));
 
             function destroy() {
-                return _ref14.apply(this, arguments);
+                return _ref16.apply(this, arguments);
             }
 
             return destroy;
@@ -1401,29 +1409,33 @@ function properties() {
  * @throws if not allowed
  */
 var checkOrmMethods = function checkOrmMethods(statics) {
-    Object.entries(statics).forEach(function (entry) {
-        if (typeof entry[0] !== 'string') {
+    Object.entries(statics).forEach(function (_ref17) {
+        var _ref18 = (0, _slicedToArray3['default'])(_ref17, 2),
+            k = _ref18[0],
+            v = _ref18[1];
+
+        if (typeof k !== 'string') {
             throw _rxError2['default'].newRxTypeError('COL14', {
-                name: entry[0]
+                name: k
             });
         }
 
-        if (entry[0].startsWith('_')) {
+        if (k.startsWith('_')) {
             throw _rxError2['default'].newRxTypeError('COL15', {
-                name: entry[0]
+                name: k
             });
         }
 
-        if (typeof entry[1] !== 'function') {
+        if (typeof v !== 'function') {
             throw _rxError2['default'].newRxTypeError('COL16', {
-                name: entry[0],
-                type: (0, _typeof3['default'])(entry[1])
+                name: k,
+                type: typeof k === 'undefined' ? 'undefined' : (0, _typeof3['default'])(k)
             });
         }
 
-        if (properties().includes(entry[0]) || _rxDocument2['default'].properties().includes(entry[0])) {
+        if (properties().includes(k) || _rxDocument2['default'].properties().includes(k)) {
             throw _rxError2['default'].newRxError('COL17', {
-                name: entry[0]
+                name: k
             });
         }
     });

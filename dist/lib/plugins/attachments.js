@@ -13,6 +13,10 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -52,13 +56,13 @@ var resyncRxDocument = function () {
 }();
 
 var putAttachment = exports.putAttachment = function () {
-    var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(_ref6) {
+    var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee6(_ref8) {
         var _this = this;
 
-        var id = _ref6.id,
-            data = _ref6.data,
-            _ref6$type = _ref6.type,
-            type = _ref6$type === undefined ? 'text/plain' : _ref6$type;
+        var id = _ref8.id,
+            data = _ref8.data,
+            _ref8$type = _ref8.type,
+            type = _ref8$type === undefined ? 'text/plain' : _ref8$type;
         var queue, blobBuffer, ret;
         return _regenerator2['default'].wrap(function _callee6$(_context6) {
             while (1) {
@@ -125,12 +129,12 @@ var putAttachment = exports.putAttachment = function () {
     }));
 
     return function putAttachment(_x2) {
-        return _ref7.apply(this, arguments);
+        return _ref9.apply(this, arguments);
     };
 }();
 
 var preMigrateDocument = exports.preMigrateDocument = function () {
-    var _ref9 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(action) {
+    var _ref11 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee7(action) {
         return _regenerator2['default'].wrap(function _callee7$(_context7) {
             while (1) {
                 switch (_context7.prev = _context7.next) {
@@ -147,12 +151,12 @@ var preMigrateDocument = exports.preMigrateDocument = function () {
     }));
 
     return function preMigrateDocument(_x3) {
-        return _ref9.apply(this, arguments);
+        return _ref11.apply(this, arguments);
     };
 }();
 
 var postMigrateDocument = exports.postMigrateDocument = function () {
-    var _ref10 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(action) {
+    var _ref12 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee8(action) {
         var primaryPath, attachments, id, stubData, primary, data, res;
         return _regenerator2['default'].wrap(function _callee8$(_context8) {
             while (1) {
@@ -209,7 +213,7 @@ var postMigrateDocument = exports.postMigrateDocument = function () {
     }));
 
     return function postMigrateDocument(_x4) {
-        return _ref10.apply(this, arguments);
+        return _ref12.apply(this, arguments);
     };
 }();
 
@@ -294,10 +298,12 @@ var blobBufferUtil = exports.blobBufferUtil = {
 };
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
-    Object.entries(attachment.doc.collection._attachments).forEach(function (entry) {
-        var funName = entry[0];
-        var fun = entry[1];
-        attachment.__defineGetter__(funName, function () {
+    Object.entries(attachment.doc.collection._attachments).forEach(function (_ref2) {
+        var _ref3 = (0, _slicedToArray3['default'])(_ref2, 2),
+            funName = _ref3[0],
+            fun = _ref3[1];
+
+        return attachment.__defineGetter__(funName, function () {
             return fun.bind(attachment);
         });
     });
@@ -309,13 +315,13 @@ var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment)
  */
 
 var RxAttachment = exports.RxAttachment = function () {
-    function RxAttachment(_ref2) {
-        var doc = _ref2.doc,
-            id = _ref2.id,
-            type = _ref2.type,
-            length = _ref2.length,
-            digest = _ref2.digest,
-            rev = _ref2.rev;
+    function RxAttachment(_ref4) {
+        var doc = _ref4.doc,
+            id = _ref4.id,
+            type = _ref4.type,
+            length = _ref4.length,
+            digest = _ref4.digest,
+            rev = _ref4.rev;
         (0, _classCallCheck3['default'])(this, RxAttachment);
 
         this.doc = doc;
@@ -331,7 +337,7 @@ var RxAttachment = exports.RxAttachment = function () {
     (0, _createClass3['default'])(RxAttachment, [{
         key: 'remove',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
+            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                 return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
@@ -352,7 +358,7 @@ var RxAttachment = exports.RxAttachment = function () {
             }));
 
             function remove() {
-                return _ref3.apply(this, arguments);
+                return _ref5.apply(this, arguments);
             }
 
             return remove;
@@ -366,7 +372,7 @@ var RxAttachment = exports.RxAttachment = function () {
     }, {
         key: 'getData',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
+            var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
                 var data, dataString;
                 return _regenerator2['default'].wrap(function _callee3$(_context3) {
                     while (1) {
@@ -403,7 +409,7 @@ var RxAttachment = exports.RxAttachment = function () {
             }));
 
             function getData() {
-                return _ref4.apply(this, arguments);
+                return _ref6.apply(this, arguments);
             }
 
             return getData;
@@ -411,7 +417,7 @@ var RxAttachment = exports.RxAttachment = function () {
     }, {
         key: 'getStringData',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
+            var _ref7 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
                 var bufferBlob;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -437,7 +443,7 @@ var RxAttachment = exports.RxAttachment = function () {
             }));
 
             function getStringData() {
-                return _ref5.apply(this, arguments);
+                return _ref7.apply(this, arguments);
             }
 
             return getStringData;
@@ -508,9 +514,11 @@ var prototypes = exports.prototypes = {
                 }), (0, _map.map)(function (attachmentsData) {
                     return Object.entries(attachmentsData);
                 }), (0, _map.map)(function (entries) {
-                    return entries.map(function (entry) {
-                        var id = entry[0];
-                        var attachmentData = entry[1];
+                    return entries.map(function (_ref13) {
+                        var _ref14 = (0, _slicedToArray3['default'])(_ref13, 2),
+                            id = _ref14[0],
+                            attachmentData = _ref14[1];
+
                         return RxAttachment.fromPouchDocument(id, attachmentData, _this3);
                     });
                 }));

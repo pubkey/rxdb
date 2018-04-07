@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxCollection · RxDB - Documentation</title>
+        <title>Questions & Answers · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-collection.html" />
+    <link rel="next" href="contribute.html" />
     
     
-    <link rel="prev" href="rx-schema.html" />
+    <link rel="prev" href="plugins.html" />
     
 
     </head>
@@ -509,7 +509,7 @@
         
         
     
-        <li class="chapter active" data-level="2.1" data-path="rx-collection.html">
+        <li class="chapter " data-level="2.1" data-path="rx-collection.html">
             
                 <a href="rx-collection.html">
             
@@ -1098,7 +1098,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.12" data-path="questions-answers.html">
+        <li class="chapter active" data-level="3.12" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1154,7 +1154,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxCollection</a>
+        <a href="." >Questions & Answers</a>
     </h1>
 </div>
 
@@ -1169,147 +1169,24 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxcollection">RxCollection</h1>
-<p>A collection stores documents of the same type.</p>
-<h2 id="creating-a-collection">Creating a Collection</h2>
-<p>To create a collection you need a RxDatabase object which has the .collection()-method. Every collection needs a collection name and a valid RxSchema.</p>
-<pre><code class="lang-js">myDatabase.collection({
-  name: <span class="hljs-string">&apos;humans&apos;</span>,
-  schema: mySchema
-})
-  .then(collection =&gt; <span class="hljs-built_in">console</span>.dir(collection));
-</code></pre>
-<h3 id="name">name</h3>
-<p>The name uniquely identifies the collection and should be used to refind the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>^[a-z][a-z0-9]*$</code>.</p>
-<h3 id="schema">schema</h3>
-<p>The schema defines how your data looks and how it should be handled. You can pass a RxSchema object or a simple javascript-object from which the schema will be generated.</p>
-<h3 id="pouchsettings">pouchSettings</h3>
-<p>You can pass settings directly to the <a href="https://pouchdb.com/api.html#options" target="_blank">pouchdb database create options</a> through this property.</p>
-<h2 id="get-a-collection-from-the-database">Get a collection from the database</h2>
-<p>To get an existing collection from the database, call the collection name directly on the database:</p>
-<pre><code class="lang-javascript"><span class="hljs-comment">// newly created collection</span>
-<span class="hljs-keyword">const</span> collection = <span class="hljs-keyword">await</span> db.collection({
-  name: <span class="hljs-string">&apos;heroes&apos;</span>,
-  schema: mySchema
-});
-<span class="hljs-keyword">const</span> collection2 = db.heroes;
-<span class="hljs-comment">// or</span>
-<span class="hljs-comment">// const collection2 = db[&apos;heroes&apos;]</span>
-
-<span class="hljs-built_in">console</span>.log(collection == collection2);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<h2 id="functions">Functions</h2>
-<h3 id="observe-">Observe $</h3>
-<p>Calling this will return an <a href="http://reactivex.io/rxjs/manual/overview.html#observable" target="_blank">rxjs-Observable</a> which streams every change to data of this collection.</p>
-<pre><code class="lang-js">myCollection.$.subscribe(changeEvent =&gt; <span class="hljs-built_in">console</span>.dir(changeEvent));
-</code></pre>
-<h3 id="insert">insert()</h3>
-<p>Use this to insert new documents into the database. The collection will validate the schema and automatically encrypt any encrypted fields. Returns the new RxDocument.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.insert({
-  name: <span class="hljs-string">&apos;foo&apos;</span>,
-  lastname: <span class="hljs-string">&apos;bar&apos;</span>
-});
-</code></pre>
-<h3 id="newdocument">newDocument()</h3>
-<p>Sometimes it can be helpful to spawn and use documents before saving them into the database.
-This is useful especially when you want to use the ORM methods or prefill values from form data.
-You can create temporary documents by calling <code>RxCollection.newDocument(initalData)</code>.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> tempDoc = myCollection.newDocument({
-    firstName: <span class="hljs-string">&apos;Bob&apos;</span>
-});
-
-<span class="hljs-comment">// fill in data later</span>
-tempDoc.lastName = <span class="hljs-string">&apos;Kelso&apos;</span>;
-tempDoc.age = <span class="hljs-number">77</span>;
-
-<span class="hljs-comment">// saving a temporary document will transform it to a standard RxDocument</span>
-<span class="hljs-keyword">await</span> tempDoc.save();
-</code></pre>
-<h3 id="upsert">upsert()</h3>
-<p>Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> myCollection.upsert({
-  name: <span class="hljs-string">&apos;foo&apos;</span>,
-  lastname: <span class="hljs-string">&apos;bar2&apos;</span>
-});
-</code></pre>
-<h3 id="atomicupsert">atomicUpsert()</h3>
-<p>When you run many upsert operations on the same RxDocument in a very short timespan, you might get a <code>409 Conflict</code> error.
-This means that you tried to run a <code>.upsert()</code> on the document, while the previous upsert operation was still running.
-To prevent these types of errors, you can run atomic upsert operations.
-The behavior is similar to <a href="rx-document.html#atomicUpdate">RxDocument.atomicUpdate</a>.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> docData = {
-    name: <span class="hljs-string">&apos;Bob&apos;</span>, <span class="hljs-comment">// primary</span>
-    lastName: <span class="hljs-string">&apos;Kelso&apos;</span>
-};
-
-myCollection.upsert(docData);
-myCollection.upsert(docData);
-<span class="hljs-comment">// -&gt; throws because of parrallel update to the same document</span>
-
-myCollection.atomicUpsert(docData);
-myCollection.atomicUpsert(docData);
-myCollection.atomicUpsert(docData);
-
-<span class="hljs-comment">// wait until last upsert finished</span>
-<span class="hljs-keyword">await</span> myCollection.atomicUpsert(docData);
-<span class="hljs-comment">// -&gt; works</span>
-</code></pre>
-<h3 id="find">find()</h3>
-<p>To find documents in your collection, use this method.
-This will return a RxQuery object with the exec function.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// directly pass search-object</span>
-myCollection.find({name: {$eq: <span class="hljs-string">&apos;foo&apos;</span>}})
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
-
-<span class="hljs-comment">// chained queries</span>
-myCollection.find().where(<span class="hljs-string">&apos;name&apos;</span>).eq(<span class="hljs-string">&apos;foo&apos;</span>)
-  .exec().then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
-</code></pre>
-<h3 id="findone">findOne()</h3>
-<p>This does basically what find() does, but it returns only a single document. You can pass a primary value to find a single document more easily.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get document with name:foobar</span>
-myCollection.findOne().where(<span class="hljs-string">&apos;name&apos;</span>).eq(<span class="hljs-string">&apos;foo&apos;</span>)
-  .exec().then(doc =&gt; <span class="hljs-built_in">console</span>.dir(doc));
-
-<span class="hljs-comment">// get document by primary, functionally identical to above query</span>
-myCollection.findOne(<span class="hljs-string">&apos;foo&apos;</span>)
-  .exec().then(doc =&gt; <span class="hljs-built_in">console</span>.dir(doc));
-</code></pre>
-<h3 id="dump">dump()</h3>
-<p>Use this function to create a json export from every document in the collection. You can pass true as parameter to decrypt the encrypted data fields of your documents.</p>
-<pre><code class="lang-js">myCollection.dump()
-  .then(json =&gt; <span class="hljs-built_in">console</span>.dir(json));
-
-<span class="hljs-comment">// decrypted dump</span>
-myCollection.dump(<span class="hljs-literal">true</span>)
-  .then(json =&gt; <span class="hljs-built_in">console</span>.dir(json));
-</code></pre>
-<h3 id="importdump">importDump()</h3>
-<p>To import the json dump into your collection, use this function.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// import the dump to the database</span>
-myCollection.importDump(json)
-  .then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;done&apos;</span>));
-</code></pre>
-<h3 id="destroy">destroy()</h3>
-<p>Destroys the collection&apos;s object instance. This is to free up memory and stop all observings and replications.</p>
-<pre><code class="lang-js">myDatabase.destroy();
-</code></pre>
-<h3 id="sync">sync()</h3>
-<p>This method allows you to replicate data between other RxCollections, pouchdb instances or remove servers which support the couchdb-sync-protocol.
-Full documentation on how to use replication is <a href="replication.html">here</a>.</p>
-<h3 id="remove">remove()</h3>
-<p>Removes all known data of the collection and its previous versions.
-This removes the documents, the schemas, and older schemaVersions.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">await</span> myCollection.remove();
-<span class="hljs-comment">// collection is now removed and can be re-created</span>
-</code></pre>
-<h3 id="isrxcollection">isRxCollection</h3>
-<p>Returns true if the given object is an instance of RxCollection. Returns false if not.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> is = RxDB.isRxCollection(myObj);
-</code></pre>
-<hr>
-<p>If you are new to RxDB, you should continue <a href="rx-document.html">here</a></p>
+                                <h1 id="questions-and-answers">Questions and answers</h1>
+<h2 id="cant-change-the-schema">Can&apos;t change the schema</h2>
+<p>When you make changes to the schema of a collection, you sometimes can get an error like
+<code>Error: collection(): another instance created this collection with a different schema</code>.</p>
+<p>This means you have created a collection before and added document-data to it.
+When you now just change the schema, it is likely that the new schema does not match the saved documents inside of the collection.
+This would cause strange bugs and would be hard to debug, so RxDB check&apos;s if your schema has changed an throws an error.</p>
+<p>To change the schema im <strong>production</strong>-mode, do the following</p>
+<ul>
+<li>Increase the <code>version</code> by 1</li>
+<li>Add the appropriate <a href="https://pubkey.github.io/rxdb/data-migration.html" target="_blank">migrationStrategies</a> so the saved data will be modified to match the new schema</li>
+</ul>
+<p>In <strong>development</strong>-mode, the schema-change can be simplified by one of these strategies:</p>
+<ul>
+<li>Use the memory-adapter so your db resets on restart and your schema is not safed permanently</li>
+<li>Call <code>RxDB.removeDatabase(&apos;mydatabasename&apos;, &apos;adapter&apos;);</code> before creating a new RxDatabase-instance</li>
+<li>Add a timestamp as suffix to the database-name to create a new one each run like <code>name: &apos;heroesDB&apos; + new Date().getTime()</code></li>
+</ul>
 
                                 
                                 </section>
@@ -1337,12 +1214,12 @@ This removes the documents, the schemas, and older schemaVersions.</p>
 
             
                 
-                <a href="rx-schema.html#default" class="navigation navigation-prev " aria-label="Previous page: default">
+                <a href="plugins.html" class="navigation navigation-prev " aria-label="Previous page: Plugins">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-collection.html#creating-a-collection" class="navigation navigation-next " aria-label="Next page: Creation">
+                <a href="contribute.html" class="navigation navigation-next " aria-label="Next page: Contribute">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1353,7 +1230,7 @@ This removes the documents, the schemas, and older schemaVersions.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxCollection","level":"2.1","depth":1,"next":{"title":"Creation","level":"2.1.1","depth":2,"anchor":"#creating-a-collection","path":"rx-collection.md","ref":"./rx-collection.md#creating-a-collection","articles":[{"title":"name","level":"2.1.1.1","depth":3,"anchor":"#name","path":"rx-collection.md","ref":"./rx-collection.md#name","articles":[]},{"title":"schema","level":"2.1.1.2","depth":3,"anchor":"#schema","path":"rx-collection.md","ref":"./rx-collection.md#schema","articles":[]}]},"previous":{"title":"default","level":"1.4.6","depth":2,"anchor":"#default","path":"rx-schema.md","ref":"./rx-schema.md#default","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"rx-collection.md","mtime":"2017-12-29T17:13:49.778Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2018-04-07T21:51:09.726Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Questions & Answers","level":"3.12","depth":1,"next":{"title":"Contribute","level":"3.13","depth":1,"path":"contribute.md","ref":"./contribute.md","articles":[]},"previous":{"title":"Plugins","level":"3.11","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.2"},"file":{"path":"questions-answers.md","mtime":"2018-03-29T12:16:26.950Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2018-04-07T21:51:09.726Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

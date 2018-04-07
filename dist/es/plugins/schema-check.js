@@ -225,7 +225,7 @@ export function checkSchema(jsonID) {
         return arr.indexOf(elem) === pos;
     }) // unique
     .map(function (key) {
-        var schemaObj = objectPath.get(jsonID, 'properties.' + key.replace('.', '.properties.'));
+        var schemaObj = objectPath.get(jsonID, 'properties.' + key.replace(/\./g, '.properties.'));
         if (!schemaObj || typeof schemaObj !== 'object') {
             throw RxError.newRxError('SC21', {
                 key: key

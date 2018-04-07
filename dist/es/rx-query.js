@@ -366,16 +366,21 @@ export var RxQuery = function () {
         json.selector.language.$ne = 'query';
 
         // strip empty selectors
-        Object.entries(json.selector).filter(function (entry) {
-            return typeof entry[1] === 'object';
-        }).filter(function (entry) {
-            return entry[1] !== null;
-        }).filter(function (entry) {
-            return !Array.isArray(entry[1]);
-        }).filter(function (entry) {
-            return Object.keys(entry[1]).length === 0;
-        }).forEach(function (entry) {
-            return delete json.selector[entry[0]];
+        Object.entries(json.selector).filter(function (_ref5) {
+            var v = _ref5[1];
+            return typeof v === 'object';
+        }).filter(function (_ref6) {
+            var v = _ref6[1];
+            return v !== null;
+        }).filter(function (_ref7) {
+            var v = _ref7[1];
+            return !Array.isArray(v);
+        }).filter(function (_ref8) {
+            var v = _ref8[1];
+            return Object.keys(v).length === 0;
+        }).forEach(function (_ref9) {
+            var k = _ref9[0];
+            return delete json.selector[k];
         });
 
         // primary swap
@@ -439,7 +444,7 @@ export var RxQuery = function () {
 
 
     RxQuery.prototype.exec = function () {
-        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
+        var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
             var changed;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
@@ -475,7 +480,7 @@ export var RxQuery = function () {
         }));
 
         function exec() {
-            return _ref5.apply(this, arguments);
+            return _ref10.apply(this, arguments);
         }
 
         return exec;
@@ -584,7 +589,7 @@ export var RxQuery = function () {
                 // whe run _ensureEqual() on each subscription
                 // to ensure it triggers a re-run when subscribing after some time
                 mergeMap(function () {
-                    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(results) {
+                    var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(results) {
                         var hasChanged;
                         return _regeneratorRuntime.wrap(function _callee5$(_context5) {
                             while (1) {
@@ -615,7 +620,7 @@ export var RxQuery = function () {
                     }));
 
                     return function (_x2) {
-                        return _ref6.apply(this, arguments);
+                        return _ref11.apply(this, arguments);
                     };
                 }()), filter(function (results) {
                     return results !== 'WAITFORNEXTEMIT';

@@ -9,6 +9,10 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -429,16 +433,31 @@ var RxQuery = exports.RxQuery = function () {
             json.selector.language.$ne = 'query';
 
             // strip empty selectors
-            Object.entries(json.selector).filter(function (entry) {
-                return (0, _typeof3['default'])(entry[1]) === 'object';
-            }).filter(function (entry) {
-                return entry[1] !== null;
-            }).filter(function (entry) {
-                return !Array.isArray(entry[1]);
-            }).filter(function (entry) {
-                return Object.keys(entry[1]).length === 0;
-            }).forEach(function (entry) {
-                return delete json.selector[entry[0]];
+            Object.entries(json.selector).filter(function (_ref5) {
+                var _ref6 = (0, _slicedToArray3['default'])(_ref5, 2),
+                    v = _ref6[1];
+
+                return (typeof v === 'undefined' ? 'undefined' : (0, _typeof3['default'])(v)) === 'object';
+            }).filter(function (_ref7) {
+                var _ref8 = (0, _slicedToArray3['default'])(_ref7, 2),
+                    v = _ref8[1];
+
+                return v !== null;
+            }).filter(function (_ref9) {
+                var _ref10 = (0, _slicedToArray3['default'])(_ref9, 2),
+                    v = _ref10[1];
+
+                return !Array.isArray(v);
+            }).filter(function (_ref11) {
+                var _ref12 = (0, _slicedToArray3['default'])(_ref11, 2),
+                    v = _ref12[1];
+
+                return Object.keys(v).length === 0;
+            }).forEach(function (_ref13) {
+                var _ref14 = (0, _slicedToArray3['default'])(_ref13, 1),
+                    k = _ref14[0];
+
+                return delete json.selector[k];
             });
 
             // primary swap
@@ -508,7 +527,7 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: 'exec',
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
+            var _ref15 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
                 var changed;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
@@ -544,7 +563,7 @@ var RxQuery = exports.RxQuery = function () {
             }));
 
             function exec() {
-                return _ref5.apply(this, arguments);
+                return _ref15.apply(this, arguments);
             }
 
             return exec;
@@ -659,7 +678,7 @@ var RxQuery = exports.RxQuery = function () {
                 // whe run _ensureEqual() on each subscription
                 // to ensure it triggers a re-run when subscribing after some time
                 (0, _mergeMap.mergeMap)(function () {
-                    var _ref6 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(results) {
+                    var _ref16 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(results) {
                         var hasChanged;
                         return _regenerator2['default'].wrap(function _callee5$(_context5) {
                             while (1) {
@@ -690,7 +709,7 @@ var RxQuery = exports.RxQuery = function () {
                     }));
 
                     return function (_x2) {
-                        return _ref6.apply(this, arguments);
+                        return _ref16.apply(this, arguments);
                     };
                 }()), (0, _filter.filter)(function (results) {
                     return results !== 'WAITFORNEXTEMIT';

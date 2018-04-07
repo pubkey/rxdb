@@ -250,7 +250,7 @@ function checkSchema(jsonID) {
         return arr.indexOf(elem) === pos;
     }) // unique
     .map(function (key) {
-        var schemaObj = _objectPath2['default'].get(jsonID, 'properties.' + key.replace('.', '.properties.'));
+        var schemaObj = _objectPath2['default'].get(jsonID, 'properties.' + key.replace(/\./g, '.properties.'));
         if (!schemaObj || (typeof schemaObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(schemaObj)) !== 'object') {
             throw _rxError2['default'].newRxError('SC21', {
                 key: key

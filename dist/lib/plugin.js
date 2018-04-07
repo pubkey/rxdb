@@ -4,6 +4,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
@@ -78,26 +82,32 @@ function addPlugin(plugin) {
 
     // prototype-overwrites
     if (plugin.prototypes) {
-        Object.entries(plugin.prototypes).forEach(function (entry) {
-            var name = entry[0];
-            var fun = entry[1];
-            fun(PROTOTYPES[name]);
+        Object.entries(plugin.prototypes).forEach(function (_ref) {
+            var _ref2 = (0, _slicedToArray3['default'])(_ref, 2),
+                name = _ref2[0],
+                fun = _ref2[1];
+
+            return fun(PROTOTYPES[name]);
         });
     }
     // overwritable-overwrites
     if (plugin.overwritable) {
-        Object.entries(plugin.overwritable).forEach(function (entry) {
-            var name = entry[0];
-            var fun = entry[1];
-            _overwritable2['default'][name] = fun;
+        Object.entries(plugin.overwritable).forEach(function (_ref3) {
+            var _ref4 = (0, _slicedToArray3['default'])(_ref3, 2),
+                name = _ref4[0],
+                fun = _ref4[1];
+
+            return _overwritable2['default'][name] = fun;
         });
     }
     // extend-hooks
     if (plugin.hooks) {
-        Object.entries(plugin.hooks).forEach(function (entry) {
-            var name = entry[0];
-            var fun = entry[1];
-            _hooks.HOOKS[name].push(fun);
+        Object.entries(plugin.hooks).forEach(function (_ref5) {
+            var _ref6 = (0, _slicedToArray3['default'])(_ref5, 2),
+                name = _ref6[0],
+                fun = _ref6[1];
+
+            return _hooks.HOOKS[name].push(fun);
         });
     }
 }

@@ -8,6 +8,10 @@ var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
 
+var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
@@ -64,8 +68,12 @@ var MQuery = function () {
         key: 'clone',
         value: function clone() {
             var same = new MQuery();
-            Object.entries(this).forEach(function (entry) {
-                same[entry[0]] = util.clone(entry[1]);
+            Object.entries(this).forEach(function (_ref) {
+                var _ref2 = (0, _slicedToArray3['default'])(_ref, 2),
+                    k = _ref2[0],
+                    v = _ref2[1];
+
+                return same[k] = util.clone(v);
             });
             return same;
         }

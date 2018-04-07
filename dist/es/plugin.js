@@ -41,26 +41,26 @@ export function addPlugin(plugin) {
 
     // prototype-overwrites
     if (plugin.prototypes) {
-        Object.entries(plugin.prototypes).forEach(function (entry) {
-            var name = entry[0];
-            var fun = entry[1];
-            fun(PROTOTYPES[name]);
+        Object.entries(plugin.prototypes).forEach(function (_ref) {
+            var name = _ref[0],
+                fun = _ref[1];
+            return fun(PROTOTYPES[name]);
         });
     }
     // overwritable-overwrites
     if (plugin.overwritable) {
-        Object.entries(plugin.overwritable).forEach(function (entry) {
-            var name = entry[0];
-            var fun = entry[1];
-            overwritable[name] = fun;
+        Object.entries(plugin.overwritable).forEach(function (_ref2) {
+            var name = _ref2[0],
+                fun = _ref2[1];
+            return overwritable[name] = fun;
         });
     }
     // extend-hooks
     if (plugin.hooks) {
-        Object.entries(plugin.hooks).forEach(function (entry) {
-            var name = entry[0];
-            var fun = entry[1];
-            HOOKS[name].push(fun);
+        Object.entries(plugin.hooks).forEach(function (_ref3) {
+            var name = _ref3[0],
+                fun = _ref3[1];
+            return HOOKS[name].push(fun);
         });
     }
 }

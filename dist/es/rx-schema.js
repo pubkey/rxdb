@@ -80,10 +80,13 @@ export var RxSchema = function () {
      */
     RxSchema.prototype.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
         obj = util.clone(obj);
-        Object.entries(this.defaultValues).filter(function (entry) {
-            return !obj.hasOwnProperty(entry[0]);
-        }).forEach(function (entry) {
-            obj[entry[0]] = entry[1];
+        Object.entries(this.defaultValues).filter(function (_ref) {
+            var k = _ref[0];
+            return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
+        }).forEach(function (_ref2) {
+            var k = _ref2[0],
+                v = _ref2[1];
+            return obj[k] = v;
         });
         return obj;
     };
@@ -164,10 +167,13 @@ export var RxSchema = function () {
 
             if (!this._defaultValues) {
                 this._defaultValues = {};
-                Object.entries(this.normalized.properties).filter(function (entry) {
-                    return entry[1].hasOwnProperty('default');
-                }).forEach(function (entry) {
-                    return _this3._defaultValues[entry[0]] = entry[1]['default'];
+                Object.entries(this.normalized.properties).filter(function (_ref3) {
+                    var v = _ref3[1];
+                    return v.hasOwnProperty('default');
+                }).forEach(function (_ref4) {
+                    var k = _ref4[0],
+                        v = _ref4[1];
+                    return _this3._defaultValues[k] = v['default'];
                 });
             }
             return this._defaultValues;
@@ -232,9 +238,10 @@ export function getIndexes(jsonID) {
     var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
     var indexes = [];
-    Object.entries(jsonID).forEach(function (entry) {
-        var key = entry[0];
-        var obj = entry[1];
+    Object.entries(jsonID).forEach(function (_ref5) {
+        var key = _ref5[0],
+            obj = _ref5[1];
+
         var path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
 
         if (obj.index) indexes.push([path]);
