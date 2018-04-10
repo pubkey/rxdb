@@ -80,4 +80,6 @@ export declare class PouchDB {
     ): Promise<void>;
     bulkGet(options?: any): Promise<any>;
     revsDiff(diff: any): Promise<any>;
+                                    
+    static plugin(p: any): void;
 }
