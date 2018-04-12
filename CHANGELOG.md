@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Improved typings of `RxChangeEvent` thx [@hubgit](https://github.com/hubgit)
+
 ### 7.4.3 (April 7,2018)
 
 Bugfixes:
