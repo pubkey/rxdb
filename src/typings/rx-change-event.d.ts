@@ -1,4 +1,4 @@
-import { RxDocument } from 'rxdb/src/typings/rx-document';
+import { RxDocument } from '../../src/typings/rx-document';
 
 export interface RxChangeEventData {
   readonly col?: string;
