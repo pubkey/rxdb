@@ -170,11 +170,11 @@
     "webpack": "4.5.0"
   },
   "// greenkeeper": [
-      "// babel-eslint: https://github.com/babel/babel-eslint/issues/530"
+    "// babel-eslint: https://github.com/babel/babel-eslint/issues/530"
   ],
   "greenkeeper": {
     "ignore": [
-        "babel-eslint"
+      "babel-eslint"
     ]
   }
 }

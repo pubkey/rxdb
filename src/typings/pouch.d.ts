@@ -36,6 +36,11 @@ export interface PouchSettings {
     iosDatabaseLocation?: string
 }
 
+declare type Debug = {
+    enable(what: string): void;
+    disable(): void;
+};
+
 export declare class PouchDB {
     constructor(name: string, options: { adapter: string });
     info(): Promise<any>;
@@ -80,6 +85,7 @@ export declare class PouchDB {
     ): Promise<void>;
     bulkGet(options?: any): Promise<any>;
     revsDiff(diff: any): Promise<any>;
-                                    
+
     static plugin(p: any): void;
+    static debug: Debug;
 }

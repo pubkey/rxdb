@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Bugfixes:
+  - Wrong index used when no sort specified [#609](https://github.com/pubkey/rxdb/issues/609)
+
 Other:
   - Improved typings of `RxChangeEvent` thx [@hubgit](https://github.com/hubgit)
 

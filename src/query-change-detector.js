@@ -215,6 +215,23 @@ class QueryChangeDetector {
         return !!first;
     }
 
+    /**
+     * if no sort-order is specified,
+     * pouchdb will use the primary
+     */
+    _getSortOptions() {
+        if (!this._sortOptions) {
+            const options = this.query.toJSON();
+            let sortOptions = options.sort;
+            if (!sortOptions) {
+                sortOptions = [{
+                    _id: 'asc'
+                }];
+            }
+            this._sortOptions = sortOptions;
+        }
+        return this._sortOptions;
+    }
 
     /**
      * checks if the sort-relevant fields have changed
@@ -223,8 +240,8 @@ class QueryChangeDetector {
      * @return {boolean}
      */
     _sortFieldChanged(docDataBefore, docDataAfter) {
-        const options = this.query.toJSON();
-        const sortFields = options.sort.map(sortObj => Object.keys(sortObj).pop());
+        const sortOptions = this._getSortOptions();
+        const sortFields = sortOptions.map(sortObj => Object.keys(sortObj).pop());
 
         let changed = false;
         sortFields.find(field => {
@@ -246,7 +263,7 @@ class QueryChangeDetector {
      * @return {boolean} true if before, false if after
      */
     _isSortedBefore(docDataLeft, docDataRight) {
-        const options = this.query.toJSON();
+        const sortOptions = this._getSortOptions();
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
         const swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
         const swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
@@ -262,7 +279,7 @@ class QueryChangeDetector {
         const sortedRows = filterInMemoryFields(
             rows, {
                 selector: massageSelector(this.query.toJSON().selector),
-                sort: options.sort
+                sort: sortOptions
             },
             inMemoryFields
         );
@@ -275,19 +292,19 @@ class QueryChangeDetector {
      * @return {object[]}
      */
     _resortDocData(resultsData) {
+        const sortOptions = this._getSortOptions();
         const rows = resultsData.map(doc => {
             return {
                 doc: this.query.collection.schema.swapPrimaryToId(doc)
             };
         });
-        const options = this.query.toJSON();
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
 
         // TODO use createFieldSorter
         const sortedRows = filterInMemoryFields(
             rows, {
                 selector: massageSelector(this.query.toJSON().selector),
-                sort: options.sort
+                sort: sortOptions
             },
             inMemoryFields
         );

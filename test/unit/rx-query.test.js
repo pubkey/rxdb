@@ -3,7 +3,7 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import clone from 'clone';
 
-import * as RxDB from '../../dist/lib/index';
+import RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -991,6 +991,46 @@ config.parallel('rx-query.test.js', () => {
             assert.equal(foundDocsDesc[0].info.title, 'cctest');
 
             db.destroy();
+        });
+        it('#609 default index on _id when better possible', async () => {
+            const mySchema = {
+                version: 0,
+                disableKeyCompression: true,
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string'
+                    },
+                    passportId: {
+                        type: 'string',
+                        index: true
+                    }
+                }
+            };
+            const collection = await humansCollection.createBySchema(mySchema);
+
+            await collection.insert({
+                name: 'abc',
+                passportId: 'foobar'
+            });
+
+            // first query, no sort
+            const q1 = collection.findOne({
+                passportId: 'foofbar'
+            });
+            const explained1 = await collection.pouch.explain(q1.toJSON());
+            assert.ok(explained1.index.ddoc);
+            assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
+
+            // second query, with sort
+            const q2 = collection.findOne({
+                passportId: 'foofbar'
+            }).sort('passportId');
+            const explained2 = await collection.pouch.explain(q2.toJSON());
+            assert.ok(explained2.index.ddoc);
+            assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
+
+            collection.database.destroy();
         });
     });
 
