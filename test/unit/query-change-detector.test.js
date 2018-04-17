@@ -12,6 +12,12 @@ import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 import {
     first
 } from 'rxjs/operators/first';
+import {
+    filter
+} from 'rxjs/operators/filter';
+import {
+    map
+} from 'rxjs/operators/map';
 
 let SpawnServer;
 if (config.platform.isNode()) {
@@ -21,10 +27,10 @@ if (config.platform.isNode()) {
 
 // TODO disable later
 // QueryChangeDetector.enableDebugging();
-QueryChangeDetector.enable();
 
 
 config.parallel('query-change-detector.test.js', () => {
+    QueryChangeDetector.enable();
     describe('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
@@ -408,7 +414,98 @@ config.parallel('query-change-detector.test.js', () => {
             });
         });
     });
-    describe('BUGS', () => {
+    describe('integration', () => {
+        describe('sort-order', () => {
+            it('should order by primary by default', async () => {
+                const schema = {
+                    version: 0,
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            primary: true
+                        },
+                        passportId: {
+                            type: 'string',
+                            index: true
+                        }
+                    }
+                };
+                const col = await humansCollection.createBySchema(schema);
+
+                // insert 3 docs
+                await col.insert({
+                    id: 'ccc',
+                    passportId: 'foobar1'
+                });
+                await col.insert({
+                    id: 'bbb',
+                    passportId: 'foobar2'
+                });
+                await col.insert({
+                    id: 'ddd',
+                    passportId: 'foobar3'
+                });
+                await col.insert({
+                    id: 'aaa',
+                    passportId: 'foobar4'
+                });
+
+                // it should sort by primary even if other index is used
+                const docs = await col
+                    .find()
+                    .where('passportId')
+                    .ne('foobar3')
+                    .exec();
+
+                assert.deepEqual(
+                    docs.map(d => d.id), [
+                        'aaa',
+                        'bbb',
+                        'ccc'
+                    ]
+                );
+
+                // same should apply when change-detection runs
+                const docs$ = await col
+                    .find()
+                    .where('passportId')
+                    .ne('foobar3')
+                    .$;
+
+                const results = [];
+                const sub = docs$
+                    .pipe(
+                        filter(docs => docs !== null),
+                        map(docs => docs.map(doc => doc.id))
+                    ).subscribe(docsIds => results.push(docsIds));
+
+                await AsyncTestUtil.waitUntil(() => results.length === 1);
+
+                await col.insert({
+                    id: 'aab',
+                    passportId: 'foobar5'
+                });
+
+                await AsyncTestUtil.waitUntil(() => results.length === 2);
+
+                const lastResult = results[1];
+
+                assert.deepEqual(
+                    lastResult, [
+                        'aaa',
+                        'aab',
+                        'bbb',
+                        'ccc'
+                    ]
+                );
+
+                sub.unsubscribe();
+                col.database.destroy();
+            });
+        });
+    });
+    describe('ISSUES', () => {
         it('SYNC and Observe does not work with R3 - resort', async () => {
             if (!config.platform.isNode()) return;
             const serverURL = await SpawnServer.spawn();

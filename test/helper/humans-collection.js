@@ -33,6 +33,23 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
     return collection;
 }
 
+export async function createBySchema(schema, name = 'human') {
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
+    const db = await RxDatabase.create({
+        name: util.randomCouchString(10),
+        adapter: 'memory',
+        multiInstance: true,
+        ignoreDuplicate: true
+    });
+
+    const collection = await db.collection({
+        name,
+        schema
+    });
+
+    return collection;
+}
+
 export async function createAttachments(size = 20, name = 'human', multiInstance = true) {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
