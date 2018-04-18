@@ -6846,6 +6846,27 @@ var QueryChangeDetector = function () {
         }
 
         /**
+         * if no sort-order is specified,
+         * pouchdb will use the primary
+         */
+
+    }, {
+        key: '_getSortOptions',
+        value: function _getSortOptions() {
+            if (!this._sortOptions) {
+                var options = this.query.toJSON();
+                var sortOptions = options.sort;
+                if (!sortOptions) {
+                    sortOptions = [{
+                        _id: 'asc'
+                    }];
+                }
+                this._sortOptions = sortOptions;
+            }
+            return this._sortOptions;
+        }
+
+        /**
          * checks if the sort-relevant fields have changed
          * @param  {object} docDataBefore
          * @param  {object} docDataAfter
@@ -6855,8 +6876,8 @@ var QueryChangeDetector = function () {
     }, {
         key: '_sortFieldChanged',
         value: function _sortFieldChanged(docDataBefore, docDataAfter) {
-            var options = this.query.toJSON();
-            var sortFields = options.sort.map(function (sortObj) {
+            var sortOptions = this._getSortOptions();
+            var sortFields = sortOptions.map(function (sortObj) {
                 return Object.keys(sortObj).pop();
             });
 
@@ -6883,7 +6904,7 @@ var QueryChangeDetector = function () {
     }, {
         key: '_isSortedBefore',
         value: function _isSortedBefore(docDataLeft, docDataRight) {
-            var options = this.query.toJSON();
+            var sortOptions = this._getSortOptions();
             var inMemoryFields = Object.keys(this.query.toJSON().selector);
             var swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
             var swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
@@ -6897,7 +6918,7 @@ var QueryChangeDetector = function () {
             // TODO use createFieldSorter
             var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
                 selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector),
-                sort: options.sort
+                sort: sortOptions
             }, inMemoryFields);
             return sortedRows[0].id === swappedLeft._id;
         }
@@ -6913,18 +6934,18 @@ var QueryChangeDetector = function () {
         value: function _resortDocData(resultsData) {
             var _this3 = this;
 
+            var sortOptions = this._getSortOptions();
             var rows = resultsData.map(function (doc) {
                 return {
                     doc: _this3.query.collection.schema.swapPrimaryToId(doc)
                 };
             });
-            var options = this.query.toJSON();
             var inMemoryFields = Object.keys(this.query.toJSON().selector);
 
             // TODO use createFieldSorter
             var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
                 selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector),
-                sort: options.sort
+                sort: sortOptions
             }, inMemoryFields);
             var sortedDocs = sortedRows.map(function (row) {
                 return row.doc;
@@ -11171,12 +11192,6 @@ var RxQuery = exports.RxQuery = function () {
                     sortArray.push(pushMe);
                 });
                 json.sort = sortArray;
-            } else {
-                // sort by primaryKey as default
-                // (always use _id because there is no primary-swap on json.sort)
-                json.sort = [{
-                    _id: 'asc'
-                }];
             }
 
             if (options.limit) {
@@ -14082,65 +14097,97 @@ for (var i = 0, len = code.length; i < len; ++i) {
 revLookup['-'.charCodeAt(0)] = 62
 revLookup['_'.charCodeAt(0)] = 63
 
-function placeHoldersCount (b64) {
+function getLens (b64) {
   var len = b64.length
+
   if (len % 4 > 0) {
     throw new Error('Invalid string. Length must be a multiple of 4')
   }
 
-  // the number of equal signs (place holders)
-  // if there are two placeholders, than the two characters before it
-  // represent one byte
-  // if there is only one, then the three characters before it represent 2 bytes
-  // this is just a cheap hack to not do indexOf twice
-  return b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+  // Trim off extra bytes after placeholder bytes are found
+  // See: https://github.com/beatgammit/base64-js/issues/42
+  var validLen = b64.indexOf('=')
+  if (validLen === -1) validLen = len
+
+  var placeHoldersLen = validLen === len
+    ? 0
+    : 4 - (validLen % 4)
+
+  return [validLen, placeHoldersLen]
 }
 
+// base64 is 4/3 + up to two characters of the original data
 function byteLength (b64) {
-  // base64 is 4/3 + up to two characters of the original data
-  return (b64.length * 3 / 4) - placeHoldersCount(b64)
+  var lens = getLens(b64)
+  var validLen = lens[0]
+  var placeHoldersLen = lens[1]
+  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
+}
+
+function _byteLength (b64, validLen, placeHoldersLen) {
+  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
 }
 
 function toByteArray (b64) {
-  var i, l, tmp, placeHolders, arr
-  var len = b64.length
-  placeHolders = placeHoldersCount(b64)
+  var tmp
+  var lens = getLens(b64)
+  var validLen = lens[0]
+  var placeHoldersLen = lens[1]
 
-  arr = new Arr((len * 3 / 4) - placeHolders)
+  var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen))
+
+  var curByte = 0
 
   // if there are placeholders, only get up to the last complete 4 chars
-  l = placeHolders > 0 ? len - 4 : len
+  var len = placeHoldersLen > 0
+    ? validLen - 4
+    : validLen
 
-  var L = 0
-
-  for (i = 0; i < l; i += 4) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
-    arr[L++] = (tmp >> 16) & 0xFF
-    arr[L++] = (tmp >> 8) & 0xFF
-    arr[L++] = tmp & 0xFF
+  for (var i = 0; i < len; i += 4) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 18) |
+      (revLookup[b64.charCodeAt(i + 1)] << 12) |
+      (revLookup[b64.charCodeAt(i + 2)] << 6) |
+      revLookup[b64.charCodeAt(i + 3)]
+    arr[curByte++] = (tmp >> 16) & 0xFF
+    arr[curByte++] = (tmp >> 8) & 0xFF
+    arr[curByte++] = tmp & 0xFF
   }
 
-  if (placeHolders === 2) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
-    arr[L++] = tmp & 0xFF
-  } else if (placeHolders === 1) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
-    arr[L++] = (tmp >> 8) & 0xFF
-    arr[L++] = tmp & 0xFF
+  if (placeHoldersLen === 2) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 2) |
+      (revLookup[b64.charCodeAt(i + 1)] >> 4)
+    arr[curByte++] = tmp & 0xFF
+  }
+
+  if (placeHoldersLen === 1) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 10) |
+      (revLookup[b64.charCodeAt(i + 1)] << 4) |
+      (revLookup[b64.charCodeAt(i + 2)] >> 2)
+    arr[curByte++] = (tmp >> 8) & 0xFF
+    arr[curByte++] = tmp & 0xFF
   }
 
   return arr
 }
 
 function tripletToBase64 (num) {
-  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+  return lookup[num >> 18 & 0x3F] +
+    lookup[num >> 12 & 0x3F] +
+    lookup[num >> 6 & 0x3F] +
+    lookup[num & 0x3F]
 }
 
 function encodeChunk (uint8, start, end) {
   var tmp
   var output = []
   for (var i = start; i < end; i += 3) {
-    tmp = ((uint8[i] << 16) & 0xFF0000) + ((uint8[i + 1] << 8) & 0xFF00) + (uint8[i + 2] & 0xFF)
+    tmp =
+      ((uint8[i] << 16) & 0xFF0000) +
+      ((uint8[i + 1] << 8) & 0xFF00) +
+      (uint8[i + 2] & 0xFF)
     output.push(tripletToBase64(tmp))
   }
   return output.join('')
@@ -14150,30 +14197,33 @@ function fromByteArray (uint8) {
   var tmp
   var len = uint8.length
   var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
-  var output = ''
   var parts = []
   var maxChunkLength = 16383 // must be multiple of 3
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+    parts.push(encodeChunk(
+      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
+    ))
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
   if (extraBytes === 1) {
     tmp = uint8[len - 1]
-    output += lookup[tmp >> 2]
-    output += lookup[(tmp << 4) & 0x3F]
-    output += '=='
+    parts.push(
+      lookup[tmp >> 2] +
+      lookup[(tmp << 4) & 0x3F] +
+      '=='
+    )
   } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
-    output += lookup[tmp >> 10]
-    output += lookup[(tmp >> 4) & 0x3F]
-    output += lookup[(tmp << 2) & 0x3F]
-    output += '='
+    tmp = (uint8[len - 2] << 8) + uint8[len - 1]
+    parts.push(
+      lookup[tmp >> 10] +
+      lookup[(tmp >> 4) & 0x3F] +
+      lookup[(tmp << 2) & 0x3F] +
+      '='
+    )
   }
-
-  parts.push(output)
 
   return parts.join('')
 }
@@ -16316,7 +16366,7 @@ module.exports = function (it) {
 };
 
 },{}],81:[function(require,module,exports){
-var core = module.exports = { version: '2.5.4' };
+var core = module.exports = { version: '2.5.5' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 },{}],82:[function(require,module,exports){
@@ -21520,9 +21570,11 @@ function set(target, propertyKey, V /* , receiver */) {
   }
   if (has(ownDesc, 'value')) {
     if (ownDesc.writable === false || !isObject(receiver)) return false;
-    existingDescriptor = gOPD.f(receiver, propertyKey) || createDesc(0);
-    existingDescriptor.value = V;
-    dP.f(receiver, propertyKey, existingDescriptor);
+    if (existingDescriptor = gOPD.f(receiver, propertyKey)) {
+      if (existingDescriptor.get || existingDescriptor.set || existingDescriptor.writable === false) return false;
+      existingDescriptor.value = V;
+      dP.f(receiver, propertyKey, existingDescriptor);
+    } else dP.f(receiver, propertyKey, createDesc(0, V));
     return true;
   }
   return ownDesc.set === undefined ? false : (ownDesc.set.call(receiver, V), true);

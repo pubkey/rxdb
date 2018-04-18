@@ -401,12 +401,6 @@ var RxQuery = exports.RxQuery = function () {
                     sortArray.push(pushMe);
                 });
                 json.sort = sortArray;
-            } else {
-                // sort by primaryKey as default
-                // (always use _id because there is no primary-swap on json.sort)
-                json.sort = [{
-                    _id: 'asc'
-                }];
             }
 
             if (options.limit) {

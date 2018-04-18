@@ -259,6 +259,27 @@ var QueryChangeDetector = function () {
         }
 
         /**
+         * if no sort-order is specified,
+         * pouchdb will use the primary
+         */
+
+    }, {
+        key: '_getSortOptions',
+        value: function _getSortOptions() {
+            if (!this._sortOptions) {
+                var options = this.query.toJSON();
+                var sortOptions = options.sort;
+                if (!sortOptions) {
+                    sortOptions = [{
+                        _id: 'asc'
+                    }];
+                }
+                this._sortOptions = sortOptions;
+            }
+            return this._sortOptions;
+        }
+
+        /**
          * checks if the sort-relevant fields have changed
          * @param  {object} docDataBefore
          * @param  {object} docDataAfter
@@ -268,8 +289,8 @@ var QueryChangeDetector = function () {
     }, {
         key: '_sortFieldChanged',
         value: function _sortFieldChanged(docDataBefore, docDataAfter) {
-            var options = this.query.toJSON();
-            var sortFields = options.sort.map(function (sortObj) {
+            var sortOptions = this._getSortOptions();
+            var sortFields = sortOptions.map(function (sortObj) {
                 return Object.keys(sortObj).pop();
             });
 
@@ -296,7 +317,7 @@ var QueryChangeDetector = function () {
     }, {
         key: '_isSortedBefore',
         value: function _isSortedBefore(docDataLeft, docDataRight) {
-            var options = this.query.toJSON();
+            var sortOptions = this._getSortOptions();
             var inMemoryFields = Object.keys(this.query.toJSON().selector);
             var swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
             var swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
@@ -310,7 +331,7 @@ var QueryChangeDetector = function () {
             // TODO use createFieldSorter
             var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
                 selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector),
-                sort: options.sort
+                sort: sortOptions
             }, inMemoryFields);
             return sortedRows[0].id === swappedLeft._id;
         }
@@ -326,18 +347,18 @@ var QueryChangeDetector = function () {
         value: function _resortDocData(resultsData) {
             var _this3 = this;
 
+            var sortOptions = this._getSortOptions();
             var rows = resultsData.map(function (doc) {
                 return {
                     doc: _this3.query.collection.schema.swapPrimaryToId(doc)
                 };
             });
-            var options = this.query.toJSON();
             var inMemoryFields = Object.keys(this.query.toJSON().selector);
 
             // TODO use createFieldSorter
             var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
                 selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector),
-                sort: options.sort
+                sort: sortOptions
             }, inMemoryFields);
             var sortedDocs = sortedRows.map(function (row) {
                 return row.doc;

@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 7.4.4 (April 18, 2018)
 
 Bugfixes:
   - Wrong index used when no sort specified [#609](https://github.com/pubkey/rxdb/issues/609)
