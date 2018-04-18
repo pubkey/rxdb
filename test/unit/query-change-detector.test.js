@@ -420,6 +420,7 @@ config.parallel('query-change-detector.test.js', () => {
                 const schema = {
                     version: 0,
                     type: 'object',
+                    disableKeyCompression: true,
                     properties: {
                         id: {
                             type: 'string',
@@ -466,6 +467,19 @@ config.parallel('query-change-detector.test.js', () => {
                     ]
                 );
 
+                // it should find the same order with pouchdb
+                const pouchResult = await col.pouch.find(
+                    col
+                    .find()
+                    .where('passportId')
+                    .ne('foobar3').toJSON()
+                );
+                assert.deepEqual(
+                    docs.map(d => d.id),
+                    pouchResult.docs.map(doc => doc._id)
+                );
+
+
                 // same should apply when change-detection runs
                 const docs$ = await col
                     .find()
@@ -498,6 +512,18 @@ config.parallel('query-change-detector.test.js', () => {
                         'bbb',
                         'ccc'
                     ]
+                );
+
+                // it should find the same order with pouchdb
+                const pouchResult2 = await col.pouch.find(
+                    col
+                    .find()
+                    .where('passportId')
+                    .ne('foobar3').toJSON()
+                );
+                assert.deepEqual(
+                    lastResult,
+                    pouchResult2.docs.map(doc => doc._id)
                 );
 
                 sub.unsubscribe();
