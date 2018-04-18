@@ -8,7 +8,7 @@ export interface RxChangeEventData {
   readonly it: string;
   readonly op: 'INSERT' | 'UPDATE' | 'REMOVE';
   readonly t: number;
-  readonly v?: object;
+  readonly v?: any;
 }
 
 export declare class RxChangeEvent {
