@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
+
 // import typings
 import * as RxDBTypes from './../RxDB.d';
-
 
 // batteries-included
 // import RxDB from 'rxdb';
@@ -33,16 +33,12 @@ import RxDBReplicationModule from 'rxdb/plugins/replication';
 RxDB.plugin(RxDBReplicationModule);
 // always needed for replication with the node-server
 RxDB.plugin(require('pouchdb-adapter-http'));
-
-
-
 RxDB.QueryChangeDetector.enable();
 RxDB.QueryChangeDetector.enableDebugging();
 
 import PouchdbAdapterIdb from 'pouchdb-adapter-idb';
 RxDB.plugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
-
 
 let collections = [
     {
