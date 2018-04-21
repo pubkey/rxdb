@@ -10,15 +10,7 @@ export class RxSchema {
     constructor(jsonID) {
         this.jsonID = jsonID;
         this.compoundIndexes = this.jsonID.compoundIndexes;
-
-        // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.indexes.forEach(indexAr => {
-            indexAr
-                .filter(index => !this.jsonID.required.includes(index))
-                .filter(index => !index.includes('.')) // TODO make them sub-required
-                .forEach(index => this.jsonID.required.push(index));
-        });
 
         // primary is always required
         this.primaryPath = getPrimary(this.jsonID);

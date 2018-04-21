@@ -438,13 +438,6 @@ config.parallel('rx-schema.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('index not given', () => {
-                    const schema = RxSchema.create(schemas.human);
-                    const obj = schemaObjects.human();
-                    obj._id = util.generateId();
-                    delete obj.passportId;
-                    assert.throws(() => schema.validate(obj), Error);
-                });
                 it('required field not given', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
