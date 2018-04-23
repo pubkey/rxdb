@@ -4,6 +4,12 @@ export type RxChangeEventOperation =
     'REMOVE' | // document removed
     'RxDatabase.collection'; // collection created
 
+export type RemoveData = {
+    _id: string,
+    _rev: string,
+    _deleted: true
+};
+
 export interface RxChangeEventData<T = {}> {
     readonly col?: string;
     readonly db: string;
@@ -12,7 +18,7 @@ export interface RxChangeEventData<T = {}> {
     readonly it: string;
     readonly op: RxChangeEventOperation;
     readonly t: number;
-    readonly v?: T;
+    readonly v?: T | RemoveData;
 }
 
 export declare class RxChangeEvent<T = {}> {
