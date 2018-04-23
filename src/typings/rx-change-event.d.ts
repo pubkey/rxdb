@@ -11,7 +11,7 @@ export interface RxChangeEventData<T = {}> {
   readonly v?: T;
 }
 
-export declare class RxChangeEvent<T> {
+export declare class RxChangeEvent<T = {}> {
     data: RxChangeEventData<T>;
     toJSON(): RxChangeEventData<T>;
 }
