@@ -1,17 +1,17 @@
-import { RxDocument } from '../../src/typings/rx-document';
+export type RxChangeEventOperation = 'INSERT' | 'UPDATE' | 'REMOVE'
 
-export interface RxChangeEventData {
+export interface RxChangeEventData<T = {}> {
   readonly col?: string;
   readonly db: string;
-  readonly doc?: RxDocument<object>;
+  readonly doc?: string;
   readonly isLocal?: boolean;
   readonly it: string;
-  readonly op: 'INSERT' | 'UPDATE' | 'REMOVE';
+  readonly op: RxChangeEventOperation;
   readonly t: number;
-  readonly v?: any;
+  readonly v?: T;
 }
 
-export declare class RxChangeEvent {
-    data: RxChangeEventData;
-    toJSON(): RxChangeEventData;
+export declare class RxChangeEvent<T> {
+    data: RxChangeEventData<T>;
+    toJSON(): RxChangeEventData<T>;
 }
