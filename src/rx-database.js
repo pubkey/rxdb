@@ -68,6 +68,19 @@ export class RxDatabase {
         return this.__collectionsPouch;
     }
 
+    async dangerousRemoveCollectionInfo() {
+        const colPouch = this._collectionsPouch;
+        const docsRes = await colPouch.allDocs();
+        await Promise.all(
+            docsRes.rows
+            .map(row => ({
+                _id: row.key,
+                _rev: row.value.rev
+            }))
+            .map(doc => colPouch.remove(doc._id, doc._rev))
+        );
+    }
+
     /**
      * do the async things for this database
      */

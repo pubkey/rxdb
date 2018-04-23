@@ -480,7 +480,7 @@ config.parallel('rx-database.test.js', () => {
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                const col1 =await db1.collection({
+                const col1 = await db1.collection({
                     name: collectionName,
                     schema: schemas.human
                 });
@@ -546,6 +546,41 @@ config.parallel('rx-database.test.js', () => {
                 password: 'foo2222333333bar2'
             });
             await db2.remove();
+        });
+    });
+    describe('.dangerousRemoveCollectionInfo()', () => {
+        it('should be possible to hard-overwrite the collections', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                password: 'fo222222obar'
+            });
+            const col = await db.collection({
+                name: 'human',
+                schema: schemas.simpleHuman
+            });
+            await col.insert({
+                passportId: 'foo',
+                age: '10'
+            });
+            await db.destroy();
+
+            const db2 = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                password: 'fo222222obar'
+            });
+
+            await db2.dangerousRemoveCollectionInfo();
+
+            const col2 = await db2.collection({
+                name: 'human',
+                schema: schemas.humanAgeIndex
+            });
+            assert.ok(col2);
+
+            await db2.destroy();
         });
     });
 

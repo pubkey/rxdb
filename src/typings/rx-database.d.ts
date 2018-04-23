@@ -52,4 +52,11 @@ export declare class RxDatabase {
      * @return {Promise<boolean>}
      */
     waitForLeadership(): Promise<boolean>;
+
+    /**
+     * removes all internal collection-info
+     * only use this if you have to upgrade from a major rxdb-version
+     * do NEVER use this to change the schema of a collection
+     */
+    dangerousRemoveCollectionInfo(): Promise<void>;
 }

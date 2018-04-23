@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Other:
+  - Added `dangerousRemoveCollectionInfo()` for migrations over rxdb-versions.
+
 ### 7.4.4 (April 18, 2018)
 
 Bugfixes:
