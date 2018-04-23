@@ -185,8 +185,10 @@ export function sync({
 }) {
     options = util.clone(options);
     // if remote is RxCollection, get internal pouchdb
-    if (RxCollection.isInstanceOf(remote))
+    if (RxCollection.isInstanceOf(remote)){
+        remote.watchForChanges();
         remote = remote.pouch;
+    }
 
     if (query && this !== query.collection) {
         throw RxError.newRxError('RC2', {
