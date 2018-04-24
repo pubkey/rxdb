@@ -55,7 +55,7 @@ const configuration = {
             timeout: 6000
         }
     },
-    browsers: ['ChromeNoSandbox'],
+    browsers: ['Chrome_travis_ci'],
     browserDisconnectTimeout: 6000,
     processKillTimeout: 6000,
     customLaunchers: {
@@ -69,7 +69,6 @@ const configuration = {
 
 if (process.env.TRAVIS) {
     configuration.browsers = ['Chrome_travis_ci'];
-
     /**
      * overwrite reporters-default
      * So no big list will be shown at log
