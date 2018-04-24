@@ -1331,6 +1331,27 @@ var RxCollection = exports.RxCollection = function () {
             return this._observable$;
         }
     }, {
+        key: 'insert$',
+        get: function get() {
+            return this.$.pipe((0, _filter.filter)(function (cE) {
+                return cE.data.op === 'INSERT';
+            }));
+        }
+    }, {
+        key: 'update$',
+        get: function get() {
+            return this.$.pipe((0, _filter.filter)(function (cE) {
+                return cE.data.op === 'UPDATE';
+            }));
+        }
+    }, {
+        key: 'remove$',
+        get: function get() {
+            return this.$.pipe((0, _filter.filter)(function (cE) {
+                return cE.data.op === 'REMOVE';
+            }));
+        }
+    }, {
         key: 'onDestroy',
         get: function get() {
             var _this8 = this;

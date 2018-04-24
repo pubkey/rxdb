@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 7.5.0 (April 24, 2018)
 
 Features:
   - Added `RxCollection.insert$`, `RxCollection.update$`, `RxCollection.remove$` [read the docs](https://pubkey.github.io/rxdb/rx-collection.html#observe-)
