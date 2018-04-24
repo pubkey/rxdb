@@ -14,6 +14,7 @@ import {
 
 export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
 
+export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 
 export declare class RxDocumentBase<RxDocumentType> {
     readonly collection: RxCollection<RxDocumentType>;
@@ -40,7 +41,7 @@ export declare class RxDocumentBase<RxDocumentType> {
     allAttachments(): Promise<RxAttachment<RxDocumentType>[]>;
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;
 
-    toJSON(): RxDocumentType;
+    toJSON(): RxDocumentTypeWithRev<RxDocumentType>;
     destroy(): void;
 }
 

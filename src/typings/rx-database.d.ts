@@ -8,8 +8,12 @@ import {
     RxLocalDocument
 } from './rx-document';
 import {
-    RxChangeEvent
+    RxChangeEventInsert,
+    RxChangeEventUpdate,
+    RxChangeEventRemove,
+    RxChangeEventCollection
 } from './rx-change-event';
+
 import {
     PouchSettings
 } from "./pouch";
@@ -33,7 +37,7 @@ export declare class RxDatabase {
     options?: any;
     pouchSettings?: PouchSettings;
 
-    readonly $: Observable<RxChangeEvent>;
+    readonly $: Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
 
     collection(args: RxCollectionCreator): Promise<RxCollection<any>>;
     destroy(): Promise<boolean>;

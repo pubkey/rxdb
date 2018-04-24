@@ -10,22 +10,72 @@ export type RemoveData = {
     _deleted: true
 };
 
-export interface RxChangeEventData<T = {}> {
-    readonly col?: string;
-    readonly db: string;
-    readonly doc?: string;
-    readonly isLocal?: boolean;
-    readonly it: string;
+export type RxEventValueWithRevAndId = {
+    _id: string;
+    _rev: string;
+};
+export type RxEventValue<RxDocumentType> = RxDocumentType & RxEventValueWithRevAndId;
+
+
+export class RxChangeEventDataBase {
     readonly op: RxChangeEventOperation;
     readonly t: number;
-    readonly v?: T | RemoveData;
+    readonly db: string;
+    readonly it: string;
+    readonly isLocal: boolean;
 }
 
-export declare class RxChangeEvent<T = {}> {
-    data: RxChangeEventData<T>;
-    toJSON(): RxChangeEventData<T>;
-
+export declare class RxChangeEventBase {
     isIntern(): boolean;
     isSocket(): boolean;
-    hash: string;
+    readonly hash: string;
+}
+
+// INSERT
+export class RxChangeEventInsertData<RxDocumentType> extends RxChangeEventDataBase {
+    readonly op: 'INSERT';
+    readonly col: string;
+    readonly doc: string;
+    readonly v: RxEventValue<RxDocumentType>;
+}
+
+export declare class RxChangeEventInsert<RxDocumentType> extends RxChangeEventBase {
+    readonly data: RxChangeEventInsertData<RxDocumentType>;
+    toJSON(): RxChangeEventInsertData<RxDocumentType>;
+}
+
+// UPDATE
+export class RxChangeEventUpdateData<RxDocumentType> extends RxChangeEventDataBase {
+    readonly op: 'UPDATE';
+    readonly col: string;
+    readonly doc: string;
+    readonly v: RxEventValue<RxDocumentType>;
+}
+
+export declare class RxChangeEventUpdate<RxDocumentType> extends RxChangeEventBase {
+    readonly data: RxChangeEventUpdateData<RxDocumentType>;
+    toJSON(): RxChangeEventUpdateData<RxDocumentType>;
+}
+
+// REMOVE
+export class RxChangeEventRemoveData<RxDocumentType> extends RxChangeEventDataBase {
+    readonly op: 'REMOVE';
+    readonly col: string;
+    readonly doc: string;
+    readonly v: RxEventValue<RxDocumentType> | RemoveData;
+}
+
+export declare class RxChangeEventRemove<RxDocumentType> extends RxChangeEventBase {
+    readonly data: RxChangeEventRemoveData<RxDocumentType>;
+    toJSON(): RxChangeEventRemoveData<RxDocumentType>;
+}
+
+// COLLECTION
+export class RxChangeEventCollectionData extends RxChangeEventDataBase {
+    readonly op: 'RxDatabase.collection';
+}
+
+export declare class RxChangeEventCollection extends RxChangeEventBase {
+    readonly data: RxChangeEventCollectionData;
+    toJSON(): RxChangeEventCollectionData;
 }

@@ -19,7 +19,9 @@ import {
     PouchReplicationOptions
 } from './pouch';
 import {
-    RxChangeEvent
+    RxChangeEventInsert,
+    RxChangeEventUpdate,
+    RxChangeEventRemove
 } from './rx-change-event';
 import {
     RxDocument,
@@ -77,7 +79,11 @@ export declare class RxCollection<RxDocumentType> {
     options?: any;
     readonly pouch: PouchDB;
 
-    readonly $: Observable<RxChangeEvent>;
+    readonly $: Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
+    readonly insert$: Observable<RxChangeEventInsert<RxDocumentType>>;
+    readonly update$: Observable<RxChangeEventUpdate<RxDocumentType>>;
+    readonly remove$: Observable<RxChangeEventRemove<RxDocumentType>>;
+
     insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType>;
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;

@@ -273,6 +273,21 @@ export class RxCollection {
     get $() {
         return this._observable$;
     }
+    get insert$() {
+        return this.$.pipe(
+            filter(cE => cE.data.op === 'INSERT')
+        );
+    }
+    get update$() {
+        return this.$.pipe(
+            filter(cE => cE.data.op === 'UPDATE')
+        );
+    }
+    get remove$() {
+        return this.$.pipe(
+            filter(cE => cE.data.op === 'REMOVE')
+        );
+    }
     $emit(changeEvent) {
         return this.database.$emit(changeEvent);
     }

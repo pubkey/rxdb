@@ -2,8 +2,12 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added `RxCollection.insert$`, `RxCollection.update$`, `RxCollection.remove$` [read the docs](https://pubkey.github.io/rxdb/rx-collection.html#observe-)
+
 Other:
   - Added `dangerousRemoveCollectionInfo()` for migrations over rxdb-versions.
+  - Improved typings for `RxChangeEvent`
 
 ### 7.4.4 (April 18, 2018)
 

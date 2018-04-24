@@ -47,6 +47,12 @@ Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/ov
 
 ```js
 myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
+
+// you can also observe single event-types with insert$ update$ remove$
+myCollection.insert$.subscribe(changeEvent => console.dir(changeEvent));
+myCollection.update$.subscribe(changeEvent => console.dir(changeEvent));
+myCollection.remove$.subscribe(changeEvent => console.dir(changeEvent));
+
 ```
 
 ### insert()

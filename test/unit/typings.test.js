@@ -28,7 +28,7 @@ describe('typings.test.js', () => {
         const stderr = [];
         const promise = spawn('ts-node', [
             '--no-cache',
-            '--compilerOptions', '{"target":"es6", "strict": true}',
+            '--compilerOptions', '{"target":"es6", "strict": true, "strictNullChecks": true}',
             '--type-check',
             '-p', code
         ]);
@@ -219,6 +219,38 @@ describe('typings.test.js', () => {
             });
         });
     });
+    describe('change-event', () => {
+        it('.insert$ .update$ .remove$', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: RxDatabase = await create({
+                        name: 'mydb',
+                        adapter: 'memory',
+                        multiInstance: false,
+                        ignoreDuplicate: false
+                    });
+                    type docType = {
+                        firstName: string,
+                        lastName: string
+                    }
+                    const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                    const myCollection: RxCollection<docType> = await myDb.collection({
+                        name: 'humans',
+                        schema: mySchema,
+                        autoMigrate: false,
+                    });
+
+                    const names: string[] = [];
+                    const revs: string[] = [];
+                    const sub1 = myCollection.insert$.subscribe(cE => {
+                        names.push(cE.data.v.firstName);
+                        revs.push(cE.data.v._rev);
+                    });
+                })();
+            `;
+            await transpileCode(code);
+        });
+    });
     config.parallel('document', () => {
         it('should know the fields of the document', async () => {
             const code = codeBase + `
@@ -278,6 +310,31 @@ describe('typings.test.js', () => {
                         data: 'foo bar',
                         type: 'text/plain'
                     });
+                });
+            `;
+            await transpileCode(code);
+        });
+        it('.toJSON() should have _rev', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+
+                    type DocType = {
+                        age: number,
+                        firstName: string,
+                        lastName: string,
+                        passportId: string
+                    };
+
+                    const myCollection: RxCollection<DocType> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        autoMigrate: false,
+                    });
+
+                    const result = await myCollection.findOne().exec();
+                    if(!result) throw new Error('got no doc');
+                    const rev: string = result.toJSON()._rev;
                 });
             `;
             await transpileCode(code);

@@ -92,4 +92,64 @@ config.parallel('reactive-collection.test.js', () => {
             });
         });
     });
+    describe('.insert$', () => {
+        it('should only emit inserts', async () => {
+            const c = await humansCollection.create(0);
+
+            const emitted = [];
+            c.insert$.subscribe(cE => emitted.push(cE));
+
+            await c.insert(schemaObjects.human());
+            const doc = await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.human());
+            await doc.remove();
+
+            await c.insert(schemaObjects.human());
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 4);
+            emitted.forEach(cE => assert.equal(cE.data.op, 'INSERT'));
+            c.database.destroy();
+        });
+    });
+    describe('.update$', () => {
+        it('should only emit updates', async () => {
+            const c = await humansCollection.create(0);
+
+            const emitted = [];
+            c.update$.subscribe(cE => emitted.push(cE));
+
+            const doc1 = await c.insert(schemaObjects.human());
+            const doc2 = await c.insert(schemaObjects.human());
+            const doc3 = await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.human());
+            await doc3.remove();
+            doc1.firstName = 'foobar1';
+            await doc1.save();
+            doc2.firstName = 'foobar2';
+            await doc2.save();
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            emitted.forEach(cE => assert.equal(cE.data.op, 'UPDATE'));
+            c.database.destroy();
+        });
+    });
+    describe('.remove$', () => {
+        it('should only emit removes', async () => {
+            const c = await humansCollection.create(0);
+
+            const emitted = [];
+            c.remove$.subscribe(cE => emitted.push(cE));
+            await c.insert(schemaObjects.human());
+            const doc1 = await c.insert(schemaObjects.human());
+            const doc2 = await c.insert(schemaObjects.human());
+            await doc1.remove();
+            await c.insert(schemaObjects.human());
+            await doc2.remove();
+
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+            emitted.forEach(cE => assert.equal(cE.data.op, 'REMOVE'));
+            c.database.destroy();
+        });
+    });
 });
