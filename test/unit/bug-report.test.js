@@ -29,7 +29,8 @@ describe('bug-report.test.js', () => {
                     type: 'string'
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
+                    index: true
                 },
                 age: {
                     type: 'integer',
@@ -58,7 +59,7 @@ describe('bug-report.test.js', () => {
         await collection.insert({
             passportId: 'foobar',
             firstName: 'Bob',
-            lastName: 'Kelso',
+            //lastName: 'Kelso',
             age: 56
         });
 
