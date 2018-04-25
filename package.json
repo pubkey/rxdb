@@ -144,7 +144,7 @@
     "mocha": "5.1.1",
     "mocha.parallel": "0.15.5",
     "nconf": "0.10.0",
-    "node": "9.11.0",
+    "node": "10.0.0",
     "pouchdb": "6.4.3",
     "pouchdb-adapter-http": "6.4.3",
     "pouchdb-adapter-idb": "6.4.3",
