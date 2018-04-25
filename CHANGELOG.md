@@ -1,5 +1,13 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - Indexes are no longer required thx [@gvuyk](https://github.com/gvuyk) [#620](https://github.com/pubkey/rxdb/issues/620)
+
+Other:
+  - Fixed typings for `additionalProperties` in schemas
+
 ### 7.5.0 (April 24, 2018)
 
 Features:

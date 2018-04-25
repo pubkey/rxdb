@@ -615,6 +615,45 @@ config.parallel('rx-schema.test.js', () => {
 
             db.destroy();
         });
+        it('#620 indexes should not be required', async () => {
+            const mySchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string',
+                        index: true
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+            // create a database
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'test',
+                schema: mySchema
+            });
+            await collection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                age: 56
+            });
+            db.destroy();
+        });
     });
     describe('performance', () => {
         it('validate object often', async () => {
