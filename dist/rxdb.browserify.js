@@ -11691,25 +11691,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 var RxSchema = exports.RxSchema = function () {
     function RxSchema(jsonID) {
-        var _this = this;
-
         (0, _classCallCheck3['default'])(this, RxSchema);
 
         this.jsonID = jsonID;
         this.compoundIndexes = this.jsonID.compoundIndexes;
-
-        // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.indexes.forEach(function (indexAr) {
-            indexAr.filter(function (index) {
-                return !_this.jsonID.required.includes(index);
-            }).filter(function (index) {
-                return !index.includes('.');
-            }) // TODO make them sub-required
-            .forEach(function (index) {
-                return _this.jsonID.required.push(index);
-            });
-        });
 
         // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
@@ -11796,12 +11782,12 @@ var RxSchema = exports.RxSchema = function () {
     }, {
         key: 'swapPrimaryToId',
         value: function swapPrimaryToId(obj) {
-            var _this2 = this;
+            var _this = this;
 
             if (this.primaryPath === '_id') return obj;
             var ret = {};
             Object.entries(obj).forEach(function (entry) {
-                var newKey = entry[0] === _this2.primaryPath ? '_id' : entry[0];
+                var newKey = entry[0] === _this.primaryPath ? '_id' : entry[0];
                 ret[newKey] = entry[1];
             });
             return ret;
@@ -11860,7 +11846,7 @@ var RxSchema = exports.RxSchema = function () {
     }, {
         key: 'defaultValues',
         get: function get() {
-            var _this3 = this;
+            var _this2 = this;
 
             if (!this._defaultValues) {
                 this._defaultValues = {};
@@ -11874,7 +11860,7 @@ var RxSchema = exports.RxSchema = function () {
                         k = _ref8[0],
                         v = _ref8[1];
 
-                    return _this3._defaultValues[k] = v['default'];
+                    return _this2._defaultValues[k] = v['default'];
                 });
             }
             return this._defaultValues;
@@ -16137,13 +16123,7 @@ function clone(parent, circular, depth, prototype, includeNonEnumerable) {
     } else if (clone.__isDate(parent)) {
       child = new Date(parent.getTime());
     } else if (useBuffer && Buffer.isBuffer(parent)) {
-      if (Buffer.allocUnsafe) {
-        // Node.js >= 4.5.0
-        child = Buffer.allocUnsafe(parent.length);
-      } else {
-        // Older Node.js versions
-        child = new Buffer(parent.length);
-      }
+      child = new Buffer(parent.length);
       parent.copy(child);
       return child;
     } else if (_instanceof(parent, Error)) {

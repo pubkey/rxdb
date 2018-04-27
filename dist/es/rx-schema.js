@@ -8,25 +8,11 @@ import { runPluginHooks } from './hooks';
 
 export var RxSchema = function () {
     function RxSchema(jsonID) {
-        var _this = this;
-
         _classCallCheck(this, RxSchema);
 
         this.jsonID = jsonID;
         this.compoundIndexes = this.jsonID.compoundIndexes;
-
-        // make indexes required
         this.indexes = getIndexes(this.jsonID);
-        this.indexes.forEach(function (indexAr) {
-            indexAr.filter(function (index) {
-                return !_this.jsonID.required.includes(index);
-            }).filter(function (index) {
-                return !index.includes('.');
-            }) // TODO make them sub-required
-            .forEach(function (index) {
-                return _this.jsonID.required.push(index);
-            });
-        });
 
         // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
@@ -99,12 +85,12 @@ export var RxSchema = function () {
     };
 
     RxSchema.prototype.swapPrimaryToId = function swapPrimaryToId(obj) {
-        var _this2 = this;
+        var _this = this;
 
         if (this.primaryPath === '_id') return obj;
         var ret = {};
         Object.entries(obj).forEach(function (entry) {
-            var newKey = entry[0] === _this2.primaryPath ? '_id' : entry[0];
+            var newKey = entry[0] === _this.primaryPath ? '_id' : entry[0];
             ret[newKey] = entry[1];
         });
         return ret;
@@ -163,7 +149,7 @@ export var RxSchema = function () {
     }, {
         key: 'defaultValues',
         get: function get() {
-            var _this3 = this;
+            var _this2 = this;
 
             if (!this._defaultValues) {
                 this._defaultValues = {};
@@ -173,7 +159,7 @@ export var RxSchema = function () {
                 }).forEach(function (_ref4) {
                     var k = _ref4[0],
                         v = _ref4[1];
-                    return _this3._defaultValues[k] = v['default'];
+                    return _this2._defaultValues[k] = v['default'];
                 });
             }
             return this._defaultValues;
