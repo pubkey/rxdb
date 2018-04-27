@@ -391,10 +391,10 @@ config.parallel('rx-query.test.js', () => {
         it('querying fast should still return the same RxDocument', async () => {
             if (!config.platform.isNode()) return;
             // use a 'slow' adapter because memory might be to fast
-            RxDB.plugin(require('pouchdb-adapter-node-websql'));
+            const leveldown = require('leveldown');
             const db = await RxDB.create({
                 name: '../test_tmp/' + util.randomCouchString(10),
-                adapter: 'websql'
+                adapter: leveldown
             });
             const c = await db.collection({
                 name: 'humans',

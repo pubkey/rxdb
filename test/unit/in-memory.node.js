@@ -6,14 +6,13 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
-import PouchAdapterWebsql from 'pouchdb-adapter-node-websql';
-
+const leveldown = require('leveldown');
 
 import * as util from '../../dist/lib/util';
 
 
 const RxDB = require('../../');
-RxDB.plugin(PouchAdapterWebsql);
+RxDB.plugin(require('pouchdb-adapter-leveldb'));
 
 const schema = {
     title: 'human schema',
@@ -40,7 +39,7 @@ describe('in-memory.node.js', () => {
     it('should throw when used without memory-adapter', async () => {
         const db = await RxDB.create({
             name: '../test_tmp/' + util.randomCouchString(10),
-            adapter: 'websql'
+            adapter: leveldown
         });
         const col = await db.collection({
             name: 'humans',
@@ -59,7 +58,7 @@ describe('in-memory.node.js', () => {
         RxDB.plugin(PouchAdapterMemory);
         const db = await RxDB.create({
             name: '../test_tmp/' + util.randomCouchString(10),
-            adapter: 'websql'
+            adapter: leveldown
         });
         const col = await db.collection({
             name: 'humans',

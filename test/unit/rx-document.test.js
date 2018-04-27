@@ -442,10 +442,10 @@ config.parallel('rx-document.test.js', () => {
             it('should work when inserting on a slow storage', async () => {
                 if (!config.platform.isNode()) return;
                 // use a 'slow' adapter because memory might be to fast
-                RxDB.plugin(require('pouchdb-adapter-node-websql'));
+                const leveldown = require('leveldown');
                 const db = await RxDB.create({
                     name: '../test_tmp/' + util.randomCouchString(10),
-                    adapter: 'websql'
+                    adapter: leveldown
                 });
                 const c = await db.collection({
                     name: 'humans',
@@ -470,12 +470,12 @@ config.parallel('rx-document.test.js', () => {
             it('should be persistent when re-creating the database', async () => {
                 if (!config.platform.isNode()) return;
                 // use a 'slow' adapter because memory might be to fast
-                RxDB.plugin(require('pouchdb-adapter-node-websql'));
+                const leveldown = require('leveldown');
 
                 const dbName = '../test_tmp/' + util.randomCouchString(10);
                 const db = await RxDB.create({
                     name: dbName,
-                    adapter: 'websql'
+                    adapter: leveldown
                 });
                 const c = await db.collection({
                     name: 'humans',
@@ -492,7 +492,7 @@ config.parallel('rx-document.test.js', () => {
                 // same again
                 const db2 = await RxDB.create({
                     name: dbName,
-                    adapter: 'websql'
+                    adapter: leveldown
                 });
                 const c2 = await db2.collection({
                     name: 'humans',

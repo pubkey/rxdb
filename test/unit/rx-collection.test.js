@@ -1279,10 +1279,10 @@ config.parallel('rx-collection.test.js', () => {
                 it('should work when inserting on a slow storage', async () => {
                     if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
-                    RxDB.plugin(require('pouchdb-adapter-node-websql'));
+                    const leveldown = require('leveldown');
                     const db = await RxDB.create({
                         name: '../test_tmp/' + util.randomCouchString(10),
-                        adapter: 'websql'
+                        adapter: leveldown
                     });
                     const c = await db.collection({
                         name: 'humans',
