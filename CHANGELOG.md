@@ -7,6 +7,10 @@ Bugfixes:
 
 Other:
   - Fixed typings for `additionalProperties` in schemas
+  - Added performance-tests
+
+Typings:
+  - Added optional type for ORM-Methods
 
 ### 7.5.0 (April 24, 2018)
 

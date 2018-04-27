@@ -340,6 +340,44 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
+    config.parallel('orm', () => {
+        it('should correctly recognize orm-methods', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+
+                    type DocType = {
+                        passportId: string;
+                        age: number;
+                        oneOptional?: string;
+                    };
+
+                    type OrmMethods = {
+                        foobar(): string;
+                    };
+
+                    const myCollection: RxCollection<DocType, OrmMethods> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        methods: {
+                            foobar(){
+                                return 'foobar';
+                            }
+                        }
+                    });
+
+                    const doc = await myCollection.insert({
+                        passportId: 'asdf',
+                        age: 10
+                    });
+
+                    const x: string = doc.foobar();
+
+                });
+            `;
+            await transpileCode(code);
+        });
+    });
     describe('query', () => {
         it('should know the where-fields', async () => {
             const code = codeBase + `

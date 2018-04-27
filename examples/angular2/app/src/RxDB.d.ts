@@ -16,14 +16,16 @@ declare interface RxHeroDocumentType {
         name?: string,
         damage?: string
     }>;
-
-    // ORM methods
-    hpPercent(): number;
 }
 
-export type RxHeroDocument = RxDocument<RxHeroDocumentType>;
+// ORM methods
+type RxHeroOrmMethods = {
+    hpPercent(): number;
+};
 
-declare class RxHeroCollection extends RxCollection<RxHeroDocumentType> {
+export type RxHeroDocument = RxDocument<RxHeroDocumentType, RxHeroOrmMethods>;
+
+declare class RxHeroCollection extends RxCollection<RxHeroDocumentType, RxHeroOrmMethods> {
     pouch: any;
 }
 

@@ -10,8 +10,8 @@ export type RxAttachmentCreator = {
     type: string
 };
 
-export declare class RxAttachment<RxDocumentType> {
-    readonly doc: RxDocument<RxDocumentType>;
+export declare class RxAttachment<RxDocumentType, OrmMethods = {}> {
+    readonly doc: RxDocument<RxDocumentType, OrmMethods>;
     readonly id: string;
     readonly type: string;
     readonly length: number;

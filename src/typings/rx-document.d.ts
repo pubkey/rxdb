@@ -12,12 +12,12 @@ import {
     RxAttachmentCreator
 } from './rx-attachment';
 
-export type RxDocument<RxDocumentType> = RxDocumentBase<RxDocumentType> & RxDocumentType;
+export type RxDocument<RxDocumentType, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
 export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 
-export declare class RxDocumentBase<RxDocumentType> {
-    readonly collection: RxCollection<RxDocumentType>;
+export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
+    readonly collection: RxCollection<RxDocumentType, OrmMethods>;
     readonly deleted: boolean;
 
     readonly $: Observable<any>;
@@ -29,17 +29,17 @@ export declare class RxDocumentBase<RxDocumentType> {
     readonly primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
-    set(objPath: string, value: any): RxDocument<RxDocumentType>;
+    set(objPath: string, value: any): RxDocument<RxDocumentType, OrmMethods>;
     save(): Promise<boolean>;
     remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument<RxDocumentType> | any>;
+    populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any>;
     update(updateObj: any): Promise<any>;
-    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType>>;
+    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType, OrmMethods>>;
 
-    putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType>>;
-    getAttachment(id: string): Promise<RxAttachment<RxDocumentType>>;
-    allAttachments(): Promise<RxAttachment<RxDocumentType>[]>;
-    readonly allAttachments$: Observable<RxAttachment<RxDocumentType>[]>;
+    putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
+    getAttachment(id: string): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
+    allAttachments(): Promise<RxAttachment<RxDocumentType, OrmMethods>[]>;
+    readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
 
     toJSON(): RxDocumentTypeWithRev<RxDocumentType>;
     destroy(): void;

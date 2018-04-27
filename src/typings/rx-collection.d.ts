@@ -72,7 +72,7 @@ export interface SyncOptions {
     query?: RxQuery<any, any>
 }
 
-export declare class RxCollection<RxDocumentType> {
+export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     readonly database: RxDatabase;
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
@@ -84,25 +84,25 @@ export declare class RxCollection<RxDocumentType> {
     readonly update$: Observable<RxChangeEventUpdate<RxDocumentType>>;
     readonly remove$: Observable<RxChangeEventRemove<RxDocumentType>>;
 
-    insert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
-    newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType>;
-    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
-    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
-    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType>[]>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType> | null>;
+    insert(json: RxDocumentType): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType, OrmMethods>;
+    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
+    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
 
     dump(decrytped: boolean): Promise<any>;
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
-    preSave(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
-    preRemove(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
 
-    postInsert(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
-    postSave(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
-    postRemove(fun: RxCollectionHookCallback<RxDocumentType>, parallel: boolean): void;
-    postCreate(fun: RxCollectionHookCallback<RxDocumentType>): void;
+    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postCreate(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>): void;
 
 
     // migration
@@ -124,14 +124,14 @@ export declare class RxCollection<RxDocumentType> {
     /**
      * creates an in-memory replicated version of this collection
      */
-    inMemory(): Promise<RxCollection<RxDocumentType>>;
+    inMemory(): Promise<RxCollection<RxDocumentType, OrmMethods>>;
 
-    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType>>>;
-    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType>>>;
-    getLocal(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType>>>;
+    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
+    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
+    getLocal(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
 
     destroy(): Promise<boolean>;
     remove(): Promise<any>;
 }
 
-export type RxCollectionHookCallback<RxDocumentType> = (doc: RxDocument<RxDocumentType>) => void;
+export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (doc: RxDocument<RxDocumentType, OrmMethods>) => void;
