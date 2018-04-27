@@ -1,3 +1,5 @@
+import AsyncTestUtil from 'async-test-util';
+
 export const human = {
     title: 'human schema',
     version: 0,
@@ -620,3 +622,52 @@ export const refHumanNested = {
         }
     }
 };
+
+
+/**
+ * an average schema used in performance-tests
+ */
+export const averageSchema = () => ({
+    title: 'averageSchema_' + AsyncTestUtil.randomString(5), // randomisation used so hash differs
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        var1: {
+            type: 'string',
+            index: true
+        },
+        var2: {
+            type: 'number',
+        },
+        deep: {
+            type: 'object',
+            properties: {
+                deep1: {
+                    type: 'string'
+                },
+                deep2: {
+                    type: 'string'
+                }
+            }
+        },
+        list: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    deep1: {
+                        type: 'string'
+                    },
+                    deep2: {
+                        type: 'string'
+                    }
+                }
+            }
+        }
+
+    }
+});

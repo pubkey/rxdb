@@ -104,3 +104,19 @@ export function refHumanNested(bestFriend) {
         }
     };
 }
+
+export function averageSchema() {
+    return {
+        id: randomToken(12),
+        var1: randomToken(12),
+        var2: randomInt(100, 50000),
+        deep: {
+            deep1: randomToken(5),
+            deep2: randomToken(8)
+        },
+        list: new Array(5).fill(0).map(() => ({
+            deep1: randomToken(5),
+            deep2: randomToken(8)
+        }))
+    };
+}

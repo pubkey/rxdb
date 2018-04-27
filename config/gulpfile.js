@@ -43,3 +43,13 @@ gulp.task('test:typings', function() {
             process.exit();
         });
 });
+
+gulp.task('test:performance', function() {
+    mochaSettings.timeout = 25 * 1000;
+    return gulp
+        .src(tests.performance)
+        .pipe(mocha(mochaSettings))
+        .once('end', function() {
+            process.exit();
+        });
+});

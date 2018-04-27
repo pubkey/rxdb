@@ -9,7 +9,6 @@ const nodeAndBrowser = [
     '../test_tmp/unit/key-compression.test.js',
     '../test_tmp/unit/socket.test.js',
     '../test_tmp/unit/rx-database.test.js',
-    '../test_tmp/unit/rx-change-event.test.js', // TODO move this down under replication
     '../test_tmp/unit/rx-collection.test.js',
     '../test_tmp/unit/rx-document.test.js',
     '../test_tmp/unit/temporary-document.test.js',
@@ -28,6 +27,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/data-migration.test.js',
     '../test_tmp/unit/leader-election.test.js',
     '../test_tmp/unit/replication.test.js',
+    '../test_tmp/unit/rx-change-event.test.js',
     '../test_tmp/unit/encryption.test.js',
     '../test_tmp/unit/import-export.test.js',
     '../test_tmp/unit/cross-instance.test.js',
@@ -50,8 +50,14 @@ const nodeOnly = [
 const typings = [
     '../test_tmp/unit/typings.test.js'
 ];
+
+const performance = [
+    '../test_tmp/unit/performance.test.js'
+];
+
 module.exports = {
     browser: nodeAndBrowser.concat(last),
     all: nodeAndBrowser.concat(nodeOnly).concat(last),
-    typings
+    typings,
+    performance
 };
