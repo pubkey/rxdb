@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 7.5.1 (May 3, 2018)
 
 Bugfixes:
   - Indexes are no longer required thx [@gvuyk](https://github.com/gvuyk) [#620](https://github.com/pubkey/rxdb/issues/620)

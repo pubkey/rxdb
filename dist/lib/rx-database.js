@@ -708,9 +708,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 _context5.next = 27;
                                 return pouch.find({
                                     selector: {
-                                        language: {
-                                            $ne: 'query'
-                                        }
+                                        _id: {}
                                     },
                                     limit: 1
                                 });

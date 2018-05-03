@@ -9431,9 +9431,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 _context5.next = 27;
                                 return pouch.find({
                                     selector: {
-                                        language: {
-                                            $ne: 'query'
-                                        }
+                                        _id: {}
                                     },
                                     limit: 1
                                 });
@@ -11275,11 +11273,6 @@ var RxQuery = exports.RxQuery = function () {
                 json.skip = options.skip;
             }
 
-            // add not-query to _id to prevend the grabbing of '_design..' docs
-            // this is not the best solution because it prevents the usage of a 'language'-field
-            if (!json.selector.language) json.selector.language = {};
-            json.selector.language.$ne = 'query';
-
             // strip empty selectors
             Object.entries(json.selector).filter(function (_ref5) {
                 var _ref6 = (0, _slicedToArray3['default'])(_ref5, 2),
@@ -11313,6 +11306,13 @@ var RxQuery = exports.RxQuery = function () {
                 // selector
                 json.selector._id = json.selector[primPath];
                 delete json.selector[primPath];
+            }
+
+            // if no selector is used, pouchdb has a bug, so we add a default-selector
+            if (Object.keys(json.selector).length === 0) {
+                json.selector = {
+                    _id: {}
+                };
             }
 
             this._toJSON = json;
