@@ -45,7 +45,7 @@ gulp.task('test:typings', function() {
 });
 
 gulp.task('test:performance', function() {
-    mochaSettings.timeout = 25 * 1000;
+    mochaSettings.timeout = 40 * 1000;
     return gulp
         .src(tests.performance)
         .pipe(mocha(mochaSettings))
