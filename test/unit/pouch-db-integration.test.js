@@ -37,7 +37,6 @@ config.parallel('pouch-db-integration.test.js', () => {
             db.destroy();
         });
     });
-
     describe('pouchdb-adapter-memory', () => {
         it('should not create a db without adding the adapter', async () => {
             await AsyncTestUtil.assertThrows(
@@ -252,7 +251,6 @@ config.parallel('pouch-db-integration.test.js', () => {
             });
         });
     });
-
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async () => {
             const name = util.randomCouchString(10);
@@ -283,6 +281,43 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             pouch1.destroy();
             pouch2.destroy();
+        });
+        /**
+         * @link https://github.com/pouchdb/pouchdb/issues/6733
+         */
+        it('pouchdb.find() should not return design-docs', async () => {
+            const pouch = new RxDB.PouchDB(
+                util.randomCouchString(10), {
+                    adapter: 'memory'
+                }, {
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
+            );
+
+            await pouch.createIndex({
+                index: {
+                    fields: ['foo']
+                }
+            });
+
+            // add one doc
+            await pouch.put({
+                _id: 'asdf',
+                foo: 'bar'
+            });
+
+            // get docs
+            const docs = await pouch.find({
+                selector: {
+                    foo: { $gt: null }
+                },
+                sort: ['foo']
+            });
+
+            assert.equal(docs.docs.length, 1);
+
+            pouch.destroy();
         });
     });
 });

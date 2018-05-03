@@ -279,11 +279,6 @@ export class RxQuery {
             json.skip = options.skip;
         }
 
-        // add not-query to _id to prevend the grabbing of '_design..' docs
-        // this is not the best solution because it prevents the usage of a 'language'-field
-        if (!json.selector.language) json.selector.language = {};
-        json.selector.language.$ne = 'query';
-
         // strip empty selectors
         Object
             .entries(json.selector)
@@ -301,6 +296,14 @@ export class RxQuery {
             // selector
             json.selector._id = json.selector[primPath];
             delete json.selector[primPath];
+        }
+
+        // if no selector is used, pouchdb has a bug, so we add a default-selector
+        if (Object.keys(json.selector).length === 0) {
+            json.selector = {
+                _id: {
+                }
+            };
         }
 
         this._toJSON = json;

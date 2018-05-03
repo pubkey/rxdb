@@ -8,6 +8,7 @@ Bugfixes:
 Other:
   - Fixed typings for `additionalProperties` in schemas
   - Added performance-tests
+  - Removed workarround for [pouchdb#6733](https://github.com/pouchdb/pouchdb/issues/6733)
 
 Typings:
   - Added optional type for ORM-Methods

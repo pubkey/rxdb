@@ -65,9 +65,6 @@ config.parallel('rx-query.test.js', () => {
                     age: {
                         '$gt': 18,
                         '$lt': 67
-                    },
-                    language: {
-                        '$ne': 'query'
                     }
                 },
                 sort: [{
