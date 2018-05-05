@@ -141,7 +141,7 @@
     "karma-mocha": "1.3.0",
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
-    "leveldown": "3.0.1",
+    "leveldown": "3.0.2",
     "memdown": "2.0.0",
     "mocha": "5.1.1",
     "mocha.parallel": "0.15.5",
