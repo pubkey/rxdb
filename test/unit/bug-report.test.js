@@ -9,13 +9,11 @@
  * - 'npm run test:browsers' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import RxDB from '../../dist/lib/index';
-import * as util from '../../dist/lib/util';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('query cache should be invalidated after changes caused by replication', async () => {
         // create a schema
         const mySchema = {
             version: 0,
@@ -39,68 +37,67 @@ describe('bug-report.test.js', () => {
             }
         };
 
-        // generate a random database-name
-        const name = util.randomCouchString(10);
-
         // create a database
-        const db = await RxDB.create({
-            name,
-            adapter: 'memory',
-            ignoreDuplicate: true
+        const db1 = await RxDB.create({
+            name: 'db1',
+            adapter: 'memory'
         });
         // create a collection
-        const collection = await db.collection({
+        const collection1 = await db1.collection({
             name: 'crawlstate',
             schema: mySchema
         });
 
         // insert a document
-        await collection.insert({
+        await collection1.insert({
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
             age: 56
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await RxDB.create({
-            name,
-            adapter: 'memory',
-            ignoreDuplicate: true
+        // createa another database
+        const db2 = await RxDB.create({
+            name: 'db2',
+            adapter: 'memory'
         });
         // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
+        const collection2 = await db2.collection({
             name: 'crawlstate',
             schema: mySchema
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // query for all documents on db2-collection2 (query will be cached)
+        let documents = await collection2.find({}).exec();
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.equal(myDocument.age, 56);
+        // Replicate from db1-collection1 to db2-collection2
+        const pullstate = collection2.sync({
+            remote: collection1.pouch,
+            direction: {pull: true, push: false},
+            options: {live: false}
+        });
+        
+        // Wait for replication to complete
+        await new Promise((resolve, reject) => {
+            pullstate.complete$.subscribe(completed => {
+                if(completed){
+                    if(completed.ok === true)
+                        resolve();
+                    else
+                        reject(completed.errors);
+                }
+            });
+            pullstate.error$.subscribe(error => {reject(error);});
+        });
 
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
+        //collection2._queryCache.destroy();
+        documents = await collection2.find({}).exec();
 
+        assert.equal(documents.length, 1);
 
         // clean up afterwards
-        sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        db1.destroy();
+        db2.destroy();
     });
 });
