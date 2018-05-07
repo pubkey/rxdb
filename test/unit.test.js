@@ -55,9 +55,14 @@ const performance = [
     '../test_tmp/unit/performance.test.js'
 ];
 
+const couchdb = [
+    '../test_tmp/unit/couch-db-integration.test.js'
+];
+
 module.exports = {
     browser: nodeAndBrowser.concat(last),
     all: nodeAndBrowser.concat(nodeOnly).concat(last),
     typings,
-    performance
+    performance,
+    couchdb
 };

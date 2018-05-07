@@ -53,3 +53,14 @@ gulp.task('test:performance', function() {
             process.exit();
         });
 });
+
+
+gulp.task('test:couchdb', function() {
+    mochaSettings.timeout = 40 * 1000;
+    return gulp
+        .src(tests.couchdb)
+        .pipe(mocha(mochaSettings))
+        .once('end', function() {
+            process.exit();
+        });
+});
