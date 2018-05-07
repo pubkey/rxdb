@@ -63,19 +63,19 @@ RxDB is made so that you can use **exactly the same code** at
 ![Firefox](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png)
 ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
 ![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
-![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) browsers
-- ![NodeJS](docs-src/files/icons/nodejs.png) NodeJS
-- ![electron](docs-src/files/icons/electron.png) Electron
-- ![react-native](docs-src/files/icons/react-native.png) React-Native
-- ![cordova](docs-src/files/icons/cordova.png) Cordova/Phonegap
-- ![nativescript](docs-src/files/icons/nativescript.png) Nativescript
+![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) Browsers
+- ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://nodejs.org/en/)
+- ![electron](docs-src/files/icons/electron.png) [Electron](https://electronjs.org/)
+- ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://facebook.github.io/react-native/)
+- ![cordova](docs-src/files/icons/cordova.png) [Cordova/Phonegap](https://cordova.apache.org/)
+- ![nativescript](docs-src/files/icons/nativescript.png) [Nativescript](https://www.nativescript.org/)
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
-- ![react](docs-src/files/icons/react.png) react
-- ![angular](docs-src/files/icons/angular.png) angular/ng2
-- ![ionic](docs-src/files/icons/ionic.png) ionic2
-- ![vuejs](docs-src/files/icons/vuejs.png) vuejs
+- ![react](docs-src/files/icons/react.png) [React](https://reactjs.org/)
+- ![angular](docs-src/files/icons/angular.png) [Angular/ng2](https://angular.io/)
+- ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://ionicframework.com/)
+- ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://vuejs.org/)
 
 
 ## Quickstart
@@ -421,3 +421,7 @@ Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or explori
 
 # Thank you
 A big **Thank you** to every [supporter](https://github.com/pubkey/rxdb/blob/master/SUPPORTER.md) and every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
+
+## Licnese 
+
+[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt)
