@@ -1,5 +1,12 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+
+Other:
+  - Added integration tests for couchdb
+
+
 ### 7.5.1 (May 3, 2018)
 
 Bugfixes:
