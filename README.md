@@ -422,6 +422,6 @@ Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or explori
 # Thank you
 A big **Thank you** to every [supporter](https://github.com/pubkey/rxdb/blob/master/SUPPORTER.md) and every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
 
-## Licnese 
+## License
 
 [Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt)
