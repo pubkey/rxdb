@@ -2,6 +2,8 @@
 
 ### X.X.X (comming soon)
 
+Bugfixes:
+  - Query cache is not being invalidated by replication [#630](https://github.com/pubkey/rxdb/issues/630)
 
 Other:
   - Added integration tests for couchdb

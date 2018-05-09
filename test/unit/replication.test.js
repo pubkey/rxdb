@@ -12,7 +12,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import * as RxDB from '../../dist/lib/index';
+import RxDB from '../../dist/lib/index';
 
 import {
     fromEvent
@@ -34,7 +34,6 @@ if (config.platform.isNode()) {
 
 describe('replication.test.js', () => {
     if (!config.platform.isNode()) return;
-
     describe('spawnServer.js', () => {
         it('spawn and reach a server', async () => {
             let path = await SpawnServer.spawn();
@@ -373,7 +372,6 @@ describe('replication.test.js', () => {
             });
         });
     });
-
     config.parallel('events', () => {
         describe('positive', () => {
             it('collection: should get an event when a doc syncs', async () => {
@@ -488,5 +486,93 @@ describe('replication.test.js', () => {
             });
         });
         describe('negative', () => {});
+    });
+    describe('ISSUES', () => {
+        it('#630 Query cache is not being invalidated by replication', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            // create a database
+            const db1 = await RxDB.create({
+                name: util.randomCouchString(12),
+                adapter: 'memory'
+            });
+            // create a collection
+            const collection1 = await db1.collection({
+                name: 'crawlstate',
+                schema: mySchema
+            });
+
+            // insert a document
+            await collection1.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+
+            // create another database
+            const db2 = await RxDB.create({
+                name: util.randomCouchString(12),
+                adapter: 'memory'
+            });
+            // create a collection
+            const collection2 = await db2.collection({
+                name: 'crawlstate',
+                schema: mySchema
+            });
+
+            // query for all documents on db2-collection2 (query will be cached)
+            let documents = await collection2.find({}).exec();
+
+            // Replicate from db1-collection1 to db2-collection2
+            const pullstate = collection2.sync({
+                remote: collection1.pouch,
+                direction: {
+                    pull: true,
+                    push: false
+                },
+                options: {
+                    live: false
+                }
+            });
+
+            // Wait for replication to complete
+            await pullstate.complete$
+                .pipe(
+                    filter(completed => completed.ok === true),
+                    first()
+                ).toPromise();
+
+            // query for all documents on db2-collection2 again (result is read from cache which doesnt contain replicated doc)
+            // collection2._queryCache.destroy();
+            documents = await collection2.find({}).exec();
+
+            assert.equal(documents.length, 1);
+
+            // clean up afterwards
+            db1.destroy();
+            db2.destroy();
+        });
     });
 });

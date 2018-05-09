@@ -142,7 +142,9 @@ export function watchForChanges() {
             map(c => c.doc),
             filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev)),
             filter(doc => sendChanges[doc._rev] = 'YES'),
-            delay(10),
+            // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
+            delay(0),
+            delay(0),
             map(doc => {
                 let ret = null;
                 if (sendChanges[doc._rev] === 'YES') ret = doc;
@@ -185,7 +187,7 @@ export function sync({
 }) {
     options = util.clone(options);
     // if remote is RxCollection, get internal pouchdb
-    if (RxCollection.isInstanceOf(remote)){
+    if (RxCollection.isInstanceOf(remote)) {
         remote.watchForChanges();
         remote = remote.pouch;
     }

@@ -109,7 +109,6 @@ export class RxQuery {
         return ret;
     }
 
-
     /**
      * ensures that the results of this query is equal to the results which a query over the database would give
      * @return {Promise<boolean>} true if results have changed
@@ -117,7 +116,6 @@ export class RxQuery {
     async __ensureEqual() {
         let ret = false;
         if (this._isResultsInSync()) return false; // nothing happend
-
 
         let mustReExec = false; // if this becomes true, a whole execution over the database is made
         if (this._latestChangeEvent === -1) mustReExec = true;
