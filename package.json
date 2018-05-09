@@ -117,7 +117,7 @@
     "child-process-promise": "2.2.1",
     "concurrently": "3.5.1",
     "convert-hrtime": "2.0.0",
-    "cross-env": "5.1.4",
+    "cross-env": "5.1.5",
     "delete": "1.1.0",
     "dependency-check": "3.1.0",
     "detect-browser": "2.4.0",
