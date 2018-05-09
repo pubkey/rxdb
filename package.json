@@ -113,7 +113,7 @@
     "babel-preset-es2017": "6.24.1",
     "babel-preset-latest": "6.24.1",
     "brfs": "1.6.1",
-    "browserify": "16.2.0",
+    "browserify": "16.2.1",
     "child-process-promise": "2.2.1",
     "concurrently": "3.5.1",
     "convert-hrtime": "2.0.0",
