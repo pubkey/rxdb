@@ -220,7 +220,6 @@ var RxQuery = exports.RxQuery = function () {
                             case 3:
                                 // nothing happend
 
-
                                 mustReExec = false; // if this becomes true, a whole execution over the database is made
 
                                 if (this._latestChangeEvent === -1) mustReExec = true;

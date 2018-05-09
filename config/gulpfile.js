@@ -45,7 +45,7 @@ gulp.task('test:typings', function() {
 });
 
 gulp.task('test:performance', function() {
-    mochaSettings.timeout = 40 * 1000;
+    mochaSettings.timeout = 90 * 1000; // this is so high because travis has different machines
     return gulp
         .src(tests.performance)
         .pipe(mocha(mochaSettings))

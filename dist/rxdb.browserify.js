@@ -5807,7 +5807,9 @@ function watchForChanges() {
         }).includes(doc._rev);
     }), (0, _filter.filter)(function (doc) {
         return sendChanges[doc._rev] = 'YES';
-    }), (0, _delay.delay)(10), (0, _map.map)(function (doc) {
+    }),
+    // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
+    (0, _delay.delay)(0), (0, _delay.delay)(0), (0, _map.map)(function (doc) {
         var ret = null;
         if (sendChanges[doc._rev] === 'YES') ret = doc;
         delete sendChanges[doc._rev];
@@ -11071,7 +11073,6 @@ var RxQuery = exports.RxQuery = function () {
 
                             case 3:
                                 // nothing happend
-
 
                                 mustReExec = false; // if this becomes true, a whole execution over the database is made
 

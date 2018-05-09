@@ -157,7 +157,9 @@ export function watchForChanges() {
         }).includes(doc._rev);
     }), filter(function (doc) {
         return sendChanges[doc._rev] = 'YES';
-    }), delay(10), map(function (doc) {
+    }),
+    // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
+    delay(0), delay(0), map(function (doc) {
         var ret = null;
         if (sendChanges[doc._rev] === 'YES') ret = doc;
         delete sendChanges[doc._rev];
