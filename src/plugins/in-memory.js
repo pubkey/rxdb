@@ -6,7 +6,7 @@
 
 import {
     Subject
-} from 'rxjs/Subject';
+} from 'rxjs';
 
 import RxCollection from '../rx-collection';
 import * as util from '../util';

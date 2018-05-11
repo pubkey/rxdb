@@ -10,14 +10,10 @@ import AsyncTestUtil from 'async-test-util';
 import RxDB from '../../dist/lib/';
 
 import {
-    filter
-} from 'rxjs/operators/filter';
-import {
-    map
-} from 'rxjs/operators/map';
-import {
+    filter,
+    map,
     tap
-} from 'rxjs/operators/tap';
+} from 'rxjs/operators';
 
 config.parallel('reactive-query.test.js', () => {
     describe('positive', () => {

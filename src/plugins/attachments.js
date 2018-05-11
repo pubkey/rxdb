@@ -1,6 +1,6 @@
 import {
     map
-} from 'rxjs/operators/map';
+} from 'rxjs/operators';
 
 
 import RxChangeEvent from './../rx-change-event';

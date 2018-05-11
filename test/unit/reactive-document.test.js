@@ -13,7 +13,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import RxDB from '../../dist/lib';
 import {
     first
-} from 'rxjs/operators/first';
+} from 'rxjs/operators';
 
 config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {

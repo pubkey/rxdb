@@ -11,13 +11,11 @@ import {
 
 import {
     BehaviorSubject
-} from 'rxjs/BehaviorSubject';
+} from 'rxjs';
 import {
-    distinctUntilChanged
-} from 'rxjs/operators/distinctUntilChanged';
-import {
+    distinctUntilChanged,
     map
-} from 'rxjs/operators/map';
+} from 'rxjs/operators';
 
 export class RxDocument {
     constructor(collection, jsonData) {

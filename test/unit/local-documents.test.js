@@ -8,12 +8,9 @@ import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 import config from './config';
 import {
-    filter
-} from 'rxjs/operators/filter';
-import {
+    filter,
     first
-} from 'rxjs/operators/first';
-
+} from 'rxjs/operators';
 
 config.parallel('local-documents.test.js', () => {
     describe('.insertLocal()', () => {

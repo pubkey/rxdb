@@ -1,7 +1,7 @@
 import IdleQueue from 'custom-idle-queue';
 import {
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 import * as util from './util';
 import RxDocument from './rx-document';

@@ -1,12 +1,10 @@
 import {
     fromEvent
-} from 'rxjs/observable/fromEvent';
+} from 'rxjs';
 import {
-    map
-} from 'rxjs/operators/map';
-import {
+    map,
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS

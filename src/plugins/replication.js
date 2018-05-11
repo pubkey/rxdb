@@ -5,23 +5,15 @@
 
 import PouchReplicationPlugin from 'pouchdb-replication';
 import {
-    Subject
-} from 'rxjs/Subject';
-import {
-    BehaviorSubject
-} from 'rxjs/BehaviorSubject';
-import {
+    BehaviorSubject,
+    Subject,
     fromEvent
-} from 'rxjs/observable/fromEvent';
+} from 'rxjs';
 import {
-    filter
-} from 'rxjs/operators/filter';
-import {
-    map
-} from 'rxjs/operators/map';
-import {
+    filter,
+    map,
     delay
-} from 'rxjs/operators/delay';
+} from 'rxjs/operators';
 
 import * as util from '../util';
 import Core from '../core';

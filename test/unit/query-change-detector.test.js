@@ -6,18 +6,14 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import * as RxDB from '../../dist/lib/index';
+import RxDB from '../../dist/lib/index';
 
 import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 import {
-    first
-} from 'rxjs/operators/first';
-import {
-    filter
-} from 'rxjs/operators/filter';
-import {
+    first,
+    filter,
     map
-} from 'rxjs/operators/map';
+} from 'rxjs/operators';
 
 let SpawnServer;
 if (config.platform.isNode()) {

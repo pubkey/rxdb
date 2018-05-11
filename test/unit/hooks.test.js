@@ -10,7 +10,7 @@ import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import {
     first
-} from 'rxjs/operators/first';
+} from 'rxjs/operators';
 
 config.parallel('hooks.test.js', () => {
     describe('get/set', () => {

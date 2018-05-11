@@ -64,7 +64,7 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^5.5.8"
+    "rxjs": "^6.1.0"
   },
   "dependencies": {
     "@types/core-js": "0.9.46",
@@ -94,7 +94,7 @@
     "assert": "1.4.1",
     "async-test-util": "1.5.1",
     "babel-cli": "6.26.0",
-    "babel-core": "6.26.0",
+    "babel-core": "6.26.3",
     "babel-eslint": "7.2.3",
     "babel-loader": "7.1.4",
     "babel-plugin-transform-async-to-generator": "6.24.1",
@@ -113,7 +113,7 @@
     "babel-preset-es2017": "6.24.1",
     "babel-preset-latest": "6.24.1",
     "brfs": "1.6.1",
-    "browserify": "16.2.1",
+    "browserify": "16.2.2",
     "child-process-promise": "2.2.1",
     "concurrently": "3.5.1",
     "convert-hrtime": "2.0.0",
@@ -144,7 +144,7 @@
     "karma-mocha": "1.3.0",
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
-    "leveldown": "3.0.1",
+    "leveldown": "3.0.2",
     "memdown": "2.0.0",
     "mocha": "5.1.1",
     "mocha.parallel": "0.15.5",
@@ -163,15 +163,15 @@
     "request-promise": "4.2.2",
     "request-promise-native": "1.0.5",
     "rimraf": "2.6.2",
-    "rxjs": "5.5.10",
+    "rxjs": "6.1.0",
     "shelljs": "0.8.2",
-    "ts-node": "6.0.1",
+    "ts-node": "6.0.3",
     "typescript": "2.8.3",
     "uglify-js": "3.3.24",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.7.0"
+    "webpack": "4.8.1"
   },
   "// greenkeeper": [
     "// babel-eslint: https://github.com/babel/babel-eslint/issues/530"

@@ -1,11 +1,9 @@
 import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
 import {
-    filter
-} from 'rxjs/operators/filter';
-import {
+    filter,
     map
-} from 'rxjs/operators/map';
+} from 'rxjs/operators';
 
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';

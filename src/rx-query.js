@@ -10,17 +10,13 @@ import {
 } from './hooks';
 
 import {
-    merge
-} from 'rxjs/observable/merge';
-import {
+    merge,
     BehaviorSubject
-} from 'rxjs/BehaviorSubject';
+} from 'rxjs';
 import {
-    mergeMap
-} from 'rxjs/operators/mergeMap';
-import {
+    mergeMap,
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 let _queryCount = 0;
 const newQueryID = function() {

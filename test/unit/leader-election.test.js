@@ -13,7 +13,7 @@ import * as LeaderElector from '../../dist/lib/plugins/leader-election';
 
 import {
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 config.parallel('leader-election.test.js', () => {
     describe('leaderObject', () => {

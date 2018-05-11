@@ -18,7 +18,7 @@ import * as util from '../util';
 
 import {
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
 const _getDocCache = parent => {

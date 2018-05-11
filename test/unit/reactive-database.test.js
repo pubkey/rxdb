@@ -6,11 +6,9 @@ import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
 
 import {
-    first
-} from 'rxjs/operators/first';
-import {
+    first,
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 describe('reactive-database.test.js', () => {
     describe('.collection()', () => {

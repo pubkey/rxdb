@@ -16,13 +16,11 @@ import RxDB from '../../dist/lib/index';
 
 import {
     fromEvent
-} from 'rxjs/observable/fromEvent';
+} from 'rxjs';
 import {
-    filter
-} from 'rxjs/operators/filter';
-import {
+    filter,
     first
-} from 'rxjs/operators/first';
+} from 'rxjs/operators';
 
 let request;
 let SpawnServer;

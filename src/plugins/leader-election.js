@@ -12,13 +12,11 @@ export const documentID = '_local/leader';
 
 import {
     BehaviorSubject
-} from 'rxjs/BehaviorSubject';
+} from 'rxjs';
 import {
-    filter
-} from 'rxjs/operators/filter';
-import {
+    filter,
     first
-} from 'rxjs/operators/first';
+} from 'rxjs/operators';
 
 
 /**

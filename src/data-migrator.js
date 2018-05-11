@@ -14,7 +14,7 @@ import hooks from './hooks';
 
 import {
     Observable
-} from 'rxjs/Observable';
+} from 'rxjs';
 
 class DataMigrator {
     constructor(newestCollection, migrationStrategies) {

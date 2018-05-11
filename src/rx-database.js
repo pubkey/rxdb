@@ -15,10 +15,10 @@ import {
 
 import {
     Subject
-} from 'rxjs/Subject';
+} from 'rxjs';
 import {
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 /**
  * stores the combinations

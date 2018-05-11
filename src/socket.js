@@ -8,10 +8,10 @@ const PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
 import {
     Subject
-} from 'rxjs/Subject';
+} from 'rxjs';
 import {
     filter
-} from 'rxjs/operators/filter';
+} from 'rxjs/operators';
 
 class Socket {
     constructor(database) {
