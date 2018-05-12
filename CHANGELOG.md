@@ -6,8 +6,8 @@ Bugfixes:
   - Query cache is not being invalidated by replication [#630](https://github.com/pubkey/rxdb/issues/630)
 
 Other:
+  - Updated to rxjs 6.0.0
   - Added integration tests for couchdb
-
 
 ### 7.5.1 (May 3, 2018)
 
