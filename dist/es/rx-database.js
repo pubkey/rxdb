@@ -15,8 +15,8 @@ import Socket from './socket';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
 
-import { Subject } from 'rxjs/Subject';
-import { filter } from 'rxjs/operators/filter';
+import { Subject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 /**
  * stores the combinations
@@ -392,8 +392,10 @@ export var RxDatabase = function () {
 
                             args.database = this;
 
+                            runPluginHooks('preCreateRxCollection', args);
+
                             if (!(args.name.charAt(0) === '_')) {
-                                _context5.next = 5;
+                                _context5.next = 6;
                                 break;
                             }
 
@@ -401,9 +403,9 @@ export var RxDatabase = function () {
                                 name: args.name
                             });
 
-                        case 5:
+                        case 6:
                             if (!this.collections[args.name]) {
-                                _context5.next = 7;
+                                _context5.next = 8;
                                 break;
                             }
 
@@ -411,9 +413,9 @@ export var RxDatabase = function () {
                                 name: args.name
                             });
 
-                        case 7:
+                        case 8:
                             if (args.schema) {
-                                _context5.next = 9;
+                                _context5.next = 10;
                                 break;
                             }
 
@@ -422,7 +424,7 @@ export var RxDatabase = function () {
                                 args: args
                             });
 
-                        case 9:
+                        case 10:
 
                             if (!RxSchema.isInstanceOf(args.schema)) args.schema = RxSchema.create(args.schema);
 
@@ -431,7 +433,7 @@ export var RxDatabase = function () {
                             // check unallowed collection-names
 
                             if (!properties().includes(args.name)) {
-                                _context5.next = 13;
+                                _context5.next = 14;
                                 break;
                             }
 
@@ -439,35 +441,35 @@ export var RxDatabase = function () {
                                 name: args.name
                             });
 
-                        case 13:
+                        case 14:
 
                             // check schemaHash
                             schemaHash = args.schema.hash;
                             collectionDoc = null;
-                            _context5.prev = 15;
-                            _context5.next = 18;
+                            _context5.prev = 16;
+                            _context5.next = 19;
                             return this.lockedRun(function () {
                                 return _this4._collectionsPouch.get(internalPrimary);
                             });
 
-                        case 18:
+                        case 19:
                             collectionDoc = _context5.sent;
-                            _context5.next = 23;
+                            _context5.next = 24;
                             break;
 
-                        case 21:
-                            _context5.prev = 21;
-                            _context5.t0 = _context5['catch'](15);
+                        case 22:
+                            _context5.prev = 22;
+                            _context5.t0 = _context5['catch'](16);
 
-                        case 23:
+                        case 24:
                             if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
-                                _context5.next = 30;
+                                _context5.next = 31;
                                 break;
                             }
 
                             // collection already exists with different schema, check if it has documents
                             pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-                            _context5.next = 27;
+                            _context5.next = 28;
                             return pouch.find({
                                 selector: {
                                     _id: {}
@@ -475,11 +477,11 @@ export var RxDatabase = function () {
                                 limit: 1
                             });
 
-                        case 27:
+                        case 28:
                             oneDoc = _context5.sent;
 
                             if (!(oneDoc.docs.length !== 0)) {
-                                _context5.next = 30;
+                                _context5.next = 31;
                                 break;
                             }
 
@@ -489,15 +491,15 @@ export var RxDatabase = function () {
                                 schemaHash: schemaHash
                             });
 
-                        case 30:
-                            _context5.next = 32;
+                        case 31:
+                            _context5.next = 33;
                             return RxCollection.create(args);
 
-                        case 32:
+                        case 33:
                             collection = _context5.sent;
 
                             if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
-                                _context5.next = 35;
+                                _context5.next = 36;
                                 break;
                             }
 
@@ -505,14 +507,14 @@ export var RxDatabase = function () {
                                 name: args.name
                             });
 
-                        case 35:
+                        case 36:
                             if (collectionDoc) {
-                                _context5.next = 43;
+                                _context5.next = 44;
                                 break;
                             }
 
-                            _context5.prev = 36;
-                            _context5.next = 39;
+                            _context5.prev = 37;
+                            _context5.next = 40;
                             return this.lockedRun(function () {
                                 return _this4._collectionsPouch.put({
                                     _id: internalPrimary,
@@ -522,15 +524,15 @@ export var RxDatabase = function () {
                                 });
                             });
 
-                        case 39:
-                            _context5.next = 43;
+                        case 40:
+                            _context5.next = 44;
                             break;
 
-                        case 41:
-                            _context5.prev = 41;
-                            _context5.t1 = _context5['catch'](36);
+                        case 42:
+                            _context5.prev = 42;
+                            _context5.t1 = _context5['catch'](37);
 
-                        case 43:
+                        case 44:
                             cEvent = RxChangeEvent.create('RxDatabase.collection', this);
 
                             cEvent.data.v = collection.name;
@@ -544,12 +546,12 @@ export var RxDatabase = function () {
 
                             return _context5.abrupt('return', collection);
 
-                        case 50:
+                        case 51:
                         case 'end':
                             return _context5.stop();
                     }
                 }
-            }, _callee5, this, [[15, 21], [36, 41]]);
+            }, _callee5, this, [[16, 22], [37, 42]]);
         }));
 
         function collection(_x3) {

@@ -13,9 +13,8 @@ import RxError from '../rx-error';
 
 export var documentID = '_local/leader';
 
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { filter } from 'rxjs/operators/filter';
-import { first } from 'rxjs/operators/first';
+import { BehaviorSubject } from 'rxjs';
+import { filter, first } from 'rxjs/operators';
 
 /**
  * This time defines how 'fast' the communication between the instances is.

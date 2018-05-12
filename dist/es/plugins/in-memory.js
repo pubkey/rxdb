@@ -9,7 +9,7 @@ import _inherits from 'babel-runtime/helpers/inherits';
  * So you can do faster queries and also query over encrypted fields
  */
 
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 
 import RxCollection from '../rx-collection';
 import * as util from '../util';

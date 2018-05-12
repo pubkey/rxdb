@@ -21,7 +21,7 @@ import DocCache from '../doc-cache';
 import RxError from '../rx-error';
 import * as util from '../util';
 
-import { filter } from 'rxjs/operators/filter';
+import { filter } from 'rxjs/operators';
 
 var DOC_CACHE_BY_PARENT = new WeakMap();
 var _getDocCache = function _getDocCache(parent) {

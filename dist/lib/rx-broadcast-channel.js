@@ -19,11 +19,9 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 exports.canIUse = canIUse;
 exports.create = create;
 
-var _fromEvent = require('rxjs/observable/fromEvent');
+var _rxjs = require('rxjs');
 
-var _map = require('rxjs/operators/map');
-
-var _filter = require('rxjs/operators/filter');
+var _operators = require('rxjs/operators');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -87,11 +85,11 @@ var RxBroadcastChannel = function () {
             var _this = this;
 
             if (!this._$) {
-                this._$ = (0, _fromEvent.fromEvent)(this.bc, 'message').pipe((0, _map.map)(function (msg) {
+                this._$ = (0, _rxjs.fromEvent)(this.bc, 'message').pipe((0, _operators.map)(function (msg) {
                     return msg.data;
-                }), (0, _map.map)(function (strMsg) {
+                }), (0, _operators.map)(function (strMsg) {
                     return JSON.parse(strMsg);
-                }), (0, _filter.filter)(function (msg) {
+                }), (0, _operators.filter)(function (msg) {
                     return msg.it !== _this.token;
                 }));
             }

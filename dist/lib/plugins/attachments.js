@@ -220,7 +220,7 @@ var postMigrateDocument = exports.postMigrateDocument = function () {
 exports.getAttachment = getAttachment;
 exports.allAttachments = allAttachments;
 
-var _map = require('rxjs/operators/map');
+var _operators = require('rxjs/operators');
 
 var _rxChangeEvent = require('./../rx-change-event');
 
@@ -508,12 +508,12 @@ var prototypes = exports.prototypes = {
             get: function allAttachments$() {
                 var _this3 = this;
 
-                return this._dataSync$.pipe((0, _map.map)(function (data) {
+                return this._dataSync$.pipe((0, _operators.map)(function (data) {
                     if (!data._attachments) return {};
                     return data._attachments;
-                }), (0, _map.map)(function (attachmentsData) {
+                }), (0, _operators.map)(function (attachmentsData) {
                     return Object.entries(attachmentsData);
-                }), (0, _map.map)(function (entries) {
+                }), (0, _operators.map)(function (entries) {
                     return entries.map(function (_ref13) {
                         var _ref14 = (0, _slicedToArray3['default'])(_ref13, 2),
                             id = _ref14[0],

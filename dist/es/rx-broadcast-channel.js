@@ -1,8 +1,7 @@
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
-import { fromEvent } from 'rxjs/observable/fromEvent';
-import { map } from 'rxjs/operators/map';
-import { filter } from 'rxjs/operators/filter';
+import { fromEvent } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
 
 /**
  * this is a wrapper for BroadcastChannel to integrate it with RxJS

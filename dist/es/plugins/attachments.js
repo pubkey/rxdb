@@ -32,7 +32,7 @@ var resyncRxDocument = function () {
     };
 }();
 
-import { map } from 'rxjs/operators/map';
+import { map } from 'rxjs/operators';
 
 import RxChangeEvent from './../rx-change-event';
 import * as util from './../util';

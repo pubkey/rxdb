@@ -50,7 +50,7 @@ var _hooks = require('./hooks');
 
 var _hooks2 = _interopRequireDefault(_hooks);
 
-var _Observable = require('rxjs/Observable');
+var _rxjs = require('rxjs');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -123,7 +123,7 @@ var DataMigrator = function () {
                 percent: 0 // percentage
             };
 
-            var migrationState$ = new _Observable.Observable(function () {
+            var migrationState$ = new _rxjs.Observable(function () {
                 var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(observer) {
                     var oldCols, countAll, totalCount, currentCol, _loop;
 
@@ -503,7 +503,7 @@ var OldCollection = function () {
             if (this._migrate) throw _rxError2['default'].newRxError('DM3');
             this._migrate = true;
 
-            var stateStream$ = new _Observable.Observable(function () {
+            var stateStream$ = new _rxjs.Observable(function () {
                 var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(observer) {
                     var batch, error;
                     return _regenerator2['default'].wrap(function _callee5$(_context6) {

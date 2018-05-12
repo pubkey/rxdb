@@ -35,9 +35,9 @@ var _rxBroadcastChannel = require('./rx-broadcast-channel');
 
 var _rxBroadcastChannel2 = _interopRequireDefault(_rxBroadcastChannel);
 
-var _Subject = require('rxjs/Subject');
+var _rxjs = require('rxjs');
 
-var _filter = require('rxjs/operators/filter');
+var _operators = require('rxjs/operators');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -63,7 +63,7 @@ var Socket = function () {
         this.receivedEvents = {};
 
         this.bc = _rxBroadcastChannel2['default'].create(this.database, 'socket');
-        this.messages$ = new _Subject.Subject();
+        this.messages$ = new _rxjs.Subject();
     }
 
     /**
@@ -89,7 +89,7 @@ var Socket = function () {
 
                                 // pull on BroadcastChannel-message
                                 if (this.bc) {
-                                    this.subs.push(this.bc.$.pipe((0, _filter.filter)(function (msg) {
+                                    this.subs.push(this.bc.$.pipe((0, _operators.filter)(function (msg) {
                                         return msg.type === 'pull';
                                     })).subscribe(function () {
                                         return _this.pull();

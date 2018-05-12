@@ -9,6 +9,7 @@ import _asyncToGenerator from "babel-runtime/helpers/asyncToGenerator";
  */
 export var HOOKS = {
   createRxDatabase: [],
+  preCreateRxCollection: [],
   createRxCollection: [],
   /**
    * functions that get the json-schema as input

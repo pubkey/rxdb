@@ -39,11 +39,9 @@ var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
-var _BehaviorSubject = require('rxjs/BehaviorSubject');
+var _rxjs = require('rxjs');
 
-var _filter = require('rxjs/operators/filter');
-
-var _first = require('rxjs/operators/first');
+var _operators = require('rxjs/operators');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -77,7 +75,7 @@ var LeaderElector = function () {
         this.token = this.database.token;
 
         this.isLeader = false;
-        this.becomeLeader$ = new _BehaviorSubject.BehaviorSubject({
+        this.becomeLeader$ = new _rxjs.BehaviorSubject({
             isLeader: false
         });
 
@@ -360,35 +358,35 @@ var LeaderElector = function () {
                                             while (1) {
                                                 switch (_context4.prev = _context4.next) {
                                                     case 0:
-                                                        subs.push(_this.bc.$.pipe((0, _filter.filter)(function () {
+                                                        subs.push(_this.bc.$.pipe((0, _operators.filter)(function () {
                                                             return !!_this.isApplying;
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             return msg.t >= applyTime;
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             return msg.type === 'apply';
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             if (msg.data < applyTime || msg.data === applyTime && msg.it > _this.token) return true;else return false;
-                                                        }), (0, _filter.filter)(function () {
+                                                        }), (0, _operators.filter)(function () {
                                                             return errors.length < 1;
                                                         })).subscribe(function (msg) {
                                                             return errors.push('other is applying:' + msg.it);
                                                         }));
-                                                        subs.push(_this.bc.$.pipe((0, _filter.filter)(function () {
+                                                        subs.push(_this.bc.$.pipe((0, _operators.filter)(function () {
                                                             return !!_this.isApplying;
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             return msg.t >= applyTime;
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             return msg.type === 'tell';
-                                                        }), (0, _filter.filter)(function () {
+                                                        }), (0, _operators.filter)(function () {
                                                             return errors.length < 1;
                                                         })).subscribe(function (msg) {
                                                             return errors.push('other is leader' + msg.it);
                                                         }));
-                                                        subs.push(_this.bc.$.pipe((0, _filter.filter)(function () {
+                                                        subs.push(_this.bc.$.pipe((0, _operators.filter)(function () {
                                                             return !!_this.isApplying;
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             return msg.type === 'apply';
-                                                        }), (0, _filter.filter)(function (msg) {
+                                                        }), (0, _operators.filter)(function (msg) {
                                                             if (msg.data > applyTime || msg.data === applyTime && msg.it > _this.token) return true;else return false;
                                                         })).subscribe(function () {
                                                             return _this.bc.write('apply', applyTime);
@@ -604,11 +602,11 @@ var LeaderElector = function () {
                                 break;
 
                             case 11:
-                                this.signalLeadership = this.bc.$.pipe((0, _filter.filter)(function () {
+                                this.signalLeadership = this.bc.$.pipe((0, _operators.filter)(function () {
                                     return !!_this2.isLeader;
                                 }),
                                 // BUGFIX: avoids loop-hole when for whatever reason 2 are leader
-                                (0, _filter.filter)(function (msg) {
+                                (0, _operators.filter)(function (msg) {
                                     return msg.type !== 'tell';
                                 })).subscribe(function () {
                                     return _this2.leaderSignal();
@@ -814,7 +812,7 @@ var LeaderElector = function () {
 
                             case 9:
                                 // apply when leader dies
-                                this.subs.push(this.bc.$.pipe((0, _filter.filter)(function (msg) {
+                                this.subs.push(this.bc.$.pipe((0, _operators.filter)(function (msg) {
                                     return msg.type === 'death';
                                 })).subscribe(function () {
                                     return _this3.applyOnce();
@@ -878,9 +876,9 @@ var LeaderElector = function () {
                                 }))();
 
                             case 14:
-                                return _context11.abrupt('return', this.becomeLeader$.asObservable().pipe((0, _filter.filter)(function (i) {
+                                return _context11.abrupt('return', this.becomeLeader$.asObservable().pipe((0, _operators.filter)(function (i) {
                                     return i.isLeader === true;
-                                }), (0, _first.first)()).toPromise());
+                                }), (0, _operators.first)()).toPromise());
 
                             case 15:
                             case 'end':

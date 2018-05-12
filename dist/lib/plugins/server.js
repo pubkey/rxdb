@@ -15,10 +15,6 @@ var _expressPouchdb = require('express-pouchdb');
 
 var _expressPouchdb2 = _interopRequireDefault(_expressPouchdb);
 
-var _filter = require('rxjs/operators/filter');
-
-var _map = require('rxjs/operators/map');
-
 var _pouchDb = require('../pouch-db');
 
 var _pouchDb2 = _interopRequireDefault(_pouchDb);
@@ -41,7 +37,7 @@ _core2['default'].plugin(_replication2['default']);
 
 var APP_OF_DB = new WeakMap();
 var SERVERS_OF_DB = new WeakMap();
-var SUBSCRIPTIONS_OF_DB = new WeakMap();
+var DBS_WITH_SERVER = new WeakSet();
 
 var normalizeDbName = function normalizeDbName(db) {
     var splitted = db.name.split('/').filter(function (str) {
@@ -97,20 +93,8 @@ function spawnServer(_ref) {
         return tunnelCollectionPath(db, path, app, colName);
     });
 
-    // also tunnel if collection is created afterwards
     // show error if collection is created afterwards
-    var dbSub = db.$.pipe((0, _filter.filter)(function (ev) {
-        return ev.data.col === '_collections';
-    }), (0, _map.map)(function (ev) {
-        return ev.data.v;
-    })).subscribe(function (colName) {
-        var err = _rxError2['default'].newRxError('S1', {
-            collection: colName,
-            database: db.name
-        });
-        throw err;
-    });
-    SUBSCRIPTIONS_OF_DB.set(db, dbSub);
+    DBS_WITH_SERVER.add(db);
 
     app.use(path, (0, _expressPouchdb2['default'])(pseudo));
     var server = app.listen(port);
@@ -123,15 +107,25 @@ function spawnServer(_ref) {
 }
 
 /**
+ * when a server is created, no more collections can be spawned
+ */
+var ensureNoMoreCollections = function ensureNoMoreCollections(args) {
+    if (DBS_WITH_SERVER.has(args.database)) {
+        var err = _rxError2['default'].newRxError('S1', {
+            collection: args.name,
+            database: args.database.name
+        });
+        throw err;
+    }
+};
+
+/**
  * runs when the database gets destroyed
  */
 function onDestroy(db) {
-    if (SERVERS_OF_DB.has(db)) {
-        SERVERS_OF_DB.get(db).forEach(function (server) {
-            return server.close();
-        });
-        SUBSCRIPTIONS_OF_DB.get(db).unsubscribe();
-    }
+    if (SERVERS_OF_DB.has(db)) SERVERS_OF_DB.get(db).forEach(function (server) {
+        return server.close();
+    });
 }
 
 var rxdb = exports.rxdb = true;
@@ -142,7 +136,8 @@ var prototypes = exports.prototypes = {
 };
 
 var hooks = exports.hooks = {
-    preDestroyRxDatabase: onDestroy
+    preDestroyRxDatabase: onDestroy,
+    preCreateRxCollection: ensureNoMoreCollections
 };
 
 var overwritable = exports.overwritable = {};

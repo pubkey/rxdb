@@ -10,8 +10,8 @@ var TIMESTAMP_DOC_ID = '_local/last-change';
 var EVENT_TTL = 5000; // after this age, events will be deleted
 var PULL_TIME = RxBroadcastChannel.canIUse() ? EVENT_TTL / 2 : 200;
 
-import { Subject } from 'rxjs/Subject';
-import { filter } from 'rxjs/operators/filter';
+import { Subject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 var Socket = function () {
     function Socket(database) {

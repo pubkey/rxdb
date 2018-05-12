@@ -7,12 +7,8 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
  */
 
 import PouchReplicationPlugin from 'pouchdb-replication';
-import { Subject } from 'rxjs/Subject';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { fromEvent } from 'rxjs/observable/fromEvent';
-import { filter } from 'rxjs/operators/filter';
-import { map } from 'rxjs/operators/map';
-import { delay } from 'rxjs/operators/delay';
+import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
+import { filter, map, delay } from 'rxjs/operators';
 
 import * as util from '../util';
 import Core from '../core';
@@ -147,7 +143,10 @@ export function watchForChanges() {
         since: 'now',
         live: true,
         include_docs: true
-    }), 'change').pipe(filter(function (c) {
+    }), 'change').pipe(map(function (ar) {
+        return ar[0];
+    }), // rxjs6.x fires an array for whatever reason
+    filter(function (c) {
         return c.id.charAt(0) !== '_';
     }), map(function (c) {
         return c.doc;

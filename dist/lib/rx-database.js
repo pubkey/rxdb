@@ -233,9 +233,9 @@ var _overwritable2 = _interopRequireDefault(_overwritable);
 
 var _hooks = require('./hooks');
 
-var _Subject = require('rxjs/Subject');
+var _rxjs = require('rxjs');
 
-var _filter = require('rxjs/operators/filter');
+var _operators = require('rxjs/operators');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -272,8 +272,8 @@ var RxDatabase = exports.RxDatabase = function () {
         this.collections = {};
 
         // rx
-        this.subject = new _Subject.Subject();
-        this.observable$ = this.subject.asObservable().pipe((0, _filter.filter)(function (cEvent) {
+        this.subject = new _rxjs.Subject();
+        this.observable$ = this.subject.asObservable().pipe((0, _operators.filter)(function (cEvent) {
             return _rxChangeEvent2['default'].isInstanceOf(cEvent);
         }));
     }
@@ -630,8 +630,10 @@ var RxDatabase = exports.RxDatabase = function () {
 
                                 args.database = this;
 
+                                (0, _hooks.runPluginHooks)('preCreateRxCollection', args);
+
                                 if (!(args.name.charAt(0) === '_')) {
-                                    _context5.next = 5;
+                                    _context5.next = 6;
                                     break;
                                 }
 
@@ -639,9 +641,9 @@ var RxDatabase = exports.RxDatabase = function () {
                                     name: args.name
                                 });
 
-                            case 5:
+                            case 6:
                                 if (!this.collections[args.name]) {
-                                    _context5.next = 7;
+                                    _context5.next = 8;
                                     break;
                                 }
 
@@ -649,9 +651,9 @@ var RxDatabase = exports.RxDatabase = function () {
                                     name: args.name
                                 });
 
-                            case 7:
+                            case 8:
                                 if (args.schema) {
-                                    _context5.next = 9;
+                                    _context5.next = 10;
                                     break;
                                 }
 
@@ -660,7 +662,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                     args: args
                                 });
 
-                            case 9:
+                            case 10:
 
                                 if (!_rxSchema2['default'].isInstanceOf(args.schema)) args.schema = _rxSchema2['default'].create(args.schema);
 
@@ -669,7 +671,7 @@ var RxDatabase = exports.RxDatabase = function () {
                                 // check unallowed collection-names
 
                                 if (!properties().includes(args.name)) {
-                                    _context5.next = 13;
+                                    _context5.next = 14;
                                     break;
                                 }
 
@@ -677,35 +679,35 @@ var RxDatabase = exports.RxDatabase = function () {
                                     name: args.name
                                 });
 
-                            case 13:
+                            case 14:
 
                                 // check schemaHash
                                 schemaHash = args.schema.hash;
                                 collectionDoc = null;
-                                _context5.prev = 15;
-                                _context5.next = 18;
+                                _context5.prev = 16;
+                                _context5.next = 19;
                                 return this.lockedRun(function () {
                                     return _this4._collectionsPouch.get(internalPrimary);
                                 });
 
-                            case 18:
+                            case 19:
                                 collectionDoc = _context5.sent;
-                                _context5.next = 23;
+                                _context5.next = 24;
                                 break;
 
-                            case 21:
-                                _context5.prev = 21;
-                                _context5.t0 = _context5['catch'](15);
+                            case 22:
+                                _context5.prev = 22;
+                                _context5.t0 = _context5['catch'](16);
 
-                            case 23:
+                            case 24:
                                 if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
-                                    _context5.next = 30;
+                                    _context5.next = 31;
                                     break;
                                 }
 
                                 // collection already exists with different schema, check if it has documents
                                 pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-                                _context5.next = 27;
+                                _context5.next = 28;
                                 return pouch.find({
                                     selector: {
                                         _id: {}
@@ -713,11 +715,11 @@ var RxDatabase = exports.RxDatabase = function () {
                                     limit: 1
                                 });
 
-                            case 27:
+                            case 28:
                                 oneDoc = _context5.sent;
 
                                 if (!(oneDoc.docs.length !== 0)) {
-                                    _context5.next = 30;
+                                    _context5.next = 31;
                                     break;
                                 }
 
@@ -727,15 +729,15 @@ var RxDatabase = exports.RxDatabase = function () {
                                     schemaHash: schemaHash
                                 });
 
-                            case 30:
-                                _context5.next = 32;
+                            case 31:
+                                _context5.next = 33;
                                 return _rxCollection2['default'].create(args);
 
-                            case 32:
+                            case 33:
                                 collection = _context5.sent;
 
                                 if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
-                                    _context5.next = 35;
+                                    _context5.next = 36;
                                     break;
                                 }
 
@@ -743,14 +745,14 @@ var RxDatabase = exports.RxDatabase = function () {
                                     name: args.name
                                 });
 
-                            case 35:
+                            case 36:
                                 if (collectionDoc) {
-                                    _context5.next = 43;
+                                    _context5.next = 44;
                                     break;
                                 }
 
-                                _context5.prev = 36;
-                                _context5.next = 39;
+                                _context5.prev = 37;
+                                _context5.next = 40;
                                 return this.lockedRun(function () {
                                     return _this4._collectionsPouch.put({
                                         _id: internalPrimary,
@@ -760,15 +762,15 @@ var RxDatabase = exports.RxDatabase = function () {
                                     });
                                 });
 
-                            case 39:
-                                _context5.next = 43;
+                            case 40:
+                                _context5.next = 44;
                                 break;
 
-                            case 41:
-                                _context5.prev = 41;
-                                _context5.t1 = _context5['catch'](36);
+                            case 42:
+                                _context5.prev = 42;
+                                _context5.t1 = _context5['catch'](37);
 
-                            case 43:
+                            case 44:
                                 cEvent = _rxChangeEvent2['default'].create('RxDatabase.collection', this);
 
                                 cEvent.data.v = collection.name;
@@ -782,12 +784,12 @@ var RxDatabase = exports.RxDatabase = function () {
 
                                 return _context5.abrupt('return', collection);
 
-                            case 50:
+                            case 51:
                             case 'end':
                                 return _context5.stop();
                         }
                     }
-                }, _callee5, this, [[15, 21], [36, 41]]);
+                }, _callee5, this, [[16, 22], [37, 42]]);
             }));
 
             function collection(_x3) {

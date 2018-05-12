@@ -29,17 +29,9 @@ var _pouchdbReplication = require('pouchdb-replication');
 
 var _pouchdbReplication2 = _interopRequireDefault(_pouchdbReplication);
 
-var _Subject = require('rxjs/Subject');
+var _rxjs = require('rxjs');
 
-var _BehaviorSubject = require('rxjs/BehaviorSubject');
-
-var _fromEvent = require('rxjs/observable/fromEvent');
-
-var _filter = require('rxjs/operators/filter');
-
-var _map = require('rxjs/operators/map');
-
-var _delay = require('rxjs/operators/delay');
+var _operators = require('rxjs/operators');
 
 var _util = require('../util');
 
@@ -83,11 +75,11 @@ var RxReplicationState = exports.RxReplicationState = function () {
         this.collection = collection;
         this._pouchEventEmitterObject = null;
         this._subjects = {
-            change: new _Subject.Subject(),
-            docs: new _Subject.Subject(),
-            active: new _BehaviorSubject.BehaviorSubject(false),
-            complete: new _BehaviorSubject.BehaviorSubject(false),
-            error: new _Subject.Subject()
+            change: new _rxjs.Subject(),
+            docs: new _rxjs.Subject(),
+            active: new _rxjs.BehaviorSubject(false),
+            complete: new _rxjs.BehaviorSubject(false),
+            error: new _rxjs.Subject()
         };
 
         // create getters
@@ -109,12 +101,12 @@ var RxReplicationState = exports.RxReplicationState = function () {
             this._pouchEventEmitterObject = evEmitter;
 
             // change
-            this._subs.push((0, _fromEvent.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
+            this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
                 return _this2._subjects.change.next(ev);
             }));
 
             // docs
-            this._subs.push((0, _fromEvent.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
+            this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
                 if (_this2._subjects.docs.observers.length === 0 || ev.direction !== 'pull') return;
 
                 ev.change.docs.filter(function (doc) {
@@ -129,20 +121,20 @@ var RxReplicationState = exports.RxReplicationState = function () {
             }));
 
             // error
-            this._subs.push((0, _fromEvent.fromEvent)(evEmitter, 'error').subscribe(function (ev) {
+            this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'error').subscribe(function (ev) {
                 return _this2._subjects.error.next(ev);
             }));
 
             // active
-            this._subs.push((0, _fromEvent.fromEvent)(evEmitter, 'active').subscribe(function () {
+            this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'active').subscribe(function () {
                 return _this2._subjects.active.next(true);
             }));
-            this._subs.push((0, _fromEvent.fromEvent)(evEmitter, 'paused').subscribe(function () {
+            this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'paused').subscribe(function () {
                 return _this2._subjects.active.next(false);
             }));
 
             // complete
-            this._subs.push((0, _fromEvent.fromEvent)(evEmitter, 'complete').subscribe(function (info) {
+            this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'complete').subscribe(function (info) {
                 return _this2._subjects.complete.next(info);
             }));
         }
@@ -196,28 +188,31 @@ function watchForChanges() {
      * this is to ensure that changes from 'synced' dbs will be published
      */
     var sendChanges = {};
-    var pouch$ = (0, _fromEvent.fromEvent)(this.pouch.changes({
+    var pouch$ = (0, _rxjs.fromEvent)(this.pouch.changes({
         since: 'now',
         live: true,
         include_docs: true
-    }), 'change').pipe((0, _filter.filter)(function (c) {
+    }), 'change').pipe((0, _operators.map)(function (ar) {
+        return ar[0];
+    }), // rxjs6.x fires an array for whatever reason
+    (0, _operators.filter)(function (c) {
         return c.id.charAt(0) !== '_';
-    }), (0, _map.map)(function (c) {
+    }), (0, _operators.map)(function (c) {
         return c.doc;
-    }), (0, _filter.filter)(function (doc) {
+    }), (0, _operators.filter)(function (doc) {
         return !_this3._changeEventBuffer.buffer.map(function (cE) {
             return cE.data.v._rev;
         }).includes(doc._rev);
-    }), (0, _filter.filter)(function (doc) {
+    }), (0, _operators.filter)(function (doc) {
         return sendChanges[doc._rev] = 'YES';
     }),
     // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
-    (0, _delay.delay)(0), (0, _delay.delay)(0), (0, _map.map)(function (doc) {
+    (0, _operators.delay)(0), (0, _operators.delay)(0), (0, _operators.map)(function (doc) {
         var ret = null;
         if (sendChanges[doc._rev] === 'YES') ret = doc;
         delete sendChanges[doc._rev];
         return ret;
-    }), (0, _filter.filter)(function (doc) {
+    }), (0, _operators.filter)(function (doc) {
         return doc !== null;
     })).subscribe(function (doc) {
         _this3.$emit(_rxChangeEvent2['default'].fromPouchChange(doc, _this3));
@@ -225,9 +220,9 @@ function watchForChanges() {
 
     this._subs.push(pouch$);
 
-    var ob2 = this.$.pipe((0, _map.map)(function (cE) {
+    var ob2 = this.$.pipe((0, _operators.map)(function (cE) {
         return cE.data.v;
-    }), (0, _map.map)(function (doc) {
+    }), (0, _operators.map)(function (doc) {
         if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
     })).subscribe();
     this._subs.push(ob2);

@@ -65,7 +65,7 @@ var _util = require('../util');
 
 var util = _interopRequireWildcard(_util);
 
-var _filter = require('rxjs/operators/filter');
+var _operators = require('rxjs/operators');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -87,7 +87,7 @@ var _getDocCache = function _getDocCache(parent) {
 var CHANGE_SUB_BY_PARENT = new WeakMap();
 var _getChangeSub = function _getChangeSub(parent) {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
-        var sub = parent.$.pipe((0, _filter.filter)(function (cE) {
+        var sub = parent.$.pipe((0, _operators.filter)(function (cE) {
             return cE.data.isLocal;
         })).subscribe(function (cE) {
             var docCache = _getDocCache(parent);

@@ -97,7 +97,7 @@ var spawnInMemory = exports.spawnInMemory = function () {
     };
 }();
 
-var _Subject = require('rxjs/Subject');
+var _rxjs = require('rxjs');
 
 var _rxCollection = require('../rx-collection');
 
@@ -189,7 +189,7 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
 
                                 this.pouch = new _pouchDb2['default']('rxdb-in-memory-' + util.randomCouchString(10), util.adapterObject('memory'), {});
 
-                                this._observable$ = new _Subject.Subject();
+                                this._observable$ = new _rxjs.Subject();
                                 this._changeEventBuffer = _changeEventBuffer2['default'].create(this);
 
                                 // INDEXES

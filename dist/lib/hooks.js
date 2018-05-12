@@ -49,6 +49,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
  */
 var HOOKS = exports.HOOKS = {
   createRxDatabase: [],
+  preCreateRxCollection: [],
   createRxCollection: [],
   /**
    * functions that get the json-schema as input

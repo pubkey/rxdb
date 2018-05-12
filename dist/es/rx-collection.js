@@ -3,7 +3,7 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import IdleQueue from 'custom-idle-queue';
-import { filter } from 'rxjs/operators/filter';
+import { filter } from 'rxjs/operators';
 
 import * as util from './util';
 import RxDocument from './rx-document';

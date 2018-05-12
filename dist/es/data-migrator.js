@@ -16,7 +16,7 @@ import RxError from './rx-error';
 import overwritable from './overwritable';
 import hooks from './hooks';
 
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 var DataMigrator = function () {
     function DataMigrator(newestCollection, migrationStrategies) {

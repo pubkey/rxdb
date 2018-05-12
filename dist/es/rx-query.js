@@ -11,10 +11,8 @@ import QueryChangeDetector from './query-change-detector';
 import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
 
-import { merge } from 'rxjs/observable/merge';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { mergeMap } from 'rxjs/operators/mergeMap';
-import { filter } from 'rxjs/operators/filter';
+import { merge, BehaviorSubject } from 'rxjs';
+import { mergeMap, filter } from 'rxjs/operators';
 
 var _queryCount = 0;
 var newQueryID = function newQueryID() {

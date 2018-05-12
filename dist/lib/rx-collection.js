@@ -131,7 +131,7 @@ var _customIdleQueue = require('custom-idle-queue');
 
 var _customIdleQueue2 = _interopRequireDefault(_customIdleQueue);
 
-var _filter = require('rxjs/operators/filter');
+var _operators = require('rxjs/operators');
 
 var _util = require('./util');
 
@@ -254,7 +254,7 @@ var RxCollection = exports.RxCollection = function () {
 
                             case 5:
 
-                                this._observable$ = this.database.$.pipe((0, _filter.filter)(function (event) {
+                                this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
                                     return event.data.col === _this2.name;
                                 }));
                                 this._changeEventBuffer = _changeEventBuffer2['default'].create(this);
@@ -277,7 +277,7 @@ var RxCollection = exports.RxCollection = function () {
 
                             case 9:
 
-                                this._subs.push(this._observable$.pipe((0, _filter.filter)(function (cE) {
+                                this._subs.push(this._observable$.pipe((0, _operators.filter)(function (cE) {
                                     return !cE.data.isLocal;
                                 })).subscribe(function (cE) {
                                     // when data changes, send it to RxDocument in docCache
@@ -1333,21 +1333,21 @@ var RxCollection = exports.RxCollection = function () {
     }, {
         key: 'insert$',
         get: function get() {
-            return this.$.pipe((0, _filter.filter)(function (cE) {
+            return this.$.pipe((0, _operators.filter)(function (cE) {
                 return cE.data.op === 'INSERT';
             }));
         }
     }, {
         key: 'update$',
         get: function get() {
-            return this.$.pipe((0, _filter.filter)(function (cE) {
+            return this.$.pipe((0, _operators.filter)(function (cE) {
                 return cE.data.op === 'UPDATE';
             }));
         }
     }, {
         key: 'remove$',
         get: function get() {
-            return this.$.pipe((0, _filter.filter)(function (cE) {
+            return this.$.pipe((0, _operators.filter)(function (cE) {
                 return cE.data.op === 'REMOVE';
             }));
         }

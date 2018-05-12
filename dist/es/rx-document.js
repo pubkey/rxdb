@@ -11,9 +11,8 @@ import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
 
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
-import { map } from 'rxjs/operators/map';
+import { BehaviorSubject } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 
 export var RxDocument = function () {
     function RxDocument(collection, jsonData) {

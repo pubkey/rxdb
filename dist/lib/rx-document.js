@@ -60,11 +60,9 @@ var _rxError2 = _interopRequireDefault(_rxError);
 
 var _hooks = require('./hooks');
 
-var _BehaviorSubject = require('rxjs/BehaviorSubject');
+var _rxjs = require('rxjs');
 
-var _distinctUntilChanged = require('rxjs/operators/distinctUntilChanged');
-
-var _map = require('rxjs/operators/map');
+var _operators = require('rxjs/operators');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -80,14 +78,14 @@ var RxDocument = exports.RxDocument = function () {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new _BehaviorSubject.BehaviorSubject(util.clone(jsonData));
+        this._dataSync$ = new _rxjs.BehaviorSubject(util.clone(jsonData));
 
         // current doc-data, changes when setting values etc
         this._data = util.clone(jsonData);
 
         // false when _data !== _dataSync
-        this._synced$ = new _BehaviorSubject.BehaviorSubject(true);
-        this._deleted$ = new _BehaviorSubject.BehaviorSubject(false);
+        this._synced$ = new _rxjs.BehaviorSubject(true);
+        this._deleted$ = new _rxjs.BehaviorSubject(false);
     }
 
     (0, _createClass3['default'])(RxDocument, [{
@@ -195,9 +193,9 @@ var RxDocument = exports.RxDocument = function () {
                 });
             }
 
-            return this._dataSync$.pipe((0, _map.map)(function (data) {
+            return this._dataSync$.pipe((0, _operators.map)(function (data) {
                 return _objectPath2['default'].get(data, path);
-            }), (0, _distinctUntilChanged.distinctUntilChanged)()).asObservable();
+            }), (0, _operators.distinctUntilChanged)()).asObservable();
         }
 
         /**
@@ -749,7 +747,7 @@ var RxDocument = exports.RxDocument = function () {
     }, {
         key: 'synced$',
         get: function get() {
-            return this._synced$.pipe((0, _distinctUntilChanged.distinctUntilChanged)()).asObservable();
+            return this._synced$.pipe((0, _operators.distinctUntilChanged)()).asObservable();
         }
     }, {
         key: 'synced',

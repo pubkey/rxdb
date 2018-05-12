@@ -1,7 +1,5 @@
 import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
-import { filter } from 'rxjs/operators/filter';
-import { map } from 'rxjs/operators/map';
 
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';
@@ -12,7 +10,7 @@ Core.plugin(ReplicationPlugin);
 
 var APP_OF_DB = new WeakMap();
 var SERVERS_OF_DB = new WeakMap();
-var SUBSCRIPTIONS_OF_DB = new WeakMap();
+var DBS_WITH_SERVER = new WeakSet();
 
 var normalizeDbName = function normalizeDbName(db) {
     var splitted = db.name.split('/').filter(function (str) {
@@ -68,20 +66,8 @@ export function spawnServer(_ref) {
         return tunnelCollectionPath(db, path, app, colName);
     });
 
-    // also tunnel if collection is created afterwards
     // show error if collection is created afterwards
-    var dbSub = db.$.pipe(filter(function (ev) {
-        return ev.data.col === '_collections';
-    }), map(function (ev) {
-        return ev.data.v;
-    })).subscribe(function (colName) {
-        var err = RxError.newRxError('S1', {
-            collection: colName,
-            database: db.name
-        });
-        throw err;
-    });
-    SUBSCRIPTIONS_OF_DB.set(db, dbSub);
+    DBS_WITH_SERVER.add(db);
 
     app.use(path, ExpressPouchDB(pseudo));
     var server = app.listen(port);
@@ -94,15 +80,25 @@ export function spawnServer(_ref) {
 }
 
 /**
+ * when a server is created, no more collections can be spawned
+ */
+var ensureNoMoreCollections = function ensureNoMoreCollections(args) {
+    if (DBS_WITH_SERVER.has(args.database)) {
+        var err = RxError.newRxError('S1', {
+            collection: args.name,
+            database: args.database.name
+        });
+        throw err;
+    }
+};
+
+/**
  * runs when the database gets destroyed
  */
 export function onDestroy(db) {
-    if (SERVERS_OF_DB.has(db)) {
-        SERVERS_OF_DB.get(db).forEach(function (server) {
-            return server.close();
-        });
-        SUBSCRIPTIONS_OF_DB.get(db).unsubscribe();
-    }
+    if (SERVERS_OF_DB.has(db)) SERVERS_OF_DB.get(db).forEach(function (server) {
+        return server.close();
+    });
 }
 
 export var rxdb = true;
@@ -113,7 +109,8 @@ export var prototypes = {
 };
 
 export var hooks = {
-    preDestroyRxDatabase: onDestroy
+    preDestroyRxDatabase: onDestroy,
+    preCreateRxCollection: ensureNoMoreCollections
 };
 
 export var overwritable = {};

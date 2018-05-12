@@ -62,13 +62,9 @@ var _rxError2 = _interopRequireDefault(_rxError);
 
 var _hooks = require('./hooks');
 
-var _merge = require('rxjs/observable/merge');
+var _rxjs = require('rxjs');
 
-var _BehaviorSubject = require('rxjs/BehaviorSubject');
-
-var _mergeMap = require('rxjs/operators/mergeMap');
-
-var _filter = require('rxjs/operators/filter');
+var _operators = require('rxjs/operators');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -91,7 +87,7 @@ var RxQuery = exports.RxQuery = function () {
         this._queryChangeDetector = _queryChangeDetector2['default'].create(this);
 
         this._resultsData = null;
-        this._results$ = new _BehaviorSubject.BehaviorSubject(null);
+        this._results$ = new _rxjs.BehaviorSubject(null);
         this._latestChangeEvent = -1;
 
         /**
@@ -672,7 +668,7 @@ var RxQuery = exports.RxQuery = function () {
                 var res$ = this._results$.pipe(
                 // whe run _ensureEqual() on each subscription
                 // to ensure it triggers a re-run when subscribing after some time
-                (0, _mergeMap.mergeMap)(function () {
+                (0, _operators.mergeMap)(function () {
                     var _ref16 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(results) {
                         var hasChanged;
                         return _regenerator2['default'].wrap(function _callee5$(_context5) {
@@ -706,19 +702,19 @@ var RxQuery = exports.RxQuery = function () {
                     return function (_x2) {
                         return _ref16.apply(this, arguments);
                     };
-                }()), (0, _filter.filter)(function (results) {
+                }()), (0, _operators.filter)(function (results) {
                     return results !== 'WAITFORNEXTEMIT';
                 })).asObservable();
 
                 // we also subscribe to the changeEvent-stream so it detects changed if it has subscribers
-                var changeEvents$ = this.collection.$.pipe((0, _filter.filter)(function (cEvent) {
+                var changeEvents$ = this.collection.$.pipe((0, _operators.filter)(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
-                }), (0, _filter.filter)(function () {
+                }), (0, _operators.filter)(function () {
                     _this3._ensureEqual();
                     return false;
                 }));
 
-                this._$ = (0, _merge.merge)(res$, changeEvents$);
+                this._$ = (0, _rxjs.merge)(res$, changeEvents$);
             }
             return this._$;
         }
