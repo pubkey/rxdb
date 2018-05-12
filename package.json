@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "Reactive database for progressive web apps and more",
-  "version": "7.5.1",
+  "version": "7.6.0",
   "author": "pubkey",
   "repository": {
     "type": "git",

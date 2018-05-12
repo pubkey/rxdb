@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 7.6.0 (May 12, 2018)
 
 Bugfixes:
   - Query cache is not being invalidated by replication [#630](https://github.com/pubkey/rxdb/issues/630)
