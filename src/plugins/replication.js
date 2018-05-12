@@ -130,6 +130,7 @@ export function watchForChanges() {
             'change'
         )
         .pipe(
+            map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
             filter(c => c.id.charAt(0) !== '_'),
             map(c => c.doc),
             filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev)),

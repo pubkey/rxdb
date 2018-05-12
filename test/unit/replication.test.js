@@ -18,6 +18,7 @@ import {
     fromEvent
 } from 'rxjs';
 import {
+    map,
     filter,
     first
 } from 'rxjs/operators';
@@ -102,7 +103,6 @@ describe('replication.test.js', () => {
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, null, false);
                 const c2 = await humansCollection.create(0, null, false);
-                const pw8 = AsyncTestUtil.waitResolveable(1400);
                 c.pouch.sync(serverURL, {
                     live: true
                 });
@@ -117,26 +117,23 @@ describe('replication.test.js', () => {
                             since: 'now',
                             live: true,
                             include_docs: true
-                        }), 'change')
-                    .pipe(
+                        }), 'change').pipe(
+                        map(ar => ar[0]),
                         filter(e => !e.id.startsWith('_'))
-                    )
-                    .subscribe(e => e1.push(e));
+                    ).subscribe(e => e1.push(e));
                 const e2 = [];
                 const pouch2$ =
                     fromEvent(c2.pouch.changes({
                         since: 'now',
                         live: true,
                         include_docs: true
-                    }), 'change')
-                    .pipe(
+                    }), 'change').pipe(
+                        map(ar => ar[0]),
                         filter(e => !e.id.startsWith('_'))
-                    )
-                    .subscribe(e => e2.push(e));
+                    ).subscribe(e => e2.push(e));
 
                 const obj = schemaObjects.human();
                 await c.insert(obj);
-                await pw8.promise;
 
                 await AsyncTestUtil.waitUntil(() => e1.length === 1);
                 await AsyncTestUtil.waitUntil(() => e2.length === 1);

@@ -253,6 +253,8 @@ export class RxDatabase {
 
         args.database = this;
 
+        runPluginHooks('preCreateRxCollection', args);
+
         if (args.name.charAt(0) === '_') {
             throw RxError.newRxError('DB2', {
                 name: args.name

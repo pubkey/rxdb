@@ -1,9 +1,5 @@
 import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
-import {
-    filter,
-    map
-} from 'rxjs/operators';
 
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';
@@ -14,7 +10,7 @@ Core.plugin(ReplicationPlugin);
 
 const APP_OF_DB = new WeakMap();
 const SERVERS_OF_DB = new WeakMap();
-const SUBSCRIPTIONS_OF_DB = new WeakMap();
+const DBS_WITH_SERVER = new WeakSet();
 
 
 const normalizeDbName = function(db) {
@@ -66,23 +62,8 @@ export function spawnServer({
     // TODO do this for all collections that get created afterwards
     Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, path, app, colName));
 
-    // also tunnel if collection is created afterwards
     // show error if collection is created afterwards
-    const dbSub = db.$
-        .pipe(
-            filter(ev => ev.data.col === '_collections'),
-            map(ev => ev.data.v)
-        )
-        .subscribe(colName => {
-            const err = RxError.newRxError(
-                'S1', {
-                    collection: colName,
-                    database: db.name
-                }
-            );
-            throw err;
-        });
-    SUBSCRIPTIONS_OF_DB.set(db, dbSub);
+    DBS_WITH_SERVER.add(db);
 
     app.use(path, ExpressPouchDB(pseudo));
     const server = app.listen(port);
@@ -94,15 +75,27 @@ export function spawnServer({
     };
 }
 
+/**
+ * when a server is created, no more collections can be spawned
+ */
+const ensureNoMoreCollections = function(args) {
+    if (DBS_WITH_SERVER.has(args.database)) {
+        const err = RxError.newRxError(
+            'S1', {
+                collection: args.name,
+                database: args.database.name
+            }
+        );
+        throw err;
+    }
+};
 
 /**
  * runs when the database gets destroyed
  */
 export function onDestroy(db) {
-    if (SERVERS_OF_DB.has(db)) {
+    if (SERVERS_OF_DB.has(db))
         SERVERS_OF_DB.get(db).forEach(server => server.close());
-        SUBSCRIPTIONS_OF_DB.get(db).unsubscribe();
-    }
 }
 
 
@@ -114,7 +107,8 @@ export const prototypes = {
 };
 
 export const hooks = {
-    preDestroyRxDatabase: onDestroy
+    preDestroyRxDatabase: onDestroy,
+    preCreateRxCollection: ensureNoMoreCollections
 };
 
 export const overwritable = {};

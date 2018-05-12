@@ -7,6 +7,7 @@
  */
 export const HOOKS = {
     createRxDatabase: [],
+    preCreateRxCollection: [],
     createRxCollection: [],
     /**
      * functions that get the json-schema as input

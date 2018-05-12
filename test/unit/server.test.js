@@ -26,7 +26,8 @@ config.parallel('server.test.js', () => {
     let lastPort = 3000;
     const nexPort = () => lastPort++;
 
-    it('should run and sync', async () => {
+    it('should run and sync', async function() {
+        this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
         await serverCollection.database.server({
@@ -152,7 +153,6 @@ config.parallel('server.test.js', () => {
         db1.server({
             port
         });
-
         await AsyncTestUtil.assertThrows(
             () => db1.collection({
                 name: 'human',
@@ -161,6 +161,7 @@ config.parallel('server.test.js', () => {
             Error,
             'after'
         );
+
         db1.destroy();
     });
 });
