@@ -21,6 +21,10 @@
 <script>
 import Vue from 'vue';
 import * as Database from '../database/Database';
+import {
+    filter
+} from 'rxjs/operators';
+
 export default Vue.component('heroes-list', {
     data: () => {
         return {
@@ -33,8 +37,9 @@ export default Vue.component('heroes-list', {
         this.subs.push(
             db.heroes
             .find().$
-            .filter(x => x != null)
-            .subscribe(results => {
+            .pipe(
+                filter(x => x != null)
+            ).subscribe(results => {
                 console.log('results:');
                 //                console.dir(results);
                 this.results = results;
