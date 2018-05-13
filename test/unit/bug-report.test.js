@@ -1,106 +1,77 @@
-/**
- * this is a template for a test.
- * If you found a bug, edit this test to reproduce it
- * and than make a pull-request with that failing test.
- * The maintainer will later move your test to the correct possition in the test-suite.
- *
- * To run this test do:
- * - 'npm run test:node' so it runs in nodejs
- * - 'npm run test:browsers' so it runs in the browser
- */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
-
 import RxDB from '../../dist/lib/index';
-import * as util from '../../dist/lib/util';
+import { filter } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
-        // create a schema
-        const mySchema = {
+        // Create a schema
+        const schema = {
             version: 0,
+            disableKeyCompression: true,
             type: 'object',
             properties: {
-                passportId: {
-                    type: 'string',
-                    primary: true
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
+                name: {type: 'string'},
+                number: {type: 'number'}
             }
         };
 
-        // generate a random database-name
-        const name = util.randomCouchString(10);
+        // Create db A
+        const dbA = await RxDB.create({ name: 'dba', adapter: 'memory' });
 
-        // create a database
-        const db = await RxDB.create({
-            name,
-            adapter: 'memory',
-            ignoreDuplicate: true
+        // Create collection A
+        const collectionA = await dbA.collection({ name: 'result', schema: schema });
+
+        // Insert documents
+        await collectionA.insert({ name: 'aaaa', 'number': 1 });
+        await collectionA.insert({ name: 'bbbb', 'number': 2 });
+
+        // Make a query so it gets cached
+        await collectionA.find({}).exec();
+
+        // Create db B
+        const dbB = await RxDB.create({ name: 'dbb', adapter: 'memory' });
+
+        // Create collection B
+        const collectionB = await dbB.collection({ name: 'result', schema: schema });
+
+        // Pull from collection A
+        const pullstate = collectionB.sync({
+            remote: collectionA.pouch,
+            direction: {pull: true, push: false},
+            options: {live: false}
         });
-        // create a collection
-        const collection = await db.collection({
-            name: 'crawlstate',
-            schema: mySchema
+        
+        // Wait for replication to complete
+        await pullstate.complete$
+            .pipe(filter(completed => completed.ok === true), first())
+            .toPromise();
+
+        // Delete 1 doc from collection B
+        const doc = await collectionB.findOne({name: 'aaaa'}).exec();
+        await doc.remove();
+        await new Promise(r => {setTimeout(r,100);});
+
+        // Push to collection A
+        const pushstate = collectionB.sync({
+            remote: collectionA.pouch,
+            direction: {pull: false, push: true},
+            options: {live: false}
         });
 
-        // insert a document
-        await collection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        // Wait for replication to complete
+        await pushstate.complete$
+            .pipe(filter(completed => completed.ok === true), first())
+            .toPromise();
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await RxDB.create({
-            name,
-            adapter: 'memory',
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'crawlstate',
-            schema: mySchema
-        });
+        // Collection A should now have 1 doc
+        const docsOnA = await collectionA.find({}).exec();
+        assert.equal(docsOnA.length, 1);
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.equal(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-
-        // clean up afterwards
-        sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        // Cleanup
+        await dbA.remove();
+        await dbA.destroy();
+        await dbB.remove();
+        await dbB.destroy();
     });
 });
