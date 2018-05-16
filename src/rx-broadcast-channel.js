@@ -15,6 +15,7 @@ class RxBroadcastChannel {
         this.name = name;
         this.database = database;
         this.token = database.token;
+        this._destroyed = false;
     }
 
     /**
@@ -53,6 +54,7 @@ class RxBroadcastChannel {
      * @return {Promise<any>}
      */
     write(type, data) {
+        if (this._destroyed) return;
         return this.bc.postMessage(
             JSON.stringify({
                 type,
@@ -61,9 +63,16 @@ class RxBroadcastChannel {
                 t: new Date().getTime()
             })
         );
+        /*.catch(err => {
+            console.error('RxDB: Could not write to BroadcastChannel, this is a bug, report it');
+            console.dir('type: ' + type);
+            console.dir('data: ' + data);
+            console.dir(err);
+        });*/
     }
 
     destroy() {
+        this._destroyed = true;
         this._bc && this._bc.close();
     }
 }

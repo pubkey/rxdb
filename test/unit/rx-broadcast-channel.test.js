@@ -1,9 +1,11 @@
 import assert from 'assert';
 
-import * as RxDB from '../../dist/lib/index';
+import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as RxBroadcastChannel from '../../dist/lib/rx-broadcast-channel';
+import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects';
 
 describe('rx-broadcast-channel.test.js', () => {
     if (!RxBroadcastChannel.canIUse()) return;
@@ -85,5 +87,17 @@ describe('rx-broadcast-channel.test.js', () => {
         state.dbs.map(db => db.destroy());
         state.otherDB.destroy();
         assert.equal(RxDB.dbCount(), 0);
+    });
+    describe('ISSUES', () => {
+        it('#644 Unhandled promise rejection with DOMException', async () => {
+            await Promise.all(
+                new Array(10).fill().map(async () => {
+                    const c = await humansCollection.create();
+                    const docData = schemaObjects.human();
+                    await c.insert(docData);
+                    c.database.destroy();
+                })
+            );
+        });
     });
 });
