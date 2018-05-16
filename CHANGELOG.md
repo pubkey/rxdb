@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Unhandled promise rejection with DOMException [#644](https://github.com/pubkey/rxdb/issues/644)
+  - Prevent bug with replication of internal pouchdb's [#641](https://github.com/pubkey/rxdb/pull/641)
 
 ### 7.6.0 (May 12, 2018)
 

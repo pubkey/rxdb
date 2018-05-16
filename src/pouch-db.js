@@ -56,5 +56,8 @@ PouchDB.getBatch = function(pouchdb, limit) {
         );
 };
 
+PouchDB.isInstanceOf = function(obj) {
+    return obj instanceof PouchDB;
+};
 
 export default PouchDB;

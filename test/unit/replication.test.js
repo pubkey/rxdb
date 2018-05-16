@@ -152,7 +152,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
                 c.sync({
-                    remote: c2.pouch,
+                    remote: c2,
                     waitForLeadership: false,
                     direction: {
                         pull: false,
@@ -174,7 +174,7 @@ describe('replication.test.js', () => {
                 const c = await humansCollection.create(10, null, false);
                 const c2 = await humansCollection.create(10, null, false);
                 c.sync({
-                    remote: c2.pouch,
+                    remote: c2,
                     waitForLeadership: false,
                     direction: {
                         pull: true,
@@ -199,7 +199,7 @@ describe('replication.test.js', () => {
                 const c2 = await humansCollection.create(10, null, false);
                 await AsyncTestUtil.assertThrows(
                     () => c.sync({
-                        remote: c2.pouch,
+                        remote: c2,
                         direction: {
                             push: false,
                             pull: false
@@ -225,7 +225,7 @@ describe('replication.test.js', () => {
                 await c2.insert(matchingDoc);
 
                 c.sync({
-                    remote: c2.pouch,
+                    remote: c2,
                     waitForLeadership: false,
                     query: query
                 });
@@ -252,7 +252,7 @@ describe('replication.test.js', () => {
                 const query = otherCollection.find().where('firstName').eq('foobar');
                 await AsyncTestUtil.assertThrows(
                     () => c.sync({
-                        remote: c2.pouch,
+                        remote: c2,
                         query
                     }),
                     Error,
@@ -371,7 +371,7 @@ describe('replication.test.js', () => {
         describe('positive', () => {
             it('collection: should get an event when a doc syncs', async () => {
                 const syncC = await humansCollection.create(0);
-                const syncPouch = syncC.pouch;
+                const syncPouch = syncC;
 
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
@@ -402,7 +402,7 @@ describe('replication.test.js', () => {
 
             it('query: should re-find when a docs syncs', async () => {
                 const syncC = await humansCollection.create(0);
-                const syncPouch = syncC.pouch;
+                const syncPouch = syncC;
 
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
@@ -435,7 +435,7 @@ describe('replication.test.js', () => {
             });
             it('document: should change field when doc saves', async () => {
                 const syncC = await humansCollection.create(0);
-                const syncPouch = syncC.pouch;
+                const syncPouch = syncC;
 
                 const c = await humansCollection.create(0, 'colsource' + util.randomCouchString(5));
                 const c2 = await humansCollection.create(0, 'colsync' + util.randomCouchString(5));
@@ -542,7 +542,7 @@ describe('replication.test.js', () => {
 
             // Replicate from db1-collection1 to db2-collection2
             const pullstate = collection2.sync({
-                remote: collection1.pouch,
+                remote: collection1,
                 direction: {
                     pull: true,
                     push: false
@@ -568,6 +568,28 @@ describe('replication.test.js', () => {
             // clean up afterwards
             db1.destroy();
             db2.destroy();
+        });
+        it('#641 using a collections internal pouch for replication should be prevented', async () => {
+            const colA = await humansCollection.create(0);
+            const colB = await humansCollection.create(0);
+
+            await AsyncTestUtil.assertThrows(
+                () => colA.sync({
+                    remote: colB.pouch,
+                    direction: {
+                        pull: true,
+                        push: false
+                    },
+                    options: {
+                        live: false
+                    }
+                }),
+                Error,
+                'pouchdb as remote'
+            );
+
+            colA.database.destroy();
+            colB.database.destroy();
         });
     });
 });
