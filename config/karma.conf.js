@@ -73,7 +73,7 @@ if (process.env.TRAVIS) {
      * overwrite reporters-default
      * So no big list will be shown at log
      */
-    configuration.reporters = [];
+    // configuration.reporters = [];
 }
 
 module.exports = function(config) {
