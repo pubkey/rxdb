@@ -229,6 +229,9 @@ export class RxDocument {
         if (valueObj === null) return;
 
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
+
+        if (!pathProperties) return;
+
         if (pathProperties.properties) pathProperties = pathProperties.properties;
 
         Object.keys(pathProperties)
