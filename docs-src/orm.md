@@ -33,7 +33,7 @@ const heroes = await myDatabase.collection({
   schema: mySchema,
   statics: {
     whoAmI: function(){
-        this.name;
+        return this.name;
     }
   }
 });
