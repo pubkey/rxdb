@@ -52,12 +52,12 @@ const configuration = {
     client: {
         mocha: {
             bail: true,
-            timeout: 6000
+            timeout: 12000
         }
     },
     browsers: ['Chrome_travis_ci'],
-    browserDisconnectTimeout: 6000,
-    processKillTimeout: 6000,
+    browserDisconnectTimeout: 12000,
+    processKillTimeout: 12000,
     customLaunchers: {
         Chrome_travis_ci: {
             base: 'Chrome',

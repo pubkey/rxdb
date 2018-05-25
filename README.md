@@ -420,7 +420,7 @@ Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or explori
 - Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
 
 # Thank you
-A big **Thank you** to every [supporter](https://github.com/pubkey/rxdb/blob/master/SUPPORTER.md) and every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
+A big **Thank you** to every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
 
 ## License
 

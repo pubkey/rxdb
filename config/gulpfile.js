@@ -4,13 +4,13 @@ const tests = require('../test/unit.test');
 
 const mochaSettings = {
     bail: true,
-    timeout: 6000,
+    timeout: 10000,
     exit: true,
     reporter: 'spec'
 };
 
 if (process.env.TRAVIS) {
-    mochaSettings.timeout = 12000;
+    mochaSettings.timeout = 24000;
     mochaSettings.reporter = 'min';
 }
 

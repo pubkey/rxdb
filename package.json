@@ -117,7 +117,7 @@
     "child-process-promise": "2.2.1",
     "concurrently": "3.5.1",
     "convert-hrtime": "2.0.0",
-    "cross-env": "5.1.5",
+    "cross-env": "5.1.6",
     "delete": "1.1.0",
     "dependency-check": "3.1.0",
     "detect-browser": "2.5.0",
@@ -149,7 +149,7 @@
     "mocha": "5.2.0",
     "mocha.parallel": "0.15.5",
     "nconf": "0.10.0",
-    "node": "10.1.0",
+    "node": "10.2.0",
     "pouchdb": "6.4.3",
     "pouchdb-adapter-http": "6.4.3",
     "pouchdb-adapter-idb": "6.4.3",
@@ -163,15 +163,15 @@
     "request-promise": "4.2.2",
     "request-promise-native": "1.0.5",
     "rimraf": "2.6.2",
-    "rxjs": "6.1.0",
+    "rxjs": "6.2.0",
     "shelljs": "0.8.2",
-    "ts-node": "6.0.3",
+    "ts-node": "6.0.5",
     "typescript": "2.8.3",
     "uglify-js": "3.3.27",
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.8.1"
+    "webpack": "4.8.3"
   },
   "// greenkeeper": [
     "// babel-eslint: https://github.com/babel/babel-eslint/issues/530"
