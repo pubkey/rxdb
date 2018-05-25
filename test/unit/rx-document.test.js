@@ -651,7 +651,7 @@ config.parallel('rx-document.test.js', () => {
         });
     });
     describe('issues', () => {
-        it('ISSUE #66 - insert -> remove -> upsert does not give new state', async () => {
+        it('#66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
@@ -673,7 +673,7 @@ config.parallel('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('ISSUE #66 - insert -> remove -> insert does not give new state', async () => {
+        it('#66 - insert -> remove -> insert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             const primary = docData.passportId;
@@ -694,7 +694,7 @@ config.parallel('rx-document.test.js', () => {
 
             c.database.destroy();
         });
-        it('ISSUE #76 - deepEqual does not work correctly for Arrays', async () => {
+        it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await RxDatabase.create({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
@@ -723,6 +723,43 @@ config.parallel('rx-document.test.js', () => {
             const afterSkills = colDump.docs[0].skills;
             assert.equal(afterSkills.length, 4);
             assert.ok(afterSkills.includes(newSkill));
+            db.destroy();
+        });
+        it('#646 Skip defining getter and setter when property not defined in schema', async () => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    key: {
+                        type: 'string',
+                        primary: true
+                    },
+                    value: {
+                        type: 'object'
+                    }
+                }
+            };
+            const col = await await db.collection({
+                name: 'heroes',
+                schema
+            });
+
+            const doc = await col.insert({
+                key: 'foobar',
+                value: {
+                    x: {
+                        foo: 'bar'
+                    }
+                }
+            });
+
+            const value = doc.get('value.x');
+            assert.equal(value.foo, 'bar');
+
             db.destroy();
         });
     });

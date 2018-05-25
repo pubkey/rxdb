@@ -6,6 +6,7 @@ Bugfixes:
   - Unhandled promise rejection with DOMException [#644](https://github.com/pubkey/rxdb/issues/644)
   - Prevent bug with replication of internal pouchdb's [#641](https://github.com/pubkey/rxdb/pull/641)
   - LocalDocument observe on field not working [#661](https://github.com/pubkey/rxdb/issues/661)
+  - Skip defining getter and setter when property not defined in schema [#646](https://github.com/pubkey/rxdb/pull/646)
 
 ### 7.6.0 (May 12, 2018)
 
