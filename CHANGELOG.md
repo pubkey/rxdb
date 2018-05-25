@@ -7,6 +7,7 @@ Bugfixes:
   - Prevent bug with replication of internal pouchdb's [#641](https://github.com/pubkey/rxdb/pull/641)
   - LocalDocument observe on field not working [#661](https://github.com/pubkey/rxdb/issues/661)
   - Skip defining getter and setter when property not defined in schema [#646](https://github.com/pubkey/rxdb/pull/646)
+  - (typings) Fix `type: 'object'` not correctly recognized (via gitter at 2018 Mai 22 19:20)
 
 ### 7.6.0 (May 12, 2018)
 

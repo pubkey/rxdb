@@ -12,6 +12,7 @@ describe('typings.test.js', () => {
             RxDatabase,
             RxDatabaseCreator,
             RxCollection,
+            RxCollectionCreator,
             RxDocument,
             RxJsonSchema,
             RxError,
@@ -468,6 +469,25 @@ describe('typings.test.js', () => {
                     }
                 });
             });
+        });
+        it('via gitter at 2018 Mai 22 19:20', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const db: RxDatabase = {} as RxDatabase;
+                    const heroSchema = {
+                        version: 0,
+                        type: 'object',
+                        properties: {
+                        },
+                        required: ['color']
+                    }
+                    const colCreator: RxCollectionCreator = {
+                        name: 'herocollection',
+                        schema: heroSchema
+                    };
+                })();
+            `;
+            await transpileCode(code);
         });
     });
 });

@@ -1,7 +1,7 @@
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string';
+export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | string;
 export interface JsonSchema {
     allOf?: JsonSchema[];
     anyOf?: JsonSchema[];
@@ -56,10 +56,15 @@ export declare class RxJsonSchema {
     title?: string;
     description?: string;
     version: number;
-    type: 'object';
+    /**
+     * TODO this looks like a typescript-bug
+     * we have to allows all string because the 'object'-literal is not recognized
+     * retry this in later typescript-versions
+     */
+    type: 'object' | string;
     properties: { [key: string]: RxJsonSchemaTopLevel };
-    required?: Array<string>;
-    compoundIndexes?: Array<string | Array<string>>;
+    required?: string[];
+    compoundIndexes?: string[] | string[][];
     disableKeyCompression?: boolean;
     additionalProperties?: true;
     attachments?: {
