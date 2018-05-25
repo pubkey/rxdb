@@ -17,7 +17,10 @@ import * as util from '../util';
 
 
 import {
-    filter
+    filter,
+    map,
+    distinctUntilChanged
+
 } from 'rxjs/operators';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
@@ -154,9 +157,10 @@ export class RxLocalDocument extends RxDocument.RxDocument {
             throw RxError.newRxError('LD4');
 
         return this._dataSync$
-            .map(data => objectPath.get(data, path))
-            .distinctUntilChanged()
-            .asObservable();
+            .pipe(
+                map(data => objectPath.get(data, path)),
+                distinctUntilChanged()
+            ).asObservable();
     }
     set(objPath, value) {
         if (!value) {

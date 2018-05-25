@@ -225,11 +225,11 @@ config.parallel('local-documents.test.js', () => {
             doc1.remove();
 
             await doc2.deleted$
-            .pipe(
-                filter(d => d === true),
-                first()
-            )
-            .toPromise();
+                .pipe(
+                    filter(d => d === true),
+                    first()
+                )
+                .toPromise();
 
             db.destroy();
             db2.destroy();
@@ -348,8 +348,22 @@ config.parallel('local-documents.test.js', () => {
 
             c.database.destroy();
         });
-    });
-    describe('exxx', () => {
-        // it('e', () => process.exit());
+        it('#661 LocalDocument Observer field error', async () => {
+            const myCollection = await humansCollection.create(0);
+            await myCollection.upsertLocal(
+                'foobar', {
+                    foo: 'bar'
+                }
+            );
+
+            const emitted = [];
+            const localDoc = await myCollection.getLocal('foobar');
+            localDoc.get$('foo').subscribe(val => emitted.push(val));
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.equal(emitted[0], 'bar');
+
+            myCollection.database.destroy();
+        });
     });
 });
