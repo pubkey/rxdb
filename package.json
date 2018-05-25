@@ -171,7 +171,7 @@
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.8.3"
+    "webpack": "4.9.1"
   },
   "// greenkeeper": [
     "// babel-eslint: https://github.com/babel/babel-eslint/issues/530",
