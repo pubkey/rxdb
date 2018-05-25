@@ -194,9 +194,9 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
             }
             if (path === this.primaryPath) throw _rxError2['default'].newRxError('LD4');
 
-            return this._dataSync$.map(function (data) {
+            return this._dataSync$.pipe((0, _operators.map)(function (data) {
                 return _objectPath2['default'].get(data, path);
-            }).distinctUntilChanged().asObservable();
+            }), (0, _operators.distinctUntilChanged)()).asObservable();
         }
     }, {
         key: 'set',

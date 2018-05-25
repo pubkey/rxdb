@@ -21,7 +21,7 @@ import DocCache from '../doc-cache';
 import RxError from '../rx-error';
 import * as util from '../util';
 
-import { filter } from 'rxjs/operators';
+import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 
 var DOC_CACHE_BY_PARENT = new WeakMap();
 var _getDocCache = function _getDocCache(parent) {
@@ -132,9 +132,9 @@ export var RxLocalDocument = function (_RxDocument$RxDocumen) {
         }
         if (path === this.primaryPath) throw RxError.newRxError('LD4');
 
-        return this._dataSync$.map(function (data) {
+        return this._dataSync$.pipe(map(function (data) {
             return objectPath.get(data, path);
-        }).distinctUntilChanged().asObservable();
+        }), distinctUntilChanged()).asObservable();
     };
 
     RxLocalDocument.prototype.set = function set(objPath, value) {

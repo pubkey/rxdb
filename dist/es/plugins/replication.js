@@ -15,9 +15,12 @@ import Core from '../core';
 import RxCollection from '../rx-collection';
 import RxChangeEvent from '../rx-change-event';
 import RxError from '../rx-error';
+import PouchDB from '../pouch-db';
 
 // add pouchdb-replication-plugin
 Core.plugin(PouchReplicationPlugin);
+
+var INTERNAL_POUCHDBS = new WeakSet();
 
 export var RxReplicationState = function () {
     function RxReplicationState(collection) {
@@ -200,6 +203,15 @@ export function sync(_ref2) {
         query = _ref2.query;
 
     options = util.clone(options);
+
+    // prevent #641 by not allowing internal pouchdbs as remote
+    if (PouchDB.isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
+        throw RxError.newRxError('RC3', {
+            database: this.database.name,
+            collection: this.name
+        });
+    }
+
     // if remote is RxCollection, get internal pouchdb
     if (RxCollection.isInstanceOf(remote)) {
         remote.watchForChanges();
@@ -267,10 +279,17 @@ export var prototypes = {
 
 export var overwritable = {};
 
+export var hooks = {
+    createRxCollection: function createRxCollection(collection) {
+        INTERNAL_POUCHDBS.add(collection.pouch);
+    }
+};
+
 export default {
     rxdb: rxdb,
     prototypes: prototypes,
     overwritable: overwritable,
+    hooks: hooks,
     watchForChanges: watchForChanges,
     sync: sync
 };

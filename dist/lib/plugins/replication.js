@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.overwritable = exports.prototypes = exports.rxdb = exports.RxReplicationState = undefined;
+exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxReplicationState = undefined;
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -53,17 +53,21 @@ var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
+var _pouchDb = require('../pouch-db');
+
+var _pouchDb2 = _interopRequireDefault(_pouchDb);
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 // add pouchdb-replication-plugin
-/**
- * this plugin adds the RxCollection.sync()-function to rxdb
- * you can use it to sync collections with remote or local couchdb-instances
- */
+_core2['default'].plugin(_pouchdbReplication2['default']); /**
+                                                            * this plugin adds the RxCollection.sync()-function to rxdb
+                                                            * you can use it to sync collections with remote or local couchdb-instances
+                                                            */
 
-_core2['default'].plugin(_pouchdbReplication2['default']);
+var INTERNAL_POUCHDBS = new WeakSet();
 
 var RxReplicationState = exports.RxReplicationState = function () {
     function RxReplicationState(collection) {
@@ -249,6 +253,15 @@ function sync(_ref2) {
         query = _ref2.query;
 
     options = util.clone(options);
+
+    // prevent #641 by not allowing internal pouchdbs as remote
+    if (_pouchDb2['default'].isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
+        throw _rxError2['default'].newRxError('RC3', {
+            database: this.database.name,
+            collection: this.name
+        });
+    }
+
     // if remote is RxCollection, get internal pouchdb
     if (_rxCollection2['default'].isInstanceOf(remote)) {
         remote.watchForChanges();
@@ -316,10 +329,17 @@ var prototypes = exports.prototypes = {
 
 var overwritable = exports.overwritable = {};
 
+var hooks = exports.hooks = {
+    createRxCollection: function createRxCollection(collection) {
+        INTERNAL_POUCHDBS.add(collection.pouch);
+    }
+};
+
 exports['default'] = {
     rxdb: rxdb,
     prototypes: prototypes,
     overwritable: overwritable,
+    hooks: hooks,
     watchForChanges: watchForChanges,
     sync: sync
 };

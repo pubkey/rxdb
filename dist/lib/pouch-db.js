@@ -71,4 +71,8 @@ _pouchdbCore2['default'].getBatch = function (pouchdb, limit) {
     });
 };
 
+_pouchdbCore2['default'].isInstanceOf = function (obj) {
+    return obj instanceof _pouchdbCore2['default'];
+};
+
 exports['default'] = _pouchdbCore2['default'];

@@ -264,6 +264,7 @@ var RxDocument = exports.RxDocument = function () {
             if (valueObj === null) return;
 
             var pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
+            if (typeof pathProperties === 'undefined') return;
             if (pathProperties.properties) pathProperties = pathProperties.properties;
 
             Object.keys(pathProperties).forEach(function (key) {

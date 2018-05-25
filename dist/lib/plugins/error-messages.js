@@ -122,6 +122,7 @@ var CODES = {
     // plugins/replication.js
     RC1: 'Replication: already added',
     RC2: 'RxCollection.sync() query must be from the same RxCollection',
+    RC3: 'RxCollection.sync() Do not use a collection\'s pouchdb as remote, use the collection instead',
 
     // plugins/schema-check.js
     SC1: 'fieldnames do not match the regex',
