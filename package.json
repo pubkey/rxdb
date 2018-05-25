@@ -174,7 +174,7 @@
     "webpack": "4.8.3"
   },
   "// greenkeeper": [
-    "// babel-eslint: https://github.com/babel/babel-eslint/issues/530"
+    "// babel-eslint: https://github.com/babel/babel-eslint/issues/530",
     "// node: native build fails too often"
   ],
   "greenkeeper": {
