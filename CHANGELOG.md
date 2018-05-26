@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 7.6.1 (May 26, 2018)
 
 Bugfixes:
   - Unhandled promise rejection with DOMException [#644](https://github.com/pubkey/rxdb/issues/644)
