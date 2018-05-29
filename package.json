@@ -175,12 +175,14 @@
   },
   "// greenkeeper": [
     "// babel-eslint: https://github.com/babel/babel-eslint/issues/530",
-    "// node: native build fails too often"
+    "// node: native build fails too often",
+    "// webpack: too many updates"
   ],
   "greenkeeper": {
     "ignore": [
       "babel-eslint",
-      "node"
+      "node",
+      "webpack"
     ]
   }
 }
