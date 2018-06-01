@@ -313,17 +313,23 @@ export class RxCollection {
         json = util.clone(json);
         json = this.schema.fillObjectWithDefaults(json);
 
-        if (json._id) {
-            throw RxError.newRxError('COL2', {
-                data: json
-            });
-        }
+        if (this.schema.primaryPath === '_id') {
+            if (json._id && !this.options.provideId) {
+                throw RxError.newRxError('COL2', {
+                    data: json
+                });
+            }
 
-        // fill _id
-        if (
-            this.schema.primaryPath === '_id' &&
-            !json._id
-        ) json._id = util.generateId();
+            if (!json._id) {
+                if (this.options.provideId) {
+                    throw RxError.newRxError('COL19', {
+                        data: json
+                    });
+                }
+                // fill _id
+                json._id = util.generateId();
+            }
+        }
 
         await this._runHooks('pre', 'insert', json);
 
