@@ -108,7 +108,7 @@ config.parallel('local-documents.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('.remove()', () => {
         it('should remove the document', async () => {
@@ -364,6 +364,68 @@ config.parallel('local-documents.test.js', () => {
             assert.equal(emitted[0], 'bar');
 
             myCollection.database.destroy();
+        });
+        it('#663', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory'
+            });
+            const boundaryMgmtSchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    boudariesGrp: {
+                        type: 'array',
+                        uniqueItems: false,
+                        item: {
+                            type: 'object',
+                            properties: {
+                                bndrPlnId: {
+                                    type: 'string',
+                                },
+                                bndrPlnNm: {
+                                    type: 'string',
+                                }
+                            }
+                        },
+                        default: [],
+                    },
+                }
+            };
+            const boundaryMgmtCol = await db.collection({
+                name: 'human',
+                schema: boundaryMgmtSchema
+            });
+
+
+            // insert non-local
+            await boundaryMgmtCol.insert({
+                boudariesGrp: [
+                    'mygroup'
+                ]
+            });
+
+            await boundaryMgmtCol.insertLocal('metadata', {
+                userData: {},
+                selectedBndrPlnId: 'foobar1',
+                actionRev: 0,
+                bndrId: 'foobar2',
+                direction: 'foobar3',
+            });
+
+            // save localgrpId
+            const grpId = 'foobar';
+            const metadata = await boundaryMgmtCol.getLocal('metadata');
+            metadata.set('selectedBndrPlnId', grpId);
+            await metadata.save();
+
+            const data = await boundaryMgmtCol.findOne().exec();
+            const json = data.toJSON();
+
+            assert.equal(json.boudariesGrp[0], 'mygroup');
+
+            db.destroy();
         });
     });
 });
