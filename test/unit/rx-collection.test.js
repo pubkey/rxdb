@@ -325,6 +325,27 @@ config.parallel('rx-collection.test.js', () => {
 
                     db.destroy();
                 });
+                it('should insert when _id given (with options.provideId=true)', async () => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human,
+                        options: {
+                            provideId: true
+                        }
+                    });
+                    const human = schemaObjects.human();
+                    const _id = 'Human:' + util.randomCouchString(20);
+                    human._id = _id;
+                    await collection.insert(human);
+                    const doc = await collection.findOne().exec();
+                    assert.equal(doc._id, _id);
+
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('should not insert broken human (required missing)', async () => {
@@ -410,6 +431,26 @@ config.parallel('rx-collection.test.js', () => {
                         }),
                         Error,
                         'is required'
+                    );
+                    db.destroy();
+                });
+                it('should not insert when _id is missing (with options.provideId=true)', async () => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human,
+                        options: {
+                            provideId: true
+                        }
+                    });
+                    const human = schemaObjects.human();
+                    await AsyncTestUtil.assertThrows(
+                        () => collection.insert(human),
+                        Error,
+                        'you must provide ._id when options.provideId is truthy'
                     );
                     db.destroy();
                 });
