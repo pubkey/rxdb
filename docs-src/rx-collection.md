@@ -172,7 +172,7 @@ myDatabase.destroy();
 ```
 
 ### sync()
-This method allows you to replicate data between other RxCollections, pouchdb instances or remove servers which support the couchdb-sync-protocol.
+This method allows you to replicate data between other RxCollections, pouchdb instances or remote servers which support the couchdb-sync-protocol.
 Full documentation on how to use replication is [here](./replication.md).
 
 ### remove()
