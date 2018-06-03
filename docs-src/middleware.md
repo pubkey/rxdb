@@ -165,7 +165,7 @@ An remove-hook receives the document which is removed.
 - postRemove parallel-hooks
 - event is emitted to RxDatabase and RxCollection
 
-#### preSave
+#### preRemove
 
 ```js
 // series
