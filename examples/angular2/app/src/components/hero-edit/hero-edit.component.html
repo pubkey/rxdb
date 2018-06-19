@@ -1,10 +1,10 @@
-<md-card *ngIf="hero" class="hero-edit-component">
-    <md-card-subtitle>Edit</md-card-subtitle>
+<mat-card *ngIf="hero" class="hero-edit-component">
+    <mat-card-subtitle>Edit</mat-card-subtitle>
 
     <div class="alert" *ngIf="!(hero.synced$ | async)">
         <h4>Warning:</h4>
         <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
-        <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
+        <button mat-raised-button color="primary" (click)=hero.resync()>resync</button>
     </div>
 
     <div class="alert deleted" *ngIf="(hero.deleted$ | async)">
@@ -18,12 +18,12 @@
     </h5>
 
 
-    <md-input-container>
-        HP: <input mdInput type="number" [(ngModel)]="hero.hp" min="0" [max]="hero.maxHP" name="hp" />
-    </md-input-container>
+    <mat-form-field>
+        HP: <input matInput type="number" [(ngModel)]="hero.hp" min="0" [max]="hero.maxHP" name="hp" />
+    </mat-form-field>
 
     <br />
-    <button md-raised-button color="primary" (click)="cancel()">cancel</button>
-    <button *ngIf="!(hero.deleted$ | async)" md-raised-button color="primary" (click)=submit()>submit</button>
+    <button mat-raised-button color="primary" (click)="cancel()">cancel</button>
+    <button *ngIf="!(hero.deleted$ | async)" mat-raised-button color="primary" (click)=submit()>submit</button>
 
-</md-card>
+</mat-card>

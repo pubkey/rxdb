@@ -163,7 +163,7 @@
     "request-promise": "4.2.2",
     "request-promise-native": "1.0.5",
     "rimraf": "2.6.2",
-    "rxjs": "6.2.0",
+    "rxjs": "^6.2.1",
     "shelljs": "0.8.2",
     "ts-node": "6.1.1",
     "typescript": "2.8.3",
