@@ -1,9 +1,9 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { routing, appRoutingProviders } from './app.routes';
 import { FormsModule }   from '@angular/forms';
-import { MaterialModule } from '@angular/material';
-
+import { MatCardModule, MatListModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule } from '@angular/material';
 
 import {
     APP_BASE_HREF,
@@ -40,9 +40,10 @@ import { DatabaseService } from './services/database.service';
 @NgModule({
     imports: [
         BrowserModule,
+        BrowserAnimationsModule,
         FormsModule,
         routing,
-        MaterialModule
+        MatCardModule, MatListModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule,
     ],
     providers: [
         DatabaseService,

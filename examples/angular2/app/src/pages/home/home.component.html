@@ -3,13 +3,13 @@
 
     <hero-edit *ngIf="editedHero" [(hero)]="editedHero" (done)="editedHero=null"></hero-edit>
 
-    <md-card>
-        <md-card-subtitle>Heroes</md-card-subtitle>
+    <mat-card>
+        <mat-card-subtitle>Heroes</mat-card-subtitle>
         <heroes-list (edit)="editHero($event)"></heroes-list>
-    </md-card>
+    </mat-card>
     <br/>
-    <md-card>
-        <md-card-subtitle>Add Hero</md-card-subtitle>
+    <mat-card>
+        <mat-card-subtitle>Add Hero</mat-card-subtitle>
         <hero-insert></hero-insert>
-    </md-card>
+    </mat-card>
 </div>

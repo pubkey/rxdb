@@ -1,9 +1,9 @@
 <div class="loading" *ngIf="!heroes" class="hero-list-component">
-    <md-spinner class="app-spinner"></md-spinner>
+    <mat-spinner class="app-spinner"></mat-spinner>
 </div>
 
-<md-list *ngIf="heroes" class="hero-list-component">
-    <md-list-item *ngFor="let hero of heroes" class="listHero">
+<mat-list *ngIf="heroes" class="hero-list-component">
+    <mat-list-item *ngFor="let hero of heroes" class="listHero">
         <div class="color-box" [style.background-color]="hero.color"></div>
         <div class="name">
           {{hero.name}}
@@ -15,5 +15,5 @@
             <i class="fa fa-pencil-square-o" aria-hidden="true" (click)="editHero(hero)"></i>
             <i class="fa fa-trash-o" aria-hidden="true" (click)="deleteHero(hero)"></i>
         </div>
-    </md-list-item>
-</md-list>
+    </mat-list-item>
+</mat-list>
