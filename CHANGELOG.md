@@ -1,5 +1,12 @@
 # Changelog
 
+
+### X.X.X (comming soon)
+
+
+Other:
+  - Updated Angular-Example to 6.0.5 Thanks [@fuerst](https://github.com/fuerst)
+
 ### 7.6.1 (May 26, 2018)
 
 Bugfixes:
