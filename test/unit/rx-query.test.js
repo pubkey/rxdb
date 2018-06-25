@@ -441,18 +441,18 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(2)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
             assert.equal(query._execOverDatabaseCount, 1);
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.equal(query._execOverDatabaseCount, 1);
@@ -479,9 +479,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
 
             assert.equal(query._execOverDatabaseCount, 1);
@@ -707,9 +707,9 @@ config.parallel('rx-query.test.js', () => {
             // insert 100
             await Promise.all(
                 new Array(100)
-                .fill(0)
-                .map(() => schemaObjects.human())
-                .map(docData => c.insert(docData))
+                    .fill(0)
+                    .map(() => schemaObjects.human())
+                    .map(docData => c.insert(docData))
             );
 
             // make and exec query
@@ -720,9 +720,9 @@ config.parallel('rx-query.test.js', () => {
             // produces changeEvents
             await Promise.all(
                 new Array(300) // higher than ChangeEventBuffer.limit
-                .fill(0)
-                .map(() => schemaObjects.human())
-                .map(docData => c.insert(docData))
+                    .fill(0)
+                    .map(() => schemaObjects.human())
+                    .map(docData => c.insert(docData))
             );
 
             // re-exec query
@@ -848,7 +848,7 @@ config.parallel('rx-query.test.js', () => {
                 schema
             });
 
-            const destroyAll = async function(collection) {
+            const destroyAll = async function (collection) {
                 const remove = async item => {
                     try {
                         //                        console.log('remove:');
@@ -883,9 +883,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => generateDocData())
-                .map(data => col.insert(data))
+                    .fill(0)
+                    .map(() => generateDocData())
+                    .map(data => col.insert(data))
             );
 
             const emitted = [];
@@ -1026,6 +1026,65 @@ config.parallel('rx-query.test.js', () => {
             const explained2 = await collection.pouch.explain(q2.toJSON());
             assert.ok(explained2.index.ddoc);
             assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
+
+            collection.database.destroy();
+        });
+        it('#698 Same query producing a different result', async () => {
+            const mySchema = {
+                version: 0,
+                disableKeyCompression: true,
+                type: 'object',
+                properties: {
+                    event_id: {
+                        type: 'number'
+                    },
+                    user_id: {
+                        type: 'string'
+                    },
+                    created_at: {
+                        type: 'number',
+                        index: true
+                    }
+                }
+            };
+            const collection = await humansCollection.createBySchema(mySchema);
+
+            await collection.insert({
+                event_id: 1,
+                user_id: '6',
+                created_at: 1337
+            });
+            await collection.insert({
+                event_id: 2,
+                user_id: '6',
+                created_at: 1337
+            });
+
+            const resultDocs1 = await collection
+                .find({
+                    $and: [
+                        { event_id: { $eq: 2 } },
+                        { user_id: { $eq: '6' } },
+                        { created_at: { $gt: null } },
+                    ],
+                })
+                .sort({ created_at: 'desc' })
+                .exec();
+            const resultData1 = resultDocs1.map(doc => doc.toJSON());
+
+            const resultDocs2 = await collection
+                .find()
+                .where('event_id').eq(2)
+                .where('user_id').eq('6')
+                .where('created_at').gt(null)
+                .sort({ created_at: 'desc' })
+                .exec();
+            const resultData2 = resultDocs2.map(doc => doc.toJSON());
+
+
+            assert.equal(resultData1.length, 1);
+            assert.equal(resultData1[0].event_id, 2);
+            assert.deepEqual(resultData1, resultData2);
 
             collection.database.destroy();
         });
