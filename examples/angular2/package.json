@@ -24,15 +24,15 @@
   "author": "pubkey",
   "license": "MIT",
   "dependencies": {
-    "@angular/animations": "^6.0.5",
-    "@angular/cdk": "^6.3.0",
+    "@angular/animations": "6.0.5",
+    "@angular/cdk": "6.3.0",
     "@angular/common": "6.0.5",
     "@angular/compiler": "6.0.5",
     "@angular/compiler-cli": "6.0.5",
     "@angular/core": "6.0.5",
     "@angular/forms": "6.0.5",
     "@angular/http": "6.0.5",
-    "@angular/material": "^6.3.0",
+    "@angular/material": "6.3.0",
     "@angular/platform-browser": "6.0.5",
     "@angular/platform-browser-dynamic": "6.0.5",
     "@angular/platform-server": "6.0.5",
@@ -52,9 +52,9 @@
     "regenerator": "0.11.0",
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "../../",
-    "rxjs": "^6.2.1",
-    "rxjs-compat": "^6.2.1",
-    "zone.js": "^0.8.26"
+    "rxjs": "6.2.1",
+    "rxjs-compat": "6.2.1",
+    "zone.js": "0.8.26"
   },
   "devDependencies": {
     "@types/chai": "4.0.4",
