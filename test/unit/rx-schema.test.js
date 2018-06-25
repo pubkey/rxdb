@@ -533,7 +533,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(schemaObj.type, 'string');
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.fillObjectWithDefaults()', () => {
             describe('positive', () => {
@@ -652,6 +652,93 @@ config.parallel('rx-schema.test.js', () => {
                 firstName: 'Bob',
                 age: 56
             });
+            db.destroy();
+        });
+        it('#697 Indexes do not work in objects named "properties"', async () => {
+            const mySchema = {
+                version: 0,
+                id: 'post',
+                type: 'object',
+                properties: {
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                index: true,
+                            },
+                            content: {
+                                type: 'string',
+                                index: true,
+                            }
+                        }
+                    },
+                },
+            };
+
+            // create a database
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'test',
+                schema: mySchema
+            });
+
+            await collection.insert({
+                properties: {
+                    name: 'Title',
+                    content: 'Post content'
+                }
+            });
+
+            db.destroy();
+        });
+        it('#697(2) should also work deep nested', async () => {
+            const mySchema = {
+                version: 0,
+                id: 'post',
+                type: 'object',
+                properties: {
+                    properties: {
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                index: true,
+                            },
+                            properties: {
+                                type: 'string',
+                                index: true,
+                            }
+                        }
+                    },
+                },
+            };
+
+            // create a database
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const collection = await db.collection({
+                name: 'test',
+                schema: mySchema
+            });
+
+            await collection.insert({
+                properties: {
+                    name: 'Title',
+                    properties: 'Post content'
+                }
+            });
+
+            assert.deepEqual(
+                [['properties.name'], ['properties.properties']],
+                collection.schema.indexes
+            );
+
             db.destroy();
         });
     });

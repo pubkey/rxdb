@@ -4,6 +4,9 @@
 ### X.X.X (comming soon)
 
 
+Bugfixes:
+  - Indexes do not work in objects named "properties" [#697](https://github.com/pubkey/rxdb/issues/697)
+
 Other:
   - Updated Angular-Example to 6.0.5 Thanks [@fuerst](https://github.com/fuerst)
 

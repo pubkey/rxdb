@@ -194,28 +194,32 @@ export function hasCrypt(jsonSchema) {
 
 
 export function getIndexes(jsonID, prePath = '') {
-    let indexes = [];
-    Object
-        .entries(jsonID)
-        .forEach(([key, obj]) => {
-            const path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
-
-            if (obj.index)
-                indexes.push([path]);
-
-            if (typeof obj === 'object' && !Array.isArray(obj)) {
-                const add = getIndexes(obj, path);
-                indexes = indexes.concat(add);
-            }
+    const flattened = util.flattenObject(jsonID);
+    const keys = Object.keys(flattened);
+    let indexes = keys
+        // flattenObject returns only ending paths, we need all paths pointing to an object    
+        .map(key => {
+            const splitted = key.split('.');
+            splitted.pop(); // all but last
+            return splitted.join('.');
+        })
+        .filter(key => key !== '')
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
+        .filter(key => { // check if this path defines an index
+            const value = objectPath.get(jsonID, key);
+            if (value.index) return true;
+            else return false;
+        })
+        .map(key => { // replace inner properties
+            key = key.replace('properties.', ''); // first
+            key = key.replace(/\.properties\./g, '.'); // middle
+            return [util.trimDots(key)];
         });
 
-    if (prePath === '') {
-        const addCompound = jsonID.compoundIndexes || [];
-        indexes = indexes.concat(addCompound);
-    }
+        // add compound-indexes
+    const addCompound = jsonID.compoundIndexes || [];
+    indexes = indexes.concat(addCompound);
 
-    indexes = indexes
-        .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
     return indexes;
 }
 
@@ -259,7 +263,7 @@ export function normalize(jsonSchema) {
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-const fillWithDefaultSettings = function(schemaObj) {
+const fillWithDefaultSettings = function (schemaObj) {
     schemaObj = util.clone(schemaObj);
 
     // additionalProperties is always false
