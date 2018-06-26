@@ -73,11 +73,11 @@ export class RxDatabase {
         const docsRes = await colPouch.allDocs();
         await Promise.all(
             docsRes.rows
-            .map(row => ({
-                _id: row.key,
-                _rev: row.value.rev
-            }))
-            .map(doc => colPouch.remove(doc._id, doc._rev))
+                .map(row => ({
+                    _id: row.key,
+                    _rev: row.value.rev
+                }))
+                .map(doc => colPouch.remove(doc._id, doc._rev))
         );
     }
 
@@ -97,7 +97,7 @@ export class RxDatabase {
                 pwHashDoc = await this.lockedRun(
                     () => this._adminPouch.get('_local/pwHash')
                 );
-            } catch (e) {}
+            } catch (e) { }
             if (!pwHashDoc) {
                 try {
                     await this.lockedRun(
@@ -106,7 +106,7 @@ export class RxDatabase {
                             value: util.hash(this.password)
                         })
                     );
-                } catch (e) {}
+                } catch (e) { }
             }
             if (pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value) {
                 throw RxError.newRxError('DB1', {
@@ -236,9 +236,9 @@ export class RxDatabase {
             });
         await Promise.all(
             relevantDocs
-            .map(doc => this.lockedRun(
-                () => this._collectionsPouch.remove(doc)
-            ))
+                .map(doc => this.lockedRun(
+                    () => this._collectionsPouch.remove(doc)
+                ))
         );
         return relevantDocs.map(doc => doc.version);
     }
@@ -291,7 +291,7 @@ export class RxDatabase {
             collectionDoc = await this.lockedRun(
                 () => this._collectionsPouch.get(internalPrimary)
             );
-        } catch (e) {}
+        } catch (e) { }
 
         if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
             // collection already exists with different schema, check if it has documents
@@ -333,7 +333,7 @@ export class RxDatabase {
                         version: collection.schema.version
                     })
                 );
-            } catch (e) {}
+            } catch (e) { }
         }
 
         const cEvent = RxChangeEvent.create(
@@ -541,8 +541,24 @@ export async function create({
 }
 
 
+
+export function getPouchLocation(dbName, collectionName, schemaVersion) {
+    const prefix = dbName + '-rxdb-' + schemaVersion + '-';
+    if (!collectionName.includes('/')) {
+        return prefix + collectionName;
+    } else {
+        // if collectionName is a path, we have to prefix the last part only
+        const split = collectionName.split('/');
+        const last = split.pop();
+
+        let ret = split.join('/');
+        ret += '/' + prefix + last;
+        return ret;
+    }
+}
+
 function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}, pouchSettingsFromRxDatabaseCreator = {}) {
-    const pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
+    const pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
     const pouchDbParameters = {
         location: pouchLocation,
         adapter: util.adapterObject(adapter),
@@ -582,14 +598,14 @@ export async function removeDatabase(databaseName, adapter) {
     // remove collections
     Promise.all(
         collectionsData.rows
-        .map(colDoc => colDoc.id)
-        .map(id => {
-            const split = id.split('-');
-            const name = split[0];
-            const version = parseInt(split[1], 10);
-            const pouch = _spawnPouchDB(databaseName, adapter, name, version);
-            return pouch.destroy();
-        })
+            .map(colDoc => colDoc.id)
+            .map(id => {
+                const split = id.split('-');
+                const name = split[0];
+                const version = parseInt(split[1], 10);
+                const pouch = _spawnPouchDB(databaseName, adapter, name, version);
+                return pouch.destroy();
+            })
     );
 
     // remove internals

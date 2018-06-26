@@ -16,6 +16,11 @@ import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 
+import {
+    getPouchLocation
+} from '../../dist/lib/rx-database';
+
+
 config.parallel('rx-database.test.js', () => {
     describe('.create()', () => {
         describe('positive', () => {
@@ -581,6 +586,24 @@ config.parallel('rx-database.test.js', () => {
             assert.ok(col2);
 
             await db2.destroy();
+        });
+    });
+
+    describe('ISSUES', () => {
+        it('#677 wrong pouch-location when path as collection-name', () => {
+            const pouchPathNormal = getPouchLocation(
+                'mydb',
+                'humans',
+                5
+            );
+            assert.equal(pouchPathNormal, 'mydb-rxdb-5-humans');
+            
+            const pouchPath = getPouchLocation(
+                'mydb',
+                'subfolder/humans',
+                5
+            );
+            assert.equal(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
     });
 
