@@ -10,6 +10,7 @@ This list contains things that have to be done but will create breaking changes.
 - RxDatabase().collection() currently accepts `RxSchema` and `RxJsonSchema` which is confusing. Only allow `RxJsonSchema`
 - Schemas can currently have `required: true` only specific fields. This is agains the json-schema-standard. Required fields should be set via `required: ['fieldOne', 'fieldTwo']`
 - Move to [babel-preset-env](https://babeljs.io/env/)
+- Do cross-intance communication with https://github.com/pubkey/broadcast-channel (faster, less performance-waste)
 
 # Maybe
 
