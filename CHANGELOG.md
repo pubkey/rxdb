@@ -1,5 +1,11 @@
 # Changelog
 
+### 8.0.0 (comming soon) BREAKING
+
+Breaking:
+  - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
+
+
 
 ### 7.7.0 (July 6, 2018)
 
