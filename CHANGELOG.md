@@ -7,6 +7,7 @@
 Bugfixes:
   - Indexes do not work in objects named "properties" [#697](https://github.com/pubkey/rxdb/issues/697)
   - Wrong pouch-location when folderpath used for collection [#677](https://github.com/pubkey/rxdb/issues/677)
+  - Mutating a result-array from `RxQuery.exec()` or `RxQuery.$` does not affect future calls [#698#issuecomment-402604237](https://github.com/pubkey/rxdb/issues/698#issuecomment-402604237)
 
 Other:
   - Updated Angular-Example to 6.0.5 Thanks [@fuerst](https://github.com/fuerst)

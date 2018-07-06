@@ -3,6 +3,10 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config';
 import clone from 'clone';
 
+import {
+    first
+} from 'rxjs/operators';
+
 import RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as humansCollection from './../helper/humans-collection';
@@ -1087,6 +1091,39 @@ config.parallel('rx-query.test.js', () => {
             assert.deepEqual(resultData1, resultData2);
 
             collection.database.destroy();
+        });
+        it('698#issuecomment-402604237 mutating a returned array should not affect exec-calls afterwards', async () => {
+            const c = await humansCollection.create(2);
+            const query = c.find();
+
+            // exec-calls
+            const result1 = await query.exec();
+            assert.equal(result1.length, 2);
+            result1.push({
+                foo: 'bar'
+            });
+            const result2 = await query.exec();
+            assert.equal(result2.length, 2);
+
+            c.database.destroy();
+
+            // subscriptions
+            const c2 = await humansCollection.create(2);
+            const query2 = c2.find();
+            const res1 = await query2.$
+                .pipe(
+                    first()
+                ).toPromise();
+            res1.push({
+                foo: 'bar'
+            });
+            const res2 = await query2.$
+                .pipe(
+                    first()
+                ).toPromise();
+            assert.equal(res2.length, 2);
+
+            c2.database.destroy();
         });
     });
 
