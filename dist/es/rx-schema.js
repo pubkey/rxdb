@@ -223,29 +223,34 @@ export function hasCrypt(jsonSchema) {
 export function getIndexes(jsonID) {
     var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
-    var indexes = [];
-    Object.entries(jsonID).forEach(function (_ref5) {
-        var key = _ref5[0],
-            obj = _ref5[1];
-
-        var path = key === 'properties' ? prePath : util.trimDots(prePath + '.' + key);
-
-        if (obj.index) indexes.push([path]);
-
-        if (typeof obj === 'object' && !Array.isArray(obj)) {
-            var add = getIndexes(obj, path);
-            indexes = indexes.concat(add);
-        }
+    var flattened = util.flattenObject(jsonID);
+    var keys = Object.keys(flattened);
+    var indexes = keys
+    // flattenObject returns only ending paths, we need all paths pointing to an object    
+    .map(function (key) {
+        var splitted = key.split('.');
+        splitted.pop(); // all but last
+        return splitted.join('.');
+    }).filter(function (key) {
+        return key !== '';
+    }).filter(function (elem, pos, arr) {
+        return arr.indexOf(elem) === pos;
+    }) // unique
+    .filter(function (key) {
+        // check if this path defines an index
+        var value = objectPath.get(jsonID, key);
+        if (value.index) return true;else return false;
+    }).map(function (key) {
+        // replace inner properties
+        key = key.replace('properties.', ''); // first
+        key = key.replace(/\.properties\./g, '.'); // middle
+        return [util.trimDots(key)];
     });
 
-    if (prePath === '') {
-        var addCompound = jsonID.compoundIndexes || [];
-        indexes = indexes.concat(addCompound);
-    }
+    // add compound-indexes
+    var addCompound = jsonID.compoundIndexes || [];
+    indexes = indexes.concat(addCompound);
 
-    indexes = indexes.filter(function (elem, pos, arr) {
-        return arr.indexOf(elem) === pos;
-    }); // unique;
     return indexes;
 }
 

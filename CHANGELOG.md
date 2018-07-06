@@ -1,7 +1,7 @@
 # Changelog
 
 
-### X.X.X (comming soon)
+### 7.7.0 (July 6, 2018)
 
 
 Bugfixes:
@@ -239,7 +239,7 @@ Quickfix because of new [pouchdb-import](https://github.com/pouchdb/pouchdb/issu
 
 Features:
   - Added [RxCollection.atomicUpsert](https://pubkey.github.io/rxdb/rx-collection.html#atomicupsert)
-  - Added [defaul values](https://pubkey.github.io/rxdb/rx-schema.html#default)
+  - Added [default values](https://pubkey.github.io/rxdb/rx-schema.html#default)
   - Added generic typings so it's easier to be extended [see](https://github.com/pubkey/rxdb/blob/master/examples/angular2/app/src/RxDB.d.ts)
 
 Other:

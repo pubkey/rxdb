@@ -105,6 +105,7 @@ exports.pouchReplicationFunction = pouchReplicationFunction;
 exports.randomCouchString = randomCouchString;
 exports.shuffleArray = shuffleArray;
 exports.adapterObject = adapterObject;
+exports.flattenObject = flattenObject;
 
 var _randomToken = require('random-token');
 
@@ -402,3 +403,27 @@ function recursiveDeepCopy(o) {
 var clone = exports.clone = recursiveDeepCopy;
 
 var isElectronRenderer = exports.isElectronRenderer = (0, _isElectron2['default'])();
+
+/**
+ * returns a flattened object
+ * @link https://gist.github.com/penguinboy/762197
+ */
+function flattenObject(ob) {
+    var toReturn = {};
+
+    for (var i in ob) {
+        if (!ob.hasOwnProperty(i)) continue;
+
+        if ((0, _typeof3['default'])(ob[i]) == 'object') {
+            var flatObject = flattenObject(ob[i]);
+            for (var x in flatObject) {
+                if (!flatObject.hasOwnProperty(x)) continue;
+
+                toReturn[i + '.' + x] = flatObject[x];
+            }
+        } else {
+            toReturn[i] = ob[i];
+        }
+    }
+    return toReturn;
+};

@@ -519,7 +519,7 @@ var RxQuery = exports.RxQuery = function () {
         key: 'exec',
         value: function () {
             var _ref15 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
-                var changed;
+                var changed, current, ret;
                 return _regenerator2['default'].wrap(function _callee4$(_context4) {
                     while (1) {
                         switch (_context4.prev = _context4.next) {
@@ -543,9 +543,16 @@ var RxQuery = exports.RxQuery = function () {
                                 break;
 
                             case 7:
-                                return _context4.abrupt('return', this._results$.getValue());
 
-                            case 8:
+                                // than return the current results
+                                current = this._results$.getValue();
+
+                                // copy the array so it wont matter if the user modifies it
+
+                                ret = Array.isArray(current) ? current.slice() : current;
+                                return _context4.abrupt('return', ret);
+
+                            case 10:
                             case 'end':
                                 return _context4.stop();
                         }
@@ -716,7 +723,11 @@ var RxQuery = exports.RxQuery = function () {
 
                 this._$ = (0, _rxjs.merge)(res$, changeEvents$);
             }
-            return this._$;
+            return this._$.pipe((0, _operators.map)(function (current) {
+                // copy the array so it wont matter if the user modifies it
+                var ret = Array.isArray(current) ? current.slice() : current;
+                return ret;
+            }));
         }
     }]);
     return RxQuery;

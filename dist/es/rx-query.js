@@ -12,7 +12,7 @@ import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
 
 import { merge, BehaviorSubject } from 'rxjs';
-import { mergeMap, filter } from 'rxjs/operators';
+import { mergeMap, filter, map } from 'rxjs/operators';
 
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
@@ -438,7 +438,7 @@ export var RxQuery = function () {
 
     RxQuery.prototype.exec = function () {
         var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
-            var changed;
+            var changed, current, ret;
             return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
                     switch (_context4.prev = _context4.next) {
@@ -462,9 +462,16 @@ export var RxQuery = function () {
                             break;
 
                         case 7:
-                            return _context4.abrupt('return', this._results$.getValue());
 
-                        case 8:
+                            // than return the current results
+                            current = this._results$.getValue();
+
+                            // copy the array so it wont matter if the user modifies it
+
+                            ret = Array.isArray(current) ? current.slice() : current;
+                            return _context4.abrupt('return', ret);
+
+                        case 10:
                         case 'end':
                             return _context4.stop();
                     }
@@ -629,7 +636,11 @@ export var RxQuery = function () {
 
                 this._$ = merge(res$, changeEvents$);
             }
-            return this._$;
+            return this._$.pipe(map(function (current) {
+                // copy the array so it wont matter if the user modifies it
+                var ret = Array.isArray(current) ? current.slice() : current;
+                return ret;
+            }));
         }
     }]);
 

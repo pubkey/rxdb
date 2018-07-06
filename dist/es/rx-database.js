@@ -918,11 +918,26 @@ export var create = function () {
     };
 }();
 
+export function getPouchLocation(dbName, collectionName, schemaVersion) {
+    var prefix = dbName + '-rxdb-' + schemaVersion + '-';
+    if (!collectionName.includes('/')) {
+        return prefix + collectionName;
+    } else {
+        // if collectionName is a path, we have to prefix the last part only
+        var split = collectionName.split('/');
+        var last = split.pop();
+
+        var ret = split.join('/');
+        ret += '/' + prefix + last;
+        return ret;
+    }
+}
+
 function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
     var pouchSettings = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
     var pouchSettingsFromRxDatabaseCreator = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 
-    var pouchLocation = dbName + '-rxdb-' + schemaVersion + '-' + collectionName;
+    var pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
     var pouchDbParameters = {
         location: pouchLocation,
         adapter: util.adapterObject(adapter),
