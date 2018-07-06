@@ -3,7 +3,7 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-- Switch out default-validator to ajv
+- ~~Switch out default-validator to ajv~~ Canceled: Ajv increases the build size by 80kB and has a worse performance
 - disable KeyCompression by default.
 - compress encrypted hex-strings before saving them
 - refactor `rx-change-event.js` so the typings have a more clear structure
