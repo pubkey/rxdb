@@ -57,7 +57,7 @@ describe('replication.test.js', () => {
     });
     config.parallel('test pouch-sync to ensure nothing broke', () => {
         describe('positive', () => {
-            it('sync two collections over server', async function() {
+            it('sync two collections over server', async function () {
                 const serverURL = await SpawnServer.spawn();
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(0);
@@ -65,7 +65,7 @@ describe('replication.test.js', () => {
                 const pw8 = AsyncTestUtil.waitResolveable(1000);
                 c.pouch.sync(serverURL, {
                     live: true
-                }).on('error', function(err) {
+                }).on('error', function (err) {
                     console.log('error:');
                     console.log(JSON.stringify(err));
                     throw new Error(err);
@@ -118,9 +118,9 @@ describe('replication.test.js', () => {
                             live: true,
                             include_docs: true
                         }), 'change').pipe(
-                        map(ar => ar[0]),
-                        filter(e => !e.id.startsWith('_'))
-                    ).subscribe(e => e1.push(e));
+                            map(ar => ar[0]),
+                            filter(e => !e.id.startsWith('_'))
+                        ).subscribe(e => e1.push(e));
                 const e2 = [];
                 const pouch2$ =
                     fromEvent(c2.pouch.changes({
@@ -276,9 +276,9 @@ describe('replication.test.js', () => {
                 });
                 const emited = [];
                 repState.change$.subscribe(cE => emited.push(cE));
-                await AsyncTestUtil.waitUntil(() => emited.length >= 2);
+                await AsyncTestUtil.waitUntil(() => emited.length >= 1);
                 await c2.insert(schemaObjects.human());
-                await AsyncTestUtil.waitUntil(() => emited.length >= 3);
+                await AsyncTestUtil.waitUntil(() => emited.length >= 2);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -340,7 +340,7 @@ describe('replication.test.js', () => {
                             lastEv.push.ok === true &&
                             lastEv.pull.ok === true
                         ) ret = true;
-                    } catch (e) {}
+                    } catch (e) { }
                     return ret;
                 });
                 sub.unsubscribe();
@@ -480,7 +480,7 @@ describe('replication.test.js', () => {
                 c2.database.destroy();
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('ISSUES', () => {
         it('#630 Query cache is not being invalidated by replication', async () => {

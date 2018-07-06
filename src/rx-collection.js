@@ -83,35 +83,35 @@ export class RxCollection {
         // INDEXES
         await Promise.all(
             this.schema.indexes
-            .map(indexAr => {
-                const compressedIdx = indexAr
-                    .map(key => {
-                        if (!this.schema.doKeyCompression())
-                            return key;
-                        else
-                            return this._keyCompressor._transformKey('', '', key.split('.'));
-                    });
+                .map(indexAr => {
+                    const compressedIdx = indexAr
+                        .map(key => {
+                            if (!this.schema.doKeyCompression())
+                                return key;
+                            else
+                                return this._keyCompressor._transformKey('', '', key.split('.'));
+                        });
 
-                return this.database.lockedRun(
-                    () => this.pouch.createIndex({
-                        index: {
-                            fields: compressedIdx
-                        }
-                    })
-                );
-            })
+                    return this.database.lockedRun(
+                        () => this.pouch.createIndex({
+                            index: {
+                                fields: compressedIdx
+                            }
+                        })
+                    );
+                })
         );
 
         this._subs.push(
             this._observable$
-            .pipe(
-                filter(cE => !cE.data.isLocal)
-            )
-            .subscribe(cE => {
-                // when data changes, send it to RxDocument in docCache
-                const doc = this._docCache.get(cE.data.doc);
-                if (doc) doc._handleChangeEvent(cE);
-            })
+                .pipe(
+                    filter(cE => !cE.data.isLocal)
+                )
+                .subscribe(cE => {
+                    // when data changes, send it to RxDocument in docCache
+                    const doc = this._docCache.get(cE.data.doc);
+                    if (doc) doc._handleChangeEvent(cE);
+                })
         );
     }
 
@@ -578,7 +578,7 @@ export class RxCollection {
 
         await Promise.all(
             hooks.parallel
-            .map(hook => hook(doc))
+                .map(hook => hook(doc))
         );
     }
 
@@ -643,7 +643,7 @@ export class RxCollection {
  * @throws {Error|TypeError} if not ok
  * @return {boolean}
  */
-const checkMigrationStrategies = function(schema, migrationStrategies) {
+const checkMigrationStrategies = function (schema, migrationStrategies) {
     // migrationStrategies must be object not array
     if (
         typeof migrationStrategies !== 'object' ||
@@ -701,7 +701,7 @@ export function properties() {
  * @param  {{}} statics [description]
  * @throws if not allowed
  */
-const checkOrmMethods = function(statics) {
+const checkOrmMethods = function (statics) {
     Object
         .entries(statics)
         .forEach(([k, v]) => {
