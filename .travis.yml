@@ -13,7 +13,7 @@ before_install:
   - sh -e /etc/init.d/xvfb start
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 script:
-- travis_retry rm -r node_modules && npm install --depth 0 --silent
+- travis_retry npm install --depth 0 --silent
 - travis_retry npm run test:node
 - travis_retry npm run test:fast
 - travis_retry npm run test:browser
