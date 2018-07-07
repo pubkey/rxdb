@@ -299,7 +299,7 @@ export function randomCouchString(length = 10) {
  */
 export function shuffleArray(arr) {
     return arr.sort(() => (Math.random() - 0.5));
-};
+}
 
 
 /**
@@ -316,7 +316,7 @@ export function adapterObject(adapter) {
         };
     }
     return adapterObj;
-};
+}
 
 
 function recursiveDeepCopy(o) {
@@ -353,4 +353,4 @@ export function flattenObject(ob) {
         }
     }
     return toReturn;
-};
+}

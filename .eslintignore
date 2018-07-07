@@ -1,0 +1,4 @@
+test/playground/*
+test_tmp/
+tmp/
+dist/

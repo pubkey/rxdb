@@ -195,7 +195,8 @@ export class RxQuery {
     get $() {
         if (!this._$) {
             // use results$ to emit new results
-            const res$ = this._results$
+            const res$ = this
+                ._results$
                 .pipe(
                     // whe run _ensureEqual() on each subscription
                     // to ensure it triggers a re-run when subscribing after some time
@@ -204,9 +205,8 @@ export class RxQuery {
                         if (hasChanged) return 'WAITFORNEXTEMIT';
                         else return results;
                     }),
-                    filter(results => results !== 'WAITFORNEXTEMIT'),
-            )
-                .asObservable();
+                    filter(results => results !== 'WAITFORNEXTEMIT')
+                ).asObservable();
 
             // we also subscribe to the changeEvent-stream so it detects changed if it has subscribers
             const changeEvents$ = this.collection.$
@@ -310,7 +310,7 @@ export class RxQuery {
 
         this._toJSON = json;
         return this._toJSON;
-    };
+    }
 
     /**
      * get the key-compression version of this query
@@ -390,7 +390,7 @@ export class RxQuery {
         clonedThis.mquery.regex(params);
 
         return clonedThis._tunnelQueryCache();
-    };
+    }
 
 
     /**
@@ -446,7 +446,7 @@ export class RxQuery {
         }
         clonedThis.mquery.sort(params);
         return clonedThis._tunnelQueryCache();
-    };
+    }
 
     limit(amount) {
         if (this.op === 'findOne')

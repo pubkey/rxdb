@@ -199,7 +199,7 @@ export async function putAttachment({
         }
     );
     return ret;
-};
+}
 
 /**
  * get an attachment of the document by its id
@@ -219,7 +219,7 @@ export function getAttachment(id) {
         this
     );
     return attachment;
-};
+}
 
 /**
  * returns all attachments of the document
@@ -236,7 +236,7 @@ export function allAttachments() {
                 this
             );
         });
-};
+}
 
 export async function preMigrateDocument(action) {
     delete action.migrated._attachments;

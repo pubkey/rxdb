@@ -14,18 +14,18 @@ const minPassLength = 8;
 export function encrypt(value, password) {
     const encrypted = cryptoAes.encrypt(value, password);
     return encrypted.toString();
-};
+}
 
 export function decrypt(cipherText, password) {
     const decrypted = cryptoAes.decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
-};
+}
 
-const _encryptValue = function(value) {
+const _encryptValue = function (value) {
     return encrypt(JSON.stringify(value), this._password);
 };
 
-const _decryptValue = function(encValue) {
+const _decryptValue = function (encValue) {
     const decrypted = decrypt(encValue, this._password);
     return JSON.parse(decrypted);
 };
@@ -43,7 +43,7 @@ export const prototypes = {
     }
 };
 export const overwritable = {
-    validatePassword: function(password) {
+    validatePassword: function (password) {
         if (password && typeof password !== 'string') {
             throw RxError.newRxTypeError('EN1', {
                 password

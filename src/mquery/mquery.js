@@ -461,7 +461,7 @@ function push(opts, field, value) {
         .replace('desc', '-1')
         .replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
-};
+}
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
@@ -479,7 +479,7 @@ function _pushArr(opts, field, value) {
             .replace('desc', '-1')
             .replace('descending', '-1');*/
     opts.sort.push([field, value]);
-};
+}
 
 /**
  * Determines if `conds` can be merged using `mquery().merge()`

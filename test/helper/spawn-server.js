@@ -29,4 +29,4 @@ export async function spawn() {
             res(ret + '/' + randomToken(5) + '/');
         });
     });
-};
+}

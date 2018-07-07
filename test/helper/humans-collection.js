@@ -156,7 +156,7 @@ export async function createAgeIndex(amount = 20) {
 }
 
 
-export async function multipleOnSameDB() {
+export async function multipleOnSameDB(size = 10) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),

@@ -156,7 +156,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         //        console.log('$emit called:');
         //        console.dir(changeEvent);
     }
-};
+}
 
 
 function toCleanSchema(rxSchema) {
@@ -204,7 +204,7 @@ export async function spawnInMemory() {
 
     await preparePromise;
     return col;
-};
+}
 
 
 export const rxdb = true;

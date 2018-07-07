@@ -568,7 +568,7 @@ export class RxCollection {
                 parallel: []
             };
         }
-    };
+    }
     async _runHooks(when, key, doc) {
         const hooks = this.getHooks(when, key);
         if (!hooks) return;

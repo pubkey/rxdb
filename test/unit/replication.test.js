@@ -117,7 +117,8 @@ describe('replication.test.js', () => {
                             since: 'now',
                             live: true,
                             include_docs: true
-                        }), 'change').pipe(
+                        }), 'change')
+                        .pipe(
                             map(ar => ar[0]),
                             filter(e => !e.id.startsWith('_'))
                         ).subscribe(e => e1.push(e));

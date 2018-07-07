@@ -35,7 +35,7 @@ export function checkFieldNameRegex(fieldName) {
             fieldName
         });
     }
-};
+}
 
 /**
  * validate that all schema-related things are ok
@@ -73,7 +73,6 @@ export function validateFieldsDeep(jsonSchema) {
                     throw RxError.newRxError('SC4', {
                         fieldName
                     });
-                    break;
             }
         }
 
@@ -131,7 +130,7 @@ export function validateFieldsDeep(jsonSchema) {
     }
     traverse(jsonSchema, '');
     return true;
-};
+}
 
 
 /**
@@ -261,7 +260,7 @@ export function checkSchema(jsonID) {
                 type: index.schemaObj.type
             });
         });
-};
+}
 
 
 

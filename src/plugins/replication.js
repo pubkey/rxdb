@@ -223,7 +223,7 @@ export function sync({
         this._repStates.push(repState);
     })();
     return repState;
-};
+}
 
 export const rxdb = true;
 export const prototypes = {

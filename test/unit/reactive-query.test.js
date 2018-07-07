@@ -39,7 +39,7 @@ config.parallel('reactive-query.test.js', () => {
             let pw8 = AsyncTestUtil.waitResolveable(500);
             query.$.subscribe(newResults => {
                 lastValue = newResults;
-                if (!!newResults) pw8.resolve();
+                if (newResults) pw8.resolve();
             });
             await pw8.promise;
             assert.equal(lastValue.length, 1);
@@ -103,7 +103,7 @@ config.parallel('reactive-query.test.js', () => {
                 firstName: doc.get('firstName')
             }).$.subscribe(newV => {
                 values = newV;
-                if (!!newV) pw8.resolve();
+                if (newV) pw8.resolve();
             });
 
             await pw8.promise;

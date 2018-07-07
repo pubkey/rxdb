@@ -391,7 +391,7 @@ class LeaderElector {
 export function create(database) {
     const elector = new LeaderElector(database);
     return elector;
-};
+}
 
 export const rxdb = true;
 export const prototypes = {};

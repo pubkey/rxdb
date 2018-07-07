@@ -120,7 +120,7 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'object',
                                 properties: {
                                     first$Name: {
-                                        type: string
+                                        type: 'string'
                                     }
                                 }
                             }
@@ -135,7 +135,7 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'object',
                                 properties: {
                                     firstName$: {
-                                        type: string
+                                        type: 'string'
                                     }
                                 }
                             }
@@ -740,22 +740,6 @@ config.parallel('rx-schema.test.js', () => {
             );
 
             db.destroy();
-        });
-    });
-    describe('performance', () => {
-        it('validate object often', async () => {
-            return; // comment out to run speed-test
-            const schema = RxSchema.create(schemas.human);
-            const obj = schemaObjects.human();
-            obj._id = util.randomCouchString(10);
-
-            console.dir(obj);
-            console.time('t1');
-            for (let i = 0; i < 5000; i++)
-                schema.validate(obj);
-
-            console.timeEnd('t1');
-            process.exit();
         });
     });
     describe('wait a bit', () => {

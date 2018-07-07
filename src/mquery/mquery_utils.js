@@ -26,7 +26,7 @@ export function merge(to, from) {
                 to[key] = from[key];
         }
     }
-};
+}
 
 /**
  * Same as merge but clones the assigned values.
@@ -59,7 +59,7 @@ export function mergeClone(to, from) {
             }
         }
     }
-};
+}
 
 /**
  * Determines if `arg` is an object.
@@ -69,4 +69,4 @@ export function mergeClone(to, from) {
  */
 export function isObject(arg) {
     return '[object Object]' === arg.toString();
-};
+}

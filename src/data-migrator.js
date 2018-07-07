@@ -71,8 +71,8 @@ class DataMigrator {
             state.total = totalCount;
             observer.next(util.clone(state));
 
-            let currentCol = null;
-            while (currentCol = oldCols.shift()) {
+            let currentCol = oldCols.shift();
+            while (currentCol) {
                 const migrationState$ = currentCol.migrate(batchSize);
                 await new Promise(res => {
                     const sub = migrationState$.subscribe(
@@ -90,6 +90,7 @@ class DataMigrator {
                             res();
                         });
                 });
+                currentCol = oldCols.shift();
             }
 
             state.done = true;

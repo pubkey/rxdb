@@ -153,7 +153,7 @@ export class RxSchema {
      * returns true if key-compression should be done
      */
     doKeyCompression() {
-        return !!!this.jsonID.disableKeyCompression;
+        return !this.jsonID.disableKeyCompression;
     }
 }
 
@@ -193,7 +193,7 @@ export function hasCrypt(jsonSchema) {
 }
 
 
-export function getIndexes(jsonID, prePath = '') {
+export function getIndexes(jsonID) {
     const flattened = util.flattenObject(jsonID);
     const keys = Object.keys(flattened);
     let indexes = keys

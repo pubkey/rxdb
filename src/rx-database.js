@@ -621,7 +621,7 @@ export async function removeDatabase(databaseName, adapter) {
  */
 export async function checkAdapter(adapter) {
     return await overwritable.checkAdapter(adapter);
-};
+}
 
 export function isInstanceOf(obj) {
     return obj instanceof RxDatabase;

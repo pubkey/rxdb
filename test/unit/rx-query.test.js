@@ -19,7 +19,7 @@ config.parallel('rx-query.test.js', () => {
         describe('basic', () => {
             it('should distinguish between different sort-orders', async () => {
                 // TODO I don't know if this is defined in the couchdb-spec
-                return;
+                /*return;
                 const q1 = new MQuery();
                 q1.sort('age');
                 q1.sort('name');
@@ -30,7 +30,7 @@ config.parallel('rx-query.test.js', () => {
 
 
                 console.dir(q1);
-                console.dir(q2);
+                console.dir(q2);*/
             });
         });
         describe('.clone()', () => {
@@ -297,6 +297,7 @@ config.parallel('rx-query.test.js', () => {
 
         it('TODO should distinguish between different sort-orders', async () => {
             // TODO I don't know if this is defined in the couchdb-spec
+            /*
             return;
 
             const col = await humansCollection.create(0);
@@ -319,6 +320,7 @@ config.parallel('rx-query.test.js', () => {
             assert.notEqual(q, q2);
             assert.notEqual(q.id, q2.id);
             col.database.destroy();
+            */
         });
     });
 
@@ -758,6 +760,7 @@ config.parallel('rx-query.test.js', () => {
             // TODO it seams like this fails randomly
             // further investigation needed
             return;
+            /*
 
             // QueryChangeDetector.enable();
             const schema = {
@@ -916,6 +919,7 @@ config.parallel('rx-query.test.js', () => {
             sub.unsubscribe();
             db.destroy();
             db2.destroy();
+            */
         });
         it('#585 sort by sub-path not working', async () => {
             const schema = {

@@ -56,7 +56,7 @@ export class RxError extends Error {
     get typeError() {
         return false;
     }
-};
+}
 
 export class RxTypeError extends TypeError {
     constructor(code, message, parameters = {}) {
@@ -76,7 +76,7 @@ export class RxTypeError extends TypeError {
     get typeError() {
         return true;
     }
-};
+}
 
 
 export function pluginMissing(pluginKey) {
@@ -85,15 +85,15 @@ export function pluginMissing(pluginKey) {
         `You are using a function which must be overwritten by a plugin.
         You should either prevent the usage of this function or add the plugin via:
           - es5-require:
-            RxDB.plugin(require(\'rxdb/plugins/${pluginKey}\'))
+            RxDB.plugin(require('rxdb/plugins/${pluginKey}'))
           - es6-import:
-            import ${util.ucfirst(pluginKey)}Plugin from \'rxdb/plugins/${pluginKey}\';
+            import ${util.ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
             RxDB.plugin(${util.ucfirst(pluginKey)}Plugin);
         `, {
             pluginKey
         }
     );
-};
+}
 
 // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';

@@ -124,7 +124,7 @@ class KeyCompressor {
             });
             return ret;
         }
-    };
+    }
 
     decompress(obj) {
         if (!this.schema.doKeyCompression()) return util.clone(obj);

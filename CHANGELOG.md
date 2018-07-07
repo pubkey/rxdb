@@ -6,6 +6,8 @@ Breaking:
   - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
 
 
+Other:
+  - Upgrade to eslint 5 (no more babel-eslint)
 
 ### 7.7.0 (July 6, 2018)
 

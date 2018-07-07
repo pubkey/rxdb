@@ -314,7 +314,7 @@ export class RxDocument {
 
         objectPath.set(this._data, objPath, value);
         return this;
-    };
+    }
 
     /**
      * updates document

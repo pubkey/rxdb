@@ -13,7 +13,7 @@ class DocCache {
     delete(id) {
         delete this._map.delete(id);
     }
-};
+}
 
 export function create() {
     return new DocCache();

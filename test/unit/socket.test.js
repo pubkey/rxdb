@@ -79,7 +79,7 @@ config.parallel('socket.test.js', () => {
 
     it('cleanup should delete old events (takes 5 seconds)', async function() {
         return true; // commented out because this takes soo long
-        this.timeout(10 * 1000);
+        /*this.timeout(10 * 1000);
         const db = await RxDatabase.create({
             name: util.randomCouchString(10),
             adapter: 'memory',
@@ -100,7 +100,7 @@ config.parallel('socket.test.js', () => {
 
         const docs = await socket.fetchDocs();
         assert.equal(docs.length, 0);
-        db.destroy();
+        db.destroy();*/
     });
 
     /*    it('exit', () => {

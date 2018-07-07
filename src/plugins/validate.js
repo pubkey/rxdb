@@ -55,7 +55,7 @@ const validate = function(obj, schemaPath = '') {
             obj,
             schema: this.jsonID
         });
-    };
+    }
 };
 
 const runAfterSchemaCreated = rxSchema => {

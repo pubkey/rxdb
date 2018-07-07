@@ -38,7 +38,7 @@ function tunnelCollectionPath(db, path, app, colName) {
         }
         next();
     });
-};
+}
 
 export function spawnServer({
     path = '/db',

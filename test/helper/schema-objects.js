@@ -13,7 +13,7 @@ export function human() {
         lastName: faker.name.lastName(),
         age: randomInt(10, 50)
     };
-};
+}
 
 export function simpleHuman() {
     return {
@@ -21,15 +21,14 @@ export function simpleHuman() {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName()
     };
-};
+}
 
 export function simpleHumanAge() {
     return {
         passportId: randomToken(12),
         age: randomInt(10, 50) + ''
     };
-};
-
+}
 
 export function nestedHuman() {
     return {
@@ -40,7 +39,7 @@ export function nestedHuman() {
             level: 5
         }
     };
-};
+}
 
 export function deepNestedHuman() {
     return {
@@ -53,7 +52,7 @@ export function deepNestedHuman() {
             }
         }
     };
-};
+}
 
 export function heroArray() {
     return {
@@ -67,15 +66,13 @@ export function heroArray() {
     };
 }
 
-
 export function encryptedHuman() {
     return {
         passportId: randomToken(12),
         firstName: faker.name.firstName(),
         secret: randomToken(12)
     };
-};
-
+}
 
 export function encryptedObjectHuman() {
     return {
@@ -87,7 +84,6 @@ export function encryptedObjectHuman() {
         }
     };
 }
-
 
 export function refHuman(bestFriend) {
     return {

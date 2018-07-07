@@ -30,9 +30,10 @@ const schema = {
     required: ['firstName', 'lastName']
 };
 
-const run = async function() {
+const run = async function () {
     // create database
-    const db = await RxDatabase.create({
+    const RxDB = require('../../');
+    const db = await RxDB.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
         ignoreDuplicate: true
@@ -53,7 +54,7 @@ const run = async function() {
 
     // query
     const doc = await db.humans.findOne().where('firstName').ne('foobar').exec();
-    assert.ok(Core.isRxDocument(doc));
+    assert.ok(RxDB.isRxDocument(doc));
 
     // destroy database
     await db.destroy();

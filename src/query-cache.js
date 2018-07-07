@@ -26,7 +26,7 @@ class QueryCache {
         this.subs.forEach(sub => sub.unsubscribe());
         this._map = new Map();
     }
-};
+}
 
 export function create() {
     return new QueryCache();

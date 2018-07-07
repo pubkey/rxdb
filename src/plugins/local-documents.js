@@ -210,7 +210,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         );
         this.$emit(changeEvent);
     }
-};
+}
 
 
 let INIT_DONE = false;
