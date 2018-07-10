@@ -50,12 +50,13 @@
     "build:es": "rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es",
     "build": "npm run clear && npm run transpile && npm run build:es && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
     "build:min": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && uglifyjs --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
-    "build:size": "echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./dist/rxdb.browserify.min.js",
+    "build:webpack": "npm run transpile && cross-env NODE_ENV=build webpack --config ./config/webpack.config.js",
+    "build:size": "npm run build:webpack && echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./test_tmp/webpack.bundle.js",
     "docs:install": "gitbook install docs-src",
     "docs:serve": "gitbook serve docs-src",
     "docs:build": "gitbook install docs-src && gitbook build docs-src docs && cp docs-src/files/logo/icon.png docs/gitbook/images/apple-touch-icon-precomposed-152.png && cp docs-src/files/logo/icon.ico docs/gitbook/images/favicon.ico && npm run docs:copy",
     "docs:copy": "cp -r docs-src/files docs/files",
-    "disc": "npm run transpile && browserify dist/lib/index.js --full-paths | uglifyjs --compress --mangle | discify --open --full-paths",
+    "disc": "npm run transpile && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:fast' src/ test/",
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"
@@ -168,7 +169,9 @@
     "walk-sync": "0.3.2",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.15.1"
+    "webpack": "4.15.1",
+    "webpack-bundle-analyzer": "2.13.1",
+    "webpack-cli": "3.0.8"
   },
   "// greenkeeper": [
     "// babel-eslint: https://github.com/babel/babel-eslint/issues/530",
