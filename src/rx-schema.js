@@ -271,7 +271,7 @@ const fillWithDefaultSettings = function (schemaObj) {
 
     // fill with key-compression-state ()
     if (!schemaObj.hasOwnProperty('disableKeyCompression'))
-        schemaObj.disableKeyCompression = false;
+        schemaObj.disableKeyCompression = true;
 
     // compoundIndexes must be array
     schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];

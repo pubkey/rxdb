@@ -3,15 +3,15 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-- ~~Switch out default-validator to ajv~~ Canceled: Ajv increases the build size by 80kB and has a worse performance
-- disable KeyCompression by default.
-- compress encrypted hex-strings before saving them
-- refactor `rx-change-event.js` so the typings have a more clear structure
-- RxDatabase().collection() currently accepts `RxSchema` and `RxJsonSchema` which is confusing. Only allow `RxJsonSchema`
-- Schemas can currently have `required: true` only specific fields. This is agains the json-schema-standard. Required fields should be set via `required: ['fieldOne', 'fieldTwo']`
-- Move to [babel-preset-env](https://babeljs.io/env/)
-- Do cross-intance communication with https://github.com/pubkey/broadcast-channel (faster, less performance-waste)
-- @ngohuunam via gitter: "I need to apply to pouch setting option skip_setup: true. it's seem re-enabled again in v.7.0"
+- [x] ~~Switch out default-validator to ajv~~ Canceled: Ajv increases the build size by 80kB and has a worse performance
+- [x] disable KeyCompression by default.
+- [ ] compress encrypted hex-strings before saving them
+- [ ] refactor `rx-change-event.js` so the typings have a more clear structure
+- [ ] RxDatabase().collection() currently accepts `RxSchema` and `RxJsonSchema` which is confusing. Only allow `RxJsonSchema`
+- [ ] Schemas can currently have `required: true` only specific fields. This is agains the json-schema-standard. Required fields should be set via `required: ['fieldOne', 'fieldTwo']`
+- [ ] Move to [babel-preset-env](https://babeljs.io/env/)
+- [ ] Do cross-intance communication with https://github.com/pubkey/broadcast-channel (faster, less performance-waste)
+- [ ] @ngohuunam via gitter: "I need to apply to pouch setting option skip_setup: true. it's seem re-enabled again in v.7.0"
 
 # Maybe
 

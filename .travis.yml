@@ -3,7 +3,7 @@ sudo:            required
 os:
   - linux
 node_js:
-  - "9.2.1"
+  - "10.6.0"
 services:
   - docker
 
