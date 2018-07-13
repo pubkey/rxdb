@@ -57,6 +57,17 @@ export function validateFieldsDeep(jsonSchema) {
             });
         }
 
+        /**
+         * required fields cannot be set via 'required: true',
+         * but must be set via required: []
+         */
+        if(schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean'){
+            throw RxError.newRxError('SC24', {
+                fieldName
+            });
+        }
+
+         
         // if ref given, must be type=='string' or type=='array' with string-items
         if (schemaObj.hasOwnProperty('ref')) {
             switch (schemaObj.type) {

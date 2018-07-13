@@ -252,10 +252,10 @@ config.parallel('reactive-query.test.js', () => {
                         primary: true
                     },
                     state: {
-                        type: 'object',
-                        required: true
+                        type: 'object'
                     }
-                }
+                },
+                required: ['state']
             };
             const name = util.randomCouchString(10);
             const db = await RxDB.create({

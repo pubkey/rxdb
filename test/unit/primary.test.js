@@ -6,7 +6,7 @@
  *    - index:    true
  *    - final:    true
  *    - unique:   true
- *    - required: true
+ *    - required
  */
 
 import assert from 'assert';

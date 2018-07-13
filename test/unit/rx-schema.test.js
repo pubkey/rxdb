@@ -84,6 +84,19 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }), Error);
                 });
+                it('break when required is set via required: true', ()=> {
+                    assert.throws(() => SchemaCheck.checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        description: 'dot in fieldname',
+                        properties: {
+                            'myfield': {
+                                type: 'string',
+                                required: true
+                            }
+                        }
+                    }), Error);
+                });
 
                 /**
                  * things to make sure there a no conflicts with the RxDocument-proxy
