@@ -31,7 +31,7 @@ export interface JsonSchema {
     properties?: {
         [key: string]: JsonSchema;
     };
-    required?: string[] | boolean;
+    required?: string[];
     uniqueItems?: boolean;
     enum?: any[];
     not?: JsonSchema;
