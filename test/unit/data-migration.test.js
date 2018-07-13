@@ -6,7 +6,6 @@ import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxCollection from '../../dist/lib/rx-collection';
-import * as RxSchema from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -18,16 +17,15 @@ config.parallel('data-migration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const schema = RxSchema.create(schemas.simpleHumanV3);
                 await RxCollection.create({
                     database: db,
                     name: 'foobar',
-                    schema,
+                    schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 db.destroy();
@@ -40,10 +38,9 @@ config.parallel('data-migration.test.js', () => {
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                const schema = RxSchema.create(schemas.human);
                 await db.collection({
                     name: colName,
-                    schema,
+                    schema: schemas.human,
                     autoMigrate: false
                 });
 
@@ -52,15 +49,14 @@ config.parallel('data-migration.test.js', () => {
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 await db2.collection({
                     name: colName,
-                    schema: schema2,
+                    schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 db.destroy();
@@ -73,12 +69,11 @@ config.parallel('data-migration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const schema = RxSchema.create(schemas.human);
                 await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
-                        schema,
+                        schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: []
                     }),
@@ -91,15 +86,14 @@ config.parallel('data-migration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const schema = RxSchema.create(schemas.human);
                 await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
-                        schema,
+                        schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
-                            foo: function() {}
+                            foo: function () { }
                         }
                     }),
                     Error
@@ -111,15 +105,14 @@ config.parallel('data-migration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const schema = RxSchema.create(schemas.human);
                 await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
-                        schema,
+                        schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
-                            '1.1': function() {}
+                            '1.1': function () { }
                         }
                     }),
                     Error
@@ -131,12 +124,11 @@ config.parallel('data-migration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const schema = RxSchema.create(schemas.human);
                 await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
-                        schema,
+                        schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
                             1: 'foobar'
@@ -151,16 +143,15 @@ config.parallel('data-migration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                const schema = RxSchema.create(schemas.simpleHumanV3);
                 await AsyncTestUtil.assertThrows(
                     () => RxCollection.create({
                         database: db,
                         name: 'foobar',
-                        schema,
+                        schema: schemas.simpleHumanV3,
                         autoMigrate: false,
                         migrationStrategies: {
-                            1: () => {},
-                            3: () => {}
+                            1: () => { },
+                            3: () => { }
                         }
                     }),
                     Error
@@ -182,9 +173,9 @@ config.parallel('data-migration.test.js', () => {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 const old = await col._dataMigrator._getOldCollections();
@@ -199,10 +190,9 @@ config.parallel('data-migration.test.js', () => {
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                const schema = RxSchema.create(schemas.simpleHuman);
                 await db.collection({
                     name: colName,
-                    schema,
+                    schema: schemas.simpleHuman,
                     autoMigrate: false
                 });
 
@@ -211,15 +201,14 @@ config.parallel('data-migration.test.js', () => {
                     adapter: 'memory',
                     ignoreDuplicate: true
                 });
-                const schema2 = RxSchema.create(schemas.simpleHumanV3);
                 const col2 = await db2.collection({
                     name: colName,
-                    schema: schema2,
+                    schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 const old = await col2._dataMigrator._getOldCollections();
@@ -434,7 +423,7 @@ config.parallel('data-migration.test.js', () => {
                     state$.subscribe(state => {
                         assert.equal(state.type, 'deleted');
                         states.push(state);
-                    }, () => {}, pw8.resolve);
+                    }, () => { }, pw8.resolve);
 
                     await pw8.promise;
                     assert.equal(states.length, 10);

@@ -4,7 +4,6 @@ import * as schemaObjects from './schema-objects';
 
 import * as util from '../../dist/lib/util';
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
 
 import * as RxDB from '../../dist/lib/index';
 
@@ -325,10 +324,9 @@ export async function createMigrationCollection(
         adapter: 'memory',
         ignoreDuplicate: true
     });
-    const schema = RxSchema.create(schemas.simpleHuman);
     const col = await db.collection({
         name: colName,
-        schema,
+        schema: schemas.simpleHuman,
         autoMigrate: false
     });
 
@@ -346,10 +344,9 @@ export async function createMigrationCollection(
         adapter: 'memory',
         ignoreDuplicate: true
     });
-    const schema2 = RxSchema.create(schemas.simpleHumanV3);
     const col2 = await db2.collection({
         name: colName,
-        schema: schema2,
+        schema: schemas.simpleHumanV3,
         autoMigrate,
         migrationStrategies
     });

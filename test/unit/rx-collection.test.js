@@ -127,11 +127,10 @@ config.parallel('rx-collection.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
-                    const schema = RxSchema.create(schemas.human);
                     const collection = await db.collection({
                         database: db,
                         name: 'human',
-                        schema,
+                        schema: schemas.human,
                         options: {
                             foo: 'bar'
                         }

@@ -272,9 +272,6 @@ export class RxDatabase {
             });
         }
 
-        if (!RxSchema.isInstanceOf(args.schema))
-            args.schema = RxSchema.create(args.schema);
-
         const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
 
         // check unallowed collection-names
@@ -283,6 +280,8 @@ export class RxDatabase {
                 name: args.name
             });
         }
+
+        args.schema = RxSchema.create(args.schema);
 
         // check schemaHash
         const schemaHash = args.schema.hash;

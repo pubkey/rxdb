@@ -260,19 +260,6 @@ config.parallel('rx-database.test.js', () => {
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
                 db.destroy();
             });
-            it('use Schema-Object', async () => {
-                const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
-                    adapter: 'memory'
-                });
-                const schema = RxDatabase.RxSchema.create(schemas.human);
-                const collection = await db.collection({
-                    name: 'human1',
-                    schema
-                });
-                assert.equal(collection.constructor.name, 'RxCollection');
-                db.destroy();
-            });
             it('use encrypted db', async () => {
                 const db = await RxDatabase.create({
                     name: util.randomCouchString(10),

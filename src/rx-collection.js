@@ -6,6 +6,7 @@ import {
 import * as util from './util';
 import RxDocument from './rx-document';
 import RxQuery from './rx-query';
+import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
 import DataMigrator from './data-migrator';
@@ -754,7 +755,14 @@ export async function create({
     options = {}
 }) {
     util.validateCouchDBString(name);
+
+    // ensure it is a schema-object
+    if (!RxSchema.isInstanceOf(schema))
+        schema = RxSchema.create(schema);
+
+
     checkMigrationStrategies(schema, migrationStrategies);
+
 
     // check ORM-methods
     checkOrmMethods(statics);

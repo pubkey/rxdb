@@ -4,7 +4,8 @@
 
 Breaking:
   - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
-  - `disableKeyCompression` is set to `false` by default.
+  - `disableKeyCompression` is set to `false` by default
+  - `RxDatabase.collection()` now only accepts the json-schema as schema-attribute
 
 Other:
   - Upgrade to eslint 5 (no more babel-eslint)

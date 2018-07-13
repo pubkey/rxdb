@@ -30,7 +30,7 @@ import {
 
 export interface RxCollectionCreator {
     name: string;
-    schema: RxSchema | RxJsonSchema;
+    schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
     migrationStrategies?: {
         [key: number]: Function
