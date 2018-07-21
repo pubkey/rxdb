@@ -120,3 +120,10 @@ export function averageSchema() {
         }))
     };
 }
+
+export function point() {
+    return {
+        x: faker.random.number(),
+        y: faker.random.number()
+    };
+}
