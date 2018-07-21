@@ -61,6 +61,9 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate with defaults', () => {
                     SchemaCheck.checkSchema(schemas.humanDefault);
                 });
+                it('validate point', () => {
+                    SchemaCheck.checkSchema(schemas.point);
+                });
             });
             describe('negative', () => {
                 it('break when index is no string', () => {
@@ -280,6 +283,10 @@ config.parallel('rx-schema.test.js', () => {
                     const schema = RxSchema.create(schemas.nestedHuman);
                     assert.equal(schema.constructor.name, 'RxSchema');
                 });
+                it('create point', () => {
+                    const schema = RxSchema.create(schemas.point);
+                    assert.equal(schema.constructor.name, 'RxSchema');
+                });
                 it('should have indexes human', () => {
                     const schema = RxSchema.create(schemas.human);
                     assert.equal(schema.indexes[0], 'passportId');
@@ -420,6 +427,12 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate one human', () => {
                     const schema = RxSchema.create(schemas.human);
                     const obj = schemaObjects.human();
+                    obj._id = util.generateId();
+                    schema.validate(obj);
+                });
+                it('validate one point', () => {
+                    const schema = RxSchema.create(schemas.point);
+                    const obj = schemaObjects.point();
                     obj._id = util.generateId();
                     schema.validate(obj);
                 });
