@@ -73,7 +73,8 @@ describe('util.test.js', () => {
         describe('negative', () => {
             it('should not validate a spaced string', () => {
                 assert.throws(
-                    () => util.validateCouchDBString('foo bar')
+                    () => util.validateCouchDBString('foo bar'),
+                    { code: 'UT2' }
                 );
             });
         });
