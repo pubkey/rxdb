@@ -197,12 +197,12 @@ config.parallel('reactive-query.test.js', () => {
             const streamed = [];
             subs.push(
                 col.findOne(_id).$
-                .pipe(
-                    filter(doc => doc !== null)
-                )
-                .subscribe(doc => {
-                    streamed.push(doc);
-                })
+                    .pipe(
+                        filter(doc => doc !== null)
+                    )
+                    .subscribe(doc => {
+                        streamed.push(doc);
+                    })
             );
             await AsyncTestUtil.waitUntil(() => streamed.length === 1);
             assert.equal(streamed[0].constructor.name, 'RxDocument');
@@ -211,12 +211,12 @@ config.parallel('reactive-query.test.js', () => {
             const streamed2 = [];
             subs.push(
                 col.findOne().where('_id').eq(_id).$
-                .pipe(
-                    filter(doc => doc !== null)
-                )
-                .subscribe(doc => {
-                    streamed2.push(doc);
-                })
+                    .pipe(
+                        filter(doc => doc !== null)
+                    )
+                    .subscribe(doc => {
+                        streamed2.push(doc);
+                    })
             );
             await AsyncTestUtil.waitUntil(() => streamed2.length === 1);
             assert.equal(streamed2.length, 1);
@@ -309,29 +309,34 @@ config.parallel('reactive-query.test.js', () => {
 
             await Promise.all(
                 new Array(5)
-                .fill(0)
-                .map(() => ({
-                    key: 'registry',
-                    state: getData()
-                }))
-                .map(data => db2.crawlstate.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => ({
+                        key: 'registry',
+                        state: getData()
+                    }))
+                    .map(data => {
+                        // console.log('atomicUpsert: ' + JSON.stringify(data.state));
+                        return db2.crawlstate.atomicUpsert(data);
+                    })
             );
+
+            await AsyncTestUtil.waitUntil(() => emitted.length > 0);
             await AsyncTestUtil.waitUntil(() => {
-                if (!emitted.length) return false;
                 const last = emitted[emitted.length - 1];
+                // console.log('emitted: ' + emitted.map(e => e.state.providers));
+                // console.log('last: ' + last.state.providers);
                 return last.state.providers === 4;
-            });
+            }, 0, 300);
 
             await Promise.all(
                 new Array(5)
-                .fill(0)
-                .map(() => ({
-                    key: 'registry',
-                    state: getData()
-                }))
-                .map(data => db2.crawlstate.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => ({
+                        key: 'registry',
+                        state: getData()
+                    }))
+                    .map(data => db2.crawlstate.atomicUpsert(data))
             );
-
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;
                 const last = emitted[emitted.length - 1];

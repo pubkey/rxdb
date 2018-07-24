@@ -116,15 +116,48 @@ export class RxDatabase {
             }
         }
 
+        this.storageToken = await this._ensureStorageTokenExists();
+
         if (this.multiInstance) {
             // socket
-            this.socket = await Socket.create(this);
+            this.socket = Socket.create(this);
 
             // TODO only subscribe when sth is listening to the event-chain
             this._subs.push(
-                this.socket.messages$.subscribe(cE => this.$emit(cE))
+                this.socket.messages$.subscribe(cE => {
+                    this.$emit(cE);
+                })
             );
         }
+    }
+
+
+    /**
+     * to not confuse multiInstance-messages with other databases that have the same 
+     * name and adapter, but do not share state with this one (for example in-memory-instances),
+     * we set a storage-token and use it in the broadcast-channel
+     */
+    async _ensureStorageTokenExists() {
+        try {
+            await this.lockedRun(
+                () => this._adminPouch.get('_local/storageToken')
+            );
+        } catch (err) {
+            // no doc exists -> insert
+            try {
+                await this.lockedRun(
+                    () => this._adminPouch.put({
+                        _id: '_local/storageToken',
+                        value: randomToken(10)
+                    })
+                );
+            } catch (err2) { }
+            await new Promise(res => setTimeout(res, 0));
+        }
+        const storageTokenDoc2 = await this.lockedRun(
+            () => this._adminPouch.get('_local/storageToken')
+        );
+        return storageTokenDoc2.value;
     }
 
     get leaderElector() {
@@ -173,17 +206,22 @@ export class RxDatabase {
     }
 
     /**
-     * throw a new event into the event-cicle
+     * This is the main handle-point for all change events
+     * ChangeEvents created by this instance go:
+     * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
+     * ChangeEvents created by other instances go:
+     * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEvent) {
         if (!changeEvent) return;
 
-        // throw in own cycle
+        // emit into own stream
         this.subject.next(changeEvent);
 
-        // write to socket if event was created by self
-        if (changeEvent.data.it === this.token)
+        // write to socket if event was created by this instance
+        if (changeEvent.data.it === this.token) {
             this.writeToSocket(changeEvent);
+        }
     }
 
     /**
@@ -418,7 +456,7 @@ export class RxDatabase {
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
         this.destroyed = true;
-        this.socket && await this.socket.destroy();
+        this.socket && this.socket.destroy();
         if (this._leaderElector)
             await this._leaderElector.destroy();
         this._subs.map(sub => sub.unsubscribe());
@@ -588,7 +626,6 @@ function _internalCollectionsPouch(name, adapter, pouchSettingsFromRxDatabaseCre
 
 export async function removeDatabase(databaseName, adapter) {
     const adminPouch = _internalAdminPouch(databaseName, adapter);
-    const socketPouch = _spawnPouchDB(databaseName, adapter, '_socket', 0);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
     const collectionsData = await collectionsPouch.allDocs({
         include_docs: true
@@ -610,8 +647,7 @@ export async function removeDatabase(databaseName, adapter) {
     // remove internals
     await Promise.all([
         collectionsPouch.destroy(),
-        adminPouch.destroy(),
-        socketPouch.destroy()
+        adminPouch.destroy()
     ]);
 }
 

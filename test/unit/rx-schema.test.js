@@ -84,7 +84,7 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }), Error);
                 });
-                it('break when required is set via required: true', ()=> {
+                it('break when required is set via required: true', () => {
                     assert.throws(() => SchemaCheck.checkSchema({
                         title: 'schema',
                         version: 0,

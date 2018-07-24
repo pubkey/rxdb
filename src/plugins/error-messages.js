@@ -104,9 +104,6 @@ const CODES = {
     JD3: 'RxCollection.importDump(): json.passwordHash does not match the own',
 
     // plugins/leader-election.js
-    LE1: 'LeaderElection: this should not happen :( please contact the maintainer',
-    LE2: 'LeaderElection: someone else is applying/leader',
-    LE3: 'LeaderElection: someone else overwrote apply',
 
     // plugins/local-documents.js
     LD1: 'RxDocument.allAttachments$ cant use attachments on local documents',

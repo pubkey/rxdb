@@ -62,7 +62,6 @@ config.parallel('cross-instance.test.js', () => {
                 });
                 await c1.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(async () => {
-                    await db2.socket.pull();
                     return recieved > 0;
                 });
 
@@ -85,8 +84,6 @@ config.parallel('cross-instance.test.js', () => {
                 await c1.insert(schemaObjects.human());
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    await db2.socket.pull();
-                    await db2.socket.pull();
                     return recieved === 1;
                 });
 
@@ -108,7 +105,6 @@ config.parallel('cross-instance.test.js', () => {
             await c1.insert(schemaObjects.human());
 
             await AsyncTestUtil.waitUntil(async () => {
-                await c2.database.socket.pull();
                 return recieved > 0;
             });
 
@@ -158,7 +154,6 @@ config.parallel('cross-instance.test.js', () => {
 
             doc1.set('firstName', 'foobar');
             await doc1.save();
-            await c2.database.socket.pull();
 
             await util.promiseWait(10);
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
@@ -214,7 +209,6 @@ config.parallel('cross-instance.test.js', () => {
 
             doc1.set('secret', 'foobar');
             await doc1.save();
-            await c2.database.socket.pull();
 
             await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
             assert.equal(secretAfter, 'foobar');
@@ -272,7 +266,6 @@ config.parallel('cross-instance.test.js', () => {
                 subname: 'bar'
             });
             await doc1.save();
-            await c2.database.socket.pull();
 
             await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
             assert.deepEqual(secretAfter, {

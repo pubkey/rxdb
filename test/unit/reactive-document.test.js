@@ -125,8 +125,6 @@ config.parallel('reactive-document.test.js', () => {
                 await doc2.save();
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    await c1.database.socket.pull();
-                    await c2.database.socket.pull();
                     return doc.firstName === 'foobar';
                 });
                 assert.equal(doc.firstName, 'foobar');
@@ -151,8 +149,6 @@ config.parallel('reactive-document.test.js', () => {
                 await doc2.save();
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    await c1.database.socket.pull();
-                    await c2.database.socket.pull();
                     return doc.firstName === 'foobar1';
                 });
                 assert.equal(doc.firstName, 'foobar1');
@@ -183,8 +179,6 @@ config.parallel('reactive-document.test.js', () => {
                 await doc2.save();
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    await c1.database.socket.pull();
-                    await c2.database.socket.pull();
                     const notOk = await doc.synced$.pipe(first()).toPromise();
                     return !notOk;
                 });
@@ -193,8 +187,6 @@ config.parallel('reactive-document.test.js', () => {
                 await doc.save();
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    await c1.database.socket.pull();
-                    await c2.database.socket.pull();
                     const ok = await doc.synced$.pipe(first()).toPromise();
                     return ok;
                 });

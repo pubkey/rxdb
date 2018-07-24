@@ -9,6 +9,7 @@ Breaking:
   - It is no longer allowed to set required fields via `required: true`, use `required: ['myfield']` in compliance with the jsonschema standard
 
 Other:
+  - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
 
 ### 7.7.0 (July 6, 2018)

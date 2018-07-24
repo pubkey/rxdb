@@ -229,7 +229,7 @@ export class RxDocument {
         if (valueObj === null) return;
 
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
-        if(typeof pathProperties === 'undefined') return;
+        if (typeof pathProperties === 'undefined') return;
         if (pathProperties.properties) pathProperties = pathProperties.properties;
 
         Object.keys(pathProperties)
@@ -347,9 +347,10 @@ export class RxDocument {
         const queue = this.atomicQueue;
         await queue.requestIdlePromise();
         await queue.wrapCall(
-            () => Promise
-            .resolve(fun(this))
-            .then(() => this.save())
+            async () => {
+                await fun(this);
+                await this.save();
+            }
         );
         return this;
     }

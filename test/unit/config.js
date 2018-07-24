@@ -16,4 +16,9 @@ const config = {
     parallel: useParallel
 };
 
+if (config.platform.name === 'node') {
+    process.setMaxListeners(100);
+    require('events').EventEmitter.defaultMaxListeners = 100;
+}
+
 export default config;
