@@ -7,6 +7,7 @@
     "eslint-plugin-react": "7.5.1",
     "eslint-plugin-react-native": "3.2.1",
     "jest-expo": "23.0.0",
+    "node": "8.11.3",
     "react-native-scripts": "1.8.1",
     "react-test-renderer": "16.2.0"
   },
