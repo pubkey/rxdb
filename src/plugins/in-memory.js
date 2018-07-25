@@ -9,7 +9,11 @@ import {
 } from 'rxjs';
 
 import RxCollection from '../rx-collection';
-import * as util from '../util';
+import {
+    clone,
+    randomCouchString,
+    adapterObject
+} from '../util';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
 import RxSchema from '../rx-schema';
@@ -53,10 +57,9 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this.pouch = new PouchDB(
-            'rxdb-in-memory-' + util.randomCouchString(10),
-            util.adapterObject('memory'), {}
+            'rxdb-in-memory-' + randomCouchString(10),
+            adapterObject('memory'), {}
         );
-
         this._observable$ = new Subject();
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
@@ -160,7 +163,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
 
 
 function toCleanSchema(rxSchema) {
-    const newSchemaJson = util.clone(rxSchema.jsonID);
+    const newSchemaJson = clone(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;

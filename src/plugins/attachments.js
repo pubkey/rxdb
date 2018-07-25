@@ -4,7 +4,10 @@ import {
 
 
 import RxChangeEvent from './../rx-change-event';
-import * as util from './../util';
+import {
+    nextTick,
+    isElectronRenderer
+} from './../util';
 import RxError from '../rx-error';
 
 function ensureSchemaSupportsAttachments(doc) {
@@ -16,17 +19,18 @@ function ensureSchemaSupportsAttachments(doc) {
     }
 }
 
-async function resyncRxDocument(doc) {
-    const docData = await doc.collection.pouch.get(doc.primary);
-    const data = doc.collection._handleFromPouch(docData);
-    const changeEvent = RxChangeEvent.create(
-        'UPDATE',
-        doc.collection.database,
-        doc.collection,
-        doc,
-        data
-    );
-    doc.$emit(changeEvent);
+function resyncRxDocument(doc) {
+    return doc.collection.pouch.get(doc.primary).then(docData => {
+        const data = doc.collection._handleFromPouch(docData);
+        const changeEvent = RxChangeEvent.create(
+            'UPDATE',
+            doc.collection.database,
+            doc.collection,
+            doc,
+            data
+        );
+        doc.$emit(changeEvent);
+    });
 }
 
 
@@ -41,7 +45,7 @@ export const blobBufferUtil = {
     createBlobBuffer(data, type) {
         let blobBuffer;
 
-        if (util.isElectronRenderer) {
+        if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
             return new Buffer(data, {
                 type
@@ -64,7 +68,7 @@ export const blobBufferUtil = {
     toString(blobBuffer) {
         if (blobBuffer instanceof Buffer) {
             // node
-            return util.nextTick()
+            return nextTick()
                 .then(() => blobBuffer.toString());
         }
         return new Promise(res => {
@@ -80,7 +84,7 @@ export const blobBufferUtil = {
 };
 
 
-const _assignMethodsToAttachment = function(attachment) {
+const _assignMethodsToAttachment = function (attachment) {
     Object
         .entries(attachment.doc.collection._attachments)
         .forEach(([funName, fun]) => attachment.__defineGetter__(funName, () => fun.bind(attachment)));

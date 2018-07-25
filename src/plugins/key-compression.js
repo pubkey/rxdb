@@ -3,7 +3,11 @@
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import * as util from '../util';
+import {
+    numberToLetter,
+    trimDots,
+    clone
+} from '../util';
 
 class KeyCompressor {
     /**
@@ -23,7 +27,7 @@ class KeyCompressor {
             let lastKeyNumber = 0;
             const nextKey = () => {
                 lastKeyNumber++;
-                return util.numberToLetter(lastKeyNumber - 1);
+                return numberToLetter(lastKeyNumber - 1);
             };
             this._table = {};
             const jsonSchema = this.schema.normalized;
@@ -31,7 +35,7 @@ class KeyCompressor {
             const propertiesToTable = (path, obj) => {
                 Object.keys(obj).map(key => {
                     const propertyObj = obj[key];
-                    const fullPath = (key === 'properties') ? path : util.trimDots(path + '.' + key);
+                    const fullPath = (key === 'properties') ? path : trimDots(path + '.' + key);
                     if (
                         typeof propertyObj === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
@@ -72,11 +76,11 @@ class KeyCompressor {
         if (typeof obj !== 'object' || obj === null) return obj;
         if (Array.isArray(obj)) {
             return obj
-                .map(o => this._compressObj(o, util.trimDots(path + '.item')));
+                .map(o => this._compressObj(o, trimDots(path + '.item')));
         }
         Object.keys(obj).forEach(key => {
             const propertyObj = obj[key];
-            const fullPath = util.trimDots(path + '.' + key);
+            const fullPath = trimDots(path + '.' + key);
             const replacedKey = this.table[fullPath] ? this.table[fullPath] : key;
             let nextObj = propertyObj;
             nextObj = this._compressObj(propertyObj, fullPath);
@@ -92,7 +96,7 @@ class KeyCompressor {
      * @param {Object} compressed obj
      */
     compress(obj) {
-        if (!this.schema.doKeyCompression()) return util.clone(obj);
+        if (!this.schema.doKeyCompression()) return clone(obj);
         return this._compressObj(obj);
     }
 
@@ -127,7 +131,7 @@ class KeyCompressor {
     }
 
     decompress(obj) {
-        if (!this.schema.doKeyCompression()) return util.clone(obj);
+        if (!this.schema.doKeyCompression()) return clone(obj);
         const returnObj = this._decompressObj(obj);
         return returnObj;
     }
@@ -141,11 +145,11 @@ class KeyCompressor {
      */
     _transformKey(prePath, prePathCompressed, remainPathAr) {
         const table = this.table;
-        prePath = util.trimDots(prePath);
-        prePathCompressed = util.trimDots(prePathCompressed);
+        prePath = trimDots(prePath);
+        prePathCompressed = trimDots(prePathCompressed);
         const nextPath = remainPathAr.shift();
 
-        const nextFullPath = util.trimDots(prePath + '.' + nextPath);
+        const nextFullPath = trimDots(prePath + '.' + nextPath);
         if (table[nextFullPath])
             prePathCompressed += '.' + table[nextFullPath];
         else prePathCompressed += '.' + nextPath;
@@ -153,7 +157,7 @@ class KeyCompressor {
         if (remainPathAr.length > 0)
             return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);
         else
-            return util.trimDots(prePathCompressed);
+            return trimDots(prePathCompressed);
     }
 
 
@@ -163,7 +167,7 @@ class KeyCompressor {
      * @return {{selector: {}}} compressed queryJSON
      */
     compressQuery(queryJSON) {
-        queryJSON = util.clone(queryJSON);
+        queryJSON = clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
 
         // selector

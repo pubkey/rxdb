@@ -3,7 +3,9 @@
  * they can be grabbed by the observables of database, collection and document
  */
 
-import * as util from './util';
+import {
+    hash
+} from './util';
 
 export class RxChangeEvent {
     constructor(data) {
@@ -37,7 +39,7 @@ export class RxChangeEvent {
 
     get hash() {
         if (!this._hash)
-            this._hash = util.hash(this.data);
+            this._hash = hash(this.data);
         return this._hash;
     }
 }

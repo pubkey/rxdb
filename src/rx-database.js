@@ -2,7 +2,12 @@ import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
 
 import PouchDB from './pouch-db';
-import * as util from './util';
+import {
+    adapterObject,
+    hash,
+    validateCouchDBString,
+    isLevelDown
+} from './util';
 import RxError from './rx-error';
 import RxCollection from './rx-collection';
 import RxSchema from './rx-schema';
@@ -103,14 +108,14 @@ export class RxDatabase {
                     await this.lockedRun(
                         () => this._adminPouch.put({
                             _id: '_local/pwHash',
-                            value: util.hash(this.password)
+                            value: hash(this.password)
                         })
                     );
                 } catch (e) { }
             }
-            if (pwHashDoc && this.password && util.hash(this.password) !== pwHashDoc.value) {
+            if (pwHashDoc && this.password && hash(this.password) !== pwHashDoc.value) {
                 throw RxError.newRxError('DB1', {
-                    passwordHash: util.hash(this.password),
+                    passwordHash: hash(this.password),
                     existingPasswordHash: pwHashDoc.value
                 });
             }
@@ -539,7 +544,7 @@ export async function create({
     options = {},
     pouchSettings = {}
 }) {
-    util.validateCouchDBString(name);
+    validateCouchDBString(name);
 
     // check if pouchdb-adapter
     if (typeof adapter === 'string') {
@@ -549,7 +554,7 @@ export async function create({
             });
         }
     } else {
-        util.isLevelDown(adapter);
+        isLevelDown(adapter);
         if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
             throw RxError.newRxError('DB10', {
                 adapter
@@ -598,7 +603,7 @@ function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSett
     const pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
     const pouchDbParameters = {
         location: pouchLocation,
-        adapter: util.adapterObject(adapter),
+        adapter: adapterObject(adapter),
         settings: pouchSettings
     };
     const pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator);

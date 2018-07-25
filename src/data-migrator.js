@@ -4,7 +4,9 @@
  */
 
 import PouchDB from './pouch-db';
-import * as util from './util';
+import {
+    clone
+} from './util';
 
 import RxSchema from './rx-schema';
 import Crypter from './crypter';
@@ -33,8 +35,8 @@ class DataMigrator {
         return Promise
             .all(
                 this.currentSchema.previousVersions
-                .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
-                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+                    .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
+                    .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
             )
             .then(oldColDocs => oldColDocs
                 .filter(colDoc => colDoc !== null)
@@ -69,7 +71,7 @@ class DataMigrator {
             const totalCount = countAll.reduce((cur, prev) => prev = cur + prev, 0);
 
             state.total = totalCount;
-            observer.next(util.clone(state));
+            observer.next(clone(state));
 
             let currentCol = oldCols.shift();
             while (currentCol) {
@@ -80,7 +82,7 @@ class DataMigrator {
                             state.handled++;
                             state[subState.type] = state[subState.type] + 1;
                             state.percent = Math.round(state.handled / state.total * 100);
-                            observer.next(util.clone(state));
+                            observer.next(clone(state));
                         },
                         e => {
                             sub.unsubscribe();
@@ -95,7 +97,7 @@ class DataMigrator {
 
             state.done = true;
             state.percent = 100;
-            observer.next(util.clone(state));
+            observer.next(clone(state));
 
             observer.complete();
         });
@@ -165,7 +167,7 @@ class OldCollection {
      * handles a document from the pouchdb-instance
      */
     _handleFromPouch(docData) {
-        let data = util.clone(docData);
+        let data = clone(docData);
         data = this.schema.swapIdToPrimary(docData);
         if (this.schema.doKeyCompression())
             data = this.keyCompressor.decompress(data);
@@ -177,7 +179,7 @@ class OldCollection {
      * wrappers for Pouch.put/get to handle keycompression etc
      */
     _handleToPouch(docData) {
-        let data = util.clone(docData);
+        let data = clone(docData);
         data = this.crypter.encrypt(data);
         data = this.schema.swapPrimaryToId(data);
         if (this.schema.doKeyCompression())
@@ -192,7 +194,7 @@ class OldCollection {
      * @return {Object|null} final object or null if migrationStrategy deleted it
      */
     async migrateDocumentData(doc) {
-        doc = util.clone(doc);
+        doc = clone(doc);
         let nextVersion = this.version + 1;
 
         // run throught migrationStrategies
@@ -253,7 +255,7 @@ class OldCollection {
         // remove from old collection
         try {
             await this.pouchdb.remove(this._handleToPouch(doc));
-        } catch (e) {}
+        } catch (e) { }
 
         return action;
     }

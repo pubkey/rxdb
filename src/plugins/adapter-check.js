@@ -3,16 +3,19 @@
  * you can use it to check if the given adapter is working in the current environmet
  */
 import PouchDB from '../pouch-db';
-import * as util from '../util';
+import {
+    generateId,
+    adapterObject
+} from '../util';
 
 export async function checkAdapter(adapter) {
-    const id = 'rxdb-test-adapter-' + util.generateId();
+    const id = 'rxdb-test-adapter-' + generateId();
     let recoveredDoc = null;
     let pouch;
     try {
         pouch = new PouchDB(
             id,
-            util.adapterObject(adapter), {
+            adapterObject(adapter), {
                 auto_compaction: false, // no compaction because this only stores local documents
                 revs_limit: 1
             }

@@ -2,9 +2,15 @@
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-import * as utils from './mquery_utils';
+import {
+    isObject,
+    merge,
+    mergeClone
+} from './mquery_utils';
 import RxError from '../rx-error';
-import * as util from '../util';
+import {
+    clone
+} from '../util';
 
 class MQuery {
     /**
@@ -19,8 +25,8 @@ class MQuery {
     constructor(criteria) {
         const proto = this.constructor.prototype;
         this.options = {};
-        this._conditions = proto._conditions ? util.clone(proto._conditions) : {};
-        this._fields = proto._fields ? util.clone(proto._fields) : undefined;
+        this._conditions = proto._conditions ? clone(proto._conditions) : {};
+        this._fields = proto._fields ? clone(proto._fields) : undefined;
         this._path = proto._path || undefined;
 
         if (criteria)
@@ -35,7 +41,7 @@ class MQuery {
         const same = new MQuery();
         Object
             .entries(this)
-            .forEach(([k, v]) => same[k] = util.clone(v));
+            .forEach(([k, v]) => same[k] = clone(v));
         return same;
     }
 
@@ -234,14 +240,14 @@ class MQuery {
             this._ensurePath('elemMatch');
             path = this._path;
             fn = arguments[0];
-        } else if (utils.isObject(arguments[0])) {
+        } else if (isObject(arguments[0])) {
             this._ensurePath('elemMatch');
             path = this._path;
             criteria = arguments[0];
         } else if ('function' === typeof arguments[1]) {
             path = arguments[0];
             fn = arguments[1];
-        } else if (arguments[1] && utils.isObject(arguments[1])) {
+        } else if (arguments[1] && isObject(arguments[1])) {
             path = arguments[0];
             criteria = arguments[1];
         } else
@@ -298,7 +304,7 @@ class MQuery {
         }
 
         // .sort({ field: 1, test: -1 })
-        if (utils.isObject(arg)) {
+        if (isObject(arg)) {
             const keys = Object.keys(arg);
             keys.forEach(field => push(this.options, field, arg[field]));
             return this;
@@ -331,21 +337,21 @@ class MQuery {
             // if source has a feature, apply it to ourselves
 
             if (source._conditions)
-                utils.merge(this._conditions, source._conditions);
+                merge(this._conditions, source._conditions);
 
             if (source._fields) {
                 this._fields || (this._fields = {});
-                utils.merge(this._fields, source._fields);
+                merge(this._fields, source._fields);
             }
 
             if (source.options) {
                 this.options || (this.options = {});
-                utils.merge(this.options, source.options);
+                merge(this.options, source.options);
             }
 
             if (source._update) {
                 this._update || (this._update = {});
-                utils.mergeClone(this._update, source._update);
+                mergeClone(this._update, source._update);
             }
 
             if (source._distinct)
@@ -355,7 +361,7 @@ class MQuery {
         }
 
         // plain object
-        utils.merge(this._conditions, source);
+        merge(this._conditions, source);
 
         return this;
     }
@@ -380,7 +386,7 @@ class MQuery {
      * @return {Object}
      */
     _optionsForExec() {
-        const options = util.clone(this.options);
+        const options = clone(this.options);
         return options;
     }
 
@@ -488,7 +494,7 @@ function _pushArr(opts, field, value) {
  * @return {Boolean}
  */
 MQuery.canMerge = function(conds) {
-    return conds instanceof MQuery || utils.isObject(conds);
+    return conds instanceof MQuery || isObject(conds);
 };
 
 /**
@@ -505,5 +511,4 @@ MQuery.canMerge = function(conds) {
     };
 });
 
-MQuery.utils = utils;
 export default MQuery;

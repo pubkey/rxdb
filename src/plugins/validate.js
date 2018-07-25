@@ -5,7 +5,9 @@
  */
 import isMyJsonValid from 'is-my-json-valid';
 import RxError from '../rx-error';
-import * as util from '../util';
+import {
+    requestIdleCallbackIfAvailable
+} from '../util';
 
 /**
  * cache the validators by the schema-hash
@@ -20,7 +22,7 @@ const validatorsCache = {};
  * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-const _getValidator = function(schemaPath = '') {
+const _getValidator = function (schemaPath = '') {
     const hash = this.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
@@ -44,7 +46,7 @@ const _getValidator = function(schemaPath = '') {
  * @throws {RxError} if not valid
  * @return {any} obj if validation successful
  */
-const validate = function(obj, schemaPath = '') {
+const validate = function (obj, schemaPath = '') {
     const useValidator = this._getValidator(schemaPath);
     const isValid = useValidator(obj);
     if (isValid) return obj;
@@ -60,7 +62,7 @@ const validate = function(obj, schemaPath = '') {
 
 const runAfterSchemaCreated = rxSchema => {
     // pre-generate the isMyJsonValid-validator from the schema
-    util.requestIdleCallbackIfAvailable(() => {
+    requestIdleCallbackIfAvailable(() => {
         rxSchema._getValidator();
     });
 };

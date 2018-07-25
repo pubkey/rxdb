@@ -2,7 +2,9 @@
  * here we use custom errors with the additional field 'parameters'
  */
 
-import * as util from './util';
+import {
+    ucfirst
+} from './util';
 import overwritable from './overwritable';
 
 /**
@@ -87,8 +89,8 @@ export function pluginMissing(pluginKey) {
           - es5-require:
             RxDB.plugin(require('rxdb/plugins/${pluginKey}'))
           - es6-import:
-            import ${util.ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
-            RxDB.plugin(${util.ucfirst(pluginKey)}Plugin);
+            import ${ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
+            RxDB.plugin(${ucfirst(pluginKey)}Plugin);
         `, {
             pluginKey
         }

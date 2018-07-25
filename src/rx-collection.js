@@ -3,7 +3,13 @@ import {
     filter
 } from 'rxjs/operators';
 
-import * as util from './util';
+import {
+    clone,
+    validateCouchDBString,
+    ucfirst,
+    nextTick,
+    generateId
+} from './util';
 import RxDocument from './rx-document';
 import RxQuery from './rx-query';
 import RxSchema from './rx-schema';
@@ -60,7 +66,7 @@ export class RxCollection {
         // set HOOKS-functions dynamically
         HOOKS_KEYS.forEach(key => {
             HOOKS_WHEN.map(when => {
-                const fnName = when + util.ucfirst(key);
+                const fnName = when + ucfirst(key);
                 this[fnName] = (fun, parallel) => this.addHook(when, key, fun, parallel);
             });
         });
@@ -155,7 +161,7 @@ export class RxCollection {
      * wrappers for Pouch.put/get to handle keycompression etc
      */
     _handleToPouch(docData) {
-        let data = util.clone(docData);
+        let data = clone(docData);
         data = this._crypter.encrypt(data);
         data = this.schema.swapPrimaryToId(data);
         if (this.schema.doKeyCompression())
@@ -163,7 +169,7 @@ export class RxCollection {
         return data;
     }
     _handleFromPouch(docData, noDecrypt = false) {
-        let data = util.clone(docData);
+        let data = clone(docData);
         data = this.schema.swapIdToPrimary(data);
         if (this.schema.doKeyCompression())
             data = this._keyCompressor.decompress(data);
@@ -311,7 +317,7 @@ export class RxCollection {
             json = json.toJSON();
         }
 
-        json = util.clone(json);
+        json = clone(json);
         json = this.schema.fillObjectWithDefaults(json);
 
         if (json._id) {
@@ -324,7 +330,7 @@ export class RxCollection {
         if (
             this.schema.primaryPath === '_id' &&
             !json._id
-        ) json._id = util.generateId();
+        ) json._id = generateId();
 
         await this._runHooks('pre', 'insert', json);
 
@@ -358,7 +364,7 @@ export class RxCollection {
      * same as insert but overwrites existing document with same primary
      */
     async upsert(json) {
-        json = util.clone(json);
+        json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
             throw RxError.newRxError('COL3', {
@@ -415,7 +421,7 @@ export class RxCollection {
      * @return {Promise}
      */
     async atomicUpsert(json) {
-        json = util.clone(json);
+        json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
             throw RxError.newRxError('COL4', {
@@ -433,7 +439,7 @@ export class RxCollection {
                 const wasInserted = await this._atomicUpsertEnsureRxDocumentExists(primary, json);
                 if (!wasInserted.inserted) {
                     await this._atomicUpsertUpdate(wasInserted.doc, json);
-                    await util.nextTick(); // tick here so the event can propagate
+                    await nextTick(); // tick here so the event can propagate
                     return wasInserted.doc;
                 } else
                     return wasInserted.doc;
@@ -754,7 +760,7 @@ export async function create({
     attachments = {},
     options = {}
 }) {
-    util.validateCouchDBString(name);
+    validateCouchDBString(name);
 
     // ensure it is a schema-object
     if (!RxSchema.isInstanceOf(schema))

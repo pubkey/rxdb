@@ -1,7 +1,9 @@
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-import * as util from '../util';
+import {
+    hash
+} from '../util';
 import RxQuery from '../rx-query';
 import RxError from '../rx-error';
 import RxChangeEvent from '../rx-change-event';
@@ -16,7 +18,7 @@ const dumpRxDatabase = async function(decrypted = false, collections = null) {
     };
 
     if (this.password) {
-        json.passwordHash = util.hash(this.password);
+        json.passwordHash = hash(this.password);
         if (decrypted) json.encrypted = false;
         else json.encrypted = true;
     }
@@ -65,7 +67,7 @@ const dumpRxCollection = async function(decrypted = false) {
     };
 
     if (this.database.password && encrypted) {
-        json.passwordHash = util.hash(this.database.password);
+        json.passwordHash = hash(this.database.password);
         json.encrypted = true;
     }
 
@@ -90,11 +92,11 @@ const importDumpRxCollection = async function(exportedJSON) {
     // check if passwordHash matches own
     if (
         exportedJSON.encrypted &&
-        exportedJSON.passwordHash !== util.hash(this.database.password)
+        exportedJSON.passwordHash !== hash(this.database.password)
     ) {
         throw RxError.newRxError('JD3', {
             passwordHash: exportedJSON.passwordHash,
-            own: util.hash(this.database.password)
+            own: hash(this.database.password)
         });
     }
 

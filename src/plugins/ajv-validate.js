@@ -5,7 +5,9 @@
  */
 import Ajv from 'ajv';
 import RxError from '../rx-error';
-import * as util from '../util';
+import {
+    requestIdleCallbackIfAvailable
+} from '../util';
 
 /**
  * cache the validators by the schema-hash
@@ -63,7 +65,7 @@ const validate = function(obj, schemaPath = '') {
 
 const runAfterSchemaCreated = rxSchema => {
     // pre-generate validator-function from the schema
-    util.requestIdleCallbackIfAvailable(() => rxSchema._getValidator());
+    requestIdleCallbackIfAvailable(() => rxSchema._getValidator());
 };
 
 export const rxdb = true;

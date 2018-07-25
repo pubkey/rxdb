@@ -2,7 +2,10 @@ import deepEqual from 'deep-equal';
 import IdleQueue from 'custom-idle-queue';
 import MQuery from './mquery/mquery';
 
-import * as util from './util';
+import {
+    sortObject,
+    stringifyFilter
+} from './util';
 import QueryChangeDetector from './query-change-detector';
 import RxError from './rx-error';
 import {
@@ -75,7 +78,7 @@ export class RxQuery {
 
     toString() {
         if (!this.stringRep) {
-            const stringObj = util.sortObject({
+            const stringObj = sortObject({
                 op: this.op,
                 options: this.mquery.options,
                 _conditions: this.mquery._conditions,
@@ -83,7 +86,7 @@ export class RxQuery {
                 _fields: this.mquery._fields
             }, true);
 
-            this.stringRep = JSON.stringify(stringObj, util.stringifyFilter);
+            this.stringRep = JSON.stringify(stringObj, stringifyFilter);
         }
         return this.stringRep;
     }

@@ -15,7 +15,11 @@ import {
     delay
 } from 'rxjs/operators';
 
-import * as util from '../util';
+import {
+    promiseWait,
+    clone,
+    pouchReplicationFunction
+} from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
 import RxChangeEvent from '../rx-change-event';
@@ -43,7 +47,7 @@ export class RxReplicationState {
         // create getters
         Object.keys(this._subjects).forEach(key => {
             Object.defineProperty(this, key + '$', {
-                get: function() {
+                get: function () {
                     return this._subjects[key].asObservable();
                 }
             });
@@ -57,44 +61,44 @@ export class RxReplicationState {
         // change
         this._subs.push(
             fromEvent(evEmitter, 'change')
-            .subscribe(ev => this._subjects.change.next(ev))
+                .subscribe(ev => this._subjects.change.next(ev))
         );
 
         // docs
         this._subs.push(
             fromEvent(evEmitter, 'change')
-            .subscribe(ev => {
-                if (
-                    this._subjects.docs.observers.length === 0 ||
-                    ev.direction !== 'pull'
-                ) return;
+                .subscribe(ev => {
+                    if (
+                        this._subjects.docs.observers.length === 0 ||
+                        ev.direction !== 'pull'
+                    ) return;
 
-                ev.change.docs
-                    .filter(doc => doc.language !== 'query') // remove internal docs
-                    .map(doc => this.collection._handleFromPouch(doc)) // do primary-swap and keycompression
-                    .forEach(doc => this._subjects.docs.next(doc));
-            }));
+                    ev.change.docs
+                        .filter(doc => doc.language !== 'query') // remove internal docs
+                        .map(doc => this.collection._handleFromPouch(doc)) // do primary-swap and keycompression
+                        .forEach(doc => this._subjects.docs.next(doc));
+                }));
 
         // error
         this._subs.push(
             fromEvent(evEmitter, 'error')
-            .subscribe(ev => this._subjects.error.next(ev))
+                .subscribe(ev => this._subjects.error.next(ev))
         );
 
         // active
         this._subs.push(
             fromEvent(evEmitter, 'active')
-            .subscribe(() => this._subjects.active.next(true))
+                .subscribe(() => this._subjects.active.next(true))
         );
         this._subs.push(
             fromEvent(evEmitter, 'paused')
-            .subscribe(() => this._subjects.active.next(false))
+                .subscribe(() => this._subjects.active.next(false))
         );
 
         // complete
         this._subs.push(
             fromEvent(evEmitter, 'complete')
-            .subscribe(info => this._subjects.complete.next(info))
+                .subscribe(info => this._subjects.complete.next(info))
         );
     }
 
@@ -132,26 +136,26 @@ export function watchForChanges() {
             }),
             'change'
         )
-        .pipe(
-            map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
-            filter(c => c.id.charAt(0) !== '_'),
-            map(c => c.doc),
-            filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev)),
-            filter(doc => sendChanges[doc._rev] = 'YES'),
-            // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
-            delay(0),
-            delay(0),
-            map(doc => {
-                let ret = null;
-                if (sendChanges[doc._rev] === 'YES') ret = doc;
-                delete sendChanges[doc._rev];
-                return ret;
-            }),
-            filter(doc => doc !== null)
-        )
-        .subscribe(doc => {
-            this.$emit(RxChangeEvent.fromPouchChange(doc, this));
-        });
+            .pipe(
+                map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
+                filter(c => c.id.charAt(0) !== '_'),
+                map(c => c.doc),
+                filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev)),
+                filter(doc => sendChanges[doc._rev] = 'YES'),
+                // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
+                delay(0),
+                delay(0),
+                map(doc => {
+                    let ret = null;
+                    if (sendChanges[doc._rev] === 'YES') ret = doc;
+                    delete sendChanges[doc._rev];
+                    return ret;
+                }),
+                filter(doc => doc !== null)
+            )
+            .subscribe(doc => {
+                this.$emit(RxChangeEvent.fromPouchChange(doc, this));
+            });
 
     this._subs.push(pouch$);
 
@@ -181,7 +185,7 @@ export function sync({
     },
     query
 }) {
-    options = util.clone(options);
+    options = clone(options);
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (
@@ -206,7 +210,7 @@ export function sync({
         });
     }
 
-    const syncFun = util.pouchReplicationFunction(this.pouch, direction);
+    const syncFun = pouchReplicationFunction(this.pouch, direction);
     if (query) options.selector = query.keyCompress().selector;
 
     const repState = createRxReplicationState(this);
@@ -216,7 +220,7 @@ export function sync({
         if (waitForLeadership)
             await this.database.waitForLeadership();
         else // ensure next-tick
-            await util.promiseWait(0);
+            await promiseWait(0);
         const pouchSync = syncFun(remote, options);
         this.watchForChanges();
         repState.setPouchEventEmitter(pouchSync);
@@ -236,7 +240,7 @@ export const prototypes = {
 export const overwritable = {};
 
 export const hooks = {
-    createRxCollection: function(collection) {
+    createRxCollection: function (collection) {
         INTERNAL_POUCHDBS.add(collection.pouch);
     }
 };

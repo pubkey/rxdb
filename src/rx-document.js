@@ -2,7 +2,11 @@ import IdleQueue from 'custom-idle-queue';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
-import * as util from './util';
+import {
+    clone,
+    promiseWait,
+    trimDots
+} from './util';
 import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
 import {
@@ -25,10 +29,10 @@ export class RxDocument {
         this._isTemporary = false;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(util.clone(jsonData));
+        this._dataSync$ = new BehaviorSubject(clone(jsonData));
 
         // current doc-data, changes when setting values etc
-        this._data = util.clone(jsonData);
+        this._data = clone(jsonData);
 
         // false when _data !== _dataSync
         this._synced$ = new BehaviorSubject(true);
@@ -72,7 +76,7 @@ export class RxDocument {
         if (this._synced$.getValue() && deepEqual(syncedData, this._data))
             return;
         else {
-            this._data = util.clone(this._dataSync$.getValue());
+            this._data = clone(this._dataSync$.getValue());
             this._synced$.next(true);
         }
     }
@@ -98,7 +102,7 @@ export class RxDocument {
             case 'INSERT':
                 break;
             case 'UPDATE':
-                const newData = util.clone(changeEvent.data.v);
+                const newData = clone(changeEvent.data.v);
                 const prevSyncData = this._dataSync$.getValue();
                 const prevData = this._data;
 
@@ -116,7 +120,7 @@ export class RxDocument {
                     // overwrite _rev of data
                     this._data._rev = newData._rev;
                 }
-                this._dataSync$.next(util.clone(newData));
+                this._dataSync$.next(clone(newData));
                 break;
             case 'REMOVE':
                 // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -213,7 +217,7 @@ export class RxDocument {
     get(objPath) {
         if (!this._data) return undefined;
         let valueObj = objectPath.get(this._data, objPath);
-        valueObj = util.clone(valueObj);
+        valueObj = clone(valueObj);
 
         // direct return if array or non-object
         if (
@@ -234,7 +238,7 @@ export class RxDocument {
 
         Object.keys(pathProperties)
             .forEach(key => {
-                const fullPath = util.trimDots(objPath + '.' + key);
+                const fullPath = trimDots(objPath + '.' + key);
 
                 // getter - value
                 valueObj.__defineGetter__(
@@ -261,7 +265,7 @@ export class RxDocument {
     }
 
     toJSON() {
-        return util.clone(this._data);
+        return clone(this._data);
     }
 
     /**
@@ -379,14 +383,14 @@ export class RxDocument {
 
         this.collection.schema.validate(this._data);
 
-        const ret = await this.collection._pouchPut(util.clone(this._data));
+        const ret = await this.collection._pouchPut(clone(this._data));
         if (!ret.ok) {
             throw RxError.newRxError('DOC12', {
                 data: ret
             });
         }
 
-        const emitValue = util.clone(this._data);
+        const emitValue = clone(this._data);
         emitValue._rev = ret.rev;
 
         this._data = emitValue;
@@ -395,7 +399,7 @@ export class RxDocument {
 
         // event
         this._synced$.next(true);
-        this._dataSync$.next(util.clone(emitValue));
+        this._dataSync$.next(clone(emitValue));
 
 
         const changeEvent = RxChangeEvent.create(
@@ -421,7 +425,7 @@ export class RxDocument {
 
         // internal events
         this._synced$.next(true);
-        this._dataSync$.next(util.clone(this._data));
+        this._dataSync$.next(clone(this._data));
 
         return true;
     }
@@ -434,7 +438,7 @@ export class RxDocument {
             });
         }
 
-        await util.promiseWait(0);
+        await promiseWait(0);
         await this.collection._runHooks('pre', 'remove', this);
 
         await this.collection.database.lockedRun(
@@ -450,7 +454,7 @@ export class RxDocument {
         ));
 
         await this.collection._runHooks('post', 'remove', this);
-        await util.promiseWait(0);
+        await promiseWait(0);
         return;
     }
 

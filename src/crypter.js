@@ -3,7 +3,9 @@
  */
 
 import objectPath from 'object-path';
-import * as util from './util';
+import {
+    clone
+} from './util';
 
 import RxError from './rx-error';
 
@@ -34,7 +36,7 @@ export class Crypter {
     }
 
     encrypt(obj) {
-        obj = util.clone(obj);
+        obj = clone(obj);
         if (!this._password) return obj;
         Object.keys(this._schema.encryptedPaths)
             .map(path => {
@@ -46,7 +48,7 @@ export class Crypter {
     }
 
     decrypt(obj) {
-        obj = util.clone(obj);
+        obj = clone(obj);
         if (!this._password) return obj;
 
         Object.keys(this._schema.encryptedPaths)

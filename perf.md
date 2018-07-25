@@ -59,3 +59,13 @@ npm run test:performance:
 npm run test:fast
 17 seconds
 
+
+
+
+## 24. July 2018
+npm run build:size
+BEFORE:               111701
+
+
+
+112383

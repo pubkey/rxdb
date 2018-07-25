@@ -1,6 +1,12 @@
 import objectPath from 'object-path';
 
-import * as util from './util';
+import {
+    clone,
+    hash,
+    sortObject,
+    trimDots,
+    flattenObject
+} from './util';
 import RxError from './rx-error';
 import {
     runPluginHooks
@@ -68,7 +74,7 @@ export class RxSchema {
     getSchemaByObjectPath(path) {
         path = path.replace(/\./g, '.properties.');
         path = 'properties.' + path;
-        path = util.trimDots(path);
+        path = trimDots(path);
 
         const ret = objectPath.get(this.jsonID, path);
         return ret;
@@ -113,7 +119,7 @@ export class RxSchema {
 
     get hash() {
         if (!this._hash)
-            this._hash = util.hash(this.normalized);
+            this._hash = hash(this.normalized);
         return this._hash;
     }
 
@@ -123,7 +129,7 @@ export class RxSchema {
      * @return {object}
      */
     fillObjectWithDefaults(obj) {
-        obj = util.clone(obj);
+        obj = clone(obj);
         Object
             .entries(this.defaultValues)
             .filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined')
@@ -194,7 +200,7 @@ export function hasCrypt(jsonSchema) {
 
 
 export function getIndexes(jsonID) {
-    const flattened = util.flattenObject(jsonID);
+    const flattened = flattenObject(jsonID);
     const keys = Object.keys(flattened);
     let indexes = keys
         // flattenObject returns only ending paths, we need all paths pointing to an object    
@@ -213,10 +219,10 @@ export function getIndexes(jsonID) {
         .map(key => { // replace inner properties
             key = key.replace('properties.', ''); // first
             key = key.replace(/\.properties\./g, '.'); // middle
-            return [util.trimDots(key)];
+            return [trimDots(key)];
         });
 
-        // add compound-indexes
+    // add compound-indexes
     const addCompound = jsonID.compoundIndexes || [];
     indexes = indexes.concat(addCompound);
 
@@ -253,8 +259,8 @@ export function getFinalFields(jsonId) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    return util.sortObject(
-        util.clone(jsonSchema)
+    return sortObject(
+        clone(jsonSchema)
     );
 }
 
@@ -264,7 +270,7 @@ export function normalize(jsonSchema) {
  * @return {Object} cloned schemaObj
  */
 const fillWithDefaultSettings = function (schemaObj) {
-    schemaObj = util.clone(schemaObj);
+    schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;
