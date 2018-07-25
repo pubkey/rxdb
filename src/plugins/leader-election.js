@@ -27,7 +27,7 @@ class LeaderElector {
         });
     }
 
-    async destroy() {
+    destroy() {
         if (this.destroyed) return;
         this.destroyed = true;
         this.isDead = true;

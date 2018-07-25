@@ -77,11 +77,11 @@ export function nextTick() {
  * @param  {Number}  [ms=0]
  * @return {Promise}
  */
-export async function promiseWait(ms = 0) {
+export function promiseWait(ms = 0) {
     return new Promise(res => setTimeout(res, ms));
 }
 
-export async function requestIdlePromise(timeout = null) {
+export function requestIdlePromise(timeout = null) {
     if (
         typeof window === 'object' &&
         window.requestIdleCallback

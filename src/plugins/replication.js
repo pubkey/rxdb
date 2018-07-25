@@ -102,7 +102,7 @@ export class RxReplicationState {
         );
     }
 
-    async cancel() {
+    cancel() {
         if (this._pouchEventEmitterObject)
             this._pouchEventEmitterObject.cancel();
         this._subs.forEach(sub => sub.unsubscribe());
@@ -216,16 +216,14 @@ export function sync({
     const repState = createRxReplicationState(this);
 
     // run internal so .sync() does not have to be async
-    (async () => {
-        if (waitForLeadership)
-            await this.database.waitForLeadership();
-        else // ensure next-tick
-            await promiseWait(0);
+    const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+    waitTillRun.then(() => {
         const pouchSync = syncFun(remote, options);
         this.watchForChanges();
         repState.setPouchEventEmitter(pouchSync);
         this._repStates.push(repState);
-    })();
+    });
+
     return repState;
 }
 

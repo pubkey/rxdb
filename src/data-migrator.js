@@ -151,7 +151,10 @@ class OldCollection {
         return this._pouchdb;
     }
 
-    async countAllUndeleted() {
+    /**
+     * @return {Promise}
+     */
+    countAllUndeleted() {
         return PouchDB.countAllUndeleted(this.pouchdb);
     }
 

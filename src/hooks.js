@@ -63,7 +63,10 @@ export function runPluginHooks(hookKey, obj) {
     HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
-export async function runAsyncPluginHooks(hookKey, obj) {
+/**
+ * @return {Promise}
+ */
+export function runAsyncPluginHooks(hookKey, obj) {
     return Promise.all(
         HOOKS[hookKey].map(fun => fun(obj))
     );

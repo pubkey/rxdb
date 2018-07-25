@@ -242,7 +242,7 @@ export function allAttachments() {
         });
 }
 
-export async function preMigrateDocument(action) {
+export function preMigrateDocument(action) {
     delete action.migrated._attachments;
     return action;
 }

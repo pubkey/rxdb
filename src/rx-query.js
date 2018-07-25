@@ -101,12 +101,12 @@ export class RxQuery {
         else return false;
     }
 
-    async _ensureEqual() {
-        await this._ensureEqualQueue.requestIdlePromise();
-        const ret = await this._ensureEqualQueue.wrapCall(
-            () => this.__ensureEqual()
-        );
-        return ret;
+    _ensureEqual() {
+        return this._ensureEqualQueue.requestIdlePromise()
+            .then(() => this._ensureEqualQueue.wrapCall(
+                () => this.__ensureEqual()
+            )
+            );
     }
 
     /**
@@ -159,17 +159,18 @@ export class RxQuery {
         return ret; // true if results have changed
     }
 
-    async _setResultData(newResultData) {
+    _setResultData(newResultData) {
         this._resultsData = newResultData;
+        return this.collection._createDocuments(this._resultsData)
+            .then(docs => {
+                let newResultDocs = docs;
+                if (this.op === 'findOne') {
+                    if (docs.length === 0) newResultDocs = null;
+                    else newResultDocs = docs[0];
+                }
 
-        const docs = await this.collection._createDocuments(this._resultsData);
-        let newResultDocs = docs;
-        if (this.op === 'findOne') {
-            if (docs.length === 0) newResultDocs = null;
-            else newResultDocs = docs[0];
-        }
-
-        this._results$.next(newResultDocs);
+                this._results$.next(newResultDocs);
+            });
     }
 
     /**
@@ -203,10 +204,12 @@ export class RxQuery {
                 .pipe(
                     // whe run _ensureEqual() on each subscription
                     // to ensure it triggers a re-run when subscribing after some time
-                    mergeMap(async (results) => {
-                        const hasChanged = await this._ensureEqual();
-                        if (hasChanged) return 'WAITFORNEXTEMIT';
-                        else return results;
+                    mergeMap(results => {
+                        return this._ensureEqual()
+                            .then(hasChanged => {
+                                if (hasChanged) return 'WAITFORNEXTEMIT';
+                                else return results;
+                            });
                     }),
                     filter(results => results !== 'WAITFORNEXTEMIT')
                 ).asObservable();

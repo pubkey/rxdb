@@ -73,17 +73,19 @@ export class RxDatabase {
         return this.__collectionsPouch;
     }
 
-    async dangerousRemoveCollectionInfo() {
+    dangerousRemoveCollectionInfo() {
         const colPouch = this._collectionsPouch;
-        const docsRes = await colPouch.allDocs();
-        await Promise.all(
-            docsRes.rows
-                .map(row => ({
-                    _id: row.key,
-                    _rev: row.value.rev
-                }))
-                .map(doc => colPouch.remove(doc._id, doc._rev))
-        );
+        return colPouch.allDocs()
+            .then(docsRes => {
+                return Promise.all(
+                    docsRes.rows
+                        .map(row => ({
+                            _id: row.key,
+                            _rev: row.value.rev
+                        }))
+                        .map(doc => colPouch.remove(doc._id, doc._rev))
+                );
+            });
     }
 
     /**
@@ -186,8 +188,12 @@ export class RxDatabase {
         if (!this.multiInstance) return true;
         return this.leaderElector.isLeader;
     }
-    async waitForLeadership() {
-        if (!this.multiInstance) return true;
+
+    /**
+     * @return {Promise}
+     */
+    waitForLeadership() {
+        if (!this.multiInstance) return Promise.resolve(true);
         return this.leaderElector.waitForLeadership();
     }
 
@@ -265,25 +271,26 @@ export class RxDatabase {
      * @param  {string}  collectionName
      * @return {Promise<string[]>} resolves all known collection-versions
      */
-    async _removeAllOfCollection(collectionName) {
-        const data = await this.lockedRun(
+    _removeAllOfCollection(collectionName) {
+
+        return this.lockedRun(
             () => this._collectionsPouch.allDocs({
                 include_docs: true
             })
-        );
-        const relevantDocs = data.rows
-            .map(row => row.doc)
-            .filter(doc => {
-                const name = doc._id.split('-')[0];
-                return name === collectionName;
-            });
-        await Promise.all(
-            relevantDocs
-                .map(doc => this.lockedRun(
-                    () => this._collectionsPouch.remove(doc)
-                ))
-        );
-        return relevantDocs.map(doc => doc.version);
+        ).then(data => {
+            const relevantDocs = data.rows
+                .map(row => row.doc)
+                .filter(doc => {
+                    const name = doc._id.split('-')[0];
+                    return name === collectionName;
+                });
+            return Promise.all(
+                relevantDocs
+                    .map(doc => this.lockedRun(
+                        () => this._collectionsPouch.remove(doc)
+                    ))
+            ).then(() => relevantDocs.map(doc => doc.version));
+        });
     }
 
     /**
@@ -535,7 +542,7 @@ function _removeUsedCombination(name, adapter) {
     USED_COMBINATIONS[name].splice(index, 1);
 }
 
-export async function create({
+export function create({
     name,
     adapter,
     password,
@@ -576,10 +583,12 @@ export async function create({
 
 
     const db = new RxDatabase(name, adapter, password, multiInstance, options, pouchSettings);
-    await db.prepare();
 
-    runPluginHooks('createRxDatabase', db);
-    return db;
+    return db.prepare()
+        .then(() => {
+            runPluginHooks('createRxDatabase', db);
+            return db;
+        });
 }
 
 
@@ -629,38 +638,44 @@ function _internalCollectionsPouch(name, adapter, pouchSettingsFromRxDatabaseCre
     }, pouchSettingsFromRxDatabaseCreator);
 }
 
-export async function removeDatabase(databaseName, adapter) {
+/**
+ * 
+ * @return {Promise} 
+ */
+export function removeDatabase(databaseName, adapter) {
     const adminPouch = _internalAdminPouch(databaseName, adapter);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
-    const collectionsData = await collectionsPouch.allDocs({
+
+    collectionsPouch.allDocs({
         include_docs: true
+    }).then(collectionsData => {
+        // remove collections
+        Promise.all(
+            collectionsData.rows
+                .map(colDoc => colDoc.id)
+                .map(id => {
+                    const split = id.split('-');
+                    const name = split[0];
+                    const version = parseInt(split[1], 10);
+                    const pouch = _spawnPouchDB(databaseName, adapter, name, version);
+                    return pouch.destroy();
+                })
+        );
+
+        // remove internals
+        return Promise.all([
+            collectionsPouch.destroy(),
+            adminPouch.destroy()
+        ]);
     });
-
-    // remove collections
-    Promise.all(
-        collectionsData.rows
-            .map(colDoc => colDoc.id)
-            .map(id => {
-                const split = id.split('-');
-                const name = split[0];
-                const version = parseInt(split[1], 10);
-                const pouch = _spawnPouchDB(databaseName, adapter, name, version);
-                return pouch.destroy();
-            })
-    );
-
-    // remove internals
-    await Promise.all([
-        collectionsPouch.destroy(),
-        adminPouch.destroy()
-    ]);
 }
 
 /**
  * check is the given adapter can be used
+ * @return {Promise}
  */
-export async function checkAdapter(adapter) {
-    return await overwritable.checkAdapter(adapter);
+export function checkAdapter(adapter) {
+    return overwritable.checkAdapter(adapter);
 }
 
 export function isInstanceOf(obj) {

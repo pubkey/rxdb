@@ -223,17 +223,18 @@ export class RxCollection {
      * @param {?boolean} noDecrypt if true, decryption will not be made
      * @return {Object[]} array with documents-data
      */
-    async _pouchFind(rxQuery, limit, noDecrypt = false) {
+    _pouchFind(rxQuery, limit, noDecrypt = false) {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
-        const docsCompressed = await this.database.lockedRun(
+
+        return this.database.lockedRun(
             () => this.pouch.find(compressedQueryJSON)
-        );
+        ).then(docsCompressed => {
+            const docs = docsCompressed.docs
+                .map(doc => this._handleFromPouch(doc, noDecrypt));
 
-        const docs = docsCompressed.docs
-            .map(doc => this._handleFromPouch(doc, noDecrypt));
-
-        return docs;
+            return docs;
+        });
     }
 
     /**
@@ -251,7 +252,7 @@ export class RxCollection {
      * @param {Object} json documentData
      * @return {Promise<RxDocument>}
      */
-    async _createDocument(json) {
+    _createDocument(json) {
         // return from cache if exsists
         const id = json[this.schema.primaryPath];
         const cacheDoc = this._docCache.get(id);
@@ -262,15 +263,14 @@ export class RxCollection {
         this._docCache.set(id, doc);
         this._runHooksSync('post', 'create', doc);
 
-        await runAsyncPluginHooks('postCreateRxDocument', doc);
-
-        return doc;
+        return runAsyncPluginHooks('postCreateRxDocument', doc)
+            .then(() => doc);
     }
     /**
      * create RxDocument from the docs-array
      * @return {Promise<RxDocument[]>} documents
      */
-    async _createDocuments(docsJSON) {
+    _createDocuments(docsJSON) {
         return Promise.all(docsJSON.map(json => this._createDocument(json)));
     }
 
@@ -407,12 +407,14 @@ export class RxCollection {
         }
     }
 
-    async _atomicUpsertUpdate(doc, json) {
-        await doc.atomicUpdate(innerDoc => {
+    /**
+     * @return {Promise}
+     */
+    _atomicUpsertUpdate(doc, json) {
+        return doc.atomicUpdate(innerDoc => {
             json._rev = innerDoc._rev;
             innerDoc._data = json;
-        });
-        return doc;
+        }).then(() => doc);
     }
 
     /**
@@ -497,7 +499,7 @@ export class RxCollection {
      * imports the json-data into the collection
      * @param {Array} exportedJSON should be an array of raw-data
      */
-    async importDump() {
+    importDump() {
         throw RxError.pluginMissing('json-dump');
     }
 
@@ -622,7 +624,7 @@ export class RxCollection {
         return this._onDestroy;
     }
 
-    async destroy() {
+    destroy() {
         if (this.destroyed) return;
 
         this._onDestroyCall && this._onDestroyCall();

@@ -325,17 +325,17 @@ export class RxDocument {
      * @overwritten by plugin (optinal)
      * @param  {object} updateObj mongodb-like syntax
      */
-    async update() {
+    update() {
         throw RxError.pluginMissing('update');
     }
 
-    async putAttachment() {
+    putAttachment() {
         throw RxError.pluginMissing('attachments');
     }
-    async getAttachment() {
+    getAttachment() {
         throw RxError.pluginMissing('attachments');
     }
-    async allAttachments() {
+    allAttachments() {
         throw RxError.pluginMissing('attachments');
     }
     get allAttachments$() {
@@ -347,16 +347,16 @@ export class RxDocument {
      * @param  {function(RxDocument)}  fun
      * @return {Promise<RxDocument>}
      */
-    async atomicUpdate(fun) {
+    atomicUpdate(fun) {
         const queue = this.atomicQueue;
-        await queue.requestIdlePromise();
-        await queue.wrapCall(
-            async () => {
-                await fun(this);
-                await this.save();
-            }
-        );
-        return this;
+        return queue.requestIdlePromise()
+            .then(() => queue.wrapCall(
+                async () => {
+                    await fun(this); // this might or might not be a promise
+                    await this.save();
+                }
+            ))
+            .then(() => this);
     }
 
     /**
@@ -418,19 +418,21 @@ export class RxDocument {
      * Saving a temporary doc is basically the same as RxCollection.insert()
      * @return {Promise}
      */
-    async _saveTemporary() {
-        await this.collection.insert(this);
-        this._isTemporary = false;
-        this.collection._docCache.set(this.primary, this);
+    _saveTemporary() {
+        return this.collection.insert(this)
+            .then(() => {
+                this._isTemporary = false;
+                this.collection._docCache.set(this.primary, this);
 
-        // internal events
-        this._synced$.next(true);
-        this._dataSync$.next(clone(this._data));
+                // internal events
+                this._synced$.next(true);
+                this._dataSync$.next(clone(this._data));
 
-        return true;
+                return true;
+            });
     }
 
-    async remove() {
+    remove() {
         if (this.deleted) {
             throw RxError.newRxError('DOC13', {
                 document: this,
@@ -438,24 +440,22 @@ export class RxDocument {
             });
         }
 
-        await promiseWait(0);
-        await this.collection._runHooks('pre', 'remove', this);
-
-        await this.collection.database.lockedRun(
-            () => this.collection.pouch.remove(this.primary, this._data._rev)
-        );
-
-        this.$emit(RxChangeEvent.create(
-            'REMOVE',
-            this.collection.database,
-            this.collection,
-            this,
-            this._data
-        ));
-
-        await this.collection._runHooks('post', 'remove', this);
-        await promiseWait(0);
-        return;
+        return promiseWait(0)
+            .then(() => this.collection._runHooks('pre', 'remove', this))
+            .then(() => this.collection.database.lockedRun(
+                () => this.collection.pouch.remove(this.primary, this._data._rev)
+            ))
+            .then(() => {
+                this.$emit(RxChangeEvent.create(
+                    'REMOVE',
+                    this.collection.database,
+                    this.collection,
+                    this,
+                    this._data
+                ));
+                return this.collection._runHooks('post', 'remove', this);
+            })
+            .then(() => promiseWait(0));
     }
 
     destroy() {

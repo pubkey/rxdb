@@ -182,35 +182,45 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         objectPath.set(this._data, objPath, value);
         return this;
     }
-    async save() {
+    /**
+     * @return {Promise}
+     */
+    save() {
         const saveData = clone(this._data);
         saveData._id = LOCAL_PREFIX + this.id;
-        const res = await this.parentPouch.put(saveData);
-        this._data._rev = res.rev;
+        return this.parentPouch.put(saveData)
+            .then(res => {
+                this._data._rev = res.rev;
 
-        const changeEvent = RxChangeEvent.create(
-            'UPDATE',
-            RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
-            RxCollection.isInstanceOf(this.parent) ? this.parent : null,
-            this,
-            clone(this._data),
-            true
-        );
-        this.$emit(changeEvent);
+                const changeEvent = RxChangeEvent.create(
+                    'UPDATE',
+                    RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
+                    RxCollection.isInstanceOf(this.parent) ? this.parent : null,
+                    this,
+                    clone(this._data),
+                    true
+                );
+                this.$emit(changeEvent);
+            });
     }
-    async remove() {
+    /**
+     * @return {Promise}
+     */
+    remove() {
         const removeId = LOCAL_PREFIX + this.id;
-        await this.parentPouch.remove(removeId, this._data._rev);
-        _getDocCache(this.parent).delete(this.id);
-        const changeEvent = RxChangeEvent.create(
-            'REMOVE',
-            RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
-            RxCollection.isInstanceOf(this.parent) ? this.parent : null,
-            this,
-            clone(this._data),
-            true
-        );
-        this.$emit(changeEvent);
+        return this.parentPouch.remove(removeId, this._data._rev)
+            .then(() => {
+                _getDocCache(this.parent).delete(this.id);
+                const changeEvent = RxChangeEvent.create(
+                    'REMOVE',
+                    RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
+                    RxCollection.isInstanceOf(this.parent) ? this.parent : null,
+                    this,
+                    clone(this._data),
+                    true
+                );
+                this.$emit(changeEvent);
+            });
     }
 }
 
@@ -255,31 +265,34 @@ const _getPouchByParent = parent => {
 /**
  * save the local-document-data
  * throws if already exists
- * @return {RxLocalDocument}
+ * @return {Promise<RxLocalDocument>}
  */
-const insertLocal = async function (id, data) {
+const insertLocal = function (id, data) {
     if (RxCollection.isInstanceOf(this) && this._isInMemory)
         return this._parentCollection.insertLocal(id, data);
 
     data = clone(data);
-    const existing = await this.getLocal(id);
-    if (existing) {
-        throw RxError.newRxError('LD7', {
-            id,
-            data
+
+    return this.getLocal(id)
+        .then(existing => {
+            if (existing) {
+                throw RxError.newRxError('LD7', {
+                    id,
+                    data
+                });
+            }
+
+            // create new one
+            const pouch = _getPouchByParent(this);
+            const saveData = clone(data);
+            saveData._id = LOCAL_PREFIX + id;
+
+            return pouch.put(saveData);
+        }).then(res => {
+            data._rev = res.rev;
+            const newDoc = RxLocalDocument.create(id, data, this);
+            return newDoc;
         });
-    }
-
-    // create new one
-    const pouch = _getPouchByParent(this);
-    const saveData = clone(data);
-    saveData._id = LOCAL_PREFIX + id;
-
-    const res = await pouch.put(saveData);
-
-    data._rev = res.rev;
-    const newDoc = RxLocalDocument.create(id, data, this);
-    return newDoc;
 };
 
 /**

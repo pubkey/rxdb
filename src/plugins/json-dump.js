@@ -8,7 +8,10 @@ import RxQuery from '../rx-query';
 import RxError from '../rx-error';
 import RxChangeEvent from '../rx-change-event';
 
-const dumpRxDatabase = async function(decrypted = false, collections = null) {
+/**
+ * @return {Promise}
+ */
+const dumpRxDatabase = function (decrypted = false, collections = null) {
     const json = {
         name: this.name,
         instanceToken: this.token,
@@ -28,14 +31,16 @@ const dumpRxDatabase = async function(decrypted = false, collections = null) {
         .filter(colName => colName.charAt(0) !== '_')
         .map(colName => this.collections[colName]);
 
-    json.collections = await Promise.all(
+    return Promise.all(
         useCollections
-        .map(col => col.dump(decrypted))
-    );
-    return json;
+            .map(col => col.dump(decrypted))
+    ).then(cols => {
+        json.collections = cols;
+        return json;
+    });
 };
 
-const importDumpRxDatabase = async function(dump) {
+const importDumpRxDatabase = function (dump) {
     /**
      * collections must be created before the import
      * because we do not know about the other collection-settings here
@@ -51,11 +56,11 @@ const importDumpRxDatabase = async function(dump) {
 
     return Promise.all(
         dump.collections
-        .map(colDump => this.collections[colDump.name].importDump(colDump))
+            .map(colDump => this.collections[colDump.name].importDump(colDump))
     );
 };
 
-const dumpRxCollection = async function(decrypted = false) {
+const dumpRxCollection = function (decrypted = false) {
     const encrypted = !decrypted;
 
     const json = {
@@ -72,15 +77,21 @@ const dumpRxCollection = async function(decrypted = false) {
     }
 
     const query = RxQuery.create('find', {}, this);
-    const docs = await this._pouchFind(query, null, encrypted);
-    json.docs = docs.map(docData => {
-        delete docData._rev;
-        return docData;
-    });
-    return json;
+
+    return this._pouchFind(query, null, encrypted)
+        .then(docs => {
+            json.docs = docs.map(docData => {
+                delete docData._rev;
+                return docData;
+            });
+            return json;
+        });
 };
 
-const importDumpRxCollection = async function(exportedJSON) {
+/**
+ * @return {Promise}
+ */
+const importDumpRxCollection = function (exportedJSON) {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw RxError.newRxError('JD2', {
@@ -106,20 +117,20 @@ const importDumpRxCollection = async function(exportedJSON) {
         // validate schema
         .map(doc => this.schema.validate(doc))
         // import
-        .map(async (doc) => {
-            await this._pouchPut(doc);
-
-            const primary = doc[this.schema.primaryPath];
-            // emit changeEvents
-            const emitEvent = RxChangeEvent.create(
-                'INSERT',
-                this.database,
-                this,
-                null,
-                doc
-            );
-            emitEvent.data.doc = primary;
-            this.$emit(emitEvent);
+        .map(doc => {
+            return this._pouchPut(doc).then(() => {
+                const primary = doc[this.schema.primaryPath];
+                // emit changeEvents
+                const emitEvent = RxChangeEvent.create(
+                    'INSERT',
+                    this.database,
+                    this,
+                    null,
+                    doc
+                );
+                emitEvent.data.doc = primary;
+                this.$emit(emitEvent);
+            });
         });
     return Promise.all(importFns);
 };

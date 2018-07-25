@@ -66,13 +66,13 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         // INDEXES
         await Promise.all(
             this.schema.indexes
-            .map(indexAr => {
-                return this.pouch.createIndex({
-                    index: {
-                        fields: indexAr
-                    }
-                });
-            })
+                .map(indexAr => {
+                    return this.pouch.createIndex({
+                        index: {
+                            fields: indexAr
+                        }
+                    });
+                })
         );
 
         this._subs.push(
@@ -114,7 +114,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             since: 'now',
             include_docs: true,
             live: true
-        }).on('change', async (change) => {
+        }).on('change', change => {
             const doc = this._parentCollection._handleToPouch(change.doc);
             // console.log('write to parent:');
             // console.dir(doc);
@@ -129,7 +129,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             since: 'now',
             include_docs: true,
             live: true
-        }).on('change', async (change) => {
+        }).on('change', change => {
             let doc = this._parentCollection._handleFromPouch(change.doc);
             doc = this.schema.swapPrimaryToId(doc);
             // console.log('write to own2:');
