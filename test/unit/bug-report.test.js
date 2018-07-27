@@ -9,32 +9,30 @@
  * - 'npm run test:browsers' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('should keep old value on invalid update', async () => {
         // create a schema
+        const schemaEnum = ['A', 'B'];
         const mySchema = {
             version: 0,
             type: 'object',
             properties: {
-                passportId: {
-                    type: 'string',
-                    primary: true
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
+                children: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            name: { type: 'string' } ,
+                            abLetter: {
+                                type: 'string',
+                                enum: schemaEnum,
+                            },
+                        }
+                    }
                 }
             }
         };
@@ -50,57 +48,31 @@ describe('bug-report.test.js', () => {
         });
         // create a collection
         const collection = await db.collection({
-            name: 'crawlstate',
+            name: util.randomCouchString(10),
             schema: mySchema
         });
 
         // insert a document
-        await collection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+        const doc = await collection.insert({
+            children: [
+                {name: 'foo', abLetter: 'A'},
+                {name: 'bar', abLetter: 'B'},
+            ],
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await RxDB.create({
-            name,
-            adapter: 'memory',
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'crawlstate',
-            schema: mySchema
-        });
+        const colDoc = await collection.findOne({ _id: doc._id }).exec();
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        try {
+            await colDoc.update({
+                $set: {
+                    'children.1.abLetter': 'invalidEnumValue',
+                },
+            });
+        } catch (e) {}
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.equal(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
+        assert.equal(colDoc.children[1].abLetter, 'B');
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
