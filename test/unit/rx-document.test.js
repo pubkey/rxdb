@@ -12,7 +12,7 @@ import * as RxDocument from '../../dist/lib/rx-document';
 import * as RxDatabase from '../../dist/lib/index';
 
 config.parallel('rx-document.test.js', () => {
-    describe('statics', () => {});
+    describe('statics', () => { });
     describe('.get()', () => {
         describe('positive', () => {
             it('get a value', async () => {
@@ -39,7 +39,7 @@ config.parallel('rx-document.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('.set()', () => {
         describe('positive', () => {
@@ -760,6 +760,70 @@ config.parallel('rx-document.test.js', () => {
             const value = doc.get('value.x');
             assert.equal(value.foo, 'bar');
 
+            db.destroy();
+        });
+        it('#734 Invalid value persists in document after failed update', async () => {
+            // create a schema
+            const schemaEnum = ['A', 'B'];
+            const mySchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    children: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                name: { type: 'string' },
+                                abLetter: {
+                                    type: 'string',
+                                    enum: schemaEnum,
+                                },
+                            }
+                        }
+                    }
+                }
+            };
+
+            // generate a random database-name
+            const name = util.randomCouchString(10);
+
+            // create a database
+            const db = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collection = await db.collection({
+                name: util.randomCouchString(10),
+                schema: mySchema
+            });
+
+            // insert a document
+            const doc = await collection.insert({
+                children: [
+                    { name: 'foo', abLetter: 'A' },
+                    { name: 'bar', abLetter: 'B' },
+                ],
+            });
+
+            const colDoc = await collection.findOne({ _id: doc._id }).exec();
+
+
+            try {
+                await colDoc.update({
+                    $set: {
+                        'children.1.abLetter': 'invalidEnumValue',
+                    },
+                });
+            } catch (err) {
+            }
+
+            assert.equal(colDoc.children[1].abLetter, 'B');
+
+
+            // clean up afterwards
             db.destroy();
         });
     });

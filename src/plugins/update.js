@@ -5,10 +5,13 @@
  */
 import modifyjs from 'modifyjs';
 import deepEqual from 'deep-equal';
+import {
+    clone
+} from '../util.js';
 
 export function update(updateObj) {
+    const oldDocData = clone(this._data);
     const newDoc = modifyjs(this._data, updateObj);
-
     Object.keys(this._data).forEach((previousPropName) => {
         if (newDoc[previousPropName]) {
             // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
@@ -24,7 +27,13 @@ export function update(updateObj) {
         .filter(newPropName => !deepEqual(this._data[newPropName], newDoc[newPropName]))
         .forEach(newPropName => this._data[newPropName] = newDoc[newPropName]);
 
-    return this.save();
+    return this.save()
+        .then(() => this)
+        .catch(err => {
+            // save was not successfull, reset doc-data
+            this._data = oldDocData;
+            throw err;
+        });
 }
 
 export async function RxQueryUpdate(updateObj) {
