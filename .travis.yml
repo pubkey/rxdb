@@ -14,6 +14,7 @@ before_install:
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 script:
 - travis_retry npm install --depth 0 --silent
+- npm run build
 - travis_retry npm run test:node
 - travis_retry npm run test:fast
 - travis_retry npm run test:browser
@@ -21,7 +22,6 @@ script:
 - travis_retry npm run test:typings
 - travis_retry npm run test:couchdb
 - npm run test:deps
-- npm run build
 - npm run lint
 - (cd ./examples/angular2 && npm install --depth 0 --silent && npm run build && travis_retry npm run test:build)
 - (cd ./examples/vue && npm install --depth 0 --silent && npm run lint && npm run build && travis_retry npm run test)

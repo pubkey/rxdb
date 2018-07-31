@@ -68,4 +68,47 @@ BEFORE:               111701
 
 
 
-112383
+## 31. July 2018
+Better broadcast-channel and unload
+npm run test:fast
+BEFORE: 16-17 ms
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10836.312383,
+    "perInstance": 10.836312383000001
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7355.86208,
+    "perBlock": 3.67793104
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 2118.243776,
+    "perDocument": 0.21182437759999997
+  }
+}
+
+AFTER: 15ms
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10175.0929,
+    "perInstance": 10.1750929
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 6704.211541,
+    "perBlock": 3.3521057704999997
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 2352.463973,
+    "perDocument": 0.2352463973
+  }
+}
