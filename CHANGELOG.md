@@ -9,6 +9,9 @@ Bugfixes:
   - Field names can't be one character long [#717](https://github.com/pubkey/rxdb/issues/717) thanks [@errorx666](https://github.com/errorx666)
   - Invalid value persists in document after failed update [#734](https://github.com/pubkey/rxdb/issues/734) thanks [@rybaczewa](https://github.com/rybaczewa)
 
+Other
+  - Moved `@types/core-js` to dev-dependencies [#712](https://github.com/pubkey/rxdb/issues/712)
+
 ### 7.7.0 (July 6, 2018)
 
 
