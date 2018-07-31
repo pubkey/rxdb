@@ -65,6 +65,15 @@ describe('util.test.js', () => {
             it('should validate a normal string', () => {
                 util.validateCouchDBString('foobar');
             });
+            it('should allow _ and $ after the first character', () => {
+                util.validateCouchDBString('foo_bar');
+                util.validateCouchDBString('foobar_');
+                util.validateCouchDBString('foobar$');
+            } );
+            it('should not allow _ and $ as the first character', () => {
+                assert.throws( () => util.validateCouchDBString('$foobar'), { code: 'UT2' } );
+                assert.throws( () => util.validateCouchDBString('_foobar'), { code: 'UT2' } );
+            } );
             it('should validate foldernames', () => {
                 util.validateCouchDBString('./foobar'); // unix
                 util.validateCouchDBString('.\\foobar'); //windows
