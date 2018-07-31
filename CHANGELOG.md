@@ -1,6 +1,13 @@
 # Changelog
 
 
+### 7.X.X (comming soon)
+
+Bugfixes:
+  - newRxError is not a constructor [#719](https://github.com/pubkey/rxdb/issues/719) thanks [@errorx666](https://github.com/errorx666)
+  - Collection name validation is too strict [#720](https://github.com/pubkey/rxdb/issues/720) thanks [@errorx666](https://github.com/errorx666)
+  - Field names can't be one character long [#717](https://github.com/pubkey/rxdb/issues/717) thanks [@errorx666](https://github.com/errorx666)
+
 ### 7.7.0 (July 6, 2018)
 
 
