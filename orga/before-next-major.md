@@ -5,7 +5,7 @@ This list contains things that have to be done but will create breaking changes.
 
 - [x] ~~Switch out default-validator to ajv~~ Canceled: Ajv increases the build size by 80kB and has a worse performance
 - [x] disable KeyCompression by default.
-- [ ] compress encrypted hex-strings before saving them
+- [x] ~~compress encrypted hex-strings before saving them~~ Canceled: Should be done by pouchdb
 - [x] RxDatabase().collection() currently accepts `RxSchema` and `RxJsonSchema` which is confusing. Only allow `RxJsonSchema`
 - [x] Schemas can currently have `required: true` only specific fields. This is agains the json-schema-standard. Required fields should be set via `required: ['fieldOne', 'fieldTwo']`
 - [x] ~~Move to [babel-preset-env](https://babeljs.io/env/)~~ Canceled: Do this when babel7 is released
