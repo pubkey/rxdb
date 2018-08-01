@@ -13,6 +13,7 @@ This list contains things that have to be done but will create breaking changes.
 - [x] Do cross-instance communication with https://github.com/pubkey/broadcast-channel (faster, less performance-waste)
 - [x] Set QueryChangeDetection via RxDatabase-option
 - [x] @ngohuunam via gitter: "I need to apply to pouch setting option skip_setup: true. it's seem re-enabled again in v.7.0"
+- [ ] Reuse an RxDocument-protoptye per collection instead of resetting ORM-methods and attribute getters/setters on each instance
 
 # Maybe
 

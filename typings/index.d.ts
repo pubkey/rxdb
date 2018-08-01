@@ -62,6 +62,9 @@ export const removeDatabase: removeDatabaseType;
 
 export function checkAdapter(adapter: any | string): Promise<boolean>;
 
+type QueryChangeDetector = {
+    enableDebugging: () => void;
+};
 export const QueryChangeDetector: {
     enableDebugging(set?: boolean): void;
 };

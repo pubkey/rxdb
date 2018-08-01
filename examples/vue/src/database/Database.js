@@ -41,6 +41,7 @@ const _create = async function() {
     const db = await RxDB.create({
         name: 'heroesreactdb',
         adapter: 'idb',
+        queryChangeDetection: true,
         password: 'myLongAndStupidPassword'
     });
     window.dbs.push(db);

@@ -35,8 +35,6 @@ RxDB.plugin(RxDBReplicationModule);
 RxDB.plugin(require('pouchdb-adapter-http'));
 
 
-
-RxDB.QueryChangeDetector.enable();
 RxDB.QueryChangeDetector.enableDebugging();
 
 import PouchdbAdapterIdb from 'pouchdb-adapter-idb';
@@ -71,6 +69,7 @@ export class DatabaseService {
         const db: RxDBTypes.RxHeroesDatabase = await RxDB.create({
             name: 'heroes',
             adapter: useAdapter,
+            queryChangeDetection: true
             // password: 'myLongAndStupidPassword' // no password needed
         });
         console.log('DatabaseService: created database');
