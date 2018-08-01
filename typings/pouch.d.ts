@@ -25,15 +25,16 @@ export interface PouchReplicationOptions {
  * @link https://pouchdb.com/api.html#create_database
  */
 export interface PouchSettings {
-    auto_compaction?: boolean,
-    revs_limit?: number,
-    ajax?: any,
-    auth?: any,
-    skip_setup?: boolean,
-    storage?: any,
-    size?: number,
-    location?: string,
-    iosDatabaseLocation?: string
+    auto_compaction?: boolean;
+    revs_limit?: number;
+    ajax?: any;
+    fetch?: any;
+    auth?: any;
+    skip_setup?: boolean;
+    storage?: any;
+    size?: number;
+    location?: string;
+    iosDatabaseLocation?: string;
 }
 
 declare type Debug = {
