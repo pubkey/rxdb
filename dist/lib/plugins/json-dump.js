@@ -5,17 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.overwritable = exports.prototypes = exports.rxdb = undefined;
 
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
 var _util = require('../util');
-
-var util = _interopRequireWildcard(_util);
 
 var _rxQuery = require('../rx-query');
 
@@ -29,248 +19,144 @@ var _rxChangeEvent = require('../rx-change-event');
 
 var _rxChangeEvent2 = _interopRequireDefault(_rxChangeEvent);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
+ * @return {Promise}
+ */
+/**
  * this plugin adds the json export/import capabilities to RxDB
  */
-var dumpRxDatabase = function () {
-    var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
-        var _this = this;
+var dumpRxDatabase = function dumpRxDatabase() {
+    var _this = this;
 
-        var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-        var collections = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-        var json, useCollections;
-        return _regenerator2['default'].wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        json = {
-                            name: this.name,
-                            instanceToken: this.token,
-                            encrypted: false,
-                            passwordHash: null,
-                            collections: []
-                        };
+    var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    var collections = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-
-                        if (this.password) {
-                            json.passwordHash = util.hash(this.password);
-                            if (decrypted) json.encrypted = false;else json.encrypted = true;
-                        }
-
-                        useCollections = Object.keys(this.collections).filter(function (colName) {
-                            return !collections || collections.includes(colName);
-                        }).filter(function (colName) {
-                            return colName.charAt(0) !== '_';
-                        }).map(function (colName) {
-                            return _this.collections[colName];
-                        });
-                        _context.next = 5;
-                        return Promise.all(useCollections.map(function (col) {
-                            return col.dump(decrypted);
-                        }));
-
-                    case 5:
-                        json.collections = _context.sent;
-                        return _context.abrupt('return', json);
-
-                    case 7:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }));
-
-    return function dumpRxDatabase() {
-        return _ref.apply(this, arguments);
+    var json = {
+        name: this.name,
+        instanceToken: this.token,
+        encrypted: false,
+        passwordHash: null,
+        collections: []
     };
-}();
 
-var importDumpRxDatabase = function () {
-    var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(dump) {
-        var _this2 = this;
+    if (this.password) {
+        json.passwordHash = (0, _util.hash)(this.password);
+        if (decrypted) json.encrypted = false;else json.encrypted = true;
+    }
 
-        var missingCollections;
-        return _regenerator2['default'].wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        /**
-                         * collections must be created before the import
-                         * because we do not know about the other collection-settings here
-                         */
-                        missingCollections = dump.collections.filter(function (col) {
-                            return !_this2.collections[col.name];
-                        }).map(function (col) {
-                            return col.name;
-                        });
+    var useCollections = Object.keys(this.collections).filter(function (colName) {
+        return !collections || collections.includes(colName);
+    }).filter(function (colName) {
+        return colName.charAt(0) !== '_';
+    }).map(function (colName) {
+        return _this.collections[colName];
+    });
 
-                        if (!(missingCollections.length > 0)) {
-                            _context2.next = 3;
-                            break;
-                        }
+    return Promise.all(useCollections.map(function (col) {
+        return col.dump(decrypted);
+    })).then(function (cols) {
+        json.collections = cols;
+        return json;
+    });
+};
 
-                        throw _rxError2['default'].newRxError('JD1', {
-                            missingCollections: missingCollections
-                        });
+var importDumpRxDatabase = function importDumpRxDatabase(dump) {
+    var _this2 = this;
 
-                    case 3:
-                        return _context2.abrupt('return', Promise.all(dump.collections.map(function (colDump) {
-                            return _this2.collections[colDump.name].importDump(colDump);
-                        })));
+    /**
+     * collections must be created before the import
+     * because we do not know about the other collection-settings here
+     */
+    var missingCollections = dump.collections.filter(function (col) {
+        return !_this2.collections[col.name];
+    }).map(function (col) {
+        return col.name;
+    });
+    if (missingCollections.length > 0) {
+        throw _rxError2['default'].newRxError('JD1', {
+            missingCollections: missingCollections
+        });
+    }
 
-                    case 4:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, this);
+    return Promise.all(dump.collections.map(function (colDump) {
+        return _this2.collections[colDump.name].importDump(colDump);
     }));
+};
 
-    return function importDumpRxDatabase(_x3) {
-        return _ref2.apply(this, arguments);
+var dumpRxCollection = function dumpRxCollection() {
+    var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+    var encrypted = !decrypted;
+
+    var json = {
+        name: this.name,
+        schemaHash: this.schema.hash,
+        encrypted: false,
+        passwordHash: null,
+        docs: []
     };
-}();
 
-var dumpRxCollection = function () {
-    var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
-        var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-        var encrypted, json, query, docs;
-        return _regenerator2['default'].wrap(function _callee3$(_context3) {
-            while (1) {
-                switch (_context3.prev = _context3.next) {
-                    case 0:
-                        encrypted = !decrypted;
-                        json = {
-                            name: this.name,
-                            schemaHash: this.schema.hash,
-                            encrypted: false,
-                            passwordHash: null,
-                            docs: []
-                        };
+    if (this.database.password && encrypted) {
+        json.passwordHash = (0, _util.hash)(this.database.password);
+        json.encrypted = true;
+    }
 
+    var query = _rxQuery2['default'].create('find', {}, this);
 
-                        if (this.database.password && encrypted) {
-                            json.passwordHash = util.hash(this.database.password);
-                            json.encrypted = true;
-                        }
+    return this._pouchFind(query, null, encrypted).then(function (docs) {
+        json.docs = docs.map(function (docData) {
+            delete docData._rev;
+            return docData;
+        });
+        return json;
+    });
+};
 
-                        query = _rxQuery2['default'].create('find', {}, this);
-                        _context3.next = 6;
-                        return this._pouchFind(query, null, encrypted);
+/**
+ * @return {Promise}
+ */
+var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
+    var _this3 = this;
 
-                    case 6:
-                        docs = _context3.sent;
+    // check schemaHash
+    if (exportedJSON.schemaHash !== this.schema.hash) {
+        throw _rxError2['default'].newRxError('JD2', {
+            schemaHash: exportedJSON.schemaHash,
+            own: this.schema.hash
+        });
+    }
 
-                        json.docs = docs.map(function (docData) {
-                            delete docData._rev;
-                            return docData;
-                        });
-                        return _context3.abrupt('return', json);
+    // check if passwordHash matches own
+    if (exportedJSON.encrypted && exportedJSON.passwordHash !== (0, _util.hash)(this.database.password)) {
+        throw _rxError2['default'].newRxError('JD3', {
+            passwordHash: exportedJSON.passwordHash,
+            own: (0, _util.hash)(this.database.password)
+        });
+    }
 
-                    case 9:
-                    case 'end':
-                        return _context3.stop();
-                }
-            }
-        }, _callee3, this);
-    }));
-
-    return function dumpRxCollection() {
-        return _ref3.apply(this, arguments);
-    };
-}();
-
-var importDumpRxCollection = function () {
-    var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(exportedJSON) {
-        var _this3 = this;
-
-        var importFns;
-        return _regenerator2['default'].wrap(function _callee5$(_context5) {
-            while (1) {
-                switch (_context5.prev = _context5.next) {
-                    case 0:
-                        if (!(exportedJSON.schemaHash !== this.schema.hash)) {
-                            _context5.next = 2;
-                            break;
-                        }
-
-                        throw _rxError2['default'].newRxError('JD2', {
-                            schemaHash: exportedJSON.schemaHash,
-                            own: this.schema.hash
-                        });
-
-                    case 2:
-                        if (!(exportedJSON.encrypted && exportedJSON.passwordHash !== util.hash(this.database.password))) {
-                            _context5.next = 4;
-                            break;
-                        }
-
-                        throw _rxError2['default'].newRxError('JD3', {
-                            passwordHash: exportedJSON.passwordHash,
-                            own: util.hash(this.database.password)
-                        });
-
-                    case 4:
-                        importFns = exportedJSON.docs
-                        // decrypt
-                        .map(function (doc) {
-                            return _this3._crypter.decrypt(doc);
-                        })
-                        // validate schema
-                        .map(function (doc) {
-                            return _this3.schema.validate(doc);
-                        })
-                        // import
-                        .map(function () {
-                            var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(doc) {
-                                var primary, emitEvent;
-                                return _regenerator2['default'].wrap(function _callee4$(_context4) {
-                                    while (1) {
-                                        switch (_context4.prev = _context4.next) {
-                                            case 0:
-                                                _context4.next = 2;
-                                                return _this3._pouchPut(doc);
-
-                                            case 2:
-                                                primary = doc[_this3.schema.primaryPath];
-                                                // emit changeEvents
-
-                                                emitEvent = _rxChangeEvent2['default'].create('INSERT', _this3.database, _this3, null, doc);
-
-                                                emitEvent.data.doc = primary;
-                                                _this3.$emit(emitEvent);
-
-                                            case 6:
-                                            case 'end':
-                                                return _context4.stop();
-                                        }
-                                    }
-                                }, _callee4, _this3);
-                            }));
-
-                            return function (_x6) {
-                                return _ref5.apply(this, arguments);
-                            };
-                        }());
-                        return _context5.abrupt('return', Promise.all(importFns));
-
-                    case 6:
-                    case 'end':
-                        return _context5.stop();
-                }
-            }
-        }, _callee5, this);
-    }));
-
-    return function importDumpRxCollection(_x5) {
-        return _ref4.apply(this, arguments);
-    };
-}();
+    var importFns = exportedJSON.docs
+    // decrypt
+    .map(function (doc) {
+        return _this3._crypter.decrypt(doc);
+    })
+    // validate schema
+    .map(function (doc) {
+        return _this3.schema.validate(doc);
+    })
+    // import
+    .map(function (doc) {
+        return _this3._pouchPut(doc).then(function () {
+            var primary = doc[_this3.schema.primaryPath];
+            // emit changeEvents
+            var emitEvent = _rxChangeEvent2['default'].create('INSERT', _this3.database, _this3, null, doc);
+            emitEvent.data.doc = primary;
+            _this3.$emit(emitEvent);
+        });
+    });
+    return Promise.all(importFns);
+};
 
 var rxdb = exports.rxdb = true;
 var prototypes = exports.prototypes = {

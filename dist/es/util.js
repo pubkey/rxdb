@@ -1,5 +1,3 @@
-import _regeneratorRuntime from 'babel-runtime/regenerator';
-import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 /**
  * this contains a mapping to basic dependencies
  * which should be easy to change
@@ -77,63 +75,25 @@ export function nextTick() {
  * @param  {Number}  [ms=0]
  * @return {Promise}
  */
-export var promiseWait = function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-        var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        return _context.abrupt('return', new Promise(function (res) {
-                            return setTimeout(res, ms);
-                        }));
+export function promiseWait() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
-                    case 1:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }));
+    return new Promise(function (res) {
+        return setTimeout(res, ms);
+    });
+}
 
-    return function promiseWait() {
-        return _ref.apply(this, arguments);
-    };
-}();
+export function requestIdlePromise() {
+    var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-export var requestIdlePromise = function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-        var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        if (!(typeof window === 'object' && window.requestIdleCallback)) {
-                            _context2.next = 4;
-                            break;
-                        }
-
-                        return _context2.abrupt('return', new Promise(function (res) {
-                            return window.requestIdleCallback(res, {
-                                timeout: timeout
-                            });
-                        }));
-
-                    case 4:
-                        return _context2.abrupt('return', Promise.resolve());
-
-                    case 5:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, this);
-    }));
-
-    return function requestIdlePromise() {
-        return _ref2.apply(this, arguments);
-    };
-}();
+    if (typeof window === 'object' && window.requestIdleCallback) {
+        return new Promise(function (res) {
+            return window.requestIdleCallback(res, {
+                timeout: timeout
+            });
+        });
+    } else return Promise.resolve();
+}
 
 /**
  * run the callback if requestIdleCallback available
@@ -283,11 +243,11 @@ export function stringifyFilter(key, value) {
  * @param {object} pouch - instance of pouchdb
  * @return {function}
  */
-export function pouchReplicationFunction(pouch, _ref3) {
-    var _ref3$pull = _ref3.pull,
-        pull = _ref3$pull === undefined ? true : _ref3$pull,
-        _ref3$push = _ref3.push,
-        push = _ref3$push === undefined ? true : _ref3$push;
+export function pouchReplicationFunction(pouch, _ref) {
+    var _ref$pull = _ref.pull,
+        pull = _ref$pull === undefined ? true : _ref$pull,
+        _ref$push = _ref.push,
+        push = _ref$push === undefined ? true : _ref$push;
 
     if (pull && push) return pouch.sync.bind(pouch);
     if (!pull && push) return pouch.replicate.to.bind(pouch);
@@ -326,7 +286,7 @@ export function shuffleArray(arr) {
     return arr.sort(function () {
         return Math.random() - 0.5;
     });
-};
+}
 
 /**
  * transforms the given adapter into a pouch-compatible object
@@ -342,7 +302,7 @@ export function adapterObject(adapter) {
         };
     }
     return adapterObj;
-};
+}
 
 function recursiveDeepCopy(o) {
     if (!o) return o;
@@ -375,4 +335,4 @@ export function flattenObject(ob) {
         }
     }
     return toReturn;
-};
+}

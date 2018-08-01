@@ -3,9 +3,9 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-import * as utils from './mquery_utils';
+import { isObject, merge as _merge, mergeClone } from './mquery_utils';
 import RxError from '../rx-error';
-import * as util from '../util';
+import { clone as _clone } from '../util';
 
 var MQuery = function () {
     /**
@@ -22,8 +22,8 @@ var MQuery = function () {
 
         var proto = this.constructor.prototype;
         this.options = {};
-        this._conditions = proto._conditions ? util.clone(proto._conditions) : {};
-        this._fields = proto._fields ? util.clone(proto._fields) : undefined;
+        this._conditions = proto._conditions ? _clone(proto._conditions) : {};
+        this._fields = proto._fields ? _clone(proto._fields) : undefined;
         this._path = proto._path || undefined;
 
         if (criteria) this.find(criteria);
@@ -40,7 +40,7 @@ var MQuery = function () {
         Object.entries(this).forEach(function (_ref) {
             var k = _ref[0],
                 v = _ref[1];
-            return same[k] = util.clone(v);
+            return same[k] = _clone(v);
         });
         return same;
     };
@@ -254,14 +254,14 @@ var MQuery = function () {
             this._ensurePath('elemMatch');
             path = this._path;
             fn = arguments[0];
-        } else if (utils.isObject(arguments[0])) {
+        } else if (isObject(arguments[0])) {
             this._ensurePath('elemMatch');
             path = this._path;
             criteria = arguments[0];
         } else if ('function' === typeof arguments[1]) {
             path = arguments[0];
             fn = arguments[1];
-        } else if (arguments[1] && utils.isObject(arguments[1])) {
+        } else if (arguments[1] && isObject(arguments[1])) {
             path = arguments[0];
             criteria = arguments[1];
         } else throw RxError.newRxTypeError('MQ2');
@@ -320,7 +320,7 @@ var MQuery = function () {
         }
 
         // .sort({ field: 1, test: -1 })
-        if (utils.isObject(arg)) {
+        if (isObject(arg)) {
             var keys = Object.keys(arg);
             keys.forEach(function (field) {
                 return push(_this.options, field, arg[field]);
@@ -355,21 +355,21 @@ var MQuery = function () {
         if (source instanceof MQuery) {
             // if source has a feature, apply it to ourselves
 
-            if (source._conditions) utils.merge(this._conditions, source._conditions);
+            if (source._conditions) _merge(this._conditions, source._conditions);
 
             if (source._fields) {
                 this._fields || (this._fields = {});
-                utils.merge(this._fields, source._fields);
+                _merge(this._fields, source._fields);
             }
 
             if (source.options) {
                 this.options || (this.options = {});
-                utils.merge(this.options, source.options);
+                _merge(this.options, source.options);
             }
 
             if (source._update) {
                 this._update || (this._update = {});
-                utils.mergeClone(this._update, source._update);
+                mergeClone(this._update, source._update);
             }
 
             if (source._distinct) this._distinct = source._distinct;
@@ -378,7 +378,7 @@ var MQuery = function () {
         }
 
         // plain object
-        utils.merge(this._conditions, source);
+        _merge(this._conditions, source);
 
         return this;
     };
@@ -406,7 +406,7 @@ var MQuery = function () {
 
 
     MQuery.prototype._optionsForExec = function _optionsForExec() {
-        var options = util.clone(this.options);
+        var options = _clone(this.options);
         return options;
     };
 
@@ -486,7 +486,7 @@ function push(opts, field, value) {
     var s = opts.sort || (opts.sort = {});
     var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
-};
+}
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
@@ -504,7 +504,7 @@ function _pushArr(opts, field, value) {
             .replace('desc', '-1')
             .replace('descending', '-1');*/
     opts.sort.push([field, value]);
-};
+}
 
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
@@ -513,7 +513,7 @@ function _pushArr(opts, field, value) {
  * @return {Boolean}
  */
 MQuery.canMerge = function (conds) {
-    return conds instanceof MQuery || utils.isObject(conds);
+    return conds instanceof MQuery || isObject(conds);
 };
 
 /**
@@ -530,5 +530,4 @@ MQuery.canMerge = function (conds) {
     };
 });
 
-MQuery.utils = utils;
 export default MQuery;

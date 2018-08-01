@@ -3,97 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.isElectronRenderer = exports.clone = exports.requestIdlePromise = exports.promiseWait = undefined;
+exports.isElectronRenderer = exports.clone = undefined;
 
 var _typeof2 = require('babel-runtime/helpers/typeof');
 
 var _typeof3 = _interopRequireDefault(_typeof2);
-
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-/**
- * [promiseWait description]
- * @param  {Number}  [ms=0]
- * @return {Promise}
- */
-var promiseWait = exports.promiseWait = function () {
-    var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
-        var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-        return _regenerator2['default'].wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        return _context.abrupt('return', new Promise(function (res) {
-                            return setTimeout(res, ms);
-                        }));
-
-                    case 1:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }));
-
-    return function promiseWait() {
-        return _ref.apply(this, arguments);
-    };
-}();
-
-var requestIdlePromise = exports.requestIdlePromise = function () {
-    var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
-        var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-        return _regenerator2['default'].wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        if (!((typeof window === 'undefined' ? 'undefined' : (0, _typeof3['default'])(window)) === 'object' && window.requestIdleCallback)) {
-                            _context2.next = 4;
-                            break;
-                        }
-
-                        return _context2.abrupt('return', new Promise(function (res) {
-                            return window.requestIdleCallback(res, {
-                                timeout: timeout
-                            });
-                        }));
-
-                    case 4:
-                        return _context2.abrupt('return', Promise.resolve());
-
-                    case 5:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, this);
-    }));
-
-    return function requestIdlePromise() {
-        return _ref2.apply(this, arguments);
-    };
-}();
-
-/**
- * run the callback if requestIdleCallback available
- * do nothing if not
- * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
- * @param  {function} fun
- * @return {void}
- */
-
 
 exports.isLevelDown = isLevelDown;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generateId = generateId;
 exports.nextTick = nextTick;
+exports.promiseWait = promiseWait;
+exports.requestIdlePromise = requestIdlePromise;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
@@ -194,7 +116,41 @@ function nextTick() {
     return new Promise(function (res) {
         return setTimeout(res, 0);
     });
-}function requestIdleCallbackIfAvailable(fun) {
+}
+
+/**
+ * [promiseWait description]
+ * @param  {Number}  [ms=0]
+ * @return {Promise}
+ */
+function promiseWait() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+    return new Promise(function (res) {
+        return setTimeout(res, ms);
+    });
+}
+
+function requestIdlePromise() {
+    var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+
+    if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3['default'])(window)) === 'object' && window.requestIdleCallback) {
+        return new Promise(function (res) {
+            return window.requestIdleCallback(res, {
+                timeout: timeout
+            });
+        });
+    } else return Promise.resolve();
+}
+
+/**
+ * run the callback if requestIdleCallback available
+ * do nothing if not
+ * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
+ * @param  {function} fun
+ * @return {void}
+ */
+function requestIdleCallbackIfAvailable(fun) {
     if ((typeof window === 'undefined' ? 'undefined' : (0, _typeof3['default'])(window)) === 'object' && window.requestIdleCallback) window.requestIdleCallback(fun);
 }
 
@@ -335,11 +291,11 @@ function stringifyFilter(key, value) {
  * @param {object} pouch - instance of pouchdb
  * @return {function}
  */
-function pouchReplicationFunction(pouch, _ref3) {
-    var _ref3$pull = _ref3.pull,
-        pull = _ref3$pull === undefined ? true : _ref3$pull,
-        _ref3$push = _ref3.push,
-        push = _ref3$push === undefined ? true : _ref3$push;
+function pouchReplicationFunction(pouch, _ref) {
+    var _ref$pull = _ref.pull,
+        pull = _ref$pull === undefined ? true : _ref$pull,
+        _ref$push = _ref.push,
+        push = _ref$push === undefined ? true : _ref$push;
 
     if (pull && push) return pouch.sync.bind(pouch);
     if (!pull && push) return pouch.replicate.to.bind(pouch);
@@ -378,7 +334,7 @@ function shuffleArray(arr) {
     return arr.sort(function () {
         return Math.random() - 0.5;
     });
-};
+}
 
 /**
  * transforms the given adapter into a pouch-compatible object
@@ -394,7 +350,7 @@ function adapterObject(adapter) {
         };
     }
     return adapterObj;
-};
+}
 
 function recursiveDeepCopy(o) {
     if (!o) return o;
@@ -426,4 +382,4 @@ function flattenObject(ob) {
         }
     }
     return toReturn;
-};
+}

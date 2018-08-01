@@ -6,7 +6,7 @@ import _inherits from 'babel-runtime/helpers/inherits';
  * here we use custom errors with the additional field 'parameters'
  */
 
-import * as util from './util';
+import { ucfirst } from './util';
 import overwritable from './overwritable';
 
 /**
@@ -71,7 +71,7 @@ export var RxError = function (_Error) {
     }]);
 
     return RxError;
-}(Error);;
+}(Error);
 
 export var RxTypeError = function (_TypeError) {
     _inherits(RxTypeError, _TypeError);
@@ -109,13 +109,13 @@ export var RxTypeError = function (_TypeError) {
     }]);
 
     return RxTypeError;
-}(TypeError);;
+}(TypeError);
 
 export function pluginMissing(pluginKey) {
-    return new RxError('PU', 'You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require(\'rxdb/plugins/' + pluginKey + '\'))\n          - es6-import:\n            import ' + util.ucfirst(pluginKey) + 'Plugin from \'rxdb/plugins/' + pluginKey + '\';\n            RxDB.plugin(' + util.ucfirst(pluginKey) + 'Plugin);\n        ', {
+    return new RxError('PU', 'You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require(\'rxdb/plugins/' + pluginKey + '\'))\n          - es6-import:\n            import ' + ucfirst(pluginKey) + 'Plugin from \'rxdb/plugins/' + pluginKey + '\';\n            RxDB.plugin(' + ucfirst(pluginKey) + 'Plugin);\n        ', {
         pluginKey: pluginKey
     });
-};
+}
 
 // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';

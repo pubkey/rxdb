@@ -23,8 +23,6 @@ var DocCache = function () {
     return DocCache;
 }();
 
-;
-
 export function create() {
     return new DocCache();
 }

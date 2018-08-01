@@ -1,41 +1,10 @@
-import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _regeneratorRuntime from 'babel-runtime/regenerator';
 import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
-
-var resyncRxDocument = function () {
-    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(doc) {
-        var docData, data, changeEvent;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        _context.next = 2;
-                        return doc.collection.pouch.get(doc.primary);
-
-                    case 2:
-                        docData = _context.sent;
-                        data = doc.collection._handleFromPouch(docData);
-                        changeEvent = RxChangeEvent.create('UPDATE', doc.collection.database, doc.collection, doc, data);
-
-                        doc.$emit(changeEvent);
-
-                    case 6:
-                    case 'end':
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }));
-
-    return function resyncRxDocument(_x) {
-        return _ref.apply(this, arguments);
-    };
-}();
-
+import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import { map } from 'rxjs/operators';
 
 import RxChangeEvent from './../rx-change-event';
-import * as util from './../util';
+import { nextTick, isElectronRenderer } from './../util';
 import RxError from '../rx-error';
 
 function ensureSchemaSupportsAttachments(doc) {
@@ -45,6 +14,14 @@ function ensureSchemaSupportsAttachments(doc) {
             link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
         });
     }
+}
+
+function resyncRxDocument(doc) {
+    return doc.collection.pouch.get(doc.primary).then(function (docData) {
+        var data = doc.collection._handleFromPouch(docData);
+        var changeEvent = RxChangeEvent.create('UPDATE', doc.collection.database, doc.collection, doc, data);
+        doc.$emit(changeEvent);
+    });
 }
 
 export var blobBufferUtil = {
@@ -58,7 +35,7 @@ export var blobBufferUtil = {
     createBlobBuffer: function createBlobBuffer(data, type) {
         var blobBuffer = void 0;
 
-        if (util.isElectronRenderer) {
+        if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
             return new Buffer(data, {
                 type: type
@@ -81,7 +58,7 @@ export var blobBufferUtil = {
     toString: function toString(blobBuffer) {
         if (blobBuffer instanceof Buffer) {
             // node
-            return util.nextTick().then(function () {
+            return nextTick().then(function () {
                 return blobBuffer.toString();
             });
         }
@@ -98,9 +75,9 @@ export var blobBufferUtil = {
 };
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
-    Object.entries(attachment.doc.collection._attachments).forEach(function (_ref2) {
-        var funName = _ref2[0],
-            fun = _ref2[1];
+    Object.entries(attachment.doc.collection._attachments).forEach(function (_ref) {
+        var funName = _ref[0],
+            fun = _ref[1];
         return attachment.__defineGetter__(funName, function () {
             return fun.bind(attachment);
         });
@@ -112,13 +89,13 @@ var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment)
  * wrapped so that you can access the attachment-data
  */
 export var RxAttachment = function () {
-    function RxAttachment(_ref3) {
-        var doc = _ref3.doc,
-            id = _ref3.id,
-            type = _ref3.type,
-            length = _ref3.length,
-            digest = _ref3.digest,
-            rev = _ref3.rev;
+    function RxAttachment(_ref2) {
+        var doc = _ref2.doc,
+            id = _ref2.id,
+            type = _ref2.type,
+            length = _ref2.length,
+            digest = _ref2.digest,
+            rev = _ref2.rev;
 
         _classCallCheck(this, RxAttachment);
 
@@ -133,28 +110,28 @@ export var RxAttachment = function () {
     }
 
     RxAttachment.prototype.remove = function () {
-        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+            return _regeneratorRuntime.wrap(function _callee$(_context) {
                 while (1) {
-                    switch (_context2.prev = _context2.next) {
+                    switch (_context.prev = _context.next) {
                         case 0:
-                            _context2.next = 2;
+                            _context.next = 2;
                             return this.doc.collection.pouch.removeAttachment(this.doc.primary, this.id, this.doc._data._rev);
 
                         case 2:
-                            _context2.next = 4;
+                            _context.next = 4;
                             return resyncRxDocument(this.doc);
 
                         case 4:
                         case 'end':
-                            return _context2.stop();
+                            return _context.stop();
                     }
                 }
-            }, _callee2, this);
+            }, _callee, this);
         }));
 
         function remove() {
-            return _ref4.apply(this, arguments);
+            return _ref3.apply(this, arguments);
         }
 
         return remove;
@@ -167,35 +144,68 @@ export var RxAttachment = function () {
 
 
     RxAttachment.prototype.getData = function () {
-        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
+        var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
             var data, dataString;
+            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            _context2.next = 2;
+                            return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id);
+
+                        case 2:
+                            data = _context2.sent;
+
+                            if (!shouldEncrypt(this.doc)) {
+                                _context2.next = 8;
+                                break;
+                            }
+
+                            _context2.next = 6;
+                            return blobBufferUtil.toString(data);
+
+                        case 6:
+                            dataString = _context2.sent;
+
+                            data = blobBufferUtil.createBlobBuffer(this.doc.collection._crypter._decryptValue(dataString), this.type);
+
+                        case 8:
+                            return _context2.abrupt('return', data);
+
+                        case 9:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        }));
+
+        function getData() {
+            return _ref4.apply(this, arguments);
+        }
+
+        return getData;
+    }();
+
+    RxAttachment.prototype.getStringData = function () {
+        var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
+            var bufferBlob;
             return _regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
                     switch (_context3.prev = _context3.next) {
                         case 0:
                             _context3.next = 2;
-                            return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id);
+                            return this.getData();
 
                         case 2:
-                            data = _context3.sent;
+                            bufferBlob = _context3.sent;
+                            _context3.next = 5;
+                            return blobBufferUtil.toString(bufferBlob);
 
-                            if (!shouldEncrypt(this.doc)) {
-                                _context3.next = 8;
-                                break;
-                            }
-
-                            _context3.next = 6;
-                            return blobBufferUtil.toString(data);
+                        case 5:
+                            return _context3.abrupt('return', _context3.sent);
 
                         case 6:
-                            dataString = _context3.sent;
-
-                            data = blobBufferUtil.createBlobBuffer(this.doc.collection._crypter._decryptValue(dataString), this.type);
-
-                        case 8:
-                            return _context3.abrupt('return', data);
-
-                        case 9:
                         case 'end':
                             return _context3.stop();
                     }
@@ -203,41 +213,8 @@ export var RxAttachment = function () {
             }, _callee3, this);
         }));
 
-        function getData() {
-            return _ref5.apply(this, arguments);
-        }
-
-        return getData;
-    }();
-
-    RxAttachment.prototype.getStringData = function () {
-        var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
-            var bufferBlob;
-            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
-                while (1) {
-                    switch (_context4.prev = _context4.next) {
-                        case 0:
-                            _context4.next = 2;
-                            return this.getData();
-
-                        case 2:
-                            bufferBlob = _context4.sent;
-                            _context4.next = 5;
-                            return blobBufferUtil.toString(bufferBlob);
-
-                        case 5:
-                            return _context4.abrupt('return', _context4.sent);
-
-                        case 6:
-                        case 'end':
-                            return _context4.stop();
-                    }
-                }
-            }, _callee4, this);
-        }));
-
         function getStringData() {
-            return _ref6.apply(this, arguments);
+            return _ref5.apply(this, arguments);
         }
 
         return getStringData;
@@ -262,17 +239,17 @@ function shouldEncrypt(doc) {
 }
 
 export var putAttachment = function () {
-    var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(_ref8) {
+    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(_ref7) {
         var _this = this;
 
-        var id = _ref8.id,
-            data = _ref8.data,
-            _ref8$type = _ref8.type,
-            type = _ref8$type === undefined ? 'text/plain' : _ref8$type;
+        var id = _ref7.id,
+            data = _ref7.data,
+            _ref7$type = _ref7.type,
+            type = _ref7$type === undefined ? 'text/plain' : _ref7$type;
         var queue, blobBuffer, ret;
-        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
             while (1) {
-                switch (_context6.prev = _context6.next) {
+                switch (_context5.prev = _context5.next) {
                     case 0:
                         ensureSchemaSupportsAttachments(this);
                         queue = this.atomicQueue;
@@ -281,26 +258,26 @@ export var putAttachment = function () {
                         if (shouldEncrypt(this)) data = this.collection._crypter._encryptValue(data);
 
                         blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
-                        _context6.next = 6;
+                        _context5.next = 6;
                         return queue.requestIdlePromise();
 
                     case 6:
-                        _context6.next = 8;
-                        return queue.wrapCall(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
+                        _context5.next = 8;
+                        return queue.wrapCall(_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
                             var docData, attachmentData, attachment;
-                            return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+                            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
                                 while (1) {
-                                    switch (_context5.prev = _context5.next) {
+                                    switch (_context4.prev = _context4.next) {
                                         case 0:
-                                            _context5.next = 2;
+                                            _context4.next = 2;
                                             return _this.collection.pouch.putAttachment(_this.primary, id, _this._data._rev, blobBuffer, type);
 
                                         case 2:
-                                            _context5.next = 4;
+                                            _context4.next = 4;
                                             return _this.collection.pouch.get(_this.primary);
 
                                         case 4:
-                                            docData = _context5.sent;
+                                            docData = _context4.sent;
                                             attachmentData = docData._attachments[id];
                                             attachment = RxAttachment.fromPouchDocument(id, attachmentData, _this);
 
@@ -308,36 +285,36 @@ export var putAttachment = function () {
                                             _this._data._rev = docData._rev;
                                             _this._data._attachments = docData._attachments;
 
-                                            _context5.next = 11;
+                                            _context4.next = 11;
                                             return resyncRxDocument(_this);
 
                                         case 11:
-                                            return _context5.abrupt('return', attachment);
+                                            return _context4.abrupt('return', attachment);
 
                                         case 12:
                                         case 'end':
-                                            return _context5.stop();
+                                            return _context4.stop();
                                     }
                                 }
-                            }, _callee5, _this);
+                            }, _callee4, _this);
                         })));
 
                     case 8:
-                        ret = _context6.sent;
-                        return _context6.abrupt('return', ret);
+                        ret = _context5.sent;
+                        return _context5.abrupt('return', ret);
 
                     case 10:
                     case 'end':
-                        return _context6.stop();
+                        return _context5.stop();
                 }
             }
-        }, _callee6, this);
+        }, _callee5, this);
     }));
 
-    return function putAttachment(_x2) {
-        return _ref7.apply(this, arguments);
+    return function putAttachment(_x) {
+        return _ref6.apply(this, arguments);
     };
-}();;
+}();
 
 /**
  * get an attachment of the document by its id
@@ -352,7 +329,7 @@ export function getAttachment(id) {
     var attachmentData = docData._attachments[id];
     var attachment = RxAttachment.fromPouchDocument(id, attachmentData, this);
     return attachment;
-};
+}
 
 /**
  * returns all attachments of the document
@@ -366,89 +343,72 @@ export function allAttachments() {
     return Object.keys(docData._attachments).map(function (id) {
         return RxAttachment.fromPouchDocument(id, docData._attachments[id], _this2);
     });
-};
+}
 
-export var preMigrateDocument = function () {
-    var _ref10 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(action) {
-        return _regeneratorRuntime.wrap(function _callee7$(_context7) {
-            while (1) {
-                switch (_context7.prev = _context7.next) {
-                    case 0:
-                        delete action.migrated._attachments;
-                        return _context7.abrupt('return', action);
-
-                    case 2:
-                    case 'end':
-                        return _context7.stop();
-                }
-            }
-        }, _callee7, this);
-    }));
-
-    return function preMigrateDocument(_x3) {
-        return _ref10.apply(this, arguments);
-    };
-}();
+export function preMigrateDocument(action) {
+    delete action.migrated._attachments;
+    return action;
+}
 
 export var postMigrateDocument = function () {
-    var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(action) {
+    var _ref9 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(action) {
         var primaryPath, attachments, id, stubData, primary, data, res;
-        return _regeneratorRuntime.wrap(function _callee8$(_context8) {
+        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
             while (1) {
-                switch (_context8.prev = _context8.next) {
+                switch (_context6.prev = _context6.next) {
                     case 0:
                         primaryPath = action.oldCollection.schema.primaryPath;
                         attachments = action.doc._attachments;
 
                         if (attachments) {
-                            _context8.next = 4;
+                            _context6.next = 4;
                             break;
                         }
 
-                        return _context8.abrupt('return', action);
+                        return _context6.abrupt('return', action);
 
                     case 4:
-                        _context8.t0 = _regeneratorRuntime.keys(attachments);
+                        _context6.t0 = _regeneratorRuntime.keys(attachments);
 
                     case 5:
-                        if ((_context8.t1 = _context8.t0()).done) {
-                            _context8.next = 21;
+                        if ((_context6.t1 = _context6.t0()).done) {
+                            _context6.next = 21;
                             break;
                         }
 
-                        id = _context8.t1.value;
+                        id = _context6.t1.value;
                         stubData = attachments[id];
                         primary = action.doc[primaryPath];
-                        _context8.next = 11;
+                        _context6.next = 11;
                         return action.oldCollection.pouchdb.getAttachment(primary, id);
 
                     case 11:
-                        data = _context8.sent;
-                        _context8.next = 14;
+                        data = _context6.sent;
+                        _context6.next = 14;
                         return blobBufferUtil.toString(data);
 
                     case 14:
-                        data = _context8.sent;
-                        _context8.next = 17;
+                        data = _context6.sent;
+                        _context6.next = 17;
                         return action.newestCollection.pouch.putAttachment(primary, id, action.res.rev, blobBufferUtil.createBlobBuffer(data, stubData.content_type), stubData.content_type);
 
                     case 17:
-                        res = _context8.sent;
+                        res = _context6.sent;
 
                         action.res = res;
-                        _context8.next = 5;
+                        _context6.next = 5;
                         break;
 
                     case 21:
                     case 'end':
-                        return _context8.stop();
+                        return _context6.stop();
                 }
             }
-        }, _callee8, this);
+        }, _callee6, this);
     }));
 
-    return function postMigrateDocument(_x4) {
-        return _ref11.apply(this, arguments);
+    return function postMigrateDocument(_x2) {
+        return _ref9.apply(this, arguments);
     };
 }();
 
@@ -468,9 +428,9 @@ export var prototypes = {
                 }), map(function (attachmentsData) {
                     return Object.entries(attachmentsData);
                 }), map(function (entries) {
-                    return entries.map(function (_ref12) {
-                        var id = _ref12[0],
-                            attachmentData = _ref12[1];
+                    return entries.map(function (_ref10) {
+                        var id = _ref10[0],
+                            attachmentData = _ref10[1];
 
                         return RxAttachment.fromPouchDocument(id, attachmentData, _this3);
                     });

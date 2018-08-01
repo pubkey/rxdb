@@ -43,8 +43,6 @@ var DocCache = function () {
     return DocCache;
 }();
 
-;
-
 function create() {
     return new DocCache();
 }

@@ -50,8 +50,6 @@ var _mquery2 = _interopRequireDefault(_mquery);
 
 var _util = require('./util');
 
-var util = _interopRequireWildcard(_util);
-
 var _queryChangeDetector = require('./query-change-detector');
 
 var _queryChangeDetector2 = _interopRequireDefault(_queryChangeDetector);
@@ -65,8 +63,6 @@ var _hooks = require('./hooks');
 var _rxjs = require('rxjs');
 
 var _operators = require('rxjs/operators');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -128,7 +124,7 @@ var RxQuery = exports.RxQuery = function () {
         key: 'toString',
         value: function toString() {
             if (!this.stringRep) {
-                var stringObj = util.sortObject({
+                var stringObj = (0, _util.sortObject)({
                     op: this.op,
                     options: this.mquery.options,
                     _conditions: this.mquery._conditions,
@@ -136,7 +132,7 @@ var RxQuery = exports.RxQuery = function () {
                     _fields: this.mquery._fields
                 }, true);
 
-                this.stringRep = JSON.stringify(stringObj, util.stringifyFilter);
+                this.stringRep = JSON.stringify(stringObj, _util.stringifyFilter);
             }
             return this.stringRep;
         }
@@ -153,42 +149,15 @@ var RxQuery = exports.RxQuery = function () {
         }
     }, {
         key: '_ensureEqual',
-        value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
-                var _this = this;
+        value: function _ensureEqual() {
+            var _this = this;
 
-                var ret;
-                return _regenerator2['default'].wrap(function _callee$(_context) {
-                    while (1) {
-                        switch (_context.prev = _context.next) {
-                            case 0:
-                                _context.next = 2;
-                                return this._ensureEqualQueue.requestIdlePromise();
-
-                            case 2:
-                                _context.next = 4;
-                                return this._ensureEqualQueue.wrapCall(function () {
-                                    return _this.__ensureEqual();
-                                });
-
-                            case 4:
-                                ret = _context.sent;
-                                return _context.abrupt('return', ret);
-
-                            case 6:
-                            case 'end':
-                                return _context.stop();
-                        }
-                    }
-                }, _callee, this);
-            }));
-
-            function _ensureEqual() {
-                return _ref2.apply(this, arguments);
-            }
-
-            return _ensureEqual;
-        }()
+            return this._ensureEqualQueue.requestIdlePromise().then(function () {
+                return _this._ensureEqualQueue.wrapCall(function () {
+                    return _this.__ensureEqual();
+                });
+            });
+        }
 
         /**
          * ensures that the results of this query is equal to the results which a query over the database would give
@@ -198,20 +167,20 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: '__ensureEqual',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
                 var ret, mustReExec, missedChangeEvents, runChangeEvents, changeResult, latestAfter, newResultData;
-                return _regenerator2['default'].wrap(function _callee2$(_context2) {
+                return _regenerator2['default'].wrap(function _callee$(_context) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context.prev = _context.next) {
                             case 0:
                                 ret = false;
 
                                 if (!this._isResultsInSync()) {
-                                    _context2.next = 3;
+                                    _context.next = 3;
                                     break;
                                 }
 
-                                return _context2.abrupt('return', false);
+                                return _context.abrupt('return', false);
 
                             case 3:
                                 // nothing happend
@@ -225,20 +194,20 @@ var RxQuery = exports.RxQuery = function () {
                                  */
 
                                 if (mustReExec) {
-                                    _context2.next = 19;
+                                    _context.next = 19;
                                     break;
                                 }
 
                                 missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
 
                                 if (!(missedChangeEvents === null)) {
-                                    _context2.next = 11;
+                                    _context.next = 11;
                                     break;
                                 }
 
                                 // changeEventBuffer is of bounds -> we must re-execute over the database
                                 mustReExec = true;
-                                _context2.next = 19;
+                                _context.next = 19;
                                 break;
 
                             case 11:
@@ -253,95 +222,72 @@ var RxQuery = exports.RxQuery = function () {
                                 }
 
                                 if (!(Array.isArray(changeResult) && !(0, _deepEqual2['default'])(changeResult, this._resultsData))) {
-                                    _context2.next = 19;
+                                    _context.next = 19;
                                     break;
                                 }
 
                                 // we got the new results, we do not have to re-execute, mustReExec stays false
                                 ret = true; // true because results changed
-                                _context2.next = 19;
+                                _context.next = 19;
                                 return this._setResultData(changeResult);
 
                             case 19:
                                 if (!mustReExec) {
-                                    _context2.next = 29;
+                                    _context.next = 29;
                                     break;
                                 }
 
                                 // counter can change while _execOverDatabase() is running so we save it here
                                 latestAfter = this.collection._changeEventBuffer.counter;
-                                _context2.next = 23;
+                                _context.next = 23;
                                 return this._execOverDatabase();
 
                             case 23:
-                                newResultData = _context2.sent;
+                                newResultData = _context.sent;
 
                                 this._latestChangeEvent = latestAfter;
 
                                 if ((0, _deepEqual2['default'])(newResultData, this._resultsData)) {
-                                    _context2.next = 29;
+                                    _context.next = 29;
                                     break;
                                 }
 
                                 ret = true; // true because results changed
-                                _context2.next = 29;
+                                _context.next = 29;
                                 return this._setResultData(newResultData);
 
                             case 29:
-                                return _context2.abrupt('return', ret);
+                                return _context.abrupt('return', ret);
 
                             case 30:
                             case 'end':
-                                return _context2.stop();
+                                return _context.stop();
                         }
                     }
-                }, _callee2, this);
+                }, _callee, this);
             }));
 
             function __ensureEqual() {
-                return _ref3.apply(this, arguments);
+                return _ref2.apply(this, arguments);
             }
 
             return __ensureEqual;
         }()
     }, {
         key: '_setResultData',
-        value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(newResultData) {
-                var docs, newResultDocs;
-                return _regenerator2['default'].wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                this._resultsData = newResultData;
+        value: function _setResultData(newResultData) {
+            var _this2 = this;
 
-                                _context3.next = 3;
-                                return this.collection._createDocuments(this._resultsData);
+            this._resultsData = newResultData;
+            return this.collection._createDocuments(this._resultsData).then(function (docs) {
+                var newResultDocs = docs;
+                if (_this2.op === 'findOne') {
+                    if (docs.length === 0) newResultDocs = null;else newResultDocs = docs[0];
+                }
 
-                            case 3:
-                                docs = _context3.sent;
-                                newResultDocs = docs;
-
-                                if (this.op === 'findOne') {
-                                    if (docs.length === 0) newResultDocs = null;else newResultDocs = docs[0];
-                                }
-
-                                this._results$.next(newResultDocs);
-
-                            case 7:
-                            case 'end':
-                                return _context3.stop();
-                        }
-                    }
-                }, _callee3, this);
-            }));
-
-            function _setResultData(_x) {
-                return _ref4.apply(this, arguments);
-            }
-
-            return _setResultData;
-        }()
+                _this2._results$.next(newResultDocs);
+            });
+        }
 
         /**
          * executes the query on the database
@@ -417,29 +363,29 @@ var RxQuery = exports.RxQuery = function () {
             }
 
             // strip empty selectors
-            Object.entries(json.selector).filter(function (_ref5) {
+            Object.entries(json.selector).filter(function (_ref3) {
+                var _ref4 = (0, _slicedToArray3['default'])(_ref3, 2),
+                    v = _ref4[1];
+
+                return (typeof v === 'undefined' ? 'undefined' : (0, _typeof3['default'])(v)) === 'object';
+            }).filter(function (_ref5) {
                 var _ref6 = (0, _slicedToArray3['default'])(_ref5, 2),
                     v = _ref6[1];
 
-                return (typeof v === 'undefined' ? 'undefined' : (0, _typeof3['default'])(v)) === 'object';
+                return v !== null;
             }).filter(function (_ref7) {
                 var _ref8 = (0, _slicedToArray3['default'])(_ref7, 2),
                     v = _ref8[1];
 
-                return v !== null;
+                return !Array.isArray(v);
             }).filter(function (_ref9) {
                 var _ref10 = (0, _slicedToArray3['default'])(_ref9, 2),
                     v = _ref10[1];
 
-                return !Array.isArray(v);
-            }).filter(function (_ref11) {
-                var _ref12 = (0, _slicedToArray3['default'])(_ref11, 2),
-                    v = _ref12[1];
-
                 return Object.keys(v).length === 0;
-            }).forEach(function (_ref13) {
-                var _ref14 = (0, _slicedToArray3['default'])(_ref13, 1),
-                    k = _ref14[0];
+            }).forEach(function (_ref11) {
+                var _ref12 = (0, _slicedToArray3['default'])(_ref11, 1),
+                    k = _ref12[0];
 
                 return delete json.selector[k];
             });
@@ -461,14 +407,14 @@ var RxQuery = exports.RxQuery = function () {
             this._toJSON = json;
             return this._toJSON;
         }
-    }, {
-        key: 'keyCompress',
-
 
         /**
          * get the key-compression version of this query
          * @return {{selector: {}, sort: []}} compressedQuery
          */
+
+    }, {
+        key: 'keyCompress',
         value: function keyCompress() {
             if (!this.collection.schema.doKeyCompression()) return this.toJSON();else {
                 if (!this._keyCompress) {
@@ -518,11 +464,11 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: 'exec',
         value: function () {
-            var _ref15 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
+            var _ref13 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                 var changed, current, ret;
-                return _regenerator2['default'].wrap(function _callee4$(_context4) {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
-                        switch (_context4.prev = _context4.next) {
+                        switch (_context2.prev = _context2.next) {
                             case 0:
                                 changed = true;
 
@@ -530,16 +476,16 @@ var RxQuery = exports.RxQuery = function () {
 
                             case 1:
                                 if (!changed) {
-                                    _context4.next = 7;
+                                    _context2.next = 7;
                                     break;
                                 }
 
-                                _context4.next = 4;
+                                _context2.next = 4;
                                 return this._ensureEqual();
 
                             case 4:
-                                changed = _context4.sent;
-                                _context4.next = 1;
+                                changed = _context2.sent;
+                                _context2.next = 1;
                                 break;
 
                             case 7:
@@ -550,18 +496,18 @@ var RxQuery = exports.RxQuery = function () {
                                 // copy the array so it wont matter if the user modifies it
 
                                 ret = Array.isArray(current) ? current.slice() : current;
-                                return _context4.abrupt('return', ret);
+                                return _context2.abrupt('return', ret);
 
                             case 10:
                             case 'end':
-                                return _context4.stop();
+                                return _context2.stop();
                         }
                     }
-                }, _callee4, this);
+                }, _callee2, this);
             }));
 
             function exec() {
-                return _ref15.apply(this, arguments);
+                return _ref13.apply(this, arguments);
             }
 
             return exec;
@@ -586,14 +532,14 @@ var RxQuery = exports.RxQuery = function () {
 
             return clonedThis._tunnelQueryCache();
         }
-    }, {
-        key: '_sortAddToIndex',
-
 
         /**
          * adds the field of 'sort' to the search-index
          * @link https://github.com/nolanlawson/pouchdb-find/issues/204
          */
+
+    }, {
+        key: '_sortAddToIndex',
         value: function _sortAddToIndex(checkParam, clonedThis) {
             var schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
             if (!schemaObj) this._throwNotInSchema(checkParam);
@@ -632,7 +578,7 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: 'sort',
         value: function sort(params) {
-            var _this2 = this;
+            var _this3 = this;
 
             var clonedThis = this._clone();
 
@@ -644,7 +590,7 @@ var RxQuery = exports.RxQuery = function () {
                 Object.keys(params).filter(function (k) {
                     return !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt;
                 }).forEach(function (k) {
-                    return _this2._sortAddToIndex(k, clonedThis);
+                    return _this3._sortAddToIndex(k, clonedThis);
                 });
             }
             clonedThis.mquery.sort(params);
@@ -668,48 +614,18 @@ var RxQuery = exports.RxQuery = function () {
     }, {
         key: '$',
         get: function get() {
-            var _this3 = this;
+            var _this4 = this;
 
             if (!this._$) {
                 // use results$ to emit new results
                 var res$ = this._results$.pipe(
                 // whe run _ensureEqual() on each subscription
                 // to ensure it triggers a re-run when subscribing after some time
-                (0, _operators.mergeMap)(function () {
-                    var _ref16 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(results) {
-                        var hasChanged;
-                        return _regenerator2['default'].wrap(function _callee5$(_context5) {
-                            while (1) {
-                                switch (_context5.prev = _context5.next) {
-                                    case 0:
-                                        _context5.next = 2;
-                                        return _this3._ensureEqual();
-
-                                    case 2:
-                                        hasChanged = _context5.sent;
-
-                                        if (!hasChanged) {
-                                            _context5.next = 7;
-                                            break;
-                                        }
-
-                                        return _context5.abrupt('return', 'WAITFORNEXTEMIT');
-
-                                    case 7:
-                                        return _context5.abrupt('return', results);
-
-                                    case 8:
-                                    case 'end':
-                                        return _context5.stop();
-                                }
-                            }
-                        }, _callee5, _this3);
-                    }));
-
-                    return function (_x2) {
-                        return _ref16.apply(this, arguments);
-                    };
-                }()), (0, _operators.filter)(function (results) {
+                (0, _operators.mergeMap)(function (results) {
+                    return _this4._ensureEqual().then(function (hasChanged) {
+                        if (hasChanged) return 'WAITFORNEXTEMIT';else return results;
+                    });
+                }), (0, _operators.filter)(function (results) {
                     return results !== 'WAITFORNEXTEMIT';
                 })).asObservable();
 
@@ -717,7 +633,7 @@ var RxQuery = exports.RxQuery = function () {
                 var changeEvents$ = this.collection.$.pipe((0, _operators.filter)(function (cEvent) {
                     return ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op);
                 }), (0, _operators.filter)(function () {
-                    _this3._ensureEqual();
+                    _this4._ensureEqual();
                     return false;
                 }));
 

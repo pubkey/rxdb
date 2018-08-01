@@ -20,10 +20,6 @@ exports.isInstanceOf = isInstanceOf;
 
 var _util = require('./util');
 
-var util = _interopRequireWildcard(_util);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var RxChangeEvent = exports.RxChangeEvent = function () {
@@ -63,7 +59,7 @@ var RxChangeEvent = exports.RxChangeEvent = function () {
     }, {
         key: 'hash',
         get: function get() {
-            if (!this._hash) this._hash = util.hash(this.data);
+            if (!this._hash) this._hash = (0, _util.hash)(this.data);
             return this._hash;
         }
     }]);

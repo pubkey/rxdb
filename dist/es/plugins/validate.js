@@ -5,7 +5,7 @@
  */
 import isMyJsonValid from 'is-my-json-valid';
 import RxError from '../rx-error';
-import * as util from '../util';
+import { requestIdleCallbackIfAvailable } from '../util';
 
 /**
  * cache the validators by the schema-hash
@@ -56,12 +56,12 @@ var validate = function validate(obj) {
             obj: obj,
             schema: this.jsonID
         });
-    };
+    }
 };
 
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
     // pre-generate the isMyJsonValid-validator from the schema
-    util.requestIdleCallbackIfAvailable(function () {
+    requestIdleCallbackIfAvailable(function () {
         rxSchema._getValidator();
     });
 };

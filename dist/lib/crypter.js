@@ -21,13 +21,9 @@ var _objectPath2 = _interopRequireDefault(_objectPath);
 
 var _util = require('./util');
 
-var util = _interopRequireWildcard(_util);
-
 var _rxError = require('./rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -70,7 +66,7 @@ var Crypter = exports.Crypter = function () {
         value: function encrypt(obj) {
             var _this = this;
 
-            obj = util.clone(obj);
+            obj = (0, _util.clone)(obj);
             if (!this._password) return obj;
             Object.keys(this._schema.encryptedPaths).map(function (path) {
                 var value = _objectPath2['default'].get(obj, path);
@@ -84,7 +80,7 @@ var Crypter = exports.Crypter = function () {
         value: function decrypt(obj) {
             var _this2 = this;
 
-            obj = util.clone(obj);
+            obj = (0, _util.clone)(obj);
             if (!this._password) return obj;
 
             Object.keys(this._schema.encryptedPaths).map(function (path) {

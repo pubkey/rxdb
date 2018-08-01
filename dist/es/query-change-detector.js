@@ -342,13 +342,6 @@ var QueryChangeDetector = function () {
 export function enableDebugging() {
     console.log('QueryChangeDetector.enableDebugging()');
     DEBUG = true;
-};
-
-export function enable() {
-    var set = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
-    console.log('QueryChangeDetector.enableDebugging(' + set + ')');
-    ENABLED = set;
 }
 
 /**

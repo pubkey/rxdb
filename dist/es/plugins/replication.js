@@ -1,5 +1,3 @@
-import _regeneratorRuntime from 'babel-runtime/regenerator';
-import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
 import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
@@ -10,7 +8,7 @@ import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { filter, map, delay } from 'rxjs/operators';
 
-import * as util from '../util';
+import { promiseWait, clone, pouchReplicationFunction } from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
 import RxChangeEvent from '../rx-change-event';
@@ -94,31 +92,12 @@ export var RxReplicationState = function () {
         }));
     };
 
-    RxReplicationState.prototype.cancel = function () {
-        var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-            return _regeneratorRuntime.wrap(function _callee$(_context) {
-                while (1) {
-                    switch (_context.prev = _context.next) {
-                        case 0:
-                            if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
-                            this._subs.forEach(function (sub) {
-                                return sub.unsubscribe();
-                            });
-
-                        case 2:
-                        case 'end':
-                            return _context.stop();
-                    }
-                }
-            }, _callee, this);
-        }));
-
-        function cancel() {
-            return _ref.apply(this, arguments);
-        }
-
-        return cancel;
-    }();
+    RxReplicationState.prototype.cancel = function cancel() {
+        if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
+        this._subs.forEach(function (sub) {
+            return sub.unsubscribe();
+        });
+    };
 
     return RxReplicationState;
 }();
@@ -184,25 +163,25 @@ export function watchForChanges() {
     this.synced = true;
 }
 
-export function sync(_ref2) {
+export function sync(_ref) {
     var _this4 = this;
 
-    var remote = _ref2.remote,
-        _ref2$waitForLeadersh = _ref2.waitForLeadership,
-        waitForLeadership = _ref2$waitForLeadersh === undefined ? true : _ref2$waitForLeadersh,
-        _ref2$direction = _ref2.direction,
-        direction = _ref2$direction === undefined ? {
+    var remote = _ref.remote,
+        _ref$waitForLeadershi = _ref.waitForLeadership,
+        waitForLeadership = _ref$waitForLeadershi === undefined ? true : _ref$waitForLeadershi,
+        _ref$direction = _ref.direction,
+        direction = _ref$direction === undefined ? {
         pull: true,
         push: true
-    } : _ref2$direction,
-        _ref2$options = _ref2.options,
-        options = _ref2$options === undefined ? {
+    } : _ref$direction,
+        _ref$options = _ref.options,
+        options = _ref$options === undefined ? {
         live: true,
         retry: true
-    } : _ref2$options,
-        query = _ref2.query;
+    } : _ref$options,
+        query = _ref.query;
 
-    options = util.clone(options);
+    options = clone(options);
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (PouchDB.isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
@@ -224,50 +203,22 @@ export function sync(_ref2) {
         });
     }
 
-    var syncFun = util.pouchReplicationFunction(this.pouch, direction);
+    var syncFun = pouchReplicationFunction(this.pouch, direction);
     if (query) options.selector = query.keyCompress().selector;
 
     var repState = createRxReplicationState(this);
 
     // run internal so .sync() does not have to be async
-    _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-        var pouchSync;
-        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        if (!waitForLeadership) {
-                            _context2.next = 5;
-                            break;
-                        }
+    var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+    waitTillRun.then(function () {
+        var pouchSync = syncFun(remote, options);
+        _this4.watchForChanges();
+        repState.setPouchEventEmitter(pouchSync);
+        _this4._repStates.push(repState);
+    });
 
-                        _context2.next = 3;
-                        return _this4.database.waitForLeadership();
-
-                    case 3:
-                        _context2.next = 7;
-                        break;
-
-                    case 5:
-                        _context2.next = 7;
-                        return util.promiseWait(0);
-
-                    case 7:
-                        pouchSync = syncFun(remote, options);
-
-                        _this4.watchForChanges();
-                        repState.setPouchEventEmitter(pouchSync);
-                        _this4._repStates.push(repState);
-
-                    case 11:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, _this4);
-    }))();
     return repState;
-};
+}
 
 export var rxdb = true;
 export var prototypes = {

@@ -37,8 +37,6 @@ var QueryCache = function () {
     return QueryCache;
 }();
 
-;
-
 export function create() {
     return new QueryCache();
 }

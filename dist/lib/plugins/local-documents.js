@@ -63,11 +63,7 @@ var _rxError2 = _interopRequireDefault(_rxError);
 
 var _util = require('../util');
 
-var util = _interopRequireWildcard(_util);
-
 var _operators = require('rxjs/operators');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -124,7 +120,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
     (0, _createClass3['default'])(RxLocalDocument, [{
         key: 'toPouchJson',
         value: function toPouchJson() {
-            var data = util.clone(this._data);
+            var data = (0, _util.clone)(this._data);
             data._id = LOCAL_PREFIX + this.id;
         }
     }, {
@@ -139,7 +135,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
             if (changeEvent.data.doc !== this.primary) return;
             switch (changeEvent.data.op) {
                 case 'UPDATE':
-                    var newData = util.clone(changeEvent.data.v);
+                    var newData = (0, _util.clone)(changeEvent.data.v);
                     var prevSyncData = this._dataSync$.getValue();
                     var prevData = this._data;
 
@@ -155,7 +151,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
                         // overwrite _rev of data
                         this._data._rev = newData._rev;
                     }
-                    this._dataSync$.next(util.clone(newData));
+                    this._dataSync$.next((0, _util.clone)(newData));
                     break;
                 case 'REMOVE':
                     // remove from docCache to assure new upserted RxDocuments will be a new instance
@@ -181,7 +177,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
             }
 
             var valueObj = _objectPath2['default'].get(this._data, objPath);
-            valueObj = util.clone(valueObj);
+            valueObj = (0, _util.clone)(valueObj);
             return valueObj;
         }
     }, {
@@ -203,7 +199,7 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
         value: function set(objPath, value) {
             if (!value) {
                 // object path not set, overwrite whole data
-                var data = util.clone(objPath);
+                var data = (0, _util.clone)(objPath);
                 data._rev = this._data._rev;
                 this._data = data;
                 return this;
@@ -218,77 +214,40 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
             _objectPath2['default'].set(this._data, objPath, value);
             return this;
         }
+        /**
+         * @return {Promise}
+         */
+
     }, {
         key: 'save',
-        value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
-                var saveData, res, changeEvent;
-                return _regenerator2['default'].wrap(function _callee$(_context) {
-                    while (1) {
-                        switch (_context.prev = _context.next) {
-                            case 0:
-                                saveData = util.clone(this._data);
+        value: function save() {
+            var _this2 = this;
 
-                                saveData._id = LOCAL_PREFIX + this.id;
-                                _context.next = 4;
-                                return this.parentPouch.put(saveData);
+            var saveData = (0, _util.clone)(this._data);
+            saveData._id = LOCAL_PREFIX + this.id;
+            return this.parentPouch.put(saveData).then(function (res) {
+                _this2._data._rev = res.rev;
 
-                            case 4:
-                                res = _context.sent;
+                var changeEvent = _rxChangeEvent2['default'].create('UPDATE', _rxDatabase2['default'].isInstanceOf(_this2.parent) ? _this2.parent : _this2.parent.database, _rxCollection2['default'].isInstanceOf(_this2.parent) ? _this2.parent : null, _this2, (0, _util.clone)(_this2._data), true);
+                _this2.$emit(changeEvent);
+            });
+        }
+        /**
+         * @return {Promise}
+         */
 
-                                this._data._rev = res.rev;
-
-                                changeEvent = _rxChangeEvent2['default'].create('UPDATE', _rxDatabase2['default'].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection2['default'].isInstanceOf(this.parent) ? this.parent : null, this, util.clone(this._data), true);
-
-                                this.$emit(changeEvent);
-
-                            case 8:
-                            case 'end':
-                                return _context.stop();
-                        }
-                    }
-                }, _callee, this);
-            }));
-
-            function save() {
-                return _ref.apply(this, arguments);
-            }
-
-            return save;
-        }()
     }, {
         key: 'remove',
-        value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
-                var removeId, changeEvent;
-                return _regenerator2['default'].wrap(function _callee2$(_context2) {
-                    while (1) {
-                        switch (_context2.prev = _context2.next) {
-                            case 0:
-                                removeId = LOCAL_PREFIX + this.id;
-                                _context2.next = 3;
-                                return this.parentPouch.remove(removeId, this._data._rev);
+        value: function remove() {
+            var _this3 = this;
 
-                            case 3:
-                                _getDocCache(this.parent)['delete'](this.id);
-                                changeEvent = _rxChangeEvent2['default'].create('REMOVE', _rxDatabase2['default'].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection2['default'].isInstanceOf(this.parent) ? this.parent : null, this, util.clone(this._data), true);
-
-                                this.$emit(changeEvent);
-
-                            case 6:
-                            case 'end':
-                                return _context2.stop();
-                        }
-                    }
-                }, _callee2, this);
-            }));
-
-            function remove() {
-                return _ref2.apply(this, arguments);
-            }
-
-            return remove;
-        }()
+            var removeId = LOCAL_PREFIX + this.id;
+            return this.parentPouch.remove(removeId, this._data._rev).then(function () {
+                _getDocCache(_this3.parent)['delete'](_this3.id);
+                var changeEvent = _rxChangeEvent2['default'].create('REMOVE', _rxDatabase2['default'].isInstanceOf(_this3.parent) ? _this3.parent : _this3.parent.database, _rxCollection2['default'].isInstanceOf(_this3.parent) ? _this3.parent : null, _this3, (0, _util.clone)(_this3._data), true);
+                _this3.$emit(changeEvent);
+            });
+        }
     }, {
         key: 'isLocal',
         get: function get() {
@@ -326,8 +285,6 @@ var RxLocalDocument = exports.RxLocalDocument = function (_RxDocument$RxDocumen)
     return RxLocalDocument;
 }(_rxDocument2['default'].RxDocument);
 
-;
-
 var INIT_DONE = false;
 var _init = function _init() {
     if (INIT_DONE) return;else INIT_DONE = true;
@@ -364,72 +321,35 @@ var _getPouchByParent = function _getPouchByParent(parent) {
 /**
  * save the local-document-data
  * throws if already exists
- * @return {RxLocalDocument}
+ * @return {Promise<RxLocalDocument>}
  */
-var insertLocal = function () {
-    var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(id, data) {
-        var existing, pouch, saveData, res, newDoc;
-        return _regenerator2['default'].wrap(function _callee3$(_context3) {
-            while (1) {
-                switch (_context3.prev = _context3.next) {
-                    case 0:
-                        if (!(_rxCollection2['default'].isInstanceOf(this) && this._isInMemory)) {
-                            _context3.next = 2;
-                            break;
-                        }
+var insertLocal = function insertLocal(id, data) {
+    var _this4 = this;
 
-                        return _context3.abrupt('return', this._parentCollection.insertLocal(id, data));
+    if (_rxCollection2['default'].isInstanceOf(this) && this._isInMemory) return this._parentCollection.insertLocal(id, data);
 
-                    case 2:
+    data = (0, _util.clone)(data);
 
-                        data = util.clone(data);
-                        _context3.next = 5;
-                        return this.getLocal(id);
+    return this.getLocal(id).then(function (existing) {
+        if (existing) {
+            throw _rxError2['default'].newRxError('LD7', {
+                id: id,
+                data: data
+            });
+        }
 
-                    case 5:
-                        existing = _context3.sent;
+        // create new one
+        var pouch = _getPouchByParent(_this4);
+        var saveData = (0, _util.clone)(data);
+        saveData._id = LOCAL_PREFIX + id;
 
-                        if (!existing) {
-                            _context3.next = 8;
-                            break;
-                        }
-
-                        throw _rxError2['default'].newRxError('LD7', {
-                            id: id,
-                            data: data
-                        });
-
-                    case 8:
-
-                        // create new one
-                        pouch = _getPouchByParent(this);
-                        saveData = util.clone(data);
-
-                        saveData._id = LOCAL_PREFIX + id;
-
-                        _context3.next = 13;
-                        return pouch.put(saveData);
-
-                    case 13:
-                        res = _context3.sent;
-
-
-                        data._rev = res.rev;
-                        newDoc = RxLocalDocument.create(id, data, this);
-                        return _context3.abrupt('return', newDoc);
-
-                    case 17:
-                    case 'end':
-                        return _context3.stop();
-                }
-            }
-        }, _callee3, this);
-    }));
-
-    return function insertLocal(_x, _x2) {
-        return _ref3.apply(this, arguments);
-    };
-}();
+        return pouch.put(saveData);
+    }).then(function (res) {
+        data._rev = res.rev;
+        var newDoc = RxLocalDocument.create(id, data, _this4);
+        return newDoc;
+    });
+};
 
 /**
  * save the local-document-data
@@ -437,71 +357,71 @@ var insertLocal = function () {
  * @return {RxLocalDocument}
  */
 var upsertLocal = function () {
-    var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(id, data) {
+    var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee(id, data) {
         var existing, doc;
-        return _regenerator2['default'].wrap(function _callee4$(_context4) {
+        return _regenerator2['default'].wrap(function _callee$(_context) {
             while (1) {
-                switch (_context4.prev = _context4.next) {
+                switch (_context.prev = _context.next) {
                     case 0:
                         if (!(_rxCollection2['default'].isInstanceOf(this) && this._isInMemory)) {
-                            _context4.next = 2;
+                            _context.next = 2;
                             break;
                         }
 
-                        return _context4.abrupt('return', this._parentCollection.upsertLocal(id, data));
+                        return _context.abrupt('return', this._parentCollection.upsertLocal(id, data));
 
                     case 2:
-                        _context4.next = 4;
+                        _context.next = 4;
                         return this.getLocal(id);
 
                     case 4:
-                        existing = _context4.sent;
+                        existing = _context.sent;
 
                         if (existing) {
-                            _context4.next = 10;
+                            _context.next = 10;
                             break;
                         }
 
                         // create new one
                         doc = this.insertLocal(id, data);
-                        return _context4.abrupt('return', doc);
+                        return _context.abrupt('return', doc);
 
                     case 10:
                         // update existing
                         data._rev = existing._data._rev;
                         existing._data = data;
-                        _context4.next = 14;
+                        _context.next = 14;
                         return existing.save();
 
                     case 14:
-                        return _context4.abrupt('return', existing);
+                        return _context.abrupt('return', existing);
 
                     case 15:
                     case 'end':
-                        return _context4.stop();
+                        return _context.stop();
                 }
             }
-        }, _callee4, this);
+        }, _callee, this);
     }));
 
-    return function upsertLocal(_x3, _x4) {
-        return _ref4.apply(this, arguments);
+    return function upsertLocal(_x, _x2) {
+        return _ref.apply(this, arguments);
     };
 }();
 
 var getLocal = function () {
-    var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(id) {
+    var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(id) {
         var pouch, docCache, found, docData, doc;
-        return _regenerator2['default'].wrap(function _callee5$(_context5) {
+        return _regenerator2['default'].wrap(function _callee2$(_context2) {
             while (1) {
-                switch (_context5.prev = _context5.next) {
+                switch (_context2.prev = _context2.next) {
                     case 0:
                         if (!(_rxCollection2['default'].isInstanceOf(this) && this._isInMemory)) {
-                            _context5.next = 2;
+                            _context2.next = 2;
                             break;
                         }
 
-                        return _context5.abrupt('return', this._parentCollection.getLocal(id));
+                        return _context2.abrupt('return', this._parentCollection.getLocal(id));
 
                     case 2:
                         pouch = _getPouchByParent(this);
@@ -514,46 +434,46 @@ var getLocal = function () {
                         // check in pouch
 
                         if (found) {
-                            _context5.next = 19;
+                            _context2.next = 19;
                             break;
                         }
 
-                        _context5.prev = 6;
-                        _context5.next = 9;
+                        _context2.prev = 6;
+                        _context2.next = 9;
                         return pouch.get(LOCAL_PREFIX + id);
 
                     case 9:
-                        docData = _context5.sent;
+                        docData = _context2.sent;
 
                         if (docData) {
-                            _context5.next = 12;
+                            _context2.next = 12;
                             break;
                         }
 
-                        return _context5.abrupt('return', null);
+                        return _context2.abrupt('return', null);
 
                     case 12:
                         doc = RxLocalDocument.create(id, docData, this);
-                        return _context5.abrupt('return', doc);
+                        return _context2.abrupt('return', doc);
 
                     case 16:
-                        _context5.prev = 16;
-                        _context5.t0 = _context5['catch'](6);
-                        return _context5.abrupt('return', null);
+                        _context2.prev = 16;
+                        _context2.t0 = _context2['catch'](6);
+                        return _context2.abrupt('return', null);
 
                     case 19:
-                        return _context5.abrupt('return', found);
+                        return _context2.abrupt('return', found);
 
                     case 20:
                     case 'end':
-                        return _context5.stop();
+                        return _context2.stop();
                 }
             }
-        }, _callee5, this, [[6, 16]]);
+        }, _callee2, this, [[6, 16]]);
     }));
 
-    return function getLocal(_x5) {
-        return _ref5.apply(this, arguments);
+    return function getLocal(_x3) {
+        return _ref2.apply(this, arguments);
     };
 }();
 

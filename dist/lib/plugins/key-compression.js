@@ -21,10 +21,6 @@ exports.create = create;
 
 var _util = require('../util');
 
-var util = _interopRequireWildcard(_util);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var KeyCompressor = function () {
@@ -51,12 +47,12 @@ var KeyCompressor = function () {
             if ((typeof obj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(obj)) !== 'object' || obj === null) return obj;
             if (Array.isArray(obj)) {
                 return obj.map(function (o) {
-                    return _this._compressObj(o, util.trimDots(path + '.item'));
+                    return _this._compressObj(o, (0, _util.trimDots)(path + '.item'));
                 });
             }
             Object.keys(obj).forEach(function (key) {
                 var propertyObj = obj[key];
-                var fullPath = util.trimDots(path + '.' + key);
+                var fullPath = (0, _util.trimDots)(path + '.' + key);
                 var replacedKey = _this.table[fullPath] ? _this.table[fullPath] : key;
                 var nextObj = propertyObj;
                 nextObj = _this._compressObj(propertyObj, fullPath);
@@ -74,7 +70,7 @@ var KeyCompressor = function () {
     }, {
         key: 'compress',
         value: function compress(obj) {
-            if (!this.schema.doKeyCompression()) return util.clone(obj);
+            if (!this.schema.doKeyCompression()) return (0, _util.clone)(obj);
             return this._compressObj(obj);
         }
     }, {
@@ -107,7 +103,7 @@ var KeyCompressor = function () {
     }, {
         key: 'decompress',
         value: function decompress(obj) {
-            if (!this.schema.doKeyCompression()) return util.clone(obj);
+            if (!this.schema.doKeyCompression()) return (0, _util.clone)(obj);
             var returnObj = this._decompressObj(obj);
             return returnObj;
         }
@@ -124,14 +120,14 @@ var KeyCompressor = function () {
         key: '_transformKey',
         value: function _transformKey(prePath, prePathCompressed, remainPathAr) {
             var table = this.table;
-            prePath = util.trimDots(prePath);
-            prePathCompressed = util.trimDots(prePathCompressed);
+            prePath = (0, _util.trimDots)(prePath);
+            prePathCompressed = (0, _util.trimDots)(prePathCompressed);
             var nextPath = remainPathAr.shift();
 
-            var nextFullPath = util.trimDots(prePath + '.' + nextPath);
+            var nextFullPath = (0, _util.trimDots)(prePath + '.' + nextPath);
             if (table[nextFullPath]) prePathCompressed += '.' + table[nextFullPath];else prePathCompressed += '.' + nextPath;
 
-            if (remainPathAr.length > 0) return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);else return util.trimDots(prePathCompressed);
+            if (remainPathAr.length > 0) return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);else return (0, _util.trimDots)(prePathCompressed);
         }
 
         /**
@@ -145,7 +141,7 @@ var KeyCompressor = function () {
         value: function compressQuery(queryJSON) {
             var _this3 = this;
 
-            queryJSON = util.clone(queryJSON);
+            queryJSON = (0, _util.clone)(queryJSON);
             if (!this.schema.doKeyCompression()) return queryJSON;
 
             // selector
@@ -194,7 +190,7 @@ var KeyCompressor = function () {
                 var lastKeyNumber = 0;
                 var nextKey = function nextKey() {
                     lastKeyNumber++;
-                    return util.numberToLetter(lastKeyNumber - 1);
+                    return (0, _util.numberToLetter)(lastKeyNumber - 1);
                 };
                 this._table = {};
                 var jsonSchema = this.schema.normalized;
@@ -202,7 +198,7 @@ var KeyCompressor = function () {
                 var propertiesToTable = function propertiesToTable(path, obj) {
                     Object.keys(obj).map(function (key) {
                         var propertyObj = obj[key];
-                        var fullPath = key === 'properties' ? path : util.trimDots(path + '.' + key);
+                        var fullPath = key === 'properties' ? path : (0, _util.trimDots)(path + '.' + key);
                         if ((typeof propertyObj === 'undefined' ? 'undefined' : (0, _typeof3['default'])(propertyObj)) === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !_this4._table[fullPath] && fullPath !== '' && key.length > 3 && // do not compress short keys

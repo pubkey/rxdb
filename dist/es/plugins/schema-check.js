@@ -33,7 +33,7 @@ export function checkFieldNameRegex(fieldName) {
             fieldName: fieldName
         });
     }
-};
+}
 
 /**
  * validate that all schema-related things are ok
@@ -47,6 +47,16 @@ export function validateFieldsDeep(jsonSchema) {
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
             throw RxError.newRxError('SC2', {
+                fieldName: fieldName
+            });
+        }
+
+        /**
+         * required fields cannot be set via 'required: true',
+         * but must be set via required: []
+         */
+        if (schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean') {
+            throw RxError.newRxError('SC24', {
                 fieldName: fieldName
             });
         }
@@ -67,7 +77,6 @@ export function validateFieldsDeep(jsonSchema) {
                     throw RxError.newRxError('SC4', {
                         fieldName: fieldName
                     });
-                    break;
             }
         }
 
@@ -120,7 +129,7 @@ export function validateFieldsDeep(jsonSchema) {
     }
     traverse(jsonSchema, '');
     return true;
-};
+}
 
 /**
  * does the checking
@@ -244,7 +253,7 @@ export function checkSchema(jsonID) {
             type: index.schemaObj.type
         });
     });
-};
+}
 
 export var rxdb = true;
 export var hooks = {

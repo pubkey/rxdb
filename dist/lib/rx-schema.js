@@ -36,15 +36,11 @@ var _objectPath2 = _interopRequireDefault(_objectPath);
 
 var _util = require('./util');
 
-var util = _interopRequireWildcard(_util);
-
 var _rxError = require('./rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
 var _hooks = require('./hooks');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -85,7 +81,7 @@ var RxSchema = exports.RxSchema = function () {
         value: function getSchemaByObjectPath(path) {
             path = path.replace(/\./g, '.properties.');
             path = 'properties.' + path;
-            path = util.trimDots(path);
+            path = (0, _util.trimDots)(path);
 
             var ret = _objectPath2['default'].get(this.jsonID, path);
             return ret;
@@ -115,7 +111,7 @@ var RxSchema = exports.RxSchema = function () {
          * @return {object}
          */
         value: function fillObjectWithDefaults(obj) {
-            obj = util.clone(obj);
+            obj = (0, _util.clone)(obj);
             Object.entries(this.defaultValues).filter(function (_ref) {
                 var _ref2 = (0, _slicedToArray3['default'])(_ref, 1),
                     k = _ref2[0];
@@ -159,7 +155,7 @@ var RxSchema = exports.RxSchema = function () {
     }, {
         key: 'doKeyCompression',
         value: function doKeyCompression() {
-            return !!!this.jsonID.disableKeyCompression;
+            return !this.jsonID.disableKeyCompression;
         }
     }, {
         key: 'version',
@@ -238,7 +234,7 @@ var RxSchema = exports.RxSchema = function () {
     }, {
         key: 'hash',
         get: function get() {
-            if (!this._hash) this._hash = util.hash(this.normalized);
+            if (!this._hash) this._hash = (0, _util.hash)(this.normalized);
             return this._hash;
         }
     }]);
@@ -282,9 +278,7 @@ function hasCrypt(jsonSchema) {
 }
 
 function getIndexes(jsonID) {
-    var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-    var flattened = util.flattenObject(jsonID);
+    var flattened = (0, _util.flattenObject)(jsonID);
     var keys = Object.keys(flattened);
     var indexes = keys
     // flattenObject returns only ending paths, we need all paths pointing to an object    
@@ -305,7 +299,7 @@ function getIndexes(jsonID) {
         // replace inner properties
         key = key.replace('properties.', ''); // first
         key = key.replace(/\.properties\./g, '.'); // middle
-        return [util.trimDots(key)];
+        return [(0, _util.trimDots)(key)];
     });
 
     // add compound-indexes
@@ -344,7 +338,7 @@ function getFinalFields(jsonId) {
  * @return {Object} jsonSchema - ordered
  */
 function normalize(jsonSchema) {
-    return util.sortObject(util.clone(jsonSchema));
+    return (0, _util.sortObject)((0, _util.clone)(jsonSchema));
 }
 
 /**
@@ -353,13 +347,13 @@ function normalize(jsonSchema) {
  * @return {Object} cloned schemaObj
  */
 var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
-    schemaObj = util.clone(schemaObj);
+    schemaObj = (0, _util.clone)(schemaObj);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;
 
     // fill with key-compression-state ()
-    if (!schemaObj.hasOwnProperty('disableKeyCompression')) schemaObj.disableKeyCompression = false;
+    if (!schemaObj.hasOwnProperty('disableKeyCompression')) schemaObj.disableKeyCompression = true;
 
     // compoundIndexes must be array
     schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];

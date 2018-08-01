@@ -5,7 +5,7 @@ import _createClass from 'babel-runtime/helpers/createClass';
  * they can be grabbed by the observables of database, collection and document
  */
 
-import * as util from './util';
+import { hash } from './util';
 
 export var RxChangeEvent = function () {
     function RxChangeEvent(data) {
@@ -41,7 +41,7 @@ export var RxChangeEvent = function () {
     _createClass(RxChangeEvent, [{
         key: 'hash',
         get: function get() {
-            if (!this._hash) this._hash = util.hash(this.data);
+            if (!this._hash) this._hash = hash(this.data);
             return this._hash;
         }
     }]);

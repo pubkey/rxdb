@@ -4,7 +4,7 @@
  * @link https://github.com/brix/crypto-js
  */
 
-import * as cryptoAes from 'crypto-js/aes';
+import { encrypt as cryptoAes_encrypt, decrypt as cryptoAes_decrypt } from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 
 import RxError from '../rx-error';
@@ -12,14 +12,14 @@ import RxError from '../rx-error';
 var minPassLength = 8;
 
 export function encrypt(value, password) {
-    var encrypted = cryptoAes.encrypt(value, password);
+    var encrypted = cryptoAes_encrypt(value, password);
     return encrypted.toString();
-};
+}
 
 export function decrypt(cipherText, password) {
-    var decrypted = cryptoAes.decrypt(cipherText, password);
+    var decrypted = cryptoAes_decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
-};
+}
 
 var _encryptValue = function _encryptValue(value) {
     return encrypt(JSON.stringify(value), this._password);

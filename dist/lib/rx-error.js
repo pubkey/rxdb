@@ -25,13 +25,9 @@ exports.pluginMissing = pluginMissing;
 
 var _util = require('./util');
 
-var util = _interopRequireWildcard(_util);
-
 var _overwritable = require('./overwritable');
 
 var _overwritable2 = _interopRequireDefault(_overwritable);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -102,8 +98,6 @@ var RxError = exports.RxError = function (_Error) {
     return RxError;
 }(Error);
 
-;
-
 var RxTypeError = exports.RxTypeError = function (_TypeError) {
     (0, _inherits3['default'])(RxTypeError, _TypeError);
 
@@ -141,13 +135,11 @@ var RxTypeError = exports.RxTypeError = function (_TypeError) {
     return RxTypeError;
 }(TypeError);
 
-;
-
 function pluginMissing(pluginKey) {
-    return new RxError('PU', 'You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require(\'rxdb/plugins/' + pluginKey + '\'))\n          - es6-import:\n            import ' + util.ucfirst(pluginKey) + 'Plugin from \'rxdb/plugins/' + pluginKey + '\';\n            RxDB.plugin(' + util.ucfirst(pluginKey) + 'Plugin);\n        ', {
+    return new RxError('PU', 'You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require(\'rxdb/plugins/' + pluginKey + '\'))\n          - es6-import:\n            import ' + (0, _util.ucfirst)(pluginKey) + 'Plugin from \'rxdb/plugins/' + pluginKey + '\';\n            RxDB.plugin(' + (0, _util.ucfirst)(pluginKey) + 'Plugin);\n        ', {
         pluginKey: pluginKey
     });
-};
+}
 
 // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';

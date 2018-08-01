@@ -2,7 +2,7 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
 import _createClass from 'babel-runtime/helpers/createClass';
 import objectPath from 'object-path';
 
-import * as util from './util';
+import { clone, hash, sortObject, trimDots, flattenObject } from './util';
 import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
 
@@ -41,7 +41,7 @@ export var RxSchema = function () {
     RxSchema.prototype.getSchemaByObjectPath = function getSchemaByObjectPath(path) {
         path = path.replace(/\./g, '.properties.');
         path = 'properties.' + path;
-        path = util.trimDots(path);
+        path = trimDots(path);
 
         var ret = objectPath.get(this.jsonID, path);
         return ret;
@@ -65,7 +65,7 @@ export var RxSchema = function () {
      * @return {object}
      */
     RxSchema.prototype.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
-        obj = util.clone(obj);
+        obj = clone(obj);
         Object.entries(this.defaultValues).filter(function (_ref) {
             var k = _ref[0];
             return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
@@ -102,7 +102,7 @@ export var RxSchema = function () {
 
 
     RxSchema.prototype.doKeyCompression = function doKeyCompression() {
-        return !!!this.jsonID.disableKeyCompression;
+        return !this.jsonID.disableKeyCompression;
     };
 
     _createClass(RxSchema, [{
@@ -178,7 +178,7 @@ export var RxSchema = function () {
     }, {
         key: 'hash',
         get: function get() {
-            if (!this._hash) this._hash = util.hash(this.normalized);
+            if (!this._hash) this._hash = hash(this.normalized);
             return this._hash;
         }
     }]);
@@ -221,9 +221,7 @@ export function hasCrypt(jsonSchema) {
 }
 
 export function getIndexes(jsonID) {
-    var prePath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-    var flattened = util.flattenObject(jsonID);
+    var flattened = flattenObject(jsonID);
     var keys = Object.keys(flattened);
     var indexes = keys
     // flattenObject returns only ending paths, we need all paths pointing to an object    
@@ -244,7 +242,7 @@ export function getIndexes(jsonID) {
         // replace inner properties
         key = key.replace('properties.', ''); // first
         key = key.replace(/\.properties\./g, '.'); // middle
-        return [util.trimDots(key)];
+        return [trimDots(key)];
     });
 
     // add compound-indexes
@@ -283,7 +281,7 @@ export function getFinalFields(jsonId) {
  * @return {Object} jsonSchema - ordered
  */
 export function normalize(jsonSchema) {
-    return util.sortObject(util.clone(jsonSchema));
+    return sortObject(clone(jsonSchema));
 }
 
 /**
@@ -292,13 +290,13 @@ export function normalize(jsonSchema) {
  * @return {Object} cloned schemaObj
  */
 var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
-    schemaObj = util.clone(schemaObj);
+    schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
     schemaObj.additionalProperties = false;
 
     // fill with key-compression-state ()
-    if (!schemaObj.hasOwnProperty('disableKeyCompression')) schemaObj.disableKeyCompression = false;
+    if (!schemaObj.hasOwnProperty('disableKeyCompression')) schemaObj.disableKeyCompression = true;
 
     // compoundIndexes must be array
     schemaObj.compoundIndexes = schemaObj.compoundIndexes || [];

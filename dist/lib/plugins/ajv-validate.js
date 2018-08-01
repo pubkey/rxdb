@@ -15,10 +15,6 @@ var _rxError2 = _interopRequireDefault(_rxError);
 
 var _util = require('../util');
 
-var util = _interopRequireWildcard(_util);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
@@ -78,12 +74,12 @@ var validate = function validate(obj) {
             obj: obj,
             schema: this.jsonID
         });
-    };
+    }
 };
 
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
     // pre-generate validator-function from the schema
-    util.requestIdleCallbackIfAvailable(function () {
+    (0, _util.requestIdleCallbackIfAvailable)(function () {
         return rxSchema._getValidator();
     });
 };

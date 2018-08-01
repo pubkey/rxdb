@@ -22,17 +22,11 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 
 var _mquery_utils = require('./mquery_utils');
 
-var utils = _interopRequireWildcard(_mquery_utils);
-
 var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
 
 var _util = require('../util');
-
-var util = _interopRequireWildcard(_util);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -51,8 +45,8 @@ var MQuery = function () {
 
         var proto = this.constructor.prototype;
         this.options = {};
-        this._conditions = proto._conditions ? util.clone(proto._conditions) : {};
-        this._fields = proto._fields ? util.clone(proto._fields) : undefined;
+        this._conditions = proto._conditions ? (0, _util.clone)(proto._conditions) : {};
+        this._fields = proto._fields ? (0, _util.clone)(proto._fields) : undefined;
         this._path = proto._path || undefined;
 
         if (criteria) this.find(criteria);
@@ -73,7 +67,7 @@ var MQuery = function () {
                     k = _ref2[0],
                     v = _ref2[1];
 
-                return same[k] = util.clone(v);
+                return same[k] = (0, _util.clone)(v);
             });
             return same;
         }
@@ -296,14 +290,14 @@ var MQuery = function () {
                 this._ensurePath('elemMatch');
                 path = this._path;
                 fn = arguments[0];
-            } else if (utils.isObject(arguments[0])) {
+            } else if ((0, _mquery_utils.isObject)(arguments[0])) {
                 this._ensurePath('elemMatch');
                 path = this._path;
                 criteria = arguments[0];
             } else if ('function' === typeof arguments[1]) {
                 path = arguments[0];
                 fn = arguments[1];
-            } else if (arguments[1] && utils.isObject(arguments[1])) {
+            } else if (arguments[1] && (0, _mquery_utils.isObject)(arguments[1])) {
                 path = arguments[0];
                 criteria = arguments[1];
             } else throw _rxError2['default'].newRxTypeError('MQ2');
@@ -363,7 +357,7 @@ var MQuery = function () {
             }
 
             // .sort({ field: 1, test: -1 })
-            if (utils.isObject(arg)) {
+            if ((0, _mquery_utils.isObject)(arg)) {
                 var keys = Object.keys(arg);
                 keys.forEach(function (field) {
                     return push(_this.options, field, arg[field]);
@@ -399,21 +393,21 @@ var MQuery = function () {
             if (source instanceof MQuery) {
                 // if source has a feature, apply it to ourselves
 
-                if (source._conditions) utils.merge(this._conditions, source._conditions);
+                if (source._conditions) (0, _mquery_utils.merge)(this._conditions, source._conditions);
 
                 if (source._fields) {
                     this._fields || (this._fields = {});
-                    utils.merge(this._fields, source._fields);
+                    (0, _mquery_utils.merge)(this._fields, source._fields);
                 }
 
                 if (source.options) {
                     this.options || (this.options = {});
-                    utils.merge(this.options, source.options);
+                    (0, _mquery_utils.merge)(this.options, source.options);
                 }
 
                 if (source._update) {
                     this._update || (this._update = {});
-                    utils.mergeClone(this._update, source._update);
+                    (0, _mquery_utils.mergeClone)(this._update, source._update);
                 }
 
                 if (source._distinct) this._distinct = source._distinct;
@@ -422,7 +416,7 @@ var MQuery = function () {
             }
 
             // plain object
-            utils.merge(this._conditions, source);
+            (0, _mquery_utils.merge)(this._conditions, source);
 
             return this;
         }
@@ -452,7 +446,7 @@ var MQuery = function () {
     }, {
         key: '_optionsForExec',
         value: function _optionsForExec() {
-            var options = util.clone(this.options);
+            var options = (0, _util.clone)(this.options);
             return options;
         }
 
@@ -537,7 +531,7 @@ function push(opts, field, value) {
     var s = opts.sort || (opts.sort = {});
     var valueStr = value.toString().replace('asc', '1').replace('ascending', '1').replace('desc', '-1').replace('descending', '-1');
     s[field] = parseInt(valueStr, 10);
-};
+}
 
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
@@ -555,7 +549,7 @@ function _pushArr(opts, field, value) {
             .replace('desc', '-1')
             .replace('descending', '-1');*/
     opts.sort.push([field, value]);
-};
+}
 
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
@@ -564,7 +558,7 @@ function _pushArr(opts, field, value) {
  * @return {Boolean}
  */
 MQuery.canMerge = function (conds) {
-    return conds instanceof MQuery || utils.isObject(conds);
+    return conds instanceof MQuery || (0, _mquery_utils.isObject)(conds);
 };
 
 /**
@@ -581,5 +575,4 @@ MQuery.canMerge = function (conds) {
     };
 });
 
-MQuery.utils = utils;
 exports['default'] = MQuery;

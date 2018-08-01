@@ -41,7 +41,7 @@ function tunnelCollectionPath(db, path, app, colName) {
         }
         next();
     });
-};
+}
 
 export function spawnServer(_ref) {
     var _ref$path = _ref.path,

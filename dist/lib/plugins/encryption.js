@@ -9,8 +9,6 @@ exports.decrypt = decrypt;
 
 var _aes = require('crypto-js/aes');
 
-var cryptoAes = _interopRequireWildcard(_aes);
-
 var _encUtf = require('crypto-js/enc-utf8');
 
 var cryptoEnc = _interopRequireWildcard(_encUtf);
@@ -30,14 +28,14 @@ var minPassLength = 8; /**
                         */
 
 function encrypt(value, password) {
-    var encrypted = cryptoAes.encrypt(value, password);
+    var encrypted = (0, _aes.encrypt)(value, password);
     return encrypted.toString();
-};
+}
 
 function decrypt(cipherText, password) {
-    var decrypted = cryptoAes.decrypt(cipherText, password);
+    var decrypted = (0, _aes.decrypt)(cipherText, password);
     return decrypted.toString(cryptoEnc);
-};
+}
 
 var _encryptValue = function _encryptValue(value) {
     return encrypt(JSON.stringify(value), this._password);

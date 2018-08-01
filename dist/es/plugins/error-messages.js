@@ -101,9 +101,6 @@ var CODES = {
     JD3: 'RxCollection.importDump(): json.passwordHash does not match the own',
 
     // plugins/leader-election.js
-    LE1: 'LeaderElection: this should not happen :( please contact the maintainer',
-    LE2: 'LeaderElection: someone else is applying/leader',
-    LE3: 'LeaderElection: someone else overwrote apply',
 
     // plugins/local-documents.js
     LD1: 'RxDocument.allAttachments$ cant use attachments on local documents',
@@ -141,8 +138,9 @@ var CODES = {
     SC19: 'SchemaCheck: compoundIndexes must contain arrays',
     SC20: 'SchemaCheck: compoundIndexes.array must contains strings',
     SC21: 'SchemaCheck: given index is not defined in schema',
-    SC22: 'given indexKey is not type:string',
+    SC22: 'SchemaCheck: given indexKey is not type:string',
     SC23: 'SchemaCheck: fieldname is not allowed',
+    SC24: 'SchemaCheck: required fields must be set via array. See https://spacetelescope.github.io/understanding-json-schema/reference/object.html#required',
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',

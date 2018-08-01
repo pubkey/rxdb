@@ -28,8 +28,6 @@ var _pouchDb2 = _interopRequireDefault(_pouchDb);
 
 var _util = require('./util');
 
-var util = _interopRequireWildcard(_util);
-
 var _rxSchema = require('./rx-schema');
 
 var _rxSchema2 = _interopRequireDefault(_rxSchema);
@@ -51,8 +49,6 @@ var _hooks = require('./hooks');
 var _hooks2 = _interopRequireDefault(_hooks);
 
 var _rxjs = require('rxjs');
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -149,9 +145,9 @@ var DataMigrator = function () {
 
 
                                     state.total = totalCount;
-                                    observer.next(util.clone(state));
+                                    observer.next((0, _util.clone)(state));
 
-                                    currentCol = null;
+                                    currentCol = oldCols.shift();
                                     _loop = /*#__PURE__*/_regenerator2['default'].mark(function _loop() {
                                         var migrationState$;
                                         return _regenerator2['default'].wrap(function _loop$(_context) {
@@ -165,7 +161,7 @@ var DataMigrator = function () {
                                                                 state.handled++;
                                                                 state[subState.type] = state[subState.type] + 1;
                                                                 state.percent = Math.round(state.handled / state.total * 100);
-                                                                observer.next(util.clone(state));
+                                                                observer.next((0, _util.clone)(state));
                                                             }, function (e) {
                                                                 sub.unsubscribe();
                                                                 observer.error(e);
@@ -176,6 +172,9 @@ var DataMigrator = function () {
                                                         });
 
                                                     case 3:
+                                                        currentCol = oldCols.shift();
+
+                                                    case 4:
                                                     case 'end':
                                                         return _context.stop();
                                                 }
@@ -184,7 +183,7 @@ var DataMigrator = function () {
                                     });
 
                                 case 11:
-                                    if (!(currentCol = oldCols.shift())) {
+                                    if (!currentCol) {
                                         _context2.next = 15;
                                         break;
                                     }
@@ -199,7 +198,7 @@ var DataMigrator = function () {
 
                                     state.done = true;
                                     state.percent = 100;
-                                    observer.next(util.clone(state));
+                                    observer.next((0, _util.clone)(state));
 
                                     observer.complete();
 
@@ -247,28 +246,14 @@ var OldCollection = function () {
 
     (0, _createClass3['default'])(OldCollection, [{
         key: 'countAllUndeleted',
-        value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
-                return _regenerator2['default'].wrap(function _callee2$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                return _context3.abrupt('return', _pouchDb2['default'].countAllUndeleted(this.pouchdb));
 
-                            case 1:
-                            case 'end':
-                                return _context3.stop();
-                        }
-                    }
-                }, _callee2, this);
-            }));
 
-            function countAllUndeleted() {
-                return _ref2.apply(this, arguments);
-            }
-
-            return countAllUndeleted;
-        }()
+        /**
+         * @return {Promise}
+         */
+        value: function countAllUndeleted() {
+            return _pouchDb2['default'].countAllUndeleted(this.pouchdb);
+        }
     }, {
         key: 'getBatch',
         value: function getBatch(batchSize) {
@@ -288,7 +273,7 @@ var OldCollection = function () {
     }, {
         key: '_handleFromPouch',
         value: function _handleFromPouch(docData) {
-            var data = util.clone(docData);
+            var data = (0, _util.clone)(docData);
             data = this.schema.swapIdToPrimary(docData);
             if (this.schema.doKeyCompression()) data = this.keyCompressor.decompress(data);
             data = this.crypter.decrypt(data);
@@ -302,7 +287,7 @@ var OldCollection = function () {
     }, {
         key: '_handleToPouch',
         value: function _handleToPouch(docData) {
-            var data = util.clone(docData);
+            var data = (0, _util.clone)(docData);
             data = this.crypter.encrypt(data);
             data = this.schema.swapPrimaryToId(data);
             if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
@@ -319,52 +304,52 @@ var OldCollection = function () {
     }, {
         key: 'migrateDocumentData',
         value: function () {
-            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(doc) {
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(doc) {
                 var nextVersion;
-                return _regenerator2['default'].wrap(function _callee3$(_context4) {
+                return _regenerator2['default'].wrap(function _callee2$(_context3) {
                     while (1) {
-                        switch (_context4.prev = _context4.next) {
+                        switch (_context3.prev = _context3.next) {
                             case 0:
-                                doc = util.clone(doc);
+                                doc = (0, _util.clone)(doc);
                                 nextVersion = this.version + 1;
 
                                 // run throught migrationStrategies
 
                             case 2:
                                 if (!(nextVersion <= this.newestCollection.schema.version)) {
-                                    _context4.next = 11;
+                                    _context3.next = 11;
                                     break;
                                 }
 
-                                _context4.next = 5;
+                                _context3.next = 5;
                                 return this.dataMigrator.migrationStrategies[nextVersion + ''](doc);
 
                             case 5:
-                                doc = _context4.sent;
+                                doc = _context3.sent;
 
                                 nextVersion++;
 
                                 if (!(doc === null)) {
-                                    _context4.next = 9;
+                                    _context3.next = 9;
                                     break;
                                 }
 
-                                return _context4.abrupt('return', null);
+                                return _context3.abrupt('return', null);
 
                             case 9:
-                                _context4.next = 2;
+                                _context3.next = 2;
                                 break;
 
                             case 11:
-                                _context4.prev = 11;
+                                _context3.prev = 11;
 
                                 this.newestCollection.schema.validate(doc);
-                                _context4.next = 18;
+                                _context3.next = 18;
                                 break;
 
                             case 15:
-                                _context4.prev = 15;
-                                _context4.t0 = _context4['catch'](11);
+                                _context3.prev = 15;
+                                _context3.t0 = _context3['catch'](11);
                                 throw _rxError2['default'].newRxError('DM2', {
                                     fromVersion: this.version,
                                     toVersion: this.newestCollection.schema.version,
@@ -372,18 +357,18 @@ var OldCollection = function () {
                                 });
 
                             case 18:
-                                return _context4.abrupt('return', doc);
+                                return _context3.abrupt('return', doc);
 
                             case 19:
                             case 'end':
-                                return _context4.stop();
+                                return _context3.stop();
                         }
                     }
-                }, _callee3, this, [[11, 15]]);
+                }, _callee2, this, [[11, 15]]);
             }));
 
             function migrateDocumentData(_x3) {
-                return _ref3.apply(this, arguments);
+                return _ref2.apply(this, arguments);
             }
 
             return migrateDocumentData;
@@ -397,17 +382,17 @@ var OldCollection = function () {
     }, {
         key: '_migrateDocument',
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(doc) {
+            var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(doc) {
                 var migrated, action, res;
-                return _regenerator2['default'].wrap(function _callee4$(_context5) {
+                return _regenerator2['default'].wrap(function _callee3$(_context4) {
                     while (1) {
-                        switch (_context5.prev = _context5.next) {
+                        switch (_context4.prev = _context4.next) {
                             case 0:
-                                _context5.next = 2;
+                                _context4.next = 2;
                                 return this.migrateDocumentData(doc);
 
                             case 2:
-                                migrated = _context5.sent;
+                                migrated = _context4.sent;
                                 action = {
                                     doc: doc,
                                     migrated: migrated,
@@ -416,7 +401,7 @@ var OldCollection = function () {
                                 };
 
                                 if (!migrated) {
-                                    _context5.next = 16;
+                                    _context4.next = 16;
                                     break;
                                 }
 
@@ -424,51 +409,51 @@ var OldCollection = function () {
 
                                 // save to newest collection
                                 delete migrated._rev;
-                                _context5.next = 9;
+                                _context4.next = 9;
                                 return this.newestCollection._pouchPut(migrated, true);
 
                             case 9:
-                                res = _context5.sent;
+                                res = _context4.sent;
 
                                 action.res = res;
                                 action.type = 'success';
 
-                                _context5.next = 14;
+                                _context4.next = 14;
                                 return _hooks2['default'].runAsyncPluginHooks('postMigrateDocument', action);
 
                             case 14:
-                                _context5.next = 17;
+                                _context4.next = 17;
                                 break;
 
                             case 16:
                                 action.type = 'deleted';
 
                             case 17:
-                                _context5.prev = 17;
-                                _context5.next = 20;
+                                _context4.prev = 17;
+                                _context4.next = 20;
                                 return this.pouchdb.remove(this._handleToPouch(doc));
 
                             case 20:
-                                _context5.next = 24;
+                                _context4.next = 24;
                                 break;
 
                             case 22:
-                                _context5.prev = 22;
-                                _context5.t0 = _context5['catch'](17);
+                                _context4.prev = 22;
+                                _context4.t0 = _context4['catch'](17);
 
                             case 24:
-                                return _context5.abrupt('return', action);
+                                return _context4.abrupt('return', action);
 
                             case 25:
                             case 'end':
-                                return _context5.stop();
+                                return _context4.stop();
                         }
                     }
-                }, _callee4, this, [[17, 22]]);
+                }, _callee3, this, [[17, 22]]);
             }));
 
             function _migrateDocument(_x4) {
-                return _ref4.apply(this, arguments);
+                return _ref3.apply(this, arguments);
             }
 
             return _migrateDocument;
@@ -504,21 +489,21 @@ var OldCollection = function () {
             this._migrate = true;
 
             var stateStream$ = new _rxjs.Observable(function () {
-                var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5(observer) {
+                var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4(observer) {
                     var batch, error;
-                    return _regenerator2['default'].wrap(function _callee5$(_context6) {
+                    return _regenerator2['default'].wrap(function _callee4$(_context5) {
                         while (1) {
-                            switch (_context6.prev = _context6.next) {
+                            switch (_context5.prev = _context5.next) {
                                 case 0:
-                                    _context6.next = 2;
+                                    _context5.next = 2;
                                     return _this6.getBatch(batchSize);
 
                                 case 2:
-                                    batch = _context6.sent;
+                                    batch = _context5.sent;
                                     error = void 0;
 
                                 case 4:
-                                    _context6.next = 6;
+                                    _context5.next = 6;
                                     return Promise.all(batch.map(function (doc) {
                                         return _this6._migrateDocument(doc).then(function (action) {
                                             return observer.next(action);
@@ -529,28 +514,28 @@ var OldCollection = function () {
 
                                 case 6:
                                     if (!error) {
-                                        _context6.next = 9;
+                                        _context5.next = 9;
                                         break;
                                     }
 
                                     observer.error(error);
-                                    return _context6.abrupt('return');
+                                    return _context5.abrupt('return');
 
                                 case 9:
-                                    _context6.next = 11;
+                                    _context5.next = 11;
                                     return _this6.getBatch(batchSize);
 
                                 case 11:
-                                    batch = _context6.sent;
+                                    batch = _context5.sent;
 
                                 case 12:
                                     if (!error && batch.length > 0) {
-                                        _context6.next = 4;
+                                        _context5.next = 4;
                                         break;
                                     }
 
                                 case 13:
-                                    _context6.next = 15;
+                                    _context5.next = 15;
                                     return _this6['delete']();
 
                                 case 15:
@@ -559,14 +544,14 @@ var OldCollection = function () {
 
                                 case 16:
                                 case 'end':
-                                    return _context6.stop();
+                                    return _context5.stop();
                             }
                         }
-                    }, _callee5, _this6);
+                    }, _callee4, _this6);
                 }));
 
                 return function (_x6) {
-                    return _ref5.apply(this, arguments);
+                    return _ref4.apply(this, arguments);
                 };
             }());
             return stateStream$;

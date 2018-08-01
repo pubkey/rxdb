@@ -12,7 +12,7 @@ import _inherits from 'babel-runtime/helpers/inherits';
 import { Subject } from 'rxjs';
 
 import RxCollection from '../rx-collection';
-import * as util from '../util';
+import { clone, randomCouchString, adapterObject } from '../util';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
 import RxSchema from '../rx-schema';
@@ -67,8 +67,7 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
                         case 0:
                             this._crypter = Crypter.create(this.database.password, this.schema);
 
-                            this.pouch = new PouchDB('rxdb-in-memory-' + util.randomCouchString(10), util.adapterObject('memory'), {});
-
+                            this.pouch = new PouchDB('rxdb-in-memory-' + randomCouchString(10), adapterObject('memory'), {});
                             this._observable$ = new Subject();
                             this._changeEventBuffer = ChangeEventBuffer.create(this);
 
@@ -116,23 +115,23 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
 
 
     InMemoryRxCollection.prototype._initialSync = function () {
-        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
+        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
             var _this3 = this;
 
             var allRows, fromOwnStream, fromParentStream;
-            return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+            return _regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
-                    switch (_context4.prev = _context4.next) {
+                    switch (_context2.prev = _context2.next) {
                         case 0:
-                            _context4.next = 2;
+                            _context2.next = 2;
                             return this._parentCollection.pouch.allDocs({
                                 attachments: false,
                                 include_docs: true
                             });
 
                         case 2:
-                            allRows = _context4.sent;
-                            _context4.next = 5;
+                            allRows = _context2.sent;
+                            _context2.next = 5;
                             return this.pouch.bulkDocs({
                                 docs: allRows.rows.map(function (row) {
                                     return row.doc;
@@ -157,33 +156,14 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
                                 since: 'now',
                                 include_docs: true,
                                 live: true
-                            }).on('change', function () {
-                                var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(change) {
-                                    var doc;
-                                    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-                                        while (1) {
-                                            switch (_context2.prev = _context2.next) {
-                                                case 0:
-                                                    doc = _this3._parentCollection._handleToPouch(change.doc);
-                                                    // console.log('write to parent:');
-                                                    // console.dir(doc);
-
-                                                    _this3._parentCollection.pouch.bulkDocs({
-                                                        docs: [doc]
-                                                    }, BULK_DOC_OPTIONS);
-
-                                                case 2:
-                                                case 'end':
-                                                    return _context2.stop();
-                                            }
-                                        }
-                                    }, _callee2, _this3);
-                                }));
-
-                                return function (_x) {
-                                    return _ref3.apply(this, arguments);
-                                };
-                            }());
+                            }).on('change', function (change) {
+                                var doc = _this3._parentCollection._handleToPouch(change.doc);
+                                // console.log('write to parent:');
+                                // console.dir(doc);
+                                _this3._parentCollection.pouch.bulkDocs({
+                                    docs: [doc]
+                                }, BULK_DOC_OPTIONS);
+                            });
 
                             this._changeStreams.push(fromOwnStream);
 
@@ -192,43 +172,24 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
                                 since: 'now',
                                 include_docs: true,
                                 live: true
-                            }).on('change', function () {
-                                var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(change) {
-                                    var doc;
-                                    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-                                        while (1) {
-                                            switch (_context3.prev = _context3.next) {
-                                                case 0:
-                                                    doc = _this3._parentCollection._handleFromPouch(change.doc);
-
-                                                    doc = _this3.schema.swapPrimaryToId(doc);
-                                                    // console.log('write to own2:');
-                                                    // console.dir(doc);
-                                                    _this3.pouch.bulkDocs({
-                                                        docs: [doc]
-                                                    }, BULK_DOC_OPTIONS);
-
-                                                case 3:
-                                                case 'end':
-                                                    return _context3.stop();
-                                            }
-                                        }
-                                    }, _callee3, _this3);
-                                }));
-
-                                return function (_x2) {
-                                    return _ref4.apply(this, arguments);
-                                };
-                            }());
+                            }).on('change', function (change) {
+                                var doc = _this3._parentCollection._handleFromPouch(change.doc);
+                                doc = _this3.schema.swapPrimaryToId(doc);
+                                // console.log('write to own2:');
+                                // console.dir(doc);
+                                _this3.pouch.bulkDocs({
+                                    docs: [doc]
+                                }, BULK_DOC_OPTIONS);
+                            });
 
                             this._changeStreams.push(fromParentStream);
 
                         case 11:
                         case 'end':
-                            return _context4.stop();
+                            return _context2.stop();
                     }
                 }
-            }, _callee4, this);
+            }, _callee2, this);
         }));
 
         function _initialSync() {
@@ -259,10 +220,10 @@ export var InMemoryRxCollection = function (_RxCollection$RxColle) {
     };
 
     return InMemoryRxCollection;
-}(RxCollection.RxCollection);;
+}(RxCollection.RxCollection);
 
 function toCleanSchema(rxSchema) {
-    var newSchemaJson = util.clone(rxSchema.jsonID);
+    var newSchemaJson = clone(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
@@ -287,14 +248,14 @@ var INIT_DONE = false;
  * @return {Promise<RxCollection>}
  */
 export var spawnInMemory = function () {
-    var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5() {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
         var col, preparePromise;
-        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
             while (1) {
-                switch (_context5.prev = _context5.next) {
+                switch (_context3.prev = _context3.next) {
                     case 0:
                         if (INIT_DONE) {
-                            _context5.next = 4;
+                            _context3.next = 4;
                             break;
                         }
 
@@ -302,7 +263,7 @@ export var spawnInMemory = function () {
                         // ensure memory-adapter is added
 
                         if (!(!PouchDB.adapters || !PouchDB.adapters.memory)) {
-                            _context5.next = 4;
+                            _context3.next = 4;
                             break;
                         }
 
@@ -310,15 +271,15 @@ export var spawnInMemory = function () {
 
                     case 4:
                         if (!collectionCacheMap.has(this)) {
-                            _context5.next = 8;
+                            _context3.next = 8;
                             break;
                         }
 
-                        _context5.next = 7;
+                        _context3.next = 7;
                         return collectionPromiseCacheMap.get(this);
 
                     case 7:
-                        return _context5.abrupt('return', collectionCacheMap.get(this));
+                        return _context3.abrupt('return', collectionCacheMap.get(this));
 
                     case 8:
                         col = new InMemoryRxCollection(this);
@@ -327,24 +288,24 @@ export var spawnInMemory = function () {
                         collectionCacheMap.set(this, col);
                         collectionPromiseCacheMap.set(this, preparePromise);
 
-                        _context5.next = 14;
+                        _context3.next = 14;
                         return preparePromise;
 
                     case 14:
-                        return _context5.abrupt('return', col);
+                        return _context3.abrupt('return', col);
 
                     case 15:
                     case 'end':
-                        return _context5.stop();
+                        return _context3.stop();
                 }
             }
-        }, _callee5, this);
+        }, _callee3, this);
     }));
 
     return function spawnInMemory() {
-        return _ref5.apply(this, arguments);
+        return _ref3.apply(this, arguments);
     };
-}();;
+}();
 
 export var rxdb = true;
 export var prototypes = {

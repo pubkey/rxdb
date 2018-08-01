@@ -5,14 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxReplicationState = undefined;
 
-var _regenerator = require('babel-runtime/regenerator');
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
 var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
 var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
@@ -35,8 +27,6 @@ var _operators = require('rxjs/operators');
 
 var _util = require('../util');
 
-var util = _interopRequireWildcard(_util);
-
 var _core = require('../core');
 
 var _core2 = _interopRequireDefault(_core);
@@ -56,8 +46,6 @@ var _rxError2 = _interopRequireDefault(_rxError);
 var _pouchDb = require('../pouch-db');
 
 var _pouchDb2 = _interopRequireDefault(_pouchDb);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -144,31 +132,12 @@ var RxReplicationState = exports.RxReplicationState = function () {
         }
     }, {
         key: 'cancel',
-        value: function () {
-            var _ref = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee() {
-                return _regenerator2['default'].wrap(function _callee$(_context) {
-                    while (1) {
-                        switch (_context.prev = _context.next) {
-                            case 0:
-                                if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
-                                this._subs.forEach(function (sub) {
-                                    return sub.unsubscribe();
-                                });
-
-                            case 2:
-                            case 'end':
-                                return _context.stop();
-                        }
-                    }
-                }, _callee, this);
-            }));
-
-            function cancel() {
-                return _ref.apply(this, arguments);
-            }
-
-            return cancel;
-        }()
+        value: function cancel() {
+            if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
+            this._subs.forEach(function (sub) {
+                return sub.unsubscribe();
+            });
+        }
     }]);
     return RxReplicationState;
 }();
@@ -234,25 +203,25 @@ function watchForChanges() {
     this.synced = true;
 }
 
-function sync(_ref2) {
+function sync(_ref) {
     var _this4 = this;
 
-    var remote = _ref2.remote,
-        _ref2$waitForLeadersh = _ref2.waitForLeadership,
-        waitForLeadership = _ref2$waitForLeadersh === undefined ? true : _ref2$waitForLeadersh,
-        _ref2$direction = _ref2.direction,
-        direction = _ref2$direction === undefined ? {
+    var remote = _ref.remote,
+        _ref$waitForLeadershi = _ref.waitForLeadership,
+        waitForLeadership = _ref$waitForLeadershi === undefined ? true : _ref$waitForLeadershi,
+        _ref$direction = _ref.direction,
+        direction = _ref$direction === undefined ? {
         pull: true,
         push: true
-    } : _ref2$direction,
-        _ref2$options = _ref2.options,
-        options = _ref2$options === undefined ? {
+    } : _ref$direction,
+        _ref$options = _ref.options,
+        options = _ref$options === undefined ? {
         live: true,
         retry: true
-    } : _ref2$options,
-        query = _ref2.query;
+    } : _ref$options,
+        query = _ref.query;
 
-    options = util.clone(options);
+    options = (0, _util.clone)(options);
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (_pouchDb2['default'].isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
@@ -274,50 +243,22 @@ function sync(_ref2) {
         });
     }
 
-    var syncFun = util.pouchReplicationFunction(this.pouch, direction);
+    var syncFun = (0, _util.pouchReplicationFunction)(this.pouch, direction);
     if (query) options.selector = query.keyCompress().selector;
 
     var repState = createRxReplicationState(this);
 
     // run internal so .sync() does not have to be async
-    (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
-        var pouchSync;
-        return _regenerator2['default'].wrap(function _callee2$(_context2) {
-            while (1) {
-                switch (_context2.prev = _context2.next) {
-                    case 0:
-                        if (!waitForLeadership) {
-                            _context2.next = 5;
-                            break;
-                        }
+    var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : (0, _util.promiseWait)(0);
+    waitTillRun.then(function () {
+        var pouchSync = syncFun(remote, options);
+        _this4.watchForChanges();
+        repState.setPouchEventEmitter(pouchSync);
+        _this4._repStates.push(repState);
+    });
 
-                        _context2.next = 3;
-                        return _this4.database.waitForLeadership();
-
-                    case 3:
-                        _context2.next = 7;
-                        break;
-
-                    case 5:
-                        _context2.next = 7;
-                        return util.promiseWait(0);
-
-                    case 7:
-                        pouchSync = syncFun(remote, options);
-
-                        _this4.watchForChanges();
-                        repState.setPouchEventEmitter(pouchSync);
-                        _this4._repStates.push(repState);
-
-                    case 11:
-                    case 'end':
-                        return _context2.stop();
-                }
-            }
-        }, _callee2, _this4);
-    }))();
     return repState;
-};
+}
 
 var rxdb = exports.rxdb = true;
 var prototypes = exports.prototypes = {

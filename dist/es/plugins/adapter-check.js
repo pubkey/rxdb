@@ -5,7 +5,7 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
  * you can use it to check if the given adapter is working in the current environmet
  */
 import PouchDB from '../pouch-db';
-import * as util from '../util';
+import { generateId, adapterObject } from '../util';
 
 export var checkAdapter = function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(adapter) {
@@ -14,12 +14,12 @@ export var checkAdapter = function () {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        id = 'rxdb-test-adapter-' + util.generateId();
+                        id = 'rxdb-test-adapter-' + generateId();
                         recoveredDoc = null;
                         pouch = void 0;
                         _context.prev = 3;
 
-                        pouch = new PouchDB(id, util.adapterObject(adapter), {
+                        pouch = new PouchDB(id, adapterObject(adapter), {
                             auto_compaction: false, // no compaction because this only stores local documents
                             revs_limit: 1
                         });

@@ -374,7 +374,7 @@ var QueryChangeDetector = function () {
 function enableDebugging() {
     console.log('QueryChangeDetector.enableDebugging()');
     DEBUG = true;
-};
+}
 
 function enable() {
     var set = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;

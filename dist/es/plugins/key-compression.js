@@ -5,7 +5,7 @@ import _createClass from 'babel-runtime/helpers/createClass';
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import * as util from '../util';
+import { numberToLetter, trimDots, clone } from '../util';
 
 var KeyCompressor = function () {
     /**
@@ -29,12 +29,12 @@ var KeyCompressor = function () {
         if (typeof obj !== 'object' || obj === null) return obj;
         if (Array.isArray(obj)) {
             return obj.map(function (o) {
-                return _this._compressObj(o, util.trimDots(path + '.item'));
+                return _this._compressObj(o, trimDots(path + '.item'));
             });
         }
         Object.keys(obj).forEach(function (key) {
             var propertyObj = obj[key];
-            var fullPath = util.trimDots(path + '.' + key);
+            var fullPath = trimDots(path + '.' + key);
             var replacedKey = _this.table[fullPath] ? _this.table[fullPath] : key;
             var nextObj = propertyObj;
             nextObj = _this._compressObj(propertyObj, fullPath);
@@ -51,7 +51,7 @@ var KeyCompressor = function () {
 
 
     KeyCompressor.prototype.compress = function compress(obj) {
-        if (!this.schema.doKeyCompression()) return util.clone(obj);
+        if (!this.schema.doKeyCompression()) return clone(obj);
         return this._compressObj(obj);
     };
 
@@ -82,7 +82,7 @@ var KeyCompressor = function () {
     };
 
     KeyCompressor.prototype.decompress = function decompress(obj) {
-        if (!this.schema.doKeyCompression()) return util.clone(obj);
+        if (!this.schema.doKeyCompression()) return clone(obj);
         var returnObj = this._decompressObj(obj);
         return returnObj;
     };
@@ -98,14 +98,14 @@ var KeyCompressor = function () {
 
     KeyCompressor.prototype._transformKey = function _transformKey(prePath, prePathCompressed, remainPathAr) {
         var table = this.table;
-        prePath = util.trimDots(prePath);
-        prePathCompressed = util.trimDots(prePathCompressed);
+        prePath = trimDots(prePath);
+        prePathCompressed = trimDots(prePathCompressed);
         var nextPath = remainPathAr.shift();
 
-        var nextFullPath = util.trimDots(prePath + '.' + nextPath);
+        var nextFullPath = trimDots(prePath + '.' + nextPath);
         if (table[nextFullPath]) prePathCompressed += '.' + table[nextFullPath];else prePathCompressed += '.' + nextPath;
 
-        if (remainPathAr.length > 0) return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);else return util.trimDots(prePathCompressed);
+        if (remainPathAr.length > 0) return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);else return trimDots(prePathCompressed);
     };
 
     /**
@@ -118,7 +118,7 @@ var KeyCompressor = function () {
     KeyCompressor.prototype.compressQuery = function compressQuery(queryJSON) {
         var _this3 = this;
 
-        queryJSON = util.clone(queryJSON);
+        queryJSON = clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
 
         // selector
@@ -168,7 +168,7 @@ var KeyCompressor = function () {
                 var lastKeyNumber = 0;
                 var nextKey = function nextKey() {
                     lastKeyNumber++;
-                    return util.numberToLetter(lastKeyNumber - 1);
+                    return numberToLetter(lastKeyNumber - 1);
                 };
                 this._table = {};
                 var jsonSchema = this.schema.normalized;
@@ -176,7 +176,7 @@ var KeyCompressor = function () {
                 var propertiesToTable = function propertiesToTable(path, obj) {
                     Object.keys(obj).map(function (key) {
                         var propertyObj = obj[key];
-                        var fullPath = key === 'properties' ? path : util.trimDots(path + '.' + key);
+                        var fullPath = key === 'properties' ? path : trimDots(path + '.' + key);
                         if (typeof propertyObj === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
                         !_this4._table[fullPath] && fullPath !== '' && key.length > 3 && // do not compress short keys

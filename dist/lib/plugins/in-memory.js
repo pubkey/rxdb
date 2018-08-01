@@ -38,14 +38,14 @@ var _inherits3 = _interopRequireDefault(_inherits2);
  * @return {Promise<RxCollection>}
  */
 var spawnInMemory = exports.spawnInMemory = function () {
-    var _ref5 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee5() {
+    var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3() {
         var col, preparePromise;
-        return _regenerator2['default'].wrap(function _callee5$(_context5) {
+        return _regenerator2['default'].wrap(function _callee3$(_context3) {
             while (1) {
-                switch (_context5.prev = _context5.next) {
+                switch (_context3.prev = _context3.next) {
                     case 0:
                         if (INIT_DONE) {
-                            _context5.next = 4;
+                            _context3.next = 4;
                             break;
                         }
 
@@ -53,7 +53,7 @@ var spawnInMemory = exports.spawnInMemory = function () {
                         // ensure memory-adapter is added
 
                         if (!(!_pouchDb2['default'].adapters || !_pouchDb2['default'].adapters.memory)) {
-                            _context5.next = 4;
+                            _context3.next = 4;
                             break;
                         }
 
@@ -61,15 +61,15 @@ var spawnInMemory = exports.spawnInMemory = function () {
 
                     case 4:
                         if (!collectionCacheMap.has(this)) {
-                            _context5.next = 8;
+                            _context3.next = 8;
                             break;
                         }
 
-                        _context5.next = 7;
+                        _context3.next = 7;
                         return collectionPromiseCacheMap.get(this);
 
                     case 7:
-                        return _context5.abrupt('return', collectionCacheMap.get(this));
+                        return _context3.abrupt('return', collectionCacheMap.get(this));
 
                     case 8:
                         col = new InMemoryRxCollection(this);
@@ -78,22 +78,22 @@ var spawnInMemory = exports.spawnInMemory = function () {
                         collectionCacheMap.set(this, col);
                         collectionPromiseCacheMap.set(this, preparePromise);
 
-                        _context5.next = 14;
+                        _context3.next = 14;
                         return preparePromise;
 
                     case 14:
-                        return _context5.abrupt('return', col);
+                        return _context3.abrupt('return', col);
 
                     case 15:
                     case 'end':
-                        return _context5.stop();
+                        return _context3.stop();
                 }
             }
-        }, _callee5, this);
+        }, _callee3, this);
     }));
 
     return function spawnInMemory() {
-        return _ref5.apply(this, arguments);
+        return _ref3.apply(this, arguments);
     };
 }();
 
@@ -104,8 +104,6 @@ var _rxCollection = require('../rx-collection');
 var _rxCollection2 = _interopRequireDefault(_rxCollection);
 
 var _util = require('../util');
-
-var util = _interopRequireWildcard(_util);
 
 var _crypter = require('../crypter');
 
@@ -126,8 +124,6 @@ var _pouchDb2 = _interopRequireDefault(_pouchDb);
 var _rxError = require('../rx-error');
 
 var _rxError2 = _interopRequireDefault(_rxError);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -187,8 +183,7 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
                             case 0:
                                 this._crypter = _crypter2['default'].create(this.database.password, this.schema);
 
-                                this.pouch = new _pouchDb2['default']('rxdb-in-memory-' + util.randomCouchString(10), util.adapterObject('memory'), {});
-
+                                this.pouch = new _pouchDb2['default']('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'), {});
                                 this._observable$ = new _rxjs.Subject();
                                 this._changeEventBuffer = _changeEventBuffer2['default'].create(this);
 
@@ -237,23 +232,23 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
     }, {
         key: '_initialSync',
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee4() {
+            var _ref2 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2() {
                 var _this3 = this;
 
                 var allRows, fromOwnStream, fromParentStream;
-                return _regenerator2['default'].wrap(function _callee4$(_context4) {
+                return _regenerator2['default'].wrap(function _callee2$(_context2) {
                     while (1) {
-                        switch (_context4.prev = _context4.next) {
+                        switch (_context2.prev = _context2.next) {
                             case 0:
-                                _context4.next = 2;
+                                _context2.next = 2;
                                 return this._parentCollection.pouch.allDocs({
                                     attachments: false,
                                     include_docs: true
                                 });
 
                             case 2:
-                                allRows = _context4.sent;
-                                _context4.next = 5;
+                                allRows = _context2.sent;
+                                _context2.next = 5;
                                 return this.pouch.bulkDocs({
                                     docs: allRows.rows.map(function (row) {
                                         return row.doc;
@@ -278,33 +273,14 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
                                     since: 'now',
                                     include_docs: true,
                                     live: true
-                                }).on('change', function () {
-                                    var _ref3 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee2(change) {
-                                        var doc;
-                                        return _regenerator2['default'].wrap(function _callee2$(_context2) {
-                                            while (1) {
-                                                switch (_context2.prev = _context2.next) {
-                                                    case 0:
-                                                        doc = _this3._parentCollection._handleToPouch(change.doc);
-                                                        // console.log('write to parent:');
-                                                        // console.dir(doc);
-
-                                                        _this3._parentCollection.pouch.bulkDocs({
-                                                            docs: [doc]
-                                                        }, BULK_DOC_OPTIONS);
-
-                                                    case 2:
-                                                    case 'end':
-                                                        return _context2.stop();
-                                                }
-                                            }
-                                        }, _callee2, _this3);
-                                    }));
-
-                                    return function (_x) {
-                                        return _ref3.apply(this, arguments);
-                                    };
-                                }());
+                                }).on('change', function (change) {
+                                    var doc = _this3._parentCollection._handleToPouch(change.doc);
+                                    // console.log('write to parent:');
+                                    // console.dir(doc);
+                                    _this3._parentCollection.pouch.bulkDocs({
+                                        docs: [doc]
+                                    }, BULK_DOC_OPTIONS);
+                                });
 
                                 this._changeStreams.push(fromOwnStream);
 
@@ -313,43 +289,24 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
                                     since: 'now',
                                     include_docs: true,
                                     live: true
-                                }).on('change', function () {
-                                    var _ref4 = (0, _asyncToGenerator3['default'])( /*#__PURE__*/_regenerator2['default'].mark(function _callee3(change) {
-                                        var doc;
-                                        return _regenerator2['default'].wrap(function _callee3$(_context3) {
-                                            while (1) {
-                                                switch (_context3.prev = _context3.next) {
-                                                    case 0:
-                                                        doc = _this3._parentCollection._handleFromPouch(change.doc);
-
-                                                        doc = _this3.schema.swapPrimaryToId(doc);
-                                                        // console.log('write to own2:');
-                                                        // console.dir(doc);
-                                                        _this3.pouch.bulkDocs({
-                                                            docs: [doc]
-                                                        }, BULK_DOC_OPTIONS);
-
-                                                    case 3:
-                                                    case 'end':
-                                                        return _context3.stop();
-                                                }
-                                            }
-                                        }, _callee3, _this3);
-                                    }));
-
-                                    return function (_x2) {
-                                        return _ref4.apply(this, arguments);
-                                    };
-                                }());
+                                }).on('change', function (change) {
+                                    var doc = _this3._parentCollection._handleFromPouch(change.doc);
+                                    doc = _this3.schema.swapPrimaryToId(doc);
+                                    // console.log('write to own2:');
+                                    // console.dir(doc);
+                                    _this3.pouch.bulkDocs({
+                                        docs: [doc]
+                                    }, BULK_DOC_OPTIONS);
+                                });
 
                                 this._changeStreams.push(fromParentStream);
 
                             case 11:
                             case 'end':
-                                return _context4.stop();
+                                return _context2.stop();
                         }
                     }
-                }, _callee4, this);
+                }, _callee2, this);
             }));
 
             function _initialSync() {
@@ -383,10 +340,8 @@ var InMemoryRxCollection = exports.InMemoryRxCollection = function (_RxCollectio
     return InMemoryRxCollection;
 }(_rxCollection2['default'].RxCollection);
 
-;
-
 function toCleanSchema(rxSchema) {
-    var newSchemaJson = util.clone(rxSchema.jsonID);
+    var newSchemaJson = (0, _util.clone)(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
@@ -405,9 +360,7 @@ function toCleanSchema(rxSchema) {
     return _rxSchema2['default'].create(newSchemaJson);
 }
 
-var INIT_DONE = false;;
-
-var rxdb = exports.rxdb = true;
+var INIT_DONE = false;var rxdb = exports.rxdb = true;
 var prototypes = exports.prototypes = {
     RxCollection: function RxCollection(proto) {
         proto.inMemory = spawnInMemory;

@@ -24,12 +24,12 @@ var checkAdapter = exports.checkAdapter = function () {
             while (1) {
                 switch (_context.prev = _context.next) {
                     case 0:
-                        id = 'rxdb-test-adapter-' + util.generateId();
+                        id = 'rxdb-test-adapter-' + (0, _util.generateId)();
                         recoveredDoc = null;
                         pouch = void 0;
                         _context.prev = 3;
 
-                        pouch = new _pouchDb2['default'](id, util.adapterObject(adapter), {
+                        pouch = new _pouchDb2['default'](id, (0, _util.adapterObject)(adapter), {
                             auto_compaction: false, // no compaction because this only stores local documents
                             revs_limit: 1
                         });
@@ -90,10 +90,6 @@ var _pouchDb = require('../pouch-db');
 var _pouchDb2 = _interopRequireDefault(_pouchDb);
 
 var _util = require('../util');
-
-var util = _interopRequireWildcard(_util);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 

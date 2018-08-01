@@ -56,8 +56,6 @@ var QueryCache = function () {
     return QueryCache;
 }();
 
-;
-
 function create() {
     return new QueryCache();
 }

@@ -4,7 +4,7 @@ import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
  */
 
 import objectPath from 'object-path';
-import * as util from './util';
+import { clone } from './util';
 
 import RxError from './rx-error';
 
@@ -43,7 +43,7 @@ export var Crypter = function () {
     Crypter.prototype.encrypt = function encrypt(obj) {
         var _this = this;
 
-        obj = util.clone(obj);
+        obj = clone(obj);
         if (!this._password) return obj;
         Object.keys(this._schema.encryptedPaths).map(function (path) {
             var value = objectPath.get(obj, path);
@@ -56,7 +56,7 @@ export var Crypter = function () {
     Crypter.prototype.decrypt = function decrypt(obj) {
         var _this2 = this;
 
-        obj = util.clone(obj);
+        obj = clone(obj);
         if (!this._password) return obj;
 
         Object.keys(this._schema.encryptedPaths).map(function (path) {
