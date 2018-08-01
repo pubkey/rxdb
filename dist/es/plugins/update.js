@@ -7,12 +7,13 @@ import _asyncToGenerator from 'babel-runtime/helpers/asyncToGenerator';
  */
 import modifyjs from 'modifyjs';
 import deepEqual from 'deep-equal';
+import { clone } from '../util.js';
 
 export function update(updateObj) {
     var _this = this;
 
+    var oldDocData = clone(this._data);
     var newDoc = modifyjs(this._data, updateObj);
-
     Object.keys(this._data).forEach(function (previousPropName) {
         if (newDoc[previousPropName]) {
             // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
@@ -28,7 +29,13 @@ export function update(updateObj) {
         return _this._data[newPropName] = newDoc[newPropName];
     });
 
-    return this.save();
+    return this.save().then(function () {
+        return _this;
+    })['catch'](function (err) {
+        // save was not successfull, reset doc-data
+        _this._data = oldDocData;
+        throw err;
+    });
 }
 
 export var RxQueryUpdate = function () {

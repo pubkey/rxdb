@@ -217,10 +217,10 @@ export function validateCouchDBString(name) {
     name.includes('\\') // windows
     ) return true;
 
-    var regStr = '^[a-z][a-z0-9]*$';
+    var regStr = '^[a-z][_$a-z0-9]*$';
     var reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new RxError.newRxError('UT2', {
+        throw RxError.newRxError('UT2', {
             regex: regStr,
             givenName: name
         });
