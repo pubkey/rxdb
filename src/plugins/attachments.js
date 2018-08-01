@@ -47,7 +47,7 @@ export const blobBufferUtil = {
 
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
-            return new Buffer(data, {
+            return Buffer.from(data, {
                 type
             });
         }
@@ -59,7 +59,7 @@ export const blobBufferUtil = {
             });
         } catch (e) {
             // for node
-            blobBuffer = new Buffer(data, {
+            blobBuffer = Buffer.from(data, {
                 type
             });
         }
