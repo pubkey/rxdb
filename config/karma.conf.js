@@ -74,6 +74,9 @@ if (process.env.TRAVIS) {
      * So no big list will be shown at log
      */
     configuration.reporters = [];
+
+    // how many browser should be started simultanous
+    configuration.concurrency = 1;
 }
 
 module.exports = function(config) {
