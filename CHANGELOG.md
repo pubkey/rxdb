@@ -11,6 +11,7 @@ Bugfixes:
 
 Other
   - Moved `@types/core-js` to dev-dependencies [#712](https://github.com/pubkey/rxdb/issues/712)
+  - Added more example the the RxQuery-Docs [#740](https://github.com/pubkey/rxdb/pull/740) thanks [@Celludriel](https://github.com/Celludriel)
 
 ### 7.7.0 (July 6, 2018)
 
