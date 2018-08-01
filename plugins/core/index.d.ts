@@ -1,2 +1,2 @@
-import RxDB from '../../src/typings/index';
+import RxDB from '../../typings/index';
 export default RxDB;
