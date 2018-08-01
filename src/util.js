@@ -191,10 +191,10 @@ export function validateCouchDBString(name) {
     ) return true;
 
 
-    const regStr = '^[a-z][a-z0-9]*$';
+    const regStr = '^[a-z][_$a-z0-9]*$';
     const reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw new RxError.newRxError('UT2', {
+        throw RxError.newRxError('UT2', {
             regex: regStr,
             givenName: name,
         });

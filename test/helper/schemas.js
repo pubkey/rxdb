@@ -695,3 +695,19 @@ export const averageSchema = () => ({
 
     }
 });
+
+export const point = {
+    title: 'point schema',
+    version: 0,
+    description: 'describes coordinates in 2d space',
+    type: 'object',
+    properties: {
+        x: {
+            type: 'number'
+        },
+        y: {
+            type: 'number'
+        }
+    },
+    required: ['x', 'y']
+};

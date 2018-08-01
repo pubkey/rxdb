@@ -12,6 +12,18 @@ Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
 
+### 7.X.X (comming soon)
+
+Bugfixes:
+  - newRxError is not a constructor [#719](https://github.com/pubkey/rxdb/issues/719) thanks [@errorx666](https://github.com/errorx666)
+  - Collection name validation is too strict [#720](https://github.com/pubkey/rxdb/issues/720) thanks [@errorx666](https://github.com/errorx666)
+  - Field names can't be one character long [#717](https://github.com/pubkey/rxdb/issues/717) thanks [@errorx666](https://github.com/errorx666)
+  - Invalid value persists in document after failed update [#734](https://github.com/pubkey/rxdb/issues/734) thanks [@rybaczewa](https://github.com/rybaczewa)
+
+Other
+  - Moved `@types/core-js` to dev-dependencies [#712](https://github.com/pubkey/rxdb/issues/712)
+  - Added more example the the RxQuery-Docs [#740](https://github.com/pubkey/rxdb/pull/740) thanks [@Celludriel](https://github.com/Celludriel)
+
 ### 7.7.0 (July 6, 2018)
 
 

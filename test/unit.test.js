@@ -6,6 +6,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/instance-of-check.test.js',
     '../test_tmp/unit/rx-schema.test.js',
     '../test_tmp/unit/key-compression.test.js',
+    '../test_tmp/unit/bug-report.test.js',
     '../test_tmp/unit/socket.test.js',
     '../test_tmp/unit/rx-database.test.js',
     '../test_tmp/unit/rx-collection.test.js',
@@ -34,8 +35,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/local-documents.test.js',
     '../test_tmp/unit/in-memory.test.js',
     '../test_tmp/unit/server.test.js',
-    '../test_tmp/unit/attachments.test.js',
-    '../test_tmp/unit/bug-report.test.js'
+    '../test_tmp/unit/attachments.test.js'
 ];
 
 const last = [

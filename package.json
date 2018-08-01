@@ -68,7 +68,6 @@
     "rxjs": "^6.1.0"
   },
   "dependencies": {
-    "@types/core-js": "2.5.0",
     "babel-runtime": "^6.26.0",
     "broadcast-channel": "1.3.0",
     "clone": "^2.1.1",
@@ -92,6 +91,7 @@
   },
   "devDependencies": {
     "@babel/types": "7.0.0-beta.52",
+    "@types/core-js": "2.5.0",
     "@types/pouchdb-adapter-memory": "6.1.2",
     "assert": "1.4.1",
     "async-test-util": "1.6.1",

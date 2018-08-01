@@ -2,6 +2,7 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
 
 describe('util.test.js', () => {
@@ -65,15 +66,34 @@ describe('util.test.js', () => {
             it('should validate a normal string', () => {
                 util.validateCouchDBString('foobar');
             });
+            it('should allow _ and $ after the first character', () => {
+                util.validateCouchDBString('foo_bar');
+                util.validateCouchDBString('foobar_');
+                util.validateCouchDBString('foobar$');
+            });
+            it('should not allow _ and $ as the first character', async () => {
+                await AsyncTestUtil.assertThrows(
+                    () => util.validateCouchDBString('$foobar'),
+                    Error,
+                    'match the regex'
+                );
+                await AsyncTestUtil.assertThrows(
+                    () => util.validateCouchDBString('_foobar'),
+                    Error,
+                    'match the regex'
+                );
+            });
             it('should validate foldernames', () => {
                 util.validateCouchDBString('./foobar'); // unix
                 util.validateCouchDBString('.\\foobar'); //windows
             });
         });
         describe('negative', () => {
-            it('should not validate a spaced string', () => {
-                assert.throws(
-                    () => util.validateCouchDBString('foo bar')
+            it('should not validate a spaced string', async () => {
+                await AsyncTestUtil.assertThrows(
+                    () => util.validateCouchDBString('foo bar'),
+                    Error,
+                    'match the regex'
                 );
             });
         });
