@@ -78,18 +78,15 @@ var _deepEqual = require('deep-equal');
 
 var _deepEqual2 = _interopRequireDefault(_deepEqual);
 
+var _util = require('../util.js');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-/**
- * this plugin allows delta-updates with mongo-like-syntax
- * It's using modifyjs internally
- * @link https://github.com/lgandecki/modifyjs
- */
 function update(updateObj) {
     var _this = this;
 
+    var oldDocData = (0, _util.clone)(this._data);
     var newDoc = (0, _modifyjs2['default'])(this._data, updateObj);
-
     Object.keys(this._data).forEach(function (previousPropName) {
         if (newDoc[previousPropName]) {
             // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
@@ -105,9 +102,18 @@ function update(updateObj) {
         return _this._data[newPropName] = newDoc[newPropName];
     });
 
-    return this.save();
-}
-
+    return this.save().then(function () {
+        return _this;
+    })['catch'](function (err) {
+        // save was not successfull, reset doc-data
+        _this._data = oldDocData;
+        throw err;
+    });
+} /**
+   * this plugin allows delta-updates with mongo-like-syntax
+   * It's using modifyjs internally
+   * @link https://github.com/lgandecki/modifyjs
+   */
 var rxdb = exports.rxdb = true;
 var prototypes = exports.prototypes = {
     RxDocument: function RxDocument(proto) {

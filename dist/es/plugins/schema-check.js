@@ -25,7 +25,7 @@ export function checkFieldNameRegex(fieldName) {
         });
     }
 
-    var regexStr = '^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$';
+    var regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
     var regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
         throw RxError.newRxError('SC1', {

@@ -12,7 +12,7 @@ Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
 
-### 7.X.X (comming soon)
+### 7.7.1 (August 1, 2018)
 
 Bugfixes:
   - newRxError is not a constructor [#719](https://github.com/pubkey/rxdb/issues/719) thanks [@errorx666](https://github.com/errorx666)
