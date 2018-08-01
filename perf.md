@@ -112,3 +112,46 @@ AFTER: 15ms
     "perDocument": 0.2352463973
   }
 }
+
+
+## 1. August 2018
+BEFORE: 15-16ms
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10389.790377,
+    "perInstance": 10.389790376999999
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 6810.25496,
+    "perBlock": 3.40512748
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 2407.597088,
+    "perDocument": 0.2407597088
+  }
+}
+
+AFTER: {
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10247.523947,
+    "perInstance": 10.247523947
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7049.612496,
+    "perBlock": 3.524806248
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1931.517909,
+    "perDocument": 0.19315179089999998
+  }
+}

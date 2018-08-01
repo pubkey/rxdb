@@ -68,6 +68,7 @@ describe('performance.test.js', () => {
         for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {
             const db = await RxDB.create({
                 name: util.randomCouchString(10),
+                queryChangeDetection: true,
                 adapter: 'memory'
             });
 
@@ -93,6 +94,7 @@ describe('performance.test.js', () => {
     it('insertDocuments', async () => {
         const db = await RxDB.create({
             name: util.randomCouchString(10),
+            queryChangeDetection: true,
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -131,6 +133,7 @@ describe('performance.test.js', () => {
         const schema = schemas.averageSchema();
         const db = await RxDB.create({
             name: dbName,
+            queryChangeDetection: true,
             adapter: 'memory'
         });
         const col = await db.collection({
@@ -150,6 +153,7 @@ describe('performance.test.js', () => {
         const db2 = await RxDB.create({
             name: dbName,
             adapter: 'memory',
+            queryChangeDetection: true,
             ignoreDuplicate: true
         });
         const col2 = await db.collection({

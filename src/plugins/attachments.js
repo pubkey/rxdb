@@ -162,31 +162,31 @@ function shouldEncrypt(doc) {
     return !!doc.collection.schema.jsonID.attachments.encrypted;
 }
 
-export async function putAttachment({
+/**
+ * @return {Promise}
+ */
+export function putAttachment({
     id,
     data,
     type = 'text/plain'
 }) {
     ensureSchemaSupportsAttachments(this);
-    const queue = this.atomicQueue;
 
     if (shouldEncrypt(this))
         data = this.collection._crypter._encryptValue(data);
 
     const blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
 
-    await queue.requestIdlePromise();
-    const ret = await queue.wrapCall(
-        async () => {
-            await this.collection.pouch.putAttachment(
-                this.primary,
-                id,
-                this._data._rev,
-                blobBuffer,
-                type
-            );
-            // because putAttachment() does not return all data, we have to re-grep the attachments meta-info
-            const docData = await this.collection.pouch.get(this.primary);
+    this._atomicQueue = this._atomicQueue
+        .then(() => this.collection.pouch.putAttachment(
+            this.primary,
+            id,
+            this._data._rev,
+            blobBuffer,
+            type
+        ))
+        .then(() => this.collection.pouch.get(this.primary))
+        .then(docData => {
             const attachmentData = docData._attachments[id];
             const attachment = RxAttachment.fromPouchDocument(
                 id,
@@ -196,13 +196,10 @@ export async function putAttachment({
 
             this._data._rev = docData._rev;
             this._data._attachments = docData._attachments;
-
-            await resyncRxDocument(this);
-
-            return attachment;
-        }
-    );
-    return ret;
+            return resyncRxDocument(this)
+                .then(() => attachment);
+        });
+    return this._atomicQueue;
 }
 
 /**

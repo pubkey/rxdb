@@ -56,7 +56,7 @@
     "docs:serve": "gitbook serve docs-src",
     "docs:build": "gitbook install docs-src && gitbook build docs-src docs && cp docs-src/files/logo/icon.png docs/gitbook/images/apple-touch-icon-precomposed-152.png && cp docs-src/files/logo/icon.ico docs/gitbook/images/favicon.ico && npm run docs:copy",
     "docs:copy": "cp -r docs-src/files docs/files",
-    "disc": "npm run transpile && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
+    "disc": "npm run transpile && npm run build:es && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:fast' src/ test/",
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"

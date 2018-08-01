@@ -1,4 +1,3 @@
-import IdleQueue from 'custom-idle-queue';
 import {
     filter
 } from 'rxjs/operators';
@@ -51,7 +50,7 @@ export class RxCollection {
         this._methods = methods; // orm of documents
         this._attachments = attachments; // orm of attachments
         this.options = options;
-        this._atomicUpsertQueues = {};
+        this._atomicUpsertQueues = new Map();
 
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
@@ -432,22 +431,24 @@ export class RxCollection {
         }
 
         // ensure that it wont try 2 parallel runs
-        if (!this._atomicUpsertQueues[primary]) this._atomicUpsertQueues[primary] = new IdleQueue();
-        const queue = this._atomicUpsertQueues[primary];
-
-        await queue.requestIdlePromise();
-        const ret = await queue.wrapCall(
-            async () => {
-                const wasInserted = await this._atomicUpsertEnsureRxDocumentExists(primary, json);
+        let queue;
+        if (!this._atomicUpsertQueues.has(primary)) {
+            queue = Promise.resolve();
+        } else {
+            queue = this._atomicUpsertQueues.get(primary);
+        }
+        queue = queue
+            .then(() => this._atomicUpsertEnsureRxDocumentExists(primary, json))
+            .then(wasInserted => {
                 if (!wasInserted.inserted) {
-                    await this._atomicUpsertUpdate(wasInserted.doc, json);
-                    await nextTick(); // tick here so the event can propagate
-                    return wasInserted.doc;
+                    return this._atomicUpsertUpdate(wasInserted.doc, json)
+                        .then(() => nextTick()) // tick here so the event can propagate
+                        .then(() => wasInserted.doc);
                 } else
                     return wasInserted.doc;
-            }
-        );
-        return ret;
+            });
+        this._atomicUpsertQueues.set(primary, queue);
+        return queue;
     }
 
     /**

@@ -1,5 +1,4 @@
 import deepEqual from 'deep-equal';
-import IdleQueue from 'custom-idle-queue';
 import MQuery from './mquery/mquery';
 
 import {
@@ -47,12 +46,8 @@ export class RxQuery {
          * @type {Number}
          */
         this._execOverDatabaseCount = 0;
-    }
 
-    get _ensureEqualQueue() {
-        if (!this.__ensureEqualQueue)
-            this.__ensureEqualQueue = new IdleQueue();
-        return this.__ensureEqualQueue;
+        this._ensureEqualQueue = Promise.resolve();
     }
 
     _defaultQuery() {
@@ -102,11 +97,14 @@ export class RxQuery {
     }
 
     _ensureEqual() {
-        return this._ensureEqualQueue.requestIdlePromise()
-            .then(() => this._ensureEqualQueue.wrapCall(
-                () => this.__ensureEqual()
-            )
-            );
+        this._ensureEqualQueue = this._ensureEqualQueue
+            .then(() => new Promise(res => setTimeout(res, 0)))
+            .then(() => this.__ensureEqual())
+            .then(ret => {
+                return new Promise(res => setTimeout(res, 0))
+                    .then(() => ret);
+            });
+        return this._ensureEqualQueue;
     }
 
     /**

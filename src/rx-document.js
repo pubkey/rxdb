@@ -1,4 +1,3 @@
-import IdleQueue from 'custom-idle-queue';
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 
@@ -37,6 +36,8 @@ export class RxDocument {
         // false when _data !== _dataSync
         this._synced$ = new BehaviorSubject(true);
         this._deleted$ = new BehaviorSubject(false);
+
+        this._atomicQueue = Promise.resolve();
     }
     prepare() {
         // set getter/setter/observable
@@ -56,11 +57,6 @@ export class RxDocument {
     }
     get deleted() {
         return this._deleted$.getValue();
-    }
-    get atomicQueue() {
-        if (!this._atomicQueue)
-            this._atomicQueue = new IdleQueue();
-        return this._atomicQueue;
     }
     get synced$() {
         return this._synced$
@@ -348,15 +344,11 @@ export class RxDocument {
      * @return {Promise<RxDocument>}
      */
     atomicUpdate(fun) {
-        const queue = this.atomicQueue;
-        return queue.requestIdlePromise()
-            .then(() => queue.wrapCall(
-                async () => {
-                    await fun(this); // this might or might not be a promise
-                    await this.save();
-                }
-            ))
-            .then(() => this);
+        this._atomicQueue = this._atomicQueue
+            .then(() => fun(this))
+            .then(() => this.save());
+
+        return this._atomicQueue.then(() => this);
     }
 
     /**
