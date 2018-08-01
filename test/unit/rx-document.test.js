@@ -803,8 +803,14 @@ config.parallel('rx-document.test.js', () => {
             // insert a document
             const doc = await collection.insert({
                 children: [
-                    { name: 'foo', abLetter: 'A' },
-                    { name: 'bar', abLetter: 'B' },
+                    {
+                        name: 'foo',
+                        abLetter: 'A'
+                    },
+                    {
+                        name: 'bar',
+                        abLetter: 'B'
+                    },
                 ],
             });
 

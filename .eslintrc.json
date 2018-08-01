@@ -230,7 +230,7 @@
             "error",
             "any"
         ],
-        "object-curly-newline": "error",
+        "object-curly-newline": "off",
         "object-curly-spacing": [
             "error",
             "always"

@@ -14,6 +14,7 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
 
@@ -25,8 +26,8 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
     // insert data
     await Promise.all(
         new Array(size)
-        .fill(0)
-        .map(() => collection.insert(schemaObjects.human()))
+            .fill(0)
+            .map(() => collection.insert(schemaObjects.human()))
     );
 
     return collection;
@@ -38,6 +39,7 @@ export async function createBySchema(schema, name = 'human') {
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance: true,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
 
@@ -56,6 +58,7 @@ export async function createAttachments(size = 20, name = 'human', multiInstance
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
 
@@ -84,6 +87,7 @@ export async function createEncryptedAttachments(size = 20, name = 'human', mult
         password: 'foooooobaaaar',
         adapter: 'memory',
         multiInstance,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
 
@@ -112,6 +116,7 @@ export async function createNoCompression(size = 20, name = 'human') {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     const schemaJSON = clone(schemas.human);
@@ -137,6 +142,7 @@ export async function createAgeIndex(amount = 20) {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -160,6 +166,7 @@ export async function multipleOnSameDB(size = 10) {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -190,6 +197,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -212,7 +220,8 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
-        adapter
+        adapter,
+        queryChangeDetection: true,
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
@@ -235,6 +244,7 @@ export async function createEncrypted(amount = 10) {
     const db = await RxDatabase.create({
         name: util.randomCouchString(10),
         adapter: 'memory',
+        queryChangeDetection: true,
         password: util.randomCouchString(10)
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -259,6 +269,7 @@ export async function createMultiInstance(name, amount = 0, password = null) {
         adapter: 'memory',
         password,
         multiInstance: true,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -281,6 +292,7 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
         name,
         adapter: 'memory',
         multiInstance: true,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -322,6 +334,7 @@ export async function createMigrationCollection(
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     const col = await db.collection({
@@ -332,8 +345,8 @@ export async function createMigrationCollection(
 
     await Promise.all(
         new Array(amount)
-        .fill(0)
-        .map(() => col.insert(schemaObjects.simpleHumanAge()))
+            .fill(0)
+            .map(() => col.insert(schemaObjects.simpleHumanAge()))
     );
 
     col.destroy();
@@ -342,6 +355,7 @@ export async function createMigrationCollection(
     const db2 = await RxDatabase.create({
         name,
         adapter: 'memory',
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     const col2 = await db2.collection({
@@ -361,6 +375,7 @@ export async function createRelated(name = util.randomCouchString(10)) {
         name,
         adapter: 'memory',
         multiInstance: true,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -385,6 +400,7 @@ export async function createRelatedNested(name = util.randomCouchString(10)) {
         name,
         adapter: 'memory',
         multiInstance: true,
+        queryChangeDetection: true,
         ignoreDuplicate: true
     });
     // setTimeout(() => db.destroy(), dbLifetime);

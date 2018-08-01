@@ -60,15 +60,9 @@ export const create: createType;
 type removeDatabaseType = (databaseName: string, adapter: any) => Promise<void>;
 export const removeDatabase: removeDatabaseType;
 
-type QueryChangeDetector = {
-    enableDebugging: () => void,
-    enable: (to?: boolean) => void
-};
-
 export function checkAdapter(adapter: any | string): Promise<boolean>;
 
 export const QueryChangeDetector: {
-    enable(): void;
     enableDebugging(set?: boolean): void;
 };
 

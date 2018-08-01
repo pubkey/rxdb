@@ -8,7 +8,6 @@ import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import RxDB from '../../dist/lib/index';
 
-import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 import {
     first,
     filter,
@@ -21,12 +20,12 @@ if (config.platform.isNode()) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
 }
 
-// TODO disable later
+// uncomment to debug
+// import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 // QueryChangeDetector.enableDebugging();
 
 
 config.parallel('query-change-detector.test.js', () => {
-    QueryChangeDetector.enable();
     describe('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);

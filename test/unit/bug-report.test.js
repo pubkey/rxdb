@@ -46,6 +46,7 @@ describe('bug-report.test.js', () => {
         const db = await RxDB.create({
             name,
             adapter: 'memory',
+            queryChangeDetection: true,
             ignoreDuplicate: true
         });
         // create a collection
@@ -69,6 +70,7 @@ describe('bug-report.test.js', () => {
         const dbInOtherTab = await RxDB.create({
             name,
             adapter: 'memory',
+            queryChangeDetection: true,
             ignoreDuplicate: true
         });
         // create a collection

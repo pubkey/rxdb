@@ -23,6 +23,7 @@ export interface RxDatabaseCreator {
     adapter: any;
     password?: string;
     multiInstance?: boolean;
+    queryChangeDetection?: boolean;
     ignoreDuplicate?: boolean;
     options?: any;
     pouchSettings?: PouchSettings;
@@ -32,6 +33,7 @@ export declare class RxDatabase {
     readonly name: string;
     readonly token: string;
     readonly multiInstance: boolean;
+    readonly queryChangeDetection: boolean;
     readonly password: string;
     readonly collections: any;
     options?: any;

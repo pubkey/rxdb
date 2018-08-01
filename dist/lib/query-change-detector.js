@@ -13,7 +13,6 @@ var _createClass2 = require('babel-runtime/helpers/createClass');
 var _createClass3 = _interopRequireDefault(_createClass2);
 
 exports.enableDebugging = enableDebugging;
-exports.enable = enable;
 exports.create = create;
 
 var _pouchdbSelectorCore = require('pouchdb-selector-core');
@@ -34,12 +33,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
  */
 
 var DEBUG = false;
-var ENABLED = false;
 
 var QueryChangeDetector = function () {
     function QueryChangeDetector(query) {
         (0, _classCallCheck3['default'])(this, QueryChangeDetector);
 
+        /**
+         * @type {RxQuery}
+         */
         this.query = query;
         this.primaryKey = this.query.collection.schema.primaryPath;
     }
@@ -56,7 +57,11 @@ var QueryChangeDetector = function () {
             var _this = this;
 
             if (changeEvents.length === 0) return false;
-            if (!ENABLED) return true;
+
+            // check if enabled
+            if (!this.query.collection.database.queryChangeDetection) {
+                return true;
+            }
 
             var resultsData = this.query._resultsData;
             var changed = false;
@@ -376,13 +381,6 @@ function enableDebugging() {
     DEBUG = true;
 }
 
-function enable() {
-    var set = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
-    console.log('QueryChangeDetector.enableDebugging(' + set + ')');
-    ENABLED = set;
-}
-
 /**
  * @param  {RxQuery} query
  * @return {QueryChangeDetector}
@@ -394,6 +392,5 @@ function create(query) {
 
 exports['default'] = {
     create: create,
-    enableDebugging: enableDebugging,
-    enable: enable
+    enableDebugging: enableDebugging
 };

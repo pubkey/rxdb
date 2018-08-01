@@ -14,10 +14,12 @@ import {
 import objectPath from 'object-path';
 
 let DEBUG = false;
-let ENABLED = false;
 
 class QueryChangeDetector {
     constructor(query) {
+        /**
+         * @type {RxQuery}
+         */
         this.query = query;
         this.primaryKey = this.query.collection.schema.primaryPath;
     }
@@ -28,7 +30,11 @@ class QueryChangeDetector {
      */
     runChangeDetection(changeEvents) {
         if (changeEvents.length === 0) return false;
-        if (!ENABLED) return true;
+
+        // check if enabled
+        if (!this.query.collection.database.queryChangeDetection) {
+            return true;
+        }
 
         let resultsData = this.query._resultsData;
         let changed = false;
@@ -321,11 +327,6 @@ export function enableDebugging() {
     DEBUG = true;
 }
 
-export function enable(set = true) {
-    console.log(`QueryChangeDetector.enableDebugging(${set})`);
-    ENABLED = set;
-}
-
 /**
  * @param  {RxQuery} query
  * @return {QueryChangeDetector}
@@ -337,6 +338,5 @@ export function create(query) {
 
 export default {
     create,
-    enableDebugging,
-    enable
+    enableDebugging
 };

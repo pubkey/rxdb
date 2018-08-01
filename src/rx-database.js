@@ -36,12 +36,13 @@ const USED_COMBINATIONS = {};
 let DB_COUNT = 0;
 
 export class RxDatabase {
-    constructor(name, adapter, password, multiInstance, options, pouchSettings) {
+    constructor(name, adapter, password, multiInstance, queryChangeDetection, options, pouchSettings) {
         if (typeof name !== 'undefined') DB_COUNT++;
         this.name = name;
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
+        this.queryChangeDetection = queryChangeDetection;
         this.options = options;
         this.pouchSettings = pouchSettings;
         this.idleQueue = new IdleQueue();
@@ -547,6 +548,7 @@ export function create({
     adapter,
     password,
     multiInstance = true,
+    queryChangeDetection = false,
     ignoreDuplicate = false,
     options = {},
     pouchSettings = {}
@@ -582,7 +584,15 @@ export function create({
     USED_COMBINATIONS[name].push(adapter);
 
 
-    const db = new RxDatabase(name, adapter, password, multiInstance, options, pouchSettings);
+    const db = new RxDatabase(
+        name,
+        adapter,
+        password,
+        multiInstance,
+        queryChangeDetection,
+        options,
+        pouchSettings
+    );
 
     return db.prepare()
         .then(() => {
@@ -685,11 +695,6 @@ export function isInstanceOf(obj) {
 export function dbCount() {
     return DB_COUNT;
 }
-
-// TODO is this needed?
-export {
-    RxSchema as RxSchema
-};
 
 export default {
     create,

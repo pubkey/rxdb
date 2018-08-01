@@ -11,6 +11,7 @@ This list contains things that have to be done but will create breaking changes.
 - [x] ~~Move to [babel-preset-env](https://babeljs.io/env/)~~ Canceled: Do this when babel7 is released
 - [x] ~~refactor `rx-change-event.js` so the typings have a more clear structure~~ Canceled: Not worth the change
 - [x] Do cross-instance communication with https://github.com/pubkey/broadcast-channel (faster, less performance-waste)
+- [x] Set QueryChangeDetection via RxDatabase-option
 - [ ] @ngohuunam via gitter: "I need to apply to pouch setting option skip_setup: true. it's seem re-enabled again in v.7.0"
 
 # Maybe

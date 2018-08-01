@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.RxSchema = exports.RxDatabase = undefined;
+exports.RxDatabase = undefined;
 
 var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
 
@@ -90,7 +90,7 @@ var USED_COMBINATIONS = {};
 var DB_COUNT = 0;
 
 var RxDatabase = exports.RxDatabase = function () {
-    function RxDatabase(name, adapter, password, multiInstance, options, pouchSettings) {
+    function RxDatabase(name, adapter, password, multiInstance, queryChangeDetection, options, pouchSettings) {
         (0, _classCallCheck3['default'])(this, RxDatabase);
 
         if (typeof name !== 'undefined') DB_COUNT++;
@@ -98,6 +98,7 @@ var RxDatabase = exports.RxDatabase = function () {
         this.adapter = adapter;
         this.password = password;
         this.multiInstance = multiInstance;
+        this.queryChangeDetection = queryChangeDetection;
         this.options = options;
         this.pouchSettings = pouchSettings;
         this.idleQueue = new _customIdleQueue2['default']();
@@ -927,6 +928,8 @@ function create(_ref6) {
         password = _ref6.password,
         _ref6$multiInstance = _ref6.multiInstance,
         multiInstance = _ref6$multiInstance === undefined ? true : _ref6$multiInstance,
+        _ref6$queryChangeDete = _ref6.queryChangeDetection,
+        queryChangeDetection = _ref6$queryChangeDete === undefined ? false : _ref6$queryChangeDete,
         _ref6$ignoreDuplicate = _ref6.ignoreDuplicate,
         ignoreDuplicate = _ref6$ignoreDuplicate === undefined ? false : _ref6$ignoreDuplicate,
         _ref6$options = _ref6.options,
@@ -961,7 +964,7 @@ function create(_ref6) {
     if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
     USED_COMBINATIONS[name].push(adapter);
 
-    var db = new RxDatabase(name, adapter, password, multiInstance, options, pouchSettings);
+    var db = new RxDatabase(name, adapter, password, multiInstance, queryChangeDetection, options, pouchSettings);
 
     return db.prepare().then(function () {
         (0, _hooks.runPluginHooks)('createRxDatabase', db);
@@ -1060,8 +1063,6 @@ function dbCount() {
     return DB_COUNT;
 }
 
-// TODO is this needed?
-exports.RxSchema = _rxSchema2['default'];
 exports['default'] = {
     create: create,
     removeDatabase: removeDatabase,

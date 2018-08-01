@@ -7,6 +7,7 @@ Breaking:
   - `disableKeyCompression` is set to `false` by default
   - `RxDatabase.collection()` now only accepts the json-schema as schema-attribute
   - It is no longer allowed to set required fields via `required: true`, use `required: ['myfield']` in compliance with the jsonschema standard
+  - QueryChangeDetection is not enabled in the RxDatabase-options `queryChangeDetection: true`
 
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
