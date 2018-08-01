@@ -128,6 +128,22 @@ This will return a RxQuery object with the exec function.
 myCollection.find({name: {$eq: 'foo'}})
   .exec().then(documents => console.dir(documents));
 
+// find by using sql equivalent '%like%' syntax
+// This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
+myCollection.find({name: {$regex: '.*foo.*'}})
+  .exec().then(documents => console.dir(documents));
+ 
+// find using a composite statement eg: $or
+// This example checks where name is either foo or if name is not existant on the document
+myCollection.find({$or: [ { name: { $eq: 'foo' } }, { name: { $exists: false } }})
+  .exec().then(documents => console.dir(documents));
+ 
+// do a case insensitive search
+// This example will match 'foo' or 'FOO' or 'FoO' etc...
+var regexp = new RegExp('^foo$', 'i');
+myCollection.find({name: {$regex: regexp}})
+  .exec().then(documents => console.dir(documents));
+  
 // chained queries
 myCollection.find().where('name').eq('foo')
   .exec().then(documents => console.dir(documents));
