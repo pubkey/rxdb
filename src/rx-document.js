@@ -39,9 +39,13 @@ export class RxDocument {
 
         this._atomicQueue = Promise.resolve();
     }
-    prepare() {
-        // set getter/setter/observable
-        this._defineGetterSetter(this, '');
+
+    /**
+     * because of the prototype-merge,
+     * we can not use the native instanceof operator
+     */
+    get isInstanceOfRxDocument() {
+        return true;
     }
     get primaryPath() {
         return this.collection.schema.primaryPath;
@@ -221,43 +225,13 @@ export class RxDocument {
             Array.isArray(valueObj)
         ) return valueObj;
 
-        this._defineGetterSetter(valueObj, objPath);
+        defineGetterSetter(
+            this.collection.schema,
+            valueObj,
+            objPath,
+            this
+        );
         return valueObj;
-    }
-
-    _defineGetterSetter(valueObj, objPath = '') {
-        if (valueObj === null) return;
-
-        let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
-        if (typeof pathProperties === 'undefined') return;
-        if (pathProperties.properties) pathProperties = pathProperties.properties;
-
-        Object.keys(pathProperties)
-            .forEach(key => {
-                const fullPath = trimDots(objPath + '.' + key);
-
-                // getter - value
-                valueObj.__defineGetter__(
-                    key,
-                    () => this.get(fullPath)
-                );
-                // getter - observable$
-                Object.defineProperty(valueObj, key + '$', {
-                    get: () => this.get$(fullPath),
-                    enumerable: false,
-                    configurable: false
-                });
-                // getter - populate_
-                Object.defineProperty(valueObj, key + '_', {
-                    get: () => this.populate(fullPath),
-                    enumerable: false,
-                    configurable: false
-                });
-                // setter - value
-                valueObj.__defineSetter__(key, (val) => {
-                    return this.set(fullPath, val);
-                });
-            });
     }
 
     toJSON() {
@@ -324,7 +298,6 @@ export class RxDocument {
     update() {
         throw RxError.pluginMissing('update');
     }
-
     putAttachment() {
         throw RxError.pluginMissing('attachments');
     }
@@ -455,6 +428,55 @@ export class RxDocument {
     }
 }
 
+const pseudoRxDocument = new RxDocument();
+export const basePrototype = Object.getPrototypeOf(pseudoRxDocument);
+
+
+export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
+    if (valueObj === null) return;
+
+    let pathProperties = schema.getSchemaByObjectPath(objPath);
+    if (typeof pathProperties === 'undefined') return;
+    if (pathProperties.properties) pathProperties = pathProperties.properties;
+
+    Object.keys(pathProperties)
+        .forEach(key => {
+            const fullPath = trimDots(objPath + '.' + key);
+
+            // getter - value
+            valueObj.__defineGetter__(
+                key,
+                function () {
+                    const _this = thisObj ? thisObj : this;
+                    return _this.get(fullPath);
+                }
+            );
+            // getter - observable$
+            Object.defineProperty(valueObj, key + '$', {
+                get: function () {
+                    const _this = thisObj ? thisObj : this;
+                    return _this.get$(fullPath);
+                },
+                enumerable: false,
+                configurable: false
+            });
+            // getter - populate_
+            Object.defineProperty(valueObj, key + '_', {
+                get: function () {
+                    const _this = thisObj ? thisObj : this;
+                    return _this.populate(fullPath);
+                },
+                enumerable: false,
+                configurable: false
+            });
+            // setter - value
+            valueObj.__defineSetter__(key, function (val) {
+                const _this = thisObj ? thisObj : this;
+                return _this.set(fullPath, val);
+            });
+        });
+}
+
 /**
  * createas an RxDocument from the jsonData
  * @param  {RxCollection} collection
@@ -468,7 +490,6 @@ export function create(collection, jsonData) {
     ) return null;
 
     const doc = new RxDocument(collection, jsonData);
-    doc.prepare();
     runPluginHooks('createRxDocument', doc);
     return doc;
 }
@@ -487,16 +508,15 @@ let _properties;
 export function properties() {
     if (!_properties) {
         const reserved = ['deleted', 'synced'];
-        const pseudoRxDocument = new RxDocument();
         const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoRxDocument));
+        const prototypeProperties = Object.getOwnPropertyNames(basePrototype);
         _properties = [...ownProperties, ...prototypeProperties, ...reserved];
     }
     return _properties;
 }
 
 export function isInstanceOf(obj) {
-    return obj instanceof RxDocument;
+    return !!obj.isInstanceOfRxDocument;
 }
 
 export default {
@@ -504,5 +524,6 @@ export default {
     createAr,
     properties,
     RxDocument,
+    basePrototype,
     isInstanceOf
 };

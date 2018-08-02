@@ -155,3 +155,47 @@ AFTER: {
     "perDocument": 0.19315179089999998
   }
 }
+
+
+## 2. August 2018
+RxDocument-Prototype-Merge
+
+BEFORE: {
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10247.523947,
+    "perInstance": 10.247523947
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7049.612496,
+    "perBlock": 3.524806248
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1931.517909,
+    "perDocument": 0.19315179089999998
+  }
+}
+
+AFTER: {
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10211.46413,
+    "perInstance": 10.21146413
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 6385.01551,
+    "perBlock": 3.1925077550000003
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1535.049006,
+    "perDocument": 0.1535049006
+  }
+}

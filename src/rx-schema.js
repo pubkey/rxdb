@@ -11,6 +11,9 @@ import RxError from './rx-error';
 import {
     runPluginHooks
 } from './hooks';
+import {
+    defineGetterSetter
+} from './rx-document';
 
 export class RxSchema {
     constructor(jsonID) {
@@ -160,6 +163,19 @@ export class RxSchema {
      */
     doKeyCompression() {
         return !this.jsonID.disableKeyCompression;
+    }
+
+    /**
+     * creates the schema-based document-prototype,
+     * see RxCollection.getDocumentPrototype()
+     */
+    getDocumentPrototype() {
+        if (!this._getDocumentPrototype) {
+            const proto = {};
+            defineGetterSetter(this, proto, '');
+            this._getDocumentPrototype = proto;
+        }
+        return this._getDocumentPrototype;
     }
 }
 

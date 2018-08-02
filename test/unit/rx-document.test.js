@@ -10,9 +10,95 @@ import * as util from '../../dist/lib/util';
 import * as RxDB from '../../dist/lib/index';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as RxDatabase from '../../dist/lib/index';
+import * as RxSchema from '../../dist/lib/rx-schema';
 
 config.parallel('rx-document.test.js', () => {
     describe('statics', () => { });
+    describe('prototype-merge', () => {
+
+        describe('RxSchema.getDocumentPrototype()', () => {
+            it('should get an object with all main-fields', async () => {
+                const schema = RxSchema.create(schemas.human);
+                assert.ok(schema);
+                const proto = schema.getDocumentPrototype();
+                assert.ok(proto);
+                const testObjData = schemaObjects.human();
+                const testObj = {
+                    get(path) {
+                        return testObjData[path];
+                    },
+                    get$(path) {
+                        return 'Observable:' + path;
+                    },
+                    populate(path) {
+                        return 'Promise:' + path;
+                    },
+                    set(path, val) {
+                        testObjData[path] = val;
+                    }
+                };
+                testObj.__proto__ = proto;
+
+                assert.equal(testObj.passportId, testObjData.passportId);
+                Object.keys(testObjData).forEach(k => {
+                    assert.equal(testObj[k], testObjData[k]); // getter attribute
+                    assert.equal(testObj[k + '$'], 'Observable:' + k); // getter observable
+                    assert.equal(testObj[k + '_'], 'Promise:' + k); // getter populate
+                    // test setter
+                    testObj[k] = 'foo';
+                    assert.equal(testObjData[k], 'foo');
+                });
+            });
+        });
+        describe('RxCollection.getDocumentOrmPrototype()', () => {
+            it('should get a prototype with all orm-methods', async () => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema: schemas.humanFinal,
+                    methods: {
+                        foo() {
+                            return 'bar';
+                        }
+                    }
+                });
+
+                const proto = col.getDocumentOrmPrototype();
+                const testObj = {};
+                testObj.__proto__ = proto;
+                assert.equal(testObj.foo(), 'bar');
+
+                db.destroy();
+            });
+        });
+        describe('RxCollection.getDocumentPrototype()', () => {
+            it('should get a valid prototype', async () => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema: schemas.human,
+                    methods: {
+                        foo() {
+                            return 'bar';
+                        }
+                    }
+                });
+                const proto = col.getDocumentPrototype();
+
+                assert.equal(typeof proto.remove, 'function'); // from baseProto
+                assert.equal(proto.foo(), 'bar'); // from orm-proto
+
+                db.destroy();
+            });
+        });
+
+    });
     describe('.get()', () => {
         describe('positive', () => {
             it('get a value', async () => {

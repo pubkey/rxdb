@@ -127,6 +127,43 @@ export class RxCollection {
         return this.__keyCompressor;
     }
 
+
+    getDocumentOrmPrototype() {
+        const proto = {};
+        Object
+            .entries(this._methods)
+            .forEach(([k, v]) => {
+                proto[k] = v;
+            });
+        return proto;
+    }
+
+    /**
+     * merge the prototypes of schema, orm-methods and document-base
+     * so we do not have to assing getters/setters and orm methods to each document-instance
+     */
+    getDocumentPrototype() {
+        if (!this._getDocumentPrototype) {
+            const schemaProto = this.schema.getDocumentPrototype();
+            const ormProto = this.getDocumentOrmPrototype();
+            const baseProto = RxDocument.basePrototype;
+            const proto = {};
+            [
+                schemaProto,
+                ormProto,
+                baseProto
+            ].forEach(obj => {
+                const props = Object.getOwnPropertyNames(obj);
+                props.forEach(key => {
+                    const desc = Object.getOwnPropertyDescriptor(obj, key);
+                    Object.defineProperty(proto, key, desc);
+                });
+            });
+            this._getDocumentPrototype = proto;
+        }
+        return this._getDocumentPrototype;
+    }
+
     /**
      * checks if a migration is needed
      * @return {boolean}
@@ -257,8 +294,10 @@ export class RxCollection {
         const cacheDoc = this._docCache.get(id);
         if (cacheDoc) return cacheDoc;
 
+
         const doc = RxDocument.create(this, json);
-        this._assignMethodsToDocument(doc);
+        doc.__proto__ = this.getDocumentPrototype();
+
         this._docCache.set(id, doc);
         this._runHooksSync('post', 'create', doc);
 
@@ -609,8 +648,8 @@ export class RxCollection {
     newDocument(docData = {}) {
         docData = this.schema.fillObjectWithDefaults(docData);
         const doc = RxDocument.create(this, docData);
+        doc.__proto__ = this.getDocumentPrototype();
         doc._isTemporary = true;
-        this._assignMethodsToDocument(doc);
         this._runHooksSync('post', 'create', doc);
         return doc;
     }
