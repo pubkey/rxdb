@@ -60,7 +60,12 @@ class Socket {
         if (this._destroyed) return;
         this._destroyed = true;
 
-        setTimeout(() => this.bc.close(), 100);
+        /**
+         * The broadcast-channel gets closed lazy
+         * to ensure that all pending change-events
+         * get emitted
+         */
+        setTimeout(() => this.bc.close(), 1000);
     }
 }
 
