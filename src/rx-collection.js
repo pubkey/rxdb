@@ -159,7 +159,9 @@ export class RxCollection {
                     Object.defineProperty(proto, key, desc);
                 });
             });
+
             this._getDocumentPrototype = proto;
+
         }
         return this._getDocumentPrototype;
     }

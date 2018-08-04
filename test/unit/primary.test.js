@@ -14,6 +14,7 @@ import clone from 'clone';
 
 import config from './config';
 import * as RxSchema from '../../dist/lib/rx-schema';
+import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -200,7 +201,7 @@ config.parallel('primary.test.js', () => {
                     const passportId = doc.passportId;
                     assert.ok(passportId.length > 4);
                     const doc2 = await c.findOne().where('passportId').eq(passportId).exec();
-                    assert.equal(doc2.constructor.name, 'RxDocument');
+                    assert.ok(RxDocument.isInstanceOf(doc2));
                     assert.equal(doc.passportId, doc2.passportId);
                     c.database.destroy();
                 });

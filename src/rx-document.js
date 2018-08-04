@@ -20,57 +20,59 @@ import {
     map
 } from 'rxjs/operators';
 
-export class RxDocument {
-    constructor(collection, jsonData) {
-        this.collection = collection;
 
-        // if true, this is a temporary document
-        this._isTemporary = false;
+export function RxDocument(collection, jsonData) {
+    this.collection = collection;
 
-        // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(clone(jsonData));
+    // if true, this is a temporary document
+    this._isTemporary = false;
 
-        // current doc-data, changes when setting values etc
-        this._data = clone(jsonData);
+    // assume that this is always equal to the doc-data in the database
+    this._dataSync$ = new BehaviorSubject(clone(jsonData));
 
-        // false when _data !== _dataSync
-        this._synced$ = new BehaviorSubject(true);
-        this._deleted$ = new BehaviorSubject(false);
+    // current doc-data, changes when setting values etc
+    this._data = clone(jsonData);
 
-        this._atomicQueue = Promise.resolve();
-    }
+    // false when _data !== _dataSync
+    this._synced$ = new BehaviorSubject(true);
+    this._deleted$ = new BehaviorSubject(false);
 
+    this._atomicQueue = Promise.resolve();
+}
+
+
+export const basePrototype = {
     /**
      * because of the prototype-merge,
      * we can not use the native instanceof operator
      */
     get isInstanceOfRxDocument() {
         return true;
-    }
+    },
     get primaryPath() {
         return this.collection.schema.primaryPath;
-    }
+    },
     get primary() {
         return this._data[this.primaryPath];
-    }
+    },
     get revision() {
         return this._data._rev;
-    }
+    },
     get deleted$() {
         return this._deleted$.asObservable();
-    }
+    },
     get deleted() {
         return this._deleted$.getValue();
-    }
+    },
     get synced$() {
         return this._synced$
             .pipe(
                 distinctUntilChanged()
             ).asObservable();
-    }
+    },
     get synced() {
         return this._synced$.getValue();
-    }
+    },
     resync() {
         const syncedData = this._dataSync$.getValue();
         if (this._synced$.getValue() && deepEqual(syncedData, this._data))
@@ -79,7 +81,7 @@ export class RxDocument {
             this._data = clone(this._dataSync$.getValue());
             this._synced$.next(true);
         }
-    }
+    },
 
     /**
      * returns the observable which emits the plain-data of this document
@@ -87,7 +89,7 @@ export class RxDocument {
      */
     get $() {
         return this._dataSync$.asObservable();
-    }
+    },
 
     /**
      * @param {ChangeEvent}
@@ -128,7 +130,7 @@ export class RxDocument {
                 this._deleted$.next(true);
                 break;
         }
-    }
+    },
 
     /**
      * emits the changeEvent to the upper instance (RxCollection)
@@ -136,7 +138,7 @@ export class RxDocument {
      */
     $emit(changeEvent) {
         return this.collection.$emit(changeEvent);
-    }
+    },
 
     /**
      * returns observable of the value of the given path
@@ -172,7 +174,7 @@ export class RxDocument {
                 map(data => objectPath.get(data, path)),
                 distinctUntilChanged()
             ).asObservable();
-    }
+    },
 
     /**
      * populate the given path
@@ -207,7 +209,7 @@ export class RxDocument {
             return Promise.all(value.map(id => refCollection.findOne(id).exec()));
         else
             return refCollection.findOne(value).exec();
-    }
+    },
 
     /**
      * get data by objectPath
@@ -232,11 +234,11 @@ export class RxDocument {
             this
         );
         return valueObj;
-    }
+    },
 
     toJSON() {
         return clone(this._data);
-    }
+    },
 
     /**
      * set data by objectPath
@@ -288,7 +290,7 @@ export class RxDocument {
 
         objectPath.set(this._data, objPath, value);
         return this;
-    }
+    },
 
     /**
      * updates document
@@ -297,19 +299,19 @@ export class RxDocument {
      */
     update() {
         throw RxError.pluginMissing('update');
-    }
+    },
     putAttachment() {
         throw RxError.pluginMissing('attachments');
-    }
+    },
     getAttachment() {
         throw RxError.pluginMissing('attachments');
-    }
+    },
     allAttachments() {
         throw RxError.pluginMissing('attachments');
-    }
+    },
     get allAttachments$() {
         throw RxError.pluginMissing('attachments');
-    }
+    },
 
     /**
      * runs an atomic update over the document
@@ -322,7 +324,7 @@ export class RxDocument {
             .then(() => this.save());
 
         return this._atomicQueue.then(() => this);
-    }
+    },
 
     /**
      * save document if its data has changed
@@ -376,7 +378,7 @@ export class RxDocument {
         );
         this.$emit(changeEvent);
         return true;
-    }
+    },
 
     /**
      * does the same as .save() but for temporary documents
@@ -395,7 +397,7 @@ export class RxDocument {
 
                 return true;
             });
-    }
+    },
 
     remove() {
         if (this.deleted) {
@@ -421,16 +423,14 @@ export class RxDocument {
                 return this.collection._runHooks('post', 'remove', this);
             })
             .then(() => promiseWait(0));
-    }
-
+    },
     destroy() {
         throw RxError.newRxError('DOC14');
     }
-}
+};
 
 const pseudoRxDocument = new RxDocument();
-export const basePrototype = Object.getPrototypeOf(pseudoRxDocument);
-
+pseudoRxDocument.__proto__ = basePrototype;
 
 export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
     if (valueObj === null) return;

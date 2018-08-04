@@ -4,6 +4,7 @@ import config from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
+import * as RxDocument from '../../dist/lib/rx-document';
 
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
@@ -205,7 +206,7 @@ config.parallel('reactive-query.test.js', () => {
                     })
             );
             await AsyncTestUtil.waitUntil(() => streamed.length === 1);
-            assert.equal(streamed[0].constructor.name, 'RxDocument');
+            assert.ok(RxDocument.isInstanceOf(streamed[0]));
             assert.equal(streamed[0]._id, _id);
 
             const streamed2 = [];
@@ -220,7 +221,7 @@ config.parallel('reactive-query.test.js', () => {
             );
             await AsyncTestUtil.waitUntil(() => streamed2.length === 1);
             assert.equal(streamed2.length, 1);
-            assert.equal(streamed2[0].constructor.name, 'RxDocument');
+            assert.ok(RxDocument.isInstanceOf(streamed2[0]));
             assert.equal(streamed2[0]._id, _id);
 
             subs.forEach(sub => sub.unsubscribe());
@@ -238,7 +239,7 @@ config.parallel('reactive-query.test.js', () => {
                 });
             await AsyncTestUtil.waitUntil(() => streamed.length === 1);
             assert.equal(streamed.length, 1);
-            assert.equal(streamed[0].constructor.name, 'RxDocument');
+            assert.ok(RxDocument.isInstanceOf(streamed[0]));
             sub.unsubscribe();
             col.database.destroy();
         });

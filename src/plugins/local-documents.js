@@ -70,16 +70,20 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         this.id = id;
         this.parent = parent;
     }
+}
+
+const RxLocalDocumentPrototype = {
+
     toPouchJson() {
         const data = clone(this._data);
         data._id = LOCAL_PREFIX + this.id;
-    }
+    },
     get isLocal() {
         return true;
-    }
+    },
     get parentPouch() {
         return _getPouchByParent(this.parent);
-    }
+    },
 
     //
     // overwrites
@@ -116,27 +120,26 @@ export class RxLocalDocument extends RxDocument.RxDocument {
                 this._deleted$.next(true);
                 break;
         }
-    }
+    },
 
     get allAttachments$() {
         // this is overwritte here because we cannot re-set getters on the prototype
         throw RxError.newRxError('LD1', {
             document: this
         });
-    }
-
+    },
     get primaryPath() {
         return 'id';
-    }
+    },
     get primary() {
         return this.id;
-    }
+    },
     get $() {
         return this._dataSync$.asObservable();
-    }
+    },
     $emit(changeEvent) {
         return this.parent.$emit(changeEvent);
-    }
+    },
     get(objPath) {
         if (!this._data) return undefined;
         if (typeof objPath !== 'string') {
@@ -148,7 +151,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         let valueObj = objectPath.get(this._data, objPath);
         valueObj = clone(valueObj);
         return valueObj;
-    }
+    },
     get$(path) {
         if (path.includes('.item.')) {
             throw RxError.newRxError('LD3', {
@@ -163,7 +166,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
                 map(data => objectPath.get(data, path)),
                 distinctUntilChanged()
             ).asObservable();
-    }
+    },
     set(objPath, value) {
         if (!value) {
             // object path not set, overwrite whole data
@@ -181,7 +184,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
         if (Object.is(this.get(objPath), value)) return;
         objectPath.set(this._data, objPath, value);
         return this;
-    }
+    },
     /**
      * @return {Promise}
      */
@@ -202,7 +205,7 @@ export class RxLocalDocument extends RxDocument.RxDocument {
                 );
                 this.$emit(changeEvent);
             });
-    }
+    },
     /**
      * @return {Promise}
      */
@@ -222,13 +225,24 @@ export class RxLocalDocument extends RxDocument.RxDocument {
                 this.$emit(changeEvent);
             });
     }
-}
+};
 
 
 let INIT_DONE = false;
 const _init = () => {
     if (INIT_DONE) return;
     else INIT_DONE = true;
+
+    // add functions of RxDocument
+    const docBaseProto = RxDocument.basePrototype;
+    const props = Object.getOwnPropertyNames(docBaseProto);
+    props.forEach(key => {
+        const exists = Object.getOwnPropertyDescriptor(RxLocalDocumentPrototype, key);
+        if (exists) return;
+        const desc = Object.getOwnPropertyDescriptor(docBaseProto, key);
+        Object.defineProperty(RxLocalDocumentPrototype, key, desc);
+    });
+
 
     /**
      * overwrite things that not work on local documents
@@ -245,13 +259,15 @@ const _init = () => {
         'putAttachment',
         'getAttachment',
         'allAttachments'
-    ].forEach(k => RxLocalDocument.prototype[k] = getThrowingFun(k));
+    ].forEach(k => RxLocalDocumentPrototype[k] = getThrowingFun(k));
 };
 
 RxLocalDocument.create = (id, data, parent) => {
     _init();
     _getChangeSub(parent);
+
     const newDoc = new RxLocalDocument(id, data, parent);
+    newDoc.__proto__ = RxLocalDocumentPrototype;
     _getDocCache(parent).set(id, newDoc);
     return newDoc;
 };

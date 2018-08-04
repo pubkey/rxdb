@@ -421,8 +421,9 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         assert.ok(docs.length >= 10);
-                        for (const doc of docs)
-                            assert.equal(doc.constructor.name, 'RxDocument');
+                        for (const doc of docs) {
+                            assert.ok(RxDocument.isInstanceOf(doc));
+                        }
                         c.database.destroy();
                     });
                     it('find 2 times', async () => {
@@ -447,8 +448,9 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find({}).exec();
                         assert.ok(docs.length >= 10);
-                        for (const doc of docs)
-                            assert.equal(doc.constructor.name, 'RxDocument');
+                        for (const doc of docs) {
+                            assert.ok(RxDocument.isInstanceOf(doc));
+                        }
                         c.database.destroy();
                     });
                     it('find nothing with empty collection', async () => {
@@ -767,7 +769,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().limit(1).exec();
                         assert.equal(docs.length, 1);
-                        assert.equal(docs[0].constructor.name, 'RxDocument');
+                        assert.ok(RxDocument.isInstanceOf(docs[0]));
                         c.database.destroy();
                     });
                     it('get last in order', async () => {
@@ -791,7 +793,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().limit(1).limit(null).exec();
                         assert.ok(docs.length > 1);
-                        assert.equal(docs[0].constructor.name, 'RxDocument');
+                        assert.ok(RxDocument.isInstanceOf(docs[0]));
                         c.database.destroy();
                     });
                 });
@@ -918,7 +920,7 @@ config.parallel('rx-collection.test.js', () => {
                     const removed = await query.remove();
                     assert.equal(removed.length, 10);
                     removed.forEach(doc => {
-                        assert.equal(doc.constructor.name, 'RxDocument');
+                        assert.ok(RxDocument.isInstanceOf(doc));
                         assert.equal(doc.deleted, true);
                     });
                     const docsAfter = await c.find().exec();
@@ -931,7 +933,7 @@ config.parallel('rx-collection.test.js', () => {
                     const removed = await query.remove();
                     assert.equal(removed.length, 5);
                     removed.forEach(doc => {
-                        assert.equal(doc.constructor.name, 'RxDocument');
+                        assert.ok(RxDocument.isInstanceOf(doc));
                         assert.equal(doc.deleted, true);
                     });
                     const docsAfter = await c.find().exec();
@@ -942,7 +944,7 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.create(10);
                     const query = c.findOne();
                     const removed = await query.remove();
-                    assert.equal(removed.constructor.name, 'RxDocument');
+                    assert.ok(RxDocument.isInstanceOf(removed));
                     assert.equal(removed.deleted, true);
                     const docsAfter = await c.find().exec();
                     assert.equal(docsAfter.length, 9);
@@ -983,7 +985,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('find a single document', async () => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
-                    assert.equal(doc.constructor.name, 'RxDocument');
+                    assert.ok(RxDocument.isInstanceOf(doc));
                     c.database.destroy();
                 });
                 it('not crash on empty db', async () => {
@@ -998,8 +1000,8 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
                     const doc2 = await c.findOne().skip(2).exec();
-                    assert.equal(doc.constructor.name, 'RxDocument');
-                    assert.equal(doc2.constructor.name, 'RxDocument');
+                    assert.ok(RxDocument.isInstanceOf(doc));
+                    assert.ok(RxDocument.isInstanceOf(doc2));
                     assert.notEqual(doc._data.passportId, doc2._data.passportId);
                     c.database.destroy();
                 });

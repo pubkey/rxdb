@@ -110,7 +110,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('bestFriend');
-                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.ok(RxDocument.isInstanceOf(friend));
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
@@ -118,7 +118,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('foo.bestFriend');
-                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.ok(RxDocument.isInstanceOf(friend));
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
@@ -164,7 +164,7 @@ config.parallel('population.test.js', () => {
                 const doc = await col.findOne(oneGuy.name).exec();
                 const friendDocs = await doc.friends_;
                 friendDocs.forEach(friend => {
-                    assert.equal(friend.constructor.name, 'RxDocument');
+                    assert.ok(RxDocument.isInstanceOf(friend));
                 });
                 db.destroy();
             });
@@ -176,7 +176,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.bestFriend_;
-                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.ok(RxDocument.isInstanceOf(friend));
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
@@ -184,7 +184,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
                 const friend = await doc.foo.bestFriend_;
-                assert.equal(friend.constructor.name, 'RxDocument');
+                assert.ok(RxDocument.isInstanceOf(friend));
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
