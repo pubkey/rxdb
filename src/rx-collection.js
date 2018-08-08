@@ -156,10 +156,6 @@ export class RxCollection {
                 const props = Object.getOwnPropertyNames(obj);
                 props.forEach(key => {
                     const desc = Object.getOwnPropertyDescriptor(obj, key);
-                    desc.enumerable = false;
-                    desc.configurable = false;
-                    if (desc.writable)
-                        desc.writable = false;
                     Object.defineProperty(proto, key, desc);
                 });
             });
