@@ -156,14 +156,26 @@ export class RxCollection {
                 const props = Object.getOwnPropertyNames(obj);
                 props.forEach(key => {
                     const desc = Object.getOwnPropertyDescriptor(obj, key);
+                    desc.enumerable = false;
+                    desc.configurable = false;
+                    if (desc.writable)
+                        desc.writable = false;
                     Object.defineProperty(proto, key, desc);
                 });
             });
 
             this._getDocumentPrototype = proto;
-
         }
         return this._getDocumentPrototype;
+    }
+
+    getDocumentConstructor() {
+        if (!this._getDocumentConstructor) {
+            this._getDocumentConstructor = RxDocument.createRxDocumentConstructor(
+                this.getDocumentPrototype()
+            );
+        }
+        return this._getDocumentConstructor;
     }
 
     /**
@@ -276,16 +288,6 @@ export class RxCollection {
     }
 
     /**
-     * assigns the ORM-methods to the RxDocument
-     * @param {RxDocument} doc
-     */
-    _assignMethodsToDocument(doc) {
-        Object
-            .entries(this._methods)
-            .forEach(([funName, fun]) => doc.__defineGetter__(funName, () => fun.bind(doc)));
-    }
-
-    /**
      * create a RxDocument-instance from the jsonData
      * @param {Object} json documentData
      * @return {Promise<RxDocument>}
@@ -297,8 +299,11 @@ export class RxCollection {
         if (cacheDoc) return cacheDoc;
 
 
-        const doc = RxDocument.create(this, json);
-        doc.__proto__ = this.getDocumentPrototype();
+        const doc = RxDocument.createWithConstructor(
+            this.getDocumentConstructor(),
+            this,
+            json
+        );
 
         this._docCache.set(id, doc);
         this._runHooksSync('post', 'create', doc);
@@ -649,8 +654,11 @@ export class RxCollection {
      */
     newDocument(docData = {}) {
         docData = this.schema.fillObjectWithDefaults(docData);
-        const doc = RxDocument.create(this, docData);
-        doc.__proto__ = this.getDocumentPrototype();
+        const doc = RxDocument.createWithConstructor(
+            this.getDocumentConstructor(),
+            this,
+            docData
+        );
         doc._isTemporary = true;
         this._runHooksSync('post', 'create', doc);
         return doc;

@@ -21,25 +21,28 @@ import {
 } from 'rxjs/operators';
 
 
-export function RxDocument(collection, jsonData) {
-    this.collection = collection;
+export function createRxDocumentConstructor(proto = basePrototype) {
+    const constructor = function RxDocument(collection, jsonData) {
+        this.collection = collection;
 
-    // if true, this is a temporary document
-    this._isTemporary = false;
+        // if true, this is a temporary document
+        this._isTemporary = false;
 
-    // assume that this is always equal to the doc-data in the database
-    this._dataSync$ = new BehaviorSubject(clone(jsonData));
+        // assume that this is always equal to the doc-data in the database
+        this._dataSync$ = new BehaviorSubject(clone(jsonData));
 
-    // current doc-data, changes when setting values etc
-    this._data = clone(jsonData);
+        // current doc-data, changes when setting values etc
+        this._data = clone(jsonData);
 
-    // false when _data !== _dataSync
-    this._synced$ = new BehaviorSubject(true);
-    this._deleted$ = new BehaviorSubject(false);
+        // false when _data !== _dataSync
+        this._synced$ = new BehaviorSubject(true);
+        this._deleted$ = new BehaviorSubject(false);
 
-    this._atomicQueue = Promise.resolve();
+        this._atomicQueue = Promise.resolve();
+    };
+    constructor.prototype = proto;
+    return constructor;
 }
-
 
 export const basePrototype = {
     /**
@@ -429,11 +432,12 @@ export const basePrototype = {
     }
 };
 
-const pseudoRxDocument = new RxDocument();
-pseudoRxDocument.__proto__ = basePrototype;
+const pseudoConstructor = createRxDocumentConstructor(basePrototype);
+const pseudoRxDocument = new pseudoConstructor();
 
 export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
     if (valueObj === null) return;
+
 
     let pathProperties = schema.getSchemaByObjectPath(objPath);
     if (typeof pathProperties === 'undefined') return;
@@ -477,27 +481,15 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
         });
 }
 
-/**
- * createas an RxDocument from the jsonData
- * @param  {RxCollection} collection
- * @param  {[type]} jsonData   [description]
- * @return {RxDocument}
- */
-export function create(collection, jsonData) {
+export function createWithConstructor(constructor, collection, jsonData) {
     if (
         jsonData[collection.schema.primaryPath] &&
         jsonData[collection.schema.primaryPath].startsWith('_design')
     ) return null;
 
-    const doc = new RxDocument(collection, jsonData);
+    const doc = new constructor(collection, jsonData);
     runPluginHooks('createRxDocument', doc);
     return doc;
-}
-
-export function createAr(collection, jsonDataAr) {
-    return jsonDataAr
-        .map(jsonData => create(collection, jsonData))
-        .filter(doc => doc !== null);
 }
 
 /**
@@ -520,10 +512,9 @@ export function isInstanceOf(obj) {
 }
 
 export default {
-    create,
-    createAr,
+    createWithConstructor,
     properties,
-    RxDocument,
+    createRxDocumentConstructor,
     basePrototype,
     isInstanceOf
 };

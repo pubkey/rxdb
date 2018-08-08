@@ -58,7 +58,8 @@ const _getChangeSub = parent => {
 
 const LOCAL_PREFIX = '_local/';
 
-export class RxLocalDocument extends RxDocument.RxDocument {
+const RxDocumentParent = RxDocument.createRxDocumentConstructor();
+export class RxLocalDocument extends RxDocumentParent {
     /**
      * @constructor
      * @param  {string} id
