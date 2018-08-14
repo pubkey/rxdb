@@ -18,7 +18,7 @@
     "build:copy": "cp test/multitab.html dist/multitab.html",
     "build": "npm run build:clean && npm run build:webpack && npm run build:copy && echo \"BUILD SUCCESS\"",
     "docker": "docker run -it -v $(pwd):/app -p 0.0.0.0:8888:8888 -p 0.0.0.0:10101:10101 node:6.9.1 /bin/bash /app/entrypoint.bash",
-    "test:run": "testcafe chromium test/",
+    "test:run": "testcafe chromium test/ --selector-timeout 30000",
     "test:build": "concurrently \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "author": "pubkey",
