@@ -24,7 +24,7 @@ test('insert a hero', async t => {
 
     // submit
     await t.click('#insert-box button');
-    await AsyncTestUtil.wait(200);
+    await AsyncTestUtil.wait(300);
 
     const heroListElement = Selector('#list-box .hero-name');
     await t.expect(heroListElement.textContent).contains('Kelso', 'list-item contains name');
@@ -43,6 +43,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
 
     // w8 until loaded
     await Selector('#insert-box button');
+    await AsyncTestUtil.wait(300);
 
     await t
         .typeText('#insert-box input[name=name]', 'SteveIrwin')
