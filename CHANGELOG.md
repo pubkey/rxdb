@@ -12,6 +12,7 @@ Breaking:
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
+  - Refactored `plugins/replication/.watchForChanges()` to fix sometimes-breaking-test with `RxReplicationState.complete$`
 
 ### 7.7.1 (August 1, 2018)
 

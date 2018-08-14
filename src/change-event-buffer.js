@@ -85,6 +85,23 @@ class ChangeEventBuffer {
         return Object.values(docEventMap);
     }
 
+    /**
+     * use this to check if a change has already been handled
+     * @param {string} revision 
+     * @returns {boolean} true if change with revision exists
+     * 
+     */
+    hasChangeWithRevision(revision) {
+        // we loop from behind because its more likely that the searched event is at the end
+        let t = this.buffer.length;
+        while (t > 0) {
+            t--;
+            const cE = this.buffer[t];
+            if (cE.data.v && cE.data.v._rev === revision) return true;
+        }
+        return false;
+    }
+
     destroy() {
         this.subs.forEach(sub => sub.unsubscribe());
     }

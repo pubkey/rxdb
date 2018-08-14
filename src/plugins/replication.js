@@ -10,15 +10,14 @@ import {
     fromEvent
 } from 'rxjs';
 import {
-    filter,
     map,
-    delay
 } from 'rxjs/operators';
 
 import {
     promiseWait,
     clone,
-    pouchReplicationFunction
+    pouchReplicationFunction,
+    nextTick
 } from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
@@ -98,7 +97,17 @@ export class RxReplicationState {
         // complete
         this._subs.push(
             fromEvent(evEmitter, 'complete')
-                .subscribe(info => this._subjects.complete.next(info))
+                .subscribe(info => {
+
+                    /** 
+                     * when complete fires, it might be that not all changeEvents
+                     * have passed throught, because of the delay of .wachtForChanges()
+                     * Therefore we have to first ensure that all previous changeEvents have been handled
+                     */
+                    const unhandledEvents = Array.from(this.collection._watchForChangesUnhandled);
+
+                    Promise.all(unhandledEvents).then(() => this._subjects.complete.next(info));
+                })
         );
     }
 
@@ -117,16 +126,18 @@ export function createRxReplicationState(collection) {
 /**
  * waits for external changes to the database
  * and ensures they are emitted to the internal RxChangeEvent-Stream
- * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
  */
 export function watchForChanges() {
+    // do not call twice on same collection
     if (this.synced) return;
+    this.synced = true;
+
+    this._watchForChangesUnhandled = new Set();
 
     /**
      * this will grap the changes and publish them to the rx-stream
      * this is to ensure that changes from 'synced' dbs will be published
      */
-    const sendChanges = {};
     const pouch$ =
         fromEvent(
             this.pouch.changes({
@@ -135,41 +146,41 @@ export function watchForChanges() {
                 include_docs: true
             }),
             'change'
-        )
-            .pipe(
-                map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
-                filter(c => c.id.charAt(0) !== '_'),
-                map(c => c.doc),
-                filter(doc => !this._changeEventBuffer.buffer.map(cE => cE.data.v._rev).includes(doc._rev)),
-                filter(doc => sendChanges[doc._rev] = 'YES'),
-                // w8 2 ticks because pouchdb might also stream this event again from another process when multiInstance
-                delay(0),
-                delay(0),
-                map(doc => {
-                    let ret = null;
-                    if (sendChanges[doc._rev] === 'YES') ret = doc;
-                    delete sendChanges[doc._rev];
-                    return ret;
-                }),
-                filter(doc => doc !== null)
-            )
-            .subscribe(doc => {
-                this.$emit(RxChangeEvent.fromPouchChange(doc, this));
+        ).pipe(
+            map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
+        ).subscribe(change => {
+            const resPromise = _handleSingleChange(this, change);
+
+            // add and remove to the Set so RxReplicationState.complete$ can know when all events where handled
+            this._watchForChangesUnhandled.add(resPromise);
+            resPromise.then(() => {
+                this._watchForChangesUnhandled.delete(resPromise);
             });
-
+        });
     this._subs.push(pouch$);
+}
 
-    const ob2 = this.$
-        .pipe(
-            map(cE => cE.data.v),
-            map(doc => {
-                if (doc && sendChanges[doc._rev]) sendChanges[doc._rev] = 'NO';
-            })
-        )
-        .subscribe();
-    this._subs.push(ob2);
+/**
+ * handles a single change-event
+ * and ensures that it is not already handled
+ * @param {RxCollection} collection 
+ * @param {*} change 
+ * @return {Promise<boolean>}
+ */
+function _handleSingleChange(collection, change) {
+    if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
 
-    this.synced = true;
+    // wait 2 ticks and 20 ms to give the internal event-handling time to run
+    return promiseWait(20)
+        .then(() => nextTick())
+        .then(() => nextTick())
+        .then(() => {
+            const docData = change.doc;
+            // already handled by internal event-stream
+            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
+            collection.$emit(RxChangeEvent.fromPouchChange(docData, collection));
+            return true;
+        });
 }
 
 export function sync({

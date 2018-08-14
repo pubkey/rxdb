@@ -116,7 +116,7 @@ config.parallel('change-event-buffer.test.js', () => {
             );
 
             const evs = [];
-            col._changeEventBuffer.runFrom(1, function(cE) {
+            col._changeEventBuffer.runFrom(1, function (cE) {
                 evs.push(cE);
             });
             assert.equal(evs.length, 10);
@@ -134,7 +134,7 @@ config.parallel('change-event-buffer.test.js', () => {
             );
 
             const evs = [];
-            assert.throws(() => col._changeEventBuffer.runFrom(5, function(cE) {
+            assert.throws(() => col._changeEventBuffer.runFrom(5, function (cE) {
                 evs.push(cE);
             }), Error);
 
@@ -194,6 +194,23 @@ config.parallel('change-event-buffer.test.js', () => {
             assert.equal(reduced.length, 5);
             const lastEvent = reduced.find(cE => cE.data.doc === oneDoc.primary);
             assert.equal(lastEvent.data.v.age, 5);
+            col.database.destroy();
+        });
+    });
+    describe('.hasChangeWithRevision()', () => {
+        it('should not have a random revision', async () => {
+            const col = await humansCollection.create(5);
+            await col.insert(schemaObjects.human());
+            const has = col._changeEventBuffer.hasChangeWithRevision('1-foobar');
+            assert.equal(has, false);
+            col.database.destroy();
+        });
+        it('should have the revision of the last event', async () => {
+            const col = await humansCollection.create(5);
+            const doc = await col.insert(schemaObjects.human());
+            const lastRev = doc._data._rev;
+            const has = col._changeEventBuffer.hasChangeWithRevision(lastRev);
+            assert.ok(has);
             col.database.destroy();
         });
     });
