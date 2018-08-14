@@ -3,8 +3,8 @@ import {
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 
-fixture `Example page`
-    .page `http://0.0.0.0:8888/`;
+fixture`Example page`
+    .page`http://0.0.0.0:8888/`;
 
 
 test('insert a hero', async t => {
@@ -38,8 +38,13 @@ test('insert a hero', async t => {
 
 
 test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async t => {
+
+    await t.switchToIframe('#frame_0');
+
+    // w8 until loaded
+    await Selector('#insert-box button');
+
     await t
-        .switchToIframe('#frame_0')
         .typeText('#insert-box input[name=name]', 'SteveIrwin')
         .typeText('#insert-box input[name=color]', 'red')
         .click('#insert-box button');

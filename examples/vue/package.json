@@ -12,7 +12,7 @@
     "build": "cross-env NODE_ENV=production webpack --hide-modules",
     "postbuild": "cp src/index.html ./dist/index.html && cp test/multitab.html ./dist/multitab.html",
     "build:serve": "ws -p 8888 -d dist/",
-    "test:run": "testcafe chromium test/",
+    "test:run": "testcafe chromium test/ --selector-timeout 30000",
     "test": "concurrently \"npm run build:serve \" \"npm run test:run\" --kill-others --success first"
   },
   "dependencies": {
