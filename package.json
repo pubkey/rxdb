@@ -156,7 +156,7 @@
     "pouchdb-adapter-idb": "7.0.0",
     "pouchdb-adapter-leveldb": "7.0.0",
     "pouchdb-adapter-localstorage": "7.0.0",
-    "pouchdb-adapter-memory": "6.4.3",
+    "pouchdb-adapter-memory": "7.0.0",
     "pouchdb-adapter-websql": "6.4.3",
     "pre-commit": "1.2.2",
     "random-int": "1.0.0",
