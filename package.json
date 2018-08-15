@@ -152,7 +152,7 @@
     "nconf": "0.10.0",
     "node": "10.1.0",
     "pouchdb": "7.0.0",
-    "pouchdb-adapter-http": "6.4.3",
+    "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "6.4.3",
     "pouchdb-adapter-leveldb": "6.4.3",
     "pouchdb-adapter-localstorage": "6.4.3",
