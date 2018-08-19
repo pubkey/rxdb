@@ -3,11 +3,18 @@ import {
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 
-fixture`Example page`
-    .page`http://0.0.0.0:8888/`;
+fixture `Example page`
+    .page `http://0.0.0.0:8888/`;
 
 
-test('insert a hero', async t => {
+test('insert/edit/remove a hero', async t => {
+    // clear previous heroes
+    const heroElements = Selector('.hero-list-component .mat-list-item');
+    const amount = heroElements.count;
+    for (let i = 0; i < amount; i++) {
+        await t.click('.fa-trash-o');
+    }
+
     // input name
     const heroNameInput = Selector('.hero-insert-component input[name=name]');
     await t
@@ -28,7 +35,28 @@ test('insert a hero', async t => {
 
     const heroListElement = Selector('.hero-list-component .mat-list-item');
     await t.expect(heroListElement.textContent).contains('Kelso', 'list-item contains name');
+
+
+    // open edit form
+    await t.click('.fa-pencil-square-o');
+
+    // set value
+    await t
+        .click('.mat-input-element')
+        .pressKey('ctrl+a delete');
+    await t.typeText('.mat-input-element', '11');
+    await t.click('.submitButton');
+    await AsyncTestUtil.wait(100);
+
+    // edit form should be closed
+    if (await Selector('.hero-edit-component').exists) {
+        throw new Error('edit not closed');
+    }
+
+    // remove again
+    await t.click('.fa-trash-o');
 });
+
 
 test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async t => {
 
