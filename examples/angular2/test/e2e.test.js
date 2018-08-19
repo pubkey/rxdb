@@ -76,7 +76,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
     await t.switchToIframe('#frame_1');
     await AsyncTestUtil.wait(100);
     const heroElements = Selector('.hero-list-component .mat-list-item');
-    await t.expect(heroElements.count).eql(2);
+    await t.expect(heroElements.count).eql(1);
 
     const heroListElement = Selector('.hero-list-component .mat-list-item:last-of-type');
     await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
