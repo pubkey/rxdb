@@ -1,5 +1,9 @@
 # Changelog
 
+### 7.X.X (comming soon)
+
+Bugfixes:
+  - inMemory collections don't implement static methods [#744](https://github.com/pubkey/rxdb/issues/744)
 
 ### 7.7.1 (August 1, 2018)
 

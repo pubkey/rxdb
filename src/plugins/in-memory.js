@@ -47,6 +47,12 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             this._changeStreams.forEach(stream => stream.cancel());
             this.pouch.destroy();
         });
+
+        // add orm functions and options from parent
+        this.options = parentCollection.options;
+        Object
+            .entries(parentCollection._statics)
+            .forEach(([funName, fun]) => this.__defineGetter__(funName, () => fun.bind(this)));
     }
 
     async prepare() {

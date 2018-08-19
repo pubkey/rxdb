@@ -305,6 +305,34 @@ config.parallel('in-memory.test.js', () => {
 
             db2.destroy();
         });
+        it('#744 inMemory collections don\'t implement static methods and options', async () => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            const col = await db.collection({
+                name: 'heroes',
+                schema: schemas.human,
+                statics: {
+                    foo() {
+                        return 'bar';
+                    }
+                },
+                options: {
+                    foobar: 'foobar'
+                }
+            });
+            const memCol = await col.inMemory();
+
+            // check method
+            assert.equal(memCol.foo(), 'bar');
+
+            // check options
+            assert.equal(memCol.options.foobar, 'foobar');
+            db.destroy();
+        });
     });
     describe('e', () => {
         // TODO remove this
