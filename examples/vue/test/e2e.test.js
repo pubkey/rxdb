@@ -3,11 +3,11 @@ import {
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 
-fixture`Example page`
-    .page`http://0.0.0.0:8888/`;
+fixture `Example page`
+    .page `http://0.0.0.0:8888/`;
 
 
-test('insert a hero', async t => {
+test('insert/edit/remove a hero', async t => {
     // input name
     const heroNameInput = Selector('#insert-box input[name=name]');
     await t
@@ -28,7 +28,6 @@ test('insert a hero', async t => {
 
     const heroListElement = Selector('#list-box .hero-name');
     await t.expect(heroListElement.textContent).contains('Kelso', 'list-item contains name');
-
 
     // remove again
     await t.click('.actions .fa-trash-o');

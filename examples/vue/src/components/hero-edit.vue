@@ -1,7 +1,7 @@
 <template>
-<div class="hero-edit box">
+<div id="edit-box" class="hero-edit box">
     <h4>Edit</h4>
-    <div class="alert" v-if="!hero.synced">
+    <div class="alert" v-if="!synced">
         <h4>Warning:</h4>
         <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
         <button v-on:click="resync()">resync</button>
@@ -13,33 +13,47 @@
     <h5>
       <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
       {{hero.name}}
-    </h5> HP: <input type="number" v-model.number="hero.hp" min="0" v-bind:max="hero.maxHP" name="hp" />
+  </h5> HP: <input id="hp-edit-input" type="number" v-model.number="formData" min="0" v-bind:max="hero.maxHP" name="hp" />
     <br />
     <button v-on:click="cancel()">cancel</button>
-    <button v-on:click="submit()" v-if="!hero.deleted">submit</button>
+    <button id="edit-submit-button" v-on:click="submit()" v-if="!hero.deleted">submit</button>
 </div>
 </template>
 
 <script>
 import Vue from 'vue';
 import * as Database from '../database/Database';
+import {
+    skip
+} from 'rxjs/operators';
+
 export default Vue.component('hero-edit', {
     data: () => {
         return {
-            unsync: null,
+            synced: true,
             deleted: false,
+            formData: null,
             subs: []
         };
     },
     props: ['hero'],
-    mounted: async function() {},
+    mounted: async function() {
+        this.formData = this.hero.hp;
+        this.subs.push(
+            this.hero.$
+            .pipe(
+                skip(1)
+            )
+            .subscribe(() => this.synced = false)
+        );
+    },
     beforeDestroy: function() {
         this.subs.forEach(sub => sub.unsubscribe());
     },
     methods: {
         async submit() {
             console.log('heroEdit.submit()');
-            await this.hero.save();
+            await this.hero.atomicSet('hp', this.formData);
             this.$emit('submit');
         },
         resync() {
