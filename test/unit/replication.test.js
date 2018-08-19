@@ -470,8 +470,7 @@ describe('replication.test.js', () => {
                         lastValue = newValue;
                         if (lastValue === 'foobar') pw8.resolve();
                     });
-                doc.set('firstName', 'foobar');
-                await doc.save();
+                await doc.atomicSet('firstName', 'foobar');
 
                 await pw8.promise;
                 assert.equal(lastValue, 'foobar');

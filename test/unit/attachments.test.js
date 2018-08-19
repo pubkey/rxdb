@@ -93,8 +93,7 @@ config.parallel('attachments.test.js', () => {
                 type: 'text/plain'
             });
 
-            doc.age = 7;
-            await doc.save();
+            await doc.atomicSet('age', 7);
 
             const attachment = doc.getAttachment('cat.txt');
             assert.ok(attachment);

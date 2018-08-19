@@ -22,20 +22,23 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
 
     readonly $: Observable<any>;
     readonly deleted$: Observable<boolean>;
-    readonly atomicQueue: IdleQueue;
-    readonly synced$: Observable<boolean>;
-    resync(): void;
 
     readonly primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
+    populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any>;
+
+    // change data of document
+    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    atomicSet(objPath: string, value: any);
+    update(updateObj: any): Promise<any>;
+    remove(): Promise<boolean>;
+
+    // only for temporary documents
     set(objPath: string, value: any): RxDocument<RxDocumentType, OrmMethods>;
     save(): Promise<boolean>;
-    remove(): Promise<boolean>;
-    populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any>;
-    update(updateObj: any): Promise<any>;
-    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType, OrmMethods>>;
 
+    // attachments
     putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
     getAttachment(id: string): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
     allAttachments(): Promise<RxAttachment<RxDocumentType, OrmMethods>[]>;

@@ -333,9 +333,7 @@ config.parallel('query-change-detector.test.js', () => {
                     assert.equal(results.length, 4);
                     assert.equal(q._execOverDatabaseCount, 1);
 
-
-                    otherDoc.firstName = 'piotr';
-                    await otherDoc.save();
+                    await otherDoc.atomicSet('firstName', 'piotr');
 
                     results = await q.exec();
                     assert.equal(results.length, 4);
@@ -353,8 +351,7 @@ config.parallel('query-change-detector.test.js', () => {
                     assert.equal(q._execOverDatabaseCount, 1);
 
                     const oneDoc = await col.findOne().skip(2).exec();
-                    oneDoc.age = 1;
-                    await oneDoc.save();
+                    await oneDoc.atomicSet('age', 1);
 
                     results = await q.exec();
                     assert.equal(results.length, 5);
@@ -465,9 +462,9 @@ config.parallel('query-change-detector.test.js', () => {
                 // it should find the same order with pouchdb
                 const pouchResult = await col.pouch.find(
                     col
-                    .find()
-                    .where('passportId')
-                    .ne('foobar3').toJSON()
+                        .find()
+                        .where('passportId')
+                        .ne('foobar3').toJSON()
                 );
                 assert.deepEqual(
                     docs.map(d => d.id),
@@ -512,9 +509,9 @@ config.parallel('query-change-detector.test.js', () => {
                 // it should find the same order with pouchdb
                 const pouchResult2 = await col.pouch.find(
                     col
-                    .find()
-                    .where('passportId')
-                    .ne('foobar3').toJSON()
+                        .find()
+                        .where('passportId')
+                        .ne('foobar3').toJSON()
                 );
                 assert.deepEqual(
                     lastResult,

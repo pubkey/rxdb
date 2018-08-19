@@ -56,8 +56,8 @@ config.parallel('no-validate.node.js', () => {
         });
         const doc = await col.findOne().exec();
         assert.equal(doc.get('foo'), 'bar');
-        doc.set('bar', 'foo');
-        await doc.save();
+
+        await doc.atomicSet('bar', 'foo');
         db.destroy();
     });
 });

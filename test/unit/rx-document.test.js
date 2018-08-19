@@ -8,7 +8,6 @@ import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
 
 import * as RxDB from '../../dist/lib/index';
-import * as RxDocument from '../../dist/lib/rx-document';
 import * as RxDatabase from '../../dist/lib/index';
 import * as RxSchema from '../../dist/lib/rx-schema';
 
@@ -128,42 +127,8 @@ config.parallel('rx-document.test.js', () => {
         describe('negative', () => { });
     });
     describe('.set()', () => {
-        describe('positive', () => {
-            it('set the value', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = 'bliebla';
-                doc.set('passportId', val);
-                assert.equal(doc._data.passportId, val);
-                assert.equal(doc.get('passportId'), val);
-                c.database.destroy();
-            });
-            it('set object', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = {
-                    name: 'newSkill',
-                    level: 2
-                };
-                doc.set('mainSkill', val);
-                assert.equal(doc._data.mainSkill.name, val.name);
-                assert.equal(doc.get('mainSkill.name'), val.name);
-                assert.equal(doc._data.mainSkill.level, val.level);
-                assert.equal(doc.get('mainSkill.level'), val.level);
-                c.database.destroy();
-            });
-            it('set nested', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = 'newSkill';
-                doc.set('mainSkill.name', val);
-                assert.equal(doc._data.mainSkill.name, val);
-                assert.equal(doc.get('mainSkill.name'), val);
-                c.database.destroy();
-            });
-        });
         describe('negative', () => {
-            it('throw if no string', async () => {
+            it('should only not work on non-temporary document', async () => {
                 const c = await humansCollection.createNested(5);
                 const doc = await c.findOne().exec();
                 const path = {
@@ -171,135 +136,8 @@ config.parallel('rx-document.test.js', () => {
                 };
                 await AsyncTestUtil.assertThrows(
                     () => doc.set(path, 'foo'),
-                    TypeError
-                );
-                c.database.destroy();
-            });
-            it('throw if not validates schema', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = {
-                    foo: 'bar'
-                };
-                await AsyncTestUtil.assertThrows(
-                    () => doc.set('passportId', val),
-                    Error
-                );
-                c.database.destroy();
-            });
-            it('throw if not validates schema (additional property)', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = 'bliebla';
-                await AsyncTestUtil.assertThrows(
-                    () => doc.set('newone', val),
-                    Error
-                );
-                c.database.destroy();
-            });
-            it('cannot modifiy _id', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = 'bliebla';
-                await AsyncTestUtil.assertThrows(
-                    () => doc.set('_id', val),
-                    Error
-                );
-                c.database.destroy();
-            });
-            it('cannot modify final fields', async () => {
-                const db = await RxDatabase.create({
-                    name: util.randomCouchString(10),
-                    adapter: 'memory'
-                });
-                const col = await db.collection({
-                    name: 'humans',
-                    schema: schemas.humanFinal
-                });
-
-                const docData = schemaObjects.human();
-                docData.age = 60;
-                await col.insert(docData);
-                const doc = await col.findOne().exec();
-                assert.ok(doc);
-
-                await AsyncTestUtil.assertThrows(
-                    () => doc.age = 70,
-                    Error,
-                    'final fields'
-                );
-                db.destroy();
-            });
-        });
-    });
-    describe('.save()', () => {
-        describe('positive', () => {
-            it('save', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val = 'bliebla';
-                doc.set('passportId', val);
-                await doc.save();
-                const docNew = await c.findOne().exec();
-                assert.equal(docNew.get('passportId'), val);
-                c.database.destroy();
-            });
-            it('save object', async () => {
-                const c = await humansCollection.createNested(10);
-                const doc = await c.findOne().exec();
-                const val = {
-                    name: util.randomCouchString(20),
-                    level: 5
-                };
-                doc.set('mainSkill', val);
-                await doc.save();
-                const doc2 = await c.findOne().exec();
-                assert.deepEqual(doc2.get('mainSkill.name'), val.name);
-                assert.deepEqual(doc2.get('mainSkill.level'), val.level);
-                c.database.destroy();
-            });
-            it('save twice', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                const val1 = 'bliebla1';
-                const val2 = 'bliebla2';
-                doc.set('passportId', val1);
-                await doc.save();
-                const docNew = await c.findOne().exec();
-                assert.equal(docNew.get('passportId'), val1);
-                docNew.set('passportId', val1);
-
-                const docNew2 = await c.findOne().exec();
-                docNew2.set('passportId', val2);
-                await docNew2.save();
-                assert.equal(docNew2.get('passportId'), val2);
-                c.database.destroy();
-            });
-            it('.save() returns false when data not changed', async () => {
-                const c = await humansCollection.create(10);
-                const doc = await c.findOne().exec();
-                const r = await doc.save();
-                assert.equal(r, false);
-                c.database.destroy();
-            });
-            it('.save() returns true data changed', async () => {
-                const c = await humansCollection.create(10);
-                const doc = await c.findOne().exec();
-                doc.passportId = util.randomCouchString(20);
-                const r = await doc.save();
-                assert.equal(r, true);
-                c.database.destroy();
-            });
-        });
-        describe('negative', () => {
-            it('save deleted', async () => {
-                const c = await humansCollection.createNested(5);
-                const doc = await c.findOne().exec();
-                await doc.remove();
-                doc.set('passportId', 'any');
-                await AsyncTestUtil.assertThrows(
-                    () => doc.save(),
-                    Error
+                    TypeError,
+                    'temporary RxDocuments'
                 );
                 c.database.destroy();
             });
@@ -326,12 +164,18 @@ config.parallel('rx-document.test.js', () => {
                 assert.ok(doc);
 
                 // update some times to generate revisions
-                doc.age = doc.age + 1;
-                await doc.save();
-                doc.age = doc.age + 1;
-                await doc.save();
-                doc.age = 100;
-                await doc.save();
+                await doc.atomicUpdate(docData => {
+                    docData.age++;
+                    return docData;
+                });
+                await doc.atomicUpdate(docData => {
+                    docData.age++;
+                    return docData;
+                });
+                await doc.atomicUpdate(docData => {
+                    docData.age = 100;
+                    return docData;
+                });
                 const doc2 = await c.findOne().exec();
                 assert.equal(doc2.age, 100);
 
@@ -357,8 +201,7 @@ config.parallel('rx-document.test.js', () => {
                 assert.ok(docs.length > 1);
                 const first = docs[0];
 
-                first.firstName = 'foobar';
-                await first.save();
+                await first.atomicSet('firstName', 'foobar');
 
                 await first.remove();
                 const docsAfter = await c.find().exec();
@@ -472,6 +315,7 @@ config.parallel('rx-document.test.js', () => {
 
                 const returnedDoc = await doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar';
+                    return innerDoc;
                 });
                 assert.equal('foobar', doc.firstName);
                 assert.ok(doc === returnedDoc);
@@ -483,9 +327,11 @@ config.parallel('rx-document.test.js', () => {
 
                 doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar';
+                    return innerDoc;
                 });
                 await doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar2';
+                    return innerDoc;
                 });
                 assert.equal('foobar2', doc.firstName);
                 c.database.destroy();
@@ -502,6 +348,7 @@ config.parallel('rx-document.test.js', () => {
                     })
                     .forEach(x => lastPromise = doc.atomicUpdate(innerDoc => {
                         innerDoc.age = x;
+                        return innerDoc;
                     }));
                 await lastPromise;
                 assert.equal(t, doc.age);
@@ -520,6 +367,7 @@ config.parallel('rx-document.test.js', () => {
                     .forEach(x => lastPromise = doc.atomicUpdate(async (innerDoc) => {
                         await util.promiseWait(1);
                         innerDoc.age = x;
+                        return innerDoc;
                     }));
                 await lastPromise;
                 assert.equal(t, doc.age);
@@ -541,13 +389,16 @@ config.parallel('rx-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar';
+                    return innerDoc;
                 });
                 await doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar2';
+                    return innerDoc;
                 });
                 await AsyncTestUtil.wait(50);
                 await doc.atomicUpdate((innerDoc) => {
                     innerDoc.firstName = 'foobar3';
+                    return innerDoc;
                 });
                 assert.equal('foobar3', doc.firstName);
 
@@ -571,7 +422,10 @@ config.parallel('rx-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 const docData = doc.toJSON();
                 assert.ok(docData);
-                await doc.atomicUpdate(innerDoc => innerDoc.firstName = 'foobar');
+                await doc.atomicUpdate(innerDoc => {
+                    innerDoc.firstName = 'foobar';
+                    return innerDoc;
+                });
                 assert.equal(doc.firstName, 'foobar');
                 await db.destroy();
 
@@ -597,13 +451,14 @@ config.parallel('rx-document.test.js', () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 await doc.atomicUpdate(innerDoc => {
-                    assert.ok(RxDocument.isInstanceOf(innerDoc));
                     innerDoc.age = 50;
+                    return innerDoc;
                 });
                 assert.equal(doc.age, 50);
                 await AsyncTestUtil.assertThrows(
                     () => doc.atomicUpdate(innerDoc => {
                         innerDoc.age = 'foobar';
+                        return innerDoc;
                     }),
                     Error,
                     'schema'
@@ -654,8 +509,9 @@ config.parallel('rx-document.test.js', () => {
                 obs.subscribe(newVal => {
                     value = newVal;
                 });
-                doc.set('firstName', 'foobar');
-                await doc.save();
+
+                await doc.atomicSet('firstName', 'foobar');
+
                 await util.promiseWait(5);
                 assert.equal(value, 'foobar');
 
@@ -678,8 +534,8 @@ config.parallel('rx-document.test.js', () => {
                 doc.mainSkill.level$.subscribe(newVal => {
                     value = newVal;
                 });
-                doc.set('mainSkill.level', 10);
-                await doc.save();
+
+                await doc.atomicSet('mainSkill.level', 10);
                 await util.promiseWait(5);
                 assert.equal(value, 10);
                 c.database.destroy();
@@ -694,44 +550,19 @@ config.parallel('rx-document.test.js', () => {
                 doc.mainSkill.attack.good$.subscribe(newVal => {
                     value = newVal;
                 });
-                doc.set('mainSkill.attack.good', true);
-                await doc.save();
+                await doc.atomicSet('mainSkill.attack.good', true);
                 await util.promiseWait(5);
                 assert.equal(value, true);
                 c.database.destroy();
             });
         });
         describe('set', () => {
-            it('top value', async () => {
+            it('should not work on non-temporary document', async () => {
                 const c = await humansCollection.createPrimary(1);
                 const doc = await c.findOne().exec();
-                doc.firstName = 'foobar';
-                assert.equal(doc.firstName, 'foobar');
-                await doc.save();
-                const doc2 = await c.findOne(doc.passportId).exec();
-                assert.equal(doc2.firstName, 'foobar');
-                c.database.destroy();
-            });
-            it('nested value', async () => {
-                const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec();
-                doc.mainSkill.level = 10;
-                assert.equal(doc.mainSkill.level, 10);
-
-                await doc.save();
-                const doc2 = await c.findOne().exec();
-                assert.equal(doc2.mainSkill.level, 10);
-                c.database.destroy();
-            });
-            it('deep nested value', async () => {
-                const c = await humansCollection.createDeepNested(1);
-                const doc = await c.findOne().exec();
-                doc.mainSkill.attack.good = true;
-                assert.equal(doc.mainSkill.attack.good, true);
-
-                await doc.save();
-                const doc2 = await c.findOne().exec();
-                assert.equal(doc2.mainSkill.attack.good, true);
+                assert.throws(
+                    () => doc.firstName = 'foobar'
+                );
                 c.database.destroy();
             });
         });
@@ -802,8 +633,7 @@ config.parallel('rx-document.test.js', () => {
             assert.equal(doc.skills.length, 3);
 
             const newSkill = 'newSikSkill';
-            doc.set('skills', doc.skills.concat(newSkill));
-            await doc.save();
+            await doc.atomicSet('skills', doc.skills.concat(newSkill));
 
             const colDump = await col.dump(true);
             const afterSkills = colDump.docs[0].skills;

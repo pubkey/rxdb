@@ -38,7 +38,7 @@ config.parallel('encryption.test.js', () => {
                 assert.equal(Object.keys(encPaths).length, 0);
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
 
     describe('Crypter.js', () => {
@@ -159,7 +159,7 @@ config.parallel('encryption.test.js', () => {
                 db.destroy();
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('Document.save()', () => {
         describe('positive', () => {
@@ -171,8 +171,7 @@ config.parallel('encryption.test.js', () => {
                 const secret = doc.get('secret');
                 assert.equal(agent.secret, secret);
                 const newSecret = util.randomCouchString(10);
-                doc.set('secret', newSecret);
-                await doc.save();
+                await doc.atomicSet('secret', newSecret);
                 const docNew = await c.findOne().exec();
                 assert.equal(newSecret, docNew.get('secret'));
                 c.database.destroy();
@@ -199,8 +198,7 @@ config.parallel('encryption.test.js', () => {
                 assert.equal(agent.secret.name, secret.name);
                 assert.equal(agent.secret.subname, secret.subname);
 
-                doc.set('secret', newSecret);
-                await doc.save();
+                await doc.atomicSet('secret', newSecret);
                 const docNew = await c.findOne().exec();
 
                 assert.equal(newSecret.name, docNew.get('secret.name'));
@@ -209,6 +207,6 @@ config.parallel('encryption.test.js', () => {
             });
         });
 
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
 });

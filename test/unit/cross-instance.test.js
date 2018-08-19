@@ -152,8 +152,7 @@ config.parallel('cross-instance.test.js', () => {
                 firstNameAfter = newValue;
             });
 
-            doc1.set('firstName', 'foobar');
-            await doc1.save();
+            await doc1.atomicSet('firstName', 'foobar');
 
             await util.promiseWait(10);
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
@@ -207,8 +206,7 @@ config.parallel('cross-instance.test.js', () => {
                 secretAfter = newValue;
             });
 
-            doc1.set('secret', 'foobar');
-            await doc1.save();
+            await doc1.atomicSet('secret', 'foobar');
 
             await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
             assert.equal(secretAfter, 'foobar');
@@ -261,11 +259,10 @@ config.parallel('cross-instance.test.js', () => {
                 secretAfter = newValue;
             });
 
-            doc1.set('secret', {
+            await doc1.atomicSet('secret', {
                 name: 'foo',
                 subname: 'bar'
             });
-            await doc1.save();
 
             await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
             assert.deepEqual(secretAfter, {

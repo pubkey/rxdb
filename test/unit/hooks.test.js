@@ -175,8 +175,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(RxDocument.isInstanceOf(doc));
                         count++;
                     }, false);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
+                    await doc.atomicSet('firstName', 'foobar');
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
@@ -190,8 +189,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(RxDocument.isInstanceOf(doc));
                         count++;
                     }, true);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
+                    await doc.atomicSet('firstName', 'foobar');
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
@@ -201,13 +199,13 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
 
-                    c.preSave(function (doc) {
-                        doc.set('lastName', 'foobar');
+                    let hasRun = false;
+                    c.preSave(function () {
+                        hasRun = true;
                     }, false);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
-                    const doc2 = await c.findOne(human.passportId).exec();
-                    assert.equal(doc2.get('lastName'), 'foobar');
+
+                    await doc.atomicSet('firstName', 'foobar');
+                    assert.ok(hasRun);
                     c.database.destroy();
                 });
                 it('async: should save a modified document', async () => {
@@ -216,14 +214,13 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
 
-                    c.preSave(async function (doc) {
+                    let hasRun = false;
+                    c.preSave(async function () {
                         await util.promiseWait(10);
-                        doc.set('lastName', 'foobar');
+                        hasRun = true;
                     }, false);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
-                    const doc2 = await c.findOne(human.passportId).exec();
-                    assert.equal(doc2.get('lastName'), 'foobar');
+                    await doc.atomicSet('firstName', 'foobar');
+                    assert.ok(hasRun);
                     c.database.destroy();
                 });
                 it('should not save if hook throws', async () => {
@@ -237,36 +234,15 @@ config.parallel('hooks.test.js', () => {
                         throw new Error('fail');
                     }, false);
 
-                    doc.set('firstName', 'foobar');
                     let failC = 0;
                     try {
-                        await doc.save();
+                        await doc.atomicSet('firstName', 'foobar');
                     } catch (e) {
                         failC++;
                     }
                     assert.equal(failC, 1);
                     const syncValue = await doc.firstName$.pipe(first()).toPromise();
                     assert.equal(syncValue, 'test');
-                    c.database.destroy();
-                });
-            });
-            describe('negative', () => {
-                it('should throw if hook invalidates schema', async () => {
-                    const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
-                    await c.insert(human);
-                    const doc = await c.findOne(human.passportId).exec();
-
-                    c.preSave(function (doc) {
-                        doc.set('firstName', 1337);
-                    }, false);
-
-                    doc.set('firstName', 'foobar');
-
-                    await AsyncTestUtil.assertThrows(
-                        () => doc.save(),
-                        Error
-                    );
                     c.database.destroy();
                 });
             });
@@ -283,8 +259,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(RxDocument.isInstanceOf(doc));
                         count++;
                     }, false);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
+                    await doc.atomicSet('firstName', 'foobar');
                     assert.equal(count, 1);
                     c.database.destroy();
                 });
@@ -298,8 +273,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(RxDocument.isInstanceOf(doc));
                         count++;
                     }, true);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
+                    await doc.atomicSet('firstName', 'foobar');
                     assert.equal(count, 1);
                     c.database.destroy();
                 });

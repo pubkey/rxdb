@@ -953,7 +953,7 @@ config.parallel('rx-collection.test.js', () => {
             });
             describe('.update()', () => {
                 it('sets a field in all documents', async () => {
-                    const c = await humansCollection.create(10);
+                    const c = await humansCollection.create(2);
                     const query = c.find();
                     await query.update({
                         $set: {
@@ -1033,10 +1033,8 @@ config.parallel('rx-collection.test.js', () => {
                     assert.ok(RxDocument.isInstanceOf(results[0]));
 
                     assert.ok(results[0] === results[1]);
-                    // process.exit();
 
-                    results[0].firstName = 'foobar';
-                    await results[0].save();
+                    await results[0].atomicSet('firstName', 'foobar');
 
                     const results2 = await Promise.all([
                         c.findOne(primary).exec(),
@@ -1207,8 +1205,8 @@ config.parallel('rx-collection.test.js', () => {
                     await c.findOne(primary).exec();
                     const docData2 = clone(docData);
                     docData.firstName = 'foobar';
-                    await c.atomicUpsert(docData2);
 
+                    await c.atomicUpsert(docData2);
                     c.database.destroy();
                 });
                 it('should not crash when upserting the same doc in parallel', async () => {

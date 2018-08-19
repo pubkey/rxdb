@@ -5,7 +5,6 @@
  */
 
 import objectPath from 'object-path';
-import deepEqual from 'deep-equal';
 
 import RxDocument from '../rx-document';
 import RxDatabase from '../rx-database';
@@ -95,23 +94,6 @@ const RxLocalDocumentPrototype = {
         switch (changeEvent.data.op) {
             case 'UPDATE':
                 const newData = clone(changeEvent.data.v);
-                const prevSyncData = this._dataSync$.getValue();
-                const prevData = this._data;
-
-                if (deepEqual(prevSyncData, prevData)) {
-                    // document is in sync, overwrite _data
-                    this._data = newData;
-
-                    if (this._synced$.getValue() !== true)
-                        this._synced$.next(true);
-                } else {
-                    // not in sync, emit to synced$
-                    if (this._synced$.getValue() !== false)
-                        this._synced$.next(false);
-
-                    // overwrite _rev of data
-                    this._data._rev = newData._rev;
-                }
                 this._dataSync$.next(clone(newData));
                 break;
             case 'REMOVE':
@@ -124,7 +106,7 @@ const RxLocalDocumentPrototype = {
     },
 
     get allAttachments$() {
-        // this is overwritte here because we cannot re-set getters on the prototype
+        // this is overwritten here because we cannot re-set getters on the prototype
         throw RxError.newRxError('LD1', {
             document: this
         });
@@ -186,26 +168,23 @@ const RxLocalDocumentPrototype = {
         objectPath.set(this._data, objPath, value);
         return this;
     },
-    /**
-     * @return {Promise}
-     */
-    save() {
-        const saveData = clone(this._data);
-        saveData._id = LOCAL_PREFIX + this.id;
-        return this.parentPouch.put(saveData)
-            .then(res => {
-                this._data._rev = res.rev;
+    async _saveData(newData) {
+        newData = clone(newData);
+        newData._id = LOCAL_PREFIX + this.id;
 
-                const changeEvent = RxChangeEvent.create(
-                    'UPDATE',
-                    RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
-                    RxCollection.isInstanceOf(this.parent) ? this.parent : null,
-                    this,
-                    clone(this._data),
-                    true
-                );
-                this.$emit(changeEvent);
-            });
+        const res = await this.parentPouch.put(newData);
+        newData._rev = res.rev;
+        this._dataSync$.next(newData);
+
+        const changeEvent = RxChangeEvent.create(
+            'UPDATE',
+            RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
+            RxCollection.isInstanceOf(this.parent) ? this.parent : null,
+            this,
+            clone(this._data),
+            true
+        );
+        this.$emit(changeEvent);
     },
     /**
      * @return {Promise}
@@ -330,8 +309,7 @@ const upsertLocal = async function (id, data) {
     } else {
         // update existing
         data._rev = existing._data._rev;
-        existing._data = data;
-        await existing.save();
+        await existing.atomicUpdate(() => data);
         return existing;
     }
 };

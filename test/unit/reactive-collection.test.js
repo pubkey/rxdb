@@ -123,10 +123,9 @@ config.parallel('reactive-collection.test.js', () => {
             const doc3 = await c.insert(schemaObjects.human());
             await c.insert(schemaObjects.human());
             await doc3.remove();
-            doc1.firstName = 'foobar1';
-            await doc1.save();
-            doc2.firstName = 'foobar2';
-            await doc2.save();
+
+            await doc1.atomicSet('firstName', 'foobar1');
+            await doc2.atomicSet('firstName', 'foobar2');
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             emitted.forEach(cE => assert.equal(cE.data.op, 'UPDATE'));

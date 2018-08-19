@@ -1,10 +1,10 @@
 import objectPath from 'object-path';
-import deepEqual from 'deep-equal';
 
 import {
     clone,
     promiseWait,
-    trimDots
+    trimDots,
+    getHeightOfRevision
 } from './util';
 import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
@@ -30,12 +30,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new BehaviorSubject(clone(jsonData));
-
-        // current doc-data, changes when setting values etc
-        this._data = clone(jsonData);
-
-        // false when _data !== _dataSync
-        this._synced$ = new BehaviorSubject(true);
         this._deleted$ = new BehaviorSubject(false);
 
         this._atomicQueue = Promise.resolve();
@@ -52,6 +46,9 @@ export const basePrototype = {
     get isInstanceOfRxDocument() {
         return true;
     },
+    get _data() {
+        return this._dataSync$.getValue();
+    },
     get primaryPath() {
         return this.collection.schema.primaryPath;
     },
@@ -66,24 +63,6 @@ export const basePrototype = {
     },
     get deleted() {
         return this._deleted$.getValue();
-    },
-    get synced$() {
-        return this._synced$
-            .pipe(
-                distinctUntilChanged()
-            ).asObservable();
-    },
-    get synced() {
-        return this._synced$.getValue();
-    },
-    resync() {
-        const syncedData = this._dataSync$.getValue();
-        if (this._synced$.getValue() && deepEqual(syncedData, this._data))
-            return;
-        else {
-            this._data = clone(this._dataSync$.getValue());
-            this._synced$.next(true);
-        }
     },
 
     /**
@@ -101,30 +80,16 @@ export const basePrototype = {
         if (changeEvent.data.doc !== this.primary)
             return;
 
-        // TODO check if new _rev is higher then current
+        // ensure that new _rev is higher then current
+        const newRevNr = getHeightOfRevision(changeEvent.data.v._rev);
+        const currentRevNr = getHeightOfRevision(this._data._rev);
+        if (currentRevNr > newRevNr) return;
 
         switch (changeEvent.data.op) {
             case 'INSERT':
                 break;
             case 'UPDATE':
                 const newData = clone(changeEvent.data.v);
-                const prevSyncData = this._dataSync$.getValue();
-                const prevData = this._data;
-
-                if (deepEqual(prevSyncData, prevData)) {
-                    // document is in sync, overwrite _data
-                    this._data = newData;
-
-                    if (this._synced$.getValue() !== true)
-                        this._synced$.next(true);
-                } else {
-                    // not in sync, emit to synced$
-                    if (this._synced$.getValue() !== false)
-                        this._synced$.next(false);
-
-                    // overwrite _rev of data
-                    this._data._rev = newData._rev;
-                }
                 this._dataSync$.next(clone(newData));
                 break;
             case 'REMOVE':
@@ -245,10 +210,20 @@ export const basePrototype = {
 
     /**
      * set data by objectPath
+     * This can only be called on temporary documents
      * @param {string} objPath
      * @param {object} value
      */
     set(objPath, value) {
+
+        // setters can only be used on temporary documents
+        if (!this._isTemporary) {
+            throw RxError.newRxTypeError('DOC16', {
+                objPath,
+                value
+            });
+        }
+
         if (typeof objPath !== 'string') {
             throw RxError.newRxTypeError('DOC15', {
                 objPath,
@@ -256,27 +231,10 @@ export const basePrototype = {
             });
         }
 
-        // primary cannot be modified
-        if (!this._isTemporary && objPath === this.primaryPath) {
-            throw RxError.newRxError('DOC8', {
-                objPath,
-                value,
-                primaryPath: this.primaryPath
-            });
-        }
-
-        // final fields cannot be modified
-        if (!this._isTemporary && this.collection.schema.finalFields.includes(objPath)) {
-            throw RxError.newRxError('DOC9', {
-                path: objPath,
-                value
-            });
-        }
-
-        // check if equal
+        // if equal, do nothing
         if (Object.is(this.get(objPath), value)) return;
 
-        // check if nested without root-object
+        // throw if nested without root-object
         const pathEls = objPath.split('.');
         pathEls.pop();
         const rootPath = pathEls.join('.');
@@ -286,10 +244,6 @@ export const basePrototype = {
                 rootPath
             });
         }
-
-        // check schema of changed field
-        if (!this._isTemporary)
-            this.collection.schema.validate(value, objPath);
 
         objectPath.set(this._data, objPath, value);
         return this;
@@ -318,24 +272,34 @@ export const basePrototype = {
 
     /**
      * runs an atomic update over the document
-     * @param  {function(RxDocument)}  fun
+     * @param  {function(any)} fun that takes the document-data and returns a new data-object
      * @return {Promise<RxDocument>}
      */
     atomicUpdate(fun) {
         this._atomicQueue = this._atomicQueue
-            .then(() => fun(this))
-            .then(() => this.save());
+            .then(() => fun(clone(this._dataSync$.getValue()), this))
+            .then(newData => this._saveData(newData));
 
         return this._atomicQueue.then(() => this);
     },
 
-    /**
-     * save document if its data has changed
-     * @return {boolean} false if nothing to save
-     */
-    async save() {
-        if (this._isTemporary) return this._saveTemporary();
+    atomicSet(key, value) {
+        return this.atomicUpdate(docData => {
+            objectPath.set(docData, key, value);
+            return docData;
+        });
+    },
 
+    /**
+     * saves the new document-data
+     * and handles the events
+     * @param {} newData 
+     */
+    async _saveData(newData) {
+        newData = clone(newData);
+
+
+        // deleted documents cannot be changed
         if (this._deleted$.getValue()) {
             throw RxError.newRxError('DOC11', {
                 id: this.primary,
@@ -343,59 +307,54 @@ export const basePrototype = {
             });
         }
 
-        // check if different
-        if (deepEqual(this._data, this._dataSync$.getValue())) {
-            this._synced$.next(true);
-            return false; // nothing changed, dont save
-        }
-
         await this.collection._runHooks('pre', 'save', this);
 
-        this.collection.schema.validate(this._data);
+        this.collection.schema.validate(newData);
 
-        const ret = await this.collection._pouchPut(clone(this._data));
+        const ret = await this.collection._pouchPut(clone(newData));
         if (!ret.ok) {
             throw RxError.newRxError('DOC12', {
                 data: ret
             });
         }
 
-        const emitValue = clone(this._data);
-        emitValue._rev = ret.rev;
 
-        this._data = emitValue;
+        newData._rev = ret.rev;
 
-        await this.collection._runHooks('post', 'save', this);
-
-        // event
-        this._synced$.next(true);
-        this._dataSync$.next(clone(emitValue));
-
-
+        // emit event
         const changeEvent = RxChangeEvent.create(
             'UPDATE',
             this.collection.database,
             this.collection,
             this,
-            emitValue
+            newData
         );
         this.$emit(changeEvent);
-        return true;
+
+
+        await this.collection._runHooks('post', 'save', this);
     },
 
     /**
-     * does the same as .save() but for temporary documents
+     * saves the temporary document and makes a non-temporary out of it
      * Saving a temporary doc is basically the same as RxCollection.insert()
-     * @return {Promise}
+     * @return {boolean} false if nothing to save
      */
-    _saveTemporary() {
+    save() {
+        // .save() cannot be called on non-temporary-documents
+        if (!this._isTemporary) {
+            throw RxError.newRxError('DOC17', {
+                id: this.primary,
+                document: this
+            });
+        }
+
         return this.collection.insert(this)
             .then(() => {
                 this._isTemporary = false;
                 this.collection._docCache.set(this.primary, this);
 
                 // internal events
-                this._synced$.next(true);
                 this._dataSync$.next(clone(this._data));
 
                 return true;

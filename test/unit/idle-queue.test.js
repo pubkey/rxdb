@@ -27,7 +27,4 @@ config.parallel('idle-queue.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('e', () => {
-        //        it('exit', () => process.exit());
-    });
 });

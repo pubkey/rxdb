@@ -21,8 +21,9 @@ config.parallel('reactive-document.test.js', () => {
             it('should fire on save', async () => {
                 const c = await humansCollection.create();
                 const doc = await c.findOne().exec();
-                doc.set('firstName', util.randomCouchString(8));
-                doc.save();
+
+                await doc.atomicSet('firstName', util.randomCouchString(8));
+
                 const changeEvent = await doc.$.pipe(first()).toPromise();
                 assert.equal(changeEvent._id, doc.primary);
                 c.database.destroy();
@@ -37,8 +38,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = util.randomCouchString(10);
-                doc.set('firstName', setName);
-                await doc.save();
+                await doc.atomicSet('firstName', setName);
                 await util.promiseWait(5);
                 assert.equal(valueObj.v, setName);
                 c.database.destroy();
@@ -53,8 +53,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = util.randomCouchString(10);
-                doc.set('mainSkill.name', setName);
-                await doc.save();
+                await doc.atomicSet('mainSkill.name', setName);
                 util.promiseWait(5);
                 assert.equal(valueObj.v, setName);
                 c.database.destroy();
@@ -66,8 +65,7 @@ config.parallel('reactive-document.test.js', () => {
                 const sub = doc.get$('firstName').subscribe(newVal => v1 = newVal);
                 await util.promiseWait(5);
 
-                doc.set('firstName', 'foobar');
-                await doc.save();
+                await doc.atomicSet('firstName', 'foobar');
 
                 let v2;
                 doc.get$('firstName').subscribe(newVal => v2 = newVal);
@@ -105,122 +103,7 @@ config.parallel('reactive-document.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => {});
-    });
-    describe('synced$', () => {
-        describe('positive', () => {
-            it('should be in sync when unchanged document gets changed by other instance', async () => {
-                const name = util.randomCouchString(10);
-                const c1 = await humansCollection.createMultiInstance(name, 1);
-                const c2 = await humansCollection.createMultiInstance(name, 0);
-                const doc = await c1.findOne().exec();
-                const doc2 = await c2.findOne().exec();
-                assert.deepEqual(doc.firstName, doc2.firstName);
-                assert.notEqual(doc, doc2);
-
-                const ok = await doc.synced$.pipe(first()).toPromise();
-                assert.ok(ok);
-
-                doc2.firstName = 'foobar';
-                await doc2.save();
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    return doc.firstName === 'foobar';
-                });
-                assert.equal(doc.firstName, 'foobar');
-
-                const ok2 = await doc.synced$.pipe(first()).toPromise();
-                assert.ok(ok2);
-
-                c1.database.destroy();
-                c2.database.destroy();
-            });
-            it('should not be in sync when changed document gets changed by other instance', async () => {
-                const name = util.randomCouchString(10);
-                const c1 = await humansCollection.createMultiInstance(name, 1);
-                const c2 = await humansCollection.createMultiInstance(name, 0);
-                const doc = await c1.findOne().exec();
-                const doc2 = await c2.findOne().exec();
-                assert.deepEqual(doc.firstName, doc2.firstName);
-                assert.notEqual(doc, doc2);
-
-                doc.firstName = 'foobar1';
-                doc2.firstName = 'foobar2';
-                await doc2.save();
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    return doc.firstName === 'foobar1';
-                });
-                assert.equal(doc.firstName, 'foobar1');
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    const notOk = await doc.synced$.pipe(first()).toPromise();
-                    return !notOk;
-                });
-                const notOk = await doc.synced$.pipe(first()).toPromise();
-                assert.ok(!notOk);
-
-                c1.database.destroy();
-                c2.database.destroy();
-            });
-            it('should be in sync again when unsync doc saves', async () => {
-                const name = util.randomCouchString(10);
-                const c1 = await humansCollection.createMultiInstance(name, 1);
-                const c2 = await humansCollection.createMultiInstance(name, 0);
-                const doc = await c1.findOne().exec();
-                const doc2 = await c2.findOne().exec();
-                assert.deepEqual(doc.firstName, doc2.firstName);
-                assert.notEqual(doc, doc2);
-
-                doc.firstName = 'foobar1';
-
-                // unsyc
-                doc2.firstName = 'foobar2';
-                await doc2.save();
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    const notOk = await doc.synced$.pipe(first()).toPromise();
-                    return !notOk;
-                });
-
-                // resync
-                await doc.save();
-
-                await AsyncTestUtil.waitUntil(async () => {
-                    const ok = await doc.synced$.pipe(first()).toPromise();
-                    return ok;
-                });
-
-                c1.database.destroy();
-                c2.database.destroy();
-            });
-        });
-        describe('negative', () => {});
-    });
-    describe('.resync()', () => {
-        it('should have the original state after resync()', async () => {
-            const c = await humansCollection.create();
-            const doc = await c.findOne().exec();
-            const orig = doc.firstName;
-            doc.firstName = 'foobar';
-            await doc.resync();
-            assert.equal(orig, doc.firstName);
-            c.database.destroy();
-        });
-        it('should work when resyncing two times', async () => {
-            const c = await humansCollection.create();
-            const doc = await c.findOne().exec();
-            const orig = doc.firstName;
-            doc.firstName = 'foobar';
-            await doc.resync();
-            assert.equal(orig, doc.firstName);
-
-            doc.firstName = 'foobar2';
-            await doc.resync();
-            assert.equal(orig, doc.firstName);
-
-            c.database.destroy();
-        });
+        describe('negative', () => { });
     });
     describe('.get$()', () => {
         describe('positive', () => {

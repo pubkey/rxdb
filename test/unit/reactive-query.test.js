@@ -111,9 +111,8 @@ config.parallel('reactive-query.test.js', () => {
             assert.equal(values.length, 1);
 
             // change doc so query does not match
-            doc.set('firstName', 'foobar');
             pw8 = AsyncTestUtil.waitResolveable(500);
-            await doc.save();
+            await doc.atomicSet('firstName', 'foobar');
             await pw8.promise;
             assert.equal(values.length, 0);
             querySub.unsubscribe();
@@ -161,8 +160,8 @@ config.parallel('reactive-query.test.js', () => {
 
             // edit+save doc
             pw8 = AsyncTestUtil.waitResolveable(300);
-            doc.firstName = 'foobar';
-            await doc.save();
+
+            await doc.atomicSet('firstName', 'foobar');
             await pw8.promise;
 
             await util.promiseWait(20);

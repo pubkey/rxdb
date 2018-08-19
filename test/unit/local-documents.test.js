@@ -122,20 +122,17 @@ config.parallel('local-documents.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('.save()', () => {
-        it('should save the document', async () => {
+    describe('.atomicSet()', () => {
+        it('should change the value', async () => {
             const c = await humansCollection.create();
             const doc = await c.insertLocal('foobar', {
                 foo: 'bar'
             });
 
-            doc.set('foo', 'bar2');
-            await doc.save();
+            await doc.atomicSet('foo', 'bar2');
             assert.equal(doc.get('foo'), 'bar2');
-            doc.set({
-                foo: 'bar3'
-            });
-            await doc.save();
+
+            await doc.atomicSet('foo', 'bar3');
             assert.equal(doc.get('foo'), 'bar3');
 
             c.database.destroy();
@@ -149,8 +146,8 @@ config.parallel('local-documents.test.js', () => {
             const doc = await db.insertLocal('foobar', {
                 foo: 'bar'
             });
-            doc.set('foo', 'bar2');
-            await doc.save();
+
+            await doc.atomicSet('foo', 'bar2');
             db.destroy();
 
             const db2 = await RxDatabase.create({
@@ -196,9 +193,7 @@ config.parallel('local-documents.test.js', () => {
             const doc2 = await db2.getLocal('foobar');
             assert.ok(doc2);
 
-            doc1.set('foo', 'bar2');
-            await doc1.save();
-
+            await doc1.atomicSet('foo', 'bar2');
             await AsyncTestUtil.waitUntil(() => doc2.get('foo') === 'bar2');
 
             db.destroy();
@@ -264,16 +259,12 @@ config.parallel('local-documents.test.js', () => {
 
             const doc2 = await c2.findOne().exec();
             const localDoc2 = await c2.getLocal('foobar');
-
-            doc.age = 50;
-            await doc.save();
+            await doc.atomicSet('age', 50);
 
             await AsyncTestUtil.waitUntil(() => doc2.age === 50);
             await AsyncTestUtil.wait(20);
             assert.equal(localDoc2.get('age'), 10);
-
-            localDoc.set('age', 66);
-            await localDoc.save();
+            await localDoc.atomicSet('age', 66);
 
             await AsyncTestUtil.waitUntil(() => localDoc2.get('age') === 66);
             await AsyncTestUtil.wait(20);
@@ -417,8 +408,8 @@ config.parallel('local-documents.test.js', () => {
             // save localgrpId
             const grpId = 'foobar';
             const metadata = await boundaryMgmtCol.getLocal('metadata');
-            metadata.set('selectedBndrPlnId', grpId);
-            await metadata.save();
+
+            await metadata.atomicSet('selectedBndrPlnId', grpId);
 
             const data = await boundaryMgmtCol.findOne().exec();
             const json = data.toJSON();

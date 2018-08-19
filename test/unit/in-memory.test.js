@@ -44,8 +44,8 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
             const memDoc = await memCol.findOne().exec();
-            memDoc.firstName = 'foobar';
-            await memDoc.save();
+
+            await memDoc.atomicSet('firstName', 'foobar');
 
             await AsyncTestUtil.waitUntil(async () => {
                 const doc = await col.findOne()
@@ -61,8 +61,8 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
 
             const doc = await col.findOne().exec();
-            doc.firstName = 'foobar';
-            await doc.save();
+
+            await doc.atomicSet('firstName', 'foobar');
 
             await AsyncTestUtil.waitUntil(async () => {
                 const memDoc = await memCol.findOne()
@@ -293,8 +293,8 @@ config.parallel('in-memory.test.js', () => {
             assert.equal(alice.maxHp, 101);
 
             // check if it works from mem to parent
-            alice.maxHp = 103;
-            await alice.save();
+            await alice.atomicSet('maxHp', 103);
+
             await AsyncTestUtil.waitUntil(async () => {
                 const aliceDoc = await col2
                     .findOne()

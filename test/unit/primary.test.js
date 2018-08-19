@@ -167,7 +167,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.findOne()', () => {
             describe('positive', () => {
@@ -206,7 +206,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
     describe('Document', () => {
@@ -221,32 +221,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
-        });
-        describe('.set()', () => {
-            describe('positive', () => {
-                it('modify a non-primary', async () => {
-                    const c = await humansCollection.createPrimary(0);
-                    const obj = schemaObjects.simpleHuman();
-                    await c.insert(obj);
-                    const doc = await c.findOne().exec();
-                    doc.set('firstName', 'foobar');
-                    c.database.destroy();
-                });
-            });
-            describe('negative', () => {
-                it('should not allow to set the primary', async () => {
-                    const c = await humansCollection.createPrimary(0);
-                    const obj = schemaObjects.simpleHuman();
-                    await c.insert(obj);
-                    const doc = await c.findOne().exec();
-                    await AsyncTestUtil.assertThrows(
-                        () => doc.set('passportId', 'foobar'),
-                        Error
-                    );
-                    c.database.destroy();
-                });
-            });
+            describe('negative', () => { });
         });
         describe('.save()', () => {
             describe('positive', () => {
@@ -255,8 +230,7 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
+                    await doc.atomicSet('firstName', 'foobar');
                     const doc2 = await c.findOne().exec();
 
                     assert.equal(doc2.get('firstName'), 'foobar');
@@ -264,7 +238,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.subscribe()', () => {
             describe('positive', () => {
@@ -275,8 +249,7 @@ config.parallel('primary.test.js', () => {
                     const doc = await c.findOne().exec();
                     let value;
                     doc.get$('firstName').subscribe(newVal => value = newVal);
-                    doc.set('firstName', 'foobar');
-                    await doc.save();
+                    await doc.atomicSet('firstName', 'foobar');
                     await util.promiseWait(10);
                     assert.equal(value, 'foobar');
                     c.database.destroy();
@@ -319,8 +292,7 @@ config.parallel('primary.test.js', () => {
                         if (count >= 2) pW8.resolve();
                     });
                     const doc2 = await c2.findOne().exec();
-                    doc2.set('firstName', 'foobar');
-                    await doc2.save();
+                    await doc2.atomicSet('firstName', 'foobar');
                     await pW8.promise;
                     await AsyncTestUtil.waitUntil(() => value === 'foobar');
                     assert.equal(count, 2);
@@ -328,7 +300,7 @@ config.parallel('primary.test.js', () => {
                     c2.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
 });

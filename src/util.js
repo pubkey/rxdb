@@ -354,3 +354,13 @@ export function flattenObject(ob) {
     }
     return toReturn;
 }
+
+/**
+ * 
+ * @param {string} revString 
+ * @return {number}
+ */
+export function getHeightOfRevision(revString) {
+    const first = revString.split('-')[0];
+    return parseInt(first);
+}

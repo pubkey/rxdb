@@ -185,9 +185,9 @@ config.parallel('change-event-buffer.test.js', () => {
             let newVal = 0;
             while (newVal < 5) {
                 newVal++;
-                oneDoc.age = newVal;
-                await oneDoc.save();
+                await oneDoc.atomicSet('age', newVal);
             }
+
             const allEvents = q.collection._changeEventBuffer.getFrom(1);
             const reduced = q.collection._changeEventBuffer.reduceByLastOfDoc(allEvents);
 

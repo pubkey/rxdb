@@ -4,36 +4,15 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
-import deepEqual from 'deep-equal';
 import {
     clone
 } from '../util.js';
 
 export function update(updateObj) {
     const oldDocData = clone(this._data);
-    const newDoc = modifyjs(this._data, updateObj);
-    Object.keys(this._data).forEach((previousPropName) => {
-        if (newDoc[previousPropName]) {
-            // if we don't check inequality, it triggers an update attempt on fields that didn't really change,
-            // which causes problems with "readonly" fields
-            if (!deepEqual(this._data[previousPropName], newDoc[previousPropName]))
-                this._data[previousPropName] = newDoc[previousPropName];
-        } else
-            delete this._data[previousPropName];
-    });
-    delete newDoc._rev;
-    delete newDoc._id;
-    Object.keys(newDoc)
-        .filter(newPropName => !deepEqual(this._data[newPropName], newDoc[newPropName]))
-        .forEach(newPropName => this._data[newPropName] = newDoc[newPropName]);
+    const newDocData = modifyjs(oldDocData, updateObj);
 
-    return this.save()
-        .then(() => this)
-        .catch(err => {
-            // save was not successfull, reset doc-data
-            this._data = oldDocData;
-            throw err;
-        });
+    return this._saveData(newDocData);
 }
 
 export async function RxQueryUpdate(updateObj) {

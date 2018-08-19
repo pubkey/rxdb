@@ -387,8 +387,9 @@ export class RxCollection {
         json._rev = insertResult.rev;
 
         let newDoc = tempDoc;
-        if (tempDoc) tempDoc._data = json;
-        else newDoc = await this._createDocument(json);
+        if (tempDoc) {
+            tempDoc._dataSync$.next(json);
+        } else newDoc = await this._createDocument(json);
 
         await this._runHooks('post', 'insert', newDoc);
 
@@ -421,8 +422,7 @@ export class RxCollection {
         const existing = await this.findOne(primary).exec();
         if (existing) {
             json._rev = existing._rev;
-            existing._data = json;
-            await existing.save();
+            await existing.atomicUpdate(() => json);
             return existing;
         } else {
             const newDoc = await this.insert(json);
@@ -459,6 +459,7 @@ export class RxCollection {
         return doc.atomicUpdate(innerDoc => {
             json._rev = innerDoc._rev;
             innerDoc._data = json;
+            return innerDoc._data;
         }).then(() => doc);
     }
 

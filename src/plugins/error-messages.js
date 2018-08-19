@@ -85,6 +85,8 @@ const CODES = {
     DOC13: 'RxDocument.remove(): Document is already deleted',
     DOC14: 'RxDocument.destroy() does not exist',
     DOC15: 'query cannot be an array',
+    DOC16: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
+    DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',
 
     // data-migrator.js
     DM1: 'migrate() Migration has already run',
