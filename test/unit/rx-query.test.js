@@ -445,18 +445,18 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(2)
-                    .fill(0)
-                    .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                .fill(0)
+                .map(() => otherData())
+                .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
             assert.equal(query._execOverDatabaseCount, 1);
 
             await Promise.all(
                 new Array(10)
-                    .fill(0)
-                    .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                .fill(0)
+                .map(() => otherData())
+                .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.equal(query._execOverDatabaseCount, 1);
@@ -483,9 +483,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                    .fill(0)
-                    .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                .fill(0)
+                .map(() => otherData())
+                .map(data => col.atomicUpsert(data))
             );
 
             assert.equal(query._execOverDatabaseCount, 1);
@@ -711,9 +711,9 @@ config.parallel('rx-query.test.js', () => {
             // insert 100
             await Promise.all(
                 new Array(100)
-                    .fill(0)
-                    .map(() => schemaObjects.human())
-                    .map(docData => c.insert(docData))
+                .fill(0)
+                .map(() => schemaObjects.human())
+                .map(docData => c.insert(docData))
             );
 
             // make and exec query
@@ -724,9 +724,9 @@ config.parallel('rx-query.test.js', () => {
             // produces changeEvents
             await Promise.all(
                 new Array(300) // higher than ChangeEventBuffer.limit
-                    .fill(0)
-                    .map(() => schemaObjects.human())
-                    .map(docData => c.insert(docData))
+                .fill(0)
+                .map(() => schemaObjects.human())
+                .map(docData => c.insert(docData))
             );
 
             // re-exec query
@@ -852,7 +852,7 @@ config.parallel('rx-query.test.js', () => {
                 schema
             });
 
-            const destroyAll = async function (collection) {
+            const destroyAll = async function(collection) {
                 const remove = async item => {
                     try {
                         //                        console.log('remove:');
@@ -887,9 +887,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                    .fill(0)
-                    .map(() => generateDocData())
-                    .map(data => col.insert(data))
+                .fill(0)
+                .map(() => generateDocData())
+                .map(data => col.insert(data))
             );
 
             const emitted = [];
@@ -1066,13 +1066,26 @@ config.parallel('rx-query.test.js', () => {
 
             const resultDocs1 = await collection
                 .find({
-                    $and: [
-                        { event_id: { $eq: 2 } },
-                        { user_id: { $eq: '6' } },
-                        { created_at: { $gt: null } },
+                    $and: [{
+                            event_id: {
+                                $eq: 2
+                            }
+                        },
+                        {
+                            user_id: {
+                                $eq: '6'
+                            }
+                        },
+                        {
+                            created_at: {
+                                $gt: null
+                            }
+                        },
                     ],
                 })
-                .sort({ created_at: 'desc' })
+                .sort({
+                    created_at: 'desc'
+                })
                 .exec();
             const resultData1 = resultDocs1.map(doc => doc.toJSON());
 
@@ -1081,7 +1094,9 @@ config.parallel('rx-query.test.js', () => {
                 .where('event_id').eq(2)
                 .where('user_id').eq('6')
                 .where('created_at').gt(null)
-                .sort({ created_at: 'desc' })
+                .sort({
+                    created_at: 'desc'
+                })
                 .exec();
             const resultData2 = resultDocs2.map(doc => doc.toJSON());
 
@@ -1124,6 +1139,52 @@ config.parallel('rx-query.test.js', () => {
             assert.equal(res2.length, 2);
 
             c2.database.destroy();
+        });
+        it('#724 find() does not find all matching documents', async () => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    roomId: {
+                        type: 'string'
+                    },
+                    sessionId: {
+                        type: 'string'
+                    }
+                }
+            };
+            const roomsession = await db.collection({
+                name: 'roomsession',
+                schema
+            });
+            const roomId = 'roomId';
+            const sessionId = 'sessionID';
+            await roomsession.insert({
+                roomId,
+                sessionId
+            });
+
+            const foundByRoomId = await roomsession.findOne({
+                roomId
+            }).exec();
+            const foundByRoomAndSessionId = await roomsession.findOne({
+                roomId,
+                sessionId
+            }).exec();
+            const foundBySessionId = await roomsession.findOne({
+                sessionId
+            }).exec();
+
+            assert(foundByRoomId !== null); // fail
+            assert(foundByRoomAndSessionId !== null); // fail
+            assert(foundBySessionId !== null); // pass
+            assert(foundBySessionId.roomId === roomId && foundBySessionId.sessionId === sessionId); // pass
+
+            db.destroy();
         });
     });
 
