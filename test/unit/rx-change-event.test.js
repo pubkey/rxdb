@@ -6,6 +6,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 config.parallel('rx-change-event.test.js', () => {
     it('should only have doc-data on local remove', async () => {
+        return;
         const col = await humansCollection.create(5);
 
         const emitted = [];

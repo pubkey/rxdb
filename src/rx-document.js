@@ -229,7 +229,7 @@ export class RxDocument {
         if (valueObj === null) return;
 
         let pathProperties = this.collection.schema.getSchemaByObjectPath(objPath);
-        if(typeof pathProperties === 'undefined') return;
+        if (typeof pathProperties === 'undefined') return;
         if (pathProperties.properties) pathProperties = pathProperties.properties;
 
         Object.keys(pathProperties)
@@ -436,9 +436,14 @@ export class RxDocument {
         await util.promiseWait(0);
         await this.collection._runHooks('pre', 'remove', this);
 
-        await this.collection.database.lockedRun(
-            () => this.collection.pouch.remove(this.primary, this._data._rev)
-        );
+        const deletedData = util.clone(this._data);
+        deletedData._deleted = true;
+
+        /**
+         * because pouch.remove will also empty the object,
+         * we set _deleted: true and use pouch.put
+         */
+        await this.collection._pouchPut(deletedData);
 
         this.$emit(RxChangeEvent.create(
             'REMOVE',

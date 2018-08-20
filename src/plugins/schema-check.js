@@ -154,6 +154,9 @@ export function checkSchema(jsonID) {
         });
     }
 
+    if (jsonID.properties.rxdb_originInMemory)
+        throw new Error('field rxdb_originInMemory is not allowed');
+
     // check version
     if (!jsonID.hasOwnProperty('version') ||
         typeof jsonID.version !== 'number' ||

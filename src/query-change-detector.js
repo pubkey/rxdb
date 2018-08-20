@@ -41,6 +41,7 @@ class QueryChangeDetector {
                 return false;
             } else if (res) return true;
         });
+
         if (found) return true;
         if (!changed) return false;
         else return resultsData;
@@ -79,6 +80,7 @@ class QueryChangeDetector {
             console.log('wasDocInResults: ' + wasDocInResults);
             console.log('doesMatchNow: ' + doesMatchNow);
             console.log('isFilled: ' + isFilled);
+            console.log('options:' + JSON.stringify(options));
         }
 
 
@@ -107,7 +109,7 @@ class QueryChangeDetector {
 
         if (changeEvent.data.op === 'REMOVE') {
             // R1 (never matched)
-            if (!doesMatchNow) {
+            if (!wasDocInResults && !doesMatchNow) {
                 DEBUG && this._debugMessage('R1', docData);
                 return false;
             }
@@ -125,6 +127,13 @@ class QueryChangeDetector {
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
+
+            // R3.05 was in findOne-result and got removed
+            if (options.limit === 1 && !doesMatchNow && wasDocInResults) {
+                DEBUG && this._debugMessage('R3.05', docData);
+                return true;
+            }
+
             // R3.1 was in results and got removed, no limit, no skip
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
                 DEBUG && this._debugMessage('R3.1', docData);
@@ -190,6 +199,9 @@ class QueryChangeDetector {
      * @return {boolean}
      */
     doesDocMatchQuery(docData) {
+        // if doc is deleted, it cannot match
+        if (docData._deleted) return false;
+
         docData = this.query.collection.schema.swapPrimaryToId(docData);
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
         const retDocs = filterInMemoryFields(
@@ -200,6 +212,7 @@ class QueryChangeDetector {
             },
             inMemoryFields
         );
+
         const ret = retDocs.length === 1;
         return ret;
     }

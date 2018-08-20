@@ -24,7 +24,6 @@ const BULK_DOC_OPTIONS = {
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
     constructor(parentCollection, pouchSettings) {
-        //constructor(database, name, schema, pouchSettings, migrationStrategies, methods) {
         super(
             parentCollection.database,
             parentCollection.name,
@@ -118,9 +117,11 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             include_docs: true,
             live: true
         }).on('change', async (change) => {
+            // console.log('##### write to parent:');
+            if (change.doc.rxdb_originInMemory) return;
+            delete change.doc.rxdb_originInMemory;
+
             const doc = this._parentCollection._handleToPouch(change.doc);
-            // console.log('write to parent:');
-            // console.dir(doc);
             this._parentCollection.pouch.bulkDocs({
                 docs: [doc]
             }, BULK_DOC_OPTIONS);
@@ -135,11 +136,22 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         }).on('change', async (change) => {
             let doc = this._parentCollection._handleFromPouch(change.doc);
             doc = this.schema.swapPrimaryToId(doc);
-            // console.log('write to own2:');
-            // console.dir(doc);
-            this.pouch.bulkDocs({
-                docs: [doc]
-            }, BULK_DOC_OPTIONS);
+
+            // console.log('write to own inMemory:');
+            delete doc.rxdb_originInMemory;
+
+            if (doc._deleted) {
+                // because bulkDocs does not work when _deleted=true && new_edits=false, we have to do a workarround here
+                const foundBefore = await this.pouch.get(doc._id).catch(() => null);
+                doc.rxdb_originInMemory = true;
+
+                doc._rev = foundBefore._rev;
+                await this.pouch.put(doc);
+            } else {
+                await this.pouch.bulkDocs({
+                    docs: [doc]
+                }, BULK_DOC_OPTIONS);
+            }
         });
         this._changeStreams.push(fromParentStream);
     }
@@ -158,9 +170,6 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             this._eventCounter = 0;
             this.pouch.compact();
         }
-
-        //        console.log('$emit called:');
-        //        console.dir(changeEvent);
     }
 };
 
