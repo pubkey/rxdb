@@ -333,7 +333,7 @@ config.parallel('in-memory.test.js', () => {
             assert.equal(memCol.options.foobar, 'foobar');
             db.destroy();
         });
-        it('#745 inMemory collections don\'t sync up removals', async () => {
+        it('#754 inMemory collections don\'t sync up removals', async () => {
             const col = await humansCollection.create(0);
             const inMemCollection = await col.inMemory();
 
