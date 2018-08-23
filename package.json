@@ -148,7 +148,7 @@
     "leveldown": "4.0.1",
     "memdown": "3.0.0",
     "mocha": "5.2.0",
-    "mocha.parallel": "0.15.5",
+    "mocha.parallel": "0.15.6",
     "nconf": "0.10.0",
     "node": "10.1.0",
     "pouchdb": "6.4.3",
