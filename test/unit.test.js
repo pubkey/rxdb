@@ -27,7 +27,6 @@ const nodeAndBrowser = [
     '../test_tmp/unit/data-migration.test.js',
     '../test_tmp/unit/leader-election.test.js',
     '../test_tmp/unit/replication.test.js',
-    '../test_tmp/unit/rx-change-event.test.js',
     '../test_tmp/unit/encryption.test.js',
     '../test_tmp/unit/import-export.test.js',
     '../test_tmp/unit/cross-instance.test.js',
