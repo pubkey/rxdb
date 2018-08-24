@@ -28,6 +28,8 @@ export async function checkAdapter(adapter) {
         await pouch.remove(recoveredDoc);
     } catch (err) {
         return false;
+    } finally {
+        pouch && pouch.destroy && pouch.destroy()
     }
 
     if (recoveredDoc && recoveredDoc.value)
