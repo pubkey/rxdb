@@ -293,7 +293,7 @@ export const basePrototype = {
     /**
      * saves the new document-data
      * and handles the events
-     * @param {} newData 
+     * @param {} newData
      */
     async _saveData(newData) {
         newData = clone(newData);

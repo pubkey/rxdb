@@ -22,7 +22,7 @@ import {
 } from 'rxjs/operators';
 
 let _queryCount = 0;
-const newQueryID = function () {
+const newQueryID = function() {
     return ++_queryCount;
 };
 
@@ -209,8 +209,9 @@ export class RxQuery {
                                 else return results;
                             });
                     }),
-                    filter(results => results !== 'WAITFORNEXTEMIT')
-                ).asObservable();
+                    filter(results => results !== 'WAITFORNEXTEMIT'),
+                )
+                .asObservable();
 
             // we also subscribe to the changeEvent-stream so it detects changed if it has subscribers
             const changeEvents$ = this.collection.$
@@ -307,8 +308,7 @@ export class RxQuery {
         // if no selector is used, pouchdb has a bug, so we add a default-selector
         if (Object.keys(json.selector).length === 0) {
             json.selector = {
-                _id: {
-                }
+                _id: {}
             };
         }
 
@@ -469,12 +469,12 @@ export class RxQuery {
  * @param  {string[]} mQueryProtoKeys [description]
  * @return {void}                 [description]
  */
-const protoMerge = function (rxQueryProto, mQueryProtoKeys) {
+const protoMerge = function(rxQueryProto, mQueryProtoKeys) {
     mQueryProtoKeys
         .filter(attrName => !attrName.startsWith('_'))
         .filter(attrName => !rxQueryProto[attrName])
         .forEach(attrName => {
-            rxQueryProto[attrName] = function (p1) {
+            rxQueryProto[attrName] = function(p1) {
                 const clonedThis = this._clone();
                 clonedThis.mquery[attrName](p1);
                 return clonedThis._tunnelQueryCache();

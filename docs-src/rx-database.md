@@ -27,6 +27,7 @@ Depending on the adapter this can also be used to define the storage-folder of y
 The storage-adapter defines where the data is actually stored at. You can use a string for [pouchdb-adapters](https://pouchdb.com/adapters.html) or an object for level-adapters. To use an adapter it must before have been added with the RxDB.plugin()-function.
 
 Before using a level-adapter, you have to add the ``` pouchdb-adapter-leveldb``` module.
+**Please always ensure that your adapter-version is the same as `pouchdb-core` in the [rxdb package.json](https://github.com/pubkey/rxdb/blob/master/package.json). Otherwise you might have strange problems**
 
 Example with level-adapter:
 

@@ -310,12 +310,73 @@ config.parallel('pouch-db-integration.test.js', () => {
             // get docs
             const docs = await pouch.find({
                 selector: {
-                    foo: { $gt: null }
+                    foo: {
+                        $gt: null
+                    }
                 },
                 sort: ['foo']
             });
 
             assert.equal(docs.docs.length, 1);
+
+            pouch.destroy();
+        });
+        it('removing via bulkDocs does not work', async () => {
+            const pouch = new RxDB.PouchDB(
+                util.randomCouchString(10), {
+                    adapter: 'memory'
+                }, {
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
+            );
+
+            // add one doc
+            await pouch.put({
+                _id: 'foobar',
+                foo: 'bar'
+            });
+
+            // overwrite via bulkDocs
+            await pouch.bulkDocs([{
+                _id: 'foobar',
+                foo: 'bar',
+                _rev: '2-6c5d4399ffe848f395069eab42630eee'
+            }], {
+                new_edits: false
+            });
+
+            // find again
+            const foundAfter = await pouch.find({
+                selector: {}
+            });
+            assert.ok(foundAfter.docs[0]._rev.startsWith('2-')); // ok
+
+            // delete via bulkDocs
+            const x = await pouch.put({
+                _id: 'foobar',
+                foo: 'bar',
+                _rev: '3-13af8c9a835820969a8a273b18783a70',
+                _deleted: true
+            }, {
+                new_edits: false
+            });
+            assert.equal(x.length, 0);
+
+            /**
+             * If this test ever throws, it means we can remove the hacky workarround in
+             * src/plugins/in-memory.js
+             * Where we add the rxdb_originInMemory-flag
+             */
+            await AsyncTestUtil.assertThrows(
+                async () => {
+                    const foundAfter2 = await pouch.find({
+                        selector: {}
+                    });
+                    assert.ok(foundAfter2.docs[0]._rev.startsWith('3-'));
+                },
+                'AssertionError'
+            );
 
             pouch.destroy();
         });

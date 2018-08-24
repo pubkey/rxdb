@@ -28,7 +28,6 @@ const BULK_DOC_OPTIONS = {
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
     constructor(parentCollection, pouchSettings) {
-        //constructor(database, name, schema, pouchSettings, migrationStrategies, methods) {
         super(
             parentCollection.database,
             parentCollection.name,
@@ -51,6 +50,12 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             this._changeStreams.forEach(stream => stream.cancel());
             this.pouch.destroy();
         });
+
+        // add orm functions and options from parent
+        this.options = parentCollection.options;
+        Object
+            .entries(parentCollection._statics)
+            .forEach(([funName, fun]) => this.__defineGetter__(funName, () => fun.bind(this)));
     }
 
     async prepare() {
@@ -66,13 +71,13 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         // INDEXES
         await Promise.all(
             this.schema.indexes
-                .map(indexAr => {
-                    return this.pouch.createIndex({
-                        index: {
-                            fields: indexAr
-                        }
-                    });
-                })
+            .map(indexAr => {
+                return this.pouch.createIndex({
+                    index: {
+                        fields: indexAr
+                    }
+                });
+            })
         );
 
         this._subs.push(
@@ -114,10 +119,12 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             since: 'now',
             include_docs: true,
             live: true
-        }).on('change', change => {
+        }).on('change', async (change) => {
+            // console.log('##### write to parent:');
+            if (change.doc.rxdb_originInMemory) return;
+            delete change.doc.rxdb_originInMemory;
+
             const doc = this._parentCollection._handleToPouch(change.doc);
-            // console.log('write to parent:');
-            // console.dir(doc);
             this._parentCollection.pouch.bulkDocs({
                 docs: [doc]
             }, BULK_DOC_OPTIONS);
@@ -129,14 +136,25 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             since: 'now',
             include_docs: true,
             live: true
-        }).on('change', change => {
+        }).on('change', async (change) => {
             let doc = this._parentCollection._handleFromPouch(change.doc);
             doc = this.schema.swapPrimaryToId(doc);
-            // console.log('write to own2:');
-            // console.dir(doc);
-            this.pouch.bulkDocs({
-                docs: [doc]
-            }, BULK_DOC_OPTIONS);
+
+            // console.log('write to own inMemory:');
+            delete doc.rxdb_originInMemory;
+
+            if (doc._deleted) {
+                // because bulkDocs does not work when _deleted=true && new_edits=false, we have to do a workarround here
+                const foundBefore = await this.pouch.get(doc._id).catch(() => null);
+                doc.rxdb_originInMemory = true;
+
+                doc._rev = foundBefore._rev;
+                await this.pouch.put(doc);
+            } else {
+                await this.pouch.bulkDocs({
+                    docs: [doc]
+                }, BULK_DOC_OPTIONS);
+            }
         });
         this._changeStreams.push(fromParentStream);
     }
@@ -155,9 +173,6 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             this._eventCounter = 0;
             this.pouch.compact();
         }
-
-        //        console.log('$emit called:');
-        //        console.dir(changeEvent);
     }
 }
 

@@ -305,6 +305,72 @@ config.parallel('in-memory.test.js', () => {
 
             db2.destroy();
         });
+        it('#744 inMemory collections don\'t implement static methods and options', async () => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                ignoreDuplicate: true
+            });
+            const col = await db.collection({
+                name: 'heroes',
+                schema: schemas.human,
+                statics: {
+                    foo() {
+                        return 'bar';
+                    }
+                },
+                options: {
+                    foobar: 'foobar'
+                }
+            });
+            const memCol = await col.inMemory();
+
+            // check method
+            assert.equal(memCol.foo(), 'bar');
+
+            // check options
+            assert.equal(memCol.options.foobar, 'foobar');
+            db.destroy();
+        });
+        it('#754 inMemory collections don\'t sync up removals', async () => {
+            const col = await humansCollection.create(0);
+            const inMemCollection = await col.inMemory();
+
+            const obj = schemaObjects.human();
+            await col.insert(obj);
+
+            // w8 until insert was replicated into memory
+            await AsyncTestUtil.waitUntil(async () => {
+                const inserted = await inMemCollection.findOne().exec();
+                return !!inserted;
+            });
+
+            // Remove from non-inMemory
+            await col
+                .findOne()
+                .exec()
+                .then(x => x.remove());
+
+
+            // wait until remove was replicated
+            await AsyncTestUtil.waitUntil(async () => {
+                const foundMemory = await inMemCollection.findOne().exec();
+                return !foundMemory;
+            });
+
+
+            const foundWithOtherQuery = await inMemCollection.findOne().where('firstName').ne('whatever').exec();
+            assert.equal(foundWithOtherQuery, null);
+
+            const foundWithSameQuery = await inMemCollection.findOne().exec();
+            assert.equal(foundWithSameQuery, null);
+
+            const foundNonMemory = await col.findOne().exec();
+            assert.equal(foundNonMemory, null);
+
+            col.database.destroy();
+        });
     });
     describe('e', () => {
         // TODO remove this

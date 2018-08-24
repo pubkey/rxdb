@@ -15,6 +15,12 @@ Other:
   - Upgrade to eslint 5 (no more babel-eslint)
   - Refactored `plugins/replication/.watchForChanges()` to fix sometimes-breaking-test with `RxReplicationState.complete$`
 
+### 7.X.X (comming soon)
+
+Bugfixes:
+  - inMemory collections don't implement static methods [#744](https://github.com/pubkey/rxdb/issues/744)
+  - inMemory collections do not sync up removals [#754](https://github.com/pubkey/rxdb/issues/754)
+
 ### 7.7.1 (August 1, 2018)
 
 Bugfixes:

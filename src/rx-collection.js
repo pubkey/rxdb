@@ -38,7 +38,8 @@ export class RxCollection {
         migrationStrategies = {},
         methods = {},
         attachments = {},
-        options = {}
+        options = {},
+        statics = {}
     ) {
         this._isInMemory = false;
         this.destroyed = false;
@@ -50,7 +51,9 @@ export class RxCollection {
         this._methods = methods; // orm of documents
         this._attachments = attachments; // orm of attachments
         this.options = options;
+
         this._atomicUpsertQueues = new Map();
+        this._statics = statics;
 
         this._docCache = DocCache.create();
         this._queryCache = QueryCache.create();
@@ -843,7 +846,8 @@ export async function create({
         migrationStrategies,
         methods,
         attachments,
-        options
+        options,
+        statics
     );
     await collection.prepare();
 
