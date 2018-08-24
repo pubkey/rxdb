@@ -8,35 +8,58 @@ import {
     adapterObject
 } from '../util';
 
+/**
+ * The same pouchdb-location is used on each run
+ * To ensure when this is run multiple times,
+ * there will not be many created databases
+ */
+export const POUCHDB_LOCATION = 'rxdb-adapter-check';
+
 export async function checkAdapter(adapter) {
-    const id = 'rxdb-test-adapter-' + generateId();
+    // id of the document which is stored and removed to ensure everything works
+    const _id = POUCHDB_LOCATION + '-' + generateId();
     let recoveredDoc = null;
-    let pouch;
     try {
-        pouch = new PouchDB(
-            id,
+        const pouch = new PouchDB(
+            POUCHDB_LOCATION,
             adapterObject(adapter), {
-                auto_compaction: false, // no compaction because this only stores local documents
+                auto_compaction: true,
                 revs_limit: 1
             }
         );
         await pouch.info(); // ensure that we wait until db is useable
-        await pouch.put({
-            _id: id,
-            value: true
-        });
-        recoveredDoc = await pouch.get(id);
 
-        // cleanup
+        // ensure write works
+        await pouch.put({
+            _id,
+            value: {
+                ok: true,
+                time: new Date().getTime()
+            }
+        });
+
+        // ensure read works
+        recoveredDoc = await pouch.get(_id);
+
+        // ensure remove works
         await pouch.remove(recoveredDoc);
     } catch (err) {
         return false;
     }
 
-    if (recoveredDoc && recoveredDoc.value)
+    if (recoveredDoc && recoveredDoc.value && recoveredDoc.value.ok)
         return true;
     else
         return false;
+
+    /**
+     * NOTICE:
+     * Do not remove the pouchdb-instance after the test
+     * The problem is that when this function is call in parallel,
+     * for example when you restore the tabs from a browser-session and open
+     * the same website multiple times at the same time,
+     * calling destroy would possibly crash the other call
+     */
 }
 
 export const rxdb = true;

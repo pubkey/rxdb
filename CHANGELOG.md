@@ -10,6 +10,9 @@ Breaking:
   - QueryChangeDetection is not enabled in the RxDatabase-options `queryChangeDetection: true`
   - Setters are only callable on temporary documents
 
+Bugfixes:
+  - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
+
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
