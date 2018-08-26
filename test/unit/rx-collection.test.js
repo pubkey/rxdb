@@ -437,6 +437,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('find in serial', async () => {
                         const c = await humansCollection.createPrimary(0);
                         const docData = schemaObjects.simpleHuman();
+
                         const docs = await c.find().exec();
                         assert.equal(docs.length, 0);
                         await c.insert(docData);
@@ -549,7 +550,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.database.destroy();
                     });
                 });
-                describe('negative', () => { });
+                describe('negative', () => {});
             });
             describe('.or()', () => {
                 it('should find the 2 documents with the or-method', async () => {
@@ -701,6 +702,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     it('validate results', async () => {
                         const c = await humansCollection.createAgeIndex();
+
                         const desc = await c.find().sort({
                             age: -1
                         }).exec();
@@ -733,10 +735,10 @@ config.parallel('rx-collection.test.js', () => {
                                     $gt: 0
                                 }
                             })
-                                .sort({
-                                    age: -1
-                                })
-                                .exec(),
+                            .sort({
+                                age: -1
+                            })
+                            .exec(),
                             Error
                         );
                         c.database.destroy();
@@ -1045,7 +1047,7 @@ config.parallel('rx-collection.test.js', () => {
 
                     c.database.destroy();
                 });
-                it('BUG: insert and find very often', async function () {
+                it('BUG: insert and find very often', async function() {
                     this.timeout(5000);
                     const amount = 10;
                     for (let i = 0; i < amount; i++) {
@@ -1360,7 +1362,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     await Promise.all(
                         new Array(5).fill(0)
-                            .map(() => collection.insert(schemaObjects.human()))
+                        .map(() => collection.insert(schemaObjects.human()))
                     );
                     const allDocs = await collection.find().exec();
                     assert.equal(5, allDocs.length);
@@ -1385,7 +1387,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     await Promise.all(
                         new Array(5).fill(0)
-                            .map(() => collection.insert(schemaObjects.human()))
+                        .map(() => collection.insert(schemaObjects.human()))
                     );
                     await collection.remove();
 
@@ -1395,7 +1397,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: otherSchema,
                         migrationStrategies: {
-                            1: function (doc) {
+                            1: function(doc) {
                                 return doc;
                             }
                         }
@@ -1404,7 +1406,7 @@ config.parallel('rx-collection.test.js', () => {
                     assert.equal(noDocs.length, 0);
                     await Promise.all(
                         new Array(5).fill(0)
-                            .map(() => collection2.insert(schemaObjects.human()))
+                        .map(() => collection2.insert(schemaObjects.human()))
                     );
                     const fiveDocs = await collection2.find().exec();
                     assert.equal(fiveDocs.length, 5);

@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+// import AsyncTestUtil from 'async-test-util';
 import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
@@ -233,22 +233,6 @@ config.parallel('plugin.test.js', () => {
             const col = await humansCollection.create(5);
             const doc = await col.findOne().exec();
             assert.equal(doc.foo, 'bar_createRxDocument');
-            col.database.destroy();
-        });
-        it('postCreateRxDocument', async () => {
-            const plugin = {
-                rxdb: true,
-                hooks: {
-                    postCreateRxDocument: async (doc) => {
-                        await AsyncTestUtil.wait(100);
-                        doc.postCreateFoo = 'postCreateRxDocument worked!';
-                    }
-                }
-            };
-            RxDB.plugin(plugin);
-            const col = await humansCollection.create(5);
-            const doc = await col.findOne().exec();
-            assert.equal(doc.postCreateFoo, 'postCreateRxDocument worked!');
             col.database.destroy();
         });
         it('preCreatePouchDb', async () => {

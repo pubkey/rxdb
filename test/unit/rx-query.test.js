@@ -19,7 +19,7 @@ config.parallel('rx-query.test.js', () => {
         describe('basic', () => {
             it('should distinguish between different sort-orders', async () => {
                 // TODO I don't know if this is defined in the couchdb-spec
-                /*return;
+                /*
                 const q1 = new MQuery();
                 q1.sort('age');
                 q1.sort('name');
@@ -28,9 +28,7 @@ config.parallel('rx-query.test.js', () => {
                 q2.sort('name');
                 q2.sort('age');
 
-
-                console.dir(q1);
-                console.dir(q2);*/
+                */
             });
         });
         describe('.clone()', () => {
@@ -314,8 +312,6 @@ config.parallel('rx-query.test.js', () => {
                 .sort('name')
                 .sort('-age');
 
-            console.dir(q.mquery);
-            console.dir(q2.mquery);
 
             assert.notEqual(q, q2);
             assert.notEqual(q.id, q2.id);
@@ -345,25 +341,28 @@ config.parallel('rx-query.test.js', () => {
             const col = await humansCollection.create(2);
 
             // it is assumed that this query can never handled by the QueryChangeDetector
-            const q = col.find().sort('-passportId').limit(1);
+            const query = col.find().sort('-passportId').limit(1);
 
             const fired = [];
-            q.$.subscribe(res => fired.push(res));
+            const sub1 = query.$.subscribe(res => {
+                fired.push(res);
+            });
 
             await AsyncTestUtil.waitUntil(() => fired.length === 1);
-            assert.equal(q._execOverDatabaseCount, 1);
-            assert.equal(q._latestChangeEvent, 2);
+            assert.equal(query._execOverDatabaseCount, 1);
+            assert.equal(query._latestChangeEvent, 2);
 
             const addObj = schemaObjects.human();
             addObj.passportId = 'zzzzzzzz';
             await col.insert(addObj);
-            assert.equal(q.collection._changeEventBuffer.counter, 3);
+            assert.equal(query.collection._changeEventBuffer.counter, 3);
 
-            await AsyncTestUtil.waitUntil(() => q._latestChangeEvent === 3);
-            assert.equal(q._latestChangeEvent, 3);
+            await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3);
+            assert.equal(query._latestChangeEvent, 3);
 
             await AsyncTestUtil.waitUntil(() => fired.length === 2);
             assert.equal(fired[1].pop().passportId, addObj.passportId);
+            sub1.unsubscribe();
             col.database.destroy();
         });
         it('reusing exec should execOverDatabase when change happened', async () => {
@@ -858,12 +857,9 @@ config.parallel('rx-query.test.js', () => {
             const destroyAll = async function(collection) {
                 const remove = async item => {
                     try {
-                        //                        console.log('remove:');
-                        //                        console.dir(item.toJSON());
                         await item.remove();
                     } catch (e) {
                         // loop on document conflicts to delete all revisions
-                        console.log('err', e);
                         await remove(item);
                     }
                     return true;
@@ -903,8 +899,6 @@ config.parallel('rx-query.test.js', () => {
                     updatedAt: 'desc'
                 })
                 .$.subscribe(res => {
-                    //        console.log('emitted:');
-                    //        console.dir(JSON.stringify(res));
                     emitted.push(res);
                 });
 
@@ -1069,9 +1063,9 @@ config.parallel('rx-query.test.js', () => {
             });
 
 
+            /* eslint-disable */
             const selector = {
-                $and: [
-                    {
+                $and: [{
                         event_id: {
                             $eq: 2
                         }
@@ -1087,6 +1081,8 @@ config.parallel('rx-query.test.js', () => {
                     }
                 ]
             };
+            /* eslint-enable */
+
             const resultDocs1 = await collection.find(selector)
                 .sort({
                     created_at: 'desc'

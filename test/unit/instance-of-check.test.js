@@ -9,7 +9,6 @@ config.parallel('instance-of-check.test.js', () => {
         const c = await humansCollection.create(1);
         const query = c.findOne();
         const doc = await query.exec();
-
         assert.ok(RxDB.isRxDatabase(c.database));
         assert.ok(RxDB.isRxCollection(c));
         assert.ok(RxDB.isRxQuery(query));

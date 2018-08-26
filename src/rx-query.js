@@ -18,7 +18,9 @@ import {
 import {
     mergeMap,
     filter,
-    map
+    map,
+    first,
+    tap
 } from 'rxjs/operators';
 
 let _queryCount = 0;
@@ -26,18 +28,25 @@ const newQueryID = function() {
     return ++_queryCount;
 };
 
-
 export class RxQuery {
     constructor(op, queryObj, collection) {
         this.op = op;
         this.collection = collection;
         this.id = newQueryID();
-        if (!queryObj) queryObj = this._defaultQuery();
+        if (!queryObj) queryObj = _getDefaultQuery(this.collection);
         this.mquery = new MQuery(queryObj);
+
+        this._subs = [];
+
+        // contains the results as plain json-data
+        this._resultsData = null;
+
+        // contains the results as RxDocument[]
+        this._resultsDocs$ = new BehaviorSubject(null);
+
         this._queryChangeDetector = QueryChangeDetector.create(this);
 
-        this._resultsData = null;
-        this._results$ = new BehaviorSubject(null);
+        // stores the changeEvent-Number of the last handled change-event
         this._latestChangeEvent = -1;
 
         /**
@@ -48,27 +57,6 @@ export class RxQuery {
         this._execOverDatabaseCount = 0;
 
         this._ensureEqualQueue = Promise.resolve();
-    }
-
-    _defaultQuery() {
-        return {
-            [this.collection.schema.primaryPath]: {}
-        };
-    }
-
-    // returns a clone of this RxQuery
-    _clone() {
-        const cloned = new RxQuery(this.op, this._defaultQuery(), this.collection);
-        cloned.mquery = this.mquery.clone();
-        return cloned;
-    }
-
-    /**
-     * run this query through the QueryCache
-     * @return {RxQuery} can be this or another query with the equal state
-     */
-    _tunnelQueryCache() {
-        return this.collection._queryCache.getByQuery(this);
     }
 
     toString() {
@@ -84,6 +72,21 @@ export class RxQuery {
             this.stringRep = JSON.stringify(stringObj, stringifyFilter);
         }
         return this.stringRep;
+    }
+
+    // returns a clone of this RxQuery
+    _clone() {
+        const cloned = new RxQuery(this.op, _getDefaultQuery(this.collection), this.collection);
+        cloned.mquery = this.mquery.clone();
+        return cloned;
+    }
+
+    /**
+     * run this query through the QueryCache
+     * @return {RxQuery} can be this or another query with the equal state
+     */
+    _tunnelQueryCache() {
+        return this.collection._queryCache.getByQuery(this);
     }
 
     /**
@@ -109,14 +112,14 @@ export class RxQuery {
 
     /**
      * ensures that the results of this query is equal to the results which a query over the database would give
-     * @return {Promise<boolean>} true if results have changed
+     * @return {Promise<boolean>|boolean} true if results have changed
      */
-    async __ensureEqual() {
+    __ensureEqual() {
         let ret = false;
         if (this._isResultsInSync()) return false; // nothing happend
 
         let mustReExec = false; // if this becomes true, a whole execution over the database is made
-        if (this._latestChangeEvent === -1) mustReExec = true;
+        if (this._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
 
         /**
          * try to use the queryChangeDetector to calculate the new results
@@ -138,7 +141,7 @@ export class RxQuery {
                 if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
                     // we got the new results, we do not have to re-execute, mustReExec stays false
                     ret = true; // true because results changed
-                    await this._setResultData(changeResult);
+                    this._setResultData(changeResult);
                 }
             }
         }
@@ -147,28 +150,30 @@ export class RxQuery {
         if (mustReExec) {
             // counter can change while _execOverDatabase() is running so we save it here
             const latestAfter = this.collection._changeEventBuffer.counter;
-            const newResultData = await this._execOverDatabase();
-            this._latestChangeEvent = latestAfter;
-            if (!deepEqual(newResultData, this._resultsData)) {
-                ret = true; // true because results changed
-                await this._setResultData(newResultData);
-            }
+
+            return this._execOverDatabase()
+                .then(newResultData => {
+                    this._latestChangeEvent = latestAfter;
+                    if (!deepEqual(newResultData, this._resultsData)) {
+                        ret = true; // true because results changed
+                        this._setResultData(newResultData);
+                    }
+                    return ret;
+                });
         }
         return ret; // true if results have changed
     }
 
+    /**
+     * set the new result-data as result-docs of the query
+     * @param {{}[]} newResultData json-docs that were recieved from pouchdb
+     * @return {RxDocument[]}
+     */
     _setResultData(newResultData) {
         this._resultsData = newResultData;
-        return this.collection._createDocuments(this._resultsData)
-            .then(docs => {
-                let newResultDocs = docs;
-                if (this.op === 'findOne') {
-                    if (docs.length === 0) newResultDocs = null;
-                    else newResultDocs = docs[0];
-                }
-
-                this._results$.next(newResultDocs);
-            });
+        const docs = this.collection._createDocuments(this._resultsData);
+        this._resultsDocs$.next(docs);
+        return docs;
     }
 
     /**
@@ -176,6 +181,7 @@ export class RxQuery {
      * @return {Promise<{}[]>} results-array with document-data
      */
     _execOverDatabase() {
+        if (this.collection.database.destroyed) return;
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         let docsPromise;
@@ -191,52 +197,85 @@ export class RxQuery {
                     op: this.op
                 });
         }
+
         return docsPromise;
     }
 
+    /**
+     * Returns an observable that emits the results
+     * This should behave like an rxjs-BehaviorSubject which means:
+     * - Emit the current result-set on subscribe
+     * - Emit the new result-set when an RxChangeEvent comes in
+     * - Do not emit anything before the first result-set was created (no null)
+     * @return {BehaviorSubject<RxDocument[]>}
+     */
     get $() {
         if (!this._$) {
-            // use results$ to emit new results
-            const res$ = this
-                ._results$
+            /**
+             * We use _resultsDocs$ to emit new results
+             * This also ensure that there is a reemit on subscribe
+             */
+            const results$ = this._resultsDocs$
                 .pipe(
-                    // whe run _ensureEqual() on each subscription
-                    // to ensure it triggers a re-run when subscribing after some time
-                    mergeMap(results => {
+                    mergeMap(docs => {
                         return this._ensureEqual()
                             .then(hasChanged => {
-                                if (hasChanged) return 'WAITFORNEXTEMIT';
-                                else return results;
+                                if (hasChanged) return false; // wait for next emit
+                                else return docs;
                             });
                     }),
-                    filter(results => results !== 'WAITFORNEXTEMIT'),
-                )
-                .asObservable();
-
-            // we also subscribe to the changeEvent-stream so it detects changed if it has subscribers
-            const changeEvents$ = this.collection.$
-                .pipe(
-                    filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op)),
-                    filter(() => {
-                        this._ensureEqual();
-                        return false;
+                    filter(docs => !!docs), // not if previous returned false
+                    map(docs => {
+                        // findOne()-queries emit document or null
+                        if (this.op === 'findOne') {
+                            const doc = docs.length === 0 ? null : docs[0];
+                            return doc;
+                        } else return docs; // find()-queries emit RxDocument[]
+                    }),
+                    map(docs => {
+                        // copy the array so it wont matter if the user modifies it
+                        const ret = Array.isArray(docs) ? docs.slice() : docs;
+                        return ret;
                     })
+                ).asObservable();
+
+
+            /**
+             * subscribe to the changeEvent-stream so it detects changed if it has subscribers
+             */
+            const changeEvents$ = this.collection.docChanges$
+                .pipe(
+                    tap(() => this._ensureEqual()),
+                    filter(() => false)
                 );
 
             this._$ =
                 merge(
-                    res$,
+                    results$,
                     changeEvents$
                 );
         }
-        return this._$
-            .pipe(
-                map(current => {
-                    // copy the array so it wont matter if the user modifies it
-                    const ret = Array.isArray(current) ? current.slice() : current;
-                    return ret;
-                })
-            );
+        return this._$;
+    }
+
+    /**
+     * Execute the query
+     * To have an easier implementations,
+     * just subscribe and use the first result
+     * @return {Promise<RxDocument|RxDocument[]>} found documents
+     */
+    exec() {
+
+        /**
+         * run _ensureEqual() here,
+         * this will make sure that errors in the query which throw inside of pouchdb,
+         * will be thrown at this execution context
+         */
+        return this._ensureEqual()
+            .then(() => this.$
+                .pipe(
+                    first()
+                ).toPromise());
     }
 
     toJSON() {
@@ -361,25 +400,6 @@ export class RxQuery {
     }
 
     /**
-     * execute the query
-     * @return {Promise<RxDocument|RxDocument[]>} found documents
-     */
-    async exec() {
-        let changed = true;
-
-        // we run _ensureEqual() until we are in sync with the database-state
-        while (changed)
-            changed = await this._ensureEqual();
-
-        // than return the current results
-        const current = this._results$.getValue();
-
-        // copy the array so it wont matter if the user modifies it
-        const ret = Array.isArray(current) ? current.slice() : current;
-        return ret;
-    }
-
-    /**
      * regex cannot run on primary _id
      * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
      */
@@ -462,6 +482,12 @@ export class RxQuery {
         }
     }
 }
+
+const _getDefaultQuery = function(collection) {
+    return {
+        [collection.schema.primaryPath]: {}
+    };
+};
 
 /**
  * tunnel the proto-functions of mquery to RxQuery

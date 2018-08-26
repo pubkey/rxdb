@@ -167,7 +167,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {});
         });
         describe('.findOne()', () => {
             describe('positive', () => {
@@ -206,7 +206,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {});
         });
     });
     describe('Document', () => {
@@ -221,7 +221,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {});
         });
         describe('.save()', () => {
             describe('positive', () => {
@@ -238,7 +238,7 @@ config.parallel('primary.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {});
         });
         describe('.subscribe()', () => {
             describe('positive', () => {
@@ -248,18 +248,22 @@ config.parallel('primary.test.js', () => {
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
                     let value;
-                    doc.get$('firstName').subscribe(newVal => value = newVal);
+                    const sub = doc.get$('firstName').subscribe(newVal => value = newVal);
                     await doc.atomicSet('firstName', 'foobar');
                     await util.promiseWait(10);
                     assert.equal(value, 'foobar');
+                    sub.unsubscribe();
                     c.database.destroy();
                 });
                 it('subscribe to query', async () => {
                     const c = await humansCollection.createPrimary(0);
                     let docs;
-                    c.find().$.subscribe(newDocs => docs = newDocs);
+                    const sub = c.find().$.subscribe(newDocs => {
+                        docs = newDocs;
+                    });
                     await c.insert(schemaObjects.simpleHuman());
                     await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
+                    sub.unsubscribe();
                     c.database.destroy();
                 });
                 it('get event on db2 when db1 fires', async () => {
@@ -300,7 +304,7 @@ config.parallel('primary.test.js', () => {
                     c2.database.destroy();
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {});
         });
     });
 });

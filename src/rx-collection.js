@@ -21,8 +21,7 @@ import QueryCache from './query-cache';
 import ChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
 import {
-    runPluginHooks,
-    runAsyncPluginHooks
+    runPluginHooks
 } from './hooks';
 
 
@@ -92,35 +91,35 @@ export class RxCollection {
         // INDEXES
         await Promise.all(
             this.schema.indexes
-                .map(indexAr => {
-                    const compressedIdx = indexAr
-                        .map(key => {
-                            if (!this.schema.doKeyCompression())
-                                return key;
-                            else
-                                return this._keyCompressor._transformKey('', '', key.split('.'));
-                        });
+            .map(indexAr => {
+                const compressedIdx = indexAr
+                    .map(key => {
+                        if (!this.schema.doKeyCompression())
+                            return key;
+                        else
+                            return this._keyCompressor._transformKey('', '', key.split('.'));
+                    });
 
-                    return this.database.lockedRun(
-                        () => this.pouch.createIndex({
-                            index: {
-                                fields: compressedIdx
-                            }
-                        })
-                    );
-                })
+                return this.database.lockedRun(
+                    () => this.pouch.createIndex({
+                        index: {
+                            fields: compressedIdx
+                        }
+                    })
+                );
+            })
         );
 
         this._subs.push(
             this._observable$
-                .pipe(
-                    filter(cE => !cE.data.isLocal)
-                )
-                .subscribe(cE => {
-                    // when data changes, send it to RxDocument in docCache
-                    const doc = this._docCache.get(cE.data.doc);
-                    if (doc) doc._handleChangeEvent(cE);
-                })
+            .pipe(
+                filter(cE => !cE.data.isLocal)
+            )
+            .subscribe(cE => {
+                // when data changes, send it to RxDocument in docCache
+                const doc = this._docCache.get(cE.data.doc);
+                if (doc) doc._handleChangeEvent(cE);
+            })
         );
     }
 
@@ -293,7 +292,7 @@ export class RxCollection {
     /**
      * create a RxDocument-instance from the jsonData
      * @param {Object} json documentData
-     * @return {Promise<RxDocument>}
+     * @return {RxDocument}
      */
     _createDocument(json) {
         // return from cache if exsists
@@ -311,15 +310,14 @@ export class RxCollection {
         this._docCache.set(id, doc);
         this._runHooksSync('post', 'create', doc);
 
-        return runAsyncPluginHooks('postCreateRxDocument', doc)
-            .then(() => doc);
+        return doc;
     }
     /**
      * create RxDocument from the docs-array
      * @return {Promise<RxDocument[]>} documents
      */
     _createDocuments(docsJSON) {
-        return Promise.all(docsJSON.map(json => this._createDocument(json)));
+        return docsJSON.map(json => this._createDocument(json));
     }
 
     /**
@@ -343,6 +341,19 @@ export class RxCollection {
             filter(cE => cE.data.op === 'REMOVE')
         );
     }
+
+    /**
+     * only emits the change-events that change something with the documents
+     */
+    get docChanges$() {
+        if (!this.__docChanges$) {
+            this.__docChanges$ = this.$.pipe(
+                filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
+            );
+        }
+        return this.__docChanges$;
+    }
+
     $emit(changeEvent) {
         return this.database.$emit(changeEvent);
     }
@@ -392,7 +403,7 @@ export class RxCollection {
         let newDoc = tempDoc;
         if (tempDoc) {
             tempDoc._dataSync$.next(json);
-        } else newDoc = await this._createDocument(json);
+        } else newDoc = this._createDocument(json);
 
         await this._runHooks('post', 'insert', newDoc);
 
@@ -638,7 +649,7 @@ export class RxCollection {
 
         await Promise.all(
             hooks.parallel
-                .map(hook => hook(doc))
+            .map(hook => hook(doc))
         );
     }
 
@@ -706,7 +717,7 @@ export class RxCollection {
  * @throws {Error|TypeError} if not ok
  * @return {boolean}
  */
-const checkMigrationStrategies = function (schema, migrationStrategies) {
+const checkMigrationStrategies = function(schema, migrationStrategies) {
     // migrationStrategies must be object not array
     if (
         typeof migrationStrategies !== 'object' ||
@@ -764,7 +775,7 @@ export function properties() {
  * @param  {{}} statics [description]
  * @throws if not allowed
  */
-const checkOrmMethods = function (statics) {
+const checkOrmMethods = function(statics) {
     Object
         .entries(statics)
         .forEach(([k, v]) => {
