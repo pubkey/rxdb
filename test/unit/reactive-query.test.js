@@ -2,7 +2,9 @@ import assert from 'assert';
 import clone from 'clone';
 import config from './config';
 
+
 import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 import * as RxDocument from '../../dist/lib/rx-document';
 
@@ -355,8 +357,55 @@ config.parallel('reactive-query.test.js', () => {
             db.destroy();
             db2.destroy();
         });
-        describe('#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()', () => {
+        it('#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const collection = await db.collection({
+                name: 'humans',
+                schema: schemas.human
+            });
 
+            await collection.insert(schemaObjects.human());
+
+            const results = [];
+
+            const subs1 = collection.find().$.subscribe(x => {
+                results.push(x);
+                subs1.complete();
+            });
+
+            const subs2 = collection.find().$.subscribe(x => {
+                results.push(x);
+                subs2.complete();
+            });
+
+            // Let's try with a different query
+            collection
+                .find()
+                .sort('_id')
+                .exec()
+                .then((x) => {
+                    results.push(x);
+                });
+
+            const subs3 = collection
+                .find()
+                .sort('_id')
+                .$.subscribe(x => {
+                    results.push(x);
+                    subs3.complete();
+                });
+
+            await AsyncTestUtil.waitUntil(() => results.length === 4);
+            results.forEach(res => {
+                assert.equal(res.length, 1);
+            });
+
+            db.destroy();
         });
     });
 });
