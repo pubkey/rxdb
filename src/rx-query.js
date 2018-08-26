@@ -115,9 +115,10 @@ export class RxQuery {
      * @return {Promise<boolean>|boolean} true if results have changed
      */
     __ensureEqual() {
-        let ret = false;
+        if (this.collection.database.destroyed) return false; // db is closed
         if (this._isResultsInSync()) return false; // nothing happend
 
+        let ret = false;
         let mustReExec = false; // if this becomes true, a whole execution over the database is made
         if (this._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
 
@@ -181,7 +182,6 @@ export class RxQuery {
      * @return {Promise<{}[]>} results-array with document-data
      */
     _execOverDatabase() {
-        if (this.collection.database.destroyed) return;
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         let docsPromise;
@@ -264,8 +264,7 @@ export class RxQuery {
      * just subscribe and use the first result
      * @return {Promise<RxDocument|RxDocument[]>} found documents
      */
-    exec() {
-
+    async exec() {
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of pouchdb,

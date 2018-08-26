@@ -38,7 +38,7 @@
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
     "test:typings": "npm run pretest && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test:typings",
     "test:deps": "dependency-check ./package.json --no-dev",
-    "test:performance": "npm run clear:bc && npm run test:fast && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test:performance",
+    "test:performance": "npm run clear:bc && npm run pretest && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test:performance",
     "couch:start": "docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
     "test:couchdb": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test:couchdb",

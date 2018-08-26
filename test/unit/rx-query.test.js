@@ -492,6 +492,44 @@ config.parallel('rx-query.test.js', () => {
             assert.equal(query._execOverDatabaseCount, 1);
             col.database.destroy();
         });
+        it('exec from other database-instance', async () => {
+            const dbName = util.randomCouchString(10);
+            const schema = schemas.averageSchema();
+            const db = await RxDB.create({
+                name: dbName,
+                queryChangeDetection: true,
+                adapter: 'memory'
+            });
+            const col = await db.collection({
+                name: 'human',
+                schema
+            });
+
+            await Promise.all(
+                new Array(10)
+                .fill(0)
+                .map(() => schemaObjects.averageSchema())
+                .map(data => col.insert(data))
+            );
+
+            await db.destroy();
+
+            const db2 = await RxDB.create({
+                name: dbName,
+                adapter: 'memory',
+                queryChangeDetection: true,
+                ignoreDuplicate: true
+            });
+            const col2 = await db2.collection({
+                name: 'human',
+                schema
+            });
+
+            const allDocs = await col2.find().exec();
+            assert.equal(allDocs.length, 10);
+
+            db2.destroy();
+        });
     });
     describe('update', () => {
         describe('positive', () => {

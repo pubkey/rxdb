@@ -156,7 +156,7 @@ describe('performance.test.js', () => {
             queryChangeDetection: true,
             ignoreDuplicate: true
         });
-        const col2 = await db.collection({
+        const col2 = await db2.collection({
             name: 'human',
             schema,
             methods: ormMethods
