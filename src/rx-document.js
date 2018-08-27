@@ -361,7 +361,7 @@ export const basePrototype = {
             });
     },
 
-    remove() {
+    async remove() {
         if (this.deleted) {
             throw RxError.newRxError('DOC13', {
                 document: this,
@@ -369,22 +369,29 @@ export const basePrototype = {
             });
         }
 
-        return promiseWait(0)
-            .then(() => this.collection._runHooks('pre', 'remove', this))
-            .then(() => this.collection.database.lockedRun(
-                () => this.collection.pouch.remove(this.primary, this._data._rev)
-            ))
-            .then(() => {
-                this.$emit(RxChangeEvent.create(
-                    'REMOVE',
-                    this.collection.database,
-                    this.collection,
-                    this,
-                    this._data
-                ));
-                return this.collection._runHooks('post', 'remove', this);
-            })
-            .then(() => promiseWait(0));
+        await promiseWait(0);
+        await this.collection._runHooks('pre', 'remove', this);
+
+        const deletedData = clone(this._data);
+        deletedData._deleted = true;
+
+        /**
+         * because pouch.remove will also empty the object,
+         * we set _deleted: true and use pouch.put
+         */
+        await this.collection._pouchPut(deletedData);
+
+        this.$emit(RxChangeEvent.create(
+            'REMOVE',
+            this.collection.database,
+            this.collection,
+            this,
+            this._data
+        ));
+
+        await this.collection._runHooks('post', 'remove', this);
+        await promiseWait(0);
+        return this;
     },
     destroy() {
         throw RxError.newRxError('DOC14');
@@ -409,14 +416,14 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
             // getter - value
             valueObj.__defineGetter__(
                 key,
-                function () {
+                function() {
                     const _this = thisObj ? thisObj : this;
                     return _this.get(fullPath);
                 }
             );
             // getter - observable$
             Object.defineProperty(valueObj, key + '$', {
-                get: function () {
+                get: function() {
                     const _this = thisObj ? thisObj : this;
                     return _this.get$(fullPath);
                 },
@@ -425,7 +432,7 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
             });
             // getter - populate_
             Object.defineProperty(valueObj, key + '_', {
-                get: function () {
+                get: function() {
                     const _this = thisObj ? thisObj : this;
                     return _this.populate(fullPath);
                 },
@@ -433,7 +440,7 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
                 configurable: false
             });
             // setter - value
-            valueObj.__defineSetter__(key, function (val) {
+            valueObj.__defineSetter__(key, function(val) {
                 const _this = thisObj ? thisObj : this;
                 return _this.set(fullPath, val);
             });

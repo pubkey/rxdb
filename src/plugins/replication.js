@@ -99,7 +99,7 @@ export class RxReplicationState {
             fromEvent(evEmitter, 'complete')
                 .subscribe(info => {
 
-                    /** 
+                    /**
                      * when complete fires, it might be that not all changeEvents
                      * have passed throught, because of the delay of .wachtForChanges()
                      * Therefore we have to first ensure that all previous changeEvents have been handled
@@ -163,8 +163,8 @@ export function watchForChanges() {
 /**
  * handles a single change-event
  * and ensures that it is not already handled
- * @param {RxCollection} collection 
- * @param {*} change 
+ * @param {RxCollection} collection
+ * @param {*} change
  * @return {Promise<boolean>}
  */
 function _handleSingleChange(collection, change) {
@@ -178,7 +178,10 @@ function _handleSingleChange(collection, change) {
             const docData = change.doc;
             // already handled by internal event-stream
             if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-            collection.$emit(RxChangeEvent.fromPouchChange(docData, collection));
+
+            const cE = RxChangeEvent.fromPouchChange(docData, collection);
+
+            collection.$emit(cE);
             return true;
         });
 }

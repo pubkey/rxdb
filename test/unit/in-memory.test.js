@@ -73,6 +73,29 @@ config.parallel('in-memory.test.js', () => {
             });
             col.database.destroy();
         });
+        it('should fire the correct amount of events', async () => {
+            const col = await humansCollection.create(0);
+            const memCol = await col.inMemory();
+            const emitted = [];
+            const sub = memCol.$.subscribe(cE => {
+                emitted.push(cE);
+            });
+
+            const doc = await memCol.insert(schemaObjects.human());
+            await AsyncTestUtil.wait(100);
+            assert.equal(emitted.length, 1);
+
+            await doc.atomicSet('firstName', 'foobar');
+            await AsyncTestUtil.wait(100);
+            assert.equal(emitted.length, 2);
+
+            await doc.remove();
+            await AsyncTestUtil.wait(500);
+            assert.equal(emitted.length, 3);
+
+            sub.unsubscribe();
+            col.database.destroy();
+        });
     });
     describe('reactive', () => {
         it('should re-emit query when parent changes', async () => {
@@ -371,9 +394,5 @@ config.parallel('in-memory.test.js', () => {
 
             col.database.destroy();
         });
-    });
-    describe('e', () => {
-        // TODO remove this
-        //        it('e', () => process.exit());
     });
 });
