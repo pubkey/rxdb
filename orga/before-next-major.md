@@ -14,6 +14,7 @@ This list contains things that have to be done but will create breaking changes.
 - [x] Set QueryChangeDetection via RxDatabase-option
 - [x] @ngohuunam via gitter: "I need to apply to pouch setting option skip_setup: true. it's seem re-enabled again in v.7.0"
 - [x] Reuse an RxDocument-protoptye per collection instead of resetting ORM-methods and attribute getters/setters on each instance
+- [ ] Do writes on inMemory-collections direct to the parent [see](https://github.com/pubkey/rxdb/issues/744#issuecomment-414506406)
 
 # Maybe
 
