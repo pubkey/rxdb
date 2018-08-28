@@ -81,7 +81,7 @@ await myDocument.save(); // submit the changes to the storage
 ```
 
 ### remove()
-This removes the document from the collection.
+This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` like described in the [pouchdb-docs](https://pouchdb.com/guides/updating-deleting.html#deleting-documents) in option 3.
 ```js
 myDocument.remove();
 ```
