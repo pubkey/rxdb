@@ -10,23 +10,22 @@
  * @return {any} obj
  */
 var validate = function validate(obj) {
-    return obj;
+  return obj;
 };
 
 export var rxdb = true;
 export var prototypes = {
-    /**
-     * set validate-function for the RxSchema.prototype
-     * @param {[type]} prototype of RxSchema
-     */
-    RxSchema: function RxSchema(proto) {
-        proto.validate = validate;
-    }
+  /**
+   * set validate-function for the RxSchema.prototype
+   * @param {[type]} prototype of RxSchema
+   */
+  RxSchema: function RxSchema(proto) {
+    proto.validate = validate;
+  }
 };
 export var hooks = {};
-
 export default {
-    rxdb: rxdb,
-    prototypes: prototypes,
-    hooks: hooks
+  rxdb: rxdb,
+  prototypes: prototypes,
+  hooks: hooks
 };

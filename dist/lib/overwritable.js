@@ -1,15 +1,17 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports["default"] = void 0;
 
-var _rxError = require('./rx-error');
+var _rxError = _interopRequireDefault(require("./rx-error"));
 
-var _rxError2 = _interopRequireDefault(_rxError);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
+/**
+ * functions that can or should be overwritten by plugins
+ */
 var funs = {
   /**
    * validates if a password can be used
@@ -19,7 +21,7 @@ var funs = {
    * @return {void}
    */
   validatePassword: function validatePassword() {
-    throw _rxError2['default'].pluginMissing('encryption');
+    throw _rxError["default"].pluginMissing('encryption');
   },
 
   /**
@@ -28,7 +30,7 @@ var funs = {
    * @return {KeyCompressor}
    */
   createKeyCompressor: function createKeyCompressor() {
-    throw _rxError2['default'].pluginMissing('keycompression');
+    throw _rxError["default"].pluginMissing('keycompression');
   },
 
   /**
@@ -37,16 +39,15 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw _rxError2['default'].pluginMissing('leaderelection');
+    throw _rxError["default"].pluginMissing('leaderelection');
   },
-
 
   /**
    * checks if the given adapter can be used
    * @return {any} adapter
    */
   checkAdapter: function checkAdapter() {
-    throw _rxError2['default'].pluginMissing('adapter-check');
+    throw _rxError["default"].pluginMissing('adapter-check');
   },
 
   /**
@@ -56,10 +57,8 @@ var funs = {
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
     // TODO better text with link
-    return 'RxDB Error-Code ' + message + '.\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?l=JavaScript&q=' + message + '%3A\n        ';
+    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?l=JavaScript&q=" + message + "%3A\n        ";
   }
-}; /**
-    * functions that can or should be overwritten by plugins
-    */
-
-exports['default'] = funs;
+};
+var _default = funs;
+exports["default"] = _default;

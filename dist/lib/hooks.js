@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
+exports["default"] = exports.HOOKS = void 0;
+
 /**
  * stores the hooks that where added by the plugins
  */
@@ -12,15 +14,17 @@ exports.runAsyncPluginHooks = runAsyncPluginHooks;
 /**
  * hook-functions that can be extended by the plugin
  */
-var HOOKS = exports.HOOKS = {
+var HOOKS = {
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],
+
   /**
    * functions that get the json-schema as input
    * to do additionally checks/manipulation
    */
   preCreateRxSchema: [],
+
   /**
    * functions that run after the RxSchema is created
    * gets RxSchema as attribute
@@ -28,12 +32,7 @@ var HOOKS = exports.HOOKS = {
   createRxSchema: [],
   createRxQuery: [],
   createRxDocument: [],
-  /**
-   * runs after a RxDocument is created,
-   * async
-   * @type {Array}
-   */
-  postCreateRxDocument: [],
+
   /**
    * runs before a pouchdb-instance is created
    * gets pouchParameters as attribute so you can manipulate them
@@ -45,6 +44,7 @@ var HOOKS = exports.HOOKS = {
    * @type {Array}
    */
   preCreatePouchDb: [],
+
   /**
    * runs on the document-data before the document is migrated
    * {
@@ -54,35 +54,40 @@ var HOOKS = exports.HOOKS = {
    * @type {Array}
    */
   preMigrateDocument: [],
+
   /**
    * runs after the migration of a document has been done
    * @type {Array}
    */
   postMigrateDocument: [],
+
   /**
    * runs at the beginning of the destroy-process of a database
    * @type {Array}
    */
   preDestroyRxDatabase: []
 };
+exports.HOOKS = HOOKS;
 
 function runPluginHooks(hookKey, obj) {
   HOOKS[hookKey].forEach(function (fun) {
     return fun(obj);
   });
 }
-
 /**
  * @return {Promise}
  */
+
+
 function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
   }));
 }
 
-exports["default"] = {
+var _default = {
   runPluginHooks: runPluginHooks,
   runAsyncPluginHooks: runAsyncPluginHooks,
   HOOKS: HOOKS
 };
+exports["default"] = _default;

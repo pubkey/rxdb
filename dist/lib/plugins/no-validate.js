@@ -1,8 +1,10 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
+exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+
 /**
  * this plugin validates all documents
  * no mather if the schema matches or not
@@ -15,23 +17,26 @@ Object.defineProperty(exports, "__esModule", {
  * @return {any} obj
  */
 var validate = function validate(obj) {
-    return obj;
+  return obj;
 };
 
-var rxdb = exports.rxdb = true;
-var prototypes = exports.prototypes = {
-    /**
-     * set validate-function for the RxSchema.prototype
-     * @param {[type]} prototype of RxSchema
-     */
-    RxSchema: function RxSchema(proto) {
-        proto.validate = validate;
-    }
+var rxdb = true;
+exports.rxdb = rxdb;
+var prototypes = {
+  /**
+   * set validate-function for the RxSchema.prototype
+   * @param {[type]} prototype of RxSchema
+   */
+  RxSchema: function RxSchema(proto) {
+    proto.validate = validate;
+  }
 };
-var hooks = exports.hooks = {};
-
-exports["default"] = {
-    rxdb: rxdb,
-    prototypes: prototypes,
-    hooks: hooks
+exports.prototypes = prototypes;
+var hooks = {};
+exports.hooks = hooks;
+var _default = {
+  rxdb: rxdb,
+  prototypes: prototypes,
+  hooks: hooks
 };
+exports["default"] = _default;

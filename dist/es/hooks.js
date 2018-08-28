@@ -9,11 +9,13 @@ export var HOOKS = {
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],
+
   /**
    * functions that get the json-schema as input
    * to do additionally checks/manipulation
    */
   preCreateRxSchema: [],
+
   /**
    * functions that run after the RxSchema is created
    * gets RxSchema as attribute
@@ -21,12 +23,7 @@ export var HOOKS = {
   createRxSchema: [],
   createRxQuery: [],
   createRxDocument: [],
-  /**
-   * runs after a RxDocument is created,
-   * async
-   * @type {Array}
-   */
-  postCreateRxDocument: [],
+
   /**
    * runs before a pouchdb-instance is created
    * gets pouchParameters as attribute so you can manipulate them
@@ -38,6 +35,7 @@ export var HOOKS = {
    * @type {Array}
    */
   preCreatePouchDb: [],
+
   /**
    * runs on the document-data before the document is migrated
    * {
@@ -47,33 +45,33 @@ export var HOOKS = {
    * @type {Array}
    */
   preMigrateDocument: [],
+
   /**
    * runs after the migration of a document has been done
    * @type {Array}
    */
   postMigrateDocument: [],
+
   /**
    * runs at the beginning of the destroy-process of a database
    * @type {Array}
    */
   preDestroyRxDatabase: []
 };
-
 export function runPluginHooks(hookKey, obj) {
   HOOKS[hookKey].forEach(function (fun) {
     return fun(obj);
   });
 }
-
 /**
  * @return {Promise}
  */
+
 export function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
   }));
 }
-
 export default {
   runPluginHooks: runPluginHooks,
   runAsyncPluginHooks: runAsyncPluginHooks,

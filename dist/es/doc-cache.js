@@ -1,32 +1,31 @@
-import _classCallCheck from "babel-runtime/helpers/classCallCheck";
-
 // TODO add a function to run a cache-clear
-var DocCache = function () {
-    function DocCache() {
-        _classCallCheck(this, DocCache);
+var DocCache =
+/*#__PURE__*/
+function () {
+  function DocCache() {
+    this._map = new Map();
+  }
 
-        this._map = new Map();
-    }
+  var _proto = DocCache.prototype;
 
-    DocCache.prototype.get = function get(id) {
-        return this._map.get(id);
-    };
+  _proto.get = function get(id) {
+    return this._map.get(id);
+  };
 
-    DocCache.prototype.set = function set(id, obj) {
-        return this._map.set(id, obj);
-    };
+  _proto.set = function set(id, obj) {
+    return this._map.set(id, obj);
+  };
 
-    DocCache.prototype["delete"] = function _delete(id) {
-        delete this._map["delete"](id);
-    };
+  _proto["delete"] = function _delete(id) {
+    delete this._map["delete"](id);
+  };
 
-    return DocCache;
+  return DocCache;
 }();
 
 export function create() {
-    return new DocCache();
+  return new DocCache();
 }
-
 export default {
-    create: create
+  create: create
 };

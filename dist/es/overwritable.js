@@ -1,9 +1,7 @@
 /**
  * functions that can or should be overwritten by plugins
  */
-
 import RxError from './rx-error';
-
 var funs = {
   /**
    * validates if a password can be used
@@ -34,7 +32,6 @@ var funs = {
     throw RxError.pluginMissing('leaderelection');
   },
 
-
   /**
    * checks if the given adapter can be used
    * @return {any} adapter
@@ -50,8 +47,7 @@ var funs = {
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
     // TODO better text with link
-    return 'RxDB Error-Code ' + message + '.\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?l=JavaScript&q=' + message + '%3A\n        ';
+    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?l=JavaScript&q=" + message + "%3A\n        ";
   }
 };
-
 export default funs;

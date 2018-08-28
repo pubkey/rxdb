@@ -1,84 +1,74 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
-exports.overwritable = exports.prototypes = exports.rxdb = undefined;
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
 exports.create = create;
+exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = void 0;
 
-var _leaderElection = require('broadcast-channel/leader-election');
+var _leaderElection = _interopRequireDefault(require("broadcast-channel/leader-election"));
 
-var _leaderElection2 = _interopRequireDefault(_leaderElection);
+/**
+ * this plugin adds the leader-election-capabilities to rxdb
+ */
+var LeaderElector =
+/*#__PURE__*/
+function () {
+  function LeaderElector(database) {
+    this.destroyed = false;
+    this.database = database;
+    this.isLeader = false;
+    this.isDead = false;
+    this.elector = _leaderElection["default"].create(database.socket.bc);
+  }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  var _proto = LeaderElector.prototype;
 
-var LeaderElector = function () {
-    function LeaderElector(database) {
-        (0, _classCallCheck3['default'])(this, LeaderElector);
+  _proto.die = function die() {
+    return this.elector.die();
+  };
+  /**
+   * @return {Promise} promise which resolve when the instance becomes leader
+   */
 
-        this.destroyed = false;
-        this.database = database;
-        this.isLeader = false;
-        this.isDead = false;
-        this.elector = _leaderElection2['default'].create(database.socket.bc);
-    }
 
-    (0, _createClass3['default'])(LeaderElector, [{
-        key: 'die',
-        value: function die() {
-            return this.elector.die();
-        }
+  _proto.waitForLeadership = function waitForLeadership() {
+    var _this = this;
 
-        /**
-         * @return {Promise} promise which resolve when the instance becomes leader
-         */
+    return this.elector.awaitLeadership().then(function () {
+      _this.isLeader = true;
+      return true;
+    });
+  };
 
-    }, {
-        key: 'waitForLeadership',
-        value: function waitForLeadership() {
-            var _this = this;
+  _proto.destroy = function destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.isDead = true;
+    return this.die();
+  };
 
-            return this.elector.awaitLeadership().then(function () {
-                _this.isLeader = true;
-                return true;
-            });
-        }
-    }, {
-        key: 'destroy',
-        value: function destroy() {
-            if (this.destroyed) return;
-            this.destroyed = true;
-            this.isDead = true;
-            return this.die();
-        }
-    }]);
-    return LeaderElector;
-}(); /**
-      * this plugin adds the leader-election-capabilities to rxdb
-      */
+  return LeaderElector;
+}();
 
 function create(database) {
-    var elector = new LeaderElector(database);
-    return elector;
+  var elector = new LeaderElector(database);
+  return elector;
 }
 
-var rxdb = exports.rxdb = true;
-var prototypes = exports.prototypes = {};
-var overwritable = exports.overwritable = {
-    createLeaderElector: create
+var rxdb = true;
+exports.rxdb = rxdb;
+var prototypes = {};
+exports.prototypes = prototypes;
+var overwritable = {
+  createLeaderElector: create
 };
-
-exports['default'] = {
-    rxdb: rxdb,
-    prototypes: prototypes,
-    overwritable: overwritable
+exports.overwritable = overwritable;
+var _default = {
+  rxdb: rxdb,
+  prototypes: prototypes,
+  overwritable: overwritable
 };
+exports["default"] = _default;
