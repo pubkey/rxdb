@@ -4,11 +4,12 @@
 
 Breaking:
   - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
-  - `disableKeyCompression` is set to `false` by default
+  - `disableKeyCompression` is set to `true` by default
   - `RxDatabase.collection()` now only accepts the json-schema as schema-attribute
   - It is no longer allowed to set required fields via `required: true`, use `required: ['myfield']` in compliance with the jsonschema standard
   - QueryChangeDetection is not enabled in the RxDatabase-options `queryChangeDetection: true`
-  - Setters are only callable on temporary documents
+  - Setters and `save()` are only callable on temporary documents
+  - Removed `RxDocument.synced$` and `RxDocument.resync()`
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)

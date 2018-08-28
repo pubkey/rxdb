@@ -38,48 +38,6 @@ As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/
   var nestedValue = myDocument.whatever.nestedfield;
 ```
 
-### set()
-To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.
-
-```js
-myDocument.set('firstName', 'foobar');
-console.log(myDocument.get('firstName')); // <- is 'foobar'
-```
-
-### proxy-set
-As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly set values instead of using the set()-function.
-
-#### NOTICE
-It is currently not possible to proxy-set values by mutating an array. If you have to change values of an array, it is recommended to reassign the whole array instead of it parts.
-
-```js
-const myDocument = await myCollection.insert({
-      name: 'foobar',
-      nicknames: []
-});
-
-// THIS DOES NOT WORK:
-myDocument.nicknames.push('foobi'); // direct mutation
-
-// THIS WORKS:
-const nicks = myDocument.nicknames.slice(0); // copy array
-nicks.push('foobi'); // modify copy
-myDocument.nicknames = nicks; // reassing whole array
-```
-
-
-```js
-myDocument.firstName = 'foobar';
-myDocument.whatever.nestedfield = 'foobar2';
-```
-
-### save()
-This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).
-```js
-myDocument.name = 'foobar';
-await myDocument.save(); // submit the changes to the storage
-```
-
 ### remove()
 This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` like described in the [pouchdb-docs](https://pouchdb.com/guides/updating-deleting.html#deleting-documents) in option 3.
 ```js
@@ -212,88 +170,33 @@ console.log(myDocument.deleted);
 ```
 
 
-### synced$
-Emits a boolean value of whether the RxDocument is in the same state as its value stored in the database.
-This is useful to show warnings when two or more users edit a document at the same time.
+### set()
+**Only temporary documents**
+To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.
 
-Browser tab A
 ```js
-let lastState = null;
-myDocument.synced$.subscribe(state => lastState = state);
-console.log(lastState);
-// true
-
-myDocument.firstName = 'foobar';
-console.log(lastState);
-// true
+myDocument.set('firstName', 'foobar');
+console.log(myDocument.get('firstName')); // <- is 'foobar'
 ```
 
-Browser tab B
-```js
-myDocument.firstName = 'barfoo';
-await myDocument.save();
-```
+### proxy-set
+**Only temporary documents**
+As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly set values instead of using the set()-function.
 
-Browser tab A
-```js
-console.log(lastState);
-// false
-```
-
-<details>
-<summary>
-  <b>Example with Angular 2</b>
-</summary>
-
-```html
-<div *ngIf="!(hero.synced$ | async)">
-    <h4>Warning:</h4>
-    <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
-    <button md-raised-button color="primary" (click)=hero.resync()>resync</button>
-</div>
-```
-
-![synced.gif](files/synced.gif)
-</details>
-
-### get synced
-A getter to get the current value of `synced$`.
-
-Browser tab A
-```js
-console.log(myDocument.synced);
-// true
-
-myDocument.firstName = 'foobar';
-console.log(myDocument.synced);
-// true
-```
-
-Browser tab B
-```js
-myDocument.firstName = 'barfoo';
-await myDocument.save();
-```
-
-Browser tab A
-```js
-console.log(myDocument.synced);
-// false
-```
-
-### resync()
-If the RxDocument is not in sync (synced$ fires `false`), you can run `resync()` to overwrite own changes with the new state from the database.
 
 ```js
 myDocument.firstName = 'foobar';
-
-// now someone else overwrites firstName with 'Alice'
-
-myDocument.resync();
-
-console.log(myDocument.firstName);
-// Alice
+myDocument.whatever.nestedfield = 'foobar2';
 ```
+
+### save()
+**Only temporary documents**
+This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).
+```js
+myDocument.name = 'foobar';
+await myDocument.save(); // submit the changes to the storage
+```
+
 
 ### isRxDocument
 Returns true if the given object is an instance of RxDocument. Returns false if not.

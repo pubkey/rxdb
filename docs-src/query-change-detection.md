@@ -5,12 +5,14 @@ RxDB has a QueryChangeDetection to optimize observed or reused queries. This mak
 
 ## NOTICE:
 QueryChangeDetection is currently in **beta** and disabled by default.
-You can enable it by calling the `enable()`-function on its module.
+You can enable it by passing the `queryChangeDetection`-field when creating a database.
 
 ```js
-import { QueryChangeDetector } from 'rxdb';
-QueryChangeDetector.enable();
-QueryChangeDetector.enableDebugging(); // shows a console.log everytime an optimisation is made
+const db = await RxDB.create({
+  name: 'heroesdb',
+  adapter: 'memory',
+  queryChangeDetection: true // <- enable queryChangeDetection
+});
 ```
 
 # Use-case-example
