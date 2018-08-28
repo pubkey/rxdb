@@ -340,6 +340,37 @@ describe('typings.test.js', () => {
             `;
             await transpileCode(code);
         });
+        it('.atomicUpdate()', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+                    type DocType = {
+                        age: number,
+                        firstName: string,
+                        lastName: string,
+                        passportId: string
+                    };
+
+                    const myCollection: RxCollection<DocType> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        autoMigrate: false,
+                    });
+                    const doc = await myCollection.findOne().exec();
+                    if(!doc) return;
+                    await doc.atomicUpdate(docData => {
+                        const newData = {
+                            age: 23,
+                            firstName: 'bar',
+                            lastName: 'steve',
+                            passportId: 'lolol'
+                        };
+                        return newData;
+                    });
+                });
+            `;
+            await transpileCode(code);
+        });
     });
     config.parallel('orm', () => {
         it('should correctly recognize orm-methods', async () => {

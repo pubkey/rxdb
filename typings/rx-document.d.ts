@@ -16,6 +16,8 @@ export type RxDocument<RxDocumentType, OrmMethods = {}> = RxDocumentBase<RxDocum
 
 export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 
+declare type AtomicUpdateFunction<RxDocumentType> = (RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
+
 export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly collection: RxCollection<RxDocumentType, OrmMethods>;
     readonly deleted: boolean;
@@ -29,7 +31,7 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any>;
 
     // change data of document
-    atomicUpdate(fun: Function): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    atomicUpdate(fun: AtomicUpdateFunction<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     atomicSet(objPath: string, value: any);
     update(updateObj: any): Promise<any>;
     remove(): Promise<boolean>;
