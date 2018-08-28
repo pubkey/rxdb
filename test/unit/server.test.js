@@ -158,7 +158,7 @@ config.parallel('server.test.js', () => {
                 name: 'human',
                 schema: schemas.human
             }),
-            Error,
+            'RxError',
             'after'
         );
 

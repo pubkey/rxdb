@@ -601,7 +601,7 @@ config.parallel('rx-query.test.js', () => {
                             childProperty: 'Z'
                         }
                     }),
-                    Error,
+                    'RxError',
                     'schema'
                 );
                 db.destroy();

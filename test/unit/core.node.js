@@ -49,7 +49,7 @@ config.parallel('core.node.js', () => {
                     adapter: 'memory',
                     password: 'myLongAndStupidPassword'
                 }),
-                Error,
+                'RxError',
                 'plugin'
             );
         });

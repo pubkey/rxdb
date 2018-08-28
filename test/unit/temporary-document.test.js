@@ -92,7 +92,8 @@ config.parallel('temporary-document.test.js', () => {
                 const newDoc = c.newDocument(docData);
                 await AsyncTestUtil.assertThrows(
                     () => newDoc.save(),
-                    Error
+                    'RxError',
+                    'does not match'
                 );
                 c.database.destroy();
             });

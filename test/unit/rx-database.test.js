@@ -137,7 +137,8 @@ config.parallel('rx-database.test.js', () => {
                         name: null,
                         adapter: 'memory'
                     }),
-                    TypeError
+                    'RxTypeError',
+                    'null'
                 );
             });
             it('should crash with invalid adapter', async () => {
@@ -146,7 +147,8 @@ config.parallel('rx-database.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: {}
                     }),
-                    Error
+                    'RxError',
+                    'adapter'
                 );
             });
             it('should crash with invalid password (no string)', async () => {
@@ -156,7 +158,8 @@ config.parallel('rx-database.test.js', () => {
                         adapter: 'memory',
                         password: {}
                     }),
-                    TypeError
+                    'RxTypeError',
+                    'password'
                 );
             });
             it('should crash with invalid password (too short)', async () => {
@@ -166,7 +169,8 @@ config.parallel('rx-database.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(4)
                     }),
-                    Error
+                    'RxError',
+                    'min-length'
                 );
             });
             it('BUG: should have a pwHash-doc after creating the database', async () => {
@@ -206,7 +210,7 @@ config.parallel('rx-database.test.js', () => {
                         adapter: 'memory',
                         password: util.randomCouchString(10)
                     }),
-                    Error,
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -221,7 +225,7 @@ config.parallel('rx-database.test.js', () => {
                         name,
                         adapter: 'memory'
                     }),
-                    Error,
+                    'RxError',
                     'ignoreDuplicate'
                 );
                 db.destroy();
@@ -362,7 +366,7 @@ config.parallel('rx-database.test.js', () => {
                         name: 'human6',
                         schema: schemas.nostringIndex
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -380,7 +384,7 @@ config.parallel('rx-database.test.js', () => {
                         name: 'human2',
                         schema: schemas.human
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -394,7 +398,7 @@ config.parallel('rx-database.test.js', () => {
                         name: 'human7',
                         schema: schemas.encryptedHuman
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -413,7 +417,8 @@ config.parallel('rx-database.test.js', () => {
                         name: 'human8',
                         schema: schemas.bigHuman
                     }),
-                    Error
+                    'RxError',
+                    'already exists'
                 );
                 db.destroy();
             });
@@ -427,7 +432,8 @@ config.parallel('rx-database.test.js', () => {
                         name: '_test',
                         schema: schemas.human
                     }),
-                    Error
+                    'RxError',
+                    'underscore'
                 );
                 db.destroy();
             });
@@ -453,7 +459,8 @@ config.parallel('rx-database.test.js', () => {
                             name: colName,
                             schema: schemas.human
                         }),
-                        Error
+                        'RxError',
+                        'not allowed'
                     );
                     t++;
                 }
@@ -482,7 +489,8 @@ config.parallel('rx-database.test.js', () => {
                         name: collectionName,
                         schema: schemas.bigHuman
                     }),
-                    Error
+                    'RxError',
+                    'different'
                 );
                 db1.destroy();
                 db2.destroy();
@@ -584,7 +592,7 @@ config.parallel('rx-database.test.js', () => {
                 5
             );
             assert.equal(pouchPathNormal, 'mydb-rxdb-5-humans');
-            
+
             const pouchPath = getPouchLocation(
                 'mydb',
                 'subfolder/humans',

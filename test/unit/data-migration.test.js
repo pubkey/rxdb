@@ -77,7 +77,7 @@ config.parallel('data-migration.test.js', () => {
                         autoMigrate: false,
                         migrationStrategies: []
                     }),
-                    TypeError
+                    'RxTypeError'
                 );
                 db.destroy();
             });
@@ -96,7 +96,7 @@ config.parallel('data-migration.test.js', () => {
                             foo: function () { }
                         }
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -115,7 +115,7 @@ config.parallel('data-migration.test.js', () => {
                             '1.1': function () { }
                         }
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -134,7 +134,7 @@ config.parallel('data-migration.test.js', () => {
                             1: 'foobar'
                         }
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });
@@ -154,7 +154,7 @@ config.parallel('data-migration.test.js', () => {
                             3: () => { }
                         }
                     }),
-                    Error
+                    'RxError'
                 );
                 db.destroy();
             });

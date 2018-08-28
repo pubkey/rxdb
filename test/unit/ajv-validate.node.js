@@ -45,7 +45,8 @@ config.parallel('ajv-validate.node.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => col.insert({
                         foo: 'bar'
-                    })
+                    }),
+                    'RxError'
                 );
 
                 db.destroy();

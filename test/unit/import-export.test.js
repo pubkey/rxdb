@@ -182,7 +182,7 @@ config.parallel('import-export.test.js', () => {
                     const differentSchemaCol = await humansCollection.createNested();
                     await AsyncTestUtil.assertThrows(
                         () => differentSchemaCol.importDump(json),
-                        Error
+                        'RxError'
                     );
                     col.database.destroy();
                     differentSchemaCol.database.destroy();
@@ -216,7 +216,7 @@ config.parallel('import-export.test.js', () => {
                     const json = await col.dump();
                     await AsyncTestUtil.assertThrows(
                         () => col2.importDump(json),
-                        Error
+                        'RxError'
                     );
                     db.destroy();
                     db2.destroy();
@@ -478,7 +478,7 @@ config.parallel('import-export.test.js', () => {
             // should throw when the collection does not exist
             await AsyncTestUtil.assertThrows(
                 () => db2.importDump(json),
-                Error,
+                'RxError',
                 'create the collections'
             );
 

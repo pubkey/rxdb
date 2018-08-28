@@ -175,7 +175,8 @@ config.parallel('rx-collection.test.js', () => {
                             name: null,
                             schema
                         }),
-                        TypeError
+                        'RxTypeError',
+                        'null'
                     );
                     db.destroy();
                 });
@@ -196,7 +197,8 @@ config.parallel('rx-collection.test.js', () => {
                             name: '_foobar',
                             schema
                         }),
-                        Error
+                        'RxError',
+                        'foobar'
                     );
                     db.destroy();
                 });
@@ -234,7 +236,7 @@ config.parallel('rx-collection.test.js', () => {
                             name: '0foobar',
                             schema
                         }),
-                        Error
+                        'RxError'
                     );
                     db.destroy();
                 });
@@ -250,7 +252,7 @@ config.parallel('rx-collection.test.js', () => {
                             name: 'Foobar',
                             schema
                         }),
-                        Error
+                        'RxError'
                     );
                     await AsyncTestUtil.assertThrows(
                         () => RxCollection.create({
@@ -258,7 +260,7 @@ config.parallel('rx-collection.test.js', () => {
                             name: 'fooBar',
                             schema
                         }),
-                        Error
+                        'RxError'
                     );
                     db.destroy();
                 });
@@ -339,7 +341,8 @@ config.parallel('rx-collection.test.js', () => {
                     delete human.firstName;
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
-                        Error
+                        'RxError',
+                        'not match schema'
                     );
                     db.destroy();
                 });
@@ -356,7 +359,8 @@ config.parallel('rx-collection.test.js', () => {
                     human._id = util.randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
-                        Error
+                        'RxError',
+                        'not provide'
                     );
                     db.destroy();
                 });
@@ -388,7 +392,8 @@ config.parallel('rx-collection.test.js', () => {
                     human.any = util.randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
-                        Error
+                        'RxError',
+                        'not match schema'
                     );
                     db.destroy();
                 });
@@ -407,7 +412,7 @@ config.parallel('rx-collection.test.js', () => {
                             lastName: 'bar',
                             age: 20
                         }),
-                        Error,
+                        'RxError',
                         'is required'
                     );
                     db.destroy();
@@ -495,7 +500,8 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         await AsyncTestUtil.assertThrows(
                             () => c.find('foobar').exec(),
-                            Error
+                            'RxError',
+                            'findOne'
                         );
                         c.database.destroy();
                     });
@@ -503,7 +509,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         await AsyncTestUtil.assertThrows(
                             () => c.find([]).exec(),
-                            TypeError
+                            'RxTypeError'
                         );
                         c.database.destroy();
                     });
@@ -749,7 +755,7 @@ config.parallel('rx-collection.test.js', () => {
                             () => c.find().sort({
                                 foobar: 'desc'
                             }).exec(),
-                            Error,
+                            'RxError',
                             'not defined in the schema'
                         );
                         c.database.destroy();
@@ -758,7 +764,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.createAgeIndex();
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort('foobar').exec(),
-                            Error,
+                            'RxError',
                             'not defined in the schema'
                         );
                         c.database.destroy();
@@ -804,7 +810,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create(20);
                         await AsyncTestUtil.assertThrows(
                             () => c.find().limit('foobar').exec(),
-                            TypeError
+                            'RxTypeError'
                         );
                         c.database.destroy();
                     });
@@ -850,7 +856,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create(20);
                         await AsyncTestUtil.assertThrows(
                             () => c.find().skip('foobar').exec(),
-                            TypeError
+                            'RxTypeError'
                         );
                         c.database.destroy();
                     });
@@ -909,7 +915,8 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.createPrimary(0);
                         await AsyncTestUtil.assertThrows(
                             () => c.find().where('passportId').regex(/Match/).exec(),
-                            Error
+                            'RxError',
+                            'regex'
                         );
                         c.database.destroy();
                     });
@@ -1073,7 +1080,8 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.create(20);
                     await AsyncTestUtil.assertThrows(
                         () => c.findOne().limit(1).exec(),
-                        Error
+                        'RxError',
+                        'findOne'
                     );
                     c.database.destroy();
                 });
@@ -1169,7 +1177,7 @@ config.parallel('rx-collection.test.js', () => {
                     delete obj.passportId;
                     await AsyncTestUtil.assertThrows(
                         () => collection.upsert(obj),
-                        Error,
+                        'RxError',
                         'without primary'
                     );
                     db.destroy();
@@ -1190,7 +1198,8 @@ config.parallel('rx-collection.test.js', () => {
                     obj.foo = 'bar';
                     await AsyncTestUtil.assertThrows(
                         () => collection.upsert(obj),
-                        Error
+                        'RxError',
+                        'not match'
                     );
                     db.destroy();
                 });
@@ -1317,7 +1326,7 @@ config.parallel('rx-collection.test.js', () => {
                     docData2.firstName = 1337;
                     await AsyncTestUtil.assertThrows(
                         () => c.atomicUpsert(docData2),
-                        Error,
+                        'RxError',
                         'schema'
                     );
                     c.database.destroy();

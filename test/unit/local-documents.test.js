@@ -44,7 +44,7 @@ config.parallel('local-documents.test.js', () => {
                     () => c.insertLocal('foobar', {
                         foo: 'bar2'
                     }),
-                    Error,
+                    'RxError',
                     'already exists'
                 );
                 c.database.destroy();

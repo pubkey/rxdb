@@ -82,7 +82,8 @@ config.parallel('reactive-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 await AsyncTestUtil.assertThrows(
                     () => doc.get$('foobar').subscribe(newVal => newVal),
-                    Error
+                    'RxError',
+                    'observe'
                 );
                 c.database.destroy();
             });
@@ -103,7 +104,7 @@ config.parallel('reactive-document.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => { });
+        describe('negative', () => {});
     });
     describe('.get$()', () => {
         describe('positive', () => {
@@ -115,7 +116,7 @@ config.parallel('reactive-document.test.js', () => {
                 const doc = await c.findOne().exec();
                 await AsyncTestUtil.assertThrows(
                     () => doc.get$('passportId'),
-                    Error,
+                    'RxError',
                     'primary path'
                 );
                 c.database.destroy();
@@ -134,7 +135,7 @@ config.parallel('reactive-document.test.js', () => {
                 const doc = await col.findOne().exec();
                 await AsyncTestUtil.assertThrows(
                     () => doc.get$('age'),
-                    Error,
+                    'RxError',
                     'final fields'
                 );
                 db.destroy();

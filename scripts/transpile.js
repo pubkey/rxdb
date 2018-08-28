@@ -1,6 +1,7 @@
 process.env['NODE_ENV'] = 'es5';
 
 console.log('# transpiling.. (this takes some time on first run)');
+require('events').EventEmitter.defaultMaxListeners = 0;
 
 /**
  * runs the babel-transpile
@@ -37,19 +38,27 @@ nconf.argv()
 
 
 async function transpileFile(srcLocation, goalLocation) {
+    DEBUG && console.log('transpile: ' + srcLocation);
     // ensure folder exists
     const folder = path.join(goalLocation, '..');
     if (!fs.existsSync(folder)) shell.mkdir('-p', folder);
 
     await del.promise([goalLocation]);
-    const cmd = 'node node_modules/babel-cli/bin/babel.js ' + srcLocation + ' --out-file ' + goalLocation;
+    const cmd = 'node node_modules/@babel/cli/bin/babel.js ' + srcLocation + ' --out-file ' + goalLocation;
     DEBUG && console.dir(cmd);
-    if (shell.exec(cmd).code !== 0) {
+
+    const execRes = shell.exec(cmd, {
+        async: true
+    });
+    await new Promise(res => execRes.on('exit', res));
+
+    const exitCode = execRes.exitCode;
+    if (exitCode !== 0) {
         console.error('transpiling ' + srcLocation + ' failed');
         process.exit(1);
     }
-    if (DEBUG) console.log('transpiled: ' + srcLocation);
 
+    if (DEBUG) console.log('transpiled: ' + srcLocation);
 
     return;
 }
@@ -60,7 +69,7 @@ const files = Object.entries(transpileFolders)
     .map(entry => {
         const srcFolder = entry[0];
         const toFolder = entry[1];
-        return fileEntries = walkSync.entries(srcFolder)
+        return walkSync.entries(srcFolder)
             .map(fileEntry => {
                 fileEntry.goalPath = path.join(toFolder, fileEntry.relativePath);
                 return fileEntry;

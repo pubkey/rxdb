@@ -124,7 +124,8 @@ config.parallel('primary.test.js', () => {
                     obj.passportId = null;
                     await AsyncTestUtil.assertThrows(
                         () => c.insert(obj),
-                        Error
+                        'RxError',
+                        'not match'
                     );
                     c.database.destroy();
                 });

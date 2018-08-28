@@ -48,7 +48,7 @@ describe('in-memory.node.js', () => {
 
         await AsyncTestUtil.assertThrows(
             () => col.inMemory(),
-            Error,
+            'RxError',
             'adapter-memory'
         );
 

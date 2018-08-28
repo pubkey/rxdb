@@ -23,7 +23,8 @@ config.parallel('pouch-db-integration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 }),
-                Error
+                'RxError',
+                'leveldb-plugin'
             );
         });
         it('should work after adding the leveldb-plugin', async () => {
@@ -44,7 +45,8 @@ config.parallel('pouch-db-integration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 }),
-                Error
+                'RxError',
+                'Adapter'
             );
         });
         it('should work when adapter was added', async () => {
@@ -66,7 +68,8 @@ config.parallel('pouch-db-integration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'localstorage'
                 }),
-                Error
+                'RxError',
+                'Adapter'
             );
         });
     });
@@ -78,7 +81,8 @@ config.parallel('pouch-db-integration.test.js', () => {
                         name: util.randomCouchString(10),
                         adapter: 'websql'
                     }),
-                    Error
+                    'RxError',
+                    'Adapter'
                 );
             });
         });

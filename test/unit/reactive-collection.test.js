@@ -53,7 +53,8 @@ config.parallel('reactive-collection.test.js', () => {
                     () => c.insert({
                         foo: 'baar'
                     }),
-                    Error
+                    'RxError',
+                    'schema'
                 );
                 assert.equal(calls, 0);
                 sub.unsubscribe();

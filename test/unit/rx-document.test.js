@@ -136,7 +136,7 @@ config.parallel('rx-document.test.js', () => {
                 };
                 await AsyncTestUtil.assertThrows(
                     () => doc.set(path, 'foo'),
-                    TypeError,
+                    'RxTypeError',
                     'temporary RxDocuments'
                 );
                 c.database.destroy();
@@ -219,7 +219,8 @@ config.parallel('rx-document.test.js', () => {
                 await doc.remove();
                 await AsyncTestUtil.assertThrows(
                     () => doc.remove(),
-                    Error
+                    'RxError',
+                    'already'
                 );
                 c.database.destroy();
             });
@@ -300,7 +301,7 @@ config.parallel('rx-document.test.js', () => {
                             childProperty: 'Z'
                         }
                     }),
-                    Error,
+                    'RxError',
                     'schema'
                 );
                 db.destroy();
@@ -460,7 +461,7 @@ config.parallel('rx-document.test.js', () => {
                         innerDoc.age = 'foobar';
                         return innerDoc;
                     }),
-                    Error,
+                    'RxError',
                     'schema'
                 );
                 c.database.destroy();

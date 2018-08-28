@@ -4,7 +4,7 @@
  * and used via window.RxDB
  */
 
-import 'babel-polyfill';
+import '@babel/polyfill';
 import RxDB from './index.js';
 
 RxDB.plugin(require('pouchdb-adapter-idb'));

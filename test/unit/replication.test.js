@@ -206,7 +206,7 @@ describe('replication.test.js', () => {
                             pull: false
                         }
                     }),
-                    Error,
+                    'RxError',
                     'direction'
                 );
                 c.database.destroy();
@@ -256,7 +256,7 @@ describe('replication.test.js', () => {
                         remote: c2,
                         query
                     }),
-                    Error,
+                    'RxError',
                     'same'
                 );
 
@@ -584,7 +584,7 @@ describe('replication.test.js', () => {
                         live: false
                     }
                 }),
-                Error,
+                'RxError',
                 'pouchdb as remote'
             );
 

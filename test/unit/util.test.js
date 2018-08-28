@@ -74,12 +74,12 @@ describe('util.test.js', () => {
             it('should not allow _ and $ as the first character', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => util.validateCouchDBString('$foobar'),
-                    Error,
+                    'RxError',
                     'match the regex'
                 );
                 await AsyncTestUtil.assertThrows(
                     () => util.validateCouchDBString('_foobar'),
-                    Error,
+                    'RxError',
                     'match the regex'
                 );
             });
@@ -92,7 +92,7 @@ describe('util.test.js', () => {
             it('should not validate a spaced string', async () => {
                 await AsyncTestUtil.assertThrows(
                     () => util.validateCouchDBString('foo bar'),
-                    Error,
+                    'RxError',
                     'match the regex'
                 );
             });

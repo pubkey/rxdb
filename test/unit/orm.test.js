@@ -44,7 +44,8 @@ config.parallel('orm.test.js', () => {
                                 }
                             }
                         }),
-                        TypeError
+                        'RxTypeError',
+                        'cannot start'
                     );
                     db.destroy();
                 });
@@ -71,7 +72,7 @@ config.parallel('orm.test.js', () => {
                                 schema: schemas.human,
                                 statics
                             }),
-                            Error,
+                            'RxError',
                             reserved[t]
                         );
                         t++;
@@ -174,7 +175,7 @@ config.parallel('orm.test.js', () => {
                                 }
                             }
                         }),
-                        TypeError
+                        'RxTypeError'
                     );
                     db.destroy();
                 });
@@ -198,7 +199,7 @@ config.parallel('orm.test.js', () => {
                                 schema: schemas.human,
                                 methods
                             }),
-                            Error,
+                            'RxError',
                             reserved[t]
                         );
                         t++;
@@ -226,7 +227,7 @@ config.parallel('orm.test.js', () => {
                                 schema: schemas.human,
                                 methods
                             }),
-                            Error,
+                            'RxError',
                             reserved[t]
                         );
                         t++;

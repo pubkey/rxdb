@@ -238,7 +238,9 @@ config.parallel('attachments.test.js', () => {
                     id: AsyncTestUtil.randomString(5) + '.txt',
                     data: 'meow I am a kitty with a knife ',
                     type: 'text/plain'
-                })
+                }),
+                'RxError',
+                'schema'
             );
             c.database.destroy();
         });

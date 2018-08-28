@@ -16,6 +16,7 @@ Bugfixes:
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
+  - Upgrade to babel7
   - Refactored `plugins/replication/.watchForChanges()` to fix sometimes-breaking-test with `RxReplicationState.complete$`
   - Refactored `RxQuery`
 
