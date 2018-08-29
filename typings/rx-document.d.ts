@@ -32,7 +32,7 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
 
     // change data of document
     atomicUpdate(fun: AtomicUpdateFunction<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-    atomicSet(objPath: string, value: any);
+    atomicSet(objPath: string, value: any): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     update(updateObj: any): Promise<any>;
     remove(): Promise<boolean>;
 
