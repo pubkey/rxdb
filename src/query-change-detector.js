@@ -109,41 +109,40 @@ class QueryChangeDetector {
 
         if (changeEvent.data.op === 'REMOVE') {
             // R1 (never matched)
-            if (!wasDocInResults && !doesMatchNow) {
+            if (!wasDocInResults) {
                 DEBUG && this._debugMessage('R1', docData);
                 return false;
             }
 
             // R2 sorted before got removed but results not filled
-            if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
+            if (options.skip && sortBefore() && !isFilled) {
                 DEBUG && this._debugMessage('R2', docData);
                 results.shift();
                 return results;
             }
 
             // R3 (was in results and got removed)
-            if (doesMatchNow && wasDocInResults && !isFilled) {
+            if (!isFilled) {
                 DEBUG && this._debugMessage('R3', docData);
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
 
             // R3.05 was in findOne-result and got removed
-            if (options.limit === 1 && !doesMatchNow && wasDocInResults) {
+            if (options.limit === 1) {
                 DEBUG && this._debugMessage('R3.05', docData);
                 return true;
             }
 
             // R3.1 was in results and got removed, no limit, no skip
-            if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
+            if (!options.limit && !options.skip) {
                 DEBUG && this._debugMessage('R3.1', docData);
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
 
-
             // R4 matching but after results got removed
-            if (doesMatchNow && options.limit && sortAfter()) {
+            if (options.limit && sortAfter()) {
                 DEBUG && this._debugMessage('R4', docData);
                 return false;
             }
