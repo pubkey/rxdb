@@ -87,6 +87,13 @@ await lastPromise;
 console.dir(myDocument.age); // 4
 ```
 
+### atomicSet()
+Works like `atomicUpdate` but only sets the value for a single attribute.
+
+```js
+await myDocument.atomicSet('nested.attribute', 'foobar');
+console.log(myDocument.nested.attribute); // 'foobar'
+```
 
 
 ### Observe $

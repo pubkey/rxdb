@@ -60,6 +60,7 @@
         * [remove()](./rx-document.md#remove)
         * [update()](./rx-document.md#update)
         * [atomicUpdate()](./rx-document.md#atomicupdate)
+        * [atomicSet()](./rx-document.md#atomicset)
         * [$](./rx-document.md#observe-)
 
 * [RxQuery](./rx-query.md)

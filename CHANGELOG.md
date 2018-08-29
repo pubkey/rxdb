@@ -11,6 +11,9 @@ Breaking:
   - Setters and `save()` are only callable on temporary documents
   - Removed `RxDocument.synced$` and `RxDocument.resync()`
 
+Features:
+  - Added `RxDocument.atomicSet()`
+
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
 
