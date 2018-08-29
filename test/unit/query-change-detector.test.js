@@ -526,10 +526,10 @@ config.parallel('query-change-detector.test.js', () => {
     describe('ISSUES', () => {
         it('SYNC and Observe does not work with R3 - resort', async () => {
             if (!config.platform.isNode()) return;
-            const serverURL = await SpawnServer.spawn();
+            const server = await SpawnServer.spawn();
             const col = await humansCollection.createPrimary(5);
             col.sync({
-                remote: serverURL,
+                remote: server.url,
                 options: {
                     live: true
                 }
@@ -565,6 +565,7 @@ config.parallel('query-change-detector.test.js', () => {
             assert.equal(results[2][6].passportId, 'zzzzzz');
 
             sub.unsubscribe();
+            server.close();
             col.database.destroy();
         });
     });

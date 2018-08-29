@@ -35,42 +35,44 @@ describe('replication.test.js', () => {
     if (!config.platform.isNode()) return;
     describe('spawnServer.js', () => {
         it('spawn and reach a server', async () => {
-            let path = await SpawnServer.spawn();
-            path = path.split('/');
+            const server = await SpawnServer.spawn();
+            let path = server.url.split('/');
             path.pop();
             path.pop();
             path = path.join('/');
             const res = await request(path);
             const json = JSON.parse(res);
             assert.equal(typeof json.uuid, 'string');
+            server.close();
         });
         it('spawn again', async () => {
-            let path = await SpawnServer.spawn();
-            path = path.split('/');
+            const server = await SpawnServer.spawn();
+            let path = server.url.split('/');
             path.pop();
             path.pop();
             path = path.join('/');
             const res = await request(path);
             const json = JSON.parse(res);
             assert.equal(typeof json.uuid, 'string');
+            server.close();
         });
     });
     config.parallel('test pouch-sync to ensure nothing broke', () => {
         describe('positive', () => {
-            it('sync two collections over server', async function () {
-                const serverURL = await SpawnServer.spawn();
+            it('sync two collections over server', async function() {
+                const server = await SpawnServer.spawn();
                 const c = await humansCollection.create(0);
                 const c2 = await humansCollection.create(0);
 
                 const pw8 = AsyncTestUtil.waitResolveable(1000);
-                c.pouch.sync(serverURL, {
+                c.pouch.sync(server.url, {
                     live: true
-                }).on('error', function (err) {
+                }).on('error', function(err) {
                     console.log('error:');
                     console.log(JSON.stringify(err));
                     throw new Error(err);
                 });
-                c2.pouch.sync(serverURL, {
+                c2.pouch.sync(server.url, {
                     live: true
                 });
                 let count = 0;
@@ -98,15 +100,16 @@ describe('replication.test.js', () => {
 
                 c.database.destroy();
                 c2.database.destroy();
+                server.close();
             });
             it('Observable.fromEvent should fire on sync-change', async () => {
-                const serverURL = await SpawnServer.spawn();
+                const server = await SpawnServer.spawn();
                 const c = await humansCollection.create(0, null, false);
                 const c2 = await humansCollection.create(0, null, false);
-                c.pouch.sync(serverURL, {
+                c.pouch.sync(server.url, {
                     live: true
                 });
-                c2.pouch.sync(serverURL, {
+                c2.pouch.sync(server.url, {
                     live: true
                 });
 
@@ -118,10 +121,10 @@ describe('replication.test.js', () => {
                             live: true,
                             include_docs: true
                         }), 'change')
-                        .pipe(
-                            map(ar => ar[0]),
-                            filter(e => !e.id.startsWith('_'))
-                        ).subscribe(e => e1.push(e));
+                    .pipe(
+                        map(ar => ar[0]),
+                        filter(e => !e.id.startsWith('_'))
+                    ).subscribe(e => e1.push(e));
                 const e2 = [];
                 const pouch2$ =
                     fromEvent(c2.pouch.changes({
@@ -144,6 +147,7 @@ describe('replication.test.js', () => {
                 pouch2$.unsubscribe();
                 c.database.destroy();
                 c2.database.destroy();
+                server.close();
             });
         });
     });
@@ -341,7 +345,7 @@ describe('replication.test.js', () => {
                             lastEv.push.ok === true &&
                             lastEv.pull.ok === true
                         ) ret = true;
-                    } catch (e) { }
+                    } catch (e) {}
                     return ret;
                 });
                 sub.unsubscribe();
@@ -480,7 +484,7 @@ describe('replication.test.js', () => {
                 c2.database.destroy();
             });
         });
-        describe('negative', () => { });
+        describe('negative', () => {});
     });
     describe('ISSUES', () => {
         it('#630 Query cache is not being invalidated by replication', async () => {

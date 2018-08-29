@@ -443,6 +443,8 @@ config.parallel('pouch-db-integration.test.js', () => {
             await pouch.get('myid').catch(() => null);
             await pouch.put(removeMe);
 
+            await AsyncTestUtil.wait(100);
+
             foundAfter = await pouch.find({
                 selector: {}
             });

@@ -17,7 +17,6 @@ const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
 let lastPort = 12121;
 
-
 export async function spawn() {
     lastPort++;
     const path = '/db';
@@ -25,8 +24,22 @@ export async function spawn() {
     const ret = 'http://localhost:' + lastPort + path;
 
     return new Promise(res => {
-        app.listen(lastPort, function() {
-            res(ret + '/' + randomToken(5) + '/');
+        const server = app.listen(lastPort, function() {
+            res({
+                url: ret + '/' + randomToken(5) + '/',
+                close(now = false) {
+                    if (now) {
+                        server.close();
+                    } else {
+                        return new Promise(res2 => {
+                            setTimeout(() => {
+                                server.close();
+                                res2();
+                            }, 1000);
+                        });
+                    }
+                }
+            });
         });
     });
 }
