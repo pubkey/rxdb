@@ -384,5 +384,72 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             pouch.destroy();
         });
+        it('putting with _deleted does not work', async () => {
+            const pouch = new RxDB.PouchDB(
+                util.randomCouchString(10), {
+                    adapter: 'memory'
+                }, {
+                    auto_compaction: true,
+                    revs_limit: 1
+                }
+            );
+            const bulkOptions = {
+                new_edits: false
+            };
+
+            // subscribe to changes 2 times
+            pouch.changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            });
+            pouch.changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            });
+
+            // insert doc via bulkDocs
+            await pouch.bulkDocs({
+                docs: [{
+                    '|c': '0waqyh2xjwtu',
+                    '|a': 'foo123',
+                    '|b': 'King',
+                    age: 1,
+                    _id: 'myid',
+                    _rev: '1-62080c42d471e3d2625e49dcca3b8e3e'
+                }]
+            }, bulkOptions);
+
+            let foundAfter = await pouch.find({
+                selector: {}
+            });
+            assert.equal(foundAfter.docs.length, 1);
+
+
+            // update via bulkDocs
+            const updateMe = foundAfter.docs[0];
+            updateMe.firstName = 'foobar';
+            await pouch.bulkDocs({
+                docs: [updateMe]
+            }, bulkOptions);
+
+            // remove
+            foundAfter = await pouch.find({
+                selector: {}
+            });
+            const removeMe = foundAfter.docs[0];
+            removeMe._deleted = true;
+            await pouch.get('myid').catch(() => null);
+            await pouch.put(removeMe);
+
+            foundAfter = await pouch.find({
+                selector: {}
+            });
+            assert.equal(foundAfter.docs.length, 0);
+
+
+            pouch.destroy();
+        });
     });
 });
