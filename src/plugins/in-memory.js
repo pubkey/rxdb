@@ -35,7 +35,7 @@ const BULK_DOC_OPTIONS = {
 };
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
-    constructor(parentCollection, pouchSettings) {
+    constructor(parentCollection, pouchSettings = {}) {
         super(
             parentCollection.database,
             parentCollection.name,
@@ -46,7 +46,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         this._isInMemory = true;
         this._parentCollection = parentCollection;
         this._parentCollection.onDestroy.then(() => this.destroy());
-
+        this._crypter = Crypter.create(this.database.password, this.schema);
         this._changeStreams = [];
 
 
@@ -64,29 +64,19 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         Object
             .entries(parentCollection._statics)
             .forEach(([funName, fun]) => this.__defineGetter__(funName, () => fun.bind(this)));
-    }
-
-    async prepare() {
-        this._crypter = Crypter.create(this.database.password, this.schema);
 
         this.pouch = new PouchDB(
             'rxdb-in-memory-' + randomCouchString(10),
             adapterObject('memory'), {}
         );
+
         this._observable$ = new Subject();
         this._changeEventBuffer = ChangeEventBuffer.create(this);
+    }
 
-        // INDEXES
-        await Promise.all(
-            this.schema.indexes
-            .map(indexAr => {
-                return this.pouch.createIndex({
-                    index: {
-                        fields: indexAr
-                    }
-                });
-            })
-        );
+    async prepare() {
+
+        await setIndexes(this.schema, this.pouch);
 
         this._subs.push(
             this._observable$.subscribe(cE => {
@@ -96,7 +86,22 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             })
         );
 
-        await this._initialSync();
+        /* REPLICATION BETWEEN THIS AND PARENT */
+
+        // initial sync parent's docs to own
+        await replicateExistingDocuments(this._parentCollection, this);
+
+
+        /**
+         * call watchForChanges() on both sides,
+         * to ensure none-rxdb-changes like replication
+         * will fire into the change-event-stream
+         */
+        this._parentCollection.watchForChanges();
+        this.watchForChanges();
+
+
+        await this._sync();
     }
 
     /**
@@ -104,24 +109,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * so that the in-memory-collection has the same docs as the original
      * @return {Promise}
      */
-    async _initialSync() {
-        // initial sync parent's docs to own
-        const allRows = await this._parentCollection.pouch.allDocs({
-            attachments: false,
-            include_docs: true
-        });
-        await this.pouch.bulkDocs({
-            docs: allRows
-                .rows
-                .map(row => row.doc)
-                .filter(doc => !doc.language) // do not replicate design-docs
-                .map(doc => this._parentCollection._handleFromPouch(doc))
-                // swap back primary because disableKeyCompression:true
-                .map(doc => this._parentCollection.schema.swapPrimaryToId(doc))
-        }, BULK_DOC_OPTIONS);
-
-        this._parentCollection.watchForChanges();
-        this.watchForChanges();
+    async _sync() {
 
         /**
          * Sync from parent to inMemory.
@@ -210,7 +198,14 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
     }
 }
 
-
+/**
+ * returns a version of the schema that:
+ * - disabled the keyCompression
+ * - has no encryption
+ * - has no attachments
+ * @param  {RxSchema} rxSchema
+ * @return {RxSchema}
+ */
 function toCleanSchema(rxSchema) {
     const newSchemaJson = clone(rxSchema.jsonID);
     newSchemaJson.disableKeyCompression = true;
@@ -229,6 +224,54 @@ function toCleanSchema(rxSchema) {
     return RxSchema.create(newSchemaJson);
 }
 
+/**
+ * replicates all documents from the parent to the inMemoryCollection
+ * @param  {RxCollection} fromCollection
+ * @param  {RxCollection} toCollection
+ * @return {Promise<{}[]>} Promise that resolves with an array of the docs data
+ */
+export async function replicateExistingDocuments(fromCollection, toCollection) {
+    // initial sync parent's docs to own
+    const allRows = await fromCollection.pouch.allDocs({
+        attachments: false,
+        include_docs: true
+    });
+
+    const docs = allRows
+        .rows
+        .map(row => row.doc)
+        .filter(doc => !doc.language) // do not replicate design-docs
+        .map(doc => fromCollection._handleFromPouch(doc))
+        // swap back primary because disableKeyCompression:true
+        .map(doc => fromCollection.schema.swapPrimaryToId(doc));
+
+    if (docs.length === 0) return []; // nothing to replicate
+    else {
+        await toCollection.pouch.bulkDocs({
+            docs
+        }, BULK_DOC_OPTIONS);
+        return docs;
+    }
+}
+
+/**
+ * sets the indexes from the schema at the pouchdb
+ * @param {RxSchema} schema
+ * @param {PouchDB} pouch
+ * @return {Promise<void>}
+ */
+export async function setIndexes(schema, pouch) {
+    return Promise.all(
+        schema.indexes
+        .map(indexAr => {
+            return pouch.createIndex({
+                index: {
+                    fields: indexAr
+                }
+            });
+        })
+    );
+}
 
 let INIT_DONE = false;
 /**
