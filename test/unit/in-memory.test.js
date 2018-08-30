@@ -2,6 +2,7 @@
  * this test is to the in-memory-plugin
  */
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
@@ -10,9 +11,57 @@ import * as humansCollection from './../helper/humans-collection';
 import config from './config';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
+import {
+    InMemoryRxCollection,
+    setIndexes,
+    replicateExistingDocuments
+} from '../../dist/lib/plugins/in-memory';
 
 config.parallel('in-memory.test.js', () => {
+    describe('internals', () => {
+        describe('.setIndexes()', () => {
+            it('should have set all indexes', async () => {
+                const col = await humansCollection.create(0);
+                const inMem = new InMemoryRxCollection(col);
+                await setIndexes(inMem.schema, inMem.pouch);
+
+                const hasIndexes = await inMem.pouch.getIndexes();
+                assert.equal(hasIndexes.indexes[1].def.fields[0].passportId, 'asc');
+
+                col.database.destroy();
+            });
+        });
+        describe('.replicateExistingDocuments()', () => {
+            it('should have replicated all documents', async () => {
+                const col = await humansCollection.create(5);
+                const inMem = new InMemoryRxCollection(col);
+                await replicateExistingDocuments(col, inMem);
+
+                const foundAfter = await inMem.pouch.find({
+                    selector: {}
+                });
+                assert.equal(foundAfter.docs.length, 5);
+                col.database.destroy();
+            });
+            it('should have decrypted all documents', async () => {
+                const col = await humansCollection.createEncrypted(0);
+                await col.insert({
+                    passportId: 'asdf',
+                    firstName: 'steve',
+                    secret: 'foobar'
+                });
+                const inMem = new InMemoryRxCollection(col);
+                await replicateExistingDocuments(col, inMem);
+
+                const foundAfter = await inMem.pouch.find({
+                    selector: {}
+                });
+                assert.equal(foundAfter.docs[0].secret, 'foobar');
+                col.database.destroy();
+            });
+
+        });
+    });
     describe('.inMemory()', () => {
         it('should spawn an in-memory collection', async () => {
             const col = await humansCollection.create(5);
