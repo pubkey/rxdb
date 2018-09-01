@@ -97,7 +97,7 @@
     "babel-cli": "6.26.0",
     "babel-core": "6.26.3",
     "babel-eslint": "7.2.3",
-    "babel-loader": "8.0.0-beta.3",
+    "babel-loader": "8.0.1",
     "babel-plugin-transform-async-to-generator": "6.24.1",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-es2015-block-scoping": "6.26.0",
