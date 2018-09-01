@@ -104,7 +104,6 @@ export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>): void;
 
-
     // migration
     migrationNeeded(): Promise<boolean>;
     migrate(batchSize: number): Observable<{
@@ -129,6 +128,9 @@ export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
     upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
     getLocal(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
+
+    // only inMemory-collections
+    awaitPersistence(): Promise<void>;
 
     destroy(): Promise<boolean>;
     remove(): Promise<any>;

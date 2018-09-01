@@ -13,6 +13,7 @@ Breaking:
 
 Features:
   - Added `RxDocument.atomicSet()`
+  - Added `RxCollection.awaitPersistence()` for in-memory-collections
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)

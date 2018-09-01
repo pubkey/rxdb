@@ -451,6 +451,26 @@ config.parallel('in-memory.test.js', () => {
             col.database.destroy();
         });
     });
+    describe('.awaitPersistence()', () => {
+        it('should resolve the promise after some time', async () => {
+            const col = await humansCollection.create(0);
+            const memCol = await col.inMemory();
+
+            await memCol.awaitPersistence();
+
+            await memCol.insert(schemaObjects.simpleHuman());
+            await memCol.awaitPersistence();
+
+            const doc = await memCol.findOne().exec();
+            await doc.atomicSet('age', 6);
+            await memCol.awaitPersistence();
+
+            await doc.remove();
+            await memCol.awaitPersistence();
+
+            col.database.destroy();
+        });
+    });
     describe('other', () => {
         it('should work with many documents', async () => {
             const amount = 100;

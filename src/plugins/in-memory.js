@@ -12,7 +12,9 @@ import {
 
 import {
     filter,
-    map
+    map,
+    mergeMap,
+    first
 } from 'rxjs/operators';
 
 import RxCollection from '../rx-collection';
@@ -70,6 +72,12 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
 
         this._observable$ = new Subject();
         this._changeEventBuffer = ChangeEventBuffer.create(this);
+
+        const parentProto = Object.getPrototypeOf(parentCollection);
+        this._oldPouchPut = parentProto._pouchPut.bind(this);
+
+        this._nonPersistentRevisions = new Set();
+        this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
 
     async prepare() {
@@ -103,13 +111,50 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
          * create an ongoing replications between both sides
          */
         const thisToParentSub = streamChangedDocuments(this)
-            .subscribe(doc => applyChangedDocumentToPouch(this._parentCollection, doc));
+            .pipe(
+                mergeMap(doc => applyChangedDocumentToPouch(this._parentCollection, doc)
+                    .then(() => doc._rev)
+                )
+            )
+            .subscribe(changeRev => {
+                this._nonPersistentRevisions.delete(changeRev);
+                this._nonPersistentRevisionsSubject.next(this._nonPersistentRevisions.size);
+            });
         this._subs.push(thisToParentSub);
 
         const parentToThisSub = streamChangedDocuments(this._parentCollection)
             .subscribe(doc => applyChangedDocumentToPouch(this, doc));
         this._subs.push(parentToThisSub);
     }
+
+    /**
+     * waits until all writes are persistent
+     * in the parent collection
+     * @return {Promise}
+     */
+    awaitPersistence() {
+        if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
+        return this._nonPersistentRevisionsSubject.pipe(
+            filter(() => this._nonPersistentRevisions.size === 0),
+            first()
+        ).toPromise();
+    }
+
+    /**
+     * To know which events are replicated and which are not,
+     * the _pouchPut is wrapped
+     * @overwrite
+     */
+    async _pouchPut(obj, overwrite) {
+        console.log('new pouch put');
+        const ret = await this._oldPouchPut(obj, overwrite);
+        console.log('Ret');
+        console.dir(ret);
+
+        this._nonPersistentRevisions.add(ret.rev);
+        return ret;
+    }
+
 
     /**
      * @overwrite
