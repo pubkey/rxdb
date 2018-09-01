@@ -11,18 +11,15 @@ import {
 } from 'rxjs';
 
 import {
-    first,
     filter,
     map
 } from 'rxjs/operators';
 
 import RxCollection from '../rx-collection';
-import RxChangeEvent from '../rx-change-event';
 import {
     clone,
     randomCouchString,
-    adapterObject,
-    getHeightOfRevision
+    adapterObject
 } from '../util';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
@@ -102,70 +99,17 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         this.watchForChanges();
 
 
-        await this._sync();
-    }
-
-    /**
-     * this does the initial sync
-     * so that the in-memory-collection has the same docs as the original
-     * @return {Promise}
-     */
-    async _sync() {
-
-
-        /*        const thisToParentSub = streamChangedDocuments(this)
-                    .subscribe(doc => {
-                        console.log('thisToParentSub:');
-                        console.dir(doc);
-                    });
-                this._subs.push(thisToParentSub);
-
-
-                const parentToThisSub = streamChangedDocuments(this._parentCollection)
-                    .subscribe(doc => {
-                        console.log('parentToThisSub:');
-                        console.dir(doc);
-                    });
-                this._subs.push(parentToThisSub);*/
-
         /**
-         * Sync from parent to inMemory.
-         * We do not think in the other direction because writes will always go
-         * to the parent. See _pouchPut()
-         *
-         * @type {[type]}
+         * create an ongoing replications between both sides
          */
-        const fromParentStream = this._parentCollection.pouch.changes({
-            since: 'now',
-            include_docs: true,
-            live: true
-        }).on('change', async (change) => {
-            let doc = this._parentCollection._handleFromPouch(change.doc);
-            doc = this.schema.swapPrimaryToId(doc);
+        const thisToParentSub = streamChangedDocuments(this)
+            .subscribe(doc => applyChangedDocumentToPouch(this._parentCollection, doc));
+        this._subs.push(thisToParentSub);
 
-            if (doc._deleted) {
-                // because bulkDocs does not work when _deleted=true && new_edits=false, we have to do a workarround here
-                const foundBefore = await this.pouch.get(doc._id).catch(() => null);
-
-                doc._rev = foundBefore._rev;
-                const res = await this.pouch.put(doc);
-                doc._rev = res.rev;
-
-                // because pouch.put will not emit the event, do it manually
-                const cE = RxChangeEvent.fromPouchChange(doc, this);
-                this.$emit(cE);
-
-            } else {
-                await this.pouch.bulkDocs({
-                    docs: [doc]
-                }, {
-                    new_edits: false
-                });
-            }
-        });
-        this._changeStreams.push(fromParentStream);
+        const parentToThisSub = streamChangedDocuments(this._parentCollection)
+            .subscribe(doc => applyChangedDocumentToPouch(this, doc));
+        this._subs.push(parentToThisSub);
     }
-
 
     /**
      * @overwrite
@@ -185,35 +129,12 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
     }
 
     /**
-     * When a write is done to the inMemory-collection,
-     * we write to the parent and wait for the replication-event
-     * This ensures that writes are really persistend when done,
-     * and also makes it only nessesary to replicate one side
      * @overwrite
+     * Replication on the inMemory is dangerous,
+     * replicate with it's parent instead
      */
-    async _pouchPut(obj, overwrite = false) {
-        const ret = await this._parentCollection._pouchPut(obj, overwrite);
-        const changeRev = ret.rev;
-
-        // wait until the change is replicated from parent to inMemory
-        await this.$.pipe(
-            filter(cE => {
-                if (obj._deleted) {
-                    // removes have a different revision because they cannot be handled via bulkDocs
-                    // so we check for equal height and _id
-                    const isRevHeight = getHeightOfRevision(cE.data.v._rev);
-                    const mustRevHeight = getHeightOfRevision(obj._rev) + 1;
-                    if (isRevHeight === mustRevHeight && obj._id === cE.data.doc) return true;
-                    else return false;
-                } else {
-                    // use the one with the same revision
-                    return cE.data.v && cE.data.v._rev === changeRev;
-                }
-            }),
-            first()
-        ).toPromise();
-
-        return ret;
+    sync() {
+        throw RxError.newRxError('IM2');
     }
 }
 

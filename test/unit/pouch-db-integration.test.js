@@ -466,17 +466,13 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             const docData = schemaObjects.human();
             docData._id = 'foobar1';
-            console.log('put with:');
-            console.dir(docData);
             const ret = await pouch.put(docData);
 
             await AsyncTestUtil.wait(100);
 
-            console.log('overwrite with:');
             const docData2 = util.clone(docData);
             docData2._rev = ret.rev;
             docData2._deleted = true;
-            console.dir(docData2);
 
             await pouch.bulkDocs({
                 docs: [docData2]

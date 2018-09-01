@@ -260,6 +260,59 @@ config.parallel('in-memory.test.js', () => {
             sub.unsubscribe();
             col.database.destroy();
         });
+        it('should fire the correct amount of events', async () => {
+            const col = await humansCollection.create(0);
+            const memCol = await col.inMemory();
+            const emitted = [];
+            const sub = memCol.$.subscribe(cE => {
+                emitted.push(cE);
+            });
+            const emittedNonMem = [];
+            const sub2 = col.$.subscribe(cE => {
+                emittedNonMem.push(cE);
+            });
+
+            const docData = schemaObjects.human();
+            docData.firstName = 'foo123';
+            docData.age = 1;
+
+            // insert event
+            const doc = await memCol.insert(docData);
+            await AsyncTestUtil.wait(100);
+            assert.equal(emitted.length, 1); // one event should be fired
+            let foundCol = await col.find().where('firstName').ne('foobar1').exec();
+            assert.equal(foundCol.length, 1);
+            let foundMem = await memCol.find().where('firstName').ne('foobar1').exec();
+            assert.equal(foundMem.length, 1);
+
+            // update event
+            await doc.atomicSet('firstName', 'foobar');
+            await AsyncTestUtil.wait(100);
+            assert.equal(emitted.length, 2);
+            foundCol = await col.find().where('firstName').ne('foobar2').exec();
+            assert.equal(foundCol[0].firstName, 'foobar');
+            foundMem = await memCol.find().where('firstName').ne('foobar2').exec();
+            assert.equal(foundMem[0].firstName, 'foobar');
+
+            // remove event
+            await doc.remove();
+            await AsyncTestUtil.wait(100);
+            foundCol = await col.find().where('firstName').ne('foobar3').exec();
+            assert.equal(foundCol.length, 0);
+            foundMem = await memCol.find().where('firstName').ne('foobar3').exec();
+            assert.equal(foundMem.length, 0);
+            assert.equal(emitted.length, 3);
+
+            // both collection should find no docs
+            foundCol = await col.findOne().exec();
+            assert.equal(foundCol, null);
+            foundMem = await memCol.findOne().exec();
+            assert.equal(foundMem, null);
+
+            sub.unsubscribe();
+            sub2.unsubscribe();
+            col.database.destroy();
+        });
     });
     describe('reactive', () => {
         it('should re-emit query when parent changes', async () => {
@@ -405,6 +458,17 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
             const docs = await memCol.find().exec();
             assert.equal(docs.length, amount);
+            col.database.destroy();
+        });
+        it('should not allow to use .sync() on inMemory', async () => {
+            const col = await humansCollection.create(5);
+            const memCol = await col.inMemory();
+
+            await AsyncTestUtil.assertThrows(
+                () => memCol.sync(),
+                'RxError',
+                'not replicate'
+            );
             col.database.destroy();
         });
     });

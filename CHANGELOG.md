@@ -16,6 +16,8 @@ Features:
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
+  - inMemory collections don't implement static methods [#744](https://github.com/pubkey/rxdb/issues/744)
+  - inMemory collections do not sync up removals [#754](https://github.com/pubkey/rxdb/issues/754)
 
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
@@ -24,11 +26,6 @@ Other:
   - Refactored `plugins/replication/.watchForChanges()` to fix sometimes-breaking-test with `RxReplicationState.complete$`
   - Refactored `RxQuery`
 
-### 7.X.X (comming soon)
-
-Bugfixes:
-  - inMemory collections don't implement static methods [#744](https://github.com/pubkey/rxdb/issues/744)
-  - inMemory collections do not sync up removals [#754](https://github.com/pubkey/rxdb/issues/754)
 
 ### 7.7.1 (August 1, 2018)
 
