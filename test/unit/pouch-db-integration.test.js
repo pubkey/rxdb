@@ -8,6 +8,7 @@ if (config.platform.isNode())
 
 import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
+import * as schemaObjects from './../helper/schema-objects';
 import AsyncTestUtil from 'async-test-util';
 
 config.parallel('pouch-db-integration.test.js', () => {
@@ -370,7 +371,7 @@ config.parallel('pouch-db-integration.test.js', () => {
             /**
              * If this test ever throws, it means we can remove the hacky workarround in
              * src/plugins/in-memory.js
-             * Where we add the rxdb_originInMemory-flag
+             * Where we add the emitFlag to 'doNotEmitSet'
              */
             await AsyncTestUtil.assertThrows(
                 async () => {
@@ -451,6 +452,54 @@ config.parallel('pouch-db-integration.test.js', () => {
             assert.equal(foundAfter.docs.length, 0);
 
 
+            pouch.destroy();
+        });
+        it('put->delete-put will find the previous document', async () => {
+            const pouch = new RxDB.PouchDB(
+                util.randomCouchString(10), {
+                    adapter: 'memory'
+                }
+            );
+            const BULK_DOC_OPTIONS = {
+                new_edits: false
+            };
+
+            const docData = schemaObjects.human();
+            docData._id = 'foobar1';
+            console.log('put with:');
+            console.dir(docData);
+            const ret = await pouch.put(docData);
+
+            await AsyncTestUtil.wait(100);
+
+            console.log('overwrite with:');
+            const docData2 = util.clone(docData);
+            docData2._rev = ret.rev;
+            docData2._deleted = true;
+            console.dir(docData2);
+
+            await pouch.bulkDocs({
+                docs: [docData2]
+            }, BULK_DOC_OPTIONS);
+
+            await AsyncTestUtil.wait(100);
+
+            /**
+             * If this test ever throws, it means we can remove the hacky workarround in
+             * src/plugins/in-memory.js
+             * Where we add the emitFlag to 'doNotEmitSet'
+             */
+            await AsyncTestUtil.assertThrows(
+                async () => {
+                    const foundAfter2 = await pouch.find({
+                        selector: {}
+                    });
+                    assert.equal(foundAfter2.docs.length, 0);
+                },
+                'AssertionError'
+            );
+
+            // process.exit();
             pouch.destroy();
         });
     });

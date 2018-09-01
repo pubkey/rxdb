@@ -14,7 +14,9 @@ import * as util from '../../dist/lib/util';
 import {
     InMemoryRxCollection,
     setIndexes,
-    replicateExistingDocuments
+    replicateExistingDocuments,
+    streamChangedDocuments,
+    applyChangedDocumentToPouch
 } from '../../dist/lib/plugins/in-memory';
 
 config.parallel('in-memory.test.js', () => {
@@ -28,6 +30,7 @@ config.parallel('in-memory.test.js', () => {
                 const hasIndexes = await inMem.pouch.getIndexes();
                 assert.equal(hasIndexes.indexes[1].def.fields[0].passportId, 'asc');
 
+                inMem.destroy();
                 col.database.destroy();
             });
         });
@@ -41,6 +44,7 @@ config.parallel('in-memory.test.js', () => {
                     selector: {}
                 });
                 assert.equal(foundAfter.docs.length, 5);
+                inMem.destroy();
                 col.database.destroy();
             });
             it('should have decrypted all documents', async () => {
@@ -57,9 +61,120 @@ config.parallel('in-memory.test.js', () => {
                     selector: {}
                 });
                 assert.equal(foundAfter.docs[0].secret, 'foobar');
+                inMem.destroy();
                 col.database.destroy();
             });
+        });
+        describe('.streamChangedDocuments()', () => {
+            it('should stream a doc-change of a normal collection', async () => {
+                const col = await humansCollection.create(0);
+                const obs = streamChangedDocuments(col);
+                const emitted = [];
+                const sub = obs.subscribe(doc => emitted.push(doc));
 
+                await col.insert(schemaObjects.human('foobar'));
+                await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+                assert.equal(emitted[0].passportId, 'foobar');
+
+                sub.unsubscribe();
+                col.database.destroy();
+            });
+            it('should stream a doc-change of an inMemory collection', async () => {
+                const col = await humansCollection.create(0);
+                const inMem = new InMemoryRxCollection(col);
+                const obs = streamChangedDocuments(inMem);
+                const emitted = [];
+                const sub = obs.subscribe(doc => emitted.push(doc));
+
+                const doc = schemaObjects.human('foobar');
+                doc._id = 'foobar1';
+                await inMem.pouch.put(doc);
+                await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+                assert.equal(emitted[0].passportId, 'foobar');
+
+                sub.unsubscribe();
+                inMem.destroy();
+                col.database.destroy();
+            });
+            it('should use the filter-function', async () => {
+                const col = await humansCollection.create(0);
+                const obs = streamChangedDocuments(col, () => false);
+                const emitted = [];
+                const sub = obs.subscribe(doc => emitted.push(doc));
+
+                await col.insert(schemaObjects.human('foobar'));
+                await AsyncTestUtil.wait(100);
+                assert.equal(emitted.length, 0);
+
+                sub.unsubscribe();
+                col.database.destroy();
+            });
+        });
+        describe('.applyChangedDocumentToPouch()', () => {
+            it('should write the data into the collection', async () => {
+                const col = await humansCollection.create(0);
+
+                const docData = schemaObjects.human();
+                docData._id = 'foobar1';
+                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
+                await applyChangedDocumentToPouch(col, docData);
+
+                const foundAfter = await col.pouch.find({
+                    selector: {}
+                });
+                assert.equal(foundAfter.docs.length, 1);
+                assert.equal(foundAfter.docs[0]._id, 'foobar1');
+
+                col.database.destroy();
+            });
+            it('should not emit a change when written', async () => {
+                const col = await humansCollection.create(0);
+                const obs = streamChangedDocuments(col, () => false);
+                const emitted = [];
+                const sub = obs.subscribe(doc => emitted.push(doc));
+
+                const docData = schemaObjects.human();
+                docData._id = 'foobar1';
+                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
+                await applyChangedDocumentToPouch(col, docData);
+
+                await AsyncTestUtil.wait(100);
+                assert.equal(emitted.length, 0);
+
+                sub.unsubscribe();
+                col.database.destroy();
+            });
+            it('should also work with _deleted: true', async () => {
+                const col = await humansCollection.create(0);
+                const obs = streamChangedDocuments(col);
+                const emitted = [];
+
+                // insert existing doc, then overwrite
+                const docData = schemaObjects.human();
+                docData._id = 'foobar1';
+                const ret = await col.pouch.put(docData);
+
+                await AsyncTestUtil.wait(100);
+                const sub = obs.subscribe(doc => emitted.push(doc));
+
+                const docData2 = util.clone(docData);
+                docData2._rev = ret.rev;
+                docData2._deleted = true;
+                await applyChangedDocumentToPouch(col, docData2);
+
+
+                await AsyncTestUtil.wait(100);
+
+                const foundAfter = await col.pouch.find({
+                    selector: {}
+                });
+
+                assert.equal(foundAfter.docs.length, 0);
+                assert.equal(emitted.length, 0); // should not have emitted an event
+
+                sub.unsubscribe();
+                col.database.destroy();
+            });
         });
     });
     describe('.inMemory()', () => {

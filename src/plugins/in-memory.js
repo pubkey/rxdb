@@ -6,12 +6,14 @@
  */
 
 import {
-    Subject
+    Subject,
+    fromEvent as ObservableFromEvent
 } from 'rxjs';
 
 import {
     first,
-    filter
+    filter,
+    map
 } from 'rxjs/operators';
 
 import RxCollection from '../rx-collection';
@@ -31,7 +33,7 @@ import RxError from '../rx-error';
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();
 const BULK_DOC_OPTIONS = {
-    new_edits: false
+    new_edits: true
 };
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
@@ -48,7 +50,6 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         this._parentCollection.onDestroy.then(() => this.destroy());
         this._crypter = Crypter.create(this.database.password, this.schema);
         this._changeStreams = [];
-
 
         /**
          * runs on parentCollection.destroy()
@@ -111,6 +112,22 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      */
     async _sync() {
 
+
+        /*        const thisToParentSub = streamChangedDocuments(this)
+                    .subscribe(doc => {
+                        console.log('thisToParentSub:');
+                        console.dir(doc);
+                    });
+                this._subs.push(thisToParentSub);
+
+
+                const parentToThisSub = streamChangedDocuments(this._parentCollection)
+                    .subscribe(doc => {
+                        console.log('parentToThisSub:');
+                        console.dir(doc);
+                    });
+                this._subs.push(parentToThisSub);*/
+
         /**
          * Sync from parent to inMemory.
          * We do not think in the other direction because writes will always go
@@ -141,7 +158,9 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
             } else {
                 await this.pouch.bulkDocs({
                     docs: [doc]
-                }, BULK_DOC_OPTIONS);
+                }, {
+                    new_edits: false
+                });
             }
         });
         this._changeStreams.push(fromParentStream);
@@ -230,28 +249,29 @@ function toCleanSchema(rxSchema) {
  * @param  {RxCollection} toCollection
  * @return {Promise<{}[]>} Promise that resolves with an array of the docs data
  */
-export async function replicateExistingDocuments(fromCollection, toCollection) {
-    // initial sync parent's docs to own
-    const allRows = await fromCollection.pouch.allDocs({
+export function replicateExistingDocuments(fromCollection, toCollection) {
+    return fromCollection.pouch.allDocs({
         attachments: false,
         include_docs: true
+    }).then(allRows => {
+
+        const docs = allRows
+            .rows
+            .map(row => row.doc)
+            .filter(doc => !doc.language) // do not replicate design-docs
+            .map(doc => fromCollection._handleFromPouch(doc))
+            // swap back primary because disableKeyCompression:true
+            .map(doc => fromCollection.schema.swapPrimaryToId(doc));
+
+        if (docs.length === 0) return []; // nothing to replicate
+        else {
+            return toCollection.pouch.bulkDocs({
+                docs
+            }, {
+                new_edits: false
+            }).then(() => docs);
+        }
     });
-
-    const docs = allRows
-        .rows
-        .map(row => row.doc)
-        .filter(doc => !doc.language) // do not replicate design-docs
-        .map(doc => fromCollection._handleFromPouch(doc))
-        // swap back primary because disableKeyCompression:true
-        .map(doc => fromCollection.schema.swapPrimaryToId(doc));
-
-    if (docs.length === 0) return []; // nothing to replicate
-    else {
-        await toCollection.pouch.bulkDocs({
-            docs
-        }, BULK_DOC_OPTIONS);
-        return docs;
-    }
 }
 
 /**
@@ -260,7 +280,7 @@ export async function replicateExistingDocuments(fromCollection, toCollection) {
  * @param {PouchDB} pouch
  * @return {Promise<void>}
  */
-export async function setIndexes(schema, pouch) {
+export function setIndexes(schema, pouch) {
     return Promise.all(
         schema.indexes
         .map(indexAr => {
@@ -271,6 +291,75 @@ export async function setIndexes(schema, pouch) {
             });
         })
     );
+}
+
+/**
+ * returns an observable that streams all changes
+ * as plain documents that have no encryption or keyCompression.
+ * We use this to replicate changes from one collection to the other
+ * @param {RxCollection} rxCollection
+ * @param {Function?} prevFilter can be used to filter changes before doing anything
+ * @return {Observable<any>} observable that emits document-data
+ */
+export function streamChangedDocuments(rxCollection, prevFilter = () => true) {
+    if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+
+    const observable = ObservableFromEvent(rxCollection.pouch
+            .changes({
+                since: 'now',
+                live: true,
+                include_docs: true
+            }), 'change')
+        .pipe(
+            map(changeAr => changeAr[0]), // rxjs emits an array for whatever reason
+            filter(change => {
+                // changes on the doNotEmit-list shell not be fired
+                const emitFlag = change.id + ':' + change.doc._rev;
+                if (rxCollection._doNotEmitSet.has(emitFlag)) return false;
+                else return true;
+            }),
+            filter(change => prevFilter(change)),
+            map(change => rxCollection._handleFromPouch(change.doc))
+        );
+    return observable;
+}
+
+/**
+ * writes the doc-data into the pouchdb of the collection
+ * without changeing the revision
+ * @param  {RxCollection} rxCollection
+ * @param  {any} docData
+ * @return {Promise<any>} promise that resolved with the transformed doc-data
+ */
+export async function applyChangedDocumentToPouch(rxCollection, docData) {
+    if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+
+    const transformedDoc = rxCollection._handleToPouch(docData);
+
+    try {
+        const oldDoc = await rxCollection.pouch.get(transformedDoc._id);
+        transformedDoc._rev = oldDoc._rev;
+    } catch (err) {
+        // doc not found, do not use a revision
+        delete transformedDoc._rev;
+    }
+
+    const bulkRet = await rxCollection.pouch.bulkDocs({
+        docs: [transformedDoc]
+    }, BULK_DOC_OPTIONS);
+
+    if (bulkRet.length > 0 && !bulkRet[0].ok) {
+        throw new Error(JSON.stringify(bulkRet[0]));
+    }
+
+    // set the flag so this does not appear in the own event-stream again
+    const emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
+    rxCollection._doNotEmitSet.add(emitFlag);
+
+    // remove from the list later to not have a memory-leak
+    setTimeout(() => rxCollection._doNotEmitSet.delete(emitFlag), 30 * 1000);
+
+    return transformedDoc;
 }
 
 let INIT_DONE = false;

@@ -6,9 +6,10 @@ import faker from 'faker';
 import randomToken from 'random-token';
 import randomInt from 'random-int';
 
-export function human() {
+export function human(passportId) {
+    if (!passportId) passportId = randomToken(12);
     return {
-        passportId: randomToken(12),
+        passportId: passportId,
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         age: randomInt(10, 50)

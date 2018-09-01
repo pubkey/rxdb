@@ -11,6 +11,7 @@ const nodeAndBrowser = [
     '../test_tmp/unit/rx-database.test.js',
     '../test_tmp/unit/rx-collection.test.js',
     '../test_tmp/unit/rx-document.test.js',
+    '../test_tmp/unit/in-memory.test.js', // TODO move down under local-documents
     '../test_tmp/unit/temporary-document.test.js',
     '../test_tmp/unit/change-event-buffer.test.js',
     '../test_tmp/unit/rx-query.test.js',
@@ -32,7 +33,6 @@ const nodeAndBrowser = [
     '../test_tmp/unit/cross-instance.test.js',
     '../test_tmp/unit/mod-encryption.test.js',
     '../test_tmp/unit/local-documents.test.js',
-    '../test_tmp/unit/in-memory.test.js',
     '../test_tmp/unit/server.test.js',
     '../test_tmp/unit/attachments.test.js'
 ];

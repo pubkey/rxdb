@@ -31,7 +31,7 @@
   "scripts": {
     "pretest": "npm run transpile",
     "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
-    "test:fast": "npm run pretest && rimraf -rf config/pouch__all_dbs__ && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test",
+    "test:fast": "npm run pretest && npm run clear:bc && rimraf -rf config/pouch__all_dbs__ && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
     "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test",
     "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",
