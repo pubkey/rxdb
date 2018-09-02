@@ -9,10 +9,10 @@ The database is created by the asynchronous .create()-function of the main RxDB-
 ```javascript
 const db = await RxDB.create({
   name: 'heroesdb',           // <- name
-  adapter: 'websql',          // <- storage-adapter
+  adapter: 'idb',          // <- storage-adapter
   password: 'myPassword',     // <- password (optional)
-  multiInstance: true,         // <- multiInstance (default: true)
-  queryChangeDetection: false // <- queryChangeDetection (optional, beta)
+  multiInstance: true,         // <- multiInstance (optional, default: true)
+  queryChangeDetection: false // <- queryChangeDetection (optional, default: false)
 });
 console.dir(db);
 ```
