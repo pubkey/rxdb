@@ -45,6 +45,13 @@ Emits each replicated document-data.
 replicationState.docs$.subscribe(docData => console.dir(docData));
 ```
 
+### denied$
+Emits when a document failed to replicate (e.g. due to permissions).
+
+```js
+replicationState.denied$.subscribe(docData => console.dir(docData));
+```
+
 ### active$
 Emits `true` or `false` depending if the replication is running. For example if you sync with a remote server and the connection dies, this is `false` until the connection can be reestablished.
 

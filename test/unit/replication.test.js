@@ -371,6 +371,24 @@ describe('replication.test.js', () => {
                 c2.database.destroy();
             });
         });
+        describe('denied$', () => {
+            it('should not emit', async () => {
+                const c = await humansCollection.create(0);
+                const c2 = await humansCollection.create(10);
+                const repState = await c.sync({
+                    remote: c2,
+                    waitForLeadership: false
+                });
+                const emitted = [];
+                repState.denied$.subscribe(doc => emitted.push(doc));
+
+                await AsyncTestUtil.wait(100);
+                assert.equal(emitted.length, 0);
+
+                c.database.destroy();
+                c2.database.destroy();
+            });
+        });
     });
     config.parallel('events', () => {
         describe('positive', () => {

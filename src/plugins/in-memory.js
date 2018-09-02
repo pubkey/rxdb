@@ -146,11 +146,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * @overwrite
      */
     async _pouchPut(obj, overwrite) {
-        console.log('new pouch put');
         const ret = await this._oldPouchPut(obj, overwrite);
-        console.log('Ret');
-        console.dir(ret);
-
         this._nonPersistentRevisions.add(ret.rev);
         return ret;
     }

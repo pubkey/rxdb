@@ -38,6 +38,7 @@ export class RxReplicationState {
         this._subjects = {
             change: new Subject(),
             docs: new Subject(),
+            denied: new Subject(),
             active: new BehaviorSubject(false),
             complete: new BehaviorSubject(false),
             error: new Subject(),
@@ -46,7 +47,7 @@ export class RxReplicationState {
         // create getters
         Object.keys(this._subjects).forEach(key => {
             Object.defineProperty(this, key + '$', {
-                get: function () {
+                get: function() {
                     return this._subjects[key].asObservable();
                 }
             });
@@ -60,54 +61,60 @@ export class RxReplicationState {
         // change
         this._subs.push(
             fromEvent(evEmitter, 'change')
-                .subscribe(ev => this._subjects.change.next(ev))
+            .subscribe(ev => this._subjects.change.next(ev))
+        );
+
+        // denied
+        this._subs.push(
+            fromEvent(evEmitter, 'denied')
+            .subscribe(ev => this._subjects.denied.next(ev))
         );
 
         // docs
         this._subs.push(
             fromEvent(evEmitter, 'change')
-                .subscribe(ev => {
-                    if (
-                        this._subjects.docs.observers.length === 0 ||
-                        ev.direction !== 'pull'
-                    ) return;
+            .subscribe(ev => {
+                if (
+                    this._subjects.docs.observers.length === 0 ||
+                    ev.direction !== 'pull'
+                ) return;
 
-                    ev.change.docs
-                        .filter(doc => doc.language !== 'query') // remove internal docs
-                        .map(doc => this.collection._handleFromPouch(doc)) // do primary-swap and keycompression
-                        .forEach(doc => this._subjects.docs.next(doc));
-                }));
+                ev.change.docs
+                    .filter(doc => doc.language !== 'query') // remove internal docs
+                    .map(doc => this.collection._handleFromPouch(doc)) // do primary-swap and keycompression
+                    .forEach(doc => this._subjects.docs.next(doc));
+            }));
 
         // error
         this._subs.push(
             fromEvent(evEmitter, 'error')
-                .subscribe(ev => this._subjects.error.next(ev))
+            .subscribe(ev => this._subjects.error.next(ev))
         );
 
         // active
         this._subs.push(
             fromEvent(evEmitter, 'active')
-                .subscribe(() => this._subjects.active.next(true))
+            .subscribe(() => this._subjects.active.next(true))
         );
         this._subs.push(
             fromEvent(evEmitter, 'paused')
-                .subscribe(() => this._subjects.active.next(false))
+            .subscribe(() => this._subjects.active.next(false))
         );
 
         // complete
         this._subs.push(
             fromEvent(evEmitter, 'complete')
-                .subscribe(info => {
+            .subscribe(info => {
 
-                    /**
-                     * when complete fires, it might be that not all changeEvents
-                     * have passed throught, because of the delay of .wachtForChanges()
-                     * Therefore we have to first ensure that all previous changeEvents have been handled
-                     */
-                    const unhandledEvents = Array.from(this.collection._watchForChangesUnhandled);
+                /**
+                 * when complete fires, it might be that not all changeEvents
+                 * have passed throught, because of the delay of .wachtForChanges()
+                 * Therefore we have to first ensure that all previous changeEvents have been handled
+                 */
+                const unhandledEvents = Array.from(this.collection._watchForChangesUnhandled);
 
-                    Promise.all(unhandledEvents).then(() => this._subjects.complete.next(info));
-                })
+                Promise.all(unhandledEvents).then(() => this._subjects.complete.next(info));
+            })
         );
     }
 
@@ -252,7 +259,7 @@ export const prototypes = {
 export const overwritable = {};
 
 export const hooks = {
-    createRxCollection: function (collection) {
+    createRxCollection: function(collection) {
         INTERNAL_POUCHDBS.add(collection.pouch);
     }
 };

@@ -14,6 +14,7 @@ Breaking:
 Features:
   - Added `RxDocument.atomicSet()`
   - Added `RxCollection.awaitPersistence()` for in-memory-collections
+  - Added `RxReplicationState.denied$` [#763](https://github.com/pubkey/rxdb/issues/763)
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)

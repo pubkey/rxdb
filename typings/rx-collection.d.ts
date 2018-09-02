@@ -15,8 +15,7 @@ import {
     RxQuery
 } from './rx-query';
 import {
-    PouchSettings,
-    PouchReplicationOptions
+    PouchSettings
 } from './pouch';
 import {
     RxChangeEventInsert,
@@ -27,6 +26,11 @@ import {
     RxDocument,
     RxLocalDocument
 } from './rx-document';
+
+import {
+    SyncOptions,
+    RxReplicationState
+} from './plugins/replication';
 
 export interface RxCollectionCreator {
     name: string;
@@ -46,30 +50,6 @@ export interface RxCollectionCreator {
         [key: string]: Function
     };
     options?: any;
-}
-
-export declare class RxReplicationState {
-    change$: Observable<any>;
-    docs$: Observable<any>;
-    active$: Observable<any>;
-    complete$: Observable<any>;
-    error$: Observable<any>;
-    cancel(): Promise<any>;
-
-    // if you do a custom sync, put the thing you get back from pouch here
-    setPouchEventEmitter(pouchSyncState: any): void;
-}
-
-export interface SyncOptions {
-    remote: string | any,
-    waitForLeadership?: boolean,
-    direction?: {
-        push?: boolean,
-        pull?: boolean
-    },
-    // for options see https://pouchdb.com/api.html#replication
-    options?: PouchReplicationOptions,
-    query?: RxQuery<any, any>
 }
 
 export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
