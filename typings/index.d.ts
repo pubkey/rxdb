@@ -19,11 +19,11 @@ export * from './rx-database';
 
 import {
     RxCollectionCreator,
-    RxReplicationState,
-    SyncOptions,
     RxCollection as RxCollectionClass
 } from './rx-collection';
 export * from './rx-collection';
+
+export * from './plugins/replication';
 
 import {
     RxQueryOptions,
