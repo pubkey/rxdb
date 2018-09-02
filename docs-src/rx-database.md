@@ -4,14 +4,15 @@ A RxDatabase-Object contains your collections and handles the synchronisation of
 
 ## Creation
 
-The database is created by the asynchronous .create()-function of the main RxDB-module. It has the following 4 parameters.
+The database is created by the asynchronous .create()-function of the main RxDB-module. It has the following parameters:
 
 ```javascript
 const db = await RxDB.create({
   name: 'heroesdb',           // <- name
   adapter: 'websql',          // <- storage-adapter
   password: 'myPassword',     // <- password (optional)
-  multiInstance: true         // <- multiInstance (default: true)
+  multiInstance: true,         // <- multiInstance (default: true)
+  queryChangeDetection: false // <- queryChangeDetection (optional, beta)
 });
 console.dir(db);
 ```
@@ -45,6 +46,10 @@ If you want to use encrypted fields in the collections of a database, you have t
 `(optional=true)`
 When you create more than one instance of the same database in a single javascript-runtime, you should set multiInstance to ```true```. This will enable the event-sharing between the two instances **serverless**. This should be set to `false` when you have single-instances like a single nodejs-process, a react-native-app, a cordova-app or a single-window electron-app.
 
+### queryChangeDetection
+`(optional=false)`
+If set to true, this enables the [QueryChangeDetection](./query-change-detection.md) for the database.
+
 ### ignoreDuplicate
 `(optional=false)`
 If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
@@ -70,14 +75,11 @@ You can pass settings directly to the [pouchdb database create options](https://
 ## Functions
 
 ### Observe with $
-Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/overview.html#observable) which streams every change to data of this database.
+Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/observable.html) which streams every change to data of this database.
 
 ```js
 myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
-
-### waitForLeadership()
-Returns a Promise which resolves when the RxDatabase becomes [elected leader](./leader-election.md).
 
 ### dump()
 Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
@@ -101,6 +103,9 @@ emptyDatabase.importDump(json)
 
 ### server()
 Spawns a couchdb-compatible server from the database. [Read more](./custom-build.md#server)
+
+### waitForLeadership()
+Returns a Promise which resolves when the RxDatabase becomes [elected leader](./leader-election.md).
 
 ### requestIdlePromise()
 Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idle-ness of the database instead of the CPU.
@@ -130,7 +135,7 @@ await myDatabase.destroy();
 ```
 
 ### remove()
-Removes the database and all data of it from the storage.
+Removes the database and wipes all data of it from the storage.
 
 ```js
 await myDatabase.remove();

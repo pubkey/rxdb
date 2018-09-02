@@ -1,5 +1,5 @@
 # RxDocument
-A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table.
+A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts, or as result-set of queries.
 
 
 ## insert
@@ -12,7 +12,7 @@ myCollection.insert({
 ```
 
 ## find
-To find documents in a collection, you have to call the collection's .find()-function.
+To find documents in a collection, you have to call the collection's .find()-function. [See RxQuery](./rx-query.md).
 ```js
 myCollection.find().exec() // <- find all documents
   .then(documents => console.dir(documents));
@@ -28,6 +28,22 @@ This will get a single field of the document. If the field is encrypted, it will
 var name = myDocument.get('name'); // returns the name
 ```
 
+### get$()
+This function returns an observable of the given paths-value.
+The current value of this path will be emitted each time the document changes.
+```js
+// get the life-updating value of 'name'
+var isName;
+myDocument.get$('name')
+  .subscribe(newName => {
+    isName = newName;
+  });
+
+await myDocument.atomicSet('name', 'foobar2');
+console.dir(isName); // isName is now 'foobar2'
+```
+
+
 ### proxy-get
 As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly access values instead of using the get()-function.
 
@@ -36,12 +52,12 @@ As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/
   var name = myDocument.name;
   // Can also get nested values.
   var nestedValue = myDocument.whatever.nestedfield;
-```
 
-### remove()
-This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` like described in the [pouchdb-docs](https://pouchdb.com/guides/updating-deleting.html#deleting-documents) in option 3.
-```js
-myDocument.remove();
+  // Also useable with observables:
+  myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
+  // > 'name is: Stefe'
+  await myDocument.atomicSet('firstName', 'Steve');
+  // > 'name is: Steve'
 ```
 
 ### update()
@@ -59,32 +75,17 @@ await myDocument.update({
 ```
 
 ### atomicUpdate()
-When you run many save-operations on the same RxDocument in a very short timespan, it can happen that you get a `409 Conflict`-Error.
-This means that you did run a `.save()` on the document, while the previous save-operation was still running.
-To prevent these types of errors, you can run atomic update-operations.
-`atomicUpdate()` has a function as argument, which transforms the document and then automatically runs a `save()`.
-It returns a promise to notify you when the given atomic-update has finished.
-
-Example to reproduce the 409-error:
-```js
-[1,2,3,4].forEach(nr => {
-    myDocument.age = nr;
-    myDocument.save();
-});
-// throws
-```
-
-Usage of atomicUpdate:
+Updates a documents data based on a function that transforms the current data and returns the new value.
 
 ```js
-let lastPromise;
-[1,2,3,4].forEach(nr => {
-    lastPromise = myDocument.atomicUpdate(function(doc){
-        doc.age = nr;
-    });
-});
-await lastPromise;
-console.dir(myDocument.age); // 4
+
+const changeFunction = (oldData) => {
+    oldData.age = oldData.age + 1;
+    oldData.name = 'foooobarNew';
+    return oldData;
+}
+await myDocument.atomicUpdate(changeFunction);
+console.log(myDocument.name); // 'foooobarNew'
 ```
 
 ### atomicSet()
@@ -105,46 +106,10 @@ myDocument.$
   .subscribe(changeEvent => console.dir(changeEvent));
 ```
 
-### get$()
-This function returns an observable of the given paths-value.
-The current value of this path will be emitted each time the document changes.
+### remove()
+This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` like described in the [pouchdb-docs](https://pouchdb.com/guides/updating-deleting.html#deleting-documents) in option 3.
 ```js
-// get the life-updating value of 'name'
-var isName;
-myDocument.get$('name')
-  .subscribe(newName => {
-    isName = newName;
-  });
-
-myDocument.set('name', 'foobar2');
-await myDocument.save();
-
-console.dir(isName); // isName is now 'foobar2'
-```
-
-### proxy-get$
-You can directly get value-observables for a fieldName by adding the dollarSign ($) to its name.
-
-```js
-// top-level
-var currentName;
-myDocument.firstName$
-  .subscribe(newName => {
-    currentName = newName;
-  });
-myDocument.firstName = 'foobar2';
-await myDocument.save();
-console.dir(currentName); // currentName is now 'foobar2'
-
-// nested
-var currentNestedValue;
-myDocument.whatever.nestedfield$
-  .subscribe(newName => {
-    currentNestedValue = newName;
-  });
-myDocument.whatever.nestedfield = 'foobar2';
-await myDocument.save();
-console.dir(currentNestedValue); // currentNestedValue is now 'foobar2'
+myDocument.remove();
 ```
 
 ### deleted$

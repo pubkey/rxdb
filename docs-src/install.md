@@ -14,7 +14,7 @@ You also need to install the peer-dependency `rxjs` if you not have installed it
 
 ## polyfills
 
-RxDB is coded with es8 and transpiled to es5\. This means you have to install polyfills to support older browsers.
+RxDB is coded with es8 and transpiled to es5\. This means you have to install [polyfills](https://en.wikipedia.org/wiki/Polyfill_(programming)) to support older browsers. For example you can use the babel-polyfills with:
 
 `npm i babel-polyfill --save`
 
@@ -50,26 +50,6 @@ import 'babel-polyfill';
 
 // es5
 require('babel-polyfill');
-```
-
-## rxjs
-
-To reduce the build-size, RxDB is using rxjs's [pipeable-operators](https://github.com/ReactiveX/rxjs/blob/master/doc/pipeable-operators.md). This means that by default only some parts of rxjs are included into RxDB. If you want to use additional operators, you either have to require the whole rxjs-lib, or also use the lettable-operators. Another alternative is to cherry-pick the needed operators.
-
-```javascript
-// full import
-import 'rxjs'; // es6
-require('rxjs'); // es5
-
-// pipeable
-import { Subject } from 'rxjs/Subject';
-import { filter } from 'rxjs/operators/filter';
-
-// cherry-pick
-import 'rxjs/add/operator/map';		
-import 'rxjs/add/operator/mergeMap';		
-import 'rxjs/add/operator/filter';		
-import 'rxjs/add/operator/first';
 ```
 
 --------------------------------------------------------------------------------

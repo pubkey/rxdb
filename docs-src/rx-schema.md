@@ -1,6 +1,6 @@
 # RxSchema
 
-Schemas define how your data looks. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. The schema also validates that every inserted document of your collections conforms to the schema. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard so that you don't have to learn anything new.
+Schemas define how your data looks. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. The schema also validates that every inserted document of your collections conforms to the schema. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard which you might know from other projects.
 
 ## Example
 
@@ -13,6 +13,7 @@ In this example-schema we define a hero-collection with the following settings:
 - the secret-field stores an encrypted value
 - the birthyear-field is final which means it is required and cannot be changed
 - the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
+- Allows adding attachments and store them encrypted
 
   ```json
   {
@@ -60,7 +61,10 @@ In this example-schema we define a hero-collection with the following settings:
             }
         }
     },
-    "required": ["color"]
+    "required": ["color"],
+    "attachments": {
+        "encrypted": true
+    }
   }
   ```
 
@@ -137,6 +141,8 @@ const schemaWithIndexes = {
 };
 ```
 
+## attachments
+To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
 
 ## default
 Default values can only be defined for first-level fields.
