@@ -26,6 +26,7 @@ function () {
     this._subjects = {
       change: new Subject(),
       docs: new Subject(),
+      denied: new Subject(),
       active: new BehaviorSubject(false),
       complete: new BehaviorSubject(false),
       error: new Subject()
@@ -50,6 +51,11 @@ function () {
 
     this._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
       return _this2._subjects.change.next(ev);
+    })); // denied
+
+
+    this._subs.push(fromEvent(evEmitter, 'denied').subscribe(function (ev) {
+      return _this2._subjects.denied.next(ev);
     })); // docs
 
 

@@ -49,6 +49,7 @@ function () {
     this._subjects = {
       change: new _rxjs.Subject(),
       docs: new _rxjs.Subject(),
+      denied: new _rxjs.Subject(),
       active: new _rxjs.BehaviorSubject(false),
       complete: new _rxjs.BehaviorSubject(false),
       error: new _rxjs.Subject()
@@ -73,6 +74,11 @@ function () {
 
     this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
       return _this2._subjects.change.next(ev);
+    })); // denied
+
+
+    this._subs.push((0, _rxjs.fromEvent)(evEmitter, 'denied').subscribe(function (ev) {
+      return _this2._subjects.denied.next(ev);
     })); // docs
 
 

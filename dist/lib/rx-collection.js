@@ -262,9 +262,11 @@ function () {
     return data;
   };
   /**
-   * [overwrite description]
+   * every write on the pouchdb
+   * is tunneld throught this function
    * @param {object} obj
    * @param {boolean} [overwrite=false] if true, it will overwrite existing document
+   * @return {Promise}
    */
 
 

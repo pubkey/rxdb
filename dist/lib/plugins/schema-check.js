@@ -173,9 +173,8 @@ function checkSchema(jsonID) {
     throw _rxError["default"].newRxError('SC10', {
       schema: jsonID
     });
-  }
+  } // check version
 
-  if (jsonID.properties.rxdb_originInMemory) throw new Error('field rxdb_originInMemory is not allowed'); // check version
 
   if (!jsonID.hasOwnProperty('version') || typeof jsonID.version !== 'number' || jsonID.version < 0) {
     throw _rxError["default"].newRxError('SC11', {

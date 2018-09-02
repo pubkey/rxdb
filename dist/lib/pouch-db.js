@@ -19,6 +19,13 @@ var _rxError = _interopRequireDefault(require("./rx-error"));
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
+
+/*
+// comment in to debug
+const pouchdbDebug = require('pouchdb-debug');
+PouchDB.plugin(pouchdbDebug);
+PouchDB.debug.enable('*');
+*/
 // pouchdb-find
 _pouchdbCore["default"].plugin(_pouchdbFind["default"]);
 

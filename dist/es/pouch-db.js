@@ -4,7 +4,14 @@
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-import PouchDB from 'pouchdb-core'; // pouchdb-find
+import PouchDB from 'pouchdb-core';
+/*
+// comment in to debug
+const pouchdbDebug = require('pouchdb-debug');
+PouchDB.plugin(pouchdbDebug);
+PouchDB.debug.enable('*');
+*/
+// pouchdb-find
 
 import PouchDBFind from 'pouchdb-find';
 PouchDB.plugin(PouchDBFind);
