@@ -1,5 +1,6 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
+import BroadcastChannel from 'broadcast-channel';
 import convertHrtime from 'convert-hrtime';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
@@ -60,6 +61,12 @@ const ormMethods = {
 
 
 describe('performance.test.js', () => {
+    it('clear broadcast-channel tmp-folder', async () => {
+        await BroadcastChannel.clearNodeFolder();
+    });
+    it('wait a bit for jit', async () => {
+        await AsyncTestUtil.wait(2000);
+    });
     it('spawnDatabases', async () => {
         // create databases with some collections each
         const dbs = [];

@@ -2,6 +2,7 @@ console.log('######## init.test.js ########');
 
 import '@babel/polyfill';
 import config from './config';
+import BroadcastChannel from 'broadcast-channel';
 
 // set faker seed
 import faker from 'faker';
@@ -50,3 +51,10 @@ if (config.platform.name === 'firefox') {
             consoleErrorBefore(msg);
     };
 }
+
+
+describe('init.test.js', () => {
+    it('clear BroadcastChannel tmp folder', async () => {
+        await BroadcastChannel.clearNodeFolder();
+    });
+});
