@@ -1,10 +1,8 @@
 {
-  "name": "rxdb-example-angular2",
-  "version": "3.0.0",
+  "name": "rxdb-example-angular",
   "description": "",
   "scripts": {
     "preinstall": "node ./scripts/ensure-equal-versions.js",
-    "postinstall": "rimraf ./package-lock.json",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "npm-run-all --parallel dev:serve",
