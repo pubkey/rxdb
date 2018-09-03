@@ -96,103 +96,102 @@ function () {
       percent: 0 // percentage
 
     };
-    var migrationState$ = new _rxjs.Observable(
+    var observer = new _rxjs.Subject();
+    /**
+     * TODO this is a side-effect which might throw
+     * We did this because it is not possible to create new Observer(async(...))
+     * @link https://github.com/ReactiveX/rxjs/issues/4074
+     */
+
+    (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
-    function () {
-      var _ref = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee(observer) {
-        var oldCols, countAll, totalCount, currentCol, _loop;
+    _regenerator["default"].mark(function _callee() {
+      var oldCols, countAll, totalCount, currentCol, _loop;
 
-        return _regenerator["default"].wrap(function _callee$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.next = 2;
-                return _this2._getOldCollections();
+      return _regenerator["default"].wrap(function _callee$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              _context2.next = 2;
+              return _this2._getOldCollections();
 
-              case 2:
-                oldCols = _context2.sent;
-                _context2.next = 5;
-                return Promise.all(oldCols.map(function (oldCol) {
-                  return oldCol.countAllUndeleted();
-                }));
+            case 2:
+              oldCols = _context2.sent;
+              _context2.next = 5;
+              return Promise.all(oldCols.map(function (oldCol) {
+                return oldCol.countAllUndeleted();
+              }));
 
-              case 5:
-                countAll = _context2.sent;
-                totalCount = countAll.reduce(function (cur, prev) {
-                  return prev = cur + prev;
-                }, 0);
-                state.total = totalCount;
-                observer.next((0, _util.clone)(state));
-                currentCol = oldCols.shift();
-                _loop =
-                /*#__PURE__*/
-                _regenerator["default"].mark(function _loop() {
-                  var migrationState$;
-                  return _regenerator["default"].wrap(function _loop$(_context) {
-                    while (1) {
-                      switch (_context.prev = _context.next) {
-                        case 0:
-                          migrationState$ = currentCol.migrate(batchSize);
-                          _context.next = 3;
-                          return new Promise(function (res) {
-                            var sub = migrationState$.subscribe(function (subState) {
-                              state.handled++;
-                              state[subState.type] = state[subState.type] + 1;
-                              state.percent = Math.round(state.handled / state.total * 100);
-                              observer.next((0, _util.clone)(state));
-                            }, function (e) {
-                              sub.unsubscribe();
-                              observer.error(e);
-                            }, function () {
-                              sub.unsubscribe();
-                              res();
-                            });
+            case 5:
+              countAll = _context2.sent;
+              totalCount = countAll.reduce(function (cur, prev) {
+                return prev = cur + prev;
+              }, 0);
+              state.total = totalCount;
+              observer.next((0, _util.clone)(state));
+              currentCol = oldCols.shift();
+              _loop =
+              /*#__PURE__*/
+              _regenerator["default"].mark(function _loop() {
+                var migrationState$;
+                return _regenerator["default"].wrap(function _loop$(_context) {
+                  while (1) {
+                    switch (_context.prev = _context.next) {
+                      case 0:
+                        migrationState$ = currentCol.migrate(batchSize);
+                        _context.next = 3;
+                        return new Promise(function (res) {
+                          var sub = migrationState$.subscribe(function (subState) {
+                            state.handled++;
+                            state[subState.type] = state[subState.type] + 1;
+                            state.percent = Math.round(state.handled / state.total * 100);
+                            observer.next((0, _util.clone)(state));
+                          }, function (e) {
+                            sub.unsubscribe();
+                            observer.error(e);
+                          }, function () {
+                            sub.unsubscribe();
+                            res();
                           });
+                        });
 
-                        case 3:
-                          currentCol = oldCols.shift();
+                      case 3:
+                        currentCol = oldCols.shift();
 
-                        case 4:
-                        case "end":
-                          return _context.stop();
-                      }
+                      case 4:
+                      case "end":
+                        return _context.stop();
                     }
-                  }, _loop, this);
-                });
+                  }
+                }, _loop, this);
+              });
 
-              case 11:
-                if (!currentCol) {
-                  _context2.next = 15;
-                  break;
-                }
-
-                return _context2.delegateYield(_loop(), "t0", 13);
-
-              case 13:
-                _context2.next = 11;
+            case 11:
+              if (!currentCol) {
+                _context2.next = 15;
                 break;
+              }
 
-              case 15:
-                state.done = true;
-                state.percent = 100;
-                observer.next((0, _util.clone)(state));
-                observer.complete();
+              return _context2.delegateYield(_loop(), "t0", 13);
 
-              case 19:
-              case "end":
-                return _context2.stop();
-            }
+            case 13:
+              _context2.next = 11;
+              break;
+
+            case 15:
+              state.done = true;
+              state.percent = 100;
+              observer.next((0, _util.clone)(state));
+              observer.complete();
+
+            case 19:
+            case "end":
+              return _context2.stop();
           }
-        }, _callee, this);
-      }));
-
-      return function (_x) {
-        return _ref.apply(this, arguments);
-      };
-    }());
-    return migrationState$;
+        }
+      }, _callee, this);
+    }))();
+    return observer.asObservable();
   };
 
   _proto.migratePromise = function migratePromise(batchSize) {
@@ -337,7 +336,7 @@ function () {
       }, _callee2, this, [[11, 15]]);
     }));
 
-    return function migrateDocumentData(_x2) {
+    return function migrateDocumentData(_x) {
       return _migrateDocumentData.apply(this, arguments);
     };
   }();
@@ -420,7 +419,7 @@ function () {
       }, _callee3, this, [[17, 22]]);
     }));
 
-    return function _migrateDocument(_x3) {
+    return function _migrateDocument(_x2) {
       return _migrateDocument2.apply(this, arguments);
     };
   }();
@@ -448,75 +447,73 @@ function () {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     if (this._migrate) throw _rxError["default"].newRxError('DM3');
     this._migrate = true;
-    var stateStream$ = new _rxjs.Observable(
+    var observer = new _rxjs.Subject();
+    /**
+     * TODO this is a side-effect which might throw
+     * @see DataMigrator.migrate()
+     */
+
+    (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
-    function () {
-      var _ref2 = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee4(observer) {
-        var batch, error;
-        return _regenerator["default"].wrap(function _callee4$(_context5) {
-          while (1) {
-            switch (_context5.prev = _context5.next) {
-              case 0:
-                _context5.next = 2;
-                return _this6.getBatch(batchSize);
+    _regenerator["default"].mark(function _callee4() {
+      var batch, error;
+      return _regenerator["default"].wrap(function _callee4$(_context5) {
+        while (1) {
+          switch (_context5.prev = _context5.next) {
+            case 0:
+              _context5.next = 2;
+              return _this6.getBatch(batchSize);
 
-              case 2:
-                batch = _context5.sent;
+            case 2:
+              batch = _context5.sent;
 
-              case 3:
-                _context5.next = 5;
-                return Promise.all(batch.map(function (doc) {
-                  return _this6._migrateDocument(doc).then(function (action) {
-                    return observer.next(action);
-                  });
-                }))["catch"](function (e) {
-                  return error = e;
+            case 3:
+              _context5.next = 5;
+              return Promise.all(batch.map(function (doc) {
+                return _this6._migrateDocument(doc).then(function (action) {
+                  return observer.next(action);
                 });
+              }))["catch"](function (e) {
+                return error = e;
+              });
 
-              case 5:
-                if (!error) {
-                  _context5.next = 8;
-                  break;
-                }
+            case 5:
+              if (!error) {
+                _context5.next = 8;
+                break;
+              }
 
-                observer.error(error);
-                return _context5.abrupt("return");
+              observer.error(error);
+              return _context5.abrupt("return");
 
-              case 8:
-                _context5.next = 10;
-                return _this6.getBatch(batchSize);
+            case 8:
+              _context5.next = 10;
+              return _this6.getBatch(batchSize);
 
-              case 10:
-                batch = _context5.sent;
+            case 10:
+              batch = _context5.sent;
 
-              case 11:
-                if (!error && batch.length > 0) {
-                  _context5.next = 3;
-                  break;
-                }
+            case 11:
+              if (!error && batch.length > 0) {
+                _context5.next = 3;
+                break;
+              }
 
-              case 12:
-                _context5.next = 14;
-                return _this6["delete"]();
+            case 12:
+              _context5.next = 14;
+              return _this6["delete"]();
 
-              case 14:
-                observer.complete();
+            case 14:
+              observer.complete();
 
-              case 15:
-              case "end":
-                return _context5.stop();
-            }
+            case 15:
+            case "end":
+              return _context5.stop();
           }
-        }, _callee4, this);
-      }));
-
-      return function (_x4) {
-        return _ref2.apply(this, arguments);
-      };
-    }());
-    return stateStream$;
+        }
+      }, _callee4, this);
+    }))();
+    return observer.asObservable();
   };
 
   _proto2.migratePromise = function migratePromise(batchSize) {
