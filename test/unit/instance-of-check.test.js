@@ -14,6 +14,7 @@ config.parallel('instance-of-check.test.js', () => {
         assert.ok(RxDB.isRxQuery(query));
         assert.ok(RxDB.isRxDocument(doc));
         assert.ok(RxDB.isRxSchema(c.schema));
+
         c.database.destroy();
     });
     it('negative', async () => {

@@ -15,7 +15,7 @@ import overwritable from './overwritable';
 import hooks from './hooks';
 
 import {
-    Observable
+    Subject
 } from 'rxjs';
 
 class DataMigrator {
@@ -35,8 +35,8 @@ class DataMigrator {
         return Promise
             .all(
                 this.currentSchema.previousVersions
-                    .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
-                    .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+                .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
+                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
             )
             .then(oldColDocs => oldColDocs
                 .filter(colDoc => colDoc !== null)
@@ -62,7 +62,14 @@ class DataMigrator {
             percent: 0 // percentage
         };
 
-        const migrationState$ = new Observable(async (observer) => {
+        const observer = new Subject();
+
+        /**
+         * TODO this is a side-effect which might throw
+         * We did this because it is not possible to create new Observer(async(...))
+         * @link https://github.com/ReactiveX/rxjs/issues/4074
+         */
+        (async () => {
             const oldCols = await this._getOldCollections();
 
             const countAll = await Promise.all(
@@ -100,8 +107,10 @@ class DataMigrator {
             observer.next(clone(state));
 
             observer.complete();
-        });
-        return migrationState$;
+        })();
+
+
+        return observer.asObservable();
     }
 
     migratePromise(batchSize) {
@@ -258,7 +267,7 @@ class OldCollection {
         // remove from old collection
         try {
             await this.pouchdb.remove(this._handleToPouch(doc));
-        } catch (e) { }
+        } catch (e) {}
 
         return action;
     }
@@ -283,7 +292,13 @@ class OldCollection {
             throw RxError.newRxError('DM3');
         this._migrate = true;
 
-        const stateStream$ = new Observable(async (observer) => {
+        const observer = new Subject();
+
+        /**
+         * TODO this is a side-effect which might throw
+         * @see DataMigrator.migrate()
+         */
+        (async () => {
             let batch = await this.getBatch(batchSize);
             let error;
             do {
@@ -306,8 +321,9 @@ class OldCollection {
             await this.delete();
 
             observer.complete();
-        });
-        return stateStream$;
+        })();
+
+        return observer.asObservable();
     }
     migratePromise(batchSize) {
         if (!this._migratePromise) {
