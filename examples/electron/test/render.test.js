@@ -19,6 +19,9 @@ module.exports = (function() {
             });
 
             await db.waitForLeadership();
+            if(db.socket.bc.method.type !== 'native'){
+                throw new Error('wrong BroadcastChannel-method chosen: ' + db.socket.bc.method.type);
+            }
 
             const col = await db.collection({
                 name: 'heroes',
