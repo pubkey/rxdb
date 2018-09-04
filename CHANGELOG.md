@@ -10,6 +10,7 @@ Breaking:
   - QueryChangeDetection is not enabled in the RxDatabase-options `queryChangeDetection: true`
   - Setters and `save()` are only callable on temporary documents
   - Removed `RxDocument.synced$` and `RxDocument.resync()`
+  - Middleware-Hooks now have `plainJson` as first parameter and `RxDocument`-instance as second
 
 Features:
   - Added `RxDocument.atomicSet()`

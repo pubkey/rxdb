@@ -310,7 +310,7 @@ export class RxCollection {
         );
 
         this._docCache.set(id, doc);
-        this._runHooksSync('post', 'create', doc);
+        this._runHooksSync('post', 'create', json, doc);
 
         return doc;
     }
@@ -407,7 +407,7 @@ export class RxCollection {
             tempDoc._dataSync$.next(json);
         } else newDoc = this._createDocument(json);
 
-        await this._runHooks('post', 'insert', newDoc);
+        await this._runHooks('post', 'insert', json, newDoc);
 
         // event
         const emitEvent = RxChangeEvent.create(
@@ -642,26 +642,26 @@ export class RxCollection {
             };
         }
     }
-    async _runHooks(when, key, doc) {
+    async _runHooks(when, key, data, instance) {
         const hooks = this.getHooks(when, key);
         if (!hooks) return;
 
         for (let i = 0; i < hooks.series.length; i++)
-            await hooks.series[i](doc);
+            await hooks.series[i](data, instance);
 
         await Promise.all(
             hooks.parallel
-            .map(hook => hook(doc))
+            .map(hook => hook(data, instance))
         );
     }
 
     /**
      * does the same as ._runHooks() but with non-async-functions
      */
-    _runHooksSync(when, key, doc) {
+    _runHooksSync(when, key, data, instance) {
         const hooks = this.getHooks(when, key);
         if (!hooks) return;
-        hooks.series.forEach(hook => hook(doc));
+        hooks.series.forEach(hook => hook(data, instance));
     }
 
     /**
@@ -677,7 +677,8 @@ export class RxCollection {
             docData
         );
         doc._isTemporary = true;
-        this._runHooksSync('post', 'create', doc);
+
+        this._runHooksSync('post', 'create', docData, doc);
         return doc;
     }
 

@@ -307,7 +307,7 @@ export const basePrototype = {
             });
         }
 
-        await this.collection._runHooks('pre', 'save', this);
+        await this.collection._runHooks('pre', 'save', newData, this);
 
         this.collection.schema.validate(newData);
 
@@ -332,7 +332,7 @@ export const basePrototype = {
         this.$emit(changeEvent);
 
 
-        await this.collection._runHooks('post', 'save', this);
+        await this.collection._runHooks('post', 'save', newData, this);
     },
 
     /**
@@ -370,9 +370,9 @@ export const basePrototype = {
         }
 
         await promiseWait(0);
-        await this.collection._runHooks('pre', 'remove', this);
-
         const deletedData = clone(this._data);
+        await this.collection._runHooks('pre', 'remove', deletedData, this);
+
         deletedData._deleted = true;
 
         /**
@@ -389,7 +389,7 @@ export const basePrototype = {
             this._data
         ));
 
-        await this.collection._runHooks('post', 'remove', this);
+        await this.collection._runHooks('post', 'remove', deletedData, this);
         await promiseWait(0);
         return this;
     },
@@ -474,6 +474,7 @@ export function properties() {
 }
 
 export function isInstanceOf(obj) {
+    if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
 }
 

@@ -22,6 +22,15 @@ describe('typings.test.js', () => {
         } from '../';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         plugin(PouchMemAdapter);
+
+        type DefaultDocType = {
+            passportId: string;
+            age: number;
+            oneOptional?: string;
+        };
+        type DefaultOrmMethods = {
+            foobar(): string;
+        };
     `;
     const transpileCode = async (code) => {
         const spawn = require('child-process-promise').spawn;
@@ -378,17 +387,7 @@ describe('typings.test.js', () => {
                 (async() => {
                     const myDb: any = {};
 
-                    type DocType = {
-                        passportId: string;
-                        age: number;
-                        oneOptional?: string;
-                    };
-
-                    type OrmMethods = {
-                        foobar(): string;
-                    };
-
-                    const myCollection: RxCollection<DocType, OrmMethods> = await myDb.collection({
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
                         name: 'humans',
                         schema: {},
                         methods: {
@@ -405,6 +404,28 @@ describe('typings.test.js', () => {
 
                     const x: string = doc.foobar();
 
+                });
+            `;
+            await transpileCode(code);
+        });
+    });
+    config.parallel('hooks', () => {
+        it('should know the types', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
+                        name: 'humans',
+                        schema: {}
+                    });
+                    let myNumber: number;
+                    let myString: string;
+                    myCollection.postInsert((data, doc) => {
+                            myNumber = doc.age;
+                            myNumber = data.age;
+                            myString = doc.foobar();
+                            return Promise.resolve();
+                    }, true);
                 });
             `;
             await transpileCode(code);
