@@ -18,6 +18,8 @@ module.exports = (function() {
                 multiInstance: true
             });
 
+            await db.waitForLeadership();
+
             const col = await db.collection({
                 name: 'heroes',
                 schema: {
