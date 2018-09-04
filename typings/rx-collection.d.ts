@@ -52,10 +52,10 @@ export interface RxCollectionCreator {
     options?: any;
 }
 
-export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
-export type RxCollectionHookCallbackAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => Promise<void>;
-export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void;
-export type RxCollectionHookNoInstanceCallbackAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType) => Promise<void>;
+export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
+export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void>;
+export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
+export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType) => Promise<void>;
 
 export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     readonly database: RxDatabase;
@@ -80,19 +80,13 @@ export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: false): void;
-    preInsert(fun: RxCollectionHookNoInstanceCallbackAsync<RxDocumentType, OrmMethods>, parallel: true): void;
-    preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: false): void;
-    preSave(fun: RxCollectionHookCallbackAsync<RxDocumentType, OrmMethods>, parallel: true): void;
-    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: false): void;
-    preRemove(fun: RxCollectionHookCallbackAsync<RxDocumentType, OrmMethods>, parallel: true): void;
-    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: false): void;
-    postInsert(fun: RxCollectionHookCallbackAsync<RxDocumentType, OrmMethods>, parallel: true): void;
-    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: false): void;
-    postSave(fun: RxCollectionHookCallbackAsync<RxDocumentType, OrmMethods>, parallel: true): void;
-    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: false): void;
-    postRemove(fun: RxCollectionHookCallbackAsync<RxDocumentType, OrmMethods>, parallel: true): void;
-    postCreate(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>): void;
+    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
     // migration
     migrationNeeded(): Promise<boolean>;
