@@ -199,3 +199,46 @@ AFTER: {
     "perDocument": 0.1535049006
   }
 }
+
+## 4. September 2018
+Improve database-creation
+
+BEFORE: {
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10187.075964,
+    "perInstance": 10.187075964
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5573.09158,
+    "perBlock": 2.78654579
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1192.443974,
+    "perDocument": 0.11924439740000001
+  }
+}
+
+AFTER: {
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9906.039395,
+    "perInstance": 9.906039395
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5781.148116,
+    "perBlock": 2.8905740580000003
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1312.261532,
+    "perDocument": 0.1312261532
+  }
+}
