@@ -15,7 +15,7 @@ module.exports = (function() {
                 name: 'foobar587' + new Date().getTime(),
                 adapter: 'idb',
                 password: 'myLongAndStupidPassword',
-                multiInstance: false
+                multiInstance: true
             });
 
             const col = await db.collection({
