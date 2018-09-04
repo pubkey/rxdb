@@ -16,9 +16,9 @@
     "electron-tabs": "0.9.1",
     "electron-window-manager": "1.0.6",
     "melanke-watchjs": "1.4.3",
-    "pouchdb-adapter-http": "6.4.3",
-    "pouchdb-adapter-websql": "6.4.3",
-    "pouchdb-replication": "6.4.3",
+    "pouchdb-adapter-http": "7.0.0",
+    "pouchdb-adapter-websql": "7.0.0",
+    "pouchdb-replication": "7.0.0",
     "pouchdb-server": "4.0.0",
     "rxjs": "5.5.7"
   },

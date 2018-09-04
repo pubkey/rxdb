@@ -56,4 +56,17 @@ describe('Application launch', function() {
             return foundElement.value;
         });
     });
+    it('check if replicated to both windows', async () => {
+        const window1 = app.client.windowByIndex(0);
+        await AsyncTestUtil.waitUntil(async () => {
+            const foundElement = await window1.element('.name[name="Bob Kelso"]');
+            return foundElement.value;
+        });
+
+        const window2 = app.client.windowByIndex(1);
+        await AsyncTestUtil.waitUntil(async () => {
+            const foundElement = await window2.element('.name[name="Bob Kelso"]');
+            return foundElement.value;
+        });
+    });
 });
