@@ -6190,7 +6190,7 @@ function () {
 
     this._docCache.set(id, doc);
 
-    this._runHooksSync('post', 'create', doc);
+    this._runHooksSync('post', 'create', json, doc);
 
     return doc;
   };
@@ -6290,7 +6290,7 @@ function () {
               } else newDoc = this._createDocument(json);
 
               _context3.next = 23;
-              return this._runHooks('post', 'insert', newDoc);
+              return this._runHooks('post', 'insert', json, newDoc);
 
             case 23:
               // event
@@ -6661,7 +6661,7 @@ function () {
   function () {
     var _runHooks2 = (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
-    _regenerator["default"].mark(function _callee7(when, key, doc) {
+    _regenerator["default"].mark(function _callee7(when, key, data, instance) {
       var hooks, i;
       return _regenerator["default"].wrap(function _callee7$(_context7) {
         while (1) {
@@ -6686,7 +6686,7 @@ function () {
               }
 
               _context7.next = 7;
-              return hooks.series[i](doc);
+              return hooks.series[i](data, instance);
 
             case 7:
               i++;
@@ -6696,7 +6696,7 @@ function () {
             case 10:
               _context7.next = 12;
               return Promise.all(hooks.parallel.map(function (hook) {
-                return hook(doc);
+                return hook(data, instance);
               }));
 
             case 12:
@@ -6707,7 +6707,7 @@ function () {
       }, _callee7, this);
     }));
 
-    return function _runHooks(_x7, _x8, _x9) {
+    return function _runHooks(_x7, _x8, _x9, _x10) {
       return _runHooks2.apply(this, arguments);
     };
   }();
@@ -6716,11 +6716,11 @@ function () {
    */
 
 
-  _proto._runHooksSync = function _runHooksSync(when, key, doc) {
+  _proto._runHooksSync = function _runHooksSync(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
     if (!hooks) return;
     hooks.series.forEach(function (hook) {
-      return hook(doc);
+      return hook(data, instance);
     });
   };
   /**
@@ -6738,7 +6738,7 @@ function () {
 
     doc._isTemporary = true;
 
-    this._runHooksSync('post', 'create', doc);
+    this._runHooksSync('post', 'create', docData, doc);
 
     return doc;
   };
@@ -6948,7 +6948,7 @@ var checkOrmMethods = function checkOrmMethods(statics) {
  */
 
 
-function create(_x10) {
+function create(_x11) {
   return _create.apply(this, arguments);
 }
 
@@ -8362,7 +8362,7 @@ var basePrototype = {
 
             case 3:
               _context.next = 5;
-              return this.collection._runHooks('pre', 'save', this);
+              return this.collection._runHooks('pre', 'save', newData, this);
 
             case 5:
               this.collection.schema.validate(newData);
@@ -8387,7 +8387,7 @@ var basePrototype = {
               changeEvent = _rxChangeEvent["default"].create('UPDATE', this.collection.database, this.collection, this, newData);
               this.$emit(changeEvent);
               _context.next = 16;
-              return this.collection._runHooks('post', 'save', this);
+              return this.collection._runHooks('post', 'save', newData, this);
 
             case 16:
             case "end":
@@ -8453,11 +8453,11 @@ var basePrototype = {
               return (0, _util.promiseWait)(0);
 
             case 4:
-              _context2.next = 6;
-              return this.collection._runHooks('pre', 'remove', this);
-
-            case 6:
               deletedData = (0, _util.clone)(this._data);
+              _context2.next = 7;
+              return this.collection._runHooks('pre', 'remove', deletedData, this);
+
+            case 7:
               deletedData._deleted = true;
               /**
                * because pouch.remove will also empty the object,
@@ -8470,7 +8470,7 @@ var basePrototype = {
             case 10:
               this.$emit(_rxChangeEvent["default"].create('REMOVE', this.collection.database, this.collection, this, this._data));
               _context2.next = 13;
-              return this.collection._runHooks('post', 'remove', this);
+              return this.collection._runHooks('post', 'remove', deletedData, this);
 
             case 13:
               _context2.next = 15;
@@ -8570,6 +8570,7 @@ function properties() {
 }
 
 function isInstanceOf(obj) {
+  if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
 }
 

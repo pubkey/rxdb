@@ -335,7 +335,7 @@ var basePrototype = {
 
             case 3:
               _context.next = 5;
-              return this.collection._runHooks('pre', 'save', this);
+              return this.collection._runHooks('pre', 'save', newData, this);
 
             case 5:
               this.collection.schema.validate(newData);
@@ -360,7 +360,7 @@ var basePrototype = {
               changeEvent = _rxChangeEvent["default"].create('UPDATE', this.collection.database, this.collection, this, newData);
               this.$emit(changeEvent);
               _context.next = 16;
-              return this.collection._runHooks('post', 'save', this);
+              return this.collection._runHooks('post', 'save', newData, this);
 
             case 16:
             case "end":
@@ -426,11 +426,11 @@ var basePrototype = {
               return (0, _util.promiseWait)(0);
 
             case 4:
-              _context2.next = 6;
-              return this.collection._runHooks('pre', 'remove', this);
-
-            case 6:
               deletedData = (0, _util.clone)(this._data);
+              _context2.next = 7;
+              return this.collection._runHooks('pre', 'remove', deletedData, this);
+
+            case 7:
               deletedData._deleted = true;
               /**
                * because pouch.remove will also empty the object,
@@ -443,7 +443,7 @@ var basePrototype = {
             case 10:
               this.$emit(_rxChangeEvent["default"].create('REMOVE', this.collection.database, this.collection, this, this._data));
               _context2.next = 13;
-              return this.collection._runHooks('post', 'remove', this);
+              return this.collection._runHooks('post', 'remove', deletedData, this);
 
             case 13:
               _context2.next = 15;
@@ -543,6 +543,7 @@ function properties() {
 }
 
 function isInstanceOf(obj) {
+  if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
 }
 
