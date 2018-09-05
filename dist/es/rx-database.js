@@ -76,78 +76,23 @@ function () {
     _regeneratorRuntime.mark(function _callee() {
       var _this = this;
 
-      var pwHashDoc;
+      var _ref, storageToken;
+
       return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              if (!this.password) {
-                _context.next = 22;
-                break;
-              }
+              _context.next = 2;
+              return this._adminPouch.info();
 
-              _context.next = 3;
-              return this.lockedRun(function () {
-                return _this._adminPouch.info();
-              });
+            case 2:
+              _context.next = 4;
+              return Promise.all([this._ensureStorageTokenExists(), this._preparePasswordHash()]);
 
-            case 3:
-              pwHashDoc = null;
-              _context.prev = 4;
-              _context.next = 7;
-              return this.lockedRun(function () {
-                return _this._adminPouch.get('_local/pwHash');
-              });
-
-            case 7:
-              pwHashDoc = _context.sent;
-              _context.next = 12;
-              break;
-
-            case 10:
-              _context.prev = 10;
-              _context.t0 = _context["catch"](4);
-
-            case 12:
-              if (pwHashDoc) {
-                _context.next = 20;
-                break;
-              }
-
-              _context.prev = 13;
-              _context.next = 16;
-              return this.lockedRun(function () {
-                return _this._adminPouch.put({
-                  _id: '_local/pwHash',
-                  value: hash(_this.password)
-                });
-              });
-
-            case 16:
-              _context.next = 20;
-              break;
-
-            case 18:
-              _context.prev = 18;
-              _context.t1 = _context["catch"](13);
-
-            case 20:
-              if (!(pwHashDoc && this.password && hash(this.password) !== pwHashDoc.value)) {
-                _context.next = 22;
-                break;
-              }
-
-              throw RxError.newRxError('DB1', {
-                passwordHash: hash(this.password),
-                existingPasswordHash: pwHashDoc.value
-              });
-
-            case 22:
-              _context.next = 24;
-              return this._ensureStorageTokenExists();
-
-            case 24:
-              this.storageToken = _context.sent;
+            case 4:
+              _ref = _context.sent;
+              storageToken = _ref[0];
+              this.storageToken = storageToken;
 
               if (this.multiInstance) {
                 // socket
@@ -158,12 +103,12 @@ function () {
                 }));
               }
 
-            case 26:
+            case 8:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, this, [[4, 10], [13, 18]]);
+      }, _callee, this);
     }));
 
     return function prepare() {
@@ -171,7 +116,88 @@ function () {
     };
   }();
   /**
-   * to not confuse multiInstance-messages with other databases that have the same 
+   * validates and inserts the password-hash
+   * to ensure there is/was no other instance with a different password
+   */
+
+
+  _proto._preparePasswordHash =
+  /*#__PURE__*/
+  function () {
+    var _preparePasswordHash2 = _asyncToGenerator(
+    /*#__PURE__*/
+    _regeneratorRuntime.mark(function _callee2() {
+      var pwHash, pwHashDoc;
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              if (this.password) {
+                _context2.next = 2;
+                break;
+              }
+
+              return _context2.abrupt("return", false);
+
+            case 2:
+              pwHash = hash(this.password);
+              pwHashDoc = null;
+              _context2.prev = 4;
+              _context2.next = 7;
+              return this._adminPouch.get('_local/pwHash');
+
+            case 7:
+              pwHashDoc = _context2.sent;
+              _context2.next = 12;
+              break;
+
+            case 10:
+              _context2.prev = 10;
+              _context2.t0 = _context2["catch"](4);
+
+            case 12:
+              /**
+               * if pwHash was not saved, we save it,
+               * this operation might throw because another instance runs save at the same time,
+               * also we do not await the output because it does not mather
+               */
+              if (!pwHashDoc) {
+                this._adminPouch.put({
+                  _id: '_local/pwHash',
+                  value: pwHash
+                })["catch"](function () {
+                  return null;
+                });
+              } // different hash was already set by other instance
+
+
+              if (!(pwHashDoc && this.password && pwHash !== pwHashDoc.value)) {
+                _context2.next = 15;
+                break;
+              }
+
+              throw RxError.newRxError('DB1', {
+                passwordHash: hash(this.password),
+                existingPasswordHash: pwHashDoc.value
+              });
+
+            case 15:
+              return _context2.abrupt("return", true);
+
+            case 16:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, this, [[4, 10]]);
+    }));
+
+    return function _preparePasswordHash() {
+      return _preparePasswordHash2.apply(this, arguments);
+    };
+  }();
+  /**
+   * to not confuse multiInstance-messages with other databases that have the same
    * name and adapter, but do not share state with this one (for example in-memory-instances),
    * we set a storage-token and use it in the broadcast-channel
    */
@@ -182,66 +208,58 @@ function () {
   function () {
     var _ensureStorageTokenExists2 = _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee2() {
-      var _this2 = this;
-
+    _regeneratorRuntime.mark(function _callee3() {
       var storageTokenDoc2;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
         while (1) {
-          switch (_context2.prev = _context2.next) {
+          switch (_context3.prev = _context3.next) {
             case 0:
-              _context2.prev = 0;
-              _context2.next = 3;
-              return this.lockedRun(function () {
-                return _this2._adminPouch.get('_local/storageToken');
-              });
+              _context3.prev = 0;
+              _context3.next = 3;
+              return this._adminPouch.get('_local/storageToken');
 
             case 3:
-              _context2.next = 16;
+              _context3.next = 16;
               break;
 
             case 5:
-              _context2.prev = 5;
-              _context2.t0 = _context2["catch"](0);
-              _context2.prev = 7;
-              _context2.next = 10;
-              return this.lockedRun(function () {
-                return _this2._adminPouch.put({
-                  _id: '_local/storageToken',
-                  value: randomToken(10)
-                });
+              _context3.prev = 5;
+              _context3.t0 = _context3["catch"](0);
+              _context3.prev = 7;
+              _context3.next = 10;
+              return this._adminPouch.put({
+                _id: '_local/storageToken',
+                value: randomToken(10)
               });
 
             case 10:
-              _context2.next = 14;
+              _context3.next = 14;
               break;
 
             case 12:
-              _context2.prev = 12;
-              _context2.t1 = _context2["catch"](7);
+              _context3.prev = 12;
+              _context3.t1 = _context3["catch"](7);
 
             case 14:
-              _context2.next = 16;
+              _context3.next = 16;
               return new Promise(function (res) {
                 return setTimeout(res, 0);
               });
 
             case 16:
-              _context2.next = 18;
-              return this.lockedRun(function () {
-                return _this2._adminPouch.get('_local/storageToken');
-              });
+              _context3.next = 18;
+              return this._adminPouch.get('_local/storageToken');
 
             case 18:
-              storageTokenDoc2 = _context2.sent;
-              return _context2.abrupt("return", storageTokenDoc2.value);
+              storageTokenDoc2 = _context3.sent;
+              return _context3.abrupt("return", storageTokenDoc2.value);
 
             case 20:
             case "end":
-              return _context2.stop();
+              return _context3.stop();
           }
         }
-      }, _callee2, this, [[0, 5], [7, 12]]);
+      }, _callee3, this, [[0, 5], [7, 12]]);
     }));
 
     return function _ensureStorageTokenExists() {
@@ -321,13 +339,13 @@ function () {
 
 
   _proto.removeCollectionDoc = function removeCollectionDoc(name, schema) {
-    var _this3 = this;
+    var _this2 = this;
 
     var docId = this._collectionNamePrimary(name, schema);
 
     return this._collectionsPouch.get(docId).then(function (doc) {
-      return _this3.lockedRun(function () {
-        return _this3._collectionsPouch.remove(doc);
+      return _this2.lockedRun(function () {
+        return _this2._collectionsPouch.remove(doc);
       });
     });
   };
@@ -339,10 +357,10 @@ function () {
 
 
   _proto._removeAllOfCollection = function _removeAllOfCollection(collectionName) {
-    var _this4 = this;
+    var _this3 = this;
 
     return this.lockedRun(function () {
-      return _this4._collectionsPouch.allDocs({
+      return _this3._collectionsPouch.allDocs({
         include_docs: true
       });
     }).then(function (data) {
@@ -354,8 +372,8 @@ function () {
         return name === collectionName;
       });
       return Promise.all(relevantDocs.map(function (doc) {
-        return _this4.lockedRun(function () {
-          return _this4._collectionsPouch.remove(doc);
+        return _this3.lockedRun(function () {
+          return _this3._collectionsPouch.remove(doc);
         });
       })).then(function () {
         return relevantDocs.map(function (doc) {
@@ -376,27 +394,27 @@ function () {
   function () {
     var _collection = _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee3(args) {
-      var _this5 = this;
+    _regeneratorRuntime.mark(function _callee4(args) {
+      var _this4 = this;
 
       var internalPrimary, schemaHash, collectionDoc, pouch, oneDoc, collection, cEvent;
-      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+      return _regeneratorRuntime.wrap(function _callee4$(_context4) {
         while (1) {
-          switch (_context3.prev = _context3.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
               if (!(typeof args === 'string')) {
-                _context3.next = 2;
+                _context4.next = 2;
                 break;
               }
 
-              return _context3.abrupt("return", this.collections[args]);
+              return _context4.abrupt("return", this.collections[args]);
 
             case 2:
               args.database = this;
               runPluginHooks('preCreateRxCollection', args);
 
               if (!(args.name.charAt(0) === '_')) {
-                _context3.next = 6;
+                _context4.next = 6;
                 break;
               }
 
@@ -406,7 +424,7 @@ function () {
 
             case 6:
               if (!this.collections[args.name]) {
-                _context3.next = 8;
+                _context4.next = 8;
                 break;
               }
 
@@ -416,7 +434,7 @@ function () {
 
             case 8:
               if (args.schema) {
-                _context3.next = 10;
+                _context4.next = 10;
                 break;
               }
 
@@ -429,7 +447,7 @@ function () {
               internalPrimary = this._collectionNamePrimary(args.name, args.schema); // check unallowed collection-names
 
               if (!properties().includes(args.name)) {
-                _context3.next = 13;
+                _context4.next = 13;
                 break;
               }
 
@@ -442,30 +460,30 @@ function () {
 
               schemaHash = args.schema.hash;
               collectionDoc = null;
-              _context3.prev = 16;
-              _context3.next = 19;
+              _context4.prev = 16;
+              _context4.next = 19;
               return this.lockedRun(function () {
-                return _this5._collectionsPouch.get(internalPrimary);
+                return _this4._collectionsPouch.get(internalPrimary);
               });
 
             case 19:
-              collectionDoc = _context3.sent;
-              _context3.next = 24;
+              collectionDoc = _context4.sent;
+              _context4.next = 24;
               break;
 
             case 22:
-              _context3.prev = 22;
-              _context3.t0 = _context3["catch"](16);
+              _context4.prev = 22;
+              _context4.t0 = _context4["catch"](16);
 
             case 24:
               if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
-                _context3.next = 31;
+                _context4.next = 31;
                 break;
               }
 
               // collection already exists with different schema, check if it has documents
               pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-              _context3.next = 28;
+              _context4.next = 28;
               return pouch.find({
                 selector: {
                   _id: {}
@@ -474,10 +492,10 @@ function () {
               });
 
             case 28:
-              oneDoc = _context3.sent;
+              oneDoc = _context4.sent;
 
               if (!(oneDoc.docs.length !== 0)) {
-                _context3.next = 31;
+                _context4.next = 31;
                 break;
               }
 
@@ -488,14 +506,14 @@ function () {
               });
 
             case 31:
-              _context3.next = 33;
+              _context4.next = 33;
               return RxCollection.create(args);
 
             case 33:
-              collection = _context3.sent;
+              collection = _context4.sent;
 
               if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
-                _context3.next = 36;
+                _context4.next = 36;
                 break;
               }
 
@@ -505,14 +523,14 @@ function () {
 
             case 36:
               if (collectionDoc) {
-                _context3.next = 44;
+                _context4.next = 44;
                 break;
               }
 
-              _context3.prev = 37;
-              _context3.next = 40;
+              _context4.prev = 37;
+              _context4.next = 40;
               return this.lockedRun(function () {
-                return _this5._collectionsPouch.put({
+                return _this4._collectionsPouch.put({
                   _id: internalPrimary,
                   schemaHash: schemaHash,
                   schema: collection.schema.normalized,
@@ -521,12 +539,12 @@ function () {
               });
 
             case 40:
-              _context3.next = 44;
+              _context4.next = 44;
               break;
 
             case 42:
-              _context3.prev = 42;
-              _context3.t1 = _context3["catch"](37);
+              _context4.prev = 42;
+              _context4.t1 = _context4["catch"](37);
 
             case 44:
               cEvent = RxChangeEvent.create('RxDatabase.collection', this);
@@ -536,17 +554,17 @@ function () {
               this.collections[args.name] = collection;
 
               this.__defineGetter__(args.name, function () {
-                return _this5.collections[args.name];
+                return _this4.collections[args.name];
               });
 
-              return _context3.abrupt("return", collection);
+              return _context4.abrupt("return", collection);
 
             case 51:
             case "end":
-              return _context3.stop();
+              return _context4.stop();
           }
         }
-      }, _callee3, this, [[16, 22], [37, 42]]);
+      }, _callee4, this, [[16, 22], [37, 42]]);
     }));
 
     return function collection(_x) {
@@ -565,45 +583,45 @@ function () {
   function () {
     var _removeCollection = _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee4(collectionName) {
-      var _this6 = this;
+    _regeneratorRuntime.mark(function _callee5(collectionName) {
+      var _this5 = this;
 
       var knownVersions, pouches;
-      return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+      return _regeneratorRuntime.wrap(function _callee5$(_context5) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
               if (!this.collections[collectionName]) {
-                _context4.next = 3;
+                _context5.next = 3;
                 break;
               }
 
-              _context4.next = 3;
+              _context5.next = 3;
               return this.collections[collectionName].destroy();
 
             case 3:
-              _context4.next = 5;
+              _context5.next = 5;
               return this._removeAllOfCollection(collectionName);
 
             case 5:
-              knownVersions = _context4.sent;
+              knownVersions = _context5.sent;
               // get all relevant pouchdb-instances
               pouches = knownVersions.map(function (v) {
-                return _this6._spawnPouchDB(collectionName, v);
+                return _this5._spawnPouchDB(collectionName, v);
               }); // remove documents
 
-              return _context4.abrupt("return", Promise.all(pouches.map(function (pouch) {
-                return _this6.lockedRun(function () {
+              return _context5.abrupt("return", Promise.all(pouches.map(function (pouch) {
+                return _this5.lockedRun(function () {
                   return pouch.destroy();
                 });
               })));
 
             case 8:
             case "end":
-              return _context4.stop();
+              return _context5.stop();
           }
         }
-      }, _callee4, this);
+      }, _callee5, this);
     }));
 
     return function removeCollection(_x2) {
@@ -661,19 +679,19 @@ function () {
   function () {
     var _destroy = _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee5() {
-      var _this7 = this;
+    _regeneratorRuntime.mark(function _callee6() {
+      var _this6 = this;
 
-      return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+      return _regeneratorRuntime.wrap(function _callee6$(_context6) {
         while (1) {
-          switch (_context5.prev = _context5.next) {
+          switch (_context6.prev = _context6.next) {
             case 0:
               if (!this.destroyed) {
-                _context5.next = 2;
+                _context6.next = 2;
                 break;
               }
 
-              return _context5.abrupt("return");
+              return _context6.abrupt("return");
 
             case 2:
               runPluginHooks('preDestroyRxDatabase', this);
@@ -682,11 +700,11 @@ function () {
               this.socket && this.socket.destroy();
 
               if (!this._leaderElector) {
-                _context5.next = 9;
+                _context6.next = 9;
                 break;
               }
 
-              _context5.next = 9;
+              _context6.next = 9;
               return this._leaderElector.destroy();
 
             case 9:
@@ -695,9 +713,9 @@ function () {
               }); // destroy all collections
 
 
-              _context5.next = 12;
+              _context6.next = 12;
               return Promise.all(Object.keys(this.collections).map(function (key) {
-                return _this7.collections[key];
+                return _this6.collections[key];
               }).map(function (col) {
                 return col.destroy();
               }));
@@ -708,10 +726,10 @@ function () {
 
             case 13:
             case "end":
-              return _context5.stop();
+              return _context6.stop();
           }
         }
-      }, _callee5, this);
+      }, _callee6, this);
     }));
 
     return function destroy() {
@@ -725,10 +743,10 @@ function () {
 
 
   _proto.remove = function remove() {
-    var _this8 = this;
+    var _this7 = this;
 
     return this.destroy().then(function () {
-      return removeDatabase(_this8.name, _this8.adapter);
+      return removeDatabase(_this7.name, _this7.adapter);
     });
   };
 
@@ -810,20 +828,20 @@ function _removeUsedCombination(name, adapter) {
   USED_COMBINATIONS[name].splice(index, 1);
 }
 
-export function create(_ref) {
-  var name = _ref.name,
-      adapter = _ref.adapter,
-      password = _ref.password,
-      _ref$multiInstance = _ref.multiInstance,
-      multiInstance = _ref$multiInstance === void 0 ? true : _ref$multiInstance,
-      _ref$queryChangeDetec = _ref.queryChangeDetection,
-      queryChangeDetection = _ref$queryChangeDetec === void 0 ? false : _ref$queryChangeDetec,
-      _ref$ignoreDuplicate = _ref.ignoreDuplicate,
-      ignoreDuplicate = _ref$ignoreDuplicate === void 0 ? false : _ref$ignoreDuplicate,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {} : _ref$options,
-      _ref$pouchSettings = _ref.pouchSettings,
-      pouchSettings = _ref$pouchSettings === void 0 ? {} : _ref$pouchSettings;
+export function create(_ref2) {
+  var name = _ref2.name,
+      adapter = _ref2.adapter,
+      password = _ref2.password,
+      _ref2$multiInstance = _ref2.multiInstance,
+      multiInstance = _ref2$multiInstance === void 0 ? true : _ref2$multiInstance,
+      _ref2$queryChangeDete = _ref2.queryChangeDetection,
+      queryChangeDetection = _ref2$queryChangeDete === void 0 ? false : _ref2$queryChangeDete,
+      _ref2$ignoreDuplicate = _ref2.ignoreDuplicate,
+      ignoreDuplicate = _ref2$ignoreDuplicate === void 0 ? false : _ref2$ignoreDuplicate,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {} : _ref2$options,
+      _ref2$pouchSettings = _ref2.pouchSettings,
+      pouchSettings = _ref2$pouchSettings === void 0 ? {} : _ref2$pouchSettings;
   validateCouchDBString(name); // check if pouchdb-adapter
 
   if (typeof adapter === 'string') {
@@ -842,9 +860,15 @@ export function create(_ref) {
     }
   }
 
-  if (password) overwritable.validatePassword(password); // check if combination already used
+  if (password) {
+    overwritable.validatePassword(password);
+  } // check if combination already used
 
-  if (!ignoreDuplicate) _isNameAdapterUsed(name, adapter); // add to used_map
+
+  if (!ignoreDuplicate) {
+    _isNameAdapterUsed(name, adapter);
+  } // add to used_map
+
 
   if (!USED_COMBINATIONS[name]) USED_COMBINATIONS[name] = [];
   USED_COMBINATIONS[name].push(adapter);
@@ -901,8 +925,8 @@ function _internalCollectionsPouch(name, adapter) {
   }, pouchSettingsFromRxDatabaseCreator);
 }
 /**
- * 
- * @return {Promise} 
+ *
+ * @return {Promise}
  */
 
 

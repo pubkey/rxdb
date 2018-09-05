@@ -23,6 +23,8 @@ var _encryption = _interopRequireDefault(require("./plugins/encryption"));
 
 var _update = _interopRequireDefault(require("./plugins/update"));
 
+var _watchForChanges = _interopRequireDefault(require("./plugins/watch-for-changes"));
+
 var _replication = _interopRequireDefault(require("./plugins/replication"));
 
 var _adapterCheck = _interopRequireDefault(require("./plugins/adapter-check"));
@@ -54,6 +56,8 @@ _core["default"].plugin(_leaderElection["default"]);
 _core["default"].plugin(_encryption["default"]);
 
 _core["default"].plugin(_update["default"]);
+
+_core["default"].plugin(_watchForChanges["default"]);
 
 _core["default"].plugin(_replication["default"]);
 

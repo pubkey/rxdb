@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createRxReplicationState = createRxReplicationState;
-exports.watchForChanges = watchForChanges;
 exports.sync = sync;
 exports["default"] = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxReplicationState = void 0;
 
@@ -14,26 +13,27 @@ var _pouchdbReplication = _interopRequireDefault(require("pouchdb-replication"))
 
 var _rxjs = require("rxjs");
 
-var _operators = require("rxjs/operators");
-
 var _util = require("../util");
 
 var _core = _interopRequireDefault(require("../core"));
 
 var _rxCollection = _interopRequireDefault(require("../rx-collection"));
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
-
 var _rxError = _interopRequireDefault(require("../rx-error"));
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
+
+var _watchForChanges = _interopRequireDefault(require("../plugins/watch-for-changes"));
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
  */
 // add pouchdb-replication-plugin
-_core["default"].plugin(_pouchdbReplication["default"]);
+_core["default"].plugin(_pouchdbReplication["default"]); // add the watch-for-changes-plugin
+
+
+_core["default"].plugin(_watchForChanges["default"]);
 
 var INTERNAL_POUCHDBS = new WeakSet();
 
@@ -139,75 +139,9 @@ exports.RxReplicationState = RxReplicationState;
 function createRxReplicationState(collection) {
   return new RxReplicationState(collection);
 }
-/**
- * waits for external changes to the database
- * and ensures they are emitted to the internal RxChangeEvent-Stream
- */
-
-
-function watchForChanges() {
-  var _this3 = this;
-
-  // do not call twice on same collection
-  if (this.synced) return;
-  this.synced = true;
-  this._watchForChangesUnhandled = new Set();
-  /**
-   * this will grap the changes and publish them to the rx-stream
-   * this is to ensure that changes from 'synced' dbs will be published
-   */
-
-  var pouch$ = (0, _rxjs.fromEvent)(this.pouch.changes({
-    since: 'now',
-    live: true,
-    include_docs: true
-  }), 'change').pipe((0, _operators.map)(function (ar) {
-    return ar[0];
-  }) // rxjs6.x fires an array for whatever reason
-  ).subscribe(function (change) {
-    var resPromise = _handleSingleChange(_this3, change); // add and remove to the Set so RxReplicationState.complete$ can know when all events where handled
-
-
-    _this3._watchForChangesUnhandled.add(resPromise);
-
-    resPromise.then(function () {
-      _this3._watchForChangesUnhandled["delete"](resPromise);
-    });
-  });
-
-  this._subs.push(pouch$);
-}
-/**
- * handles a single change-event
- * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
- */
-
-
-function _handleSingleChange(collection, change) {
-  if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
-  // wait 2 ticks and 20 ms to give the internal event-handling time to run
-
-  return (0, _util.promiseWait)(20).then(function () {
-    return (0, _util.nextTick)();
-  }).then(function () {
-    return (0, _util.nextTick)();
-  }).then(function () {
-    var docData = change.doc; // already handled by internal event-stream
-
-    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-
-    var cE = _rxChangeEvent["default"].fromPouchChange(docData, collection);
-
-    collection.$emit(cE);
-    return true;
-  });
-}
 
 function sync(_ref) {
-  var _this4 = this;
+  var _this3 = this;
 
   var remote = _ref.remote,
       _ref$waitForLeadershi = _ref.waitForLeadership,
@@ -252,11 +186,11 @@ function sync(_ref) {
   waitTillRun.then(function () {
     var pouchSync = syncFun(remote, options);
 
-    _this4.watchForChanges();
+    _this3.watchForChanges();
 
     repState.setPouchEventEmitter(pouchSync);
 
-    _this4._repStates.push(repState);
+    _this3._repStates.push(repState);
   });
   return repState;
 }
@@ -265,7 +199,6 @@ var rxdb = true;
 exports.rxdb = rxdb;
 var prototypes = {
   RxCollection: function RxCollection(proto) {
-    proto.watchForChanges = watchForChanges;
     proto.sync = sync;
   }
 };
@@ -283,7 +216,6 @@ var _default = {
   prototypes: prototypes,
   overwritable: overwritable,
   hooks: hooks,
-  watchForChanges: watchForChanges,
   sync: sync
 };
 exports["default"] = _default;

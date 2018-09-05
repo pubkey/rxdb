@@ -30,6 +30,8 @@ var _rxCollection = _interopRequireDefault(require("../rx-collection"));
 
 var _util = require("../util");
 
+var _core = _interopRequireDefault(require("../core"));
+
 var _crypter = _interopRequireDefault(require("../crypter"));
 
 var _changeEventBuffer = _interopRequireDefault(require("../change-event-buffer"));
@@ -40,12 +42,17 @@ var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
 var _rxError = _interopRequireDefault(require("../rx-error"));
 
+var _watchForChanges = _interopRequireDefault(require("../plugins/watch-for-changes"));
+
 /**
  * This plugin adds RxCollection.inMemory()
  * Which replicates the collection into an in-memory-collection
  * So you can do faster queries and also query over encrypted fields.
  * Writes will still run on the original collection
  */
+// add the watch-for-changes-plugin
+_core["default"].plugin(_watchForChanges["default"]);
+
 var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
