@@ -209,6 +209,27 @@ RxDB.plugin(RxDBUpdateModule);
 RxDB.plugin(require('rxdb/plugins/update'));
 ```
 
+### watch-for-changes
+
+When you write data on the internal pouchdb of a collection, by default the changeEvent will not be emitted to RxDB's changestream.
+The watch-for-changes plugin lets you tell the collection to actively watch for changes on the pouchdb-instance whose origin is not RxDB.
+This plugin is used internally by the replication-plugin and the in-memory-plugin.
+
+```javascript
+// es6-import
+import RxDBWatchForChangesModule from 'rxdb/plugins/watch-for-changes';
+RxDB.plugin(RxDBWatchForChangesModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/watch-for-changes'));
+
+// you can now call this once and then do writes on the pouchdb
+myRxCollection.watchForChanges();
+
+// now write sth on the pouchdb
+myRxCollection.pouch.put({/* ... */});
+```
+
 ### adapter-check
 
 This module add the [checkAdapter](./rx-database.md#checkadapter)-function to RxDB.

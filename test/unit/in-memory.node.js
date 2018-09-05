@@ -11,7 +11,11 @@ const leveldown = require('leveldown');
 import * as util from '../../dist/lib/util';
 
 
-const RxDB = require('../../');
+const RxDB = require('../../plugins/core/');
+RxDB.plugin(require('../../plugins/in-memory'));
+RxDB.plugin(require('../../plugins/error-messages'));
+RxDB.plugin(require('../../plugins/watch-for-changes'));
+
 RxDB.plugin(require('pouchdb-adapter-leveldb'));
 
 const schema = {

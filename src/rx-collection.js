@@ -576,7 +576,7 @@ export class RxCollection {
      * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
      */
     watchForChanges() {
-        throw RxError.pluginMissing('replication');
+        throw RxError.pluginMissing('watch-for-changes');
     }
 
     /**

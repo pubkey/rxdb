@@ -27,6 +27,7 @@ Other:
   - Upgrade to eslint 5 (no more babel-eslint)
   - Upgrade to babel7
   - Refactored `plugins/replication/.watchForChanges()` to fix sometimes-breaking-test with `RxReplicationState.complete$`
+  - Split `RxCollection.watchForChanges()` into own plugin
   - Refactored `RxQuery`
 
 

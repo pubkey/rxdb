@@ -29,6 +29,9 @@ Core.plugin(EncryptionPlugin);
 import UpdatePlugin from './plugins/update';
 Core.plugin(UpdatePlugin);
 
+import WatchForChangesPlugin from './plugins/watch-for-changes';
+Core.plugin(WatchForChangesPlugin);
+
 import ReplicationPlugin from './plugins/replication';
 Core.plugin(ReplicationPlugin);
 
