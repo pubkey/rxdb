@@ -71,7 +71,7 @@
     "babel-runtime": "^6.26.0",
     "clone": "^2.1.1",
     "crypto-js": "^3.1.8",
-    "custom-idle-queue": "2.0.1",
+    "custom-idle-queue": "2.1.0",
     "deep-equal": "^1.0.1",
     "express": "4.16.3",
     "express-pouchdb": "4.0.1",
