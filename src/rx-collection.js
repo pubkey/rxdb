@@ -7,7 +7,8 @@ import {
     validateCouchDBString,
     ucfirst,
     nextTick,
-    generateId
+    generateId,
+    promiseSeries
 } from './util';
 import RxDocument from './rx-document';
 import RxQuery from './rx-query';
@@ -455,20 +456,21 @@ export class RxCollection {
      * @param  {any}  json
      * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
      */
-    async _atomicUpsertEnsureRxDocumentExists(primary, json) {
-        const doc = await this.findOne(primary).exec();
-        if (!doc) {
-            const newDoc = await this.insert(json);
-            return {
-                doc: newDoc,
-                inserted: true
-            };
-        } else {
-            return {
-                doc,
-                inserted: false
-            };
-        }
+    _atomicUpsertEnsureRxDocumentExists(primary, json) {
+        return this.findOne(primary).exec()
+            .then(doc => {
+                if (!doc) {
+                    return this.insert(json).then(newDoc => ({
+                        doc: newDoc,
+                        inserted: true
+                    }));
+                } else {
+                    return {
+                        doc,
+                        inserted: false
+                    };
+                }
+            });
     }
 
     /**
@@ -645,17 +647,22 @@ export class RxCollection {
             };
         }
     }
-    async _runHooks(when, key, data, instance) {
+
+    /**
+     * @return {Promise<void>}
+     */
+    _runHooks(when, key, data, instance) {
         const hooks = this.getHooks(when, key);
-        if (!hooks) return;
+        if (!hooks) return Promise.resolve();
 
-        for (let i = 0; i < hooks.series.length; i++)
-            await hooks.series[i](data, instance);
-
-        await Promise.all(
-            hooks.parallel
-            .map(hook => hook(data, instance))
-        );
+        // run parallel: false
+        const tasks = hooks.series.map(hook => () => hook(data, instance));
+        return promiseSeries(tasks)
+            // run parallel: true
+            .then(() => Promise.all(
+                hooks.parallel
+                .map(hook => hook(data, instance))
+            ));
     }
 
     /**

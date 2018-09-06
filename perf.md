@@ -242,3 +242,8 @@ AFTER: {
     "perDocument": 0.1312261532
   }
 }
+
+## 6. September 2018
+Build size:
+BEFORE: 103397
+AFTER: 103233

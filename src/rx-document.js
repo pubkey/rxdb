@@ -2,7 +2,6 @@ import objectPath from 'object-path';
 
 import {
     clone,
-    promiseWait,
     trimDots,
     getHeightOfRevision
 } from './util';
@@ -279,7 +278,10 @@ export const basePrototype = {
         this._atomicQueue = this._atomicQueue
             .then(async () => {
                 const oldData = clone(this._dataSync$.getValue());
+
+                // use await here because it's unknown if a promise is returned
                 const newData = await fun(clone(this._dataSync$.getValue()), this);
+
                 return this._saveData(newData, oldData);
             });
 
@@ -300,7 +302,7 @@ export const basePrototype = {
      * @param {any} oldData
      * @return {Promise}
      */
-    async _saveData(newData, oldData) {
+    _saveData(newData, oldData) {
         newData = clone(newData);
 
 
@@ -315,32 +317,32 @@ export const basePrototype = {
         // ensure modifications are ok
         this.collection.schema.validateChange(newData, oldData);
 
-        await this.collection._runHooks('pre', 'save', newData, this);
+        return this.collection._runHooks('pre', 'save', newData, this)
+            .then(() => {
+                this.collection.schema.validate(newData);
 
-        this.collection.schema.validate(newData);
+                return this.collection._pouchPut(clone(newData));
+            })
+            .then(ret => {
+                if (!ret.ok) {
+                    throw RxError.newRxError('DOC12', {
+                        data: ret
+                    });
+                }
+                newData._rev = ret.rev;
 
-        const ret = await this.collection._pouchPut(clone(newData));
-        if (!ret.ok) {
-            throw RxError.newRxError('DOC12', {
-                data: ret
+                // emit event
+                const changeEvent = RxChangeEvent.create(
+                    'UPDATE',
+                    this.collection.database,
+                    this.collection,
+                    this,
+                    newData
+                );
+                this.$emit(changeEvent);
+
+                return this.collection._runHooks('post', 'save', newData, this);
             });
-        }
-
-
-        newData._rev = ret.rev;
-
-        // emit event
-        const changeEvent = RxChangeEvent.create(
-            'UPDATE',
-            this.collection.database,
-            this.collection,
-            this,
-            newData
-        );
-        this.$emit(changeEvent);
-
-
-        await this.collection._runHooks('post', 'save', newData, this);
     },
 
     /**
@@ -369,7 +371,13 @@ export const basePrototype = {
             });
     },
 
-    async remove() {
+    /**
+     * remove the document,
+     * this not not equal to a pouchdb.remove(),
+     * instead we keep the values and only set _deleted: true
+     * @return {Promise<RxDocument>}
+     */
+    remove() {
         if (this.deleted) {
             throw RxError.newRxError('DOC13', {
                 document: this,
@@ -377,29 +385,28 @@ export const basePrototype = {
             });
         }
 
-        await promiseWait(0);
         const deletedData = clone(this._data);
-        await this.collection._runHooks('pre', 'remove', deletedData, this);
+        return this.collection._runHooks('pre', 'remove', deletedData, this)
+            .then(() => {
+                deletedData._deleted = true;
+                /**
+                 * because pouch.remove will also empty the object,
+                 * we set _deleted: true and use pouch.put
+                 */
+                return this.collection._pouchPut(deletedData);
+            })
+            .then(() => {
+                this.$emit(RxChangeEvent.create(
+                    'REMOVE',
+                    this.collection.database,
+                    this.collection,
+                    this,
+                    this._data
+                ));
 
-        deletedData._deleted = true;
-
-        /**
-         * because pouch.remove will also empty the object,
-         * we set _deleted: true and use pouch.put
-         */
-        await this.collection._pouchPut(deletedData);
-
-        this.$emit(RxChangeEvent.create(
-            'REMOVE',
-            this.collection.database,
-            this.collection,
-            this,
-            this._data
-        ));
-
-        await this.collection._runHooks('post', 'remove', deletedData, this);
-        await promiseWait(0);
-        return this;
+                return this.collection._runHooks('post', 'remove', deletedData, this);
+            })
+            .then(() => this);
     },
     destroy() {
         throw RxError.newRxError('DOC14');
