@@ -21,7 +21,7 @@ Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
   - inMemory collections don't implement static methods [#744](https://github.com/pubkey/rxdb/issues/744)
   - inMemory collections do not sync up removals [#754](https://github.com/pubkey/rxdb/issues/754)
-
+  - Ensure `final` fields cannot be changed on `RxDocument.atomicUpdate()` and `RxDocument.update()`
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)

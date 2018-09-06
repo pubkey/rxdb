@@ -277,8 +277,11 @@ export const basePrototype = {
      */
     atomicUpdate(fun) {
         this._atomicQueue = this._atomicQueue
-            .then(() => fun(clone(this._dataSync$.getValue()), this))
-            .then(newData => this._saveData(newData));
+            .then(async () => {
+                const oldData = clone(this._dataSync$.getValue());
+                const newData = await fun(clone(this._dataSync$.getValue()), this);
+                return this._saveData(newData, oldData);
+            });
 
         return this._atomicQueue.then(() => this);
     },
@@ -293,9 +296,11 @@ export const basePrototype = {
     /**
      * saves the new document-data
      * and handles the events
-     * @param {} newData
+     * @param {any} newData
+     * @param {any} oldData
+     * @return {Promise}
      */
-    async _saveData(newData) {
+    async _saveData(newData, oldData) {
         newData = clone(newData);
 
 
@@ -306,6 +311,9 @@ export const basePrototype = {
                 document: this
             });
         }
+
+        // ensure modifications are ok
+        this.collection.schema.validateChange(newData, oldData);
 
         await this.collection._runHooks('pre', 'save', newData, this);
 

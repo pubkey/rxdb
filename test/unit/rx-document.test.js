@@ -12,7 +12,7 @@ import * as RxDatabase from '../../dist/lib/index';
 import * as RxSchema from '../../dist/lib/rx-schema';
 
 config.parallel('rx-document.test.js', () => {
-    describe('statics', () => { });
+    describe('statics', () => {});
     describe('prototype-merge', () => {
 
         describe('RxSchema.getDocumentPrototype()', () => {
@@ -124,7 +124,7 @@ config.parallel('rx-document.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('negative', () => { });
+        describe('negative', () => {});
     });
     describe('.set()', () => {
         describe('negative', () => {
@@ -306,6 +306,34 @@ config.parallel('rx-document.test.js', () => {
                 );
                 db.destroy();
             });
+            it('should throw when final field is modified', async () => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema: schemas.humanFinal,
+                    methods: {
+                        foo() {
+                            return 'bar';
+                        }
+                    }
+                });
+                const docData = schemaObjects.human();
+                docData.age = 1;
+                const doc = await col.insert(docData);
+                await AsyncTestUtil.assertThrows(
+                    () => doc.update({
+                        $inc: {
+                            age: 1
+                        }
+                    }),
+                    'RxError',
+                    'final'
+                );
+                db.destroy();
+            });
         });
     });
     describe('.atomicUpdate()', () => {
@@ -465,6 +493,34 @@ config.parallel('rx-document.test.js', () => {
                     'schema'
                 );
                 c.database.destroy();
+            });
+            it('should throw when final field is modified', async () => {
+                const db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                const col = await db.collection({
+                    name: 'humans',
+                    schema: schemas.humanFinal,
+                    methods: {
+                        foo() {
+                            return 'bar';
+                        }
+                    }
+                });
+                const docData = schemaObjects.human();
+                docData.age = 1;
+                const doc = await col.insert(docData);
+
+                await AsyncTestUtil.assertThrows(
+                    () => doc.atomicUpdate(docData => {
+                        docData.age = 100;
+                        return docData;
+                    }),
+                    'RxError',
+                    'final'
+                );
+                db.destroy();
             });
         });
     });
@@ -691,7 +747,9 @@ config.parallel('rx-document.test.js', () => {
                         items: {
                             type: 'object',
                             properties: {
-                                name: { type: 'string' },
+                                name: {
+                                    type: 'string'
+                                },
                                 abLetter: {
                                     type: 'string',
                                     enum: schemaEnum,
@@ -718,20 +776,24 @@ config.parallel('rx-document.test.js', () => {
             });
 
             // insert a document
+            const child1 = {
+                name: 'foo',
+                abLetter: 'A'
+            };
+            const child2 = {
+                name: 'bar',
+                abLetter: 'B'
+            };
             const doc = await collection.insert({
                 children: [
-                    {
-                        name: 'foo',
-                        abLetter: 'A'
-                    },
-                    {
-                        name: 'bar',
-                        abLetter: 'B'
-                    },
+                    child1,
+                    child2
                 ],
             });
 
-            const colDoc = await collection.findOne({ _id: doc._id }).exec();
+            const colDoc = await collection.findOne({
+                _id: doc._id
+            }).exec();
 
 
             try {
@@ -740,8 +802,7 @@ config.parallel('rx-document.test.js', () => {
                         'children.1.abLetter': 'invalidEnumValue',
                     },
                 });
-            } catch (err) {
-            }
+            } catch (err) {}
 
             assert.equal(colDoc.children[1].abLetter, 'B');
 

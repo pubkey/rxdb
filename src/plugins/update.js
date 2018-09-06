@@ -12,7 +12,7 @@ export function update(updateObj) {
     const oldDocData = clone(this._data);
     const newDocData = modifyjs(oldDocData, updateObj);
 
-    return this._saveData(newDocData);
+    return this._saveData(newDocData, oldDocData);
 }
 
 export async function RxQueryUpdate(updateObj) {

@@ -1,4 +1,5 @@
 import objectPath from 'object-path';
+import deepEqual from 'deep-equal';
 
 import {
     clone,
@@ -105,6 +106,25 @@ export class RxSchema {
         if (!this._encryptedPaths)
             this._encryptedPaths = getEncryptedPaths(this.jsonID);
         return this._encryptedPaths;
+    }
+
+    /**
+     * checks if a given change on a document is allowed
+     * Ensures that:
+     * - primary is not modified
+     * - final fields are not modified
+     * @throws {Error} if not valid
+     */
+    validateChange(dataBefore, dataAfter) {
+        this.finalFields.forEach(fieldName => {
+            if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
+                throw RxError.newRxError('DOC9', {
+                    dataBefore,
+                    dataAfter,
+                    fieldName
+                });
+            }
+        });
     }
 
     /**
@@ -219,7 +239,7 @@ export function getIndexes(jsonID) {
     const flattened = flattenObject(jsonID);
     const keys = Object.keys(flattened);
     let indexes = keys
-        // flattenObject returns only ending paths, we need all paths pointing to an object    
+        // flattenObject returns only ending paths, we need all paths pointing to an object
         .map(key => {
             const splitted = key.split('.');
             splitted.pop(); // all but last
@@ -260,12 +280,16 @@ export function getPrimary(jsonID) {
 
 /**
  * returns the final-fields of the schema
- * @param  {Object} jsonId
+ * @param  {Object} jsonID
  * @return {string[]} field-names of the final-fields
  */
-export function getFinalFields(jsonId) {
-    return Object.keys(jsonId.properties)
-        .filter(key => jsonId.properties[key].final);
+export function getFinalFields(jsonID) {
+    const ret = Object.keys(jsonID.properties)
+        .filter(key => jsonID.properties[key].final);
+
+    // primary is also final
+    ret.push(getPrimary(jsonID));
+    return ret;
 }
 
 
@@ -285,7 +309,7 @@ export function normalize(jsonSchema) {
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-const fillWithDefaultSettings = function (schemaObj) {
+const fillWithDefaultSettings = function(schemaObj) {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
