@@ -1,4 +1,6 @@
 import { Observable } from 'rxjs';
+import BroadcastChannel from 'broadcast-channel';
+
 import {
     RxCollectionCreator,
     RxCollection
@@ -34,6 +36,7 @@ export declare class RxDatabase {
     readonly token: string;
     readonly multiInstance: boolean;
     readonly queryChangeDetection: boolean;
+    readonly broadcastChannel: BroadcastChannel;
     readonly password: string;
     readonly collections: any;
     options?: any;
