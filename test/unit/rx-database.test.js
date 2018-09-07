@@ -445,7 +445,6 @@ config.parallel('rx-database.test.js', () => {
                 const forbidden = [
                     'name',
                     'token',
-                    'prepare',
                     'isLeader',
                     '$emit',
                     'destroy',

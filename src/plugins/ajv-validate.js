@@ -22,13 +22,13 @@ const validatorsCache = {};
  * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-const _getValidator = function(schemaPath = '') {
-    const hash = this.hash;
+export function _getValidator(rxSchema, schemaPath = '') {
+    const hash = rxSchema.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
     const validatorsOfHash = validatorsCache[hash];
     if (!validatorsOfHash[schemaPath]) {
-        const schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+        const schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
         if (!schemaPart) {
             throw RxError.newRxError('VD1', {
                 schemaPath
@@ -40,7 +40,7 @@ const _getValidator = function(schemaPath = '') {
         validatorsOfHash[schemaPath] = ajv.compile(schemaPart);
     }
     return validatorsOfHash[schemaPath];
-};
+}
 
 /**
  * validates the given object against the schema
@@ -49,8 +49,8 @@ const _getValidator = function(schemaPath = '') {
  * @throws {RxError} if not valid
  * @return {any} obj if validation successful
  */
-const validate = function(obj, schemaPath = '') {
-    const useValidator = this._getValidator(schemaPath);
+function validate(obj, schemaPath = '') {
+    const useValidator = _getValidator(this, schemaPath);
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
@@ -61,11 +61,11 @@ const validate = function(obj, schemaPath = '') {
             schema: this.jsonID
         });
     }
-};
+}
 
 const runAfterSchemaCreated = rxSchema => {
     // pre-generate validator-function from the schema
-    requestIdleCallbackIfAvailable(() => rxSchema._getValidator());
+    requestIdleCallbackIfAvailable(() => _getValidator(rxSchema));
 };
 
 export const rxdb = true;
@@ -75,7 +75,6 @@ export const prototypes = {
      * @param {[type]} prototype of RxSchema
      */
     RxSchema: (proto) => {
-        proto._getValidator = _getValidator;
         proto.validate = validate;
     }
 };

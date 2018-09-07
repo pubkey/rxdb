@@ -3,7 +3,8 @@ import MQuery from './mquery/mquery';
 
 import {
     sortObject,
-    stringifyFilter
+    stringifyFilter,
+    clone
 } from './util';
 import QueryChangeDetector from './query-change-detector';
 import RxError from './rx-error';
@@ -82,90 +83,6 @@ export class RxQuery {
     }
 
     /**
-     * run this query through the QueryCache
-     * @return {RxQuery} can be this or another query with the equal state
-     */
-    _tunnelQueryCache() {
-        return this.collection._queryCache.getByQuery(this);
-    }
-
-    /**
-     * check if the current results-state is in sync with the database
-     * @return {Boolean} false if not which means it should re-execute
-     */
-    _isResultsInSync() {
-        if (this._latestChangeEvent >= this.collection._changeEventBuffer.counter)
-            return true;
-        else return false;
-    }
-
-    _ensureEqual() {
-        this._ensureEqualQueue = this._ensureEqualQueue
-            .then(() => new Promise(res => setTimeout(res, 0)))
-            .then(() => this.__ensureEqual())
-            .then(ret => {
-                return new Promise(res => setTimeout(res, 0))
-                    .then(() => ret);
-            });
-        return this._ensureEqualQueue;
-    }
-
-    /**
-     * ensures that the results of this query is equal to the results which a query over the database would give
-     * @return {Promise<boolean>|boolean} true if results have changed
-     */
-    __ensureEqual() {
-        if (this.collection.database.destroyed) return false; // db is closed
-        if (this._isResultsInSync()) return false; // nothing happend
-
-        let ret = false;
-        let mustReExec = false; // if this becomes true, a whole execution over the database is made
-        if (this._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
-
-        /**
-         * try to use the queryChangeDetector to calculate the new results
-         */
-        if (!mustReExec) {
-            const missedChangeEvents = this.collection._changeEventBuffer.getFrom(this._latestChangeEvent + 1);
-            if (missedChangeEvents === null) {
-                // changeEventBuffer is of bounds -> we must re-execute over the database
-                mustReExec = true;
-            } else {
-                this._latestChangeEvent = this.collection._changeEventBuffer.counter;
-                const runChangeEvents = this.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
-                const changeResult = this._queryChangeDetector.runChangeDetection(runChangeEvents);
-
-                if (!Array.isArray(changeResult) && changeResult) {
-                    // could not calculate the new results, execute must be done
-                    mustReExec = true;
-                }
-                if (Array.isArray(changeResult) && !deepEqual(changeResult, this._resultsData)) {
-                    // we got the new results, we do not have to re-execute, mustReExec stays false
-                    ret = true; // true because results changed
-                    this._setResultData(changeResult);
-                }
-            }
-        }
-
-        // oh no we have to re-execute the whole query over the database
-        if (mustReExec) {
-            // counter can change while _execOverDatabase() is running so we save it here
-            const latestAfter = this.collection._changeEventBuffer.counter;
-
-            return this._execOverDatabase()
-                .then(newResultData => {
-                    this._latestChangeEvent = latestAfter;
-                    if (!deepEqual(newResultData, this._resultsData)) {
-                        ret = true; // true because results changed
-                        this._setResultData(newResultData);
-                    }
-                    return ret;
-                });
-        }
-        return ret; // true if results have changed
-    }
-
-    /**
      * set the new result-data as result-docs of the query
      * @param {{}[]} newResultData json-docs that were recieved from pouchdb
      * @return {RxDocument[]}
@@ -218,7 +135,7 @@ export class RxQuery {
             const results$ = this._resultsDocs$
                 .pipe(
                     mergeMap(docs => {
-                        return this._ensureEqual()
+                        return _ensureEqual(this)
                             .then(hasChanged => {
                                 if (hasChanged) return false; // wait for next emit
                                 else return docs;
@@ -245,7 +162,7 @@ export class RxQuery {
              */
             const changeEvents$ = this.collection.docChanges$
                 .pipe(
-                    tap(() => this._ensureEqual()),
+                    tap(() => _ensureEqual(this)),
                     filter(() => false)
                 );
 
@@ -270,7 +187,7 @@ export class RxQuery {
          * this will make sure that errors in the query which throw inside of pouchdb,
          * will be thrown at this execution context
          */
-        return this._ensureEqual()
+        return _ensureEqual(this)
             .then(() => this.$
                 .pipe(
                     first()
@@ -286,7 +203,7 @@ export class RxQuery {
             selector: this.mquery._conditions
         };
 
-        const options = this.mquery._optionsForExec();
+        const options = clone(this.mquery.options);
 
         // sort
         if (options.sort) {
@@ -412,42 +329,7 @@ export class RxQuery {
         }
         clonedThis.mquery.regex(params);
 
-        return clonedThis._tunnelQueryCache();
-    }
-
-
-    /**
-     * adds the field of 'sort' to the search-index
-     * @link https://github.com/nolanlawson/pouchdb-find/issues/204
-     */
-    _sortAddToIndex(checkParam, clonedThis) {
-        const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
-        if (!schemaObj) this._throwNotInSchema(checkParam);
-
-
-        switch (schemaObj.type) {
-            case 'integer':
-                // TODO change back to -Infinity when issue resolved
-                // @link https://github.com/pouchdb/pouchdb/issues/6454
-                clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
-                break;
-            case 'string':
-                /**
-                 * strings need an empty string, see
-                 * @link https://github.com/pubkey/rxdb/issues/585
-                 */
-                clonedThis.mquery.where(checkParam).gt('');
-                break;
-            default:
-                clonedThis.mquery.where(checkParam).gt(null);
-                break;
-        }
-    }
-
-    _throwNotInSchema(key) {
-        throw RxError.newRxError('QU5', {
-            key
-        });
+        return _tunnelQueryCache(clonedThis);
     }
 
     /**
@@ -461,14 +343,14 @@ export class RxQuery {
         if (typeof params !== 'object') {
             const checkParam = params.charAt(0) === '-' ? params.substring(1) : params;
             if (!clonedThis.mquery._conditions[checkParam])
-                this._sortAddToIndex(checkParam, clonedThis);
+                _sortAddToIndex(checkParam, clonedThis);
         } else {
             Object.keys(params)
                 .filter(k => !clonedThis.mquery._conditions[k] || !clonedThis.mquery._conditions[k].$gt)
-                .forEach(k => this._sortAddToIndex(k, clonedThis));
+                .forEach(k => _sortAddToIndex(k, clonedThis));
         }
         clonedThis.mquery.sort(params);
-        return clonedThis._tunnelQueryCache();
+        return _tunnelQueryCache(clonedThis);
     }
 
     limit(amount) {
@@ -477,16 +359,24 @@ export class RxQuery {
         else {
             const clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
-            return clonedThis._tunnelQueryCache();
+            return _tunnelQueryCache(clonedThis);
         }
     }
 }
 
-const _getDefaultQuery = function(collection) {
+function _getDefaultQuery(collection) {
     return {
         [collection.schema.primaryPath]: {}
     };
-};
+}
+
+/**
+ * run this query through the QueryCache
+ * @return {RxQuery} can be this or another query with the equal state
+ */
+function _tunnelQueryCache(rxQuery) {
+    return rxQuery.collection._queryCache.getByQuery(rxQuery);
+}
 
 /**
  * tunnel the proto-functions of mquery to RxQuery
@@ -494,7 +384,7 @@ const _getDefaultQuery = function(collection) {
  * @param  {string[]} mQueryProtoKeys [description]
  * @return {void}                 [description]
  */
-const protoMerge = function(rxQueryProto, mQueryProtoKeys) {
+function protoMerge(rxQueryProto, mQueryProtoKeys) {
     mQueryProtoKeys
         .filter(attrName => !attrName.startsWith('_'))
         .filter(attrName => !rxQueryProto[attrName])
@@ -502,10 +392,10 @@ const protoMerge = function(rxQueryProto, mQueryProtoKeys) {
             rxQueryProto[attrName] = function(p1) {
                 const clonedThis = this._clone();
                 clonedThis.mquery[attrName](p1);
-                return clonedThis._tunnelQueryCache();
+                return _tunnelQueryCache(clonedThis);
             };
         });
-};
+}
 
 let protoMerged = false;
 export function create(op, queryObj, collection) {
@@ -524,7 +414,7 @@ export function create(op, queryObj, collection) {
 
     let ret = new RxQuery(op, queryObj, collection);
     // ensure when created with same params, only one is created
-    ret = ret._tunnelQueryCache();
+    ret = _tunnelQueryCache(ret);
 
     if (!protoMerged) {
         protoMerged = true;
@@ -534,6 +424,126 @@ export function create(op, queryObj, collection) {
     runPluginHooks('createRxQuery', ret);
     return ret;
 }
+
+/**
+ * throws an error that says that the key is not in the schema
+ */
+function _throwNotInSchema(key) {
+    throw RxError.newRxError('QU5', {
+        key
+    });
+}
+
+/**
+ * adds the field of 'sort' to the search-index
+ * @link https://github.com/nolanlawson/pouchdb-find/issues/204
+ */
+function _sortAddToIndex(checkParam, clonedThis) {
+    const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
+    if (!schemaObj) _throwNotInSchema(checkParam);
+
+
+    switch (schemaObj.type) {
+        case 'integer':
+            // TODO change back to -Infinity when issue resolved
+            // @link https://github.com/pouchdb/pouchdb/issues/6454
+            clonedThis.mquery.where(checkParam).gt(-9999999999999999999999999999); // -Infinity does not work since pouchdb 6.2.0
+            break;
+        case 'string':
+            /**
+             * strings need an empty string, see
+             * @link https://github.com/pubkey/rxdb/issues/585
+             */
+            clonedThis.mquery.where(checkParam).gt('');
+            break;
+        default:
+            clonedThis.mquery.where(checkParam).gt(null);
+            break;
+    }
+}
+
+/**
+ * check if the current results-state is in sync with the database
+ * @return {Boolean} false if not which means it should re-execute
+ */
+function _isResultsInSync(rxQuery) {
+    if (rxQuery._latestChangeEvent >= rxQuery.collection._changeEventBuffer.counter)
+        return true;
+    else return false;
+}
+
+
+/**
+ * wraps __ensureEqual()
+ * to ensure it does not run in parallel
+ */
+function _ensureEqual(rxQuery) {
+    rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
+        .then(() => new Promise(res => setTimeout(res, 0)))
+        .then(() => __ensureEqual(rxQuery))
+        .then(ret => {
+            return new Promise(res => setTimeout(res, 0))
+                .then(() => ret);
+        });
+    return rxQuery._ensureEqualQueue;
+}
+
+/**
+ * ensures that the results of this query is equal to the results which a query over the database would give
+ * @return {Promise<boolean>|boolean} true if results have changed
+ */
+function __ensureEqual(rxQuery) {
+    if (rxQuery.collection.database.destroyed) return false; // db is closed
+    if (_isResultsInSync(rxQuery)) return false; // nothing happend
+
+    let ret = false;
+    let mustReExec = false; // if this becomes true, a whole execution over the database is made
+    if (rxQuery._latestChangeEvent === -1) mustReExec = true; // have not executed yet -> must run
+
+    /**
+     * try to use the queryChangeDetector to calculate the new results
+     */
+    if (!mustReExec) {
+        const missedChangeEvents = rxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+        if (missedChangeEvents === null) {
+            // changeEventBuffer is of bounds -> we must re-execute over the database
+            mustReExec = true;
+        } else {
+            rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
+            const runChangeEvents = rxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+            const changeResult = rxQuery._queryChangeDetector.runChangeDetection(runChangeEvents);
+
+            if (!Array.isArray(changeResult) && changeResult) {
+                // could not calculate the new results, execute must be done
+                mustReExec = true;
+            }
+            if (Array.isArray(changeResult) && !deepEqual(changeResult, rxQuery._resultsData)) {
+                // we got the new results, we do not have to re-execute, mustReExec stays false
+                ret = true; // true because results changed
+                rxQuery._setResultData(changeResult);
+            }
+        }
+    }
+
+    // oh no we have to re-execute the whole query over the database
+    if (mustReExec) {
+        // counter can change while _execOverDatabase() is running so we save it here
+        const latestAfter = rxQuery.collection._changeEventBuffer.counter;
+
+        return rxQuery._execOverDatabase()
+            .then(newResultData => {
+                rxQuery._latestChangeEvent = latestAfter;
+                if (!deepEqual(newResultData, rxQuery._resultsData)) {
+                    ret = true; // true because results changed
+                    rxQuery._setResultData(newResultData);
+                }
+                return ret;
+            });
+    }
+    return ret; // true if results have changed
+}
+
+
 
 export function isInstanceOf(obj) {
     return obj instanceof RxQuery;

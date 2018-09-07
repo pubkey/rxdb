@@ -1,5 +1,6 @@
 import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
+import BroadcastChannel from 'broadcast-channel';
 
 import PouchDB from './pouch-db';
 import {
@@ -12,7 +13,6 @@ import RxError from './rx-error';
 import RxCollection from './rx-collection';
 import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
-import Socket from './socket';
 import overwritable from './overwritable';
 import {
     runPluginHooks
@@ -62,18 +62,6 @@ export class RxDatabase {
         );
     }
 
-    get _adminPouch() {
-        if (!this.__adminPouch)
-            this.__adminPouch = _internalAdminPouch(this.name, this.adapter, this.pouchSettings);
-        return this.__adminPouch;
-    }
-
-    get _collectionsPouch() {
-        if (!this.__collectionsPouch)
-            this.__collectionsPouch = _internalCollectionsPouch(this.name, this.adapter, this.pouchSettings);
-        return this.__collectionsPouch;
-    }
-
     dangerousRemoveCollectionInfo() {
         const colPouch = this._collectionsPouch;
         return colPouch.allDocs()
@@ -87,96 +75,6 @@ export class RxDatabase {
                     .map(doc => colPouch.remove(doc._id, doc._rev))
                 );
             });
-    }
-
-    /**
-     * do the async things for this database
-     */
-    async prepare() {
-        // ensure admin-pouch is useable
-        await this._adminPouch.info();
-
-        // validate/insert password-hash
-        const [
-            storageToken
-        ] = await Promise.all([
-            this._ensureStorageTokenExists(),
-            this._preparePasswordHash()
-        ]);
-        this.storageToken = storageToken;
-
-        if (this.multiInstance) {
-            // socket
-            this.socket = Socket.create(this);
-
-            // TODO only subscribe when sth is listening to the event-chain
-            this._subs.push(
-                this.socket.messages$.subscribe(cE => {
-                    this.$emit(cE);
-                })
-            );
-        }
-    }
-
-
-    /**
-     * validates and inserts the password-hash
-     * to ensure there is/was no other instance with a different password
-     */
-    async _preparePasswordHash() {
-        if (!this.password) return false;
-
-        const pwHash = hash(this.password);
-
-        let pwHashDoc = null;
-        try {
-            pwHashDoc = await this._adminPouch.get('_local/pwHash');
-        } catch (e) {}
-
-
-        /**
-         * if pwHash was not saved, we save it,
-         * this operation might throw because another instance runs save at the same time,
-         * also we do not await the output because it does not mather
-         */
-        if (!pwHashDoc) {
-            this._adminPouch.put({
-                _id: '_local/pwHash',
-                value: pwHash
-            }).catch(() => null);
-        }
-
-        // different hash was already set by other instance
-        if (pwHashDoc && this.password && pwHash !== pwHashDoc.value) {
-            throw RxError.newRxError('DB1', {
-                passwordHash: hash(this.password),
-                existingPasswordHash: pwHashDoc.value
-            });
-        }
-
-        return true;
-    }
-
-    /**
-     * to not confuse multiInstance-messages with other databases that have the same
-     * name and adapter, but do not share state with this one (for example in-memory-instances),
-     * we set a storage-token and use it in the broadcast-channel
-     */
-    async _ensureStorageTokenExists() {
-        try {
-            await this._adminPouch.get('_local/storageToken');
-        } catch (err) {
-            // no doc exists -> insert
-            try {
-                await this._adminPouch.put({
-                    _id: '_local/storageToken',
-                    value: randomToken(10)
-                });
-            } catch (err2) {}
-            await new Promise(res => setTimeout(res, 0));
-        }
-        const storageTokenDoc2 = await this._adminPouch.get('_local/storageToken');
-        return storageTokenDoc2.value;
     }
 
     get leaderElector() {
@@ -210,25 +108,6 @@ export class RxDatabase {
     }
 
     /**
-     * writes the changeEvent to the socket
-     * @param  {RxChangeEvent} changeEvent
-     * @return {Promise<boolean>}
-     */
-    writeToSocket(changeEvent) {
-        if (
-            this.multiInstance &&
-            !changeEvent.isIntern() &&
-            this.socket
-        ) {
-            return this
-                .socket
-                .write(changeEvent)
-                .then(() => true);
-        } else
-            return Promise.resolve(false);
-    }
-
-    /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
      * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
@@ -243,7 +122,7 @@ export class RxDatabase {
 
         // write to socket if event was created by this instance
         if (changeEvent.data.it === this.token) {
-            this.writeToSocket(changeEvent);
+            writeToSocket(this, changeEvent);
         }
     }
 
@@ -255,54 +134,17 @@ export class RxDatabase {
     }
 
     /**
-     * returns the primary for a given collection-data
-     * used in the internal pouchdb-instances
-     * @param {string} name
-     * @param {RxSchema} schema
-     */
-    _collectionNamePrimary(name, schema) {
-        return name + '-' + schema.version;
-    }
-
-    /**
      * removes the collection-doc from this._collectionsPouch
      * @return {Promise}
      */
     removeCollectionDoc(name, schema) {
-        const docId = this._collectionNamePrimary(name, schema);
+        const docId = _collectionNamePrimary(name, schema);
         return this
             ._collectionsPouch
             .get(docId)
             .then(doc => this.lockedRun(
                 () => this._collectionsPouch.remove(doc)
             ));
-    }
-
-    /**
-     * removes all internal docs of a given collection
-     * @param  {string}  collectionName
-     * @return {Promise<string[]>} resolves all known collection-versions
-     */
-    _removeAllOfCollection(collectionName) {
-
-        return this.lockedRun(
-            () => this._collectionsPouch.allDocs({
-                include_docs: true
-            })
-        ).then(data => {
-            const relevantDocs = data.rows
-                .map(row => row.doc)
-                .filter(doc => {
-                    const name = doc._id.split('-')[0];
-                    return name === collectionName;
-                });
-            return Promise.all(
-                relevantDocs
-                .map(doc => this.lockedRun(
-                    () => this._collectionsPouch.remove(doc)
-                ))
-            ).then(() => relevantDocs.map(doc => doc.version));
-        });
     }
 
     /**
@@ -334,7 +176,7 @@ export class RxDatabase {
             });
         }
 
-        const internalPrimary = this._collectionNamePrimary(args.name, args.schema);
+        const internalPrimary = _collectionNamePrimary(args.name, args.schema);
 
         // check unallowed collection-names
         if (properties().includes(args.name)) {
@@ -421,7 +263,7 @@ export class RxDatabase {
             await this.collections[collectionName].destroy();
 
         // remove schemas from internal db
-        const knownVersions = await this._removeAllOfCollection(collectionName);
+        const knownVersions = await _removeAllOfCollection(this, collectionName);
         // get all relevant pouchdb-instances
         const pouches = knownVersions
             .map(v => this._spawnPouchDB(collectionName, v));
@@ -480,7 +322,16 @@ export class RxDatabase {
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
         this.destroyed = true;
-        this.socket && this.socket.destroy();
+
+        if (this.broadcastChannel) {
+            /**
+             * The broadcast-channel gets closed lazy
+             * to ensure that all pending change-events
+             * get emitted
+             */
+            setTimeout(() => this.broadcastChannel.close(), 1000);
+        }
+
         if (this._leaderElector)
             await this._leaderElector.destroy();
         this._subs.map(sub => sub.unsubscribe());
@@ -490,6 +341,7 @@ export class RxDatabase {
             .map(key => this.collections[key])
             .map(col => col.destroy())
         );
+
 
         // remove combination from USED_COMBINATIONS-map
         _removeUsedCombination(this.name, this.adapter);
@@ -554,6 +406,177 @@ function _removeUsedCombination(name, adapter) {
     USED_COMBINATIONS[name].splice(index, 1);
 }
 
+/**
+ * validates and inserts the password-hash
+ * to ensure there is/was no other instance with a different password
+ */
+export async function _preparePasswordHash(rxDatabase) {
+    if (!rxDatabase.password) return false;
+
+    const pwHash = hash(rxDatabase.password);
+
+    let pwHashDoc = null;
+    try {
+        pwHashDoc = await rxDatabase._adminPouch.get('_local/pwHash');
+    } catch (e) {}
+
+
+    /**
+     * if pwHash was not saved, we save it,
+     * this operation might throw because another instance runs save at the same time,
+     * also we do not await the output because it does not mather
+     */
+    if (!pwHashDoc) {
+        rxDatabase._adminPouch.put({
+            _id: '_local/pwHash',
+            value: pwHash
+        }).catch(() => null);
+    }
+
+    // different hash was already set by other instance
+    if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
+        throw RxError.newRxError('DB1', {
+            passwordHash: hash(rxDatabase.password),
+            existingPasswordHash: pwHashDoc.value
+        });
+    }
+
+    return true;
+}
+
+
+/**
+ * to not confuse multiInstance-messages with other databases that have the same
+ * name and adapter, but do not share state with this one (for example in-memory-instances),
+ * we set a storage-token and use it in the broadcast-channel
+ */
+export async function _ensureStorageTokenExists(rxDatabase) {
+    try {
+        await rxDatabase._adminPouch.get('_local/storageToken');
+    } catch (err) {
+        // no doc exists -> insert
+        try {
+            await rxDatabase._adminPouch.put({
+                _id: '_local/storageToken',
+                value: randomToken(10)
+            });
+        } catch (err2) {}
+        await new Promise(res => setTimeout(res, 0));
+    }
+    const storageTokenDoc2 = await rxDatabase._adminPouch.get('_local/storageToken');
+    return storageTokenDoc2.value;
+}
+
+/**
+ * writes the changeEvent to the broadcastChannel
+ * @param  {RxChangeEvent} changeEvent
+ * @return {Promise<boolean>}
+ */
+export function writeToSocket(rxDatabase, changeEvent) {
+    if (
+        rxDatabase.multiInstance &&
+        !changeEvent.isIntern() &&
+        rxDatabase.broadcastChannel
+    ) {
+
+        const socketDoc = changeEvent.toJSON();
+        delete socketDoc.db;
+        const sendOverChannel = {
+            db: rxDatabase.token, // database-token
+            st: rxDatabase.storageToken, // storage-token
+            d: socketDoc
+        };
+        return rxDatabase.broadcastChannel.postMessage(sendOverChannel);
+    } else
+        return Promise.resolve(false);
+}
+
+/**
+ * returns the primary for a given collection-data
+ * used in the internal pouchdb-instances
+ * @param {string} name
+ * @param {RxSchema} schema
+ */
+export function _collectionNamePrimary(name, schema) {
+    return name + '-' + schema.version;
+}
+
+/**
+ * removes all internal docs of a given collection
+ * @param  {string}  collectionName
+ * @return {Promise<string[]>} resolves all known collection-versions
+ */
+export function _removeAllOfCollection(rxDatabase, collectionName) {
+
+    return rxDatabase.lockedRun(
+        () => rxDatabase._collectionsPouch.allDocs({
+            include_docs: true
+        })
+    ).then(data => {
+        const relevantDocs = data.rows
+            .map(row => row.doc)
+            .filter(doc => {
+                const name = doc._id.split('-')[0];
+                return name === collectionName;
+            });
+        return Promise.all(
+            relevantDocs
+            .map(doc => rxDatabase.lockedRun(
+                () => rxDatabase._collectionsPouch.remove(doc)
+            ))
+        ).then(() => relevantDocs.map(doc => doc.version));
+    });
+}
+
+function _prepareBroadcastChannel(rxDatabase) {
+    // broadcastChannel
+    rxDatabase.broadcastChannel = new BroadcastChannel(
+        'RxDB:' +
+        rxDatabase.name + ':' +
+        'socket'
+    );
+    rxDatabase.broadcastChannel$ = new Subject();
+    rxDatabase.broadcastChannel.onmessage = msg => {
+        if (msg.st !== rxDatabase.storageToken) return; // not same storage-state
+        if (msg.db === rxDatabase.token) return; // same db
+        const changeEvent = RxChangeEvent.fromJSON(msg.d);
+        rxDatabase.broadcastChannel$.next(changeEvent);
+    };
+
+
+    // TODO only subscribe when sth is listening to the event-chain
+    rxDatabase._subs.push(
+        rxDatabase.broadcastChannel$.subscribe(cE => {
+            rxDatabase.$emit(cE);
+        })
+    );
+}
+
+/**
+ * do the async things for this database
+ */
+async function prepare(rxDatabase) {
+    rxDatabase._adminPouch = _internalAdminPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
+    rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
+
+    // ensure admin-pouch is useable
+    await rxDatabase._adminPouch.info();
+
+    // validate/insert password-hash
+    const [
+        storageToken
+    ] = await Promise.all([
+        _ensureStorageTokenExists(rxDatabase),
+        _preparePasswordHash(rxDatabase)
+    ]);
+    rxDatabase.storageToken = storageToken;
+
+    if (rxDatabase.multiInstance) {
+        _prepareBroadcastChannel(rxDatabase);
+    }
+}
+
+
 export function create({
     name,
     adapter,
@@ -607,8 +630,7 @@ export function create({
         pouchSettings
     );
 
-    return db
-        .prepare()
+    return prepare(db)
         .then(() => {
             runPluginHooks('createRxDatabase', db);
             return db;

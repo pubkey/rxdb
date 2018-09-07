@@ -140,7 +140,7 @@
     "mocha": "5.2.0",
     "mocha.parallel": "0.15.6",
     "nconf": "0.10.0",
-    "node": "10.9.0",
+    "node": "10.10.0",
     "pouchdb": "7.0.0",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",

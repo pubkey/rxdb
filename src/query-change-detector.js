@@ -53,16 +53,6 @@ class QueryChangeDetector {
         else return resultsData;
     }
 
-    _debugMessage(key, changeEventData = {}, title = 'optimized') {
-        console.dir({
-            name: 'QueryChangeDetector',
-            title,
-            query: this.query.toString(),
-            key,
-            changeEventData
-        });
-    }
-
     /**
      * handle a single ChangeEvent and try to calculate the new results
      * @param {Object[]} resultsData of previous results
@@ -73,14 +63,14 @@ class QueryChangeDetector {
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
-        const wasDocInResults = this._isDocInResultData(docData, resultsData);
-        const doesMatchNow = this.doesDocMatchQuery(docData);
+        const wasDocInResults = _isDocInResultData(this, docData, resultsData);
+        const doesMatchNow = doesDocMatchQuery(this, docData);
         const isFilled = !options.limit || (options.limit && resultsData.length >= options.limit);
         const limitAndFilled = options.limit && resultsData.length >= options.limit;
 
         if (DEBUG) {
             console.log('QueryChangeDetector.handleSingleChange()'); // TODO this should not be an error
-            this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
+            _debugMessage(this, 'start', changeEvent.data.v, 'handleSingleChange()');
             console.log('changeEvent.data:');
             console.dir(changeEvent.data);
             console.log('wasDocInResults: ' + wasDocInResults);
@@ -93,22 +83,22 @@ class QueryChangeDetector {
         let _sortAfter = null;
         const sortAfter = () => {
             if (_sortAfter === null)
-                _sortAfter = this._isSortedBefore(results[results.length - 1], docData);
+                _sortAfter = _isSortedBefore(this, results[results.length - 1], docData);
             return _sortAfter;
         };
 
         let _sortBefore = null;
         const sortBefore = () => {
             if (_sortBefore === null)
-                _sortBefore = this._isSortedBefore(docData, results[0]);
+                _sortBefore = _isSortedBefore(this, docData, results[0]);
             return _sortBefore;
         };
 
-        let _sortFieldChanged = null;
+        let __sortFieldChanged = null;
         const sortFieldChanged = () => {
-            if (_sortFieldChanged === null) {
+            if (__sortFieldChanged === null) {
                 const docBefore = resultsData.find(doc => doc[this.primaryKey] === docData[this.primaryKey]);
-                _sortFieldChanged = this._sortFieldChanged(docBefore, docData);
+                __sortFieldChanged = _sortFieldChanged(this, docBefore, docData);
             }
             return _sortFieldChanged;
         };
@@ -116,33 +106,33 @@ class QueryChangeDetector {
         if (changeEvent.data.op === 'REMOVE') {
             // R1 (never matched)
             if (!wasDocInResults && !doesMatchNow) {
-                DEBUG && this._debugMessage('R1', docData);
+                DEBUG && _debugMessage(this, 'R1', docData);
                 return false;
             }
 
             // R2 sorted before got removed but results not filled
             if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
-                DEBUG && this._debugMessage('R2', docData);
+                DEBUG && _debugMessage(this, 'R2', docData);
                 results.shift();
                 return results;
             }
 
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
-                DEBUG && this._debugMessage('R3', docData);
+                DEBUG && _debugMessage(this, 'R3', docData);
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
 
             // R3.05 was in findOne-result and got removed
             if (options.limit === 1 && !doesMatchNow && wasDocInResults) {
-                DEBUG && this._debugMessage('R3.05', docData);
+                DEBUG && _debugMessage(this, 'R3.05', docData);
                 return true;
             }
 
             // R3.1 was in results and got removed, no limit, no skip
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
-                DEBUG && this._debugMessage('R3.1', docData);
+                DEBUG && _debugMessage(this, 'R3.1', docData);
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
@@ -150,13 +140,13 @@ class QueryChangeDetector {
 
             // R4 matching but after results got removed
             if (doesMatchNow && options.limit && sortAfter()) {
-                DEBUG && this._debugMessage('R4', docData);
+                DEBUG && _debugMessage(this, 'R4', docData);
                 return false;
             }
         } else {
             // U1 doc not matched and also not matches now
             if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
-                DEBUG && this._debugMessage('U1', docData);
+                DEBUG && _debugMessage(this, 'U1', docData);
                 return false;
             }
 
@@ -170,10 +160,10 @@ class QueryChangeDetector {
                 results[i] = docData;
 
                 if (sortFieldChanged()) {
-                    DEBUG && this._debugMessage('U2 - resort', docData);
-                    return this._resortDocData(results);
+                    DEBUG && _debugMessage(this, 'U2 - resort', docData);
+                    return _resortDocData(this, results);
                 } else {
-                    DEBUG && this._debugMessage('U2 - no-resort', docData);
+                    DEBUG && _debugMessage(this, 'U2 - no-resort', docData);
                     return results;
                 }
             }
@@ -181,13 +171,13 @@ class QueryChangeDetector {
 
             // U3 not matched, but matches now, no.skip, limit < length
             if (!options.skip && !limitAndFilled && !wasDocInResults && doesMatchNow) {
-                DEBUG && this._debugMessage('U3', docData);
+                DEBUG && _debugMessage(this, 'U3', docData);
                 results.push(docData);
 
                 //    console.log('U3: preSort:');
                 //    console.dir(results);
 
-                const sorted = this._resortDocData(results);
+                const sorted = _resortDocData(this, results);
                 //        console.log('U3: postSort:');
                 //            console.dir(sorted);
                 return sorted;
@@ -197,141 +187,152 @@ class QueryChangeDetector {
         // if no optimisation-algo matches, return mustReExec:true
         return true;
     }
+}
+
+function _debugMessage(queryChangeDetector, key, changeEventData = {}, title = 'optimized') {
+    console.dir({
+        name: 'QueryChangeDetector',
+        title,
+        query: queryChangeDetector.query.toString(),
+        key,
+        changeEventData
+    });
+}
+
+/**
+ * reruns the sort on the given resultsData
+ * @param  {object[]} resultsData
+ * @return {object[]}
+ */
+export function _resortDocData(queryChangeDetector, resultsData) {
+    const sortOptions = _getSortOptions(queryChangeDetector);
+    const rows = resultsData.map(doc => {
+        return {
+            doc: queryChangeDetector.query.collection.schema.swapPrimaryToId(doc)
+        };
+    });
+    const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
+
+    // TODO use createFieldSorter
+    const sortedRows = filterInMemoryFields(
+        rows, {
+            selector: massageSelector(queryChangeDetector.query.toJSON().selector),
+            sort: sortOptions
+        },
+        inMemoryFields
+    );
+    const sortedDocs = sortedRows
+        .map(row => row.doc)
+        .map(doc => queryChangeDetector.query.collection.schema.swapIdToPrimary(doc));
+    return sortedDocs;
+}
+
+/**
+ * checks if the newDocLeft would be placed before docDataRight
+ * when the query would be reExecuted
+ * @param  {Object} docDataNew
+ * @param  {Object} docDataIs
+ * @return {boolean} true if before, false if after
+ */
+export function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
+    const sortOptions = _getSortOptions(queryChangeDetector);
+    const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
+    const swappedLeft = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataLeft);
+    const swappedRight = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataRight);
+    const rows = [
+        swappedLeft,
+        swappedRight
+    ].map(doc => ({
+        id: doc._id,
+        doc
+    }));
+
+    // TODO use createFieldSorter
+    const sortedRows = filterInMemoryFields(
+        rows, {
+            selector: massageSelector(queryChangeDetector.query.toJSON().selector),
+            sort: sortOptions
+        },
+        inMemoryFields
+    );
+    return sortedRows[0].id === swappedLeft._id;
+}
 
 
-    /**
-     * check if the document matches the query
-     * @param {object} docData
-     * @return {boolean}
-     */
-    doesDocMatchQuery(docData) {
-        // if doc is deleted, it cannot match
-        if (docData._deleted) return false;
+/**
+ * checks if the sort-relevant fields have changed
+ * @param  {object} docDataBefore
+ * @param  {object} docDataAfter
+ * @return {boolean}
+ */
+export function _sortFieldChanged(queryChangeDetector, docDataBefore, docDataAfter) {
+    const sortOptions = _getSortOptions(queryChangeDetector);
+    const sortFields = sortOptions.map(sortObj => Object.keys(sortObj).pop());
 
-        docData = this.query.collection.schema.swapPrimaryToId(docData);
-        const inMemoryFields = Object.keys(this.query.toJSON().selector);
-        const retDocs = filterInMemoryFields(
-            [{
-                doc: docData
-            }], {
-                selector: massageSelector(this.query.toJSON().selector)
-            },
-            inMemoryFields
-        );
+    let changed = false;
+    sortFields.find(field => {
+        const beforeData = objectPath.get(docDataBefore, field);
+        const afterData = objectPath.get(docDataAfter, field);
+        if (beforeData !== afterData) {
+            changed = true;
+            return true;
+        } else return false;
+    });
+    return changed;
+}
 
-        const ret = retDocs.length === 1;
-        return ret;
-    }
-
-    /**
-     * check if the document exists in the results data
-     * @param {object} docData
-     * @param {object[]} resultData
-     */
-    _isDocInResultData(docData, resultData) {
-        const primaryPath = this.query.collection.schema.primaryPath;
-        const first = resultData.find(doc => doc[primaryPath] === docData[primaryPath]);
-        return !!first;
-    }
-
-    /**
-     * if no sort-order is specified,
-     * pouchdb will use the primary
-     */
-    _getSortOptions() {
-        if (!this._sortOptions) {
-            const options = this.query.toJSON();
-            let sortOptions = options.sort;
-            if (!sortOptions) {
-                sortOptions = [{
-                    _id: 'asc'
-                }];
-            }
-            this._sortOptions = sortOptions;
+/**
+ * if no sort-order is specified,
+ * pouchdb will use the primary
+ */
+export function _getSortOptions(queryChangeDetector) {
+    if (!queryChangeDetector._sortOptions) {
+        const options = queryChangeDetector.query.toJSON();
+        let sortOptions = options.sort;
+        if (!sortOptions) {
+            sortOptions = [{
+                _id: 'asc'
+            }];
         }
-        return this._sortOptions;
+        queryChangeDetector._sortOptions = sortOptions;
     }
+    return queryChangeDetector._sortOptions;
+}
 
-    /**
-     * checks if the sort-relevant fields have changed
-     * @param  {object} docDataBefore
-     * @param  {object} docDataAfter
-     * @return {boolean}
-     */
-    _sortFieldChanged(docDataBefore, docDataAfter) {
-        const sortOptions = this._getSortOptions();
-        const sortFields = sortOptions.map(sortObj => Object.keys(sortObj).pop());
 
-        let changed = false;
-        sortFields.find(field => {
-            const beforeData = objectPath.get(docDataBefore, field);
-            const afterData = objectPath.get(docDataAfter, field);
-            if (beforeData !== afterData) {
-                changed = true;
-                return true;
-            } else return false;
-        });
-        return changed;
-    }
+/**
+ * check if the document exists in the results data
+ * @param {object} docData
+ * @param {object[]} resultData
+ */
+export function _isDocInResultData(queryChangeDetector, docData, resultData) {
+    const primaryPath = queryChangeDetector.query.collection.schema.primaryPath;
+    const first = resultData.find(doc => doc[primaryPath] === docData[primaryPath]);
+    return !!first;
+}
 
-    /**
-     * checks if the newDocLeft would be placed before docDataRight
-     * when the query would be reExecuted
-     * @param  {Object} docDataNew
-     * @param  {Object} docDataIs
-     * @return {boolean} true if before, false if after
-     */
-    _isSortedBefore(docDataLeft, docDataRight) {
-        const sortOptions = this._getSortOptions();
-        const inMemoryFields = Object.keys(this.query.toJSON().selector);
-        const swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
-        const swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
-        const rows = [
-            swappedLeft,
-            swappedRight
-        ].map(doc => ({
-            id: doc._id,
-            doc
-        }));
+/**
+ * check if the document matches the query
+ * @param {object} docData
+ * @return {boolean}
+ */
+export function doesDocMatchQuery(queryChangeDetector, docData) {
+    // if doc is deleted, it cannot match
+    if (docData._deleted) return false;
 
-        // TODO use createFieldSorter
-        const sortedRows = filterInMemoryFields(
-            rows, {
-                selector: massageSelector(this.query.toJSON().selector),
-                sort: sortOptions
-            },
-            inMemoryFields
-        );
-        return sortedRows[0].id === swappedLeft._id;
-    }
+    docData = queryChangeDetector.query.collection.schema.swapPrimaryToId(docData);
+    const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
+    const retDocs = filterInMemoryFields(
+        [{
+            doc: docData
+        }], {
+            selector: massageSelector(queryChangeDetector.query.toJSON().selector)
+        },
+        inMemoryFields
+    );
 
-    /**
-     * reruns the sort on the given resultsData
-     * @param  {object[]} resultsData
-     * @return {object[]}
-     */
-    _resortDocData(resultsData) {
-        const sortOptions = this._getSortOptions();
-        const rows = resultsData.map(doc => {
-            return {
-                doc: this.query.collection.schema.swapPrimaryToId(doc)
-            };
-        });
-        const inMemoryFields = Object.keys(this.query.toJSON().selector);
-
-        // TODO use createFieldSorter
-        const sortedRows = filterInMemoryFields(
-            rows, {
-                selector: massageSelector(this.query.toJSON().selector),
-                sort: sortOptions
-            },
-            inMemoryFields
-        );
-        const sortedDocs = sortedRows
-            .map(row => row.doc)
-            .map(doc => this.query.collection.schema.swapIdToPrimary(doc));
-        return sortedDocs;
-    }
+    const ret = retDocs.length === 1;
+    return ret;
 }
 
 

@@ -16,6 +16,9 @@ import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
 import DataMigrator from './data-migrator';
+import {
+    mustMigrate
+} from './data-migrator';
 import Crypter from './crypter';
 import DocCache from './doc-cache';
 import QueryCache from './query-cache';
@@ -67,9 +70,13 @@ export class RxCollection {
     prepare() {
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
 
+        if (this.schema.doKeyCompression()) {
+            this._keyCompressor = overwritable.createKeyCompressor(this.schema);
+        }
+
         // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
         const spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
-        const createIndexesPromise = this._prepareCreateIndexes(spawnedPouchPromise);
+        const createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
 
         this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
@@ -99,56 +106,13 @@ export class RxCollection {
     }
 
     /**
-     * creates the indexes in the pouchdb
-     */
-    _prepareCreateIndexes(spawnedPouchPromise) {
-        return Promise.all(
-            this.schema.indexes
-            .map(indexAr => {
-                const compressedIdx = indexAr
-                    .map(key => {
-                        if (!this.schema.doKeyCompression())
-                            return key;
-                        else
-                            return this._keyCompressor._transformKey('', '', key.split('.'));
-                    });
-
-                return spawnedPouchPromise.then(
-                    () => this.pouch.createIndex({
-                        index: {
-                            fields: compressedIdx
-                        }
-                    })
-                );
-            })
-        );
-    }
-
-    get _keyCompressor() {
-        if (!this.__keyCompressor)
-            this.__keyCompressor = overwritable.createKeyCompressor(this.schema);
-        return this.__keyCompressor;
-    }
-
-
-    getDocumentOrmPrototype() {
-        const proto = {};
-        Object
-            .entries(this._methods)
-            .forEach(([k, v]) => {
-                proto[k] = v;
-            });
-        return proto;
-    }
-
-    /**
      * merge the prototypes of schema, orm-methods and document-base
      * so we do not have to assing getters/setters and orm methods to each document-instance
      */
     getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const schemaProto = this.schema.getDocumentPrototype();
-            const ormProto = this.getDocumentOrmPrototype();
+            const ormProto = getDocumentOrmPrototype(this);
             const baseProto = RxDocument.basePrototype;
             const proto = {};
             [
@@ -183,14 +147,10 @@ export class RxCollection {
 
     /**
      * checks if a migration is needed
-     * @return {boolean}
+     * @return {Promise<boolean>}
      */
     migrationNeeded() {
-        if (this.schema.version === 0) return false;
-        return this
-            ._dataMigrator
-            ._getOldCollections()
-            .then(oldCols => oldCols.length > 0);
+        return mustMigrate(this._dataMigrator);
     }
 
     /**
@@ -451,40 +411,6 @@ export class RxCollection {
     }
 
     /**
-     * ensures that the given document exists
-     * @param  {string}  primary
-     * @param  {any}  json
-     * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
-     */
-    _atomicUpsertEnsureRxDocumentExists(primary, json) {
-        return this.findOne(primary).exec()
-            .then(doc => {
-                if (!doc) {
-                    return this.insert(json).then(newDoc => ({
-                        doc: newDoc,
-                        inserted: true
-                    }));
-                } else {
-                    return {
-                        doc,
-                        inserted: false
-                    };
-                }
-            });
-    }
-
-    /**
-     * @return {Promise}
-     */
-    _atomicUpsertUpdate(doc, json) {
-        return doc.atomicUpdate(innerDoc => {
-            json._rev = innerDoc._rev;
-            innerDoc._data = json;
-            return innerDoc._data;
-        }).then(() => doc);
-    }
-
-    /**
      * upserts to a RxDocument, uses atomicUpdate if document already exists
      * @param  {object}  json
      * @return {Promise}
@@ -506,10 +432,10 @@ export class RxCollection {
             queue = this._atomicUpsertQueues.get(primary);
         }
         queue = queue
-            .then(() => this._atomicUpsertEnsureRxDocumentExists(primary, json))
+            .then(() => _atomicUpsertEnsureRxDocumentExists(this, primary, json))
             .then(wasInserted => {
                 if (!wasInserted.inserted) {
-                    return this._atomicUpsertUpdate(wasInserted.doc, json)
+                    return _atomicUpsertUpdate(wasInserted.doc, json)
                         .then(() => nextTick()) // tick here so the event can propagate
                         .then(() => wasInserted.doc);
                 } else
@@ -839,6 +765,83 @@ const checkOrmMethods = function(statics) {
             }
         });
 };
+
+/**
+ * @return {Promise}
+ */
+function _atomicUpsertUpdate(doc, json) {
+    return doc.atomicUpdate(innerDoc => {
+        json._rev = innerDoc._rev;
+        innerDoc._data = json;
+        return innerDoc._data;
+    }).then(() => doc);
+}
+
+/**
+ * ensures that the given document exists
+ * @param  {string}  primary
+ * @param  {any}  json
+ * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
+ */
+function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
+    return rxCollection.findOne(primary).exec()
+        .then(doc => {
+            if (!doc) {
+                return rxCollection.insert(json).then(newDoc => ({
+                    doc: newDoc,
+                    inserted: true
+                }));
+            } else {
+                return {
+                    doc,
+                    inserted: false
+                };
+            }
+        });
+}
+
+/**
+ * returns the prototype-object
+ * that contains the orm-methods,
+ * used in the proto-merge
+ * @return {{}}
+ */
+export function getDocumentOrmPrototype(rxCollection) {
+    const proto = {};
+    Object
+        .entries(rxCollection._methods)
+        .forEach(([k, v]) => {
+            proto[k] = v;
+        });
+    return proto;
+}
+
+/**
+ * creates the indexes in the pouchdb
+ */
+function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
+    return Promise.all(
+        rxCollection.schema.indexes
+        .map(indexAr => {
+            const compressedIdx = indexAr
+                .map(key => {
+                    if (!rxCollection.schema.doKeyCompression())
+                        return key;
+                    else
+                        return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
+                });
+
+            return spawnedPouchPromise.then(
+                () => rxCollection.pouch.createIndex({
+                    index: {
+                        fields: compressedIdx
+                    }
+                })
+            );
+        })
+    );
+}
+
 
 /**
  * creates and prepares a new collection

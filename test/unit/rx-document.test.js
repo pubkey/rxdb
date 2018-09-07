@@ -9,6 +9,7 @@ import * as util from '../../dist/lib/util';
 
 import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/index';
+import * as RxCollection from '../../dist/lib/rx-collection';
 import * as RxSchema from '../../dist/lib/rx-schema';
 
 config.parallel('rx-document.test.js', () => {
@@ -65,7 +66,7 @@ config.parallel('rx-document.test.js', () => {
                     }
                 });
 
-                const proto = col.getDocumentOrmPrototype();
+                const proto = RxCollection.getDocumentOrmPrototype(col);
                 const testObj = {};
                 testObj.__proto__ = proto;
                 assert.equal(testObj.foo(), 'bar');
