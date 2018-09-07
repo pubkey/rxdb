@@ -44,15 +44,16 @@
 
 |     | **Features**                                                                                                                                                                                                                            |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ⚡️  | **Multiplatform support** for browsers, nodejs, electron, cordova, react-native and every other javascript-runtime                                                                                                                      |
-| 📈  | **Reactive** data-handling based on [rxjs](https://github.com/ReactiveX/rxjs)                                                                                                                                                           |
-| 😎  | **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant |
-| ✨   | **Schema-based** with the easy-to-learn standard of [jsonschema]                                                                                                                                                                        |
-| 📱  | **Mango-Query** exactly like you know from mongoDB and mongoose                                                                                                                                                                         |
-| ⚛️  | **Encryption** of single data-fields to protect your users data                                                                                                                                                                         |
-| ⏱   | **Import/Export** of the database-state (json), awesome for coding with [TDD](https://en.wikipedia.org/wiki/Test-driven_development)                                                                                                    |
-| 🔗  | **Multi-Window** to synchronise data between different browser-windows or nodejs-processes                                                                                                                                              |
-| ⚠️  | **ORM-capabilities** to easily handle data-code-relations                                                                                                                                                                               |
+| 💻📱  | **Multiplatform support** for browsers, nodejs, electron, cordova, react-native and every other javascript-runtime                                                                                                                      |
+| 📨 | **Reactive** data-handling based on [rxjs](https://github.com/ReactiveX/rxjs)                                                                                                                                                           |
+| 🚣 | **Offline first** let your app still work when the users has no internet                                          
+| 🔄  | **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant |
+| 📄  | **Schema-based** with the easy-to-learn standard of [jsonschema]                                                                                                                                                                        |
+| 🍊  | **Mango-Query** exactly like you know from mongoDB and mongoose                                                                                                                                                                         |
+| 🔐  | **Encryption** of single data-fields to protect your users data                                                                                                                                                                         |
+| 📤  | **Import/Export** of the database-state (json), awesome for coding with [TDD](https://en.wikipedia.org/wiki/Test-driven_development)                                                                                                    |
+| 📡  | **Multi-Window** to synchronise data between different browser-windows or nodejs-processes                                                                                                                                              |
+| 🍱 | **ORM-capabilities** to easily handle data-code-relations                                                                                                                                                                               |
 
 ## Platform-support
 
