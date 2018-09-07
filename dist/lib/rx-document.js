@@ -290,11 +290,32 @@ var basePrototype = {
   atomicUpdate: function atomicUpdate(fun) {
     var _this2 = this;
 
-    this._atomicQueue = this._atomicQueue.then(function () {
-      return fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
-    }).then(function (newData) {
-      return _this2._saveData(newData);
-    });
+    this._atomicQueue = this._atomicQueue.then(
+    /*#__PURE__*/
+    (0, _asyncToGenerator2["default"])(
+    /*#__PURE__*/
+    _regenerator["default"].mark(function _callee() {
+      var oldData, newData;
+      return _regenerator["default"].wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              oldData = (0, _util.clone)(_this2._dataSync$.getValue()); // use await here because it's unknown if a promise is returned
+
+              _context.next = 3;
+              return fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
+
+            case 3:
+              newData = _context.sent;
+              return _context.abrupt("return", _this2._saveData(newData, oldData));
+
+            case 5:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, this);
+    })));
     return this._atomicQueue.then(function () {
       return _this2;
     });
@@ -310,70 +331,44 @@ var basePrototype = {
   /**
    * saves the new document-data
    * and handles the events
-   * @param {} newData
+   * @param {any} newData
+   * @param {any} oldData
+   * @return {Promise}
    */
-  _saveData: function () {
-    var _saveData2 = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee(newData) {
-      var ret, changeEvent;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              newData = (0, _util.clone)(newData); // deleted documents cannot be changed
+  _saveData: function _saveData(newData, oldData) {
+    var _this3 = this;
 
-              if (!this._deleted$.getValue()) {
-                _context.next = 3;
-                break;
-              }
+    newData = (0, _util.clone)(newData); // deleted documents cannot be changed
 
-              throw _rxError["default"].newRxError('DOC11', {
-                id: this.primary,
-                document: this
-              });
+    if (this._deleted$.getValue()) {
+      throw _rxError["default"].newRxError('DOC11', {
+        id: this.primary,
+        document: this
+      });
+    } // ensure modifications are ok
 
-            case 3:
-              _context.next = 5;
-              return this.collection._runHooks('pre', 'save', newData, this);
 
-            case 5:
-              this.collection.schema.validate(newData);
-              _context.next = 8;
-              return this.collection._pouchPut((0, _util.clone)(newData));
+    this.collection.schema.validateChange(newData, oldData);
+    return this.collection._runHooks('pre', 'save', newData, this).then(function () {
+      _this3.collection.schema.validate(newData);
 
-            case 8:
-              ret = _context.sent;
+      return _this3.collection._pouchPut((0, _util.clone)(newData));
+    }).then(function (ret) {
+      if (!ret.ok) {
+        throw _rxError["default"].newRxError('DOC12', {
+          data: ret
+        });
+      }
 
-              if (ret.ok) {
-                _context.next = 11;
-                break;
-              }
+      newData._rev = ret.rev; // emit event
 
-              throw _rxError["default"].newRxError('DOC12', {
-                data: ret
-              });
+      var changeEvent = _rxChangeEvent["default"].create('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
 
-            case 11:
-              newData._rev = ret.rev; // emit event
+      _this3.$emit(changeEvent);
 
-              changeEvent = _rxChangeEvent["default"].create('UPDATE', this.collection.database, this.collection, this, newData);
-              this.$emit(changeEvent);
-              _context.next = 16;
-              return this.collection._runHooks('post', 'save', newData, this);
-
-            case 16:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    return function _saveData(_x) {
-      return _saveData2.apply(this, arguments);
-    };
-  }(),
+      return _this3.collection._runHooks('post', 'save', newData, _this3);
+    });
+  },
 
   /**
    * saves the temporary document and makes a non-temporary out of it
@@ -381,7 +376,7 @@ var basePrototype = {
    * @return {boolean} false if nothing to save
    */
   save: function save() {
-    var _this3 = this;
+    var _this4 = this;
 
     // .save() cannot be called on non-temporary-documents
     if (!this._isTemporary) {
@@ -392,78 +387,50 @@ var basePrototype = {
     }
 
     return this.collection.insert(this).then(function () {
-      _this3._isTemporary = false;
+      _this4._isTemporary = false;
 
-      _this3.collection._docCache.set(_this3.primary, _this3); // internal events
+      _this4.collection._docCache.set(_this4.primary, _this4); // internal events
 
 
-      _this3._dataSync$.next((0, _util.clone)(_this3._data));
+      _this4._dataSync$.next((0, _util.clone)(_this4._data));
 
       return true;
     });
   },
-  remove: function () {
-    var _remove = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee2() {
-      var deletedData;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              if (!this.deleted) {
-                _context2.next = 2;
-                break;
-              }
 
-              throw _rxError["default"].newRxError('DOC13', {
-                document: this,
-                id: this.primary
-              });
+  /**
+   * remove the document,
+   * this not not equal to a pouchdb.remove(),
+   * instead we keep the values and only set _deleted: true
+   * @return {Promise<RxDocument>}
+   */
+  remove: function remove() {
+    var _this5 = this;
 
-            case 2:
-              _context2.next = 4;
-              return (0, _util.promiseWait)(0);
+    if (this.deleted) {
+      throw _rxError["default"].newRxError('DOC13', {
+        document: this,
+        id: this.primary
+      });
+    }
 
-            case 4:
-              deletedData = (0, _util.clone)(this._data);
-              _context2.next = 7;
-              return this.collection._runHooks('pre', 'remove', deletedData, this);
+    var deletedData = (0, _util.clone)(this._data);
+    return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
+      deletedData._deleted = true;
+      /**
+       * because pouch.remove will also empty the object,
+       * we set _deleted: true and use pouch.put
+       */
 
-            case 7:
-              deletedData._deleted = true;
-              /**
-               * because pouch.remove will also empty the object,
-               * we set _deleted: true and use pouch.put
-               */
+      return _this5.collection._pouchPut(deletedData);
+    }).then(function () {
+      _this5.$emit(_rxChangeEvent["default"].create('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
 
-              _context2.next = 10;
-              return this.collection._pouchPut(deletedData);
-
-            case 10:
-              this.$emit(_rxChangeEvent["default"].create('REMOVE', this.collection.database, this.collection, this, this._data));
-              _context2.next = 13;
-              return this.collection._runHooks('post', 'remove', deletedData, this);
-
-            case 13:
-              _context2.next = 15;
-              return (0, _util.promiseWait)(0);
-
-            case 15:
-              return _context2.abrupt("return", this);
-
-            case 16:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    return function remove() {
-      return _remove.apply(this, arguments);
-    };
-  }(),
+      return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
+    }).then(function () {
+      return _this5;
+    });
+  },
   destroy: function destroy() {
     throw _rxError["default"].newRxError('DOC14');
   }

@@ -2,13 +2,14 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter } from 'rxjs/operators';
-import { clone, validateCouchDBString, ucfirst, nextTick, generateId } from './util';
+import { clone, validateCouchDBString, ucfirst, nextTick, generateId, promiseSeries } from './util';
 import RxDocument from './rx-document';
 import RxQuery from './rx-query';
 import RxSchema from './rx-schema';
 import RxChangeEvent from './rx-change-event';
 import RxError from './rx-error';
 import DataMigrator from './data-migrator';
+import { mustMigrate } from './data-migrator';
 import Crypter from './crypter';
 import DocCache from './doc-cache';
 import QueryCache from './query-cache';
@@ -56,11 +57,16 @@ function () {
   _proto.prepare = function prepare() {
     var _this = this;
 
-    this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings); // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
+    this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
+
+    if (this.schema.doKeyCompression()) {
+      this._keyCompressor = overwritable.createKeyCompressor(this.schema);
+    } // we trigger the non-blocking things first and await them later so we can do stuff in the mean time
+
 
     var spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
 
-    var createIndexesPromise = this._prepareCreateIndexes(spawnedPouchPromise);
+    var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
     this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
     this._crypter = Crypter.create(this.database.password, this.schema);
@@ -81,37 +87,6 @@ function () {
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
   };
   /**
-   * creates the indexes in the pouchdb
-   */
-
-
-  _proto._prepareCreateIndexes = function _prepareCreateIndexes(spawnedPouchPromise) {
-    var _this2 = this;
-
-    return Promise.all(this.schema.indexes.map(function (indexAr) {
-      var compressedIdx = indexAr.map(function (key) {
-        if (!_this2.schema.doKeyCompression()) return key;else return _this2._keyCompressor._transformKey('', '', key.split('.'));
-      });
-      return spawnedPouchPromise.then(function () {
-        return _this2.pouch.createIndex({
-          index: {
-            fields: compressedIdx
-          }
-        });
-      });
-    }));
-  };
-
-  _proto.getDocumentOrmPrototype = function getDocumentOrmPrototype() {
-    var proto = {};
-    Object.entries(this._methods).forEach(function (_ref) {
-      var k = _ref[0],
-          v = _ref[1];
-      proto[k] = v;
-    });
-    return proto;
-  };
-  /**
    * merge the prototypes of schema, orm-methods and document-base
    * so we do not have to assing getters/setters and orm methods to each document-instance
    */
@@ -120,7 +95,7 @@ function () {
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     if (!this._getDocumentPrototype) {
       var schemaProto = this.schema.getDocumentPrototype();
-      var ormProto = this.getDocumentOrmPrototype();
+      var ormProto = getDocumentOrmPrototype(this);
       var baseProto = RxDocument.basePrototype;
       var proto = {};
       [schemaProto, ormProto, baseProto].forEach(function (obj) {
@@ -148,15 +123,12 @@ function () {
   };
   /**
    * checks if a migration is needed
-   * @return {boolean}
+   * @return {Promise<boolean>}
    */
 
 
   _proto.migrationNeeded = function migrationNeeded() {
-    if (this.schema.version === 0) return false;
-    return this._dataMigrator._getOldCollections().then(function (oldCols) {
-      return oldCols.length > 0;
-    });
+    return mustMigrate(this._dataMigrator);
   };
   /**
    * @param {number} [batchSize=10] amount of documents handled in parallel
@@ -216,7 +188,7 @@ function () {
     var _pouchPut2 = _asyncToGenerator(
     /*#__PURE__*/
     _regeneratorRuntime.mark(function _callee(obj) {
-      var _this3 = this;
+      var _this2 = this;
 
       var overwrite,
           ret,
@@ -232,7 +204,7 @@ function () {
               _context.prev = 3;
               _context.next = 6;
               return this.database.lockedRun(function () {
-                return _this3.pouch.put(obj);
+                return _this2.pouch.put(obj);
               });
 
             case 6:
@@ -251,7 +223,7 @@ function () {
 
               _context.next = 14;
               return this.database.lockedRun(function () {
-                return _this3.pouch.get(obj._id);
+                return _this2.pouch.get(obj._id);
               });
 
             case 14:
@@ -259,7 +231,7 @@ function () {
               obj._rev = exist._rev;
               _context.next = 18;
               return this.database.lockedRun(function () {
-                return _this3.pouch.put(obj);
+                return _this2.pouch.put(obj);
               });
 
             case 18:
@@ -293,10 +265,10 @@ function () {
 
 
   _proto._pouchGet = function _pouchGet(key) {
-    var _this4 = this;
+    var _this3 = this;
 
     return this.pouch.get(key).then(function (doc) {
-      return _this4._handleFromPouch(doc);
+      return _this3._handleFromPouch(doc);
     });
   };
   /**
@@ -309,16 +281,16 @@ function () {
 
 
   _proto._pouchFind = function _pouchFind(rxQuery, limit) {
-    var _this5 = this;
+    var _this4 = this;
 
     var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var compressedQueryJSON = rxQuery.keyCompress();
     if (limit) compressedQueryJSON.limit = limit;
     return this.database.lockedRun(function () {
-      return _this5.pouch.find(compressedQueryJSON);
+      return _this4.pouch.find(compressedQueryJSON);
     }).then(function (docsCompressed) {
       var docs = docsCompressed.docs.map(function (doc) {
-        return _this5._handleFromPouch(doc, noDecrypt);
+        return _this4._handleFromPouch(doc, noDecrypt);
       });
       return docs;
     });
@@ -352,10 +324,10 @@ function () {
 
 
   _proto._createDocuments = function _createDocuments(docsJSON) {
-    var _this6 = this;
+    var _this5 = this;
 
     return docsJSON.map(function (json) {
-      return _this6._createDocument(json);
+      return _this5._createDocument(json);
     });
   };
   /**
@@ -374,7 +346,7 @@ function () {
 
 
   _proto.insert = function insert(json) {
-    var _this7 = this;
+    var _this6 = this;
 
     // inserting a temporary-document
     var tempDoc = null;
@@ -404,23 +376,23 @@ function () {
     if (this.schema.primaryPath === '_id' && !json._id) json._id = generateId();
     var newDoc = tempDoc;
     return this._runHooks('pre', 'insert', json).then(function () {
-      _this7.schema.validate(json);
+      _this6.schema.validate(json);
 
-      return _this7._pouchPut(json);
+      return _this6._pouchPut(json);
     }).then(function (insertResult) {
-      json[_this7.schema.primaryPath] = insertResult.id;
+      json[_this6.schema.primaryPath] = insertResult.id;
       json._rev = insertResult.rev;
 
       if (tempDoc) {
         tempDoc._dataSync$.next(json);
-      } else newDoc = _this7._createDocument(json);
+      } else newDoc = _this6._createDocument(json);
 
-      return _this7._runHooks('post', 'insert', json, newDoc);
+      return _this6._runHooks('post', 'insert', json, newDoc);
     }).then(function () {
       // event
-      var emitEvent = RxChangeEvent.create('INSERT', _this7.database, _this7, newDoc, json);
+      var emitEvent = RxChangeEvent.create('INSERT', _this6.database, _this6, newDoc, json);
 
-      _this7.$emit(emitEvent);
+      _this6.$emit(emitEvent);
 
       return newDoc;
     });
@@ -432,7 +404,7 @@ function () {
 
 
   _proto.upsert = function upsert(json) {
-    var _this8 = this;
+    var _this7 = this;
 
     json = clone(json);
     var primary = json[this.schema.primaryPath];
@@ -453,80 +425,8 @@ function () {
           return existing;
         });
       } else {
-        return _this8.insert(json);
+        return _this7.insert(json);
       }
-    });
-  };
-  /**
-   * ensures that the given document exists
-   * @param  {string}  primary
-   * @param  {any}  json
-   * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
-   */
-
-
-  _proto._atomicUpsertEnsureRxDocumentExists =
-  /*#__PURE__*/
-  function () {
-    var _atomicUpsertEnsureRxDocumentExists2 = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee2(primary, json) {
-      var doc, newDoc;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return this.findOne(primary).exec();
-
-            case 2:
-              doc = _context2.sent;
-
-              if (doc) {
-                _context2.next = 10;
-                break;
-              }
-
-              _context2.next = 6;
-              return this.insert(json);
-
-            case 6:
-              newDoc = _context2.sent;
-              return _context2.abrupt("return", {
-                doc: newDoc,
-                inserted: true
-              });
-
-            case 10:
-              return _context2.abrupt("return", {
-                doc: doc,
-                inserted: false
-              });
-
-            case 11:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    return function _atomicUpsertEnsureRxDocumentExists(_x2, _x3) {
-      return _atomicUpsertEnsureRxDocumentExists2.apply(this, arguments);
-    };
-  }();
-  /**
-   * @return {Promise}
-   */
-
-
-  _proto._atomicUpsertUpdate = function _atomicUpsertUpdate(doc, json) {
-    return doc.atomicUpdate(function (innerDoc) {
-      json._rev = innerDoc._rev;
-      innerDoc._data = json;
-      return innerDoc._data;
-    }).then(function () {
-      return doc;
     });
   };
   /**
@@ -537,7 +437,7 @@ function () {
 
 
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this9 = this;
+    var _this8 = this;
 
     json = clone(json);
     var primary = json[this.schema.primaryPath];
@@ -558,10 +458,10 @@ function () {
     }
 
     queue = queue.then(function () {
-      return _this9._atomicUpsertEnsureRxDocumentExists(primary, json);
+      return _atomicUpsertEnsureRxDocumentExists(_this8, primary, json);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
-        return _this9._atomicUpsertUpdate(wasInserted.doc, json).then(function () {
+        return _atomicUpsertUpdate(wasInserted.doc, json).then(function () {
           return nextTick();
         }) // tick here so the event can propagate
         .then(function () {
@@ -708,62 +608,27 @@ function () {
       };
     }
   };
+  /**
+   * @return {Promise<void>}
+   */
 
-  _proto._runHooks =
-  /*#__PURE__*/
-  function () {
-    var _runHooks2 = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee3(when, key, data, instance) {
-      var hooks, i;
-      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              hooks = this.getHooks(when, key);
 
-              if (hooks) {
-                _context3.next = 3;
-                break;
-              }
+  _proto._runHooks = function _runHooks(when, key, data, instance) {
+    var hooks = this.getHooks(when, key);
+    if (!hooks) return Promise.resolve(); // run parallel: false
 
-              return _context3.abrupt("return");
-
-            case 3:
-              i = 0;
-
-            case 4:
-              if (!(i < hooks.series.length)) {
-                _context3.next = 10;
-                break;
-              }
-
-              _context3.next = 7;
-              return hooks.series[i](data, instance);
-
-            case 7:
-              i++;
-              _context3.next = 4;
-              break;
-
-            case 10:
-              _context3.next = 12;
-              return Promise.all(hooks.parallel.map(function (hook) {
-                return hook(data, instance);
-              }));
-
-            case 12:
-            case "end":
-              return _context3.stop();
-          }
-        }
-      }, _callee3, this);
-    }));
-
-    return function _runHooks(_x4, _x5, _x6, _x7) {
-      return _runHooks2.apply(this, arguments);
-    };
-  }();
+    var tasks = hooks.series.map(function (hook) {
+      return function () {
+        return hook(data, instance);
+      };
+    });
+    return promiseSeries(tasks) // run parallel: true
+    .then(function () {
+      return Promise.all(hooks.parallel.map(function (hook) {
+        return hook(data, instance);
+      }));
+    });
+  };
   /**
    * does the same as ._runHooks() but with non-async-functions
    */
@@ -829,12 +694,6 @@ function () {
   };
 
   _createClass(RxCollection, [{
-    key: "_keyCompressor",
-    get: function get() {
-      if (!this.__keyCompressor) this.__keyCompressor = overwritable.createKeyCompressor(this.schema);
-      return this.__keyCompressor;
-    }
-  }, {
     key: "$",
     get: function get() {
       return this._observable$;
@@ -878,10 +737,10 @@ function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this10 = this;
+      var _this9 = this;
 
       if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-        return _this10._onDestroyCall = res;
+        return _this9._onDestroyCall = res;
       });
       return this._onDestroy;
     }
@@ -978,9 +837,9 @@ export function properties() {
  */
 
 var checkOrmMethods = function checkOrmMethods(statics) {
-  Object.entries(statics).forEach(function (_ref2) {
-    var k = _ref2[0],
-        v = _ref2[1];
+  Object.entries(statics).forEach(function (_ref) {
+    var k = _ref[0],
+        v = _ref[1];
 
     if (typeof k !== 'string') {
       throw RxError.newRxTypeError('COL14', {
@@ -1008,6 +867,80 @@ var checkOrmMethods = function checkOrmMethods(statics) {
     }
   });
 };
+/**
+ * @return {Promise}
+ */
+
+
+function _atomicUpsertUpdate(doc, json) {
+  return doc.atomicUpdate(function (innerDoc) {
+    json._rev = innerDoc._rev;
+    innerDoc._data = json;
+    return innerDoc._data;
+  }).then(function () {
+    return doc;
+  });
+}
+/**
+ * ensures that the given document exists
+ * @param  {string}  primary
+ * @param  {any}  json
+ * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
+ */
+
+
+function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
+  return rxCollection.findOne(primary).exec().then(function (doc) {
+    if (!doc) {
+      return rxCollection.insert(json).then(function (newDoc) {
+        return {
+          doc: newDoc,
+          inserted: true
+        };
+      });
+    } else {
+      return {
+        doc: doc,
+        inserted: false
+      };
+    }
+  });
+}
+/**
+ * returns the prototype-object
+ * that contains the orm-methods,
+ * used in the proto-merge
+ * @return {{}}
+ */
+
+
+export function getDocumentOrmPrototype(rxCollection) {
+  var proto = {};
+  Object.entries(rxCollection._methods).forEach(function (_ref2) {
+    var k = _ref2[0],
+        v = _ref2[1];
+    proto[k] = v;
+  });
+  return proto;
+}
+/**
+ * creates the indexes in the pouchdb
+ */
+
+function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
+  return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
+    var compressedIdx = indexAr.map(function (key) {
+      if (!rxCollection.schema.doKeyCompression()) return key;else return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
+    });
+    return spawnedPouchPromise.then(function () {
+      return rxCollection.pouch.createIndex({
+        index: {
+          fields: compressedIdx
+        }
+      });
+    });
+  }));
+}
 /**
  * creates and prepares a new collection
  * @param  {RxDatabase}  database

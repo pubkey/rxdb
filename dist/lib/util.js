@@ -12,6 +12,7 @@ exports.generateId = generateId;
 exports.nextTick = nextTick;
 exports.promiseWait = promiseWait;
 exports.requestIdlePromise = requestIdlePromise;
+exports.promiseSeries = promiseSeries;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
@@ -136,6 +137,19 @@ function requestIdlePromise() {
       });
     });
   } else return Promise.resolve();
+}
+/**
+ * like Promise.all() but runs in series instead of parallel
+ * @link https://github.com/egoist/promise.series/blob/master/index.js
+ * @param {Function[]} tasks array with functions that return a promise
+ * @return {Promise<Array>}
+ */
+
+
+function promiseSeries(tasks, initial) {
+  return tasks.reduce(function (current, next) {
+    return current.then(next);
+  }, Promise.resolve(initial));
 }
 /**
  * run the callback if requestIdleCallback available
@@ -399,8 +413,8 @@ function flattenObject(ob) {
   return toReturn;
 }
 /**
- * 
- * @param {string} revString 
+ *
+ * @param {string} revString
  * @return {number}
  */
 

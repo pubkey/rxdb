@@ -31,7 +31,7 @@ var validatorsCache = {};
  * @
  */
 
-var _getValidator = function _getValidator() {
+function _getValidator() {
   var schemaPath = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
   var hash = this.hash;
   if (!validatorsCache[hash]) validatorsCache[hash] = {};
@@ -50,7 +50,7 @@ var _getValidator = function _getValidator() {
   }
 
   return validatorsOfHash[schemaPath];
-};
+}
 /**
  * validates the given object against the schema
  * @param  {any} obj

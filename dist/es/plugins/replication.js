@@ -44,63 +44,6 @@ function () {
 
   var _proto = RxReplicationState.prototype;
 
-  _proto.setPouchEventEmitter = function setPouchEventEmitter(evEmitter) {
-    var _this2 = this;
-
-    if (this._pouchEventEmitterObject) throw RxError.newRxError('RC1');
-    this._pouchEventEmitterObject = evEmitter; // change
-
-    this._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
-      return _this2._subjects.change.next(ev);
-    })); // denied
-
-
-    this._subs.push(fromEvent(evEmitter, 'denied').subscribe(function (ev) {
-      return _this2._subjects.denied.next(ev);
-    })); // docs
-
-
-    this._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
-      if (_this2._subjects.docs.observers.length === 0 || ev.direction !== 'pull') return;
-      ev.change.docs.filter(function (doc) {
-        return doc.language !== 'query';
-      }) // remove internal docs
-      .map(function (doc) {
-        return _this2.collection._handleFromPouch(doc);
-      }) // do primary-swap and keycompression
-      .forEach(function (doc) {
-        return _this2._subjects.docs.next(doc);
-      });
-    })); // error
-
-
-    this._subs.push(fromEvent(evEmitter, 'error').subscribe(function (ev) {
-      return _this2._subjects.error.next(ev);
-    })); // active
-
-
-    this._subs.push(fromEvent(evEmitter, 'active').subscribe(function () {
-      return _this2._subjects.active.next(true);
-    }));
-
-    this._subs.push(fromEvent(evEmitter, 'paused').subscribe(function () {
-      return _this2._subjects.active.next(false);
-    })); // complete
-
-
-    this._subs.push(fromEvent(evEmitter, 'complete').subscribe(function (info) {
-      /**
-       * when complete fires, it might be that not all changeEvents
-       * have passed throught, because of the delay of .wachtForChanges()
-       * Therefore we have to first ensure that all previous changeEvents have been handled
-       */
-      var unhandledEvents = Array.from(_this2.collection._watchForChangesUnhandled);
-      Promise.all(unhandledEvents).then(function () {
-        return _this2._subjects.complete.next(info);
-      });
-    }));
-  };
-
   _proto.cancel = function cancel() {
     if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
 
@@ -111,11 +54,67 @@ function () {
 
   return RxReplicationState;
 }();
+
+function setPouchEventEmitter(rxRepState, evEmitter) {
+  if (rxRepState._pouchEventEmitterObject) throw RxError.newRxError('RC1');
+  rxRepState._pouchEventEmitterObject = evEmitter; // change
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
+    return rxRepState._subjects.change.next(ev);
+  })); // denied
+
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'denied').subscribe(function (ev) {
+    return rxRepState._subjects.denied.next(ev);
+  })); // docs
+
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
+    if (rxRepState._subjects.docs.observers.length === 0 || ev.direction !== 'pull') return;
+    ev.change.docs.filter(function (doc) {
+      return doc.language !== 'query';
+    }) // remove internal docs
+    .map(function (doc) {
+      return rxRepState.collection._handleFromPouch(doc);
+    }) // do primary-swap and keycompression
+    .forEach(function (doc) {
+      return rxRepState._subjects.docs.next(doc);
+    });
+  })); // error
+
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'error').subscribe(function (ev) {
+    return rxRepState._subjects.error.next(ev);
+  })); // active
+
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'active').subscribe(function () {
+    return rxRepState._subjects.active.next(true);
+  }));
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'paused').subscribe(function () {
+    return rxRepState._subjects.active.next(false);
+  })); // complete
+
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'complete').subscribe(function (info) {
+    /**
+     * when complete fires, it might be that not all changeEvents
+     * have passed throught, because of the delay of .wachtForChanges()
+     * Therefore we have to first ensure that all previous changeEvents have been handled
+     */
+    var unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
+    Promise.all(unhandledEvents).then(function () {
+      return rxRepState._subjects.complete.next(info);
+    });
+  }));
+}
+
 export function createRxReplicationState(collection) {
   return new RxReplicationState(collection);
 }
 export function sync(_ref) {
-  var _this3 = this;
+  var _this2 = this;
 
   var remote = _ref.remote,
       _ref$waitForLeadershi = _ref.waitForLeadership,
@@ -160,11 +159,11 @@ export function sync(_ref) {
   waitTillRun.then(function () {
     var pouchSync = syncFun(remote, options);
 
-    _this3.watchForChanges();
+    _this2.watchForChanges();
 
-    repState.setPouchEventEmitter(pouchSync);
+    setPouchEventEmitter(repState, pouchSync);
 
-    _this3._repStates.push(repState);
+    _this2._repStates.push(repState);
   });
   return repState;
 }

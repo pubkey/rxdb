@@ -5,6 +5,12 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports._resortDocData = _resortDocData;
+exports._isSortedBefore = _isSortedBefore;
+exports._sortFieldChanged = _sortFieldChanged;
+exports._getSortOptions = _getSortOptions;
+exports._isDocInResultData = _isDocInResultData;
+exports.doesDocMatchQuery = doesDocMatchQuery;
 exports.enableDebugging = enableDebugging;
 exports.create = create;
 exports["default"] = void 0;
@@ -64,18 +70,6 @@ function () {
     if (found) return true;
     if (!changed) return false;else return resultsData;
   };
-
-  _proto._debugMessage = function _debugMessage(key) {
-    var changeEventData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var title = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'optimized';
-    console.dir({
-      name: 'QueryChangeDetector',
-      title: title,
-      query: this.query.toString(),
-      key: key,
-      changeEventData: changeEventData
-    });
-  };
   /**
    * handle a single ChangeEvent and try to calculate the new results
    * @param {Object[]} resultsData of previous results
@@ -92,16 +86,16 @@ function () {
     var options = this.query.toJSON();
     var docData = changeEvent.data.v;
 
-    var wasDocInResults = this._isDocInResultData(docData, resultsData);
+    var wasDocInResults = _isDocInResultData(this, docData, resultsData);
 
-    var doesMatchNow = this.doesDocMatchQuery(docData);
+    var doesMatchNow = doesDocMatchQuery(this, docData);
     var isFilled = !options.limit || options.limit && resultsData.length >= options.limit;
     var limitAndFilled = options.limit && resultsData.length >= options.limit;
 
     if (DEBUG) {
       console.log('QueryChangeDetector.handleSingleChange()'); // TODO this should not be an error
 
-      this._debugMessage('start', changeEvent.data.v, 'handleSingleChange()');
+      _debugMessage(this, 'start', changeEvent.data.v, 'handleSingleChange()');
 
       console.log('changeEvent.data:');
       console.dir(changeEvent.data);
@@ -114,25 +108,25 @@ function () {
     var _sortAfter = null;
 
     var sortAfter = function sortAfter() {
-      if (_sortAfter === null) _sortAfter = _this2._isSortedBefore(results[results.length - 1], docData);
+      if (_sortAfter === null) _sortAfter = _isSortedBefore(_this2, results[results.length - 1], docData);
       return _sortAfter;
     };
 
     var _sortBefore = null;
 
     var sortBefore = function sortBefore() {
-      if (_sortBefore === null) _sortBefore = _this2._isSortedBefore(docData, results[0]);
+      if (_sortBefore === null) _sortBefore = _isSortedBefore(_this2, docData, results[0]);
       return _sortBefore;
     };
 
-    var _sortFieldChanged = null;
+    var __sortFieldChanged = null;
 
     var sortFieldChanged = function sortFieldChanged() {
-      if (_sortFieldChanged === null) {
+      if (__sortFieldChanged === null) {
         var docBefore = resultsData.find(function (doc) {
           return doc[_this2.primaryKey] === docData[_this2.primaryKey];
         });
-        _sortFieldChanged = _this2._sortFieldChanged(docBefore, docData);
+        __sortFieldChanged = _sortFieldChanged(_this2, docBefore, docData);
       }
 
       return _sortFieldChanged;
@@ -141,20 +135,20 @@ function () {
     if (changeEvent.data.op === 'REMOVE') {
       // R1 (never matched)
       if (!wasDocInResults && !doesMatchNow) {
-        DEBUG && this._debugMessage('R1', docData);
+        DEBUG && _debugMessage(this, 'R1', docData);
         return false;
       } // R2 sorted before got removed but results not filled
 
 
       if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
-        DEBUG && this._debugMessage('R2', docData);
+        DEBUG && _debugMessage(this, 'R2', docData);
         results.shift();
         return results;
       } // R3 (was in results and got removed)
 
 
       if (doesMatchNow && wasDocInResults && !isFilled) {
-        DEBUG && this._debugMessage('R3', docData);
+        DEBUG && _debugMessage(this, 'R3', docData);
         results = results.filter(function (doc) {
           return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
         });
@@ -163,13 +157,13 @@ function () {
 
 
       if (options.limit === 1 && !doesMatchNow && wasDocInResults) {
-        DEBUG && this._debugMessage('R3.05', docData);
+        DEBUG && _debugMessage(this, 'R3.05', docData);
         return true;
       } // R3.1 was in results and got removed, no limit, no skip
 
 
       if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
-        DEBUG && this._debugMessage('R3.1', docData);
+        DEBUG && _debugMessage(this, 'R3.1', docData);
         results = results.filter(function (doc) {
           return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
         });
@@ -178,13 +172,13 @@ function () {
 
 
       if (doesMatchNow && options.limit && sortAfter()) {
-        DEBUG && this._debugMessage('R4', docData);
+        DEBUG && _debugMessage(this, 'R4', docData);
         return false;
       }
     } else {
       // U1 doc not matched and also not matches now
       if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
-        DEBUG && this._debugMessage('U1', docData);
+        DEBUG && _debugMessage(this, 'U1', docData);
         return false;
       } // U2 still matching -> only resort
 
@@ -199,21 +193,21 @@ function () {
         results[i] = docData;
 
         if (sortFieldChanged()) {
-          DEBUG && this._debugMessage('U2 - resort', docData);
-          return this._resortDocData(results);
+          DEBUG && _debugMessage(this, 'U2 - resort', docData);
+          return _resortDocData(this, results);
         } else {
-          DEBUG && this._debugMessage('U2 - no-resort', docData);
+          DEBUG && _debugMessage(this, 'U2 - no-resort', docData);
           return results;
         }
       } // U3 not matched, but matches now, no.skip, limit < length
 
 
       if (!options.skip && !limitAndFilled && !wasDocInResults && doesMatchNow) {
-        DEBUG && this._debugMessage('U3', docData);
+        DEBUG && _debugMessage(this, 'U3', docData);
         results.push(docData); //    console.log('U3: preSort:');
         //    console.dir(results);
 
-        var sorted = this._resortDocData(results); //        console.log('U3: postSort:');
+        var sorted = _resortDocData(this, results); //        console.log('U3: postSort:');
         //            console.dir(sorted);
 
 
@@ -224,150 +218,160 @@ function () {
 
     return true;
   };
-  /**
-   * check if the document matches the query
-   * @param {object} docData
-   * @return {boolean}
-   */
-
-
-  _proto.doesDocMatchQuery = function doesDocMatchQuery(docData) {
-    // if doc is deleted, it cannot match
-    if (docData._deleted) return false;
-    docData = this.query.collection.schema.swapPrimaryToId(docData);
-    var inMemoryFields = Object.keys(this.query.toJSON().selector);
-    var retDocs = (0, _pouchdbSelectorCore.filterInMemoryFields)([{
-      doc: docData
-    }], {
-      selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector)
-    }, inMemoryFields);
-    var ret = retDocs.length === 1;
-    return ret;
-  };
-  /**
-   * check if the document exists in the results data
-   * @param {object} docData
-   * @param {object[]} resultData
-   */
-
-
-  _proto._isDocInResultData = function _isDocInResultData(docData, resultData) {
-    var primaryPath = this.query.collection.schema.primaryPath;
-    var first = resultData.find(function (doc) {
-      return doc[primaryPath] === docData[primaryPath];
-    });
-    return !!first;
-  };
-  /**
-   * if no sort-order is specified,
-   * pouchdb will use the primary
-   */
-
-
-  _proto._getSortOptions = function _getSortOptions() {
-    if (!this._sortOptions) {
-      var options = this.query.toJSON();
-      var sortOptions = options.sort;
-
-      if (!sortOptions) {
-        sortOptions = [{
-          _id: 'asc'
-        }];
-      }
-
-      this._sortOptions = sortOptions;
-    }
-
-    return this._sortOptions;
-  };
-  /**
-   * checks if the sort-relevant fields have changed
-   * @param  {object} docDataBefore
-   * @param  {object} docDataAfter
-   * @return {boolean}
-   */
-
-
-  _proto._sortFieldChanged = function _sortFieldChanged(docDataBefore, docDataAfter) {
-    var sortOptions = this._getSortOptions();
-
-    var sortFields = sortOptions.map(function (sortObj) {
-      return Object.keys(sortObj).pop();
-    });
-    var changed = false;
-    sortFields.find(function (field) {
-      var beforeData = _objectPath["default"].get(docDataBefore, field);
-
-      var afterData = _objectPath["default"].get(docDataAfter, field);
-
-      if (beforeData !== afterData) {
-        changed = true;
-        return true;
-      } else return false;
-    });
-    return changed;
-  };
-  /**
-   * checks if the newDocLeft would be placed before docDataRight
-   * when the query would be reExecuted
-   * @param  {Object} docDataNew
-   * @param  {Object} docDataIs
-   * @return {boolean} true if before, false if after
-   */
-
-
-  _proto._isSortedBefore = function _isSortedBefore(docDataLeft, docDataRight) {
-    var sortOptions = this._getSortOptions();
-
-    var inMemoryFields = Object.keys(this.query.toJSON().selector);
-    var swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
-    var swappedRight = this.query.collection.schema.swapPrimaryToId(docDataRight);
-    var rows = [swappedLeft, swappedRight].map(function (doc) {
-      return {
-        id: doc._id,
-        doc: doc
-      };
-    }); // TODO use createFieldSorter
-
-    var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-      selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector),
-      sort: sortOptions
-    }, inMemoryFields);
-    return sortedRows[0].id === swappedLeft._id;
-  };
-  /**
-   * reruns the sort on the given resultsData
-   * @param  {object[]} resultsData
-   * @return {object[]}
-   */
-
-
-  _proto._resortDocData = function _resortDocData(resultsData) {
-    var _this3 = this;
-
-    var sortOptions = this._getSortOptions();
-
-    var rows = resultsData.map(function (doc) {
-      return {
-        doc: _this3.query.collection.schema.swapPrimaryToId(doc)
-      };
-    });
-    var inMemoryFields = Object.keys(this.query.toJSON().selector); // TODO use createFieldSorter
-
-    var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-      selector: (0, _pouchdbSelectorCore.massageSelector)(this.query.toJSON().selector),
-      sort: sortOptions
-    }, inMemoryFields);
-    var sortedDocs = sortedRows.map(function (row) {
-      return row.doc;
-    }).map(function (doc) {
-      return _this3.query.collection.schema.swapIdToPrimary(doc);
-    });
-    return sortedDocs;
-  };
 
   return QueryChangeDetector;
 }();
+
+function _debugMessage(queryChangeDetector, key) {
+  var changeEventData = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var title = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'optimized';
+  console.dir({
+    name: 'QueryChangeDetector',
+    title: title,
+    query: queryChangeDetector.query.toString(),
+    key: key,
+    changeEventData: changeEventData
+  });
+}
+/**
+ * reruns the sort on the given resultsData
+ * @param  {object[]} resultsData
+ * @return {object[]}
+ */
+
+
+function _resortDocData(queryChangeDetector, resultsData) {
+  var sortOptions = _getSortOptions(queryChangeDetector);
+
+  var rows = resultsData.map(function (doc) {
+    return {
+      doc: queryChangeDetector.query.collection.schema.swapPrimaryToId(doc)
+    };
+  });
+  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector); // TODO use createFieldSorter
+
+  var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
+    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector),
+    sort: sortOptions
+  }, inMemoryFields);
+  var sortedDocs = sortedRows.map(function (row) {
+    return row.doc;
+  }).map(function (doc) {
+    return queryChangeDetector.query.collection.schema.swapIdToPrimary(doc);
+  });
+  return sortedDocs;
+}
+/**
+ * checks if the newDocLeft would be placed before docDataRight
+ * when the query would be reExecuted
+ * @param  {Object} docDataNew
+ * @param  {Object} docDataIs
+ * @return {boolean} true if before, false if after
+ */
+
+
+function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
+  var sortOptions = _getSortOptions(queryChangeDetector);
+
+  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
+  var swappedLeft = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataLeft);
+  var swappedRight = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataRight);
+  var rows = [swappedLeft, swappedRight].map(function (doc) {
+    return {
+      id: doc._id,
+      doc: doc
+    };
+  }); // TODO use createFieldSorter
+
+  var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
+    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector),
+    sort: sortOptions
+  }, inMemoryFields);
+  return sortedRows[0].id === swappedLeft._id;
+}
+/**
+ * checks if the sort-relevant fields have changed
+ * @param  {object} docDataBefore
+ * @param  {object} docDataAfter
+ * @return {boolean}
+ */
+
+
+function _sortFieldChanged(queryChangeDetector, docDataBefore, docDataAfter) {
+  var sortOptions = _getSortOptions(queryChangeDetector);
+
+  var sortFields = sortOptions.map(function (sortObj) {
+    return Object.keys(sortObj).pop();
+  });
+  var changed = false;
+  sortFields.find(function (field) {
+    var beforeData = _objectPath["default"].get(docDataBefore, field);
+
+    var afterData = _objectPath["default"].get(docDataAfter, field);
+
+    if (beforeData !== afterData) {
+      changed = true;
+      return true;
+    } else return false;
+  });
+  return changed;
+}
+/**
+ * if no sort-order is specified,
+ * pouchdb will use the primary
+ */
+
+
+function _getSortOptions(queryChangeDetector) {
+  if (!queryChangeDetector._sortOptions) {
+    var options = queryChangeDetector.query.toJSON();
+    var sortOptions = options.sort;
+
+    if (!sortOptions) {
+      sortOptions = [{
+        _id: 'asc'
+      }];
+    }
+
+    queryChangeDetector._sortOptions = sortOptions;
+  }
+
+  return queryChangeDetector._sortOptions;
+}
+/**
+ * check if the document exists in the results data
+ * @param {object} docData
+ * @param {object[]} resultData
+ */
+
+
+function _isDocInResultData(queryChangeDetector, docData, resultData) {
+  var primaryPath = queryChangeDetector.query.collection.schema.primaryPath;
+  var first = resultData.find(function (doc) {
+    return doc[primaryPath] === docData[primaryPath];
+  });
+  return !!first;
+}
+/**
+ * check if the document matches the query
+ * @param {object} docData
+ * @return {boolean}
+ */
+
+
+function doesDocMatchQuery(queryChangeDetector, docData) {
+  // if doc is deleted, it cannot match
+  if (docData._deleted) return false;
+  docData = queryChangeDetector.query.collection.schema.swapPrimaryToId(docData);
+  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
+  var retDocs = (0, _pouchdbSelectorCore.filterInMemoryFields)([{
+    doc: docData
+  }], {
+    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector)
+  }, inMemoryFields);
+  var ret = retDocs.length === 1;
+  return ret;
+}
 
 function enableDebugging() {
   console.log('QueryChangeDetector.enableDebugging()');

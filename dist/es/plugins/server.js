@@ -75,7 +75,7 @@ export function spawnServer(_ref) {
  * when a server is created, no more collections can be spawned
  */
 
-var ensureNoMoreCollections = function ensureNoMoreCollections(args) {
+function ensureNoMoreCollections(args) {
   if (DBS_WITH_SERVER.has(args.database)) {
     var err = RxError.newRxError('S1', {
       collection: args.name,
@@ -83,7 +83,7 @@ var ensureNoMoreCollections = function ensureNoMoreCollections(args) {
     });
     throw err;
   }
-};
+}
 /**
  * runs when the database gets destroyed
  */

@@ -95,6 +95,18 @@ export function requestIdlePromise() {
   } else return Promise.resolve();
 }
 /**
+ * like Promise.all() but runs in series instead of parallel
+ * @link https://github.com/egoist/promise.series/blob/master/index.js
+ * @param {Function[]} tasks array with functions that return a promise
+ * @return {Promise<Array>}
+ */
+
+export function promiseSeries(tasks, initial) {
+  return tasks.reduce(function (current, next) {
+    return current.then(next);
+  }, Promise.resolve(initial));
+}
+/**
  * run the callback if requestIdleCallback available
  * do nothing if not
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
@@ -343,8 +355,8 @@ export function flattenObject(ob) {
   return toReturn;
 }
 /**
- * 
- * @param {string} revString 
+ *
+ * @param {string} revString
  * @return {number}
  */
 

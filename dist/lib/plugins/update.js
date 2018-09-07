@@ -25,7 +25,7 @@ var _util = require("../util.js");
 function update(updateObj) {
   var oldDocData = (0, _util.clone)(this._data);
   var newDocData = (0, _modifyjs["default"])(oldDocData, updateObj);
-  return this._saveData(newDocData);
+  return this._saveData(newDocData, oldDocData);
 }
 
 function RxQueryUpdate(_x) {

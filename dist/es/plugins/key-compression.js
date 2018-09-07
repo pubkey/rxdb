@@ -21,57 +21,32 @@ function () {
 
   var _proto = KeyCompressor.prototype;
 
-  _proto._compressObj = function _compressObj(obj) {
-    var _this = this;
-
-    var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-    var ret = {};
-    if (typeof obj !== 'object' || obj === null) return obj;
-
-    if (Array.isArray(obj)) {
-      return obj.map(function (o) {
-        return _this._compressObj(o, trimDots(path + '.item'));
-      });
-    }
-
-    Object.keys(obj).forEach(function (key) {
-      var propertyObj = obj[key];
-      var fullPath = trimDots(path + '.' + key);
-      var replacedKey = _this.table[fullPath] ? _this.table[fullPath] : key;
-      var nextObj = propertyObj;
-      nextObj = _this._compressObj(propertyObj, fullPath);
-      ret[replacedKey] = nextObj;
-    });
-    return ret;
-  };
   /**
    * compress the keys of an object via the compression-table
    * @param {Object} obj
    * @param {Object} compressed obj
    */
-
-
   _proto.compress = function compress(obj) {
     if (!this.schema.doKeyCompression()) return clone(obj);
-    return this._compressObj(obj);
+    return _compressObj(this, obj);
   };
 
   _proto._decompressObj = function _decompressObj(obj) {
-    var _this2 = this;
+    var _this = this;
 
     var reverseTable = this.reverseTable; // non-object
 
     if (typeof obj !== 'object' || obj === null) return obj; // array
 
     if (Array.isArray(obj)) return obj.map(function (item) {
-      return _this2._decompressObj(item);
+      return _this._decompressObj(item);
     }); // object
     else {
         var ret = {};
         Object.keys(obj).forEach(function (key) {
           var replacedKey = key;
           if ((key.startsWith('|') || key.startsWith('_')) && reverseTable[key]) replacedKey = reverseTable[key];
-          ret[replacedKey] = _this2._decompressObj(obj[key]);
+          ret[replacedKey] = _this._decompressObj(obj[key]);
         });
         return ret;
       }
@@ -93,14 +68,14 @@ function () {
    */
 
 
-  _proto._transformKey = function _transformKey(prePath, prePathCompressed, remainPathAr) {
+  _proto.transformKey = function transformKey(prePath, prePathCompressed, remainPathAr) {
     var table = this.table;
     prePath = trimDots(prePath);
     prePathCompressed = trimDots(prePathCompressed);
     var nextPath = remainPathAr.shift();
     var nextFullPath = trimDots(prePath + '.' + nextPath);
     if (table[nextFullPath]) prePathCompressed += '.' + table[nextFullPath];else prePathCompressed += '.' + nextPath;
-    if (remainPathAr.length > 0) return this._transformKey(nextFullPath, prePathCompressed, remainPathAr);else return trimDots(prePathCompressed);
+    if (remainPathAr.length > 0) return this.transformKey(nextFullPath, prePathCompressed, remainPathAr);else return trimDots(prePathCompressed);
   };
   /**
    * replace the keys of a query-obj with the compressed keys
@@ -110,7 +85,7 @@ function () {
 
 
   _proto.compressQuery = function compressQuery(queryJSON) {
-    var _this3 = this;
+    var _this2 = this;
 
     queryJSON = clone(queryJSON);
     if (!this.schema.doKeyCompression()) return queryJSON; // selector
@@ -124,7 +99,7 @@ function () {
         var setObj = value.map(function (obj) {
           var newObj = {};
           Object.keys(obj).forEach(function (k) {
-            var transKey = _this3._transformKey('', '', k.split('.'));
+            var transKey = _this2.transformKey('', '', k.split('.'));
 
             newObj[transKey] = obj[k];
           });
@@ -132,7 +107,7 @@ function () {
         });
         selector[key] = setObj;
       } else {
-        var transKey = _this3._transformKey('', '', key.split('.'));
+        var transKey = _this2.transformKey('', '', key.split('.'));
 
         selector[transKey] = value;
       }
@@ -144,7 +119,7 @@ function () {
         var key = Object.keys(sortObj)[0];
         var value = sortObj[key];
         var ret = {};
-        ret[_this3._transformKey('', '', key.split('.'))] = value;
+        ret[_this2.transformKey('', '', key.split('.'))] = value;
         return ret;
       });
     }
@@ -155,7 +130,7 @@ function () {
   _createClass(KeyCompressor, [{
     key: "table",
     get: function get() {
-      var _this4 = this;
+      var _this3 = this;
 
       if (!this._table) {
         // create new table
@@ -175,11 +150,11 @@ function () {
             var fullPath = key === 'properties' ? path : trimDots(path + '.' + key);
             if (typeof propertyObj === 'object' && // do not add schema-attributes
             !Array.isArray(propertyObj) && // do not use arrays
-            !_this4._table[fullPath] && fullPath !== '' && key.length > 3 && // do not compress short keys
+            !_this3._table[fullPath] && fullPath !== '' && key.length > 3 && // do not compress short keys
             !fullPath.startsWith('_') // _id/_rev etc should never be compressed
-            ) _this4._table[fullPath] = '|' + nextKey(); // primary-key is always compressed to _id
+            ) _this3._table[fullPath] = '|' + nextKey(); // primary-key is always compressed to _id
 
-            if (propertyObj.primary === true) _this4._table[fullPath] = '_id';
+            if (propertyObj.primary === true) _this3._table[fullPath] = '_id';
             if (typeof propertyObj === 'object' && !Array.isArray(propertyObj)) propertiesToTable(fullPath, propertyObj);
           });
         };
@@ -192,7 +167,7 @@ function () {
   }, {
     key: "reverseTable",
     get: function get() {
-      var _this5 = this;
+      var _this4 = this;
 
       if (!this._reverseTable) {
         var table = this.table;
@@ -200,7 +175,7 @@ function () {
         Object.keys(table).forEach(function (key) {
           var value = table[key];
           var fieldName = key.split('.').pop();
-          _this5._reverseTable[value] = fieldName;
+          _this4._reverseTable[value] = fieldName;
         });
       }
 
@@ -210,6 +185,28 @@ function () {
 
   return KeyCompressor;
 }();
+
+function _compressObj(keyCompressor, obj) {
+  var path = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+  var ret = {};
+  if (typeof obj !== 'object' || obj === null) return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map(function (o) {
+      return _compressObj(keyCompressor, o, trimDots(path + '.item'));
+    });
+  }
+
+  Object.keys(obj).forEach(function (key) {
+    var propertyObj = obj[key];
+    var fullPath = trimDots(path + '.' + key);
+    var replacedKey = keyCompressor.table[fullPath] ? keyCompressor.table[fullPath] : key;
+    var nextObj = propertyObj;
+    nextObj = _compressObj(keyCompressor, propertyObj, fullPath);
+    ret[replacedKey] = nextObj;
+  });
+  return ret;
+}
 
 export function create(schema) {
   return new KeyCompressor(schema);

@@ -19,14 +19,14 @@ var validatorsCache = {};
  * @
  */
 
-var _getValidator = function _getValidator() {
-  var schemaPath = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-  var hash = this.hash;
+export function _getValidator(rxSchema) {
+  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  var hash = rxSchema.hash;
   if (!validatorsCache[hash]) validatorsCache[hash] = {};
   var validatorsOfHash = validatorsCache[hash];
 
   if (!validatorsOfHash[schemaPath]) {
-    var schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+    var schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
 
     if (!schemaPart) {
       throw RxError.newRxError('VD1', {
@@ -40,7 +40,7 @@ var _getValidator = function _getValidator() {
   }
 
   return validatorsOfHash[schemaPath];
-};
+}
 /**
  * validates the given object against the schema
  * @param  {any} obj
@@ -49,11 +49,10 @@ var _getValidator = function _getValidator() {
  * @return {any} obj if validation successful
  */
 
-
-var validate = function validate(obj) {
+function validate(obj) {
   var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
-  var useValidator = this._getValidator(schemaPath);
+  var useValidator = _getValidator(this, schemaPath);
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
@@ -64,12 +63,12 @@ var validate = function validate(obj) {
       schema: this.jsonID
     });
   }
-};
+}
 
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   // pre-generate validator-function from the schema
   requestIdleCallbackIfAvailable(function () {
-    return rxSchema._getValidator();
+    return _getValidator(rxSchema);
   });
 };
 
@@ -80,7 +79,6 @@ export var prototypes = {
    * @param {[type]} prototype of RxSchema
    */
   RxSchema: function RxSchema(proto) {
-    proto._getValidator = _getValidator;
     proto.validate = validate;
   }
 };

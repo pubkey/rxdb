@@ -21,16 +21,13 @@ var _util = require("../util");
  * @param {object} from
  */
 function merge(to, from) {
-  var keys = Object.keys(from);
-  var i = keys.length;
-  var key;
-
-  while (i--) {
-    key = keys[i];
-    if ('undefined' === typeof to[key]) to[key] = from[key];else {
+  Object.keys(from).forEach(function (key) {
+    if (typeof to[key] === 'undefined') {
+      to[key] = from[key];
+    } else {
       if (isObject(from[key])) merge(to[key], from[key]);else to[key] = from[key];
     }
-  }
+  });
 }
 /**
  * Same as merge but clones the assigned values.
@@ -41,13 +38,7 @@ function merge(to, from) {
 
 
 function mergeClone(to, from) {
-  var keys = Object.keys(from);
-  var i = keys.length;
-  var key;
-
-  while (i--) {
-    key = keys[i];
-
+  Object.keys(from).forEach(function (key) {
     if ('undefined' === typeof to[key]) {
       // make sure to retain key order here because of a bug handling the $each
       // operator in mongodb 2.4.4
@@ -63,7 +54,7 @@ function mergeClone(to, from) {
         });
       }
     }
-  }
+  });
 }
 /**
  * Determines if `arg` is an object.

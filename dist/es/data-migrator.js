@@ -26,51 +26,15 @@ function () {
     this.name = newestCollection.name;
   }
   /**
-   * get an array with OldCollection-instances from all existing old pouchdb-instance
-   * @return {Promise<OldCollection[]>}
-   */
-
-
-  var _proto = DataMigrator.prototype;
-
-  _proto._getOldCollections = function _getOldCollections() {
-    var _this = this;
-
-    return Promise.all(this.currentSchema.previousVersions.map(function (v) {
-      return _this.database._collectionsPouch.get(_this.name + '-' + v);
-    }).map(function (fun) {
-      return fun["catch"](function () {
-        return null;
-      });
-    }) // auto-catch so Promise.all continues
-    ).then(function (oldColDocs) {
-      return oldColDocs.filter(function (colDoc) {
-        return colDoc !== null;
-      }).map(function (colDoc) {
-        return new OldCollection(colDoc.schema.version, colDoc.schema, _this);
-      });
-    });
-  };
-  /**
-   * returns true if a migration is needed
-   * @return {Promise<boolean>}
-   */
-
-
-  _proto._mustMigrate = function _mustMigrate() {
-    if (this.currentSchema.version === 0) return Promise.resolve(false);
-    return this._getOldCollections().then(function (oldCols) {
-      if (oldCols.length === 0) return false;else return true;
-    });
-  };
-  /**
    * @param {number} [batchSize=10] amount of documents handled in parallel
    * @return {Observable} emits the migration-state
    */
 
 
+  var _proto = DataMigrator.prototype;
+
   _proto.migrate = function migrate() {
-    var _this2 = this;
+    var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     if (this._migrated) throw RxError.newRxError('DM1');
@@ -106,7 +70,7 @@ function () {
           switch (_context2.prev = _context2.next) {
             case 0:
               _context2.next = 2;
-              return _this2._getOldCollections();
+              return _getOldCollections(_this);
 
             case 2:
               oldCols = _context2.sent;
@@ -194,9 +158,9 @@ function () {
     var _migratePromise = _asyncToGenerator(
     /*#__PURE__*/
     _regeneratorRuntime.mark(function _callee2(batchSize) {
-      var _this3 = this;
+      var _this2 = this;
 
-      var mustMigrate;
+      var must;
       return _regeneratorRuntime.wrap(function _callee2$(_context3) {
         while (1) {
           switch (_context3.prev = _context3.next) {
@@ -207,12 +171,12 @@ function () {
               }
 
               _context3.next = 3;
-              return this._mustMigrate();
+              return mustMigrate(this);
 
             case 3:
-              mustMigrate = _context3.sent;
+              must = _context3.sent;
 
-              if (mustMigrate) {
+              if (must) {
                 _context3.next = 6;
                 break;
               }
@@ -221,7 +185,7 @@ function () {
 
             case 6:
               this._migratePromise = new Promise(function (res, rej) {
-                var state$ = _this3.migrate(batchSize);
+                var state$ = _this2.migrate(batchSize);
 
                 state$.subscribe(null, rej, res);
               });
@@ -266,11 +230,11 @@ function () {
   };
 
   _proto2.getBatch = function getBatch(batchSize) {
-    var _this4 = this;
+    var _this3 = this;
 
     return PouchDB.getBatch(this.pouchdb, batchSize).then(function (docs) {
       return docs.map(function (doc) {
-        return _this4._handleFromPouch(doc);
+        return _this3._handleFromPouch(doc);
       });
     });
   };
@@ -463,10 +427,10 @@ function () {
 
 
   _proto2["delete"] = function _delete() {
-    var _this5 = this;
+    var _this4 = this;
 
     return this.pouchdb.destroy().then(function () {
-      return _this5.database.removeCollectionDoc(_this5.dataMigrator.name, _this5.schema);
+      return _this4.database.removeCollectionDoc(_this4.dataMigrator.name, _this4.schema);
     });
   };
   /**
@@ -475,7 +439,7 @@ function () {
 
 
   _proto2.migrate = function migrate() {
-    var _this6 = this;
+    var _this5 = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     if (this._migrate) throw RxError.newRxError('DM3');
@@ -495,7 +459,7 @@ function () {
           switch (_context6.prev = _context6.next) {
             case 0:
               _context6.next = 2;
-              return _this6.getBatch(batchSize);
+              return _this5.getBatch(batchSize);
 
             case 2:
               batch = _context6.sent;
@@ -503,7 +467,7 @@ function () {
             case 3:
               _context6.next = 5;
               return Promise.all(batch.map(function (doc) {
-                return _this6._migrateDocument(doc).then(function (action) {
+                return _this5._migrateDocument(doc).then(function (action) {
                   return observer.next(action);
                 });
               }))["catch"](function (e) {
@@ -521,7 +485,7 @@ function () {
 
             case 8:
               _context6.next = 10;
-              return _this6.getBatch(batchSize);
+              return _this5.getBatch(batchSize);
 
             case 10:
               batch = _context6.sent;
@@ -534,7 +498,7 @@ function () {
 
             case 12:
               _context6.next = 14;
-              return _this6["delete"]();
+              return _this5["delete"]();
 
             case 14:
               observer.complete();
@@ -551,11 +515,11 @@ function () {
   };
 
   _proto2.migratePromise = function migratePromise(batchSize) {
-    var _this7 = this;
+    var _this6 = this;
 
     if (!this._migratePromise) {
       this._migratePromise = new Promise(function (res, rej) {
-        var state$ = _this7.migrate(batchSize);
+        var state$ = _this6.migrate(batchSize);
 
         state$.subscribe(null, rej, res);
       });
@@ -599,7 +563,39 @@ function () {
 
   return OldCollection;
 }();
+/**
+ * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * @return {Promise<OldCollection[]>}
+ */
 
+
+export function _getOldCollections(dataMigrator) {
+  return Promise.all(dataMigrator.currentSchema.previousVersions.map(function (v) {
+    return dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v);
+  }).map(function (fun) {
+    return fun["catch"](function () {
+      return null;
+    });
+  }) // auto-catch so Promise.all continues
+  ).then(function (oldColDocs) {
+    return oldColDocs.filter(function (colDoc) {
+      return colDoc !== null;
+    }).map(function (colDoc) {
+      return new OldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
+    });
+  });
+}
+/**
+ * returns true if a migration is needed
+ * @return {Promise<boolean>}
+ */
+
+export function mustMigrate(dataMigrator) {
+  if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
+  return _getOldCollections(dataMigrator).then(function (oldCols) {
+    if (oldCols.length === 0) return false;else return true;
+  });
+}
 export function create(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
