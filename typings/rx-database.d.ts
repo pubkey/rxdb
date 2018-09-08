@@ -37,7 +37,9 @@ export interface ServerOptions {
     port?: number;
 }
 
-export declare class RxDatabase {
+export type RxDatabase<Collections = { [key: string]: RxCollection }> = RxDatabaseBase<Collections> & Collections;
+
+export declare class RxDatabaseBase<Collections= { [key: string]: RxCollection }> {
     readonly name: string;
     readonly token: string;
     readonly multiInstance: boolean;
@@ -58,9 +60,9 @@ export declare class RxDatabase {
 
     readonly isLeader: boolean;
 
-    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
-    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
-    getLocal(id: string): Promise<RxLocalDocument<RxDatabase>>;
+    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
+    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
+    getLocal(id: string): Promise<RxLocalDocument<RxDatabase<Collections>>>;
 
     server(ServerOptions?): void;
 

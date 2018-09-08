@@ -100,6 +100,28 @@ describe('typings.test.js', () => {
                 `;
                 await transpileCode(code);
             });
+            it('allow to type-define the collections', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        const db: RxDatabase<{
+                            foobar: RxCollection
+                        }> = {} as RxDatabase<{
+                            foobar: RxCollection
+                        }>;
+                        const col: RxCollection = db.foobar;
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('an collection-untyped database should allow all collection-getters', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        const db: RxDatabase = {} as RxDatabase;
+                        const col: RxCollection = db.foobar;
+                    })();
+                `;
+                await transpileCode(code);
+            });
         });
         describe('negative', () => {
             it('should not allow additional parameters', async () => {
@@ -120,6 +142,25 @@ describe('typings.test.js', () => {
                 }
                 assert.ok(thrown);
             });
+            it('an collection-TYPED database should only allow known collection-getters', async() => {
+                const brokenCode = codeBase + `
+                    (async() => {
+                        const db: RxDatabase<{
+                            foobar: RxCollection
+                        }> = {} as RxDatabase;
+                        const col: RxCollection = db.foobar;
+                        const col2: RxCollection = db.foobar2;
+                    })();
+                `;
+                let thrown = false;
+                try {
+                    await transpileCode(brokenCode);
+                } catch (err) {
+                    thrown = true;
+                }
+                assert.ok(thrown);
+            });
+
         });
     });
     describe('collection', () => {

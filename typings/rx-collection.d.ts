@@ -57,7 +57,7 @@ export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDo
 export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
 export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType) => Promise<void>;
 
-export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
+export declare class RxCollection<RxDocumentType = any, OrmMethods = {}> {
     readonly database: RxDatabase;
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
