@@ -31,6 +31,12 @@ export interface RxDatabaseCreator {
     pouchSettings?: PouchSettings;
 }
 
+// options for the server-plugin
+export interface ServerOptions {
+    path?: string;
+    port?: number;
+}
+
 export declare class RxDatabase {
     readonly name: string;
     readonly token: string;
@@ -55,6 +61,8 @@ export declare class RxDatabase {
     insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
     upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
     getLocal(id: string): Promise<RxLocalDocument<RxDatabase>>;
+
+    server(ServerOptions?): void;
 
     /**
      * returns a promise which resolves when the instance becomes leader
