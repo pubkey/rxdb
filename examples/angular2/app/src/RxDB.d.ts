@@ -29,9 +29,11 @@ declare class RxHeroCollection extends RxCollection<RxHeroDocumentType, RxHeroOr
     pouch: any;
 }
 
-export class RxHeroesDatabase extends RxDatabase {
-    hero?: RxHeroCollection;
-}
+export type RxHeroesCollections = {
+    hero: RxHeroCollection;
+};
+
+export type RxHeroesDatabase = RxDatabase<RxHeroesCollections>;
 
 declare let _default: {
     RxHeroCollection,

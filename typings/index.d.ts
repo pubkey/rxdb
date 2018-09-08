@@ -19,7 +19,7 @@ export * from './rx-database';
 
 import {
     RxCollectionCreator,
-    RxCollection as RxCollectionClass
+    RxCollection
 } from './rx-collection';
 export * from './rx-collection';
 
@@ -54,7 +54,7 @@ import {
 export * from './rx-plugin';
 
 
-type createType = (creator: RxDatabaseCreator) => Promise<RxDatabase>;
+type createType = <Collections = { [key: string]: RxCollection }>(creator: RxDatabaseCreator) => Promise<RxDatabase<Collections>>;
 export const create: createType;
 
 type removeDatabaseType = (databaseName: string, adapter: any) => Promise<void>;

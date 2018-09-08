@@ -20,6 +20,7 @@ describe('typings.test.js', () => {
             RxPlugin,
             plugin
         } from '../';
+        import RxDB from '../';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         plugin(PouchMemAdapter);
 
@@ -86,7 +87,7 @@ describe('typings.test.js', () => {
     });
     config.parallel('database', () => {
         describe('positive', () => {
-            it('should create the database', async () => {
+            it('should create the database and use its methods', async () => {
                 const code = codeBase + `
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
@@ -96,6 +97,7 @@ describe('typings.test.js', () => {
                             ignoreDuplicate: false
                         };
                         const myDb: RxDatabase = await create(databaseCreator);
+                        await myDb.waitForLeadership();
                     })();
                 `;
                 await transpileCode(code);
@@ -109,6 +111,7 @@ describe('typings.test.js', () => {
                             foobar: RxCollection
                         }>;
                         const col: RxCollection = db.foobar;
+                        await db.waitForLeadership();
                     })();
                 `;
                 await transpileCode(code);
@@ -118,6 +121,35 @@ describe('typings.test.js', () => {
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
                         const col: RxCollection = db.foobar;
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('an collection-TYPED database should allow to access methods', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        const db: RxDatabase = {} as RxDatabase;
+                        const col: RxCollection = db.foobar;
+                        await db.waitForLeadership();
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('an allow to use a custom extends type', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        type RxHeroesDatabase = RxDatabase<{
+                            hero: RxCollection;
+                        }>;
+
+                        const db: RxHeroesDatabase = await RxDB.create<{
+                            hero: RxCollection;
+                        }>({
+                            name: 'heroes',
+                            adapter: 'memory',
+                        });
+                        const col: RxCollection = db.hero;
+                        await db.destroy();
                     })();
                 `;
                 await transpileCode(code);
