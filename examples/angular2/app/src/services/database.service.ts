@@ -66,7 +66,7 @@ export class DatabaseService {
     static dbPromise: Promise<RxDBTypes.RxHeroesDatabase> = null;
     private async _create(): Promise<RxDBTypes.RxHeroesDatabase> {
         console.log('DatabaseService: creating database..');
-        const db: RxDBTypes.RxHeroesDatabase = await RxDB.create<RxDBTypes.RxHeroesCollections>({
+        const db = await RxDB.create<RxDBTypes.RxHeroesCollections>({
             name: 'heroes',
             adapter: useAdapter,
             queryChangeDetection: true
