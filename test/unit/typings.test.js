@@ -97,7 +97,7 @@ describe('typings.test.js', () => {
                             ignoreDuplicate: false
                         };
                         const myDb: RxDatabase = await create(databaseCreator);
-                        await myDb.waitForLeadership();
+                        await myDb.destroy();
                     })();
                 `;
                 await transpileCode(code);
@@ -111,7 +111,7 @@ describe('typings.test.js', () => {
                             foobar: RxCollection
                         }>;
                         const col: RxCollection = db.foobar;
-                        await db.waitForLeadership();
+                        await db.destroy();
                     })();
                 `;
                 await transpileCode(code);
@@ -130,7 +130,7 @@ describe('typings.test.js', () => {
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
                         const col: RxCollection = db.foobar;
-                        await db.waitForLeadership();
+                        await db.destroy();
                     })();
                 `;
                 await transpileCode(code);
@@ -182,6 +182,7 @@ describe('typings.test.js', () => {
                         }> = {} as RxDatabase;
                         const col: RxCollection = db.foobar;
                         const col2: RxCollection = db.foobar2;
+                        db.destroy();
                     })();
                 `;
                 let thrown = false;
@@ -237,6 +238,7 @@ describe('typings.test.js', () => {
                         });
                         const x: string = myDb.options.foo1;
                         const y: string = myCollection.options.foo2;
+                        myDb.destroy();
                     })();
                 `;
                 await transpileCode(code);
