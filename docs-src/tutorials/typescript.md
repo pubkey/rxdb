@@ -169,4 +169,4 @@ myDatabase.destroy();
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](../contribute.md)
+If you are new to RxDB, you should continue [here](./server.md)

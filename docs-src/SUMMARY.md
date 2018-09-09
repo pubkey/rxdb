@@ -113,6 +113,7 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
+    * [Using the Server Plugin](./tutorials/server.md)
 
 * [Questions & Answers](./questions-answers.md)
 

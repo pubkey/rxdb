@@ -1,14 +1,13 @@
 import assert from 'assert';
 import config from './config';
 import AsyncTestUtil from 'async-test-util';
+import request from 'request-promise-native';
 
 import RxDB from '../../dist/lib/index';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
-
-import PouchDB from '../../dist/lib/pouch-db';
 
 config.parallel('server.test.js', () => {
     if (!config.platform.isNode()) return;
@@ -18,11 +17,6 @@ config.parallel('server.test.js', () => {
     const ServerPlugin = require('../../plugins/server');
     RxDB.plugin(ServerPlugin);
 
-    // we have to clean up after tests so there is no stupid logging
-    // @link https://github.com/pouchdb/pouchdb-server/issues/226
-    const PouchdbAllDbs = require('pouchdb-all-dbs');
-    PouchdbAllDbs(PouchDB);
-
     let lastPort = 3000;
     const nexPort = () => lastPort++;
 
@@ -31,13 +25,22 @@ config.parallel('server.test.js', () => {
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
         await serverCollection.database.server({
+            path: '/db',
             port
         });
+
+
+        // check access to path
+        const colUrl = 'http://localhost:' + port + '/db/human';
+        const gotJson = await request(colUrl);
+        const got = JSON.parse(gotJson);
+        assert.equal(got.doc_count, 1);
+
         const clientCollection = await humansCollection.create(0);
 
         // sync
         clientCollection.sync({
-            remote: 'http://localhost:' + port + '/db/human'
+            remote: colUrl
         });
 
         // insert one doc on each side

@@ -246,8 +246,10 @@ RxDB.plugin(require('rxdb/plugins/adapter-check'));
 
 ### server
 Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data from your electron-node to the browser-window. Or to fast setup a dev-environment.
-**Do never** expose this server to the internet, use a couchdb-instance at production.
 
+See: [Tutorial: Using the RxDB Server-Plugin](./tutorials/server.md)
+
+**Do never** expose this server to the internet, use a couchdb-instance at production.
 
 ```js
 
@@ -255,17 +257,8 @@ Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data
 import RxDBServerModule from 'rxdb/plugins/server';
 RxDB.plugin(RxDBServerModule);
 
-// in node.js we spawn a server from the RxDatabase
-myDatabase.server({
-    path: '/db', // optional, default '/db'
-    port: 3000  // optional, default 3000
-});
-
-
-// at the client's side we replicate one collection with the name 'human'
-await myClientCollection.sync({
-    remote: 'http://localhost:3000/db/human'
-});
+// es5-require
+RxDB.plugin(require('rxdb/plugins/server'));
 ```
 
 --------------------------------------------------------------------------------

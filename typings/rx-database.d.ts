@@ -69,7 +69,11 @@ export declare class RxDatabaseBase<Collections= { [key: string]: RxCollection }
     upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
     getLocal(id: string): Promise<RxLocalDocument<RxDatabase<Collections>>>;
 
-    server(ServerOptions?): void;
+    // from rxdb/plugins/server
+    server(ServerOptions?): {
+        app: any;
+        server: any;
+    };
 
     /**
      * returns a promise which resolves when the instance becomes leader

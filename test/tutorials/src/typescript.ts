@@ -1,9 +1,8 @@
 /**
  * this is the test for the typescript-tutorial
  * IMPORTANT: whenever you change something here,
- * ensure it is also changed in /docs-src/tutorials/typescript
+ * ensure it is also changed in /docs-src/tutorials/typescript.md
  */
-
 
 // import types
 import {
