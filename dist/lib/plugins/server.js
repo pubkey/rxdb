@@ -21,8 +21,17 @@ var _core = _interopRequireDefault(require("../core"));
 
 var _replication = _interopRequireDefault(require("./replication"));
 
+var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
+
 _core["default"].plugin(_replication["default"]);
 
+_core["default"].plugin(_watchForChanges["default"]); // we have to clean up after tests so there is no stupid logging
+// @link https://github.com/pouchdb/pouchdb-server/issues/226
+
+
+var PouchdbAllDbs = require('pouchdb-all-dbs');
+
+PouchdbAllDbs(_pouchDb["default"]);
 var APP_OF_DB = new WeakMap();
 var SERVERS_OF_DB = new WeakMap();
 var DBS_WITH_SERVER = new WeakSet();
@@ -76,7 +85,6 @@ function spawnServer(_ref) {
 
   var app = (0, _express["default"])();
   APP_OF_DB.set(db, app); // tunnel requests so collection-names can be used as paths
-  // TODO do this for all collections that get created afterwards
 
   Object.keys(db.collections).forEach(function (colName) {
     return tunnelCollectionPath(db, path, app, colName);

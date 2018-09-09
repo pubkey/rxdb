@@ -5,6 +5,13 @@ import RxError from '../rx-error';
 import Core from '../core';
 import ReplicationPlugin from './replication';
 Core.plugin(ReplicationPlugin);
+import RxDBWatchForChangesPlugin from './watch-for-changes';
+Core.plugin(RxDBWatchForChangesPlugin); // we have to clean up after tests so there is no stupid logging
+// @link https://github.com/pouchdb/pouchdb-server/issues/226
+
+var PouchdbAllDbs = require('pouchdb-all-dbs');
+
+PouchdbAllDbs(PouchDB);
 var APP_OF_DB = new WeakMap();
 var SERVERS_OF_DB = new WeakMap();
 var DBS_WITH_SERVER = new WeakSet();
@@ -56,7 +63,6 @@ export function spawnServer(_ref) {
   });
   var app = express();
   APP_OF_DB.set(db, app); // tunnel requests so collection-names can be used as paths
-  // TODO do this for all collections that get created afterwards
 
   Object.keys(db.collections).forEach(function (colName) {
     return tunnelCollectionPath(db, path, app, colName);

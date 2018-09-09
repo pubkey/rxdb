@@ -9,7 +9,7 @@ import Core from '../core';
 import RxCollection from '../rx-collection';
 import RxError from '../rx-error';
 import PouchDB from '../pouch-db';
-import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes'; // add pouchdb-replication-plugin
+import RxDBWatchForChangesPlugin from './watch-for-changes'; // add pouchdb-replication-plugin
 
 Core.plugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
 

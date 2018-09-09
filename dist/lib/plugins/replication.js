@@ -23,7 +23,7 @@ var _rxError = _interopRequireDefault(require("../rx-error"));
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
-var _watchForChanges = _interopRequireDefault(require("../plugins/watch-for-changes"));
+var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb

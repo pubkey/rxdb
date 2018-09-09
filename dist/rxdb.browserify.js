@@ -4400,7 +4400,7 @@ var _rxError = _interopRequireDefault(require("../rx-error"));
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
-var _watchForChanges = _interopRequireDefault(require("../plugins/watch-for-changes"));
+var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
 
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
@@ -4595,7 +4595,7 @@ var _default = {
 };
 exports["default"] = _default;
 
-},{"../core":3,"../plugins/watch-for-changes":26,"../pouch-db":27,"../rx-collection":31,"../rx-error":34,"../util":37,"@babel/runtime/helpers/interopRequireDefault":46,"pouchdb-replication":527,"rxjs":554}],23:[function(require,module,exports){
+},{"../core":3,"../pouch-db":27,"../rx-collection":31,"../rx-error":34,"../util":37,"./watch-for-changes":26,"@babel/runtime/helpers/interopRequireDefault":46,"pouchdb-replication":527,"rxjs":554}],23:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
