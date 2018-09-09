@@ -23,7 +23,7 @@ import {
 } from 'rxdb';
 ```
 
-Then you can declare the base-type for your document. The base-type is basically the typescript-representation of the jsonschema of the collection.
+Then you can declare the base-type for your document. The base-type is basically the typescript-representation of the jsonschema of the collection. If you have many collections, you could also generate the base-type with [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript)
 
 
 ```typescript
