@@ -2,6 +2,7 @@ import assert from 'assert';
 import config from './config';
 import AsyncTestUtil from 'async-test-util';
 import request from 'request-promise-native';
+import requestR from 'request';
 
 import RxDB from '../../dist/lib/index';
 import * as humansCollection from '../helper/humans-collection';
@@ -55,6 +56,43 @@ config.parallel('server.test.js', () => {
         });
 
         clientCollection.database.destroy();
+        serverCollection.database.destroy();
+    });
+    it('should send cors when defined', async function() {
+        this.timeout(12 * 1000);
+        const port = nexPort();
+        const serverCollection = await humansCollection.create(0);
+        await serverCollection.database.server({
+            path: '/db',
+            port,
+            cors: true
+        });
+        const colUrl = 'http://localhost:' + port + '/db/human';
+
+
+        const corsKey = 'Access-Control-Allow-Origin'.toLowerCase();
+        await new Promise((res, rej) => {
+            requestR({
+                method: 'GET',
+                url: colUrl
+            }, (error, response) => {
+                if (error) rej(error);
+                const found = Object.entries(response.headers)
+                    .find(([k, v]) => {
+                        if (k.toLowerCase() === corsKey && v === '*') return true;
+                        else return false;
+                    });
+                if (!found) {
+                    rej(
+                        new Error(
+                            'cors headers not set: ' +
+                            JSON.stringify(response.headers, null, 2)
+                        )
+                    );
+                } else res();
+            });
+        });
+
         serverCollection.database.destroy();
     });
     it('should free port when database is destroyed', async () => {

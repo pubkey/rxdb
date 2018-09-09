@@ -67,7 +67,8 @@ Now we can spawn the server.
 ```typescript
 const serverState = db.server({
     path: '/db', // (optional)
-    port: 3000   // (optional)
+    port: 3000,  // (optional)
+    cors: true   // (optional), enable CORS-headers
 });
 ```
 

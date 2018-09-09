@@ -35,6 +35,7 @@ export interface RxDatabaseCreator {
 export interface ServerOptions {
     path?: string;
     port?: number;
+    cors?: boolean;
 }
 
 export type RxDatabase<Collections = { [key: string]: RxCollection }> = RxDatabaseBase<Collections> & Collections;

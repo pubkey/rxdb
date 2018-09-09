@@ -1,5 +1,6 @@
 import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
+import corsFn from 'cors';
 
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';
@@ -50,7 +51,8 @@ function tunnelCollectionPath(db, path, app, colName) {
 
 export function spawnServer({
     path = '/db',
-    port = 3000
+    port = 3000,
+    cors = false
 }) {
     const db = this;
     if (!SERVERS_OF_DB.has(db))
@@ -72,7 +74,15 @@ export function spawnServer({
     // show error if collection is created afterwards
     DBS_WITH_SERVER.add(db);
 
+
+    if (cors) {
+        ['GET', 'HEAD', 'POST', 'PUT', 'DELETE']
+        .map(method => method.toLowerCase())
+            .forEach(method => app[method]('*', corsFn()));
+    }
+
     app.use(path, ExpressPouchDB(pseudo));
+
     const server = app.listen(port);
     SERVERS_OF_DB.get(db).push(server);
 

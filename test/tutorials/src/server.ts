@@ -55,7 +55,8 @@ async function run() {
     // spawn the server
     const serverState = db.server({
         path: '/db',
-        port: 3000
+        port: 3000,
+        cors: true
     });
     console.log('You can now open http://localhost:3000/db');
     // and should see something like '{"express-pouchdb":"Welcome!","version":"4.1.0","pouchdb-adapters":["memory"],"vendor":{"name":"PouchDB authors","version":"4.1.0"},"uuid":"b2de36bf-7d4f-4ad1-89a4-da08ec0de227"}'
