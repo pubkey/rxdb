@@ -39,6 +39,11 @@ export interface ServerOptions {
 
 export type RxDatabase<Collections = { [key: string]: RxCollection }> = RxDatabaseBase<Collections> & Collections;
 
+
+type collectionCreateType =
+    <RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }>
+    (args: RxCollectionCreator) => Promise<RxCollection<RxDocumentType, OrmMethods, StaticMethods>>;
+
 export declare class RxDatabaseBase<Collections= { [key: string]: RxCollection }> {
     readonly name: string;
     readonly token: string;
@@ -52,7 +57,7 @@ export declare class RxDatabaseBase<Collections= { [key: string]: RxCollection }
 
     readonly $: Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
 
-    collection(args: RxCollectionCreator): Promise<RxCollection<any>>;
+    collection: collectionCreateType;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;

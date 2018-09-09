@@ -11,6 +11,7 @@ Breaking:
   - Setters and `save()` are only callable on temporary documents
   - Removed `RxDocument.synced$` and `RxDocument.resync()`
   - Middleware-Hooks now have `plainJson` as first parameter and `RxDocument`-instance as second
+  - Typings have been modified, [see](./docs-src/tutorials/typescript.md)
 
 Features:
   - Added `RxDocument.atomicSet()`

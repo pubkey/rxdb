@@ -1,0 +1,34 @@
+{
+    "compilerOptions": {
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "noImplicitAny": false,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "strictPropertyInitialization": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "moduleResolution": "node",
+        "target": "es5",
+        "lib": [
+            "ES2017",
+            "dom"
+        ]
+    },
+    "formatCodeOptions": {
+        "indentSize": 2,
+        "tabSize": 2
+    },
+    "include": [
+        "src",
+        "test"
+    ],
+    "exclude": [
+        "node_modules",
+        "old",
+        "dist",
+        "tmp",
+        "config"
+    ]
+}

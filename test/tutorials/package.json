@@ -1,0 +1,12 @@
+{
+  "name": "tutorials",
+  "scripts": {
+    "test": "ts-node src/typescript.ts"
+  },
+  "dependencies": {
+    "pouchdb-adapter-memory": "7.0.0",
+    "rxdb": "../../",
+    "ts-node": "7.0.1",
+    "typescript": "3.0.3"
+  }
+}

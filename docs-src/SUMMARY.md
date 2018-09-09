@@ -111,6 +111,9 @@
 
 * [Plugins](./plugins.md)
 
+* Tutorials
+    * [Use RxDB with Typescript](./tutorials/typescript.md)
+
 * [Questions & Answers](./questions-answers.md)
 
 * [Contribute](./contribute.md)

@@ -23,8 +23,14 @@ script:
 - travis_retry npm run test:couchdb
 - npm run test:deps
 - npm run lint
+
+## examples
 - (cd ./examples/angular2 && npm install --depth 0 --silent && npm run build && travis_retry npm run test:build)
 - (cd ./examples/vue && npm install --depth 0 --silent && npm run lint && npm run build && travis_retry npm run test)
 - (cd ./examples/react-native && npm install --depth 0 --silent && travis_retry npm run test)
 #no working on travis because of different chromium-version since  8.9.2018  - (cd ./examples/electron && npm install --depth 0 --silent && travis_retry npm run test)
+
+## tutorials
+- (cd ./test/tutorials/ && npm install --depth 0 --silent && travis_retry npm test)
+
 - npm run build:size

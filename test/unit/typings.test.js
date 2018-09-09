@@ -85,7 +85,7 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
-    config.parallel('database', () => {
+    describe('database', () => {
         describe('positive', () => {
             it('should create the database and use its methods', async () => {
                 const code = codeBase + `
@@ -209,9 +209,35 @@ describe('typings.test.js', () => {
                         });
                         const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
                         const myCollection: RxCollection<any> = await myDb.collection({
-                            name: 'humans',                            schema: mySchema,
+                            name: 'humans',
+                            schema: mySchema,
                             autoMigrate: false,
                         });
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('typed collection should know its static orm methods', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+
+                        type staticMethods = {
+                            countAllDocuments: () => Promise<number>;
+                        }
+                        const myCollection: RxCollection<any, any, staticMethods> = await myDb.collection<any, any, staticMethods>({
+                            name: 'humans',
+                            schema: mySchema,
+                            autoMigrate: false
+                        });
+
+                        await myCollection.countAllDocuments();
                     })();
                 `;
                 await transpileCode(code);
@@ -301,6 +327,28 @@ describe('typings.test.js', () => {
                     thrown = true;
                 }
                 assert.ok(thrown);
+            });
+            it('UNTYPED collection should allow to access any static orm-method', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+
+                        const myCollection = await myDb.collection({
+                            name: 'humans',
+                            schema: mySchema,
+                            autoMigrate: false
+                        });
+
+                        await myCollection.countAllDocuments();
+                    })();
+                `;
+                await transpileCode(code);
             });
         });
     });
