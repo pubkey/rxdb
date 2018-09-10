@@ -554,6 +554,9 @@ export class RxCollection {
             });
         }
 
+        // bind this-scope to hook-function
+        const boundFun = fun.bind(this);
+
         const runName = parallel ? 'parallel' : 'series';
 
         this.hooks[key] = this.hooks[key] || {};
@@ -561,7 +564,7 @@ export class RxCollection {
             series: [],
             parallel: []
         };
-        this.hooks[key][when][runName].push(fun);
+        this.hooks[key][when][runName].push(boundFun);
     }
     getHooks(when, key) {
         try {

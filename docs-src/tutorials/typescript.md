@@ -136,6 +136,17 @@ await myDatabase.collection({
     statics: heroCollectionMethods
 });
 
+// add a preInsert-hook
+myDatabase.heroes.postInsert(
+    function myPostInsertHook(
+        this: HeroCollection, // own collection is bound to the scope
+        docData, // documents data
+        doc // RxDocument
+    ) {
+        console.log('insert to ' + this.name + '-collection: ' + doc.firstName);
+    },
+    false // not async
+);
 
 /**
  * use the database

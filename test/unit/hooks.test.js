@@ -117,6 +117,20 @@ config.parallel('hooks.test.js', () => {
                     assert.equal(doc, null);
                     c.database.destroy();
                 });
+                it('should have the collection bound to the this-scope', async () => {
+                    const c = await humansCollection.createPrimary(0);
+                    c.foo = 'bar';
+                    let hasRun = false;
+                    c.preInsert(function() {
+                        hasRun = true;
+                        assert.equal(this.foo, 'bar');
+                    }, false);
+
+                    await c.insert(schemaObjects.simpleHuman());
+
+                    assert.ok(hasRun);
+                    c.database.destroy();
+                });
             });
             describe('negative', () => {
                 it('should throw if hook invalidates schema', async () => {
@@ -369,6 +383,22 @@ config.parallel('hooks.test.js', () => {
                     }, true);
                     await doc.remove();
                     assert.equal(count, 1);
+                    c.database.destroy();
+                });
+                it('should have the collection bound to the this-scope', async () => {
+                    const c = await humansCollection.createPrimary(1);
+                    c.foo2 = 'bar2';
+                    let hasRun = false;
+
+                    c.postRemove(function() {
+                        hasRun = true;
+                        assert.equal(this.foo2, 'bar2');
+                    }, true);
+
+                    const doc = await c.findOne().exec();
+                    await doc.remove();
+
+                    assert.ok(hasRun);
                     c.database.destroy();
                 });
             });

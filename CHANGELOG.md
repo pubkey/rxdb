@@ -19,6 +19,7 @@ Features:
   - Added `RxCollection.awaitPersistence()` for in-memory-collections
   - Added `RxReplicationState.denied$` [#763](https://github.com/pubkey/rxdb/issues/763)
   - Added option for CORS to server-plugin
+  - `this`-scope of collection-hooks are bound to the collection itself [#788](https://github.com/pubkey/rxdb/issues/788)
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
