@@ -1,4 +1,3 @@
-
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -24,5 +23,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, '../test_tmp'),
         filename: 'webpack.bundle.js'
+    },
+    stats: {
+        warnings: false
     }
 };
