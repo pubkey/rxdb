@@ -272,7 +272,7 @@ export class RxCollection {
 
         this._docCache.set(id, doc);
         this._runHooksSync('post', 'create', json, doc);
-
+        runPluginHooks('postCreateRxDocument', doc);
         return doc;
     }
     /**

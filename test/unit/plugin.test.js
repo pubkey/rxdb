@@ -12,6 +12,11 @@ import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 
+import {
+    clearHook
+} from '../../dist/lib/hooks';
+
+
 config.parallel('plugin.test.js', () => {
     describe('.plugin()', () => {
         it('should not crash when the same plugin is added multiple times', async () => {
@@ -164,54 +169,63 @@ config.parallel('plugin.test.js', () => {
     });
     describe('hooks', () => {
         it('createRxDatabase', async () => {
+
+            const createRxDatabase = (db) => {
+                db.foo = 'bar_createRxDatabase';
+            };
             const plugin = {
                 rxdb: true,
                 hooks: {
-                    createRxDatabase: (db) => {
-                        db.foo = 'bar_createRxDatabase';
-                    }
+                    createRxDatabase
                 }
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
             assert.equal(col.database.foo, 'bar_createRxDatabase');
             col.database.destroy();
+
+            clearHook('createRxDatabase', createRxDatabase);
         });
         it('createRxCollection', async () => {
+            const createRxCollection = (col) => {
+                col.foo = 'bar_createRxCollection';
+            };
             const plugin = {
                 rxdb: true,
                 hooks: {
-                    createRxCollection: (col) => {
-                        col.foo = 'bar_createRxCollection';
-                    }
+                    createRxCollection
                 }
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
             assert.equal(col.foo, 'bar_createRxCollection');
             col.database.destroy();
+            clearHook('createRxCollection', createRxCollection);
         });
         it('createRxSchema', async () => {
+            const createRxSchema = (col) => {
+                col.foo = 'bar_createRxSchema';
+            };
             const plugin = {
                 rxdb: true,
                 hooks: {
-                    createRxSchema: (col) => {
-                        col.foo = 'bar_createRxSchema';
-                    }
+                    createRxSchema
                 }
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
             assert.equal(col.schema.foo, 'bar_createRxSchema');
             col.database.destroy();
+            clearHook('createRxSchema', createRxSchema);
         });
         it('createRxQuery', async () => {
+            const createRxQuery = (col) => {
+                col.foo = 'bar_createRxQuery';
+            };
             const plugin = {
                 rxdb: true,
                 hooks: {
-                    createRxQuery: (col) => {
-                        col.foo = 'bar_createRxQuery';
-                    }
+                    createRxQuery
                 }
             };
             RxDB.plugin(plugin);
@@ -219,14 +233,16 @@ config.parallel('plugin.test.js', () => {
             const query = col.find();
             assert.equal(query.foo, 'bar_createRxQuery');
             col.database.destroy();
+            clearHook('createRxQuery', createRxQuery);
         });
         it('createRxDocument', async () => {
+            const createRxDocument = (col) => {
+                col.foo = 'bar_createRxDocument';
+            };
             const plugin = {
                 rxdb: true,
                 hooks: {
-                    createRxDocument: (col) => {
-                        col.foo = 'bar_createRxDocument';
-                    }
+                    createRxDocument
                 }
             };
             RxDB.plugin(plugin);
@@ -234,18 +250,37 @@ config.parallel('plugin.test.js', () => {
             const doc = await col.findOne().exec();
             assert.equal(doc.foo, 'bar_createRxDocument');
             col.database.destroy();
+            clearHook('createRxDocument', createRxDocument);
+        });
+        it('postCreateRxDocument', async () => {
+            const postCreateRxDocument = (col) => {
+                col.fooPostCreate = 'bar_postCreateRxDocument';
+            };
+            const plugin = {
+                rxdb: true,
+                hooks: {
+                    postCreateRxDocument
+                }
+            };
+            RxDB.plugin(plugin);
+            const col = await humansCollection.create(5);
+            const doc = await col.findOne().exec();
+            assert.equal(doc.fooPostCreate, 'bar_postCreateRxDocument');
+            col.database.destroy();
+            clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('preCreatePouchDb', async () => {
+            const preCreatePouchDb = pouchDbParameters => {
+                if (pouchDbParameters.location.includes(collectionName)) {
+                    // only do sth at this specific collection-pouch
+                    pouchDbParameters.location = pouchDbParameters.location + 'foobar';
+                }
+            };
             const collectionName = util.randomCouchString(10);
             const plugin = {
                 rxdb: true,
                 hooks: {
-                    preCreatePouchDb: pouchDbParameters => {
-                        if (pouchDbParameters.location.includes(collectionName)) {
-                            // only do sth at this specific collection-pouch
-                            pouchDbParameters.location = pouchDbParameters.location + 'foobar';
-                        }
-                    }
+                    preCreatePouchDb
                 }
             };
             RxDB.plugin(plugin);
@@ -256,6 +291,7 @@ config.parallel('plugin.test.js', () => {
             const info = await pouchInstance.info();
             assert.ok(info.db_name.includes('foobar'));
             col.database.destroy();
+            clearHook('preCreatePouchDb', preCreatePouchDb);
         });
     });
 });

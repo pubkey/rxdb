@@ -12,6 +12,7 @@ Breaking:
   - Removed `RxDocument.synced$` and `RxDocument.resync()`
   - Middleware-Hooks now have `plainJson` as first parameter and `RxDocument`-instance as second
   - Typings have been modified, [see](./docs-src/tutorials/typescript.md)
+  - `postCreateRxDocument`-hooks will not be awaited if they are async
 
 Features:
   - Added `RxDocument.atomicSet()`
