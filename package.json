@@ -130,7 +130,7 @@
     "karma-browserify": "5.3.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.2",
-    "karma-detect-browsers": "2.3.2",
+    "karma-detect-browsers": "2.3.3",
     "karma-edge-launcher": "0.4.2",
     "karma-firefox-launcher": "1.1.0",
     "karma-ie-launcher": "1.0.0",
@@ -165,7 +165,7 @@
     "walk-sync": "0.3.3",
     "watch": "1.0.2",
     "watchify": "3.11.0",
-    "webpack": "4.17.2",
+    "webpack": "4.18.0",
     "webpack-bundle-analyzer": "2.13.1",
     "webpack-cli": "3.1.0"
   },
