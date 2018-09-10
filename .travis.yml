@@ -13,6 +13,15 @@ before_install:
   - sh -e /etc/init.d/xvfb start
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
+stages:
+  - install
+  - build
+  - unit tests
+  - code format
+  - examples
+  - docs
+  - other
+
 jobs:
   include:
     - stage: install

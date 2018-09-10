@@ -1,5 +1,6 @@
 import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
+import corsFn from 'cors';
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';
 import Core from '../core';
@@ -54,7 +55,9 @@ export function spawnServer(_ref) {
   var _ref$path = _ref.path,
       path = _ref$path === void 0 ? '/db' : _ref$path,
       _ref$port = _ref.port,
-      port = _ref$port === void 0 ? 3000 : _ref$port;
+      port = _ref$port === void 0 ? 3000 : _ref$port,
+      _ref$cors = _ref.cors,
+      cors = _ref$cors === void 0 ? false : _ref$cors;
   var db = this;
   if (!SERVERS_OF_DB.has(db)) SERVERS_OF_DB.set(db, []);
   var pseudo = PouchDB.defaults({
@@ -69,6 +72,15 @@ export function spawnServer(_ref) {
   }); // show error if collection is created afterwards
 
   DBS_WITH_SERVER.add(db);
+
+  if (cors) {
+    ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'].map(function (method) {
+      return method.toLowerCase();
+    }).forEach(function (method) {
+      return app[method]('*', corsFn());
+    });
+  }
+
   app.use(path, ExpressPouchDB(pseudo));
   var server = app.listen(port);
   SERVERS_OF_DB.get(db).push(server);

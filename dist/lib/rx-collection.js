@@ -349,6 +349,7 @@ function () {
 
     this._runHooksSync('post', 'create', json, doc);
 
+    (0, _hooks.runPluginHooks)('postCreateRxDocument', doc);
     return doc;
   };
   /**
@@ -622,15 +623,17 @@ function () {
         key: key,
         parallel: parallel
       });
-    }
+    } // bind this-scope to hook-function
 
+
+    var boundFun = fun.bind(this);
     var runName = parallel ? 'parallel' : 'series';
     this.hooks[key] = this.hooks[key] || {};
     this.hooks[key][when] = this.hooks[key][when] || {
       series: [],
       parallel: []
     };
-    this.hooks[key][when][runName].push(fun);
+    this.hooks[key][when][runName].push(boundFun);
   };
 
   _proto.getHooks = function getHooks(when, key) {

@@ -1006,6 +1006,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
+exports.clearHook = clearHook;
 exports["default"] = exports.HOOKS = void 0;
 
 /**
@@ -1033,6 +1034,13 @@ var HOOKS = {
   createRxSchema: [],
   createRxQuery: [],
   createRxDocument: [],
+
+  /**
+   * runs after a RxDocument is created,
+   * cannot be async
+   * @type {Array}
+   */
+  postCreateRxDocument: [],
 
   /**
    * runs before a pouchdb-instance is created
@@ -1084,6 +1092,16 @@ function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
   }));
+}
+/**
+ * used in tests to remove hooks
+ */
+
+
+function clearHook(type, fun) {
+  HOOKS[type] = HOOKS[type].filter(function (h) {
+    return h !== fun;
+  });
 }
 
 var _default = {
@@ -6210,6 +6228,7 @@ function () {
 
     this._runHooksSync('post', 'create', json, doc);
 
+    (0, _hooks.runPluginHooks)('postCreateRxDocument', doc);
     return doc;
   };
   /**
@@ -6483,15 +6502,17 @@ function () {
         key: key,
         parallel: parallel
       });
-    }
+    } // bind this-scope to hook-function
 
+
+    var boundFun = fun.bind(this);
     var runName = parallel ? 'parallel' : 'series';
     this.hooks[key] = this.hooks[key] || {};
     this.hooks[key][when] = this.hooks[key][when] || {
       series: [],
       parallel: []
     };
-    this.hooks[key][when][runName].push(fun);
+    this.hooks[key][when][runName].push(boundFun);
   };
 
   _proto.getHooks = function getHooks(when, key) {
