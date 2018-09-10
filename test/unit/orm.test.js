@@ -158,6 +158,36 @@ config.parallel('orm.test.js', () => {
                     });
                     db.destroy();
                 });
+                it('this-scope should be bound to document', async () => {
+                    const db = await RxDB.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const col = await db.collection({
+                        name: 'humans',
+                        schema: schemas.human,
+                        methods: {
+                            myMethod: function() {
+                                return 'test:' + this.firstName;
+                            }
+                        }
+                    });
+
+                    // add one to ensure it does not overwrite
+                    await col.insert(schemaObjects.human());
+
+                    const docData = schemaObjects.human();
+                    docData.firstName = 'foobar';
+                    const doc = await col.insert(docData);
+
+                    // add another one to ensure it does not overwrite
+                    await col.insert(schemaObjects.human());
+
+                    const val = doc.myMethod();
+                    assert.equal(val, 'test:foobar');
+
+                    db.destroy();
+                });
             });
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
