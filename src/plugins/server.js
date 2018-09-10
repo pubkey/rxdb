@@ -76,7 +76,7 @@ export function spawnServer({
 
 
     if (cors) {
-        ['GET', 'HEAD', 'POST', 'PUT', 'DELETE']
+        ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS']
         .map(method => method.toLowerCase())
             .forEach(method => app[method]('*', corsFn()));
     }
