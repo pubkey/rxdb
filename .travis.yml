@@ -19,9 +19,9 @@ stages:
   - build
   - unit tests
   - code format
-  - examples
   - docs
   - other
+  - examples
 
 jobs:
   include:
