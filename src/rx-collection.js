@@ -123,11 +123,23 @@ export class RxCollection {
                 const props = Object.getOwnPropertyNames(obj);
                 props.forEach(key => {
                     const desc = Object.getOwnPropertyDescriptor(obj, key);
-                    desc.enumerable = false;
-                    desc.configurable = false;
-                    if (desc.writable)
-                        desc.writable = false;
-                    Object.defineProperty(proto, key, desc);
+                    if (typeof desc.value === 'function') {
+                        // when getting a function, we automatically do a .bind(this)
+                        Object.defineProperty(proto, key, {
+                            get() {
+                                return desc.value.bind(this);
+                            },
+                            enumerable: false,
+                            configurable: false
+                        });
+
+                    } else {
+                        desc.enumerable = false;
+                        desc.configurable = false;
+                        if (desc.writable)
+                            desc.writable = false;
+                        Object.defineProperty(proto, key, desc);
+                    }
                 });
             });
 
