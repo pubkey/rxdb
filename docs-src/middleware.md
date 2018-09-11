@@ -35,7 +35,9 @@ Here are some other ideas:
 - notifications
 
 ## Usage
-All hooks have the plain data as first parameter and the `RxDocument`-instance as second parameter. If you want to modify the data in the hook, change attributes of the first parameter.
+All hooks have the plain data as first parameter, and all but `preInsert` also have the `RxDocument`-instance as second parameter. If you want to modify the data in the hook, change attributes of the first parameter.
+
+All hook functions are also `this`-bind to the `RxCollection`-instance.
 
 ### Insert
 An insert-hook receives the data-object of the new document.
