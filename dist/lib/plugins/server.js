@@ -97,7 +97,7 @@ function spawnServer(_ref) {
   DBS_WITH_SERVER.add(db);
 
   if (cors) {
-    ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'].map(function (method) {
+    ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'].map(function (method) {
       return method.toLowerCase();
     }).forEach(function (method) {
       return app[method]('*', (0, _cors["default"])());

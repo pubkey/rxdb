@@ -102,10 +102,22 @@ function () {
         var props = Object.getOwnPropertyNames(obj);
         props.forEach(function (key) {
           var desc = Object.getOwnPropertyDescriptor(obj, key);
-          desc.enumerable = false;
-          desc.configurable = false;
-          if (desc.writable) desc.writable = false;
-          Object.defineProperty(proto, key, desc);
+
+          if (typeof desc.value === 'function') {
+            // when getting a function, we automatically do a .bind(this)
+            Object.defineProperty(proto, key, {
+              get: function get() {
+                return desc.value.bind(this);
+              },
+              enumerable: false,
+              configurable: false
+            });
+          } else {
+            desc.enumerable = false;
+            desc.configurable = false;
+            if (desc.writable) desc.writable = false;
+            Object.defineProperty(proto, key, desc);
+          }
         });
       });
       this._getDocumentPrototype = proto;
