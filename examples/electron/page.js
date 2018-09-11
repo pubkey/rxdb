@@ -1,7 +1,7 @@
 const electron = require('electron');
 const renderTest = require('./test/render.test.js');
 
-const RxDB = require('../../');
+const RxDB = require('rxdb');
 require('babel-polyfill');
 RxDB.plugin(require('pouchdb-adapter-websql'));
 RxDB.plugin(require('pouchdb-adapter-http'));
