@@ -316,6 +316,10 @@ export class RxCollection {
         return docsJSON.map(json => this._createDocument(json));
     }
 
+    get length () {
+        return this.length;
+    }
+
     /**
      * returns observable
      */
