@@ -64,6 +64,9 @@ export class RxCollection {
         this._repStates = [];
         this.pouch = null; // this is needed to preserve this name
 
+        // not initialized.
+        this.length = -1;
+
         // set HOOKS-functions dynamically
         HOOKS_KEYS.forEach(key => {
             HOOKS_WHEN.map(when => {
@@ -119,8 +122,26 @@ export class RxCollection {
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
+                // console.info(cE);
+                const { data: { op } } = cE;
+                switch (op) {
+                    case 'INSERT':
+                        this.length += 1;
+                        break;
+
+                    case 'REMOVE':
+                        if (this.length < 1) break;
+                        this.length -= 1;
+                        break;
+                }
             })
         );
+
+
+        // update initial length -> starts at 0
+        this.pouch.allDocs().then(entries => {
+            this.length = entries ? entries.rows.length : 0;
+        });
     }
 
     get _keyCompressor() {

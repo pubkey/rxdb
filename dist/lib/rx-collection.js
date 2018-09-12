@@ -83,7 +83,9 @@ function () {
     this._subs = [];
     this._repStates = [];
     this.pouch = null; // this is needed to preserve this name
-    // set HOOKS-functions dynamically
+    // not initialized.
+
+    this.length = -1; // set HOOKS-functions dynamically
 
     HOOKS_KEYS.forEach(function (key) {
       HOOKS_WHEN.map(function (when) {
@@ -146,10 +148,28 @@ function () {
                 // when data changes, send it to RxDocument in docCache
                 var doc = _this2._docCache.get(cE.data.doc);
 
-                if (doc) doc._handleChangeEvent(cE);
-              }));
+                if (doc) doc._handleChangeEvent(cE); // console.info(cE);
 
-            case 10:
+                var op = cE.data.op;
+
+                switch (op) {
+                  case 'INSERT':
+                    _this2.length += 1;
+                    break;
+
+                  case 'REMOVE':
+                    if (_this2.length < 1) break;
+                    _this2.length -= 1;
+                    break;
+                }
+              })); // update initial length -> starts at 0
+
+
+              this.pouch.allDocs().then(function (entries) {
+                _this2.length = entries ? entries.rows.length : 0;
+              });
+
+            case 11:
             case "end":
               return _context.stop();
           }
