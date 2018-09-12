@@ -89,7 +89,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@babel/types": "7.0.0-beta.52",
+    "@babel/types": "7.0.0",
     "@types/core-js": "2.5.0",
     "@types/pouchdb-adapter-memory": "6.1.2",
     "assert": "1.4.1",
