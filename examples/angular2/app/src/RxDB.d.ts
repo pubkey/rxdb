@@ -19,21 +19,22 @@ declare interface RxHeroDocumentType {
 }
 
 // ORM methods
-type RxHeroOrmMethods = {
+type RxHeroDocMethods = {
     hpPercent(): number;
 };
 
-export type RxHeroDocument = RxDocument<RxHeroDocumentType, RxHeroOrmMethods>;
+export type RxHeroDocument = RxDocument<RxHeroDocumentType, RxHeroDocMethods>;
 
-declare class RxHeroCollection extends RxCollection<RxHeroDocumentType, RxHeroOrmMethods> {
-    pouch: any;
-}
+export type RxHeroCollection = RxCollection<RxHeroDocumentType, RxHeroDocMethods, {}>;
 
-export class RxHeroesDatabase extends RxDatabase {
-    hero?: RxHeroCollection;
-}
+export type RxHeroesCollections = {
+    hero: RxHeroCollection;
+};
+
+export type RxHeroesDatabase = RxDatabase<RxHeroesCollections>;
 
 declare let _default: {
+    RxHeroDocument,
     RxHeroCollection,
     RxHeroesDatabase
 };

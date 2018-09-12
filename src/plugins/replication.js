@@ -9,24 +9,23 @@ import {
     Subject,
     fromEvent
 } from 'rxjs';
-import {
-    map,
-} from 'rxjs/operators';
 
 import {
     promiseWait,
     clone,
-    pouchReplicationFunction,
-    nextTick
+    pouchReplicationFunction
 } from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
-import RxChangeEvent from '../rx-change-event';
 import RxError from '../rx-error';
 import PouchDB from '../pouch-db';
+import RxDBWatchForChangesPlugin from './watch-for-changes';
 
 // add pouchdb-replication-plugin
 Core.plugin(PouchReplicationPlugin);
+
+// add the watch-for-changes-plugin
+Core.plugin(RxDBWatchForChangesPlugin);
 
 const INTERNAL_POUCHDBS = new WeakSet();
 
@@ -53,70 +52,6 @@ export class RxReplicationState {
             });
         });
     }
-    setPouchEventEmitter(evEmitter) {
-        if (this._pouchEventEmitterObject)
-            throw RxError.newRxError('RC1');
-        this._pouchEventEmitterObject = evEmitter;
-
-        // change
-        this._subs.push(
-            fromEvent(evEmitter, 'change')
-            .subscribe(ev => this._subjects.change.next(ev))
-        );
-
-        // denied
-        this._subs.push(
-            fromEvent(evEmitter, 'denied')
-            .subscribe(ev => this._subjects.denied.next(ev))
-        );
-
-        // docs
-        this._subs.push(
-            fromEvent(evEmitter, 'change')
-            .subscribe(ev => {
-                if (
-                    this._subjects.docs.observers.length === 0 ||
-                    ev.direction !== 'pull'
-                ) return;
-
-                ev.change.docs
-                    .filter(doc => doc.language !== 'query') // remove internal docs
-                    .map(doc => this.collection._handleFromPouch(doc)) // do primary-swap and keycompression
-                    .forEach(doc => this._subjects.docs.next(doc));
-            }));
-
-        // error
-        this._subs.push(
-            fromEvent(evEmitter, 'error')
-            .subscribe(ev => this._subjects.error.next(ev))
-        );
-
-        // active
-        this._subs.push(
-            fromEvent(evEmitter, 'active')
-            .subscribe(() => this._subjects.active.next(true))
-        );
-        this._subs.push(
-            fromEvent(evEmitter, 'paused')
-            .subscribe(() => this._subjects.active.next(false))
-        );
-
-        // complete
-        this._subs.push(
-            fromEvent(evEmitter, 'complete')
-            .subscribe(info => {
-
-                /**
-                 * when complete fires, it might be that not all changeEvents
-                 * have passed throught, because of the delay of .wachtForChanges()
-                 * Therefore we have to first ensure that all previous changeEvents have been handled
-                 */
-                const unhandledEvents = Array.from(this.collection._watchForChangesUnhandled);
-
-                Promise.all(unhandledEvents).then(() => this._subjects.complete.next(info));
-            })
-        );
-    }
 
     cancel() {
         if (this._pouchEventEmitterObject)
@@ -125,72 +60,73 @@ export class RxReplicationState {
     }
 }
 
+function setPouchEventEmitter(rxRepState, evEmitter) {
+    if (rxRepState._pouchEventEmitterObject)
+        throw RxError.newRxError('RC1');
+    rxRepState._pouchEventEmitterObject = evEmitter;
+
+    // change
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'change')
+        .subscribe(ev => rxRepState._subjects.change.next(ev))
+    );
+
+    // denied
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'denied')
+        .subscribe(ev => rxRepState._subjects.denied.next(ev))
+    );
+
+    // docs
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'change')
+        .subscribe(ev => {
+            if (
+                rxRepState._subjects.docs.observers.length === 0 ||
+                ev.direction !== 'pull'
+            ) return;
+
+            ev.change.docs
+                .filter(doc => doc.language !== 'query') // remove internal docs
+                .map(doc => rxRepState.collection._handleFromPouch(doc)) // do primary-swap and keycompression
+                .forEach(doc => rxRepState._subjects.docs.next(doc));
+        }));
+
+    // error
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'error')
+        .subscribe(ev => rxRepState._subjects.error.next(ev))
+    );
+
+    // active
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'active')
+        .subscribe(() => rxRepState._subjects.active.next(true))
+    );
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'paused')
+        .subscribe(() => rxRepState._subjects.active.next(false))
+    );
+
+    // complete
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'complete')
+        .subscribe(info => {
+
+            /**
+             * when complete fires, it might be that not all changeEvents
+             * have passed throught, because of the delay of .wachtForChanges()
+             * Therefore we have to first ensure that all previous changeEvents have been handled
+             */
+            const unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
+
+            Promise.all(unhandledEvents).then(() => rxRepState._subjects.complete.next(info));
+        })
+    );
+}
+
 export function createRxReplicationState(collection) {
     return new RxReplicationState(collection);
-}
-
-
-/**
- * waits for external changes to the database
- * and ensures they are emitted to the internal RxChangeEvent-Stream
- */
-export function watchForChanges() {
-    // do not call twice on same collection
-    if (this.synced) return;
-    this.synced = true;
-
-    this._watchForChangesUnhandled = new Set();
-
-    /**
-     * this will grap the changes and publish them to the rx-stream
-     * this is to ensure that changes from 'synced' dbs will be published
-     */
-    const pouch$ =
-        fromEvent(
-            this.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }),
-            'change'
-        ).pipe(
-            map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
-        ).subscribe(change => {
-            const resPromise = _handleSingleChange(this, change);
-
-            // add and remove to the Set so RxReplicationState.complete$ can know when all events where handled
-            this._watchForChangesUnhandled.add(resPromise);
-            resPromise.then(() => {
-                this._watchForChangesUnhandled.delete(resPromise);
-            });
-        });
-    this._subs.push(pouch$);
-}
-
-/**
- * handles a single change-event
- * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
- */
-function _handleSingleChange(collection, change) {
-    if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
-
-    // wait 2 ticks and 20 ms to give the internal event-handling time to run
-    return promiseWait(20)
-        .then(() => nextTick())
-        .then(() => nextTick())
-        .then(() => {
-            const docData = change.doc;
-            // already handled by internal event-stream
-            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-
-            const cE = RxChangeEvent.fromPouchChange(docData, collection);
-
-            collection.$emit(cE);
-            return true;
-        });
 }
 
 export function sync({
@@ -241,7 +177,7 @@ export function sync({
     waitTillRun.then(() => {
         const pouchSync = syncFun(remote, options);
         this.watchForChanges();
-        repState.setPouchEventEmitter(pouchSync);
+        setPouchEventEmitter(repState, pouchSync);
         this._repStates.push(repState);
     });
 
@@ -251,7 +187,6 @@ export function sync({
 export const rxdb = true;
 export const prototypes = {
     RxCollection: (proto) => {
-        proto.watchForChanges = watchForChanges;
         proto.sync = sync;
     }
 };
@@ -269,6 +204,5 @@ export default {
     prototypes,
     overwritable,
     hooks,
-    watchForChanges,
     sync
 };

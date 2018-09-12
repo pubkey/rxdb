@@ -23,11 +23,16 @@ import {
     randomCouchString,
     adapterObject
 } from '../util';
+import Core from '../core';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
 import RxSchema from '../rx-schema';
 import PouchDB from '../pouch-db';
 import RxError from '../rx-error';
+
+// add the watch-for-changes-plugin
+import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
+Core.plugin(RxDBWatchForChangesPlugin);
 
 const collectionCacheMap = new WeakMap();
 const collectionPromiseCacheMap = new WeakMap();

@@ -1,4 +1,6 @@
 import { Observable } from 'rxjs';
+import BroadcastChannel from 'broadcast-channel';
+
 import {
     RxCollectionCreator,
     RxCollection
@@ -29,11 +31,26 @@ export interface RxDatabaseCreator {
     pouchSettings?: PouchSettings;
 }
 
-export declare class RxDatabase {
+// options for the server-plugin
+export interface ServerOptions {
+    path?: string;
+    port?: number;
+    cors?: boolean;
+}
+
+export type RxDatabase<Collections = { [key: string]: RxCollection }> = RxDatabaseBase<Collections> & Collections;
+
+
+type collectionCreateType =
+    <RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }>
+    (args: RxCollectionCreator) => Promise<RxCollection<RxDocumentType, OrmMethods, StaticMethods>>;
+
+export declare class RxDatabaseBase<Collections= { [key: string]: RxCollection }> {
     readonly name: string;
     readonly token: string;
     readonly multiInstance: boolean;
     readonly queryChangeDetection: boolean;
+    readonly broadcastChannel: BroadcastChannel;
     readonly password: string;
     readonly collections: any;
     options?: any;
@@ -41,7 +58,7 @@ export declare class RxDatabase {
 
     readonly $: Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
 
-    collection(args: RxCollectionCreator): Promise<RxCollection<any>>;
+    collection: collectionCreateType;
     destroy(): Promise<boolean>;
     dump(): Promise<any>;
     importDump(json: any): Promise<any>;
@@ -49,9 +66,15 @@ export declare class RxDatabase {
 
     readonly isLeader: boolean;
 
-    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
-    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase>>;
-    getLocal(id: string): Promise<RxLocalDocument<RxDatabase>>;
+    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
+    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
+    getLocal(id: string): Promise<RxLocalDocument<RxDatabase<Collections>>>;
+
+    // from rxdb/plugins/server
+    server(ServerOptions?): {
+        app: any;
+        server: any;
+    };
 
     /**
      * returns a promise which resolves when the instance becomes leader

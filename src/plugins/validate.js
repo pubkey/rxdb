@@ -22,7 +22,7 @@ const validatorsCache = {};
  * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-const _getValidator = function (schemaPath = '') {
+function _getValidator(schemaPath = '') {
     const hash = this.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
@@ -37,7 +37,7 @@ const _getValidator = function (schemaPath = '') {
         validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart);
     }
     return validatorsOfHash[schemaPath];
-};
+}
 
 /**
  * validates the given object against the schema

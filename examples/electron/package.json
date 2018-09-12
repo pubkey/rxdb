@@ -1,6 +1,5 @@
 {
   "name": "rxdb-example-electron",
-  "version": "1.0.0",
   "main": "main.js",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run electron\"",
@@ -11,19 +10,21 @@
   "dependencies": {
     "babel-polyfill": "6.26.0",
     "babel-runtime": "6.26.0",
-    "concurrently": "3.5.1",
-    "electron": "1.8.4",
-    "electron-tabs": "0.9.1",
+    "concurrently": "4.0.1",
+    "electron": "2.0.8",
+    "electron-tabs": "0.9.4",
     "electron-window-manager": "1.0.6",
-    "melanke-watchjs": "1.4.3",
-    "pouchdb-adapter-http": "6.4.3",
-    "pouchdb-adapter-websql": "6.4.3",
-    "pouchdb-replication": "6.4.3",
-    "pouchdb-server": "4.0.0",
-    "rxjs": "5.5.7"
+    "melanke-watchjs": "1.5.0",
+    "pouchdb-adapter-http": "7.0.0",
+    "pouchdb-adapter-websql": "7.0.0",
+    "pouchdb-replication": "7.0.0",
+    "pouchdb-server": "4.1.0",
+    "rxdb": "../../",
+    "rxjs": "6.3.2"
   },
   "devDependencies": {
     "mocha": "5.0.5",
-    "spectron": "3.8.0"
+    "node": "10.10.0",
+    "spectron": "4.0.0"
   }
 }

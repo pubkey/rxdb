@@ -35,6 +35,9 @@ Here are some other ideas:
 - notifications
 
 ## Usage
+All hooks have the plain data as first parameter, and all but `preInsert` also have the `RxDocument`-instance as second parameter. If you want to modify the data in the hook, change attributes of the first parameter.
+
+All hook functions are also `this`-bind to the `RxCollection`-instance.
 
 ### Insert
 An insert-hook receives the data-object of the new document.
@@ -54,22 +57,23 @@ An insert-hook receives the data-object of the new document.
 
 ```js
 // series
-myCollection.preInsert(function(documentData){
-
+myCollection.preInsert(function(plainData){
+    // set age to 50 before saving
+    plainData.age = 50;
 }, false);
 
 // parallel
-myCollection.preInsert(function(documentData){
+myCollection.preInsert(function(plainData){
 
 }, true);
 
 // async
-myCollection.preInsert(function(documentData){
+myCollection.preInsert(function(plainData){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 
 // stop the insert-operation
-myCollection.preInsert(function(documentData){
+myCollection.preInsert(function(plainData){
   throw new Error('stop');
 }, false);
 ```
@@ -78,17 +82,17 @@ myCollection.preInsert(function(documentData){
 
 ```js
 // series
-myCollection.postInsert(function(documentData){
+myCollection.postInsert(function(plainData, rxDocument){
 
 }, false);
 
 // parallel
-myCollection.postInsert(function(documentData){
+myCollection.postInsert(function(plainData, rxDocument){
 
 }, true);
 
 // async
-myCollection.postInsert(function(documentData){
+myCollection.postInsert(function(plainData, rxDocument){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 ```
@@ -111,22 +115,23 @@ A save-hook receives the document which is saved.
 
 ```js
 // series
-myCollection.preSave(function(doc){
-  doc.anyField = 'anyValue';
+myCollection.preSave(function(plainData, rxDocument){
+    // modify anyField before saving
+    plainData.anyField = 'anyValue';
 }, false);
 
 // parallel
-myCollection.preSave(function(doc){
+myCollection.preSave(function(plainData, rxDocument){
 
 }, true);
 
 // async
-myCollection.preSave(function(doc){
+myCollection.preSave(function(plainData, rxDocument){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 
 // stop the save-operation
-myCollection.preSave(function(doc){
+myCollection.preSave(function(plainData, rxDocument){
   throw new Error('stop');
 }, false);
 ```
@@ -135,17 +140,17 @@ myCollection.preSave(function(doc){
 
 ```js
 // series
-myCollection.postSave(function(doc){
+myCollection.postSave(function(plainData, rxDocument){
 
 }, false);
 
 // parallel
-myCollection.postSave(function(doc){
+myCollection.postSave(function(plainData, rxDocument){
 
 }, true);
 
 // async
-myCollection.postSave(function(doc){
+myCollection.postSave(function(plainData, rxDocument){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 ```
@@ -169,22 +174,22 @@ An remove-hook receives the document which is removed.
 
 ```js
 // series
-myCollection.preRemove(function(doc){
+myCollection.preRemove(function(plainData, rxDocument){
 
 }, false);
 
 // parallel
-myCollection.preRemove(function(doc){
+myCollection.preRemove(function(plainData, rxDocument){
 
 }, true);
 
 // async
-myCollection.preRemove(function(doc){
+myCollection.preRemove(function(plainData, rxDocument){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 
 // stop the remove-operation
-myCollection.preRemove(function(doc){
+myCollection.preRemove(function(plainData, rxDocument){
   throw new Error('stop');
 }, false);
 ```
@@ -193,17 +198,17 @@ myCollection.preRemove(function(doc){
 
 ```js
 // series
-myCollection.postRemove(function(doc){
+myCollection.postRemove(function(plainData, rxDocument){
 
 }, false);
 
 // parallel
-myCollection.postRemove(function(doc){
+myCollection.postRemove(function(plainData, rxDocument){
 
 }, true);
 
 // async
-myCollection.postRemove(function(doc){
+myCollection.postRemove(function(plainData, rxDocument){
   return new Promise(res => setTimeout(res, 100));
 }, false);
 ```
@@ -215,8 +220,8 @@ This adds a flexible way to add specify behavior to every document. You can also
 
 
 ```js
-myCollection.postCreate(function(doc){
-    Object.defineProperty(doc, 'myField', {
+myCollection.postCreate(function(plainData, rxDocument){
+    Object.defineProperty(rxDocument, 'myField', {
         get: () => 'foobar',
     });
 });

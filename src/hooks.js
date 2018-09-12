@@ -22,6 +22,12 @@ export const HOOKS = {
     createRxQuery: [],
     createRxDocument: [],
     /**
+     * runs after a RxDocument is created,
+     * cannot be async
+     * @type {Array}
+     */
+    postCreateRxDocument: [],
+    /**
      * runs before a pouchdb-instance is created
      * gets pouchParameters as attribute so you can manipulate them
      * {
@@ -64,6 +70,13 @@ export function runAsyncPluginHooks(hookKey, obj) {
     return Promise.all(
         HOOKS[hookKey].map(fun => fun(obj))
     );
+}
+
+/**
+ * used in tests to remove hooks
+ */
+export function clearHook(type, fun) {
+    HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }
 
 export default {

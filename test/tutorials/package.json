@@ -1,0 +1,21 @@
+{
+  "name": "tutorials",
+  "scripts": {
+    "test:typescript": "ts-node src/typescript.ts",
+    "test:server": "ts-node src/server.ts",
+    "test": "npm run test:typescript && npm run test:server"
+  },
+  "dependencies": {
+    "pouchdb-adapter-memory": "7.0.0",
+    "rxdb": "../../"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.4",
+    "async-test-util": "1.6.1",
+    "node": "10.10.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
+    "ts-node": "7.0.1",
+    "typescript": "3.0.3"
+  }
+}

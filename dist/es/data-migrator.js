@@ -26,39 +26,15 @@ function () {
     this.name = newestCollection.name;
   }
   /**
-   * get an array with OldCollection-instances from all existing old pouchdb-instance
-   * @return {Promise<OldCollection[]>}
-   */
-
-
-  var _proto = DataMigrator.prototype;
-
-  _proto._getOldCollections = function _getOldCollections() {
-    var _this = this;
-
-    return Promise.all(this.currentSchema.previousVersions.map(function (v) {
-      return _this.database._collectionsPouch.get(_this.name + '-' + v);
-    }).map(function (fun) {
-      return fun["catch"](function () {
-        return null;
-      });
-    }) // auto-catch so Promise.all continues
-    ).then(function (oldColDocs) {
-      return oldColDocs.filter(function (colDoc) {
-        return colDoc !== null;
-      }).map(function (colDoc) {
-        return new OldCollection(colDoc.schema.version, colDoc.schema, _this);
-      });
-    });
-  };
-  /**
    * @param {number} [batchSize=10] amount of documents handled in parallel
    * @return {Observable} emits the migration-state
    */
 
 
+  var _proto = DataMigrator.prototype;
+
   _proto.migrate = function migrate() {
-    var _this2 = this;
+    var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     if (this._migrated) throw RxError.newRxError('DM1');
@@ -94,7 +70,7 @@ function () {
           switch (_context2.prev = _context2.next) {
             case 0:
               _context2.next = 2;
-              return _this2._getOldCollections();
+              return _getOldCollections(_this);
 
             case 2:
               oldCols = _context2.sent;
@@ -176,19 +152,59 @@ function () {
     return observer.asObservable();
   };
 
-  _proto.migratePromise = function migratePromise(batchSize) {
-    var _this3 = this;
+  _proto.migratePromise =
+  /*#__PURE__*/
+  function () {
+    var _migratePromise = _asyncToGenerator(
+    /*#__PURE__*/
+    _regeneratorRuntime.mark(function _callee2(batchSize) {
+      var _this2 = this;
 
-    if (!this._migratePromise) {
-      this._migratePromise = new Promise(function (res, rej) {
-        var state$ = _this3.migrate(batchSize);
+      var must;
+      return _regeneratorRuntime.wrap(function _callee2$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              if (this._migratePromise) {
+                _context3.next = 7;
+                break;
+              }
 
-        state$.subscribe(null, rej, res);
-      });
-    }
+              _context3.next = 3;
+              return mustMigrate(this);
 
-    return this._migratePromise;
-  };
+            case 3:
+              must = _context3.sent;
+
+              if (must) {
+                _context3.next = 6;
+                break;
+              }
+
+              return _context3.abrupt("return", Promise.resolve(false));
+
+            case 6:
+              this._migratePromise = new Promise(function (res, rej) {
+                var state$ = _this2.migrate(batchSize);
+
+                state$.subscribe(null, rej, res);
+              });
+
+            case 7:
+              return _context3.abrupt("return", this._migratePromise);
+
+            case 8:
+            case "end":
+              return _context3.stop();
+          }
+        }
+      }, _callee2, this);
+    }));
+
+    return function migratePromise(_x) {
+      return _migratePromise.apply(this, arguments);
+    };
+  }();
 
   return DataMigrator;
 }();
@@ -214,11 +230,11 @@ function () {
   };
 
   _proto2.getBatch = function getBatch(batchSize) {
-    var _this4 = this;
+    var _this3 = this;
 
     return PouchDB.getBatch(this.pouchdb, batchSize).then(function (docs) {
       return docs.map(function (doc) {
-        return _this4._handleFromPouch(doc);
+        return _this3._handleFromPouch(doc);
       });
     });
   };
@@ -259,48 +275,48 @@ function () {
   function () {
     var _migrateDocumentData = _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee2(doc) {
+    _regeneratorRuntime.mark(function _callee3(doc) {
       var nextVersion;
-      return _regeneratorRuntime.wrap(function _callee2$(_context3) {
+      return _regeneratorRuntime.wrap(function _callee3$(_context4) {
         while (1) {
-          switch (_context3.prev = _context3.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
               doc = clone(doc);
               nextVersion = this.version + 1; // run throught migrationStrategies
 
             case 2:
               if (!(nextVersion <= this.newestCollection.schema.version)) {
-                _context3.next = 11;
+                _context4.next = 11;
                 break;
               }
 
-              _context3.next = 5;
+              _context4.next = 5;
               return this.dataMigrator.migrationStrategies[nextVersion + ''](doc);
 
             case 5:
-              doc = _context3.sent;
+              doc = _context4.sent;
               nextVersion++;
 
               if (!(doc === null)) {
-                _context3.next = 9;
+                _context4.next = 9;
                 break;
               }
 
-              return _context3.abrupt("return", null);
+              return _context4.abrupt("return", null);
 
             case 9:
-              _context3.next = 2;
+              _context4.next = 2;
               break;
 
             case 11:
-              _context3.prev = 11;
+              _context4.prev = 11;
               this.newestCollection.schema.validate(doc);
-              _context3.next = 18;
+              _context4.next = 18;
               break;
 
             case 15:
-              _context3.prev = 15;
-              _context3.t0 = _context3["catch"](11);
+              _context4.prev = 15;
+              _context4.t0 = _context4["catch"](11);
               throw RxError.newRxError('DM2', {
                 fromVersion: this.version,
                 toVersion: this.newestCollection.schema.version,
@@ -308,17 +324,17 @@ function () {
               });
 
             case 18:
-              return _context3.abrupt("return", doc);
+              return _context4.abrupt("return", doc);
 
             case 19:
             case "end":
-              return _context3.stop();
+              return _context4.stop();
           }
         }
-      }, _callee2, this, [[11, 15]]);
+      }, _callee3, this, [[11, 15]]);
     }));
 
-    return function migrateDocumentData(_x) {
+    return function migrateDocumentData(_x2) {
       return _migrateDocumentData.apply(this, arguments);
     };
   }();
@@ -333,17 +349,17 @@ function () {
   function () {
     var _migrateDocument2 = _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee3(doc) {
+    _regeneratorRuntime.mark(function _callee4(doc) {
       var migrated, action, res;
-      return _regeneratorRuntime.wrap(function _callee3$(_context4) {
+      return _regeneratorRuntime.wrap(function _callee4$(_context5) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
-              _context4.next = 2;
+              _context5.next = 2;
               return this.migrateDocumentData(doc);
 
             case 2:
-              migrated = _context4.sent;
+              migrated = _context5.sent;
               action = {
                 doc: doc,
                 migrated: migrated,
@@ -352,55 +368,55 @@ function () {
               };
 
               if (!migrated) {
-                _context4.next = 16;
+                _context5.next = 16;
                 break;
               }
 
               hooks.runPluginHooks('preMigrateDocument', action); // save to newest collection
 
               delete migrated._rev;
-              _context4.next = 9;
+              _context5.next = 9;
               return this.newestCollection._pouchPut(migrated, true);
 
             case 9:
-              res = _context4.sent;
+              res = _context5.sent;
               action.res = res;
               action.type = 'success';
-              _context4.next = 14;
+              _context5.next = 14;
               return hooks.runAsyncPluginHooks('postMigrateDocument', action);
 
             case 14:
-              _context4.next = 17;
+              _context5.next = 17;
               break;
 
             case 16:
               action.type = 'deleted';
 
             case 17:
-              _context4.prev = 17;
-              _context4.next = 20;
+              _context5.prev = 17;
+              _context5.next = 20;
               return this.pouchdb.remove(this._handleToPouch(doc));
 
             case 20:
-              _context4.next = 24;
+              _context5.next = 24;
               break;
 
             case 22:
-              _context4.prev = 22;
-              _context4.t0 = _context4["catch"](17);
+              _context5.prev = 22;
+              _context5.t0 = _context5["catch"](17);
 
             case 24:
-              return _context4.abrupt("return", action);
+              return _context5.abrupt("return", action);
 
             case 25:
             case "end":
-              return _context4.stop();
+              return _context5.stop();
           }
         }
-      }, _callee3, this, [[17, 22]]);
+      }, _callee4, this, [[17, 22]]);
     }));
 
-    return function _migrateDocument(_x2) {
+    return function _migrateDocument(_x3) {
       return _migrateDocument2.apply(this, arguments);
     };
   }();
@@ -411,10 +427,10 @@ function () {
 
 
   _proto2["delete"] = function _delete() {
-    var _this5 = this;
+    var _this4 = this;
 
     return this.pouchdb.destroy().then(function () {
-      return _this5.database.removeCollectionDoc(_this5.dataMigrator.name, _this5.schema);
+      return _this4.database.removeCollectionDoc(_this4.dataMigrator.name, _this4.schema);
     });
   };
   /**
@@ -423,7 +439,7 @@ function () {
 
 
   _proto2.migrate = function migrate() {
-    var _this6 = this;
+    var _this5 = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     if (this._migrate) throw RxError.newRxError('DM3');
@@ -436,22 +452,22 @@ function () {
 
     _asyncToGenerator(
     /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee4() {
+    _regeneratorRuntime.mark(function _callee5() {
       var batch, error;
-      return _regeneratorRuntime.wrap(function _callee4$(_context5) {
+      return _regeneratorRuntime.wrap(function _callee5$(_context6) {
         while (1) {
-          switch (_context5.prev = _context5.next) {
+          switch (_context6.prev = _context6.next) {
             case 0:
-              _context5.next = 2;
-              return _this6.getBatch(batchSize);
+              _context6.next = 2;
+              return _this5.getBatch(batchSize);
 
             case 2:
-              batch = _context5.sent;
+              batch = _context6.sent;
 
             case 3:
-              _context5.next = 5;
+              _context6.next = 5;
               return Promise.all(batch.map(function (doc) {
-                return _this6._migrateDocument(doc).then(function (action) {
+                return _this5._migrateDocument(doc).then(function (action) {
                   return observer.next(action);
                 });
               }))["catch"](function (e) {
@@ -460,50 +476,50 @@ function () {
 
             case 5:
               if (!error) {
-                _context5.next = 8;
+                _context6.next = 8;
                 break;
               }
 
               observer.error(error);
-              return _context5.abrupt("return");
+              return _context6.abrupt("return");
 
             case 8:
-              _context5.next = 10;
-              return _this6.getBatch(batchSize);
+              _context6.next = 10;
+              return _this5.getBatch(batchSize);
 
             case 10:
-              batch = _context5.sent;
+              batch = _context6.sent;
 
             case 11:
               if (!error && batch.length > 0) {
-                _context5.next = 3;
+                _context6.next = 3;
                 break;
               }
 
             case 12:
-              _context5.next = 14;
-              return _this6["delete"]();
+              _context6.next = 14;
+              return _this5["delete"]();
 
             case 14:
               observer.complete();
 
             case 15:
             case "end":
-              return _context5.stop();
+              return _context6.stop();
           }
         }
-      }, _callee4, this);
+      }, _callee5, this);
     }))();
 
     return observer.asObservable();
   };
 
   _proto2.migratePromise = function migratePromise(batchSize) {
-    var _this7 = this;
+    var _this6 = this;
 
     if (!this._migratePromise) {
       this._migratePromise = new Promise(function (res, rej) {
-        var state$ = _this7.migrate(batchSize);
+        var state$ = _this6.migrate(batchSize);
 
         state$.subscribe(null, rej, res);
       });
@@ -547,7 +563,39 @@ function () {
 
   return OldCollection;
 }();
+/**
+ * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * @return {Promise<OldCollection[]>}
+ */
 
+
+export function _getOldCollections(dataMigrator) {
+  return Promise.all(dataMigrator.currentSchema.previousVersions.map(function (v) {
+    return dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v);
+  }).map(function (fun) {
+    return fun["catch"](function () {
+      return null;
+    });
+  }) // auto-catch so Promise.all continues
+  ).then(function (oldColDocs) {
+    return oldColDocs.filter(function (colDoc) {
+      return colDoc !== null;
+    }).map(function (colDoc) {
+      return new OldCollection(colDoc.schema.version, colDoc.schema, dataMigrator);
+    });
+  });
+}
+/**
+ * returns true if a migration is needed
+ * @return {Promise<boolean>}
+ */
+
+export function mustMigrate(dataMigrator) {
+  if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
+  return _getOldCollections(dataMigrator).then(function (oldCols) {
+    if (oldCols.length === 0) return false;else return true;
+  });
+}
 export function create(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }

@@ -52,7 +52,14 @@ export interface RxCollectionCreator {
     options?: any;
 }
 
-export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
+export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
+export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void>;
+export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
+export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType) => Promise<void>;
+
+export type RxCollection<RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }> = RxCollectionBase<RxDocumentType, OrmMethods> & StaticMethods;
+
+export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     readonly database: RxDatabase;
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
@@ -75,14 +82,13 @@ export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     importDump(exportedJSON: any): Promise<Boolean>;
 
     // HOOKS
-    preInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
+    preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     preSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     preRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-
     postInsert(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postSave(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
-    postCreate(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>): void;
+    postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
     // migration
     migrationNeeded(): Promise<boolean>;
@@ -115,5 +121,3 @@ export declare class RxCollection<RxDocumentType, OrmMethods = {}> {
     destroy(): Promise<boolean>;
     remove(): Promise<any>;
 }
-
-export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (doc: RxDocument<RxDocumentType, OrmMethods>) => void;

@@ -13,11 +13,15 @@ import { Subject, fromEvent as ObservableFromEvent } from 'rxjs';
 import { filter, map, mergeMap, first } from 'rxjs/operators';
 import RxCollection from '../rx-collection';
 import { clone, randomCouchString, adapterObject } from '../util';
+import Core from '../core';
 import Crypter from '../crypter';
 import ChangeEventBuffer from '../change-event-buffer';
 import RxSchema from '../rx-schema';
 import PouchDB from '../pouch-db';
-import RxError from '../rx-error';
+import RxError from '../rx-error'; // add the watch-for-changes-plugin
+
+import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
+Core.plugin(RxDBWatchForChangesPlugin);
 var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {

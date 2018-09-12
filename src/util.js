@@ -95,6 +95,21 @@ export function requestIdlePromise(timeout = null) {
         return Promise.resolve();
 }
 
+
+/**
+ * like Promise.all() but runs in series instead of parallel
+ * @link https://github.com/egoist/promise.series/blob/master/index.js
+ * @param {Function[]} tasks array with functions that return a promise
+ * @return {Promise<Array>}
+ */
+export function promiseSeries(tasks, initial) {
+    return tasks
+        .reduce(
+            (current, next) => current.then(next),
+            Promise.resolve(initial)
+        );
+}
+
 /**
  * run the callback if requestIdleCallback available
  * do nothing if not
@@ -356,8 +371,8 @@ export function flattenObject(ob) {
 }
 
 /**
- * 
- * @param {string} revString 
+ *
+ * @param {string} revString
  * @return {number}
  */
 export function getHeightOfRevision(revString) {

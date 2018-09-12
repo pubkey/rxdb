@@ -20,8 +20,18 @@ describe('typings.test.js', () => {
             RxPlugin,
             plugin
         } from '../';
+        import RxDB from '../';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         plugin(PouchMemAdapter);
+
+        type DefaultDocType = {
+            passportId: string;
+            age: number;
+            oneOptional?: string;
+        };
+        type DefaultOrmMethods = {
+            foobar(): string;
+        };
     `;
     const transpileCode = async (code) => {
         const spawn = require('child-process-promise').spawn;
@@ -75,9 +85,9 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
-    config.parallel('database', () => {
+    describe('database', () => {
         describe('positive', () => {
-            it('should create the database', async () => {
+            it('should create the database and use its methods', async () => {
                 const code = codeBase + `
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
@@ -87,6 +97,59 @@ describe('typings.test.js', () => {
                             ignoreDuplicate: false
                         };
                         const myDb: RxDatabase = await create(databaseCreator);
+                        await myDb.destroy();
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('allow to type-define the collections', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        const db: RxDatabase<{
+                            foobar: RxCollection
+                        }> = {} as RxDatabase<{
+                            foobar: RxCollection
+                        }>;
+                        const col: RxCollection = db.foobar;
+                        await db.destroy();
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('an collection-untyped database should allow all collection-getters', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        const db: RxDatabase = {} as RxDatabase;
+                        const col: RxCollection = db.foobar;
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('an collection-TYPED database should allow to access methods', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        const db: RxDatabase = {} as RxDatabase;
+                        const col: RxCollection = db.foobar;
+                        await db.destroy();
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('an allow to use a custom extends type', async() => {
+                const code = codeBase + `
+                    (async() => {
+                        type RxHeroesDatabase = RxDatabase<{
+                            hero: RxCollection;
+                        }>;
+
+                        const db: RxHeroesDatabase = await RxDB.create<{
+                            hero: RxCollection;
+                        }>({
+                            name: 'heroes',
+                            adapter: 'memory',
+                        });
+                        const col: RxCollection = db.hero;
+                        await db.destroy();
                     })();
                 `;
                 await transpileCode(code);
@@ -111,6 +174,26 @@ describe('typings.test.js', () => {
                 }
                 assert.ok(thrown);
             });
+            it('an collection-TYPED database should only allow known collection-getters', async() => {
+                const brokenCode = codeBase + `
+                    (async() => {
+                        const db: RxDatabase<{
+                            foobar: RxCollection
+                        }> = {} as RxDatabase;
+                        const col: RxCollection = db.foobar;
+                        const col2: RxCollection = db.foobar2;
+                        db.destroy();
+                    })();
+                `;
+                let thrown = false;
+                try {
+                    await transpileCode(brokenCode);
+                } catch (err) {
+                    thrown = true;
+                }
+                assert.ok(thrown);
+            });
+
         });
     });
     describe('collection', () => {
@@ -126,9 +209,35 @@ describe('typings.test.js', () => {
                         });
                         const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
                         const myCollection: RxCollection<any> = await myDb.collection({
-                            name: 'humans',                            schema: mySchema,
+                            name: 'humans',
+                            schema: mySchema,
                             autoMigrate: false,
                         });
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('typed collection should know its static orm methods', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+
+                        type staticMethods = {
+                            countAllDocuments: () => Promise<number>;
+                        }
+                        const myCollection: RxCollection<any, any, staticMethods> = await myDb.collection<any, any, staticMethods>({
+                            name: 'humans',
+                            schema: mySchema,
+                            autoMigrate: false
+                        });
+
+                        await myCollection.countAllDocuments();
                     })();
                 `;
                 await transpileCode(code);
@@ -155,6 +264,7 @@ describe('typings.test.js', () => {
                         });
                         const x: string = myDb.options.foo1;
                         const y: string = myCollection.options.foo2;
+                        myDb.destroy();
                     })();
                 `;
                 await transpileCode(code);
@@ -217,6 +327,28 @@ describe('typings.test.js', () => {
                     thrown = true;
                 }
                 assert.ok(thrown);
+            });
+            it('UNTYPED collection should allow to access any static orm-method', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+
+                        const myCollection = await myDb.collection({
+                            name: 'humans',
+                            schema: mySchema,
+                            autoMigrate: false
+                        });
+
+                        await myCollection.countAllDocuments();
+                    })();
+                `;
+                await transpileCode(code);
             });
         });
     });
@@ -378,17 +510,7 @@ describe('typings.test.js', () => {
                 (async() => {
                     const myDb: any = {};
 
-                    type DocType = {
-                        passportId: string;
-                        age: number;
-                        oneOptional?: string;
-                    };
-
-                    type OrmMethods = {
-                        foobar(): string;
-                    };
-
-                    const myCollection: RxCollection<DocType, OrmMethods> = await myDb.collection({
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
                         name: 'humans',
                         schema: {},
                         methods: {
@@ -405,6 +527,28 @@ describe('typings.test.js', () => {
 
                     const x: string = doc.foobar();
 
+                });
+            `;
+            await transpileCode(code);
+        });
+    });
+    config.parallel('hooks', () => {
+        it('should know the types', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+                    const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
+                        name: 'humans',
+                        schema: {}
+                    });
+                    let myNumber: number;
+                    let myString: string;
+                    myCollection.postInsert((data, doc) => {
+                            myNumber = doc.age;
+                            myNumber = data.age;
+                            myString = doc.foobar();
+                            return Promise.resolve();
+                    }, true);
                 });
             `;
             await transpileCode(code);

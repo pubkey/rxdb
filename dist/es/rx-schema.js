@@ -1,5 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import objectPath from 'object-path';
+import deepEqual from 'deep-equal';
 import { clone, hash, sortObject, trimDots, flattenObject } from './util';
 import RxError from './rx-error';
 import { runPluginHooks } from './hooks';
@@ -44,6 +45,24 @@ function () {
   };
 
   /**
+   * checks if a given change on a document is allowed
+   * Ensures that:
+   * - primary is not modified
+   * - final fields are not modified
+   * @throws {Error} if not valid
+   */
+  _proto.validateChange = function validateChange(dataBefore, dataAfter) {
+    this.finalFields.forEach(function (fieldName) {
+      if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
+        throw RxError.newRxError('DOC9', {
+          dataBefore: dataBefore,
+          dataAfter: dataAfter,
+          fieldName: fieldName
+        });
+      }
+    });
+  };
+  /**
    * validate if the obj matches the schema
    * @overwritten by plugin (required)
    * @param {Object} obj
@@ -51,6 +70,8 @@ function () {
    * @throws {Error} if not valid
    * @param {Object} obj equal to input-obj
    */
+
+
   _proto.validate = function validate() {
     throw RxError.pluginMissing('validate');
   };
@@ -233,7 +254,7 @@ export function hasCrypt(jsonSchema) {
 export function getIndexes(jsonID) {
   var flattened = flattenObject(jsonID);
   var keys = Object.keys(flattened);
-  var indexes = keys // flattenObject returns only ending paths, we need all paths pointing to an object    
+  var indexes = keys // flattenObject returns only ending paths, we need all paths pointing to an object
   .map(function (key) {
     var splitted = key.split('.');
     splitted.pop(); // all but last
@@ -275,14 +296,17 @@ export function getPrimary(jsonID) {
 }
 /**
  * returns the final-fields of the schema
- * @param  {Object} jsonId
+ * @param  {Object} jsonID
  * @return {string[]} field-names of the final-fields
  */
 
-export function getFinalFields(jsonId) {
-  return Object.keys(jsonId.properties).filter(function (key) {
-    return jsonId.properties[key]["final"];
-  });
+export function getFinalFields(jsonID) {
+  var ret = Object.keys(jsonID.properties).filter(function (key) {
+    return jsonID.properties[key]["final"];
+  }); // primary is also final
+
+  ret.push(getPrimary(jsonID));
+  return ret;
 }
 /**
  * orders the schemas attributes by alphabetical order

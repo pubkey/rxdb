@@ -407,16 +407,6 @@ function () {
     return this;
   };
   /**
-   * Returns default options.
-   * @return {Object}
-   */
-
-
-  _proto._optionsForExec = function _optionsForExec() {
-    var options = (0, _util.clone)(this.options);
-    return options;
-  };
-  /**
    * Make sure _path is set.
    *
    * @parmam {String} method

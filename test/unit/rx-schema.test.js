@@ -371,16 +371,30 @@ config.parallel('rx-schema.test.js', () => {
             });
         });
         describe('.getFinalFields()', () => {
-            const ret = RxSchema.getFinalFields({
-                version: 0,
-                properties: {
-                    myField: {
-                        type: 'string',
-                        final: true
+            it('should contain the field', () => {
+                const ret = RxSchema.getFinalFields({
+                    version: 0,
+                    properties: {
+                        myField: {
+                            type: 'string',
+                            final: true
+                        }
                     }
-                }
+                });
+                assert.ok(ret.includes('myField'));
             });
-            assert.deepEqual(ret, ['myField']);
+            it('should contain the primary', async () => {
+                const ret = RxSchema.getFinalFields({
+                    version: 0,
+                    properties: {
+                        myField: {
+                            type: 'string',
+                            primary: true
+                        }
+                    }
+                });
+                assert.deepEqual(ret, ['myField']);
+            });
         });
     });
     describe('instance', () => {
@@ -540,6 +554,45 @@ config.parallel('rx-schema.test.js', () => {
                 });
             });
         });
+        describe('.validateChange()', () => {
+            describe('positive', () => {
+                it('should allow a valid change', async () => {
+                    const schema = RxSchema.create(schemas.human);
+                    const dataBefore = schemaObjects.human();
+                    const dataAfter = clone(dataBefore);
+                    dataAfter.age = 100;
+
+                    schema.validateChange(dataBefore, dataAfter);
+                });
+            });
+            describe('negative', () => {
+                it('should not allow to change the primary', async () => {
+                    const schema = RxSchema.create(schemas.primaryHuman);
+                    const dataBefore = schemaObjects.human();
+                    const dataAfter = clone(dataBefore);
+                    dataAfter.passportId = 'foobar';
+
+                    await AsyncTestUtil.assertThrows(
+                        () => schema.validateChange(dataBefore, dataAfter),
+                        'RxError',
+                        'final'
+                    );
+                });
+                it('should not allow to change a final field', async () => {
+                    const schema = RxSchema.create(schemas.humanFinal);
+                    const dataBefore = schemaObjects.human();
+                    dataBefore.age = 1;
+                    const dataAfter = clone(dataBefore);
+                    dataAfter.age = 100;
+
+                    await AsyncTestUtil.assertThrows(
+                        () => schema.validateChange(dataBefore, dataAfter),
+                        'RxError',
+                        'final'
+                    );
+                });
+            });
+        });
         describe('.getSchemaByObjectPath()', () => {
             describe('positive', () => {
                 it('get firstLevel', async () => {
@@ -559,7 +612,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(schemaObj.type, 'string');
                 });
             });
-            describe('negative', () => { });
+            describe('negative', () => {});
         });
         describe('.fillObjectWithDefaults()', () => {
             describe('positive', () => {
@@ -761,7 +814,10 @@ config.parallel('rx-schema.test.js', () => {
             });
 
             assert.deepEqual(
-                [['properties.name'], ['properties.properties']],
+                [
+                    ['properties.name'],
+                    ['properties.properties']
+                ],
                 collection.schema.indexes
             );
 

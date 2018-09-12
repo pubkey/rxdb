@@ -426,20 +426,14 @@ config.parallel('key-compression.test.js', () => {
         describe('.compress()', async () => {
             it('do not compress', async () => {
                 const col = await humansCollection.createNoCompression(0);
-                const human = schemaObjects.human();
-                const after = col._keyCompressor.compress(human);
-                assert.deepEqual(human, after);
-                assert.ok(typeof after.lastName, 'string');
+                assert.equal(typeof col._keyCompressor, 'undefined');
                 col.database.destroy();
             });
         });
         describe('.decompress()', async () => {
             it('do not compress', async () => {
                 const col = await humansCollection.createNoCompression(0);
-                const human = schemaObjects.human();
-                const after = col._keyCompressor.decompress(human);
-                assert.deepEqual(human, after);
-                assert.ok(typeof after.lastName, 'string');
+                assert.equal(typeof col._keyCompressor, 'undefined');
                 col.database.destroy();
             });
         });

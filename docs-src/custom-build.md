@@ -209,6 +209,27 @@ RxDB.plugin(RxDBUpdateModule);
 RxDB.plugin(require('rxdb/plugins/update'));
 ```
 
+### watch-for-changes
+
+When you write data on the internal pouchdb of a collection, by default the changeEvent will not be emitted to RxDB's changestream.
+The watch-for-changes plugin lets you tell the collection to actively watch for changes on the pouchdb-instance whose origin is not RxDB.
+This plugin is used internally by the replication-plugin and the in-memory-plugin.
+
+```javascript
+// es6-import
+import RxDBWatchForChangesModule from 'rxdb/plugins/watch-for-changes';
+RxDB.plugin(RxDBWatchForChangesModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/watch-for-changes'));
+
+// you can now call this once and then do writes on the pouchdb
+myRxCollection.watchForChanges();
+
+// now write sth on the pouchdb
+myRxCollection.pouch.put({/* ... */});
+```
+
 ### adapter-check
 
 This module add the [checkAdapter](./rx-database.md#checkadapter)-function to RxDB.
@@ -225,8 +246,10 @@ RxDB.plugin(require('rxdb/plugins/adapter-check'));
 
 ### server
 Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data from your electron-node to the browser-window. Or to fast setup a dev-environment.
-**Do never** expose this server to the internet, use a couchdb-instance at production.
 
+See: [Tutorial: Using the RxDB Server-Plugin](./tutorials/server.md)
+
+**Do never** expose this server to the internet, use a couchdb-instance at production.
 
 ```js
 
@@ -234,17 +257,8 @@ Spawns a couchdb-compatible server from a RxDatabase. Use this to replicate data
 import RxDBServerModule from 'rxdb/plugins/server';
 RxDB.plugin(RxDBServerModule);
 
-// in node.js we spawn a server from the RxDatabase
-myDatabase.server({
-    path: '/db', // optional, default '/db'
-    port: 3000  // optional, default 3000
-});
-
-
-// at the client's side we replicate one collection with the name 'human'
-await myClientCollection.sync({
-    remote: 'http://localhost:3000/db/human'
-});
+// es5-require
+RxDB.plugin(require('rxdb/plugins/server'));
 ```
 
 --------------------------------------------------------------------------------

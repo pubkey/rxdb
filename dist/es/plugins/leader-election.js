@@ -11,7 +11,7 @@ function () {
     this.database = database;
     this.isLeader = false;
     this.isDead = false;
-    this.elector = LeaderElection.create(database.socket.bc);
+    this.elector = LeaderElection.create(database.broadcastChannel);
   }
 
   var _proto = LeaderElector.prototype;

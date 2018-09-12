@@ -10,22 +10,31 @@ Breaking:
   - QueryChangeDetection is not enabled in the RxDatabase-options `queryChangeDetection: true`
   - Setters and `save()` are only callable on temporary documents
   - Removed `RxDocument.synced$` and `RxDocument.resync()`
+  - Middleware-Hooks now have `plainJson` as first parameter and `RxDocument`-instance as second
+  - Typings have been modified, [see](./docs-src/tutorials/typescript.md)
+  - `postCreateRxDocument`-hooks will not be awaited if they are async
 
 Features:
   - Added `RxDocument.atomicSet()`
   - Added `RxCollection.awaitPersistence()` for in-memory-collections
   - Added `RxReplicationState.denied$` [#763](https://github.com/pubkey/rxdb/issues/763)
+  - Added option for CORS to server-plugin
+  - `this`-scope of collection-hooks are bound to the collection itself [#788](https://github.com/pubkey/rxdb/issues/788)
+  - All methods of `RxDocument` are bound to the instance [#791](https://github.com/pubkey/rxdb/issues/791)
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
   - inMemory collections don't implement static methods [#744](https://github.com/pubkey/rxdb/issues/744)
   - inMemory collections do not sync up removals [#754](https://github.com/pubkey/rxdb/issues/754)
+  - Ensure `final` fields cannot be changed on `RxDocument.atomicUpdate()` and `RxDocument.update()`
+  - Fixed a missing dependency on the server-plugin
 
 Other:
   - cross-instance communication is now done with https://github.com/pubkey/broadcast-channel (way better performance)
   - Upgrade to eslint 5 (no more babel-eslint)
   - Upgrade to babel7
   - Refactored `plugins/replication/.watchForChanges()` to fix sometimes-breaking-test with `RxReplicationState.complete$`
+  - Split `RxCollection.watchForChanges()` into own plugin
   - Refactored `RxQuery`
 
 

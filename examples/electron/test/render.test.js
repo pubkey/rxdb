@@ -15,8 +15,13 @@ module.exports = (function() {
                 name: 'foobar587' + new Date().getTime(),
                 adapter: 'idb',
                 password: 'myLongAndStupidPassword',
-                multiInstance: false
+                multiInstance: true
             });
+
+            await db.waitForLeadership();
+            if(db.broadcastChannel.method.type !== 'native'){
+                throw new Error('wrong BroadcastChannel-method chosen: ' + db.broadcastChannel.method.type);
+            }
 
             const col = await db.collection({
                 name: 'heroes',

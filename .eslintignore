@@ -1,4 +1,5 @@
 test/playground/*
+test/tutorials
 test_tmp/
 tmp/
 dist/

@@ -21,7 +21,7 @@ function () {
     this.database = database;
     this.isLeader = false;
     this.isDead = false;
-    this.elector = _leaderElection["default"].create(database.socket.bc);
+    this.elector = _leaderElection["default"].create(database.broadcastChannel);
   }
 
   var _proto = LeaderElector.prototype;

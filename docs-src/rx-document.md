@@ -169,6 +169,10 @@ myDocument.name = 'foobar';
 await myDocument.save(); // submit the changes to the storage
 ```
 
+## NOTICE: All methods of RxDocument are bound to the instance
+
+When you get a method from a `RxDocument`, the method is automatically bound to the documents instance. This means you do not have to use things like `myMethod.bind(myDocument)` like you would do in jsx.
+
 
 ### isRxDocument
 Returns true if the given object is an instance of RxDocument. Returns false if not.

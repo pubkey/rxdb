@@ -57,5 +57,6 @@ module.exports = {
     },
     node: {
         fs: 'empty'
-    }
+    },
+    stats: 'none' // disabled to not polute travis-output
 };

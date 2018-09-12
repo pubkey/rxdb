@@ -1,5 +1,6 @@
 language:        node_js
 sudo:            required
+dist: trusty
 os:
   - linux
 node_js:
@@ -12,19 +13,64 @@ before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
-script:
-- travis_retry npm install --depth 0 --silent
-- npm run build
-- travis_retry npm run test:node
-- travis_retry npm run test:fast
-- travis_retry npm run test:browser
-- travis_retry npm run test:performance
-- travis_retry npm run test:typings
-- travis_retry npm run test:couchdb
-- npm run test:deps
-- npm run lint
-- (cd ./examples/angular2 && npm install --depth 0 --silent && npm run build && travis_retry npm run test:build)
-- (cd ./examples/vue && npm install --depth 0 --silent && npm run lint && npm run build && travis_retry npm run test)
-- (cd ./examples/react-native && npm install --depth 0 --silent && travis_retry npm run test)
-- (cd ./examples/electron && npm install --depth 0 --silent && travis_retry npm run test)
-- npm run build:size
+
+stages:
+  - install
+  - build
+  - unit tests
+  - code format
+  - docs
+  - other
+  - examples
+
+jobs:
+  include:
+    - stage: install
+      script: travis_retry npm install --depth 0 --silent
+
+    - stage: build
+      script: npm run build
+    - stage: unit tests
+      script: travis_retry npm run test:node
+      env: LABEL=test:node
+    - stage: unit tests
+      script: travis_retry npm run test:fast
+      env: LABEL=test:fast
+    - stage: unit tests
+      script: travis_retry npm run test:browser
+      env: LABEL=test:browser
+    - stage: unit tests
+      script: travis_retry npm run test:couchdb
+      env: LABEL=test:couchdb
+    - stage: unit tests
+      script: travis_retry npm run test:performance
+      env: LABEL=test:performance
+
+    - stage: code format
+      script: travis_retry npm run test:typings
+      env: LABEL=test:typings
+    - stage: code format
+      script: npm run test:deps
+      env: LABEL=test:deps
+    - stage: code format
+      script: npm run lint
+      env: LABEL=lint
+
+    - stage: docs
+      script: (cd ./test/tutorials/ && npm install > "/dev/null" 2>&1 && travis_retry npm test)
+
+    - stage: other
+      script: npm run build:size
+
+    - stage: examples
+      script: (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
+      env: LABEL=angular
+    - stage: examples
+      script: (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
+      env: LABEL=vue
+    - stage: examples
+      script: (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      env: LABEL=electron
+    - stage: examples
+      script: (cd ./examples/react-native && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      env: LABEL=react-native

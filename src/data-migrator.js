@@ -28,23 +28,6 @@ class DataMigrator {
     }
 
     /**
-     * get an array with OldCollection-instances from all existing old pouchdb-instance
-     * @return {Promise<OldCollection[]>}
-     */
-    _getOldCollections() {
-        return Promise
-            .all(
-                this.currentSchema.previousVersions
-                .map(v => this.database._collectionsPouch.get(this.name + '-' + v))
-                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
-            )
-            .then(oldColDocs => oldColDocs
-                .filter(colDoc => colDoc !== null)
-                .map(colDoc => new OldCollection(colDoc.schema.version, colDoc.schema, this))
-            );
-    }
-
-    /**
      * @param {number} [batchSize=10] amount of documents handled in parallel
      * @return {Observable} emits the migration-state
      */
@@ -70,7 +53,7 @@ class DataMigrator {
          * @link https://github.com/ReactiveX/rxjs/issues/4074
          */
         (async () => {
-            const oldCols = await this._getOldCollections();
+            const oldCols = await _getOldCollections(this);
 
             const countAll = await Promise.all(
                 oldCols.map(oldCol => oldCol.countAllUndeleted())
@@ -113,8 +96,12 @@ class DataMigrator {
         return observer.asObservable();
     }
 
-    migratePromise(batchSize) {
+    async migratePromise(batchSize) {
         if (!this._migratePromise) {
+
+            const must = await mustMigrate(this);
+            if (!must) return Promise.resolve(false);
+
             this._migratePromise = new Promise((res, rej) => {
                 const state$ = this.migrate(batchSize);
                 state$.subscribe(null, rej, res);
@@ -336,6 +323,37 @@ class OldCollection {
     }
 }
 
+
+/**
+ * get an array with OldCollection-instances from all existing old pouchdb-instance
+ * @return {Promise<OldCollection[]>}
+ */
+export function _getOldCollections(dataMigrator) {
+    return Promise
+        .all(
+            dataMigrator.currentSchema.previousVersions
+            .map(v => dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v))
+            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+        )
+        .then(oldColDocs => oldColDocs
+            .filter(colDoc => colDoc !== null)
+            .map(colDoc => new OldCollection(colDoc.schema.version, colDoc.schema, dataMigrator))
+        );
+}
+
+
+/**
+ * returns true if a migration is needed
+ * @return {Promise<boolean>}
+ */
+export function mustMigrate(dataMigrator) {
+    if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
+    return _getOldCollections(dataMigrator)
+        .then(oldCols => {
+            if (oldCols.length === 0) return false;
+            else return true;
+        });
+}
 
 export function create(newestCollection, migrationStrategies) {
     return new DataMigrator(newestCollection, migrationStrategies);

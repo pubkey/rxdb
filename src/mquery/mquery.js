@@ -382,15 +382,6 @@ class MQuery {
     }
 
     /**
-     * Returns default options.
-     * @return {Object}
-     */
-    _optionsForExec() {
-        const options = clone(this.options);
-        return options;
-    }
-
-    /**
      * Make sure _path is set.
      *
      * @parmam {String} method

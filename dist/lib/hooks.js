@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
+exports.clearHook = clearHook;
 exports["default"] = exports.HOOKS = void 0;
 
 /**
@@ -32,6 +33,13 @@ var HOOKS = {
   createRxSchema: [],
   createRxQuery: [],
   createRxDocument: [],
+
+  /**
+   * runs after a RxDocument is created,
+   * cannot be async
+   * @type {Array}
+   */
+  postCreateRxDocument: [],
 
   /**
    * runs before a pouchdb-instance is created
@@ -83,6 +91,16 @@ function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
   }));
+}
+/**
+ * used in tests to remove hooks
+ */
+
+
+function clearHook(type, fun) {
+  HOOKS[type] = HOOKS[type].filter(function (h) {
+    return h !== fun;
+  });
 }
 
 var _default = {

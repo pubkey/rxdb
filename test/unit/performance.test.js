@@ -82,8 +82,8 @@ describe('performance.test.js', () => {
             await Promise.all(
                 new Array(benchmark.spawnDatabases.collections)
                 .fill(0)
-                .map(async () => {
-                    await db.collection({
+                .map(() => {
+                    return db.collection({
                         name: 'human' + util.randomCouchString(10),
                         schema: schemas.averageSchema(),
                         statics: ormMethods
