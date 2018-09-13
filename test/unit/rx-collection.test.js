@@ -59,13 +59,13 @@ config.parallel('rx-collection.test.js', () => {
                     assert.equal(has.length, 1);
                     col.database.destroy();
                 });
-                it('should create compound-indexes (disableKeyCompression)', async () => {
+                it('should create compound-indexes (keyCompression: false)', async () => {
                     const db = await RxDatabase.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const schemaJSON = clone(schemas.compoundIndex);
-                    schemaJSON.disableKeyCompression = true;
+                    schemaJSON.keyCompression = false;
                     const schema = RxSchema.create(schemaJSON);
                     const col = await RxCollection.create({
                         database: db,
@@ -628,7 +628,7 @@ config.parallel('rx-collection.test.js', () => {
                             adapter: 'memory'
                         });
                         const schemaObj = clone(schemas.humanSubIndex);
-                        schemaObj.disableKeyCompression = true;
+                        schemaObj.keyCompression = false;
                         const schema = RxSchema.create(schemaObj);
                         const collection = await RxCollection.create({
                             database: db,

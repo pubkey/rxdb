@@ -276,9 +276,9 @@ export class RxQuery {
      * @return {{selector: {}, sort: []}} compressedQuery
      */
     keyCompress() {
-        if (!this.collection.schema.doKeyCompression())
+        if (!this.collection.schema.doKeyCompression()) {
             return this.toJSON();
-        else {
+        } else {
             if (!this._keyCompress) {
                 this._keyCompress = this
                     .collection

@@ -65,7 +65,7 @@ export declare class RxJsonSchema {
     properties: { [key: string]: RxJsonSchemaTopLevel };
     required?: string[];
     compoundIndexes?: string[] | string[][];
-    disableKeyCompression?: boolean;
+    keyCompression?: boolean;
     additionalProperties?: true;
     attachments?: {
             encrypted?: boolean

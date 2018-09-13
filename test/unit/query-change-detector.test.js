@@ -413,7 +413,7 @@ config.parallel('query-change-detector.test.js', () => {
                 const schema = {
                     version: 0,
                     type: 'object',
-                    disableKeyCompression: true,
+                    keyCompression: false,
                     properties: {
                         id: {
                             type: 'string',

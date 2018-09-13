@@ -96,7 +96,7 @@ const heroSchema: RxJsonSchema = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {

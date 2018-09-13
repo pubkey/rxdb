@@ -120,7 +120,7 @@ export async function createNoCompression(size = 20, name = 'human') {
         ignoreDuplicate: true
     });
     const schemaJSON = clone(schemas.human);
-    schemaJSON.disableKeyCompression = true;
+    schemaJSON.keyCompression = false;
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
         name,

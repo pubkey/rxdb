@@ -84,14 +84,14 @@ console.dir(myDatabase.heroes.name);
 The `version` field is a number, starting with `0`.
 When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.
 
-## disableKeyCompression
+## keyCompression
 
 Since version `8.0.0`, the keyCompression is disabled by default. If you have a huge amount of documents it makes sense to enable the keyCompression and save disk-space.
-Notice that `disableKeyCompression` can only be used on the **top-level** of a schema.
+Notice that `keyCompression` can only be used on the **top-level** of a schema.
 
 ```javascript
 const mySchema = {
-  disableKeyCompression: false, // set this to false to enable the keyCompression
+  keyCompression: true, // set this to true, to enable the keyCompression
   version: 0,
   title: 'human schema no compression',
   type: 'object',
@@ -119,9 +119,9 @@ Index is only allowed on field types `string`, `integer` and `number`
 
 ```js
 const schemaWithIndexes = {
-  disableKeyCompression: true,
   version: 0,
   title: 'human schema no compression',
+  keyCompression: true,
   type: 'object',
   properties: {
       firstName: {
