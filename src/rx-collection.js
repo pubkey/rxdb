@@ -28,19 +28,6 @@ import {
     runPluginHooks
 } from './hooks';
 
-const updateCollectionLength = (op) => {
-    switch (op) {
-        case 'INSERT':
-            this._length += 1;
-            break;
-
-        case 'REMOVE':
-            if (this._length < 1) break;
-            this._length -= 1;
-            break;
-    }
-};
-
 export class RxCollection {
     constructor(
         database,
@@ -103,8 +90,6 @@ export class RxCollection {
         );
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
-        updateCollectionLength.bind(this);
-
         this._subs.push(
             this._observable$
             .pipe(
@@ -114,7 +99,16 @@ export class RxCollection {
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
-                updateCollectionLength(cE.data.op);
+                switch (cE.data.op) {
+                    case 'INSERT':
+                        this._length += 1;
+                        break;
+
+                    case 'REMOVE':
+                        if (this._length < 1) break;
+                        this._length -= 1;
+                        break;
+                }
             })
         );
 

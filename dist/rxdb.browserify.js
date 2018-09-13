@@ -5879,9 +5879,9 @@ exports["default"] = _default;
 },{"./util":37,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45}],31:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -5928,21 +5928,6 @@ var _overwritable = _interopRequireDefault(require("./overwritable"));
 
 var _hooks = require("./hooks");
 
-var _this = void 0;
-
-var updateCollectionLength = function updateCollectionLength(op) {
-  switch (op) {
-    case 'INSERT':
-      _this._length += 1;
-      break;
-
-    case 'REMOVE':
-      if (_this._length < 1) break;
-      _this._length -= 1;
-      break;
-  }
-};
-
 var RxCollection =
 /*#__PURE__*/
 function () {
@@ -5985,7 +5970,7 @@ function () {
   var _proto = RxCollection.prototype;
 
   _proto.prepare = function prepare() {
-    var _this2 = this;
+    var _this = this;
 
     this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
 
@@ -6001,24 +5986,33 @@ function () {
     this._dataMigrator = _dataMigrator["default"].create(this, this._migrationStrategies);
     this._crypter = _crypter["default"].create(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
-      return event.data.col === _this2.name;
+      return event.data.col === _this.name;
     }));
     this._changeEventBuffer = _changeEventBuffer["default"].create(this);
-    updateCollectionLength.bind(this);
 
     this._subs.push(this._observable$.pipe((0, _operators.filter)(function (cE) {
       return !cE.data.isLocal;
     })).subscribe(function (cE) {
       // when data changes, send it to RxDocument in docCache
-      var doc = _this2._docCache.get(cE.data.doc);
+      var doc = _this._docCache.get(cE.data.doc);
 
       if (doc) doc._handleChangeEvent(cE);
-      updateCollectionLength(cE.data.op);
+
+      switch (cE.data.op) {
+        case 'INSERT':
+          _this._length += 1;
+          break;
+
+        case 'REMOVE':
+          if (_this._length < 1) break;
+          _this._length -= 1;
+          break;
+      }
     })); // update initial length -> starts at 0
 
 
     this.pouch.allDocs().then(function (entries) {
-      _this2._length = entries.rows.length || 0;
+      _this._length = entries.rows.length || 0;
     });
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
   };
@@ -6136,7 +6130,7 @@ function () {
     var _pouchPut2 = (0, _asyncToGenerator2["default"])(
     /*#__PURE__*/
     _regenerator["default"].mark(function _callee(obj) {
-      var _this3 = this;
+      var _this2 = this;
 
       var overwrite,
           ret,
@@ -6152,7 +6146,7 @@ function () {
               _context.prev = 3;
               _context.next = 6;
               return this.database.lockedRun(function () {
-                return _this3.pouch.put(obj);
+                return _this2.pouch.put(obj);
               });
 
             case 6:
@@ -6171,7 +6165,7 @@ function () {
 
               _context.next = 14;
               return this.database.lockedRun(function () {
-                return _this3.pouch.get(obj._id);
+                return _this2.pouch.get(obj._id);
               });
 
             case 14:
@@ -6179,7 +6173,7 @@ function () {
               obj._rev = exist._rev;
               _context.next = 18;
               return this.database.lockedRun(function () {
-                return _this3.pouch.put(obj);
+                return _this2.pouch.put(obj);
               });
 
             case 18:
@@ -6213,10 +6207,10 @@ function () {
 
 
   _proto._pouchGet = function _pouchGet(key) {
-    var _this4 = this;
+    var _this3 = this;
 
     return this.pouch.get(key).then(function (doc) {
-      return _this4._handleFromPouch(doc);
+      return _this3._handleFromPouch(doc);
     });
   };
   /**
@@ -6229,16 +6223,16 @@ function () {
 
 
   _proto._pouchFind = function _pouchFind(rxQuery, limit) {
-    var _this5 = this;
+    var _this4 = this;
 
     var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var compressedQueryJSON = rxQuery.keyCompress();
     if (limit) compressedQueryJSON.limit = limit;
     return this.database.lockedRun(function () {
-      return _this5.pouch.find(compressedQueryJSON);
+      return _this4.pouch.find(compressedQueryJSON);
     }).then(function (docsCompressed) {
       var docs = docsCompressed.docs.map(function (doc) {
-        return _this5._handleFromPouch(doc, noDecrypt);
+        return _this4._handleFromPouch(doc, noDecrypt);
       });
       return docs;
     });
@@ -6274,10 +6268,10 @@ function () {
 
 
   _proto._createDocuments = function _createDocuments(docsJSON) {
-    var _this6 = this;
+    var _this5 = this;
 
     return docsJSON.map(function (json) {
-      return _this6._createDocument(json);
+      return _this5._createDocument(json);
     });
   };
 
@@ -6292,7 +6286,7 @@ function () {
 
 
   _proto.insert = function insert(json) {
-    var _this7 = this;
+    var _this6 = this;
 
     // inserting a temporary-document
     var tempDoc = null;
@@ -6322,23 +6316,23 @@ function () {
     if (this.schema.primaryPath === '_id' && !json._id) json._id = (0, _util.generateId)();
     var newDoc = tempDoc;
     return this._runHooks('pre', 'insert', json).then(function () {
-      _this7.schema.validate(json);
+      _this6.schema.validate(json);
 
-      return _this7._pouchPut(json);
+      return _this6._pouchPut(json);
     }).then(function (insertResult) {
-      json[_this7.schema.primaryPath] = insertResult.id;
+      json[_this6.schema.primaryPath] = insertResult.id;
       json._rev = insertResult.rev;
 
       if (tempDoc) {
         tempDoc._dataSync$.next(json);
-      } else newDoc = _this7._createDocument(json);
+      } else newDoc = _this6._createDocument(json);
 
-      return _this7._runHooks('post', 'insert', json, newDoc);
+      return _this6._runHooks('post', 'insert', json, newDoc);
     }).then(function () {
       // event
-      var emitEvent = _rxChangeEvent["default"].create('INSERT', _this7.database, _this7, newDoc, json);
+      var emitEvent = _rxChangeEvent["default"].create('INSERT', _this6.database, _this6, newDoc, json);
 
-      _this7.$emit(emitEvent);
+      _this6.$emit(emitEvent);
 
       return newDoc;
     });
@@ -6350,7 +6344,7 @@ function () {
 
 
   _proto.upsert = function upsert(json) {
-    var _this8 = this;
+    var _this7 = this;
 
     json = (0, _util.clone)(json);
     var primary = json[this.schema.primaryPath];
@@ -6371,7 +6365,7 @@ function () {
           return existing;
         });
       } else {
-        return _this8.insert(json);
+        return _this7.insert(json);
       }
     });
   };
@@ -6383,7 +6377,7 @@ function () {
 
 
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this9 = this;
+    var _this8 = this;
 
     json = (0, _util.clone)(json);
     var primary = json[this.schema.primaryPath];
@@ -6404,7 +6398,7 @@ function () {
     }
 
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this9, primary, json);
+      return _atomicUpsertEnsureRxDocumentExists(_this8, primary, json);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
         return _atomicUpsertUpdate(wasInserted.doc, json).then(function () {
@@ -6704,10 +6698,10 @@ function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this10 = this;
+      var _this9 = this;
 
       if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-        return _this10._onDestroyCall = res;
+        return _this9._onDestroyCall = res;
       });
       return this._onDestroy;
     }
