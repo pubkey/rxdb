@@ -28,6 +28,18 @@ import {
     runPluginHooks
 } from './hooks';
 
+const updateCollectionLength = (op) => {
+    switch (op) {
+        case 'INSERT':
+            this._length += 1;
+            break;
+
+        case 'REMOVE':
+            if (this._length < 1) break;
+            this._length -= 1;
+            break;
+    }
+};
 
 export class RxCollection {
     constructor(
@@ -71,14 +83,6 @@ export class RxCollection {
         _applyHookFunctions(this);
     }
 
-    get length () {
-        return this._length;
-    }
-
-    get length$ () {
-        return this._length$;
-    }
-
     prepare() {
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
 
@@ -99,22 +103,7 @@ export class RxCollection {
         );
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
-        this._length$ = this._observable$.subscribe(cE => {
-            const { data: { op } } = cE;
-            // updateCollectionLength(op)
-            switch (op) {
-                case 'INSERT':
-                    this._length += 1;
-                    break;
-
-                case 'REMOVE':
-                    if (this._length < 1) break;
-                    this._length -= 1;
-                    break;
-            }
-
-            return this._length;
-        });
+        updateCollectionLength.bind(this);
 
         this._subs.push(
             this._observable$
@@ -125,10 +114,9 @@ export class RxCollection {
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
+                updateCollectionLength(cE.data.op);
             })
         );
-
-        
 
         // update initial length -> starts at 0
         this.pouch.allDocs().then(entries => {
@@ -331,6 +319,10 @@ export class RxCollection {
         return docsJSON.map(json => this._createDocument(json));
     }
 
+    get length() {
+        return this._length;
+    }
+
     /**
      * returns observable
      */
@@ -351,6 +343,11 @@ export class RxCollection {
         return this.$.pipe(
             filter(cE => cE.data.op === 'REMOVE')
         );
+    }
+    get length$() {
+        return this.$.pipe(
+            filter(cE => ['REMOVE', 'INSERT'].indexOf(cE) > -1)
+        ).length;
     }
 
     /**
