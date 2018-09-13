@@ -41,6 +41,9 @@ export class HeroesListComponent implements OnInit, OnDestroy {
             .sort({ name: 1 })
             .$;
         this.sub = heroes$.subscribe(heroes => {
+            console.log('heroes:');
+            console.dir(heroes);
+
             this.heroes = heroes;
             this.zone.run(() => { });
         });

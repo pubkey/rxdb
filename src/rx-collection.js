@@ -123,18 +123,32 @@ export class RxCollection {
                 const props = Object.getOwnPropertyNames(obj);
                 props.forEach(key => {
                     const desc = Object.getOwnPropertyDescriptor(obj, key);
+
+
+                    /**
+                     * When enumerable is true, it will show on console.dir(instance)
+                     * To not polute the output, only getters and methods are enumerable
+                     */
+                    let enumerable = true;
+                    if (
+                        key.startsWith('_') ||
+                        key.endsWith('_') ||
+                        key.startsWith('$') ||
+                        key.endsWith('$')
+                    ) enumerable = false;
+
                     if (typeof desc.value === 'function') {
                         // when getting a function, we automatically do a .bind(this)
                         Object.defineProperty(proto, key, {
                             get() {
                                 return desc.value.bind(this);
                             },
-                            enumerable: false,
+                            enumerable,
                             configurable: false
                         });
 
                     } else {
-                        desc.enumerable = false;
+                        desc.enumerable = enumerable;
                         desc.configurable = false;
                         if (desc.writable)
                             desc.writable = false;
