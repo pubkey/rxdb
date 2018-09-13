@@ -33,7 +33,8 @@ const nodeAndBrowser = [
     '../test_tmp/unit/local-documents.test.js',
     '../test_tmp/unit/in-memory.test.js',
     '../test_tmp/unit/server.test.js',
-    '../test_tmp/unit/attachments.test.js'
+    '../test_tmp/unit/attachments.test.js',
+    '../test_tmp/unit/version-migration.test.js'
 ];
 
 const last = [

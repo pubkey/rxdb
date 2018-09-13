@@ -4,7 +4,7 @@
 
 Breaking:
   - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
-  - `disableKeyCompression` is set to `true` by default
+  - `disableKeyCompression` is renamed to `keyCompression` which defaults to `false`
   - `RxDatabase.collection()` now only accepts the json-schema as schema-attribute
   - It is no longer allowed to set required fields via `required: true`, use `required: ['myfield']` in compliance with the jsonschema standard
   - QueryChangeDetection is not enabled in the RxDatabase-options `queryChangeDetection: true`

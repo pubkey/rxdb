@@ -4,7 +4,7 @@ export const human = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -31,7 +31,7 @@ export const humanDefault = {
     title: 'human schema',
     version: 0,
     description: 'describes a human being',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -58,7 +58,7 @@ export const humanDefault = {
 export const humanFinal = {
     title: 'human schema with age set final',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -83,7 +83,7 @@ export const humanFinal = {
 export const simpleHuman = {
     title: 'human schema',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'describes a simple human being',
     type: 'object',
     properties: {
@@ -101,7 +101,7 @@ export const simpleHuman = {
 export const simpleHumanV3 = {
     title: 'human schema',
     version: 3,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'describes a simple human being',
     type: 'object',
     properties: {
@@ -119,7 +119,7 @@ export const simpleHumanV3 = {
 export const humanAgeIndex = {
     title: 'human schema',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'describes a human being',
     type: 'object',
     properties: {
@@ -148,7 +148,7 @@ export const humanSubIndex = {
     title: 'human schema',
     version: 0,
     description: 'describes a human being where other.age is index',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -174,7 +174,7 @@ export const nestedHuman = {
     title: 'human nested',
     version: 0,
     description: 'describes a human being with a nested field',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -205,7 +205,7 @@ export const nestedHuman = {
 export const deepNestedHuman = {
     title: 'deep human nested',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'describes a human being with a nested field',
     type: 'object',
     properties: {
@@ -241,7 +241,7 @@ export const noindexHuman = {
     title: 'human schema',
     version: 0,
     description: 'this schema has no index',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         firstName: {
@@ -258,7 +258,7 @@ export const noindexHuman = {
 export const nostringIndex = {
     description: 'the index has no type:string',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -279,7 +279,7 @@ export const bigHuman = {
     title: 'human schema',
     version: 0,
     description: 'describes a human being with 2 indexes',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -310,7 +310,7 @@ export const encryptedHuman = {
     version: 0,
     description: 'uses an encrypted field',
     type: 'object',
-    disableKeyCompression: false,
+    keyCompression: true,
     properties: {
         passportId: {
             type: 'string',
@@ -330,7 +330,7 @@ export const encryptedHuman = {
 export const encryptedObjectHuman = {
     title: 'human encrypted',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'uses an encrypted field',
     type: 'object',
     properties: {
@@ -360,7 +360,7 @@ export const encryptedObjectHuman = {
 export const encryptedDeepHuman = {
     title: 'human encrypted',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'uses an encrypted field',
     type: 'object',
     properties: {
@@ -424,7 +424,7 @@ export const compoundIndex = {
     version: 0,
     description: 'this schema has a compoundIndex',
     type: 'object',
-    disableKeyCompression: false,
+    keyCompression: true,
     properties: {
         passportId: {
             type: 'string'
@@ -445,7 +445,7 @@ export const compoundIndexNoString = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -468,7 +468,7 @@ export const wrongCompoundFormat = {
     title: 'compund index',
     version: 0,
     description: 'this schema has a compoundIndex',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -498,7 +498,7 @@ export const empty = {
 export const heroArray = {
     'title': 'hero schema',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     'description': 'describes a hero with an array-field',
     'type': 'object',
     'properties': {
@@ -530,7 +530,7 @@ export const simpleArrayHero = {
     title: 'hero schema',
     version: 0,
     description: 'describes a hero with a string-array-field',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         name: {
@@ -553,7 +553,7 @@ export const primaryHuman = {
     title: 'human schema with primary',
     version: 0,
     description: 'describes a human being with passsportID as primary',
-    disableKeyCompression: false,
+    keyCompression: true,
     type: 'object',
     properties: {
         passportId: {
@@ -579,7 +579,7 @@ export const primaryHuman = {
 export const humanNormalizeSchema1 = {
     title: 'human schema',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     description: 'describes a human being',
     properties: {
         age: {
@@ -595,7 +595,7 @@ export const humanNormalizeSchema1 = {
 export const humanNormalizeSchema2 = {
     title: 'human schema',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     properties: {
         age: {
             minimum: 0,
@@ -612,7 +612,7 @@ export const humanNormalizeSchema2 = {
 export const refHuman = {
     title: 'human related to other human',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     properties: {
         name: {
             primary: true,
@@ -628,7 +628,7 @@ export const refHuman = {
 export const refHumanNested = {
     title: 'human related to other human',
     version: 0,
-    disableKeyCompression: false,
+    keyCompression: true,
     properties: {
         name: {
             primary: true,
@@ -654,7 +654,7 @@ export const averageSchema = () => ({
     title: 'averageSchema_' + AsyncTestUtil.randomString(5), // randomisation used so hash differs
     version: 0,
     type: 'object',
-    disableKeyCompression: false,
+    keyCompression: true,
     properties: {
         id: {
             type: 'string',

@@ -13,7 +13,7 @@ const schema = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
-    disableKeyCompression: true,
+    keyCompression: false,
     type: 'object',
     properties: {
         passportId: {

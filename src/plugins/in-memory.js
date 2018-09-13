@@ -194,7 +194,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
  */
 function toCleanSchema(rxSchema) {
     const newSchemaJson = clone(rxSchema.jsonID);
-    newSchemaJson.disableKeyCompression = true;
+    newSchemaJson.keyCompression = false;
     delete newSchemaJson.properties._id;
     delete newSchemaJson.properties._rev;
     delete newSchemaJson.properties._attachments;
@@ -227,7 +227,7 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
             .map(row => row.doc)
             .filter(doc => !doc.language) // do not replicate design-docs
             .map(doc => fromCollection._handleFromPouch(doc))
-            // swap back primary because disableKeyCompression:true
+            // swap back primary because keyCompression:false
             .map(doc => fromCollection.schema.swapPrimaryToId(doc));
 
         if (docs.length === 0) return []; // nothing to replicate

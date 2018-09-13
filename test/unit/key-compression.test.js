@@ -302,6 +302,9 @@ config.parallel('key-compression.test.js', () => {
                 .where('firstName').eq('myFirstName')
                 .keyCompress();
             const jsonString = JSON.stringify(query);
+
+            console.dir(jsonString);
+
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));
             assert.equal(query.selector[c._keyCompressor.table['firstName']], 'myFirstName');
@@ -412,13 +415,13 @@ config.parallel('key-compression.test.js', () => {
         describe('.doKeyCompression()', () => {
             it('doKeyCompression(): true', async () => {
                 const schemaJSON = clone(schemas.human);
-                schemaJSON.disableKeyCompression = true;
+                schemaJSON.keyCompression = false;
                 const schema = RxSchema.create(schemaJSON);
                 assert.equal(schema.doKeyCompression(), false);
             });
             it('doKeyCompression(): false', async () => {
                 const schemaJSON = clone(schemas.human);
-                schemaJSON.disableKeyCompression = false;
+                schemaJSON.keyCompression = true;
                 const schema = RxSchema.create(schemaJSON);
                 assert.equal(schema.doKeyCompression(), true);
             });

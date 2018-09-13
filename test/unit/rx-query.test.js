@@ -613,7 +613,7 @@ config.parallel('rx-query.test.js', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
                 const schema = {
-                    'disableKeyCompression': true,
+                    'keyCompression': false,
                     'version': 0,
                     'type': 'object',
                     'properties': {
@@ -663,7 +663,7 @@ config.parallel('rx-query.test.js', () => {
             });
             it('schema example 2', async () => {
                 const schema = {
-                    disableKeyCompression: true,
+                    keyCompression: false,
                     version: 0,
                     type: 'object',
                     properties: {
@@ -802,7 +802,7 @@ config.parallel('rx-query.test.js', () => {
             // QueryChangeDetector.enable();
             const schema = {
                 primaryPath: '_id',
-                disableKeyCompression: true,
+                keyCompression: false,
                 properties: {
                     id: {
                         primary: true,
@@ -957,7 +957,7 @@ config.parallel('rx-query.test.js', () => {
             const schema = {
                 version: 0,
                 type: 'object',
-                disableKeyCompression: true,
+                keyCompression: false,
                 properties: {
                     id: {
                         type: 'string',
@@ -1032,7 +1032,7 @@ config.parallel('rx-query.test.js', () => {
         it('#609 default index on _id when better possible', async () => {
             const mySchema = {
                 version: 0,
-                disableKeyCompression: true,
+                keyCompression: false,
                 type: 'object',
                 properties: {
                     name: {
@@ -1072,7 +1072,7 @@ config.parallel('rx-query.test.js', () => {
         it('#698 Same query producing a different result', async () => {
             const mySchema = {
                 version: 0,
-                disableKeyCompression: true,
+                keyCompression: false,
                 type: 'object',
                 properties: {
                     event_id: {
