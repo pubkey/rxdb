@@ -48,6 +48,9 @@ function () {
     this._subs = [];
     this._repStates = [];
     this.pouch = null; // this is needed to preserve this name
+    // not initialized.
+
+    this.length = -1;
 
     _applyHookFunctions(this);
   }
@@ -81,9 +84,26 @@ function () {
       // when data changes, send it to RxDocument in docCache
       var doc = _this._docCache.get(cE.data.doc);
 
-      if (doc) doc._handleChangeEvent(cE);
-    }));
+      if (doc) doc._handleChangeEvent(cE); // console.info(cE);
 
+      var op = cE.data.op;
+
+      switch (op) {
+        case 'INSERT':
+          _this.length += 1;
+          break;
+
+        case 'REMOVE':
+          if (_this.length < 1) break;
+          _this.length -= 1;
+          break;
+      }
+    })); // update initial length -> starts at 0
+
+
+    this.pouch.allDocs().then(function (entries) {
+      _this.length = entries ? entries.rows.length : 0;
+    });
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
   };
   /**

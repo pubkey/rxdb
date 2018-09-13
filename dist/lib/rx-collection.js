@@ -81,16 +81,9 @@ function () {
     this._subs = [];
     this._repStates = [];
     this.pouch = null; // this is needed to preserve this name
-<<<<<<< HEAD
     // not initialized.
 
-    this.length = -1; // set HOOKS-functions dynamically
-
-    HOOKS_KEYS.forEach(function (key) {
-      HOOKS_WHEN.map(function (when) {
-        var fnName = when + (0, _util.ucfirst)(key);
-=======
->>>>>>> c8c00f8f7fc561fee15d10bc7c1baede6ceb3556
+    this.length = -1;
 
     _applyHookFunctions(this);
   }
@@ -109,42 +102,12 @@ function () {
 
     var spawnedPouchPromise = this.pouch.info(); // resolved when the pouchdb is useable
 
-<<<<<<< HEAD
-                if (doc) doc._handleChangeEvent(cE); // console.info(cE);
-
-                var op = cE.data.op;
-
-                switch (op) {
-                  case 'INSERT':
-                    _this2.length += 1;
-                    break;
-
-                  case 'REMOVE':
-                    if (_this2.length < 1) break;
-                    _this2.length -= 1;
-                    break;
-                }
-              })); // update initial length -> starts at 0
-
-
-              this.pouch.allDocs().then(function (entries) {
-                _this2.length = entries ? entries.rows.length : 0;
-              });
-
-            case 11:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-=======
     var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
     this._dataMigrator = _dataMigrator["default"].create(this, this._migrationStrategies);
     this._crypter = _crypter["default"].create(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
       return event.data.col === _this.name;
->>>>>>> c8c00f8f7fc561fee15d10bc7c1baede6ceb3556
     }));
     this._changeEventBuffer = _changeEventBuffer["default"].create(this);
 
@@ -154,9 +117,26 @@ function () {
       // when data changes, send it to RxDocument in docCache
       var doc = _this._docCache.get(cE.data.doc);
 
-      if (doc) doc._handleChangeEvent(cE);
-    }));
+      if (doc) doc._handleChangeEvent(cE); // console.info(cE);
 
+      var op = cE.data.op;
+
+      switch (op) {
+        case 'INSERT':
+          _this.length += 1;
+          break;
+
+        case 'REMOVE':
+          if (_this.length < 1) break;
+          _this.length -= 1;
+          break;
+      }
+    })); // update initial length -> starts at 0
+
+
+    this.pouch.allDocs().then(function (entries) {
+      _this.length = entries ? entries.rows.length : 0;
+    });
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
   };
   /**
