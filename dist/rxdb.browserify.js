@@ -3138,7 +3138,7 @@ exports.InMemoryRxCollection = InMemoryRxCollection;
 
 function toCleanSchema(rxSchema) {
   var newSchemaJson = (0, _util.clone)(rxSchema.jsonID);
-  newSchemaJson.disableKeyCompression = true;
+  newSchemaJson.keyCompression = false;
   delete newSchemaJson.properties._id;
   delete newSchemaJson.properties._rev;
   delete newSchemaJson.properties._attachments;
@@ -3175,7 +3175,7 @@ function replicateExistingDocuments(fromCollection, toCollection) {
     }) // do not replicate design-docs
     .map(function (doc) {
       return fromCollection._handleFromPouch(doc);
-    }) // swap back primary because disableKeyCompression:true
+    }) // swap back primary because keyCompression:false
     .map(function (doc) {
       return fromCollection.schema.swapPrimaryToId(doc);
     });
@@ -6014,6 +6014,13 @@ function () {
         var props = Object.getOwnPropertyNames(obj);
         props.forEach(function (key) {
           var desc = Object.getOwnPropertyDescriptor(obj, key);
+          /**
+           * When enumerable is true, it will show on console.dir(instance)
+           * To not polute the output, only getters and methods are enumerable
+           */
+
+          var enumerable = true;
+          if (key.startsWith('_') || key.endsWith('_') || key.startsWith('$') || key.endsWith('$')) enumerable = false;
 
           if (typeof desc.value === 'function') {
             // when getting a function, we automatically do a .bind(this)
@@ -6021,11 +6028,11 @@ function () {
               get: function get() {
                 return desc.value.bind(this);
               },
-              enumerable: false,
+              enumerable: enumerable,
               configurable: false
             });
           } else {
-            desc.enumerable = false;
+            desc.enumerable = enumerable;
             desc.configurable = false;
             if (desc.writable) desc.writable = false;
             Object.defineProperty(proto, key, desc);
@@ -8947,7 +8954,9 @@ function () {
 
 
   _proto.keyCompress = function keyCompress() {
-    if (!this.collection.schema.doKeyCompression()) return this.toJSON();else {
+    if (!this.collection.schema.doKeyCompression()) {
+      return this.toJSON();
+    } else {
       if (!this._keyCompress) {
         this._keyCompress = this.collection._keyCompressor.compressQuery(this.toJSON());
       }
@@ -9450,7 +9459,15 @@ function () {
 
 
   _proto.doKeyCompression = function doKeyCompression() {
-    return !this.jsonID.disableKeyCompression;
+    /**
+     * in rxdb 8.0.0 we renambed the keycompression-option
+     * But when a data-migration is done with and old schema,
+     * it might have the old option which then should be used
+     * TODO: Remove this check in Sep 2019
+     */
+    if (this.jsonID.hasOwnProperty('disableKeyCompression')) {
+      return !this.jsonID.disableKeyCompression;
+    } else return this.jsonID.keyCompression;
   };
   /**
    * creates the schema-based document-prototype,
@@ -9669,7 +9686,7 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
-  if (!schemaObj.hasOwnProperty('disableKeyCompression')) schemaObj.disableKeyCompression = true; // compoundIndexes must be array
+  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // compoundIndexes must be array
 
   schemaObj.compoundIndexes = schemaObj.compoundIndexes || []; // required must be array
 

@@ -261,7 +261,9 @@ function () {
 
 
   _proto.keyCompress = function keyCompress() {
-    if (!this.collection.schema.doKeyCompression()) return this.toJSON();else {
+    if (!this.collection.schema.doKeyCompression()) {
+      return this.toJSON();
+    } else {
       if (!this._keyCompress) {
         this._keyCompress = this.collection._keyCompressor.compressQuery(this.toJSON());
       }

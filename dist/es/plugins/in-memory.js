@@ -253,7 +253,7 @@ function (_RxCollection$RxColle) {
 
 function toCleanSchema(rxSchema) {
   var newSchemaJson = clone(rxSchema.jsonID);
-  newSchemaJson.disableKeyCompression = true;
+  newSchemaJson.keyCompression = false;
   delete newSchemaJson.properties._id;
   delete newSchemaJson.properties._rev;
   delete newSchemaJson.properties._attachments;
@@ -290,7 +290,7 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
     }) // do not replicate design-docs
     .map(function (doc) {
       return fromCollection._handleFromPouch(doc);
-    }) // swap back primary because disableKeyCompression:true
+    }) // swap back primary because keyCompression:false
     .map(function (doc) {
       return fromCollection.schema.swapPrimaryToId(doc);
     });
