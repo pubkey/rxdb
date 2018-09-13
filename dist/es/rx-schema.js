@@ -118,7 +118,15 @@ function () {
 
 
   _proto.doKeyCompression = function doKeyCompression() {
-    return !this.jsonID.disableKeyCompression;
+    /**
+     * in rxdb 8.0.0 we renambed the keycompression-option
+     * But when a data-migration is done with and old schema,
+     * it might have the old option which then should be used
+     * TODO: Remove this check in Sep 2019
+     */
+    if (this.jsonID.hasOwnProperty('disableKeyCompression')) {
+      return !this.jsonID.disableKeyCompression;
+    } else return this.jsonID.keyCompression;
   };
   /**
    * creates the schema-based document-prototype,
@@ -328,7 +336,7 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
 
   schemaObj.additionalProperties = false; // fill with key-compression-state ()
 
-  if (!schemaObj.hasOwnProperty('disableKeyCompression')) schemaObj.disableKeyCompression = true; // compoundIndexes must be array
+  if (!schemaObj.hasOwnProperty('keyCompression')) schemaObj.keyCompression = false; // compoundIndexes must be array
 
   schemaObj.compoundIndexes = schemaObj.compoundIndexes || []; // required must be array
 
