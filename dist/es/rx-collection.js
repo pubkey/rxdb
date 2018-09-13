@@ -48,9 +48,9 @@ function () {
     this._subs = [];
     this._repStates = [];
     this.pouch = null; // this is needed to preserve this name
-    // not initialized.
+    // length basic subscriber -> not initialized.
 
-    this.length = -1;
+    this._length = -1;
 
     _applyHookFunctions(this);
   }
@@ -77,6 +77,22 @@ function () {
       return event.data.col === _this.name;
     }));
     this._changeEventBuffer = ChangeEventBuffer.create(this);
+    this._length$ = this._observable$.subscribe(function (cE) {
+      var op = cE.data.op; // updateCollectionLength(op)
+
+      switch (op) {
+        case 'INSERT':
+          _this._length += 1;
+          break;
+
+        case 'REMOVE':
+          if (_this._length < 1) break;
+          _this._length -= 1;
+          break;
+      }
+
+      return _this._length;
+    });
 
     this._subs.push(this._observable$.pipe(filter(function (cE) {
       return !cE.data.isLocal;
@@ -84,25 +100,12 @@ function () {
       // when data changes, send it to RxDocument in docCache
       var doc = _this._docCache.get(cE.data.doc);
 
-      if (doc) doc._handleChangeEvent(cE); // console.info(cE);
-
-      var op = cE.data.op;
-
-      switch (op) {
-        case 'INSERT':
-          _this.length += 1;
-          break;
-
-        case 'REMOVE':
-          if (_this.length < 1) break;
-          _this.length -= 1;
-          break;
-      }
+      if (doc) doc._handleChangeEvent(cE);
     })); // update initial length -> starts at 0
 
 
     this.pouch.allDocs().then(function (entries) {
-      _this.length = entries ? entries.rows.length : 0;
+      _this._length = entries.rows.length || 0;
     });
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
   };
@@ -729,6 +732,16 @@ function () {
   };
 
   _createClass(RxCollection, [{
+    key: "length",
+    get: function get() {
+      return this._length;
+    }
+  }, {
+    key: "length$",
+    get: function get() {
+      return this._length$;
+    }
+  }, {
     key: "$",
     get: function get() {
       return this._observable$;

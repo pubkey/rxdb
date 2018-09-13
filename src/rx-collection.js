@@ -65,10 +65,18 @@ export class RxCollection {
         this._repStates = [];
         this.pouch = null; // this is needed to preserve this name
 
-        // not initialized.
-        this.length = -1;
+        // length basic subscriber -> not initialized.
+        this._length = -1;
 
         _applyHookFunctions(this);
+    }
+
+    get length () {
+        return this._length;
+    }
+
+    get length$ () {
+        return this._length$;
     }
 
     prepare() {
@@ -91,6 +99,23 @@ export class RxCollection {
         );
         this._changeEventBuffer = ChangeEventBuffer.create(this);
 
+        this._length$ = this._observable$.subscribe(cE => {
+            const { data: { op } } = cE;
+            // updateCollectionLength(op)
+            switch (op) {
+                case 'INSERT':
+                    this._length += 1;
+                    break;
+
+                case 'REMOVE':
+                    if (this._length < 1) break;
+                    this._length -= 1;
+                    break;
+            }
+
+            return this._length;
+        });
+
         this._subs.push(
             this._observable$
             .pipe(
@@ -100,24 +125,14 @@ export class RxCollection {
                 // when data changes, send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
-                // console.info(cE);
-                const { data: { op } } = cE;
-                switch (op) {
-                    case 'INSERT':
-                        this.length += 1;
-                        break;
-
-                    case 'REMOVE':
-                        if (this.length < 1) break;
-                        this.length -= 1;
-                        break;
-                }
             })
         );
 
+        
+
         // update initial length -> starts at 0
         this.pouch.allDocs().then(entries => {
-            this.length = entries ? entries.rows.length : 0;
+            this._length = entries.rows.length || 0;
         });
 
         return Promise.all([
