@@ -340,7 +340,7 @@ export class RxCollection {
     }
     get length$() {
         return this.$.pipe(
-            filter(cE => ['REMOVE', 'INSERT'].indexOf(cE) > -1)
+            filter(cE => ['REMOVE', 'INSERT'].indexOf(cE.data.op) > -1)
         ).length;
     }
 

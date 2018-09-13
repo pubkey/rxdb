@@ -798,7 +798,7 @@ function () {
     key: "length$",
     get: function get() {
       return this.$.pipe((0, _operators.filter)(function (cE) {
-        return ['REMOVE', 'INSERT'].indexOf(cE) > -1;
+        return ['REMOVE', 'INSERT'].indexOf(cE.data.op) > -1;
       })).length;
     }
     /**
