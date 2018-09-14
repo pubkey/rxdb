@@ -1,8 +1,8 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { routing, appRoutingProviders } from './app.routes';
-import { FormsModule }   from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule, MatListModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule } from '@angular/material';
 
 import {
@@ -35,7 +35,9 @@ import { HeroEditComponent } from './components/hero-edit/hero-edit.component';
  * SERVICES
  */
 import { DatabaseService } from './services/database.service';
-
+import {
+    initDatabase
+} from './services/database.service';
 
 @NgModule({
     imports: [
@@ -46,13 +48,19 @@ import { DatabaseService } from './services/database.service';
         MatCardModule, MatListModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule,
     ],
     providers: [
+        {
+            provide: APP_INITIALIZER,
+            useFactory: () => initDatabase,
+            multi: true,
+            deps: [/* your dependencies */]
+        },
         DatabaseService,
         appRoutingProviders,
         { provide: APP_BASE_HREF, useValue: '/' },
         {
             provide: LocationStrategy,
             useClass: PathLocationStrategy
-        },
+        }
     ],
     declarations: [
         AppComponent,

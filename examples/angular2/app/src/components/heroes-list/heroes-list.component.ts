@@ -1,20 +1,48 @@
-import { Component, OnInit, OnDestroy, NgZone, Output, EventEmitter } from '@angular/core';
-import { DatabaseService } from '../../services/database.service';
-import * as RxDBTypes from '../../RxDB.d';
+import {
+    Component,
+    Output,
+    EventEmitter,
+    ChangeDetectorRef,
+    ChangeDetectionStrategy
+} from '@angular/core';
+import {
+    Observable,
+} from 'rxjs';
+import {
+    tap
+} from 'rxjs/operators';
 
+import { DatabaseService } from '../../services/database.service';
+import {
+    RxHeroDocument
+} from '../../RxDB.d';
 
 @Component({
     selector: 'heroes-list',
     templateUrl: './heroes-list.component.html',
     styles: [String(require('./heroes-list.component.less'))],
-    providers: [DatabaseService]
+    providers: [DatabaseService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HeroesListComponent implements OnInit, OnDestroy {
+export class HeroesListComponent {
 
-    heroes: RxDBTypes.RxHeroDocument[] | RxDBTypes.RxHeroDocument;
-    sub;
+    private emittedFirst = false;
+    private heroes$: Observable<RxHeroDocument[]>;
+    @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 
-    @Output('edit') editChange: EventEmitter<RxDBTypes.RxHeroDocument> = new EventEmitter();
+    constructor(
+        private dbService: DatabaseService,
+        private _cdr: ChangeDetectorRef
+    ) {
+        this.heroes$ = this.dbService
+            .db.hero                // collection
+            .find().sort('name')    // query
+            .$.pipe(                // observable
+                dbService.tapWithChangeDetection(this._cdr), // run change-detection on each emit
+                tap(() => this.emittedFirst = true)          // hide loading-icon on first emit
+            );
+    }
+
     set edit(hero) {
         console.log('editHero: ' + hero.name);
         this.editChange.emit(hero);
@@ -26,44 +54,13 @@ export class HeroesListComponent implements OnInit, OnDestroy {
         hero.remove();
     }
 
-    constructor(
-        private databaseService: DatabaseService,
-        private zone: NgZone
-    ) {
-    }
-
-    ngAfterContentInit() { }
-
-    private async _show() {
-        const db = await this.databaseService.get();
-        const heroes$ = db.hero
-            .find()
-            .sort({ name: 1 })
-            .$;
-        this.sub = heroes$.subscribe(heroes => {
-            console.log('heroes:');
-            console.dir(heroes);
-
-            this.heroes = heroes;
-            this.zone.run(() => { });
-        });
-    }
-
-
     /**
      * this method exists to play arround with the typings
      */
-    async foo() {
-        const db = await this.databaseService.get();
+    async foo(): Promise<string> {
+        const db = this.dbService.db;
         const firstDoc = await db.hero.findOne().exec();
         const f: string = firstDoc.color;
-    }
-
-    ngOnInit() {
-        this._show();
-    }
-
-    ngOnDestroy() {
-        this.sub.unsubscribe();
+        return f;
     }
 }

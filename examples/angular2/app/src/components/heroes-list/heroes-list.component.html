@@ -1,9 +1,9 @@
-<div class="loading" *ngIf="!heroes" class="hero-list-component">
+<div class="loading" *ngIf="!emittedFirst" class="hero-list-component">
     <mat-spinner class="app-spinner"></mat-spinner>
 </div>
 
-<mat-list *ngIf="heroes" class="hero-list-component">
-    <mat-list-item *ngFor="let hero of heroes" class="listHero">
+<mat-list class="hero-list-component">
+    <mat-list-item *ngFor="let hero of heroes$ | async as heroes; index as i" class="listHero">
         <div class="color-box" [style.background-color]="hero.color"></div>
         <div class="name">
           {{hero.name}}
