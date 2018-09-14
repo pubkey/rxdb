@@ -1,0 +1,8 @@
+/** custom css, see https://help.gitbook.com/content/how-can-i-include-css.html **/
+.page-inner {
+    max-width: 1000px;
+}
+
+.markdown-section a {
+    color: #e6008d;
+}

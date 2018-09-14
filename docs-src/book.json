@@ -1,5 +1,5 @@
 {
-    "gitbook": "3.2.2",
+    "gitbook": "3.2.3",
     "root": ".",
     "output": "./docs",
     "title": "RxDB - Documentation",
@@ -7,7 +7,8 @@
         "edit-link",
         "github",
         "custom-favicon",
-        "-sharing"
+        "-sharing",
+        "expandable-chapters"
     ],
     "links": {
         "sidebar": {
@@ -24,6 +25,7 @@
         },
         "github": {
             "url": "https://github.com/pubkey/rxdb"
-        }
+        },
+        "expandable-chapters":{}
     }
 }
