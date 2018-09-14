@@ -25,7 +25,7 @@
         * [destroy()](./rx-database.md#destroy)
         * [remove()](./rx-database.md#remove)
         * [checkAdapter()](./rx-database.md#checkadapter)
-        * [isRxDatabase()](./rx-database.md#isRxDatabase)
+        * [isRxDatabase()](./rx-database.md#isrxdatabase)
 
 * [RxSchema](./rx-schema.md)
     * [Example](./rx-schema.md#example)
@@ -57,7 +57,7 @@
         * [sync()](./rx-collection.md#sync)
         * [remove()](./rx-collection.md#clear)
         * [destroy()](./rx-collection.md#destroy)
-        * [isRxCollection()](./rx-collection.md#isRxCollection)
+        * [isRxCollection()](./rx-collection.md#isrxcollection)
 
 * [RxDocument](./rx-document.md)
     * [Insert](./rx-document.md#insert)
@@ -74,7 +74,7 @@
         * [deleted$](./rx-document.md#deleted$)
         * [set()](./rx-document.md#set)
         * [save()](./rx-document.md#save)
-        * [isRxDocument()](./rx-document.md#isRxDocument)
+        * [isRxDocument()](./rx-document.md#isrxdocument)
 
 * [RxQuery](./rx-query.md)
     * [find()](./rx-query.md#find)
@@ -84,7 +84,7 @@
     * [update()](./rx-query.md#update)
     * [remove()](./rx-query.md#remove)
     * [Examples](./rx-query.md#examples)
-    * [isRxQuery()](./rx-query.md#isRxQuery)
+    * [isRxQuery()](./rx-query.md#isrxquery)
 
 * [RxAttachment](./rx-attachment.md)
 
