@@ -28,6 +28,8 @@ import {
     runPluginHooks
 } from './hooks';
 
+let length = -1;
+
 export class RxCollection {
     constructor(
         database,
@@ -65,7 +67,7 @@ export class RxCollection {
         this.pouch = null; // this is needed to preserve this name
 
         // length basic subscriber -> not initialized.
-        this._length = -1;
+        // this._length = -1;
 
         _applyHookFunctions(this);
     }
@@ -96,25 +98,20 @@ export class RxCollection {
                 filter(cE => !cE.data.isLocal)
             )
             .subscribe(cE => {
-                // when data changes, send it to RxDocument in docCache
+                // when data changes:
+                
+                // send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
-                switch (cE.data.op) {
-                    case 'INSERT':
-                        this._length += 1;
-                        break;
-
-                    case 'REMOVE':
-                        if (this._length < 1) break;
-                        this._length -= 1;
-                        break;
-                }
+                
+                // update collection length
+                this._updateCollectionLength(cE.data.op);
             })
         );
 
         // update initial length -> starts at 0
         this.pouch.allDocs().then(entries => {
-            this._length = entries.rows.length || 0;
+            length = entries.rows.length || 0;
         });
 
         return Promise.all([
@@ -313,10 +310,6 @@ export class RxCollection {
         return docsJSON.map(json => this._createDocument(json));
     }
 
-    get length() {
-        return this._length;
-    }
-
     /**
      * returns observable
      */
@@ -337,11 +330,6 @@ export class RxCollection {
         return this.$.pipe(
             filter(cE => cE.data.op === 'REMOVE')
         );
-    }
-    get length$() {
-        return this.$.pipe(
-            filter(cE => ['REMOVE', 'INSERT'].indexOf(cE.data.op) > -1)
-        ).length;
     }
 
     /**
@@ -688,6 +676,24 @@ export class RxCollection {
      */
     remove() {
         return this.database.removeCollection(this.name);
+    }
+
+    /**
+     * collection.length getter
+     */
+    get length() {
+        return length;
+    }
+
+    /**
+     * Updates the collection length
+     * whenever an updating event op is triggered
+     * 
+     * @param {*} op 
+     */
+    _updateCollectionLength (op) {
+        if (['INSERT', 'REMOVE'].indexOf(op) < 0) return;
+        length = op === 'INSERT' ? length + 1 : length - 1;
     }
 }
 
