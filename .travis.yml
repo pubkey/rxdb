@@ -72,5 +72,5 @@ jobs:
       script: (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=electron
     - stage: examples
-      script: (cd ./examples/react-native && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: (cd ./examples/react-native && npx yarn install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=react-native
