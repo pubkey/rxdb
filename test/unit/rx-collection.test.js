@@ -1454,7 +1454,7 @@ config.parallel('rx-collection.test.js', () => {
         });
         describe('.length', () => {
             const length = 101;
-            let db, collection, trashDoc;
+            let db, collection;
 
             before(async () => {
                 db = await RxDatabase.create({
@@ -1482,11 +1482,13 @@ config.parallel('rx-collection.test.js', () => {
                 it('increases with every insert', async () => {
                     await collection.insert(schemaObjects.human());
                     assert.equal(collection.length, length + 1);
-                    trashDoc = await collection.insert(schemaObjects.human());
+                    await collection.insert(schemaObjects.human());
                     assert.equal(collection.length, length + 2);
                 });
                 it('decreases after a remove', async () => {
+                    await collection.insert(schemaObjects.human());
                     const length = collection.length;
+                    const trashDoc = await collection.findOne();
                     await trashDoc.remove();
                     assert.equal(collection.length, length - 1);
                 });
