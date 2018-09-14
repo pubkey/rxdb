@@ -37,6 +37,7 @@ const configuration = {
         'karma-browserify',
         'karma-chrome-launcher',
         'karma-edge-launcher',
+        'karma-safari-launcher',
         'karma-firefox-launcher',
         'karma-ie-launcher',
         'karma-opera-launcher',
