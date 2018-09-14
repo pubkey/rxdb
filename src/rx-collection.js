@@ -28,7 +28,6 @@ import {
     runPluginHooks
 } from './hooks';
 
-
 export class RxCollection {
     constructor(
         database,
@@ -65,6 +64,9 @@ export class RxCollection {
         this._repStates = [];
         this.pouch = null; // this is needed to preserve this name
 
+        // uninitalized length
+        this._length = -1;
+
         _applyHookFunctions(this);
     }
     prepare() {
@@ -93,11 +95,21 @@ export class RxCollection {
                 filter(cE => !cE.data.isLocal)
             )
             .subscribe(cE => {
-                // when data changes, send it to RxDocument in docCache
+                // when data changes:
+
+                // send it to RxDocument in docCache
                 const doc = this._docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
+
+                // update collection length
+                this._updateCollectionLength(cE.data.op);
             })
         );
+
+        // update initial length -> starts at 0
+        this.pouch.allDocs().then(entries => {
+            this._length = entries.rows.length || 0;
+        });
 
         return Promise.all([
             spawnedPouchPromise,
@@ -675,6 +687,26 @@ export class RxCollection {
      */
     remove() {
         return this.database.removeCollection(this.name);
+    }
+
+    /**
+     * collection.length getter
+     */
+    get length() {
+        return this._length;
+    }
+
+    /**
+    * Updates the collection length
+    * whenever an updating event op is triggered
+    * 
+    * @param {*} op 
+    */
+    _updateCollectionLength(op) {
+        if (['INSERT', 'REMOVE'].indexOf(op) < 0) return;
+        this._length = op === 'INSERT' ?
+            this._length + 1 :
+            this._length - 1;
     }
 }
 

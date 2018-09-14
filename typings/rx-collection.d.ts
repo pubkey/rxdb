@@ -65,6 +65,7 @@ export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     readonly schema: RxSchema<RxDocumentType>;
     options?: any;
     readonly pouch: PouchDB;
+    readonly length: number;
 
     readonly $: Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
     readonly insert$: Observable<RxChangeEventInsert<RxDocumentType>>;

@@ -1452,6 +1452,60 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
         });
+        describe('.length', () => {
+            const length = 101;
+            let db, collection, trashDoc;
+
+            before(async () => {
+                db = await RxDatabase.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory'
+                });
+                collection = await db.collection({
+                    name: 'human',
+                    schema: schemas.primaryHuman
+                });
+            });
+
+            describe('positive', () => {
+                it('returns 0 if collection is empty', () => {
+                    assert.equal(0, collection.length);
+                });
+
+                it('returns the number of existing documents inside the collection', async () => {
+                    await Promise.all(
+                        new Array(length).fill(0)
+                            .map(() => collection.insert(schemaObjects.human()))
+                    );
+                    assert.equal(length, collection.length);
+                });
+                it('increases with every insert', async () => {
+                    await collection.insert(schemaObjects.human());
+                    assert.equal(collection.length, length + 1);
+                    trashDoc = await collection.insert(schemaObjects.human());
+                    assert.equal(collection.length, length + 2);
+                });
+                it('decreases after a remove', async () => {
+                    const length = collection.length;
+                    await trashDoc.remove();
+                    assert.equal(collection.length, length - 1);
+                });
+                it('doesn\'t change after an upsert', async () => {
+                    const obj = schemaObjects.simpleHuman();
+                    await collection.insert(obj);
+                    const initialColLength = collection.length;
+                    obj.firstName = 'foobar';
+                    await collection.upsert(obj);
+                    obj.firstName = 'foobar2';
+                    await collection.upsert(obj);
+                    assert.equal(collection.length, initialColLength);
+                });
+            });
+
+            after(async () => {
+                await db.destroy();
+            });
+        });
     });
     describe('issues', () => {
         it('#528  default value ignored when 0', async () => {
