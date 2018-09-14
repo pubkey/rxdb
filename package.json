@@ -137,7 +137,7 @@
     "karma-ie-launcher": "1.0.0",
     "karma-mocha": "1.3.0",
     "karma-opera-launcher": "1.0.0",
-    "karma-safari-launcher": "1.0.0",
+    "karma-safari-launcher": "^1.0.0",
     "leveldown": "4.0.1",
     "memdown": "3.0.0",
     "mocha": "5.2.0",
