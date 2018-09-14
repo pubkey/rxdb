@@ -53,7 +53,7 @@ replicationState.denied$.subscribe(docData => console.dir(docData));
 ```
 
 ### active$
-Emits `true` or `false` depending if the replication is running. For example if you sync with a remote server and the connection dies, this is `false` until the connection can be reestablished.
+Emits `true` or `false` depending if the replication is transmitting data. A `false` value does not imply the connection has died.
 
 ```js
 replicationState.active$.subscribe(active => console.dir(active));
