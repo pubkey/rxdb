@@ -1,6 +1,16 @@
-import { Injectable } from '@angular/core';
+import {
+    Injectable,
+    ChangeDetectorRef
+} from '@angular/core';
+import {
+    tap
+} from 'rxjs/operators';
+
 // import typings
-import * as RxDBTypes from './../RxDB.d';
+import {
+    RxHeroesDatabase,
+    RxHeroesCollections
+} from './../RxDB.d';
 
 
 // batteries-included
@@ -32,10 +42,9 @@ RxDB.plugin(RxDBLeaderElectionModule);
 import RxDBReplicationModule from 'rxdb/plugins/replication';
 RxDB.plugin(RxDBReplicationModule);
 // always needed for replication with the node-server
-RxDB.plugin(require('pouchdb-adapter-http'));
+import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
+RxDB.plugin(PouchdbAdapterHttp);
 
-
-RxDB.QueryChangeDetector.enableDebugging();
 
 import PouchdbAdapterIdb from 'pouchdb-adapter-idb';
 RxDB.plugin(PouchdbAdapterIdb);
@@ -61,61 +70,77 @@ const syncURL = 'http://' + window.location.hostname + ':10101/';
 let doSync = true;
 if (window.location.hash == '#nosync') doSync = false;
 
+
+/**
+ * creates the database
+ */
+async function _create(): Promise<RxHeroesDatabase> {
+    console.log('DatabaseService: creating database..');
+    const db = await RxDB.create<RxHeroesCollections>({
+        name: 'heroes',
+        adapter: useAdapter,
+        queryChangeDetection: true
+        // password: 'myLongAndStupidPassword' // no password needed
+    });
+    console.log('DatabaseService: created database');
+    window['db'] = db; // write to window for debugging
+
+    // show leadership in title
+    db.waitForLeadership()
+        .then(() => {
+            console.log('isLeader now');
+            document.title = '♛ ' + document.title;
+        });
+
+    // create collections
+    console.log('DatabaseService: create collections');
+    await Promise.all(collections.map(colData => db.collection(colData)));
+
+    // hooks
+    console.log('DatabaseService: add hooks');
+    db.collections.hero.preInsert(function(docObj) {
+        const color = docObj.color;
+        return db.collections.hero.findOne({ color }).exec()
+            .then(has => {
+                if (has != null) {
+                    alert('another hero already has the color ' + color);
+                    throw new Error('color already there');
+                }
+                return db;
+            });
+    });
+
+    // sync
+    console.log('DatabaseService: sync');
+    collections
+        .filter(col => col.sync)
+        .map(col => col.name)
+        .forEach(colName => db[colName].sync({ remote: syncURL + colName + '/' }));
+
+    return db;
+}
+
+let DB_INSTANCE: RxHeroesDatabase;
+
+/**
+ * This is run via APP_INITIALIZER in app.module.ts
+ * to ensure the database exsits before the angular-app starts up
+ */
+export async function initDatabase() {
+    console.log('initDatabase()');
+    DB_INSTANCE = await _create();
+}
+
 @Injectable()
 export class DatabaseService {
-    static dbPromise: Promise<RxDBTypes.RxHeroesDatabase> = null;
-    private async _create(): Promise<RxDBTypes.RxHeroesDatabase> {
-        console.log('DatabaseService: creating database..');
-        const db = await RxDB.create<RxDBTypes.RxHeroesCollections>({
-            name: 'heroes',
-            adapter: useAdapter,
-            queryChangeDetection: true
-            // password: 'myLongAndStupidPassword' // no password needed
-        });
-        console.log('DatabaseService: created database');
-        window['db'] = db; // write to window for debugging
-
-        // show leadership in title
-        db.waitForLeadership()
-            .then(() => {
-                console.log('isLeader now');
-                document.title = '♛ ' + document.title;
-            });
-
-        // create collections
-        console.log('DatabaseService: create collections');
-        await Promise.all(collections.map(colData => db.collection(colData)));
-
-        // hooks
-        console.log('DatabaseService: add hooks');
-        db.collections.hero.preInsert(function(docObj) {
-            const color = docObj.color;
-            return db.collections.hero.findOne({ color }).exec()
-                .then(has => {
-                    if (has != null) {
-                        alert('another hero already has the color ' + color);
-                        throw new Error('color already there');
-                    }
-                    return db;
-                });
-        });
-
-        // sync
-        console.log('DatabaseService: sync');
-        collections
-            .filter(col => col.sync)
-            .map(col => col.name)
-            .forEach(colName => db[colName].sync({ remote: syncURL + colName + '/' }));
-
-        return db;
+    get db(): RxHeroesDatabase {
+        return DB_INSTANCE;
     }
 
-    get(): Promise<RxDBTypes.RxHeroesDatabase> {
-        if (DatabaseService.dbPromise)
-            return DatabaseService.dbPromise;
-
-        // create database
-        DatabaseService.dbPromise = this._create();
-        return DatabaseService.dbPromise;
+    tapWithChangeDetection(cdr: ChangeDetectorRef) {
+        return tap(() => {
+            setTimeout(() => cdr.detectChanges(), 0);
+        }) as any;
     }
+
 }

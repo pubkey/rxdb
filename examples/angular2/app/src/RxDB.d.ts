@@ -32,10 +32,3 @@ export type RxHeroesCollections = {
 };
 
 export type RxHeroesDatabase = RxDatabase<RxHeroesCollections>;
-
-declare let _default: {
-    RxHeroDocument,
-    RxHeroCollection,
-    RxHeroesDatabase
-};
-export default _default;

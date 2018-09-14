@@ -1,5 +1,13 @@
-import { Component, ViewChildren, Input, OnChanges, Output, EventEmitter, OnInit } from '@angular/core';
-import { DatabaseService } from '../../services/database.service';
+import {
+    Component,
+    ViewChildren,
+    Input,
+    OnChanges,
+    Output,
+    EventEmitter,
+    OnInit,
+    ChangeDetectorRef
+} from '@angular/core';
 import {
     Subscription
 } from 'rxjs';
@@ -11,7 +19,7 @@ import {
     selector: 'hero-edit',
     templateUrl: './hero-edit.component.html',
     styles: [String(require('./hero-edit.component.less'))],
-    providers: [DatabaseService],
+    providers: [],
 })
 export class HeroEditComponent implements OnInit {
 
@@ -23,7 +31,7 @@ export class HeroEditComponent implements OnInit {
     private subs: Subscription[] = [];
 
     constructor(
-        private databaseService: DatabaseService
+        private _cdr: ChangeDetectorRef
     ) {
         this.synced = true;
     }
@@ -35,7 +43,10 @@ export class HeroEditComponent implements OnInit {
                 .pipe(
                     skip(1)
                 )
-                .subscribe(() => this.synced = false)
+                .subscribe(() => {
+                    this.synced = false;
+                    this._cdr.detectChanges();
+                })
         );
     }
 
@@ -47,6 +58,7 @@ export class HeroEditComponent implements OnInit {
     resync() {
         this.formValue = this.hero.hp;
         this.synced = true;
+        this._cdr.detectChanges();
     }
 
     async cancel() {
