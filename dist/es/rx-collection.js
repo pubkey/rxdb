@@ -16,6 +16,7 @@ import QueryCache from './query-cache';
 import ChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
+var length = -1;
 export var RxCollection =
 /*#__PURE__*/
 function () {
@@ -49,8 +50,7 @@ function () {
     this._repStates = [];
     this.pouch = null; // this is needed to preserve this name
     // length basic subscriber -> not initialized.
-
-    this._length = -1;
+    // this._length = -1;
 
     _applyHookFunctions(this);
   }
@@ -81,26 +81,18 @@ function () {
     this._subs.push(this._observable$.pipe(filter(function (cE) {
       return !cE.data.isLocal;
     })).subscribe(function (cE) {
-      // when data changes, send it to RxDocument in docCache
+      // when data changes:
+      // send it to RxDocument in docCache
       var doc = _this._docCache.get(cE.data.doc);
 
-      if (doc) doc._handleChangeEvent(cE);
+      if (doc) doc._handleChangeEvent(cE); // update collection length
 
-      switch (cE.data.op) {
-        case 'INSERT':
-          _this._length += 1;
-          break;
-
-        case 'REMOVE':
-          if (_this._length < 1) break;
-          _this._length -= 1;
-          break;
-      }
+      _this._updateCollectionLength(cE.data.op);
     })); // update initial length -> starts at 0
 
 
     this.pouch.allDocs().then(function (entries) {
-      _this._length = entries.rows.length || 0;
+      length = entries.rows.length || 0;
     });
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
   };
@@ -361,6 +353,10 @@ function () {
       return _this5._createDocument(json);
     });
   };
+  /**
+   * returns observable
+   */
+
 
   _proto.$emit = function $emit(changeEvent) {
     return this.database.$emit(changeEvent);
@@ -721,17 +717,23 @@ function () {
   _proto.remove = function remove() {
     return this.database.removeCollection(this.name);
   };
+  /**
+   * collection.length getter
+   */
+
+
+  /**
+   * Updates the collection length
+   * whenever an updating event op is triggered
+   * 
+   * @param {*} op 
+   */
+  _proto._updateCollectionLength = function _updateCollectionLength(op) {
+    if (['INSERT', 'REMOVE'].indexOf(op) < 0) return;
+    length = op === 'INSERT' ? length + 1 : length - 1;
+  };
 
   _createClass(RxCollection, [{
-    key: "length",
-    get: function get() {
-      return this._length;
-    }
-    /**
-     * returns observable
-     */
-
-  }, {
     key: "$",
     get: function get() {
       return this._observable$;
@@ -757,13 +759,6 @@ function () {
         return cE.data.op === 'REMOVE';
       }));
     }
-  }, {
-    key: "length$",
-    get: function get() {
-      return this.$.pipe(filter(function (cE) {
-        return ['REMOVE', 'INSERT'].indexOf(cE.data.op) > -1;
-      })).length;
-    }
     /**
      * only emits the change-events that change something with the documents
      */
@@ -788,6 +783,11 @@ function () {
         return _this9._onDestroyCall = res;
       });
       return this._onDestroy;
+    }
+  }, {
+    key: "length",
+    get: function get() {
+      return length;
     }
   }]);
 
