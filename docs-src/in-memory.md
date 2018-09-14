@@ -1,6 +1,6 @@
 # InMemory Collections
 
-When you do a heavy amount of operations on a `RxCollection`, you might want to optimize this by using the in-memory-replication of the collection. The in-memory-replication behaves equal to the original collection but is stored in the Memory of your computer instead of the hard drive
+When you do a heavy amount of operations on a `RxCollection`, you might want to optimize this by using the in-memory-replication of the collection. The in-memory-replication behaves equal to the original collection but is stored in the Memory of your computer instead of the hard drive. It inherits the `statics` of the original collection, but not its hooks -so you should register them separately in the case you'd want them to apply.
 
 ## Pros:
 
