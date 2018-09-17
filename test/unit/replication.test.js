@@ -305,6 +305,47 @@ describe('replication.test.js', () => {
                 c2.database.destroy();
             });
         });
+        describe('alive$', () => {
+            it('should not be alive', async () => {
+                const server = await SpawnServer.spawn();
+                server.close(true);
+                const c = await humansCollection.create(0);
+
+                const repState = c.sync({
+                    remote: server.url
+                });
+
+                const emited = [];
+                repState.alive$.subscribe(cE => emited.push(cE));
+                
+                assert.equal(emited[emited.length - 1], false);
+
+                c.database.destroy();
+            });
+            it('should be alive and transit to not alive', async () => {
+                const server = await SpawnServer.spawn();
+                const c = await humansCollection.create(0);
+
+                const repState = c.sync({
+                    remote: server.url
+                });
+
+                const emited = [];
+                repState.alive$.subscribe(cE => emited.push(cE));
+                await AsyncTestUtil.waitUntil(() => !!emited[emited.length - 1]);
+
+                assert.equal(emited[emited.length - 1], true);
+
+                server.close(true);
+                const obj = schemaObjects.human();
+                await c.insert(obj);
+
+                await AsyncTestUtil.waitUntil(() => !emited[emited.length - 1]);
+                assert.equal(emited[emited.length - 1], false);
+
+                c.database.destroy();
+            });
+        });
         describe('complete$', () => {
             it('should always be false on live-replication', async () => {
                 const c = await humansCollection.create();
