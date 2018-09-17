@@ -9,6 +9,7 @@ import {
     Subject,
     fromEvent
 } from 'rxjs';
+import { skipUntil } from 'rxjs/operators';
 
 import {
     promiseWait,
@@ -40,6 +41,7 @@ export class RxReplicationState {
             denied: new Subject(),
             active: new BehaviorSubject(false),
             complete: new BehaviorSubject(false),
+            alive: new BehaviorSubject(false),
             error: new Subject(),
         };
 
@@ -122,6 +124,39 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
 
             Promise.all(unhandledEvents).then(() => rxRepState._subjects.complete.next(info));
         })
+    );
+
+    // alive
+    async function getIsAlive(emitter) {
+        // "state" will live in emitter.state if single direction replication
+        // or in emitter.push.state & emitter.pull.state when syncing for both
+        let state = emitter.state;
+        if (!state) {
+            state = [emitter.pull.state, emitter.push.state]
+                .reduce((acc, val) => {
+                    if (acc === 'active' || val === 'active') return 'active';
+                    return acc === 'stopped' ? acc : val;
+                }, '');
+        }
+
+        // If it's active, we can't determine whether the connection is active
+        // or not yet
+        if (state === 'active') {
+            await new Promise(resolve => setTimeout(resolve, 15));
+            return getIsAlive(emitter);
+        }
+
+        const isAlive = state !== 'stopped';
+        return isAlive;
+    }
+    rxRepState._subs.push(
+        fromEvent(evEmitter, 'paused')
+            .pipe(
+                skipUntil(fromEvent(evEmitter, 'active'))
+            ).subscribe(async () => {
+                const isAlive = await getIsAlive(rxRepState._pouchEventEmitterObject);
+                rxRepState._subjects.alive.next(isAlive);
+            })
     );
 }
 

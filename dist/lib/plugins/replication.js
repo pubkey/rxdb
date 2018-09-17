@@ -9,9 +9,15 @@ exports.createRxReplicationState = createRxReplicationState;
 exports.sync = sync;
 exports["default"] = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxReplicationState = void 0;
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
 var _pouchdbReplication = _interopRequireDefault(require("pouchdb-replication"));
 
 var _rxjs = require("rxjs");
+
+var _operators = require("rxjs/operators");
 
 var _util = require("../util");
 
@@ -52,6 +58,7 @@ function () {
       denied: new _rxjs.Subject(),
       active: new _rxjs.BehaviorSubject(false),
       complete: new _rxjs.BehaviorSubject(false),
+      alive: new _rxjs.BehaviorSubject(false),
       error: new _rxjs.Subject()
     }; // create getters
 
@@ -131,30 +138,110 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     Promise.all(unhandledEvents).then(function () {
       return rxRepState._subjects.complete.next(info);
     });
-  }));
+  })); // alive
+
+
+  function getIsAlive(_x) {
+    return _getIsAlive.apply(this, arguments);
+  }
+
+  function _getIsAlive() {
+    _getIsAlive = (0, _asyncToGenerator2["default"])(
+    /*#__PURE__*/
+    _regenerator["default"].mark(function _callee2(emitter) {
+      var state, isAlive;
+      return _regenerator["default"].wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              // "state" will live in emitter.state if single direction replication
+              // or in emitter.push.state & emitter.pull.state when syncing for both
+              state = emitter.state;
+
+              if (!state) {
+                state = [emitter.pull.state, emitter.push.state].reduce(function (acc, val) {
+                  if (acc === 'active' || val === 'active') return 'active';
+                  return acc === 'stopped' ? acc : val;
+                }, '');
+              } // If it's active, we can't determine whether the connection is active
+              // or not yet
+
+
+              if (!(state === 'active')) {
+                _context2.next = 6;
+                break;
+              }
+
+              _context2.next = 5;
+              return new Promise(function (resolve) {
+                return setTimeout(resolve, 15);
+              });
+
+            case 5:
+              return _context2.abrupt("return", getIsAlive(emitter));
+
+            case 6:
+              isAlive = state !== 'stopped';
+              return _context2.abrupt("return", isAlive);
+
+            case 8:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, this);
+    }));
+    return _getIsAlive.apply(this, arguments);
+  }
+
+  rxRepState._subs.push((0, _rxjs.fromEvent)(evEmitter, 'paused').pipe((0, _operators.skipUntil)((0, _rxjs.fromEvent)(evEmitter, 'active'))).subscribe(
+  /*#__PURE__*/
+  (0, _asyncToGenerator2["default"])(
+  /*#__PURE__*/
+  _regenerator["default"].mark(function _callee() {
+    var isAlive;
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return getIsAlive(rxRepState._pouchEventEmitterObject);
+
+          case 2:
+            isAlive = _context.sent;
+
+            rxRepState._subjects.alive.next(isAlive);
+
+          case 4:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }))));
 }
 
 function createRxReplicationState(collection) {
   return new RxReplicationState(collection);
 }
 
-function sync(_ref) {
+function sync(_ref2) {
   var _this2 = this;
 
-  var remote = _ref.remote,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$direction = _ref.direction,
-      direction = _ref$direction === void 0 ? {
+  var remote = _ref2.remote,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$direction = _ref2.direction,
+      direction = _ref2$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref$direction,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {
+  } : _ref2$direction,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref$options,
-      query = _ref.query;
+  } : _ref2$options,
+      query = _ref2.query;
   options = (0, _util.clone)(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (_pouchDb["default"].isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
