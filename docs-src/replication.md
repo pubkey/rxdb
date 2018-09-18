@@ -63,7 +63,7 @@ replicationState.active$.subscribe(active => console.dir(active));
 Emits `true` or `false` depending if the replication is alive - data is transmitting properly between databases. A `false` value implies the connection has died -if you're replicating to a remote database, for example. It will only emit `false` if there are pending changes that couldn't be replicated -it won't emit immediately after the connection dies.
 
 ```js
-replicationState.active$.subscribe(active => console.dir(active));
+replicationState.alive$.subscribe(alive => console.dir(active));
 ```
 
 ### complete$
