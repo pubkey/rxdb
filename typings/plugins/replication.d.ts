@@ -10,6 +10,7 @@ export declare class RxReplicationState {
     docs$: Observable<any>;
     denied$: Observable<any>;
     active$: Observable<any>;
+    alive$: Observable<boolean>;
     complete$: Observable<any>;
     error$: Observable<any>;
     cancel(): Promise<any>;

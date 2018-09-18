@@ -21,6 +21,7 @@ Features:
   - Added option for CORS to server-plugin
   - `this`-scope of collection-hooks are bound to the collection itself [#788](https://github.com/pubkey/rxdb/issues/788)
   - All methods of `RxDocument` are bound to the instance [#791](https://github.com/pubkey/rxdb/issues/791)
+  - Added `RxReplicationState.alive$`, [see](./docs-src/replication.md#alive). Thanks [@rafamel](https://github.com/rafamel)
 
 Bugfixes:
   - checkAdapter doesn't cleanup test databases [#714](https://github.com/pubkey/rxdb/issues/714)
