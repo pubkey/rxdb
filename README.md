@@ -1,8 +1,6 @@
-<!--
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **6.0.0** is now released, read the [CHANGELOG](./CHANGELOG.md#600-september-19-2017) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
--->
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **8.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/8.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 
 <p align="center">
   <a href="https://github.com/pubkey/rxdb">

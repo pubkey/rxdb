@@ -1,6 +1,6 @@
 # Changelog
 
-### 8.0.0 (comming soon) BREAKING
+### 8.0.0 (18. September 2018) BREAKING [read the announcement](./orga/releases/8.0.0.md)
 
 Breaking:
   - Upgraded to [pouchdb 7.0.0](https://pouchdb.com/2018/06/21/pouchdb-7.0.0.html)
