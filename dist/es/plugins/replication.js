@@ -1,9 +1,13 @@
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+
 /**
  * this plugin adds the RxCollection.sync()-function to rxdb
  * you can use it to sync collections with remote or local couchdb-instances
  */
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
+import { skipUntil } from 'rxjs/operators';
 import { promiseWait, clone, pouchReplicationFunction } from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
@@ -30,6 +34,7 @@ function () {
       denied: new Subject(),
       active: new BehaviorSubject(false),
       complete: new BehaviorSubject(false),
+      alive: new BehaviorSubject(false),
       error: new Subject()
     }; // create getters
 
@@ -107,29 +112,109 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     Promise.all(unhandledEvents).then(function () {
       return rxRepState._subjects.complete.next(info);
     });
-  }));
+  })); // alive
+
+
+  function getIsAlive(_x) {
+    return _getIsAlive.apply(this, arguments);
+  }
+
+  function _getIsAlive() {
+    _getIsAlive = _asyncToGenerator(
+    /*#__PURE__*/
+    _regeneratorRuntime.mark(function _callee2(emitter) {
+      var state, isAlive;
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              // "state" will live in emitter.state if single direction replication
+              // or in emitter.push.state & emitter.pull.state when syncing for both
+              state = emitter.state;
+
+              if (!state) {
+                state = [emitter.pull.state, emitter.push.state].reduce(function (acc, val) {
+                  if (acc === 'active' || val === 'active') return 'active';
+                  return acc === 'stopped' ? acc : val;
+                }, '');
+              } // If it's active, we can't determine whether the connection is active
+              // or not yet
+
+
+              if (!(state === 'active')) {
+                _context2.next = 6;
+                break;
+              }
+
+              _context2.next = 5;
+              return new Promise(function (resolve) {
+                return setTimeout(resolve, 15);
+              });
+
+            case 5:
+              return _context2.abrupt("return", getIsAlive(emitter));
+
+            case 6:
+              isAlive = state !== 'stopped';
+              return _context2.abrupt("return", isAlive);
+
+            case 8:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, this);
+    }));
+    return _getIsAlive.apply(this, arguments);
+  }
+
+  rxRepState._subs.push(fromEvent(evEmitter, 'paused').pipe(skipUntil(fromEvent(evEmitter, 'active'))).subscribe(
+  /*#__PURE__*/
+  _asyncToGenerator(
+  /*#__PURE__*/
+  _regeneratorRuntime.mark(function _callee() {
+    var isAlive;
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return getIsAlive(rxRepState._pouchEventEmitterObject);
+
+          case 2:
+            isAlive = _context.sent;
+
+            rxRepState._subjects.alive.next(isAlive);
+
+          case 4:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }))));
 }
 
 export function createRxReplicationState(collection) {
   return new RxReplicationState(collection);
 }
-export function sync(_ref) {
+export function sync(_ref2) {
   var _this2 = this;
 
-  var remote = _ref.remote,
-      _ref$waitForLeadershi = _ref.waitForLeadership,
-      waitForLeadership = _ref$waitForLeadershi === void 0 ? true : _ref$waitForLeadershi,
-      _ref$direction = _ref.direction,
-      direction = _ref$direction === void 0 ? {
+  var remote = _ref2.remote,
+      _ref2$waitForLeadersh = _ref2.waitForLeadership,
+      waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
+      _ref2$direction = _ref2.direction,
+      direction = _ref2$direction === void 0 ? {
     pull: true,
     push: true
-  } : _ref$direction,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {
+  } : _ref2$direction,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {
     live: true,
     retry: true
-  } : _ref$options,
-      query = _ref.query;
+  } : _ref2$options,
+      query = _ref2.query;
   options = clone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (PouchDB.isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
