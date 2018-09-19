@@ -1,6 +1,5 @@
 import { Component, ViewChild, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { DatabaseService } from '../../services/database.service';
-import * as randomInt from 'random-int';
 
 @Component({
     selector: 'hero-insert',
@@ -11,7 +10,7 @@ import * as randomInt from 'random-int';
 })
 export class HeroInsertComponent {
 
-    @ViewChild('input') inputfield;
+    @ViewChild('input') inputfield: any;
 
     tempDoc: any;
 
@@ -23,7 +22,7 @@ export class HeroInsertComponent {
 
     reset() {
         this.tempDoc = this.dbService.db.hero.newDocument({
-            maxHP: randomInt(100, 1000)
+            maxHP: getRandomArbitrary(100, 1000)
         });
     }
 
@@ -43,6 +42,12 @@ export class HeroInsertComponent {
 
         this.inputfield.nativeElement.focus();
     }
+}
 
-
+/**
+ * Returns a random number between min (inclusive) and max (exclusive)
+ * @link https://stackoverflow.com/a/1527820/3443137
+ */
+function getRandomArbitrary(min: number, max: number): number {
+    return Math.random() * (max - min) + min;
 }

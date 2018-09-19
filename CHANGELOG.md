@@ -1,5 +1,10 @@
 # Changelog
 
+### 8.X.X (comming soon)
+
+Bugfixes:
+  - Does not compile in TypeScript with strict flag enabled [#448](https://github.com/pubkey/rxdb/issues/448)
+
 ### 8.0.0 (18. September 2018) BREAKING [read the announcement](./orga/releases/8.0.0.md)
 
 Breaking:

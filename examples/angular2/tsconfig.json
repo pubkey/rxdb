@@ -2,7 +2,6 @@
     "compileOnSave": false,
     "buildOnSave": false,
     "compilerOptions": {
-        "noStrictGenericChecks": true,
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
@@ -10,7 +9,9 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "removeComments": false,
-        "noImplicitAny": false,
+        "strict": true,
+        "strictPropertyInitialization": false,
+        "strictNullChecks": true,
         "types": [
             "core-js",
             "requirejs"

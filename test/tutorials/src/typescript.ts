@@ -29,7 +29,7 @@ type HeroDocType = {
 };
 
 type HeroDocMethods = {
-    scream: (string) => string;
+    scream: (v: string) => string;
 };
 
 type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;

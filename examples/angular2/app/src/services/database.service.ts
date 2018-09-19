@@ -8,8 +8,10 @@ import {
 
 // import typings
 import {
+    RxHeroDocument,
     RxHeroesDatabase,
-    RxHeroesCollections
+    RxHeroesCollections,
+    RxHeroDocumentType
 } from './../RxDB.d';
 
 
@@ -46,7 +48,7 @@ import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
 RxDB.plugin(PouchdbAdapterHttp);
 
 
-import PouchdbAdapterIdb from 'pouchdb-adapter-idb';
+import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
 RxDB.plugin(PouchdbAdapterIdb);
 const useAdapter = 'idb';
 
@@ -56,7 +58,7 @@ let collections = [
         name: 'hero',
         schema: require('../schemas/hero.schema.json'),
         methods: {
-            hpPercent() {
+            hpPercent(this: RxHeroDocument): number {
                 return this.hp / this.maxHP * 100;
             }
         },
@@ -83,7 +85,7 @@ async function _create(): Promise<RxHeroesDatabase> {
         // password: 'myLongAndStupidPassword' // no password needed
     });
     console.log('DatabaseService: created database');
-    window['db'] = db; // write to window for debugging
+    (window as any)['db'] = db; // write to window for debugging
 
     // show leadership in title
     db.waitForLeadership()
@@ -98,10 +100,10 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // hooks
     console.log('DatabaseService: add hooks');
-    db.collections.hero.preInsert(function(docObj) {
+    db.collections.hero.preInsert(function(docObj: RxHeroDocumentType) {
         const color = docObj.color;
         return db.collections.hero.findOne({ color }).exec()
-            .then(has => {
+            .then((has: RxHeroDocument | null) => {
                 if (has != null) {
                     alert('another hero already has the color ' + color);
                     throw new Error('color already there');
@@ -110,12 +112,11 @@ async function _create(): Promise<RxHeroesDatabase> {
             });
     });
 
-    // sync
+    // sync with server
     console.log('DatabaseService: sync');
-    collections
-        .filter(col => col.sync)
-        .map(col => col.name)
-        .forEach(colName => db[colName].sync({ remote: syncURL + colName + '/' }));
+    await db.hero.sync({
+        remote: syncURL + '/hero'
+    });
 
     return db;
 }

@@ -27,7 +27,7 @@ export class HeroEditComponent implements OnInit {
     @Output('done') done = new EventEmitter();
 
     public synced: Boolean = true;
-    public formValue: Number;
+    public formValue: number;
     private subs: Subscription[] = [];
 
     constructor(

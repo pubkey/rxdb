@@ -6,17 +6,17 @@
 import { RxDocument, RxCollection, RxDatabase } from 'rxdb';
 import { Observable } from 'rxjs';
 
-declare interface RxHeroDocumentType {
-    name?: string;
-    color?: string;
-    maxHP?: number;
-    hp?: number;
+export type RxHeroDocumentType = {
+    name: string;
+    color: string;
+    maxHP: number;
+    hp: number;
     team?: string;
-    skills?: Array<{
+    skills: Array<{
         name?: string,
         damage?: string
     }>;
-}
+};
 
 // ORM methods
 type RxHeroDocMethods = {

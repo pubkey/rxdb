@@ -71,7 +71,7 @@ export declare class RxDatabaseBase<Collections= { [key: string]: RxCollection }
     getLocal(id: string): Promise<RxLocalDocument<RxDatabase<Collections>>>;
 
     // from rxdb/plugins/server
-    server(ServerOptions?): {
+    server(options?: ServerOptions): {
         app: any;
         server: any;
     };

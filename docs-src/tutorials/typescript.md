@@ -39,7 +39,7 @@ We also add some ORM-methods for the document.
 
 ```typescript
 type HeroDocMethods = {
-    scream: (string) => string;
+    scream: (v: string) => string;
 };
 ```
 

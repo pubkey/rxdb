@@ -43,14 +43,14 @@ export class HeroesListComponent {
             );
     }
 
-    set edit(hero) {
+    set edit(hero: RxHeroDocument) {
         console.log('editHero: ' + hero.name);
         this.editChange.emit(hero);
     }
-    editHero(hero) {
+    editHero(hero: RxHeroDocument) {
         this.edit = hero;
     }
-    deleteHero(hero) {
+    deleteHero(hero: RxHeroDocument) {
         hero.remove();
     }
 
@@ -60,6 +60,7 @@ export class HeroesListComponent {
     async foo(): Promise<string> {
         const db = this.dbService.db;
         const firstDoc = await db.hero.findOne().exec();
+        if (!firstDoc) return 'not found';
         const f: string = firstDoc.color;
         return f;
     }

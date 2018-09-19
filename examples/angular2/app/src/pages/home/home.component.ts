@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { RxDocument } from '../../../../../../';
-import * as RxDBTypes from '../../RxDB.d';
+import {
+    RxHeroDocument
+} from '../../RxDB.d';
 
 
 @Component({
@@ -9,7 +11,7 @@ import * as RxDBTypes from '../../RxDB.d';
 })
 export class HomeComponent {
 
-    editedHero: RxDBTypes.RxHeroDocument;
+    editedHero: RxHeroDocument;
 
     constructor() { }
     ngOnInit() { }
@@ -21,7 +23,7 @@ export class HomeComponent {
         const x: number = this.editedHero.hpPercent();
     }
 
-    editHero(hero) {
+    editHero(hero: RxHeroDocument) {
         this.editedHero = hero;
     }
 }

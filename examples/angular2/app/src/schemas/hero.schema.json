@@ -43,8 +43,9 @@
                         "type": "number"
                     }
                 }
-            }
+            },
+            "default": []
         }
     },
-    "required": ["color", "maxHP"]
+    "required": ["color", "hp", "maxHP", "skills"]
 }

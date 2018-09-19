@@ -4,7 +4,7 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "strictNullChecks": true,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "strictPropertyInitialization": true,

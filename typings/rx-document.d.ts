@@ -16,7 +16,7 @@ export type RxDocument<RxDocumentType, OrmMethods = {}> = RxDocumentBase<RxDocum
 
 export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 
-declare type AtomicUpdateFunction<RxDocumentType> = (RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
+declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
 
 export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly collection: RxCollection<RxDocumentType, OrmMethods>;

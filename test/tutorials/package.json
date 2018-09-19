@@ -10,11 +10,13 @@
     "rxdb": "../../"
   },
   "devDependencies": {
-    "@types/node": "^10.9.4",
+    "@types/node": "10.9.4",
+    "@types/pouchdb-adapter-http": "6.1.2",
+    "@types/request-promise-native": "1.0.15",
     "async-test-util": "1.6.1",
     "node": "10.10.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
+    "request": "2.88.0",
+    "request-promise-native": "1.0.5",
     "ts-node": "7.0.1",
     "typescript": "3.0.3"
   }
