@@ -10,7 +10,7 @@
 
 <h1 align="center">RxDB</h1>
 <p align="center">
-  <strong>A reactive, offline-first Database for JavaScript</strong>
+  <strong>A realtime Database for the Web</strong>
 </p>
 
 <div align="center">
@@ -35,6 +35,10 @@
 </p>
 
 <br/>
+
+
+![reactive.gif](docs-src/files/realtime.gif)
+
 
 * * *
 
