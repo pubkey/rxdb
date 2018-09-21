@@ -1,6 +1,6 @@
 # Changelog
 
-### 8.X.X (comming soon)
+### 8.0.1 (21. September 2018)
 
 Bugfixes:
   - Does not compile in TypeScript with strict flag enabled [#448](https://github.com/pubkey/rxdb/issues/448)

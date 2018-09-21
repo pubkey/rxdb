@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
-  "description": "Reactive database for progressive web apps and more",
-  "version": "8.0.0",
+  "description": "A realtime Database for the Web",
+  "version": "8.0.1",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -22,7 +22,8 @@
     "pouchdb",
     "couchdb",
     "rx",
-    "reactive"
+    "reactive",
+    "realtime"
   ],
   "license": "Apache-2.0",
   "main": "./dist/lib/index.js",
