@@ -1,10 +1,11 @@
-language:        node_js
-sudo:            required
+language: node_js
+sudo: required
 dist: trusty
 os:
   - linux
 node_js:
-  - "10.6.0"
+  - "8"
+  - "10"
 services:
   - docker
 
