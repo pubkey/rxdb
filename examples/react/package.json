@@ -8,9 +8,8 @@
     "pouchdb-adapter-idb": "^6.1.2",
     "pouchdb-replication": "^6.1.2",
     "pouchdb-server": "^2.3.4",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "rxjs": "^5.2.0"
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2"
   },
   "devDependencies": {
     "react-scripts": "^0.9.0",
