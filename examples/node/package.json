@@ -4,8 +4,10 @@
   "description": "rxdb node example",
   "main": "src/app.js",
   "scripts": {
+    "preinstall": "node ./scripts/ensure-equal-versions.js",
     "start": "node src/app.js",
-    "clear": "rimraf heroesdb-rxdb*"
+    "clear": "rimraf -rf heroesdb-rxdb*",
+    "test": "npm run clear && node src/test.js"
   },
   "author": "salomonelli",
   "dependencies": {
@@ -13,9 +15,8 @@
     "chalk": "2.0.1",
     "keypress": "0.2.1",
     "node": "10.5.0",
-    "pouchdb-adapter-http": "6.2.0",
-    "pouchdb-adapter-node-websql": "6.2.0",
-    "pouchdb-replication": "6.2.0",
+    "pouchdb-adapter-http": "7.0.0",
+    "pouchdb-adapter-node-websql": "7.0.0",
     "random-name": "0.1.2"
   },
   "devDependencies": {

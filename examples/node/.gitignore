@@ -1,5 +1,4 @@
-heroesdb-rxdb-*/
-heroesdb-rxdb2-*/
+heroesdb-*
 npm-debug.log
 node_modules/
 db-files/

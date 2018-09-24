@@ -5,7 +5,7 @@ const keypress = require('keypress');
 const random = require('random-name');
 const randomColor = require('./random-color');
 
-const start = async() => {
+const start = async () => {
     Log.intro();
     observeHeroes();
     Log.explanation();
@@ -17,6 +17,7 @@ const start = async() => {
                 break;
             case '\u0003':
                 process.exit();
+                break;
             default:
                 Log.explanation();
                 break;
@@ -26,7 +27,7 @@ const start = async() => {
     process.stdin.resume();
 };
 
-const upsertHero = async() => {
+const upsertHero = async () => {
     try {
         const db = await Database.get();
         return db.heroes.addHero(random(), randomColor());
@@ -35,7 +36,7 @@ const upsertHero = async() => {
     }
 };
 
-const observeHeroes = async() => {
+const observeHeroes = async () => {
     try {
         const db = await Database.get();
         Log.createdDB();
