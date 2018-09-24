@@ -1,8 +1,6 @@
 import * as RxDB from '../../../';
-import {RxDatabase, QueryChangeDetector} from '../../../';
 
-QueryChangeDetector.enable();
-QueryChangeDetector.enableDebugging();
+RxDB.QueryChangeDetector.enableDebugging();
 
 RxDB.plugin(require('pouchdb-adapter-idb'));
 RxDB.plugin(require('pouchdb-adapter-http')); //enable syncing over http
@@ -22,11 +20,10 @@ const collections = [
 
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log('host: ' + syncURL);
-// const syncURL = host;
 
 let dbPromise = null;
 
-const _create = async function() {
+const _create = async () => {
     console.log('DatabaseService: creating database..');
     const db = await RxDB.create({name: 'heroesreactdb', adapter: 'idb', password: 'myLongAndStupidPassword'});
     console.log('DatabaseService: created database');
@@ -44,8 +41,8 @@ const _create = async function() {
 
     // hooks
     console.log('DatabaseService: add hooks');
-    db.collections.heroes.preInsert(function(docObj) {
-        const color = docObj.color;
+    db.collections.heroes.preInsert(docObj => {
+        const { color } = docObj;
         return db.collections.heroes.findOne({color}).exec().then(has => {
             if (has != null) {
                 alert('another hero already has the color ' + color);
@@ -64,7 +61,7 @@ const _create = async function() {
     return db;
 };
 
-export function get() {
+export const get = () => {
     if (!dbPromise)
         dbPromise = _create();
     return dbPromise;
