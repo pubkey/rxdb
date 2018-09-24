@@ -5,6 +5,7 @@
     "preinstall": "node ./scripts/ensure-equal-versions.js",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
+    "server:show": "node server.js ",
     "dev": "npm-run-all --parallel dev:serve",
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "dev:serve": "webpack-dev-server --host 0.0.0.0 --config webpack.config.dev.js --env.ENV development",
