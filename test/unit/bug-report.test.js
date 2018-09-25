@@ -51,7 +51,7 @@ describe('bug-report.test.js', () => {
         });
         // create a collection
         const collection = await db.collection({
-            name: 'crawlstate',
+            name: 'mycollection',
             schema: mySchema
         });
 

@@ -171,7 +171,6 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-
     describe('immutable', () => {
         it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
@@ -199,7 +198,6 @@ config.parallel('rx-query.test.js', () => {
             col.database.destroy();
         });
     });
-
     describe('QueryCache.js', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);
@@ -319,7 +317,6 @@ config.parallel('rx-query.test.js', () => {
             */
         });
     });
-
     describe('.exec()', () => {
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
@@ -608,7 +605,6 @@ config.parallel('rx-query.test.js', () => {
             });
         });
     });
-
     describe('issues', () => {
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
@@ -1222,6 +1218,79 @@ config.parallel('rx-query.test.js', () => {
             assert(foundByRoomAndSessionId !== null); // fail
             assert(foundBySessionId !== null); // pass
             assert(foundBySessionId.roomId === roomId && foundBySessionId.sessionId === sessionId); // pass
+
+            db.destroy();
+        });
+        it('#815 Allow null value for strings', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: ['string', 'null']
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            // generate a random database-name
+            const name = util.randomCouchString(10);
+
+            // create a database
+            const db = await RxDB.create({
+                name,
+                adapter: 'memory',
+                queryChangeDetection: true,
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collection = await db.collection({
+                name: 'mycollection',
+                schema: mySchema
+            });
+
+            // insert a document
+            await collection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob1',
+                age: 56
+            });
+            await collection.insert({
+                passportId: 'foobaz',
+                firstName: 'Bob2',
+                lastName: null,
+                age: 56
+            });
+
+            const queryOK = collection.find({});
+            const docsOK = await queryOK.exec();
+            assert.equal(docsOK.length, 2);
+
+            const selector = {
+                lastName: null
+            };
+
+            const pouchResult = await collection.pouch.find({
+                selector
+            });
+            const pouchDocs = pouchResult.docs;
+            const query = collection.find(selector);
+            const docs = await query.exec();
+
+            assert.equal(pouchDocs.length, docs.length);
+            assert.equal(pouchDocs[0].firstName, docs[0].firstName);
 
             db.destroy();
         });
