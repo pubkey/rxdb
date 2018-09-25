@@ -61,7 +61,7 @@ type HeroCollectionMethods = {
 }
 
 // and then merge all our types
-type HeroCollection = RxCollection<HeroDocType, HeroDocMethods>;
+type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
 ```
 
 
