@@ -1,5 +1,10 @@
 # Changelog
 
+### 8.X.X (comming soon)
+
+Bugfixes:
+  - `RxDB.removeDatabase()` did not return a Promise [#822](https://github.com/pubkey/rxdb/pull/822). Thanks [@will118](https://github.com/will118)
+
 ### 8.0.1 (21. September 2018)
 
 Bugfixes:
