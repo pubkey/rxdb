@@ -692,7 +692,7 @@ export function removeDatabase(databaseName, adapter) {
     const adminPouch = _internalAdminPouch(databaseName, adapter);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
 
-    collectionsPouch.allDocs({
+    return collectionsPouch.allDocs({
         include_docs: true
     }).then(collectionsData => {
         // remove collections
