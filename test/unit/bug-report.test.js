@@ -75,7 +75,7 @@ describe('bug-report.test.js', () => {
         });
         // create a collection
         const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'crawlstate',
+            name: 'mycollection',
             schema: mySchema
         });
 
