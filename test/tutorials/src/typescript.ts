@@ -38,7 +38,7 @@ type HeroCollectionMethods = {
     countAllDocuments: () => Promise<number>;
 }
 
-type HeroCollection = RxCollection<HeroDocType, HeroDocMethods>;
+type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
 
 type MyDatabaseCollections = {
     heroes: HeroCollection

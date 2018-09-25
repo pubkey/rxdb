@@ -1,5 +1,7 @@
 # Using RxDB with Typescript
 
+<!-- IMPORTANT: When you edit this file, apply the same changes to test/tutorials/src/typescript.ts -->
+
 In this tutorial you learn how to use RxDB with Typescript.
 We will create a basic database with one collection and several ORM-methods, fully typed!
 
