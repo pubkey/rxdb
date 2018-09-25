@@ -9,7 +9,7 @@
  * - 'npm run test:browsers' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+// import AsyncTestUtil from 'async-test-util';
 
 import RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
@@ -29,7 +29,7 @@ describe('bug-report.test.js', () => {
                     type: 'string'
                 },
                 lastName: {
-                    type: 'string'
+                    type: ['string', 'null']
                 },
                 age: {
                     type: 'integer',
@@ -59,50 +59,42 @@ describe('bug-report.test.js', () => {
         await collection.insert({
             passportId: 'foobar',
             firstName: 'Bob',
-            lastName: 'Kelso',
+            age: 56
+        });
+        await collection.insert({
+            passportId: 'foobaz',
+            firstName: 'Bob',
+            lastName: null,
             age: 56
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await RxDB.create({
-            name,
-            adapter: 'memory',
-            queryChangeDetection: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'crawlstate',
-            schema: mySchema
-        });
+        // you can also wait for events
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const queryOK = collection.find({});
+        const docsOK = await queryOK.exec();
+        assert.equal(docsOK.length, 2);
+
+        const query = collection.find({ lastName: null });
+        const docs = await query.exec();
+        assert.equal(docs.length, 2);
 
         /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.equal(myDocument.age, 56);
+        sconst emitted = [];
+        const sub = query.$.subscribe(docs => emitted.push(docs.length));
+        await collection.insert({
+            passportId: 'baz',
+            firstName: 'John',
+            age: 22
+        });
 
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        await AsyncTestUtil.waitUntil(() => emitted.length === 2);
 
-
+        assert.equal(emitted[1], 3);
+        
         // clean up afterwards
         sub.unsubscribe();
+        */
+
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
