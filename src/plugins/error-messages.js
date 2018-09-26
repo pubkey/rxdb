@@ -51,7 +51,7 @@ const CODES = {
 
     // rx-collection
     COL1: 'RxDocument.insert() You cannot insert an existing document',
-    COL2: 'RxCollection.insert() do not provide ._id, it will be generated',
+    COL2: 'RxCollection.insert() do not provide ._id when it is not the primary key',
     COL3: 'RxCollection.upsert() does not work without primary',
     COL4: 'RxCollection.atomicUpsert() does not work without primary',
     COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
