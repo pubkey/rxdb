@@ -368,7 +368,7 @@ export class RxCollection {
         json = clone(json);
         json = this.schema.fillObjectWithDefaults(json);
 
-        if (json._id) {
+        if (json._id && this.schema.primaryPath !== '_id') {
             throw RxError.newRxError('COL2', {
                 data: json
             });
