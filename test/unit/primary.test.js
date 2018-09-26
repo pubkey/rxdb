@@ -59,6 +59,10 @@ config.parallel('primary.test.js', () => {
                     schemaObj.properties.passportId.encrypted = true;
                     assert.throws(() => RxSchema.create(schemaObj), Error);
                 });
+                it('throw if primary is _id', async () => {
+                    const schemaObj = clone(schemas._idPrimary);
+                    assert.throws(() => RxSchema.create(schemaObj), Error);
+                });
             });
         });
         describe('.validate()', () => {

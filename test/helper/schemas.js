@@ -270,10 +270,24 @@ export const nostringIndex = {
         }
     },
     required: ['firstName', 'lastName']
-
 };
 
 
+export const _idPrimary = {
+    description: 'the primary is \'_id\'',
+    version: 0,
+    type: 'object',
+    properties: {
+        _id: {
+            type: 'string',
+            primary: true
+        },
+        firstName: {
+            type: 'string'
+        }
+    },
+    required: ['firstName']
+};
 
 export const bigHuman = {
     title: 'human schema',

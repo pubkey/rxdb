@@ -266,6 +266,26 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }), Error);
                 });
+                it('throw when _id is not primary', async () => {
+                    assert.throws(() => SchemaCheck.checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        description: 'save as fieldname',
+                        properties: {
+                            userId: {
+                                type: 'string',
+                                primary: true
+                            },
+                            _id: {
+                                type: 'string',
+                            },
+                            firstName: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['firstName']
+                    }), Error);
+                });
             });
         });
         describe('.normalize()', () => {
