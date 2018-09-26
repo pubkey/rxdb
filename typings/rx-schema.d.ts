@@ -76,7 +76,7 @@ export declare class RxSchema<T = any> {
     readonly jsonID: RxJsonSchema;
     getSchemaByObjectPath(path: keyof T): JsonSchema;
     readonly encryptedPaths: any;
-    validate(obj: any, schemaObj: any): void;
+    validate(obj: any, schemaPath?: string): void;
     readonly hash: string;
     readonly topLevelFields: keyof T[];
     readonly previousVersions: any[];
