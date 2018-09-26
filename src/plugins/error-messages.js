@@ -130,7 +130,6 @@ const CODES = {
     SC6: 'SchemaCheck: primary can only be defined at top-level',
     SC7: 'SchemaCheck: default-values can only be defined at top-level',
     SC8: 'SchemaCheck: first level-fields cannot start with underscore _',
-    SC9: 'SchemaCheck: schema defines ._id, this will be done automatically',
     SC10: 'SchemaCheck: schema defines ._rev, this will be done automatically',
     SC11: 'SchemaCheck: schema need an number>=0 as version',
     SC12: 'SchemaCheck: primary can only be defined once',
