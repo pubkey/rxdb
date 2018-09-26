@@ -64,6 +64,22 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate point', () => {
                     SchemaCheck.checkSchema(schemas.point);
                 });
+                it('validate _id when primary', async () => {
+                    SchemaCheck.checkSchema({
+                        title: 'schema',
+                        version: 0,
+                        properties: {
+                            _id: {
+                                type: 'string',
+                                primary: true
+                            },
+                            firstName: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['firstName']
+                    });
+                });
             });
             describe('negative', () => {
                 it('break when index is no string', () => {
