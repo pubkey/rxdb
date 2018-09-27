@@ -39,7 +39,7 @@ To import `rxdb`, add this to your javascript file:
 import RxDB from 'rxdb';
 
 // es5
-var rxdb = require('rxdb');
+var RxDB = require('rxdb');
 ```
 
 If you have not included es8-polyfills, you also have to import `babel-polyfill`.
