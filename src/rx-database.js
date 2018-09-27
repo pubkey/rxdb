@@ -688,32 +688,32 @@ function _internalCollectionsPouch(name, adapter, pouchSettingsFromRxDatabaseCre
  *
  * @return {Promise}
  */
-export function removeDatabase(databaseName, adapter) {
+export async function removeDatabase(databaseName, adapter) {
     const adminPouch = _internalAdminPouch(databaseName, adapter);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
 
-    return collectionsPouch.allDocs({
+    const collectionsData = await collectionsPouch.allDocs({
         include_docs: true
-    }).then(collectionsData => {
-        // remove collections
-        Promise.all(
-            collectionsData.rows
-            .map(colDoc => colDoc.id)
-            .map(id => {
-                const split = id.split('-');
-                const name = split[0];
-                const version = parseInt(split[1], 10);
-                const pouch = _spawnPouchDB(databaseName, adapter, name, version);
-                return pouch.destroy();
-            })
-        );
-
-        // remove internals
-        return Promise.all([
-            collectionsPouch.destroy(),
-            adminPouch.destroy()
-        ]);
     });
+
+    // remove collections
+    await Promise.all(
+        collectionsData.rows
+        .map(colDoc => colDoc.id)
+        .map(id => {
+            const split = id.split('-');
+            const name = split[0];
+            const version = parseInt(split[1], 10);
+            const pouch = _spawnPouchDB(databaseName, adapter, name, version);
+            return pouch.destroy();
+        })
+    );
+
+    // remove internals
+    return Promise.all([
+        collectionsPouch.destroy(),
+        adminPouch.destroy()
+    ]);
 }
 
 /**
