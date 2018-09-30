@@ -2,6 +2,9 @@
 
 ### 8.X.X (comming soon)
 
+Features:
+  - Allow to use `_id` as primary field [#824](https://github.com/pubkey/rxdb/pull/824). Thanks [@will118](https://github.com/will118)
+
 Bugfixes:
   - `RxDB.removeDatabase()` did not return a Promise [#822](https://github.com/pubkey/rxdb/pull/822). Thanks [@will118](https://github.com/will118)
 
