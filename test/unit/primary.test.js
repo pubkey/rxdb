@@ -69,6 +69,15 @@ config.parallel('primary.test.js', () => {
                     assert.ok(schema.validate(obj));
                 });
             });
+
+            describe('positive', () => {
+                it('should validate when primary key is _id', () => {
+                    const schema = RxSchema.create(schemas._idPrimary);
+                    const obj = schemaObjects._idPrimary();
+                    assert.ok(schema.validate(obj));
+                });
+            });
+
             describe('negative', () => {
                 it('should not validate the human without primary', () => {
                     const schema = RxSchema.create(schemas.primaryHuman);

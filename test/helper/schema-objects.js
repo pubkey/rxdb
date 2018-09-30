@@ -124,3 +124,10 @@ export function point() {
         y: faker.random.number()
     };
 }
+
+export function _idPrimary() {
+    return {
+        _id: randomToken(12),
+        firstName: faker.name.firstName()
+    };
+}
