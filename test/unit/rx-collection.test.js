@@ -282,6 +282,32 @@ config.parallel('rx-collection.test.js', () => {
                     await collection.insert(schemaObjects.human());
                     db.destroy();
                 });
+                it('should insert an object with _id set', async () => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'idprimary',
+                        schema: schemas._idPrimary
+                    });
+                    await collection.insert(schemaObjects._idPrimary());
+                    db.destroy();
+                });
+                it('should insert human (_id given)', async () => {
+                    const db = await RxDatabase.create({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
+                    const human = schemaObjects.human();
+                    human._id = util.randomCouchString(20);
+                    await collection.insert(human);
+                    db.destroy();
+                });
                 it('should insert nested human', async () => {
                     const db = await RxDatabase.create({
                         name: util.randomCouchString(10),
@@ -346,14 +372,14 @@ config.parallel('rx-collection.test.js', () => {
                     );
                     db.destroy();
                 });
-                it('should not insert broken human (_id given)', async () => {
+                it('should not insert when _id given but _id is not primary', async () => {
                     const db = await RxDatabase.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
                     const collection = await db.collection({
-                        name: 'human',
-                        schema: schemas.human
+                        name: 'humanfinal',
+                        schema: schemas.humanFinal
                     });
                     const human = schemaObjects.human();
                     human._id = util.randomCouchString(20);

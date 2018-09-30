@@ -20,6 +20,7 @@ import {
  */
 export function checkFieldNameRegex(fieldName) {
     if (fieldName === '') return;
+    if (fieldName === '_id') return;
 
     if (['properties', 'language'].includes(fieldName)) {
         throw RxError.newRxError('SC23', {
@@ -117,6 +118,9 @@ export function validateFieldsDeep(jsonSchema) {
         if (!isNested) {
             // check underscore fields
             if (fieldName.charAt(0) === '_') {
+                if (fieldName === '_id' && schemaObj.primary) {
+                    return;
+                }
                 throw RxError.newRxError('SC8', {
                     fieldName
                 });
@@ -150,13 +154,6 @@ export function validateFieldsDeep(jsonSchema) {
  * @throws {Error} if something is not ok
  */
 export function checkSchema(jsonID) {
-    // check _id
-    if (jsonID.properties._id) {
-        throw RxError.newRxError('SC9', {
-            schema: jsonID
-        });
-    }
-
     // check _rev
     if (jsonID.properties._rev) {
         throw RxError.newRxError('SC10', {
