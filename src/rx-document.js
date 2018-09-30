@@ -148,7 +148,7 @@ export const basePrototype = {
      * @param  {string}  path
      * @return {Promise<RxDocument>}
      */
-    populate(path) {
+    async populate(path) {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!schemaObj) {
@@ -274,7 +274,7 @@ export const basePrototype = {
      * @param  {function(any)} fun that takes the document-data and returns a new data-object
      * @return {Promise<RxDocument>}
      */
-    atomicUpdate(fun) {
+    async atomicUpdate(fun) {
         this._atomicQueue = this._atomicQueue
             .then(async () => {
                 const oldData = clone(this._dataSync$.getValue());
@@ -302,7 +302,7 @@ export const basePrototype = {
      * @param {any} oldData
      * @return {Promise}
      */
-    _saveData(newData, oldData) {
+    async _saveData(newData, oldData) {
         newData = clone(newData);
 
 
@@ -348,9 +348,9 @@ export const basePrototype = {
     /**
      * saves the temporary document and makes a non-temporary out of it
      * Saving a temporary doc is basically the same as RxCollection.insert()
-     * @return {boolean} false if nothing to save
+     * @return {Promise<boolean>} false if nothing to save
      */
-    save() {
+    async save() {
         // .save() cannot be called on non-temporary-documents
         if (!this._isTemporary) {
             throw RxError.newRxError('DOC17', {

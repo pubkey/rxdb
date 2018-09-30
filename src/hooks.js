@@ -66,7 +66,7 @@ export function runPluginHooks(hookKey, obj) {
 /**
  * @return {Promise}
  */
-export function runAsyncPluginHooks(hookKey, obj) {
+export async function runAsyncPluginHooks(hookKey, obj) {
     return Promise.all(
         HOOKS[hookKey].map(fun => fun(obj))
     );

@@ -67,7 +67,7 @@ export class RxCollection {
 
         _applyHookFunctions(this);
     }
-    prepare() {
+    async prepare() {
         this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
 
         if (this.schema.doKeyCompression()) {
@@ -250,7 +250,7 @@ export class RxCollection {
      * @param  {[type]} key [description]
      * @return {[type]}     [description]
      */
-    _pouchGet(key) {
+    async _pouchGet(key) {
         return this
             .pouch
             .get(key)
@@ -264,7 +264,7 @@ export class RxCollection {
      * @param {?boolean} noDecrypt if true, decryption will not be made
      * @return {Object[]} array with documents-data
      */
-    _pouchFind(rxQuery, limit, noDecrypt = false) {
+    async _pouchFind(rxQuery, limit, noDecrypt = false) {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
 
@@ -352,7 +352,7 @@ export class RxCollection {
      * @param {RxDocument} doc which was created
      * @return {Promise<RxDocument>}
      */
-    insert(json) {
+    async insert(json) {
         // inserting a temporary-document
         let tempDoc = null;
         if (RxDocument.isInstanceOf(json)) {
@@ -413,7 +413,7 @@ export class RxCollection {
      * same as insert but overwrites existing document with same primary
      * @return {Promise<RxDocument>}
      */
-    upsert(json) {
+    async upsert(json) {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
@@ -441,7 +441,7 @@ export class RxCollection {
      * @param  {object}  json
      * @return {Promise}
      */
-    atomicUpsert(json) {
+    async atomicUpsert(json) {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
@@ -606,9 +606,9 @@ export class RxCollection {
     /**
      * @return {Promise<void>}
      */
-    _runHooks(when, key, data, instance) {
+    async _runHooks(when, key, data, instance) {
         const hooks = this.getHooks(when, key);
-        if (!hooks) return Promise.resolve();
+        if (!hooks) return;
 
         // run parallel: false
         const tasks = hooks.series.map(hook => () => hook(data, instance));
@@ -798,7 +798,7 @@ const checkOrmMethods = function(statics) {
 /**
  * @return {Promise}
  */
-function _atomicUpsertUpdate(doc, json) {
+async function _atomicUpsertUpdate(doc, json) {
     return doc.atomicUpdate(innerDoc => {
         json._rev = innerDoc._rev;
         innerDoc._data = json;
@@ -812,7 +812,7 @@ function _atomicUpsertUpdate(doc, json) {
  * @param  {any}  json
  * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
  */
-function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
+async function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
     return rxCollection.findOne(primary).exec()
         .then(doc => {
             if (!doc) {
@@ -848,7 +848,7 @@ export function getDocumentOrmPrototype(rxCollection) {
 /**
  * creates the indexes in the pouchdb
  */
-function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
+async function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
     return Promise.all(
         rxCollection.schema.indexes
         .map(indexAr => {
@@ -881,7 +881,7 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
  * @param  {?Object}  [migrationStrategies={}]
  * @return {Promise<RxCollection>} promise with collection
  */
-export function create({
+export async function create({
     database,
     name,
     schema,

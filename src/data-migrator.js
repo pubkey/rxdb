@@ -150,11 +150,11 @@ class OldCollection {
     /**
      * @return {Promise}
      */
-    countAllUndeleted() {
+    async countAllUndeleted() {
         return PouchDB.countAllUndeleted(this.pouchdb);
     }
 
-    getBatch(batchSize) {
+    async getBatch(batchSize) {
         return PouchDB
             .getBatch(this.pouchdb, batchSize)
             .then(docs => docs
@@ -264,7 +264,7 @@ class OldCollection {
      * deletes this.pouchdb and removes it from the database.collectionsCollection
      * @return {Promise}
      */
-    delete() {
+    async delete() {
         return this
             .pouchdb.destroy()
             .then(() => this.database.removeCollectionDoc(this.dataMigrator.name, this.schema));
@@ -328,7 +328,7 @@ class OldCollection {
  * get an array with OldCollection-instances from all existing old pouchdb-instance
  * @return {Promise<OldCollection[]>}
  */
-export function _getOldCollections(dataMigrator) {
+export async function _getOldCollections(dataMigrator) {
     return Promise
         .all(
             dataMigrator.currentSchema.previousVersions
@@ -346,8 +346,8 @@ export function _getOldCollections(dataMigrator) {
  * returns true if a migration is needed
  * @return {Promise<boolean>}
  */
-export function mustMigrate(dataMigrator) {
-    if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
+export async function mustMigrate(dataMigrator) {
+    if (dataMigrator.currentSchema.version === 0) return false;
     return _getOldCollections(dataMigrator)
         .then(oldCols => {
             if (oldCols.length === 0) return false;

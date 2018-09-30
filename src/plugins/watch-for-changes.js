@@ -55,8 +55,8 @@ export function watchForChanges() {
  * @param {*} change
  * @return {Promise<boolean>}
  */
-function _handleSingleChange(collection, change) {
-    if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
+async function _handleSingleChange(collection, change) {
+    if (change.id.charAt(0) === '_') return false; // do not handle changes of internal docs
 
     // wait 2 ticks and 20 ms to give the internal event-handling time to run
     return promiseWait(20)
@@ -65,7 +65,7 @@ function _handleSingleChange(collection, change) {
         .then(() => {
             const docData = change.doc;
             // already handled by internal event-stream
-            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
+            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return false;
 
             const cE = RxChangeEvent.fromPouchChange(docData, collection);
 

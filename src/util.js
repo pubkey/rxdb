@@ -81,7 +81,7 @@ export function promiseWait(ms = 0) {
     return new Promise(res => setTimeout(res, ms));
 }
 
-export function requestIdlePromise(timeout = null) {
+export async function requestIdlePromise(timeout = null) {
     if (
         typeof window === 'object' &&
         window.requestIdleCallback
@@ -91,8 +91,7 @@ export function requestIdlePromise(timeout = null) {
                 timeout
             })
         );
-    } else
-        return Promise.resolve();
+    }
 }
 
 
@@ -102,7 +101,7 @@ export function requestIdlePromise(timeout = null) {
  * @param {Function[]} tasks array with functions that return a promise
  * @return {Promise<Array>}
  */
-export function promiseSeries(tasks, initial) {
+export async function promiseSeries(tasks, initial) {
     return tasks
         .reduce(
             (current, next) => current.then(next),

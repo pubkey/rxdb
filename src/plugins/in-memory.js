@@ -137,8 +137,8 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * in the parent collection
      * @return {Promise}
      */
-    awaitPersistence() {
-        if (this._nonPersistentRevisions.size === 0) return Promise.resolve();
+    async awaitPersistence() {
+        if (this._nonPersistentRevisions.size === 0) return;
         return this._nonPersistentRevisionsSubject.pipe(
             filter(() => this._nonPersistentRevisions.size === 0),
             first()
@@ -216,7 +216,7 @@ function toCleanSchema(rxSchema) {
  * @param  {RxCollection} toCollection
  * @return {Promise<{}[]>} Promise that resolves with an array of the docs data
  */
-export function replicateExistingDocuments(fromCollection, toCollection) {
+export async function replicateExistingDocuments(fromCollection, toCollection) {
     return fromCollection.pouch.allDocs({
         attachments: false,
         include_docs: true
@@ -247,7 +247,7 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
  * @param {PouchDB} pouch
  * @return {Promise<void>}
  */
-export function setIndexes(schema, pouch) {
+export async function setIndexes(schema, pouch) {
     return Promise.all(
         schema.indexes
         .map(indexAr => {

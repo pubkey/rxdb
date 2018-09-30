@@ -98,7 +98,7 @@ export class RxQuery {
      * executes the query on the database
      * @return {Promise<{}[]>} results-array with document-data
      */
-    _execOverDatabase() {
+    async _execOverDatabase() {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
 
         let docsPromise;
@@ -293,7 +293,7 @@ export class RxQuery {
      * deletes all found documents
      * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
      */
-    remove() {
+    async remove() {
         let ret;
         return this
             .exec()
@@ -311,7 +311,7 @@ export class RxQuery {
      * @param  {object} updateObj
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
-    update() {
+    async update() {
         throw RxError.pluginMissing('update');
     }
 
@@ -477,7 +477,7 @@ function _isResultsInSync(rxQuery) {
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
  */
-function _ensureEqual(rxQuery) {
+async function _ensureEqual(rxQuery) {
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
         .then(() => new Promise(res => setTimeout(res, 0)))
         .then(() => __ensureEqual(rxQuery))

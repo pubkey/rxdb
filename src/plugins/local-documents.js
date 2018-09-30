@@ -189,7 +189,7 @@ const RxLocalDocumentPrototype = {
     /**
      * @return {Promise}
      */
-    remove() {
+    async remove() {
         const removeId = LOCAL_PREFIX + this.id;
         return this.parentPouch.remove(removeId, this._data._rev)
             .then(() => {
@@ -263,7 +263,7 @@ const _getPouchByParent = parent => {
  * throws if already exists
  * @return {Promise<RxLocalDocument>}
  */
-const insertLocal = function (id, data) {
+const insertLocal = async function (id, data) {
     if (RxCollection.isInstanceOf(this) && this._isInMemory)
         return this._parentCollection.insertLocal(id, data);
 

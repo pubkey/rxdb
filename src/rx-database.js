@@ -62,7 +62,7 @@ export class RxDatabase {
         );
     }
 
-    dangerousRemoveCollectionInfo() {
+    async dangerousRemoveCollectionInfo() {
         const colPouch = this._collectionsPouch;
         return colPouch.allDocs()
             .then(docsRes => {
@@ -102,8 +102,8 @@ export class RxDatabase {
     /**
      * @return {Promise}
      */
-    waitForLeadership() {
-        if (!this.multiInstance) return Promise.resolve(true);
+    async waitForLeadership() {
+        if (!this.multiInstance) return true;
         return this.leaderElector.waitForLeadership();
     }
 
@@ -135,9 +135,9 @@ export class RxDatabase {
 
     /**
      * removes the collection-doc from this._collectionsPouch
-     * @return {Promise}
+     * }
      */
-    removeCollectionDoc(name, schema) {
+    async removeCollectionDoc(name, schema) {
         const docId = _collectionNamePrimary(name, schema);
         return this
             ._collectionsPouch
@@ -351,7 +351,7 @@ export class RxDatabase {
      * deletes the database and its stored data
      * @return {Promise}
      */
-    remove() {
+    async remove() {
         return this
             .destroy()
             .then(() => removeDatabase(this.name, this.adapter));
@@ -472,7 +472,7 @@ export async function _ensureStorageTokenExists(rxDatabase) {
  * @param  {RxChangeEvent} changeEvent
  * @return {Promise<boolean>}
  */
-export function writeToSocket(rxDatabase, changeEvent) {
+export async function writeToSocket(rxDatabase, changeEvent) {
     if (
         rxDatabase.multiInstance &&
         !changeEvent.isIntern() &&
@@ -488,7 +488,7 @@ export function writeToSocket(rxDatabase, changeEvent) {
         };
         return rxDatabase.broadcastChannel.postMessage(sendOverChannel);
     } else
-        return Promise.resolve(false);
+        return false;
 }
 
 /**
@@ -506,7 +506,7 @@ export function _collectionNamePrimary(name, schema) {
  * @param  {string}  collectionName
  * @return {Promise<string[]>} resolves all known collection-versions
  */
-export function _removeAllOfCollection(rxDatabase, collectionName) {
+export async function _removeAllOfCollection(rxDatabase, collectionName) {
 
     return rxDatabase.lockedRun(
         () => rxDatabase._collectionsPouch.allDocs({
@@ -577,7 +577,7 @@ async function prepare(rxDatabase) {
 }
 
 
-export function create({
+export async function create({
     name,
     adapter,
     password,
@@ -720,7 +720,7 @@ export async function removeDatabase(databaseName, adapter) {
  * check is the given adapter can be used
  * @return {Promise}
  */
-export function checkAdapter(adapter) {
+export async function checkAdapter(adapter) {
     return overwritable.checkAdapter(adapter);
 }
 

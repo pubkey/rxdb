@@ -24,7 +24,7 @@ import RxError from './rx-error';
  * @param  {PouchDB}  pouchdb instance
  * @return {Promise<number>} number of documents
  */
-PouchDB.countAllUndeleted = function(pouchdb) {
+PouchDB.countAllUndeleted = async function(pouchdb) {
     return pouchdb
         .allDocs({
             include_docs: false,
@@ -43,7 +43,7 @@ PouchDB.countAllUndeleted = function(pouchdb) {
  * @param  {number}  limit
  * @return {Promise<{}[]>} array with documents
  */
-PouchDB.getBatch = function(pouchdb, limit) {
+PouchDB.getBatch = async function(pouchdb, limit) {
     if (limit <= 1) {
         throw RxError.newRxError('P1', {
             limit

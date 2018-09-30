@@ -11,7 +11,7 @@ import RxChangeEvent from '../rx-change-event';
 /**
  * @return {Promise}
  */
-const dumpRxDatabase = function (decrypted = false, collections = null) {
+const dumpRxDatabase = async function (decrypted = false, collections = null) {
     const json = {
         name: this.name,
         instanceToken: this.token,
@@ -40,7 +40,7 @@ const dumpRxDatabase = function (decrypted = false, collections = null) {
     });
 };
 
-const importDumpRxDatabase = function (dump) {
+const importDumpRxDatabase = async function (dump) {
     /**
      * collections must be created before the import
      * because we do not know about the other collection-settings here
@@ -60,7 +60,7 @@ const importDumpRxDatabase = function (dump) {
     );
 };
 
-const dumpRxCollection = function (decrypted = false) {
+const dumpRxCollection = async function (decrypted = false) {
     const encrypted = !decrypted;
 
     const json = {
@@ -91,7 +91,7 @@ const dumpRxCollection = function (decrypted = false) {
 /**
  * @return {Promise}
  */
-const importDumpRxCollection = function (exportedJSON) {
+const importDumpRxCollection = async function (exportedJSON) {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw RxError.newRxError('JD2', {

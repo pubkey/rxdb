@@ -19,7 +19,7 @@ function ensureSchemaSupportsAttachments(doc) {
     }
 }
 
-function resyncRxDocument(doc) {
+async function resyncRxDocument(doc) {
     return doc.collection.pouch.get(doc.primary).then(docData => {
         const data = doc.collection._handleFromPouch(docData);
         const changeEvent = RxChangeEvent.create(
@@ -65,7 +65,7 @@ export const blobBufferUtil = {
         }
         return blobBuffer;
     },
-    toString(blobBuffer) {
+    async toString(blobBuffer) {
         if (blobBuffer instanceof Buffer) {
             // node
             return nextTick()
@@ -165,7 +165,7 @@ function shouldEncrypt(doc) {
 /**
  * @return {Promise}
  */
-export function putAttachment({
+export async function putAttachment({
     id,
     data,
     type = 'text/plain'

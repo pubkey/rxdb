@@ -20,7 +20,7 @@ class LeaderElector {
     /**
      * @return {Promise} promise which resolve when the instance becomes leader
      */
-    waitForLeadership() {
+    async waitForLeadership() {
         return this.elector.awaitLeadership().then(() => {
             this.isLeader = true;
             return true;
