@@ -377,7 +377,7 @@ export const basePrototype = {
      * instead we keep the values and only set _deleted: true
      * @return {Promise<RxDocument>}
      */
-    remove() {
+    async remove() {
         if (this.deleted) {
             throw RxError.newRxError('DOC13', {
                 document: this,

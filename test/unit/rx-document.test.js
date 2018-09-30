@@ -811,5 +811,21 @@ config.parallel('rx-document.test.js', () => {
             // clean up afterwards
             db.destroy();
         });
+        it('#830 RxDocument.remove() rejects -doesn\'t sync throw', async () => {
+            const c = await humansCollection.create(5);
+            const doc = await c.findOne().exec();
+            await doc.remove();
+
+            let asyncE, syncE;
+            try {
+                await doc.remove().catch(e => (asyncE = e));
+            } catch(e) {
+                syncE = e;
+            }
+            assert.equal(syncE, undefined);
+            assert.equal(asyncE instanceof Error, true);
+
+            c.database.destroy();
+        });
     });
 });
