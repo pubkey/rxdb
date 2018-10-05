@@ -19,7 +19,6 @@ stages:
   - build
   - unit tests
   - code format
-  - docs
   - other
   - examples
 
@@ -56,11 +55,12 @@ jobs:
       script: npm run lint
       env: LABEL=lint
 
-    - stage: docs
-      script: (cd ./test/tutorials/ && npm install > "/dev/null" 2>&1 && travis_retry npm test)
-
     - stage: other
       script: npm run build:size
+      env: LABEL=build:size
+    - stage: other
+      script: (cd ./test/tutorials/ && npm install > "/dev/null" 2>&1 && travis_retry npm test)
+      env: LABEL=docs
 
     - stage: examples
       script: (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
