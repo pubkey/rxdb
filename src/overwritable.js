@@ -48,7 +48,7 @@ const funs = {
         // TODO better text with link
         return `RxDB Error-Code ${message}.
         - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages
-        - Or search for this code https://github.com/pubkey/rxdb/search?l=JavaScript&q=${message}%3A
+        - Or search for this code https://github.com/pubkey/rxdb/search?q=${message}
         `;
     }
 };
