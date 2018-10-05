@@ -35,7 +35,7 @@ gulp.task('profile', function() {
 });
 
 gulp.task('test:typings', function() {
-    mochaSettings.timeout = 12000;
+    mochaSettings.timeout = 50000;
     return gulp
         .src(tests.typings)
         .pipe(mocha(mochaSettings))
