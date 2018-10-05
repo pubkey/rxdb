@@ -85,7 +85,7 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
-    describe('database', () => {
+    config.parallel('database', () => {
         describe('positive', () => {
             it('should create the database and use its methods', async () => {
                 const code = codeBase + `
@@ -102,7 +102,7 @@ describe('typings.test.js', () => {
                 `;
                 await transpileCode(code);
             });
-            it('allow to type-define the collections', async() => {
+            it('allow to type-define the collections', async () => {
                 const code = codeBase + `
                     (async() => {
                         const db: RxDatabase<{
@@ -116,7 +116,7 @@ describe('typings.test.js', () => {
                 `;
                 await transpileCode(code);
             });
-            it('an collection-untyped database should allow all collection-getters', async() => {
+            it('an collection-untyped database should allow all collection-getters', async () => {
                 const code = codeBase + `
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
@@ -125,7 +125,7 @@ describe('typings.test.js', () => {
                 `;
                 await transpileCode(code);
             });
-            it('an collection-TYPED database should allow to access methods', async() => {
+            it('an collection-TYPED database should allow to access methods', async () => {
                 const code = codeBase + `
                     (async() => {
                         const db: RxDatabase = {} as RxDatabase;
@@ -135,7 +135,7 @@ describe('typings.test.js', () => {
                 `;
                 await transpileCode(code);
             });
-            it('an allow to use a custom extends type', async() => {
+            it('an allow to use a custom extends type', async () => {
                 const code = codeBase + `
                     (async() => {
                         type RxHeroesDatabase = RxDatabase<{
@@ -174,7 +174,7 @@ describe('typings.test.js', () => {
                 }
                 assert.ok(thrown);
             });
-            it('an collection-TYPED database should only allow known collection-getters', async() => {
+            it('an collection-TYPED database should only allow known collection-getters', async () => {
                 const brokenCode = codeBase + `
                     (async() => {
                         const db: RxDatabase<{
@@ -196,8 +196,8 @@ describe('typings.test.js', () => {
 
         });
     });
-    describe('collection', () => {
-        config.parallel('positive', () => {
+    config.parallel('collection', () => {
+        describe('positive', () => {
             it('collection-creation', async () => {
                 const code = codeBase + `
                     (async() => {
@@ -302,7 +302,7 @@ describe('typings.test.js', () => {
                 await transpileCode(code);
             });
         });
-        config.parallel('negative', () => {
+        describe('negative', () => {
             it('should not allow wrong collection-settings', async () => {
                 const brokenCode = codeBase + `
                     (async() => {
@@ -352,7 +352,7 @@ describe('typings.test.js', () => {
             });
         });
     });
-    describe('change-event', () => {
+    config.parallel('change-event', () => {
         it('.insert$ .update$ .remove$', async () => {
             const code = codeBase + `
                 (async() => {
@@ -504,9 +504,10 @@ describe('typings.test.js', () => {
             await transpileCode(code);
         });
     });
-    config.parallel('orm', () => {
-        it('should correctly recognize orm-methods', async () => {
-            const code = codeBase + `
+    config.parallel('other', () => {
+        describe('orm', () => {
+            it('should correctly recognize orm-methods', async () => {
+                const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
 
@@ -529,12 +530,12 @@ describe('typings.test.js', () => {
 
                 });
             `;
-            await transpileCode(code);
+                await transpileCode(code);
+            });
         });
-    });
-    config.parallel('hooks', () => {
-        it('should know the types', async () => {
-            const code = codeBase + `
+        describe('hooks', () => {
+            it('should know the types', async () => {
+                const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
                     const myCollection: RxCollection<DefaultDocType, DefaultOrmMethods> = await myDb.collection({
@@ -551,12 +552,12 @@ describe('typings.test.js', () => {
                     }, true);
                 });
             `;
-            await transpileCode(code);
+                await transpileCode(code);
+            });
         });
-    });
-    describe('query', () => {
-        it('should know the where-fields', async () => {
-            const code = codeBase + `
+        describe('query', () => {
+            it('should know the where-fields', async () => {
+                const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
 
@@ -580,12 +581,12 @@ describe('typings.test.js', () => {
                     const query = myCollection.findOne().where('nestedObject.foo').eq('foobar');
                 });
             `;
-            await transpileCode(code);
+                await transpileCode(code);
+            });
         });
-    });
-    describe('rx-error', () => {
-        it('should know the parameters of the error', async () => {
-            const code = codeBase + `
+        describe('rx-error', () => {
+            it('should know the parameters of the error', async () => {
+                const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
                     const myCollection: RxCollection<any> = await myDb.collection({
@@ -605,12 +606,12 @@ describe('typings.test.js', () => {
                     }
                 });
             `;
-            await transpileCode(code);
+                await transpileCode(code);
+            });
         });
-    });
-    describe('plugin', () => {
-        it('should be a valid RxPlugin', async () => {
-            const code = codeBase + `
+        describe('plugin', () => {
+            it('should be a valid RxPlugin', async () => {
+                const code = codeBase + `
                 (async() => {
                     const myPlugin: RxPlugin = {
                         rxdb: true,
@@ -621,10 +622,11 @@ describe('typings.test.js', () => {
                     plugin(myPlugin);
                 });
             `;
-            await transpileCode(code);
+                await transpileCode(code);
+            });
         });
     });
-    describe('issues', () => {
+    config.parallel('issues', () => {
         it('#448 strict:true not working', async () => {
             /*
              * TODO we currently have to set "skipLibCheck": true
