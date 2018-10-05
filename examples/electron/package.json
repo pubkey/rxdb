@@ -2,9 +2,8 @@
   "name": "rxdb-example-electron",
   "main": "main.js",
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run electron\"",
+    "start": "npm run electron",
     "electron": "electron .",
-    "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true",
     "test": "mocha"
   },
   "dependencies": {
@@ -18,7 +17,6 @@
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-replication": "7.0.0",
-    "pouchdb-server": "4.1.0",
     "rxdb": "../../",
     "rxjs": "6.3.2"
   },
