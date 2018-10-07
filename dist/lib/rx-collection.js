@@ -420,7 +420,7 @@ function () {
     json = (0, _util.clone)(json);
     json = this.schema.fillObjectWithDefaults(json);
 
-    if (json._id) {
+    if (json._id && this.schema.primaryPath !== '_id') {
       throw _rxError["default"].newRxError('COL2', {
         data: json
       });

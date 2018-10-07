@@ -34,6 +34,7 @@ var _rxSchema = require("../rx-schema");
  */
 function checkFieldNameRegex(fieldName) {
   if (fieldName === '') return;
+  if (fieldName === '_id') return;
 
   if (['properties', 'language'].includes(fieldName)) {
     throw _rxError["default"].newRxError('SC23', {
@@ -129,6 +130,10 @@ function validateFieldsDeep(jsonSchema) {
     if (!isNested) {
       // check underscore fields
       if (fieldName.charAt(0) === '_') {
+        if (fieldName === '_id' && schemaObj.primary) {
+          return;
+        }
+
         throw _rxError["default"].newRxError('SC8', {
           fieldName: fieldName
         });
@@ -161,14 +166,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
 function checkSchema(jsonID) {
-  // check _id
-  if (jsonID.properties._id) {
-    throw _rxError["default"].newRxError('SC9', {
-      schema: jsonID
-    });
-  } // check _rev
-
-
+  // check _rev
   if (jsonID.properties._rev) {
     throw _rxError["default"].newRxError('SC10', {
       schema: jsonID

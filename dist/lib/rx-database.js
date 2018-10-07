@@ -988,35 +988,58 @@ function _internalCollectionsPouch(name, adapter) {
  */
 
 
-function removeDatabase(databaseName, adapter) {
-  var adminPouch = _internalAdminPouch(databaseName, adapter);
-
-  var collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
-
-  collectionsPouch.allDocs({
-    include_docs: true
-  }).then(function (collectionsData) {
-    // remove collections
-    Promise.all(collectionsData.rows.map(function (colDoc) {
-      return colDoc.id;
-    }).map(function (id) {
-      var split = id.split('-');
-      var name = split[0];
-      var version = parseInt(split[1], 10);
-
-      var pouch = _spawnPouchDB2(databaseName, adapter, name, version);
-
-      return pouch.destroy();
-    })); // remove internals
-
-    return Promise.all([collectionsPouch.destroy(), adminPouch.destroy()]);
-  });
+function removeDatabase(_x6, _x7) {
+  return _removeDatabase.apply(this, arguments);
 }
 /**
  * check is the given adapter can be used
  * @return {Promise}
  */
 
+
+function _removeDatabase() {
+  _removeDatabase = (0, _asyncToGenerator2["default"])(
+  /*#__PURE__*/
+  _regenerator["default"].mark(function _callee7(databaseName, adapter) {
+    var adminPouch, collectionsPouch, collectionsData;
+    return _regenerator["default"].wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            adminPouch = _internalAdminPouch(databaseName, adapter);
+            collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
+            _context7.next = 4;
+            return collectionsPouch.allDocs({
+              include_docs: true
+            });
+
+          case 4:
+            collectionsData = _context7.sent;
+            _context7.next = 7;
+            return Promise.all(collectionsData.rows.map(function (colDoc) {
+              return colDoc.id;
+            }).map(function (id) {
+              var split = id.split('-');
+              var name = split[0];
+              var version = parseInt(split[1], 10);
+
+              var pouch = _spawnPouchDB2(databaseName, adapter, name, version);
+
+              return pouch.destroy();
+            }));
+
+          case 7:
+            return _context7.abrupt("return", Promise.all([collectionsPouch.destroy(), adminPouch.destroy()]));
+
+          case 8:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7, this);
+  }));
+  return _removeDatabase.apply(this, arguments);
+}
 
 function checkAdapter(adapter) {
   return _overwritable["default"].checkAdapter(adapter);

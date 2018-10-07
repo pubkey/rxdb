@@ -1,6 +1,6 @@
 # Changelog
 
-### 8.X.X (comming soon)
+### 8.0.2 (7. Oktober 2018)
 
 Features:
   - Allow to use `_id` as primary field [#824](https://github.com/pubkey/rxdb/pull/824). Thanks [@will118](https://github.com/will118)

@@ -47,7 +47,7 @@ var funs = {
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
     // TODO better text with link
-    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?l=JavaScript&q=" + message + "%3A\n        ";
+    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
 export default funs;
