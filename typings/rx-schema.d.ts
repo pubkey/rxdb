@@ -61,7 +61,7 @@ export declare class RxJsonSchema {
      * we have to allows all string because the 'object'-literal is not recognized
      * retry this in later typescript-versions
      */
-    type: 'object' | string;
+    type?: 'object' | string;
     properties: { [key: string]: RxJsonSchemaTopLevel };
     required?: string[];
     compoundIndexes?: string[] | string[][];
