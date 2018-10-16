@@ -38,7 +38,6 @@ export class HeroesListComponent {
             .db.hero                // collection
             .find().sort('name')    // query
             .$.pipe(                // observable
-                dbService.tapWithChangeDetection(this._cdr), // run change-detection on each emit
                 tap(() => this.emittedFirst = true)          // hide loading-icon on first emit
             );
     }

@@ -32,6 +32,11 @@ import { HeroInsertComponent } from './components/hero-insert/hero-insert.compon
 import { HeroEditComponent } from './components/hero-edit/hero-edit.component';
 
 /**
+ * PIPES
+ */
+import AsyncNoZonePipe from './pipes/async-no-zone.pipe';
+
+/**
  * SERVICES
  */
 import { DatabaseService } from './services/database.service';
@@ -39,13 +44,15 @@ import {
     initDatabase
 } from './services/database.service';
 
+
+
 @NgModule({
     imports: [
         BrowserModule,
         BrowserAnimationsModule,
         FormsModule,
         routing,
-        MatCardModule, MatListModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule,
+        MatCardModule, MatListModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule
     ],
     providers: [
         {
@@ -67,7 +74,8 @@ import {
         HomeComponent,
         HeroesListComponent,
         HeroInsertComponent,
-        HeroEditComponent
+        HeroEditComponent,
+        AsyncNoZonePipe
     ],
     bootstrap: [
         AppComponent
