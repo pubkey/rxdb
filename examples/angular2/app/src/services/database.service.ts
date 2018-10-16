@@ -125,7 +125,7 @@ let DB_INSTANCE: RxHeroesDatabase;
 
 /**
  * This is run via APP_INITIALIZER in app.module.ts
- * to ensure the database exsits before the angular-app starts up
+ * to ensure the database exists before the angular-app starts up
  */
 export async function initDatabase() {
     console.log('initDatabase()');
@@ -137,11 +137,4 @@ export class DatabaseService {
     get db(): RxHeroesDatabase {
         return DB_INSTANCE;
     }
-
-    tapWithChangeDetection(cdr: ChangeDetectorRef) {
-        return tap(() => {
-            setTimeout(() => cdr.detectChanges(), 0);
-        }) as any;
-    }
-
 }
