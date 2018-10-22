@@ -45,7 +45,7 @@ console.dir(isName); // isName is now 'foobar2'
 
 
 ### proxy-get
-As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly access values instead of using the get()-function.
+All properties of a `RxDocument` are assigned as getters so you can also directly access values instead of using the get()-function.
 
 ```js
   // Identical to myDocument.get('name');
@@ -153,7 +153,7 @@ console.log(myDocument.get('firstName')); // <- is 'foobar'
 
 ### proxy-set
 **Only temporary documents**
-As RxDocument is wrapped into a [Proxy-object](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Proxy), you can also directly set values instead of using the set()-function.
+All properties of an `RxDocument` are assigned as setters to it so you can also directly set values instead of using the set()-function.
 
 
 ```js
