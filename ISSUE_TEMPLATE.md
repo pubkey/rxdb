@@ -5,7 +5,9 @@
 -->
 
 <!-- IMPORTANT:
-  If you have a common question which cannot be solved with a PR, ask it here https://gitter.im/pubkey/rxdb
+  If you have a common question which cannot be solved with a PR, ask it at one of these places:
+  - https://stackoverflow.com/
+  - https://gitter.im/pubkey/rxdb
 -->
 
 <!-- DID YOU KNOW?
