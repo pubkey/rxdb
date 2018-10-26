@@ -2,6 +2,7 @@
 config/
 examples/
 docs/
+docs-src/
 orga/
 scripts/
 test/
