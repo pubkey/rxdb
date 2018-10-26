@@ -15,7 +15,7 @@
 
 <div align="center">
   <h3>
-    <a href="https://pubkey.github.io/rxdb/">Documentation</a>
+    <a href="http://rxdb.info/">Documentation</a>
     <span> | </span>
     <a href="https://github.com/pubkey/rxdb/tree/master/examples">Example-Projects</a>
   </h3>
@@ -431,7 +431,7 @@ As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.c
 
 ## Getting started
 
-Get started now by [reading the docs](https://pubkey.github.io/rxdb/) or exploring the [example-projects](./examples).
+Get started now by [reading the docs](http://rxdb.info/) or exploring the [example-projects](./examples).
 
 ## Contribute
 
