@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  Reactive, serverless, client-side, offline-first database in javascript.
+  A realtime Database for the Web
 </p>
 
 <p align="center">
