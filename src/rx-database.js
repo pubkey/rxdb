@@ -435,6 +435,7 @@ export async function _preparePasswordHash(rxDatabase) {
 
     // different hash was already set by other instance
     if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
+        await rxDatabase.destroy();
         throw RxError.newRxError('DB1', {
             passwordHash: hash(rxDatabase.password),
             existingPasswordHash: pwHashDoc.value

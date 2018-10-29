@@ -1,5 +1,10 @@
 # Changelog
 
+### 8.X.X (comming soon)
+
+Bugfixes:
+  - Reopening a database after using the wrong password did not work [#837](https://github.com/pubkey/rxdb/issues/837)
+
 ### 8.0.2 (7. Oktober 2018)
 
 Features:

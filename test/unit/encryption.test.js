@@ -1,5 +1,6 @@
 import assert from 'assert';
 import config from './config';
+import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -9,6 +10,7 @@ import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxSchema from '../../dist/lib/rx-schema';
 import * as Crypter from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
+import RxDB from '../../dist/lib';
 
 config.parallel('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {
@@ -38,9 +40,8 @@ config.parallel('encryption.test.js', () => {
                 assert.equal(Object.keys(encPaths).length, 0);
             });
         });
-        describe('negative', () => { });
+        describe('negative', () => {});
     });
-
     describe('Crypter.js', () => {
         it('create', () => {
             const schema = RxSchema.create(schemas.human);
@@ -159,7 +160,7 @@ config.parallel('encryption.test.js', () => {
                 db.destroy();
             });
         });
-        describe('negative', () => { });
+        describe('negative', () => {});
     });
     describe('Document.save()', () => {
         describe('positive', () => {
@@ -207,6 +208,41 @@ config.parallel('encryption.test.js', () => {
             });
         });
 
-        describe('negative', () => { });
+        describe('negative', () => {});
     });
+    describe('ISSUES', () => {
+        it('#837 Recover from wrong database password', async () => {
+            const name = util.randomCouchString(10) + '837';
+            const password = util.randomCouchString(10);
+
+            // 1. create and destroy encrypted db
+            const db1 = await RxDB.create({
+                name,
+                adapter: 'memory',
+                password
+            });
+            await db1.destroy();
+
+            // 2. reopen with wrong password
+            await AsyncTestUtil.assertThrows(
+                () => RxDB.create({
+                    name,
+                    adapter: 'memory',
+                    password: 'foobarfoobar'
+                }),
+                'RxError',
+                'different password'
+            );
+
+            // 3. reopen with correct password
+            const db2 = await RxDB.create({
+                name,
+                adapter: 'memory',
+                password
+            });
+            assert.ok(db2);
+            await db2.destroy();
+        });
+    });
+
 });
