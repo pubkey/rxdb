@@ -628,19 +628,23 @@ function _preparePasswordHash2() {
 
 
             if (!(pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value)) {
-              _context4.next = 15;
+              _context4.next = 17;
               break;
             }
 
+            _context4.next = 16;
+            return rxDatabase.destroy();
+
+          case 16:
             throw RxError.newRxError('DB1', {
               passwordHash: hash(rxDatabase.password),
               existingPasswordHash: pwHashDoc.value
             });
 
-          case 15:
+          case 17:
             return _context4.abrupt("return", true);
 
-          case 16:
+          case 18:
           case "end":
             return _context4.stop();
         }
