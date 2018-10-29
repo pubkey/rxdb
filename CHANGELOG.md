@@ -1,11 +1,11 @@
 # Changelog
 
-### 8.X.X (comming soon)
+### 8.0.3 (29. October 2018)
 
 Bugfixes:
   - Reopening a database after using the wrong password did not work [#837](https://github.com/pubkey/rxdb/issues/837)
 
-### 8.0.2 (7. Oktober 2018)
+### 8.0.2 (7. October 2018)
 
 Features:
   - Allow to use `_id` as primary field [#824](https://github.com/pubkey/rxdb/pull/824). Thanks [@will118](https://github.com/will118)
