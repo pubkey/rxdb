@@ -80,7 +80,7 @@
     "deep-equal": "^1.0.1",
     "express": "4.16.4",
     "express-pouchdb": "4.1.0",
-    "is-electron": "2.1.0",
+    "is-electron": "2.2.0",
     "is-my-json-valid": "2.19.0",
     "modifyjs": "0.3.1",
     "object-path": "0.11.4",
