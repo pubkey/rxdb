@@ -13,8 +13,7 @@
         "strictPropertyInitialization": false,
         "strictNullChecks": true,
         "types": [
-            "core-js",
-            "requirejs"
+            "core-js"
         ],
         "lib": [
             "dom",

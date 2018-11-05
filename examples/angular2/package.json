@@ -54,9 +54,10 @@
     "zone.js": "0.8.26"
   },
   "devDependencies": {
-    "@types/chai": "4.1.6",
+    "@types/chai": "4.1.7",
     "@types/core-js": "2.5.0",
     "@types/hammerjs": "2.0.36",
+    "@types/node": "10.12.2",
     "@types/pouchdb-adapter-http": "6.1.2",
     "@types/pouchdb-adapter-idb": "6.1.2",
     "@types/requirejs": "2.1.31",
@@ -85,7 +86,7 @@
     "testcafe": "0.22.0",
     "testcafe-hammerhead": "11.2.1",
     "tslint": "5.11.0",
-    "typescript": "3.1.1",
+    "typescript": "3.1.6",
     "url-loader": "0.6.2",
     "webpack": "3.8.1",
     "webpack-dev-middleware": "1.12.0",
