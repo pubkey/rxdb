@@ -72,7 +72,7 @@
   },
   "dependencies": {
     "@babel/runtime": "7.1.5",
-    "broadcast-channel": "2.1.7",
+    "broadcast-channel": "2.1.8",
     "clone": "^2.1.1",
     "cors": "2.8.5",
     "crypto-js": "^3.1.8",
@@ -119,7 +119,7 @@
     "dependency-check": "3.2.1",
     "detect-browser": "3.0.1",
     "disc": "1.3.3",
-    "eslint": "5.8.0",
+    "eslint": "5.9.0",
     "exists-file": "3.0.2",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",
