@@ -1,5 +1,10 @@
 # Changelog
 
+### 8.0.4 (13 November 2018)
+
+Bugfixes:
+  - Updated the dependencies with some bugfixes
+
 ### 8.0.3 (29. October 2018)
 
 Bugfixes:
