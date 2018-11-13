@@ -160,7 +160,7 @@
     "request-promise-native": "1.0.5",
     "rimraf": "2.6.2",
     "rxjs": "6.3.3",
-    "shelljs": "0.8.2",
+    "shelljs": "0.8.3",
     "ts-node": "7.0.1",
     "typescript": "3.1.6",
     "uglify-js": "3.4.9",
