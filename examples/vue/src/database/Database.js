@@ -46,7 +46,7 @@ const _create = async function() {
     });
     window.dbs.push(db);
     console.log('DatabaseService: created database');
-    window['db'] = db; // write to window for debugging
+    window['rxdb'] = db; // write to window for debugging
 
     // show leadership in title
     db.waitForLeadership().then(() => {
@@ -82,8 +82,15 @@ const _create = async function() {
     return db;
 };
 
-export function get() {
+let DB = null;
+export async function init() {
     if (!dbPromise)
         dbPromise = _create();
-    return dbPromise;
+    DB = await dbPromise;
+    return DB;
+}
+
+export function get() {
+    if (!DB) throw new Error('Database.init() not done yet');
+    return DB;
 }

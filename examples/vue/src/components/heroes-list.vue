@@ -1,7 +1,7 @@
 <template>
 <div class="heroes-list">
-    <ul v-if="results">
-        <li v-for="hero in results">
+    <ul v-if="!loading">
+        <li v-for="hero in heroes">
             <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
             <span class="hero-name">{{ hero.name }}</span>
             <div class="life">
@@ -22,33 +22,37 @@
 import Vue from 'vue';
 import * as Database from '../database/Database';
 import {
-    filter
+    filter,
+    first,
+    map,
+    debounce,
+    startWith
 } from 'rxjs/operators';
+import {
+    timer
+} from 'rxjs';
 
 export default Vue.component('heroes-list', {
-    data: () => {
+    data() {
         return {
-            results: [],
-            subs: []
+            loading: true
         };
     },
-    mounted: async function() {
-        const db = await Database.get();
-        this.subs.push(
-            db.heroes
-            .find().$
-            .pipe(
-                filter(x => x != null)
-            ).subscribe(results => {
-                console.log('results:');
-                //                console.dir(results);
-                this.results = results;
-            })
-        );
+    subscriptions() {
+        const db = Database.get();
+        return {
+            heroes: db.heroes.find().$
+        }
     },
-    beforeDestroy: function() {
-        this.subs.forEach(sub => sub.unsubscribe());
+    async mounted() {
+        const db = Database.get();
+        this.loading = await db.heroes.find().$.pipe(
+            debounce(() => timer(1000)),
+            map(() => false),
+            first()
+        ).toPromise();
     },
+    beforeDestroy() {},
     methods: {
         removeHero(hero) {
             hero.remove();

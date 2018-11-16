@@ -1,6 +1,7 @@
 # RxDB vuejs example
 
 This is an example usage of RxDB with VueJS. It implements a simple heroes-list which can be filled by the user.
+For easier mapping of observables, [vue-rx](https://github.com/vuejs/vue-rx) is used.
 
 # Try it out
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)

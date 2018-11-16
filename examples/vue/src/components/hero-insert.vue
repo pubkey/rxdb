@@ -26,7 +26,7 @@ export default Vue.component('hero-insert', {
       async onSubmit() {
           console.log('OnSubmit');
           console.dir(this);
-          const db = await Database.get();
+          const db = Database.get();
           const obj = {
               name: this.name,
               color: this.color,

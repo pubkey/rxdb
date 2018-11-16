@@ -11,9 +11,9 @@
         <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
     </div>
     <h5>
-      <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
-      {{hero.name}}
-  </h5> HP: <input id="hp-edit-input" type="number" v-model.number="formData" min="0" v-bind:max="hero.maxHP" name="hp" />
+        <div class="color-box" v-bind:style="{ backgroundColor: hero.color }"></div>
+        {{hero.name}}
+    </h5> HP: <input id="hp-edit-input" type="number" v-model.number="formData" min="0" v-bind:max="hero.maxHP" name="hp" />
     <br />
     <button v-on:click="cancel()">cancel</button>
     <button id="edit-submit-button" v-on:click="submit()" v-if="!hero.deleted">submit</button>
@@ -22,9 +22,10 @@
 
 <script>
 import Vue from 'vue';
-import * as Database from '../database/Database';
 import {
-    skip
+    skip,
+    map,
+    first
 } from 'rxjs/operators';
 
 export default Vue.component('hero-edit', {
@@ -37,19 +38,19 @@ export default Vue.component('hero-edit', {
         };
     },
     props: ['hero'],
-    mounted: async function() {
+    async mounted() {
         this.formData = this.hero.hp;
-        this.subs.push(
-            this.hero.$
-            .pipe(
-                skip(1)
-            )
-            .subscribe(() => this.synced = false)
-        );
+        this.hero.$.pipe(
+                skip(1),
+                first(),
+                map(() => false)
+            ).toPromise()
+            .then(v => this.synced = v);
+
+        this.hero.deleted$.pipe(first()).toPromise()
+            .then(() => this.deleted = true);
     },
-    beforeDestroy: function() {
-        this.subs.forEach(sub => sub.unsubscribe());
-    },
+    beforeDestroy() {},
     methods: {
         async submit() {
             console.log('heroEdit.submit()');
@@ -58,11 +59,11 @@ export default Vue.component('hero-edit', {
         },
         resync() {
             console.log('heroEdit.resync()');
-            this.hero.resync();
+            this.formData = this.hero.hp;
+            this.synced = true;
         },
         cancel() {
             console.log('heroEdit.cancel()');
-            this.hero.resync();
             this.$emit('cancel');
         }
     }
@@ -87,9 +88,11 @@ export default Vue.component('hero-edit', {
     border-radius: 10px;
     padding: 8px;
     border-color: #e0e021;
+
     &.deleted {
         border-color: red;
     }
+
     h4 {
         padding: 0;
         margin: 0;

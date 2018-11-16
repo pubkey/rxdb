@@ -22,7 +22,8 @@
     "pouchdb-server": "2.3.7",
     "random-int": "1.0.0",
     "rxjs": "6.3.1",
-    "vue": "2.5.17"
+    "vue": "2.5.17",
+    "vue-rx": "6.0.1"
   },
   "devDependencies": {
     "async-test-util": "1.6.1",
