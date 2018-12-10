@@ -164,7 +164,7 @@
     "ts-node": "7.0.1",
     "typescript": "3.1.6",
     "uglify-js": "3.4.9",
-    "walk-sync": "1.0.0",
+    "walk-sync": "1.0.1",
     "watch": "1.0.2",
     "watchify": "3.11.0",
     "webpack": "4.25.1",
