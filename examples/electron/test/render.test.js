@@ -19,7 +19,7 @@ module.exports = (function() {
             });
 
             await db.waitForLeadership();
-            if(db.broadcastChannel.method.type !== 'native'){
+            if (db.broadcastChannel.method.type !== 'native') {
                 throw new Error('wrong BroadcastChannel-method chosen: ' + db.broadcastChannel.method.type);
             }
 

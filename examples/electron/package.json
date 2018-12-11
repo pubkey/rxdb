@@ -9,20 +9,20 @@
   "dependencies": {
     "babel-polyfill": "6.26.0",
     "babel-runtime": "6.26.0",
-    "concurrently": "4.0.1",
-    "electron": "2.0.8",
-    "electron-tabs": "0.9.4",
+    "concurrently": "4.1.0",
+    "electron": "3.0.11",
+    "electron-tabs": "0.9.5",
     "electron-window-manager": "1.0.6",
     "melanke-watchjs": "1.5.0",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-replication": "7.0.0",
     "rxdb": "../../",
-    "rxjs": "6.3.2"
+    "rxjs": "6.3.3"
   },
   "devDependencies": {
-    "mocha": "5.0.5",
-    "node": "10.10.0",
-    "spectron": "4.0.0"
+    "mocha": "5.2.0",
+    "node": "11.4.0",
+    "spectron": "5.0.0"
   }
 }
