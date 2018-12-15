@@ -96,7 +96,7 @@
   },
   "devDependencies": {
     "@babel/cli": "7.2.0",
-    "@babel/core": "7.1.6",
+    "@babel/core": "7.2.2",
     "@babel/plugin-check-constants": "7.0.0-beta.38",
     "@babel/plugin-proposal-object-rest-spread": "7.0.0",
     "@babel/plugin-transform-member-expression-literals": "7.0.0",
