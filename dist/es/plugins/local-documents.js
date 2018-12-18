@@ -209,9 +209,11 @@ var RxLocalDocumentPrototype = {
       }, _callee, this);
     }));
 
-    return function _saveData(_x) {
+    function _saveData(_x) {
       return _saveData2.apply(this, arguments);
-    };
+    }
+
+    return _saveData;
   }(),
 
   /**

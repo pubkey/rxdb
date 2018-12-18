@@ -36,14 +36,14 @@ function () {
 
   _proto._encryptValue = function _encryptValue() {
     throw _rxError["default"].pluginMissing('encryption');
-  };
+  }
   /**
    * decrypt and json-parse an encrypted value
    * @overwritten by plugin (optional)
    * @param  {string} encValue
    * @return {any}
    */
-
+  ;
 
   _proto._decryptValue = function _decryptValue() {
     throw _rxError["default"].pluginMissing('encryption');

@@ -61,7 +61,7 @@ function () {
         });
       }
     });
-  };
+  }
   /**
    * validate if the obj matches the schema
    * @overwritten by plugin (required)
@@ -70,7 +70,7 @@ function () {
    * @throws {Error} if not valid
    * @param {Object} obj equal to input-obj
    */
-
+  ;
 
   _proto.validate = function validate() {
     throw RxError.pluginMissing('validate');
@@ -111,11 +111,11 @@ function () {
       ret[newKey] = entry[1];
     });
     return ret;
-  };
+  }
   /**
    * returns true if key-compression should be done
    */
-
+  ;
 
   _proto.doKeyCompression = function doKeyCompression() {
     /**
@@ -127,12 +127,12 @@ function () {
     if (this.jsonID.hasOwnProperty('disableKeyCompression')) {
       return !this.jsonID.disableKeyCompression;
     } else return this.jsonID.keyCompression;
-  };
+  }
   /**
    * creates the schema-based document-prototype,
    * see RxCollection.getDocumentPrototype()
    */
-
+  ;
 
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     if (!this._getDocumentPrototype) {

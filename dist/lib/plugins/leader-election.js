@@ -28,11 +28,11 @@ function () {
 
   _proto.die = function die() {
     return this.elector.die();
-  };
+  }
   /**
    * @return {Promise} promise which resolve when the instance becomes leader
    */
-
+  ;
 
   _proto.waitForLeadership = function waitForLeadership() {
     var _this = this;

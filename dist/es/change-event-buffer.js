@@ -36,13 +36,13 @@ function () {
     while (this.buffer.length > this.limit) {
       this.buffer.shift();
     }
-  };
+  }
   /**
    * gets the array-index for the given pointer
    * @param  {number} pointer
    * @return {number|null} arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
    */
-
+  ;
 
   _proto.getArrayIndexByPointer = function getArrayIndexByPointer(pointer) {
     var oldestEvent = this.buffer[0];
@@ -51,13 +51,13 @@ function () {
 
     var rest = pointer - oldestCounter;
     return rest;
-  };
+  }
   /**
    * get all changeEvents which came in later than the pointer-event
    * @param  {number} pointer
    * @return {RxChangeEvent[]|null} array with change-events. Iif null, pointer out of bounds
    */
-
+  ;
 
   _proto.getFrom = function getFrom(pointer) {
     var ret = [];
@@ -76,7 +76,7 @@ function () {
     this.getFrom(pointer).forEach(function (cE) {
       return fn(cE);
     });
-  };
+  }
   /**
    * no matter how many operations are done on one document,
    * only the last operation has to be checked to calculate the new state
@@ -84,7 +84,7 @@ function () {
    * @param {ChangeEvent[]} changeEvents
    * @return {ChangeEvents[]}
    */
-
+  ;
 
   _proto.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
     var docEventMap = {};
@@ -92,14 +92,14 @@ function () {
       docEventMap[changeEvent.data.doc] = changeEvent;
     });
     return Object.values(docEventMap);
-  };
+  }
   /**
    * use this to check if a change has already been handled
    * @param {string} revision 
    * @returns {boolean} true if change with revision exists
    * 
    */
-
+  ;
 
   _proto.hasChangeWithRevision = function hasChangeWithRevision(revision) {
     // we loop from behind because its more likely that the searched event is at the end

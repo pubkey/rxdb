@@ -69,14 +69,14 @@ function () {
     });
     if (found) return true;
     if (!changed) return false;else return resultsData;
-  };
+  }
   /**
    * handle a single ChangeEvent and try to calculate the new results
    * @param {Object[]} resultsData of previous results
    * @param {ChangeEvent} changeEvent
    * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
    */
-
+  ;
 
   _proto.handleSingleChange = function handleSingleChange(resultsData, changeEvent) {
     var _this2 = this;

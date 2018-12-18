@@ -42,14 +42,14 @@ function () {
       return same[k] = _clone(v);
     });
     return same;
-  };
+  }
   /**
    * Specifies a `path` for use with chaining.
    * @param {String} [path]
    * @param {Object} [val]
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.where = function where() {
     if (!arguments.length) return this;
@@ -65,7 +65,7 @@ function () {
     throw RxError.newRxTypeError('MQ1', {
       path: arguments[0]
     });
-  };
+  }
   /**
    * Specifies the complementary comparison value for paths specified with `where()`
    * ####Example
@@ -73,7 +73,7 @@ function () {
    * @param {Object} val
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.equals = function equals(val) {
     this._ensurePath('equals');
@@ -81,14 +81,14 @@ function () {
     var path = this._path;
     this._conditions[path] = val;
     return this;
-  };
+  }
   /**
    * Specifies the complementary comparison value for paths specified with `where()`
    * This is alias of `equals`
    * @param {Object} val
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.eq = function eq(val) {
     this._ensurePath('eq');
@@ -96,7 +96,7 @@ function () {
     var path = this._path;
     this._conditions[path] = val;
     return this;
-  };
+  }
   /**
    * Specifies arguments for an `$or` condition.
    * ####Example
@@ -104,14 +104,14 @@ function () {
    * @param {Array} array array of conditions
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.or = function or(array) {
     var or = this._conditions.$or || (this._conditions.$or = []);
     if (!Array.isArray(array)) array = [array];
     or.push.apply(or, array);
     return this;
-  };
+  }
   /**
    * Specifies arguments for a `$nor` condition.
    * ####Example
@@ -119,14 +119,14 @@ function () {
    * @param {Array} array array of conditions
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.nor = function nor(array) {
     var nor = this._conditions.$nor || (this._conditions.$nor = []);
     if (!Array.isArray(array)) array = [array];
     nor.push.apply(nor, array);
     return this;
-  };
+  }
   /**
    * Specifies arguments for a `$and` condition.
    * ####Example
@@ -135,14 +135,14 @@ function () {
    * @param {Array} array array of conditions
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.and = function and(array) {
     var and = this._conditions.$and || (this._conditions.$and = []);
     if (!Array.isArray(array)) array = [array];
     and.push.apply(and, array);
     return this;
-  };
+  }
   /**
    * Specifies a `$mod` condition
    *
@@ -151,7 +151,7 @@ function () {
    * @return {MQuery} this
    * @api public
    */
-
+  ;
 
   _proto.mod = function mod() {
     var val;
@@ -178,7 +178,7 @@ function () {
     var conds = this._conditions[path] || (this._conditions[path] = {});
     conds.$mod = val;
     return this;
-  };
+  }
   /**
    * Specifies an `$exists` condition
    * ####Example
@@ -191,7 +191,7 @@ function () {
    * @return {MQuery} this
    * @api public
    */
-
+  ;
 
   _proto.exists = function exists() {
     var path;
@@ -220,7 +220,7 @@ function () {
     var conds = this._conditions[path] || (this._conditions[path] = {});
     conds.$exists = val;
     return this;
-  };
+  }
   /**
    * Specifies an `$elemMatch` condition
    * ####Example
@@ -238,7 +238,7 @@ function () {
    * @param {Object|Function} criteria
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.elemMatch = function elemMatch() {
     if (null === arguments[0]) throw RxError.newRxTypeError('MQ2');
@@ -273,7 +273,7 @@ function () {
     var conds = this._conditions[path] || (this._conditions[path] = {});
     conds.$elemMatch = criteria;
     return this;
-  };
+  }
   /**
    * Sets the sort order
    * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
@@ -285,7 +285,7 @@ function () {
    * @param {Object|String|Array} arg
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.sort = function sort(arg) {
     var _this = this;
@@ -332,7 +332,7 @@ function () {
     throw RxError.newRxTypeError('MQ3', {
       args: arguments
     });
-  };
+  }
   /**
    * Merges another MQuery or conditions object into this one.
    *
@@ -341,7 +341,7 @@ function () {
    * @param {MQuery|Object} source
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.merge = function merge(source) {
     if (!source) return this;
@@ -381,7 +381,7 @@ function () {
     _merge(this._conditions, source);
 
     return this;
-  };
+  }
   /**
    * Finds documents.
    * ####Example
@@ -390,18 +390,18 @@ function () {
    * @param {Object} [criteria] mongodb selector
    * @return {MQuery} this
    */
-
+  ;
 
   _proto.find = function find(criteria) {
     if (MQuery.canMerge(criteria)) this.merge(criteria);
     return this;
-  };
+  }
   /**
    * Make sure _path is set.
    *
    * @parmam {String} method
    */
-
+  ;
 
   _proto._ensurePath = function _ensurePath(method) {
     if (!this._path) {

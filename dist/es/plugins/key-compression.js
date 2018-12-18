@@ -58,7 +58,7 @@ function () {
     var returnObj = this._decompressObj(obj);
 
     return returnObj;
-  };
+  }
   /**
    * get the full compressed-key-path of a object-path
    * @param {string} prePath | 'mainSkill'
@@ -66,7 +66,7 @@ function () {
    * @param {string[]} remainPathAr | ['attack', 'count']
    * @return {string} compressedPath | '|a.|b.|c'
    */
-
+  ;
 
   _proto.transformKey = function transformKey(prePath, prePathCompressed, remainPathAr) {
     var table = this.table;
@@ -76,13 +76,13 @@ function () {
     var nextFullPath = trimDots(prePath + '.' + nextPath);
     if (table[nextFullPath]) prePathCompressed += '.' + table[nextFullPath];else prePathCompressed += '.' + nextPath;
     if (remainPathAr.length > 0) return this.transformKey(nextFullPath, prePathCompressed, remainPathAr);else return trimDots(prePathCompressed);
-  };
+  }
   /**
    * replace the keys of a query-obj with the compressed keys
    * @param {{selector: {}}} queryJSON
    * @return {{selector: {}}} compressed queryJSON
    */
-
+  ;
 
   _proto.compressQuery = function compressQuery(queryJSON) {
     var _this2 = this;

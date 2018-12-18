@@ -138,15 +138,17 @@ function () {
       }, _callee, this);
     }));
 
-    return function remove() {
+    function remove() {
       return _remove.apply(this, arguments);
-    };
-  }();
+    }
+
+    return remove;
+  }()
   /**
    * returns the data for the attachment
    * @return {Promise<Buffer|Blob>}
    */
-
+  ;
 
   _proto.getData =
   /*#__PURE__*/
@@ -188,9 +190,11 @@ function () {
       }, _callee2, this);
     }));
 
-    return function getData() {
+    function getData() {
       return _getData.apply(this, arguments);
-    };
+    }
+
+    return getData;
   }();
 
   _proto.getStringData =
@@ -223,9 +227,11 @@ function () {
       }, _callee3, this);
     }));
 
-    return function getStringData() {
+    function getStringData() {
       return _getStringData.apply(this, arguments);
-    };
+    }
+
+    return getStringData;
   }();
 
   return RxAttachment;

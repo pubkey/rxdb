@@ -81,20 +81,20 @@ function () {
     }
 
     return this.stringRep;
-  }; // returns a clone of this RxQuery
-
+  } // returns a clone of this RxQuery
+  ;
 
   _proto._clone = function _clone() {
     var cloned = new RxQuery(this.op, _getDefaultQuery(this.collection), this.collection);
     cloned.mquery = this.mquery.clone();
     return cloned;
-  };
+  }
   /**
    * set the new result-data as result-docs of the query
    * @param {{}[]} newResultData json-docs that were recieved from pouchdb
    * @return {RxDocument[]}
    */
-
+  ;
 
   _proto._setResultData = function _setResultData(newResultData) {
     this._resultsData = newResultData;
@@ -104,12 +104,12 @@ function () {
     this._resultsDocs$.next(docs);
 
     return docs;
-  };
+  }
   /**
    * executes the query on the database
    * @return {Promise<{}[]>} results-array with document-data
    */
-
+  ;
 
   _proto._execOverDatabase = function _execOverDatabase() {
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
@@ -131,7 +131,7 @@ function () {
     }
 
     return docsPromise;
-  };
+  }
   /**
    * Returns an observable that emits the results
    * This should behave like an rxjs-BehaviorSubject which means:
@@ -140,7 +140,7 @@ function () {
    * - Do not emit anything before the first result-set was created (no null)
    * @return {BehaviorSubject<RxDocument[]>}
    */
-
+  ;
 
   /**
    * Execute the query
@@ -172,9 +172,11 @@ function () {
       }, _callee, this);
     }));
 
-    return function exec() {
+    function exec() {
       return _exec.apply(this, arguments);
-    };
+    }
+
+    return exec;
   }();
 
   _proto.toJSON = function toJSON() {
@@ -253,12 +255,12 @@ function () {
 
     this._toJSON = json;
     return this._toJSON;
-  };
+  }
   /**
    * get the key-compression version of this query
    * @return {{selector: {}, sort: []}} compressedQuery
    */
-
+  ;
 
   _proto.keyCompress = function keyCompress() {
     if (!this.collection.schema.doKeyCompression()) {
@@ -270,12 +272,12 @@ function () {
 
       return this._keyCompress;
     }
-  };
+  }
   /**
    * deletes all found documents
    * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
    */
-
+  ;
 
   _proto.remove = function remove() {
     var ret;
@@ -287,23 +289,23 @@ function () {
     }).then(function () {
       return ret;
     });
-  };
+  }
   /**
    * updates all found documents
    * @overwritten by plugin (optinal)
    * @param  {object} updateObj
    * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
    */
-
+  ;
 
   _proto.update = function update() {
     throw _rxError["default"].pluginMissing('update');
-  };
+  }
   /**
    * regex cannot run on primary _id
    * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
    */
-
+  ;
 
   _proto.regex = function regex(params) {
     var clonedThis = this._clone();
@@ -316,12 +318,12 @@ function () {
 
     clonedThis.mquery.regex(params);
     return _tunnelQueryCache(clonedThis);
-  };
+  }
   /**
    * make sure it searches index because of pouchdb-find bug
    * @link https://github.com/nolanlawson/pouchdb-find/issues/204
    */
-
+  ;
 
   _proto.sort = function sort(params) {
     var clonedThis = this._clone(); // workarround because sort wont work on unused keys

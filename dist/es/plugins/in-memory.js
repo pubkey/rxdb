@@ -151,16 +151,18 @@ function (_RxCollection$RxColle) {
       }, _callee, this);
     }));
 
-    return function prepare() {
+    function prepare() {
       return _prepare.apply(this, arguments);
-    };
-  }();
+    }
+
+    return prepare;
+  }()
   /**
    * waits until all writes are persistent
    * in the parent collection
    * @return {Promise}
    */
-
+  ;
 
   _proto.awaitPersistence = function awaitPersistence() {
     var _this3 = this;
@@ -169,13 +171,13 @@ function (_RxCollection$RxColle) {
     return this._nonPersistentRevisionsSubject.pipe(filter(function () {
       return _this3._nonPersistentRevisions.size === 0;
     }), first()).toPromise();
-  };
+  }
   /**
    * To know which events are replicated and which are not,
    * the _pouchPut is wrapped
    * @overwrite
    */
-
+  ;
 
   _proto._pouchPut =
   /*#__PURE__*/
@@ -206,14 +208,16 @@ function (_RxCollection$RxColle) {
       }, _callee2, this);
     }));
 
-    return function _pouchPut(_x, _x2) {
+    function _pouchPut(_x, _x2) {
       return _pouchPut2.apply(this, arguments);
-    };
-  }();
+    }
+
+    return _pouchPut;
+  }()
   /**
    * @overwrite
    */
-
+  ;
 
   _proto.$emit = function $emit(changeEvent) {
     if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev)) return;
@@ -228,13 +232,13 @@ function (_RxCollection$RxColle) {
       this._eventCounter = 0;
       this.pouch.compact();
     }
-  };
+  }
   /**
    * @overwrite
    * Replication on the inMemory is dangerous,
    * replicate with it's parent instead
    */
-
+  ;
 
   _proto.sync = function sync() {
     throw RxError.newRxError('IM2');

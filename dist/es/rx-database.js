@@ -82,7 +82,7 @@ function () {
   _proto.waitForLeadership = function waitForLeadership() {
     if (!this.multiInstance) return Promise.resolve(true);
     return this.leaderElector.waitForLeadership();
-  };
+  }
   /**
    * This is the main handle-point for all change events
    * ChangeEvents created by this instance go:
@@ -90,7 +90,7 @@ function () {
    * ChangeEvents created by other instances go:
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
    */
-
+  ;
 
   _proto.$emit = function $emit(changeEvent) {
     if (!changeEvent) return; // emit into own stream
@@ -100,11 +100,11 @@ function () {
     if (changeEvent.data.it === this.token) {
       writeToSocket(this, changeEvent);
     }
-  };
+  }
   /**
    * @return {Observable} observable
    */
-
+  ;
 
   /**
    * removes the collection-doc from this._collectionsPouch
@@ -120,13 +120,13 @@ function () {
         return _this._collectionsPouch.remove(doc);
       });
     });
-  };
+  }
   /**
    * create or fetch a collection
    * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
    * @return {Collection}
    */
-
+  ;
 
   _proto.collection =
   /*#__PURE__*/
@@ -306,16 +306,18 @@ function () {
       }, _callee, this, [[16, 22], [37, 42]]);
     }));
 
-    return function collection(_x) {
+    function collection(_x) {
       return _collection.apply(this, arguments);
-    };
-  }();
+    }
+
+    return collection;
+  }()
   /**
    * delete all data of the collection and its previous versions
    * @param  {string}  collectionName
    * @return {Promise}
    */
-
+  ;
 
   _proto.removeCollection =
   /*#__PURE__*/
@@ -363,15 +365,17 @@ function () {
       }, _callee2, this);
     }));
 
-    return function removeCollection(_x2) {
+    function removeCollection(_x2) {
       return _removeCollection.apply(this, arguments);
-    };
-  }();
+    }
+
+    return removeCollection;
+  }()
   /**
    * runs the given function between idleQueue-locking
    * @return {any}
    */
-
+  ;
 
   _proto.lockedRun = function lockedRun(fun) {
     return this.idleQueue.wrapCall(fun);
@@ -379,39 +383,39 @@ function () {
 
   _proto.requestIdlePromise = function requestIdlePromise() {
     return this.idleQueue.requestIdlePromise();
-  };
+  }
   /**
    * export to json
    * @param {boolean} decrypted
    * @param {?string[]} collections array with collectionNames or null if all
    */
-
+  ;
 
   _proto.dump = function dump() {
     throw RxError.pluginMissing('json-dump');
-  };
+  }
   /**
    * import json
    * @param {Object} dump
    */
-
+  ;
 
   _proto.importDump = function importDump() {
     throw RxError.pluginMissing('json-dump');
-  };
+  }
   /**
    * spawn server
    */
-
+  ;
 
   _proto.server = function server() {
     throw RxError.pluginMissing('server');
-  };
+  }
   /**
    * destroys the database-instance and all collections
    * @return {Promise}
    */
-
+  ;
 
   _proto.destroy =
   /*#__PURE__*/
@@ -481,15 +485,17 @@ function () {
       }, _callee3, this);
     }));
 
-    return function destroy() {
+    function destroy() {
       return _destroy.apply(this, arguments);
-    };
-  }();
+    }
+
+    return destroy;
+  }()
   /**
    * deletes the database and its stored data
    * @return {Promise}
    */
-
+  ;
 
   _proto.remove = function remove() {
     var _this5 = this;
@@ -531,7 +537,7 @@ export function properties() {
     var pseudoInstance = new RxDatabase();
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-    _properties = ownProperties.concat(prototypeProperties);
+    _properties = [].concat(ownProperties, prototypeProperties);
   }
 
   return _properties;

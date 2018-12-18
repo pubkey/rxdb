@@ -118,12 +118,12 @@ function () {
     }));
 
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
-  };
+  }
   /**
    * merge the prototypes of schema, orm-methods and document-base
    * so we do not have to assing getters/setters and orm methods to each document-instance
    */
-
+  ;
 
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     if (!this._getDocumentPrototype) {
@@ -172,41 +172,41 @@ function () {
     }
 
     return this._getDocumentConstructor;
-  };
+  }
   /**
    * checks if a migration is needed
    * @return {Promise<boolean>}
    */
-
+  ;
 
   _proto.migrationNeeded = function migrationNeeded() {
     return (0, _dataMigrator.mustMigrate)(this._dataMigrator);
-  };
+  }
   /**
    * @param {number} [batchSize=10] amount of documents handled in parallel
    * @return {Observable} emits the migration-status
    */
-
+  ;
 
   _proto.migrate = function migrate() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     return this._dataMigrator.migrate(batchSize);
-  };
+  }
   /**
    * does the same thing as .migrate() but returns promise
    * @param {number} [batchSize=10] amount of documents handled in parallel
    * @return {Promise} resolves when finished
    */
-
+  ;
 
   _proto.migratePromise = function migratePromise() {
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
     return this._dataMigrator.migratePromise(batchSize);
-  };
+  }
   /**
    * wrappers for Pouch.put/get to handle keycompression etc
    */
-
+  ;
 
   _proto._handleToPouch = function _handleToPouch(docData) {
     var data = (0, _util.clone)(docData);
@@ -224,7 +224,7 @@ function () {
     if (noDecrypt) return data;
     data = this._crypter.decrypt(data);
     return data;
-  };
+  }
   /**
    * every write on the pouchdb
    * is tunneld throught this function
@@ -232,7 +232,7 @@ function () {
    * @param {boolean} [overwrite=false] if true, it will overwrite existing document
    * @return {Promise}
    */
-
+  ;
 
   _proto._pouchPut =
   /*#__PURE__*/
@@ -305,16 +305,18 @@ function () {
       }, _callee, this, [[3, 9]]);
     }));
 
-    return function _pouchPut(_x) {
+    function _pouchPut(_x) {
       return _pouchPut2.apply(this, arguments);
-    };
-  }();
+    }
+
+    return _pouchPut;
+  }()
   /**
    * get document from pouchdb by its _id
    * @param  {[type]} key [description]
    * @return {[type]}     [description]
    */
-
+  ;
 
   _proto._pouchGet = function _pouchGet(key) {
     var _this3 = this;
@@ -322,7 +324,7 @@ function () {
     return this.pouch.get(key).then(function (doc) {
       return _this3._handleFromPouch(doc);
     });
-  };
+  }
   /**
    * wrapps pouch-find
    * @param {RxQuery} rxQuery
@@ -330,7 +332,7 @@ function () {
    * @param {?boolean} noDecrypt if true, decryption will not be made
    * @return {Object[]} array with documents-data
    */
-
+  ;
 
   _proto._pouchFind = function _pouchFind(rxQuery, limit) {
     var _this4 = this;
@@ -346,13 +348,13 @@ function () {
       });
       return docs;
     });
-  };
+  }
   /**
    * create a RxDocument-instance from the jsonData
    * @param {Object} json documentData
    * @return {RxDocument}
    */
-
+  ;
 
   _proto._createDocument = function _createDocument(json) {
     // return from cache if exsists
@@ -370,12 +372,12 @@ function () {
 
     (0, _hooks.runPluginHooks)('postCreateRxDocument', doc);
     return doc;
-  };
+  }
   /**
    * create RxDocument from the docs-array
    * @return {Promise<RxDocument[]>} documents
    */
-
+  ;
 
   _proto._createDocuments = function _createDocuments(docsJSON) {
     var _this5 = this;
@@ -383,21 +385,21 @@ function () {
     return docsJSON.map(function (json) {
       return _this5._createDocument(json);
     });
-  };
+  }
   /**
    * returns observable
    */
-
+  ;
 
   _proto.$emit = function $emit(changeEvent) {
     return this.database.$emit(changeEvent);
-  };
+  }
   /**
    * @param {Object|RxDocument} json data or RxDocument if temporary
    * @param {RxDocument} doc which was created
    * @return {Promise<RxDocument>}
    */
-
+  ;
 
   _proto.insert = function insert(json) {
     var _this6 = this;
@@ -450,12 +452,12 @@ function () {
 
       return newDoc;
     });
-  };
+  }
   /**
    * same as insert but overwrites existing document with same primary
    * @return {Promise<RxDocument>}
    */
-
+  ;
 
   _proto.upsert = function upsert(json) {
     var _this7 = this;
@@ -482,13 +484,13 @@ function () {
         return _this7.insert(json);
       }
     });
-  };
+  }
   /**
    * upserts to a RxDocument, uses atomicUpdate if document already exists
    * @param  {object}  json
    * @return {Promise}
    */
-
+  ;
 
   _proto.atomicUpsert = function atomicUpsert(json) {
     var _this8 = this;
@@ -527,13 +529,13 @@ function () {
     this._atomicUpsertQueues.set(primary, queue);
 
     return queue;
-  };
+  }
   /**
    * takes a mongoDB-query-object and returns the documents
    * @param  {object} queryObj
    * @return {RxDocument[]} found documents
    */
-
+  ;
 
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
@@ -563,55 +565,55 @@ function () {
     }
 
     return query;
-  };
+  }
   /**
    * export to json
    * @param {boolean} decrypted if true, all encrypted values will be decrypted
    */
-
+  ;
 
   _proto.dump = function dump() {
     throw _rxError["default"].pluginMissing('json-dump');
-  };
+  }
   /**
    * imports the json-data into the collection
    * @param {Array} exportedJSON should be an array of raw-data
    */
-
+  ;
 
   _proto.importDump = function importDump() {
     throw _rxError["default"].pluginMissing('json-dump');
-  };
+  }
   /**
    * waits for external changes to the database
    * and ensures they are emitted to the internal RxChangeEvent-Stream
    * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
    */
-
+  ;
 
   _proto.watchForChanges = function watchForChanges() {
     throw _rxError["default"].pluginMissing('watch-for-changes');
-  };
+  }
   /**
    * sync with another database
    */
-
+  ;
 
   _proto.sync = function sync() {
     throw _rxError["default"].pluginMissing('replication');
-  };
+  }
   /**
    * Create a replicated in-memory-collection
    */
-
+  ;
 
   _proto.inMemory = function inMemory() {
     throw _rxError["default"].pluginMissing('in-memory');
-  };
+  }
   /**
    * HOOKS
    */
-
+  ;
 
   _proto.addHook = function addHook(when, key, fun) {
     var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
@@ -664,11 +666,11 @@ function () {
         parallel: []
       };
     }
-  };
+  }
   /**
    * @return {Promise<void>}
    */
-
+  ;
 
   _proto._runHooks = function _runHooks(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
@@ -685,11 +687,11 @@ function () {
         return hook(data, instance);
       }));
     });
-  };
+  }
   /**
    * does the same as ._runHooks() but with non-async-functions
    */
-
+  ;
 
   _proto._runHooksSync = function _runHooksSync(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
@@ -697,13 +699,13 @@ function () {
     hooks.series.forEach(function (hook) {
       return hook(data, instance);
     });
-  };
+  }
   /**
    * creates a temporaryDocument which can be saved later
    * @param {Object} docData
    * @return {RxDocument}
    */
-
+  ;
 
   _proto.newDocument = function newDocument() {
     var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -716,12 +718,12 @@ function () {
     this._runHooksSync('post', 'create', docData, doc);
 
     return doc;
-  };
+  }
   /**
    * returns a promise that is resolved when the collection gets destroyed
    * @return {Promise}
    */
-
+  ;
 
   _proto.destroy = function destroy() {
     if (this.destroyed) return;
@@ -741,12 +743,12 @@ function () {
 
     delete this.database.collections[this.name];
     this.destroyed = true;
-  };
+  }
   /**
    * remove all data
    * @return {Promise}
    */
-
+  ;
 
   _proto.remove = function remove() {
     return this.database.removeCollection(this.name);
@@ -887,7 +889,7 @@ function properties() {
     var pseudoInstance = new RxCollection();
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-    _properties = ownProperties.concat(prototypeProperties);
+    _properties = [].concat(ownProperties, prototypeProperties);
   }
 
   return _properties;

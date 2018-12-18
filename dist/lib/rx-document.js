@@ -503,7 +503,7 @@ function properties() {
     var reserved = ['deleted', 'synced'];
     var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
     var prototypeProperties = Object.getOwnPropertyNames(basePrototype);
-    _properties = ownProperties.concat(prototypeProperties, reserved);
+    _properties = [].concat(ownProperties, prototypeProperties, reserved);
   }
 
   return _properties;

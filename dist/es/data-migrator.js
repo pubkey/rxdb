@@ -201,9 +201,11 @@ function () {
       }, _callee2, this);
     }));
 
-    return function migratePromise(_x) {
+    function migratePromise(_x) {
       return _migratePromise.apply(this, arguments);
-    };
+    }
+
+    return migratePromise;
   }();
 
   return DataMigrator;
@@ -237,11 +239,11 @@ function () {
         return _this3._handleFromPouch(doc);
       });
     });
-  };
+  }
   /**
    * handles a document from the pouchdb-instance
    */
-
+  ;
 
   _proto2._handleFromPouch = function _handleFromPouch(docData) {
     var data = clone(docData);
@@ -249,11 +251,11 @@ function () {
     if (this.schema.doKeyCompression()) data = this.keyCompressor.decompress(data);
     data = this.crypter.decrypt(data);
     return data;
-  };
+  }
   /**
    * wrappers for Pouch.put/get to handle keycompression etc
    */
-
+  ;
 
   _proto2._handleToPouch = function _handleToPouch(docData) {
     var data = clone(docData);
@@ -261,14 +263,14 @@ function () {
     data = this.schema.swapPrimaryToId(data);
     if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
     return data;
-  };
+  }
   /**
    * runs the doc-data through all following migrationStrategies
    * so it will match the newest schema.
    * @throws Error if final doc does not match final schema or migrationStrategy crashes
    * @return {Object|null} final object or null if migrationStrategy deleted it
    */
-
+  ;
 
   _proto2.migrateDocumentData =
   /*#__PURE__*/
@@ -334,15 +336,17 @@ function () {
       }, _callee3, this, [[11, 15]]);
     }));
 
-    return function migrateDocumentData(_x2) {
+    function migrateDocumentData(_x2) {
       return _migrateDocumentData.apply(this, arguments);
-    };
-  }();
+    }
+
+    return migrateDocumentData;
+  }()
   /**
    * transform docdata and save to new collection
    * @return {{type: string, doc: {}}} status-action with status and migrated document
    */
-
+  ;
 
   _proto2._migrateDocument =
   /*#__PURE__*/
@@ -416,15 +420,17 @@ function () {
       }, _callee4, this, [[17, 22]]);
     }));
 
-    return function _migrateDocument(_x3) {
+    function _migrateDocument(_x3) {
       return _migrateDocument2.apply(this, arguments);
-    };
-  }();
+    }
+
+    return _migrateDocument;
+  }()
   /**
    * deletes this.pouchdb and removes it from the database.collectionsCollection
    * @return {Promise}
    */
-
+  ;
 
   _proto2["delete"] = function _delete() {
     var _this4 = this;
@@ -432,11 +438,11 @@ function () {
     return this.pouchdb.destroy().then(function () {
       return _this4.database.removeCollectionDoc(_this4.dataMigrator.name, _this4.schema);
     });
-  };
+  }
   /**
    * runs the migration on all documents and deletes the pouchdb afterwards
    */
-
+  ;
 
   _proto2.migrate = function migrate() {
     var _this5 = this;
