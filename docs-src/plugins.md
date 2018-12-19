@@ -11,7 +11,7 @@ const myPlugin = {
         /**
          * every value in this object can manipulate the prototype of the keynames class
          * You can manipulate every prototype in this list:
-         * @link https://github.com/pubkey/rxdb/blob/cutsom-builds/src/Plugin.js
+         * @link https://github.com/pubkey/rxdb/blob/master/src/plugin.js#L22
          */
         prototypes: {
             /**
