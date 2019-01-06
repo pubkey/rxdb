@@ -16,17 +16,17 @@
     "test": "concurrently \"npm run build:serve \" \"npm run test:run\" --kill-others --success first"
   },
   "dependencies": {
-    "concurrently": "4.0.1",
+    "concurrently": "4.1.0",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
-    "pouchdb-server": "2.3.7",
+    "pouchdb-server": "4.1.0",
     "random-int": "1.0.0",
-    "rxjs": "6.3.1",
+    "rxjs": "6.3.3",
     "vue": "2.5.17",
     "vue-rx": "6.0.1"
   },
   "devDependencies": {
-    "async-test-util": "1.6.1",
+    "async-test-util": "1.6.3",
     "babel-core": "6.26.3",
     "babel-loader": "7.1.2",
     "babel-polyfill": "6.26.0",
@@ -35,13 +35,13 @@
     "babel-preset-stage-0": "6.24.1",
     "cross-env": "5.2.0",
     "css-loader": "0.28.9",
-    "eslint": "5.5.0",
+    "eslint": "5.12.0",
     "file-loader": "1.1.6",
     "local-web-server": "2.6.0",
     "testcafe": "0.21.1",
-    "vue-loader": "13.7.0",
+    "vue-loader": "14.2.2",
     "vue-template-compiler": "2.5.17",
-    "webpack": "3.10.0",
-    "webpack-dev-server": "2.11.0"
+    "webpack": "4.28.3",
+    "webpack-dev-server": "3.1.14"
   }
 }
