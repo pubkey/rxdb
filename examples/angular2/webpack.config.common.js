@@ -9,7 +9,7 @@ module.exports = {
         'app': './app/bootstrap.ts'
     },
     module: {
-        loaders: [{
+        rules: [{
             test: /\.ts?$/,
             loaders: ['awesome-typescript-loader?useWebpackText=true', 'angular2-template-loader'],
         }, {
@@ -23,7 +23,7 @@ module.exports = {
             loader: ['style-loader', 'css-loader', 'less-loader']
         }, {
             test: /\.json$/,
-            loader: 'json-loader'
+            loader: 'raw-loader'
         }, {
             test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
             loader: 'url-loader?limit=10000&mimetype=application/font-woff'
@@ -44,14 +44,14 @@ module.exports = {
         publicPath: '/'
     },
     plugins: [
-        new webpack.optimize.CommonsChunkPlugin({
-            name: ['app', 'vendor', 'polyfills']
-        }),
         new HtmlWebpackPlugin({
             template: 'app/index.html',
             chunksSortMode: 'dependency'
         })
     ],
+    optimization: {
+        splitChunks: false
+    },
     resolve: {
         extensions: ['.js', '.ts']
     },

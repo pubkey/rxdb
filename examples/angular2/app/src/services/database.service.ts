@@ -14,6 +14,7 @@ import {
     RxHeroDocumentType
 } from './../RxDB.d';
 
+import heroSchema from '../schemas/hero.schema';
 
 // batteries-included
 // import RxDB from 'rxdb';
@@ -56,7 +57,7 @@ const useAdapter = 'idb';
 let collections = [
     {
         name: 'hero',
-        schema: require('../schemas/hero.schema.json'),
+        schema: heroSchema,
         methods: {
             hpPercent(this: RxHeroDocument): number {
                 return this.hp / this.maxHP * 100;

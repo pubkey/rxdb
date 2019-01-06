@@ -13,25 +13,17 @@ module.exports = function(options) {
         'ENV': JSON.stringify(ENV)
     }));
     plugins.push(new webpack.NoEmitOnErrorsPlugin());
-    doUglify && plugins.push(new webpack.optimize.UglifyJsPlugin({
-        beautify: false,
-        mangle: {
-            screw_ie8: true,
-            keep_fnames: false
-        },
-        compress: {
-            screw_ie8: true,
-            warnings: false
-        },
-        comments: false
-    }));
+
     plugins.push(new AppCachePlugin({
         exclude: ['app.js', 'styles.css'],
         output: 'app.appcache'
     }));
 
-
     return webpackMerge(commonConfig, {
-        plugins
+        plugins,
+        optimization: {
+            minimize: doUglify
+        },
+        mode: ENV
     });
 };
