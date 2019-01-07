@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - Calling `remove()` on a deleted RxDocument should return a rejected promise [#830](https://github.com/pubkey/rxdb/issues/830)
+
 ### 8.0.4 (13 November 2018)
 
 Bugfixes:

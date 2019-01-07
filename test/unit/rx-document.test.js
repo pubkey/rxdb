@@ -811,5 +811,20 @@ config.parallel('rx-document.test.js', () => {
             // clean up afterwards
             db.destroy();
         });
+        it('#830 should return a rejected promise when already deleted', async () => {
+            const c = await humansCollection.createPrimary(1);
+            const doc = await c.findOne().exec();
+            assert.ok(doc);
+            await doc.remove();
+            assert.ok(doc.deleted);
+            const ret = doc.remove();
+            assert.equal(typeof ret.then, 'function'); // ensure it's a promise
+            await AsyncTestUtil.assertThrows(
+                () => ret,
+                'RxError',
+                'already deleted'
+            );
+            c.database.destroy();
+        });
     });
 });
