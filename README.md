@@ -427,6 +427,12 @@ Now, when one user logs off, it will calculate the new results from the current 
 
 All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a VirtualBox for IE11 and Edge.
 
+We soon will switch to [Browserstack](https://www.browserstack.com/) and run automated tests in all major browsers<br/>
+
+<div align="center">
+    <img src="https://user-images.githubusercontent.com/7760/34738829-7327ddc4-f561-11e7-97e2-2fe0474eaf05.png" width="280px" />
+</div>
+
 As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
 
 ## Getting started
