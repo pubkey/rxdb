@@ -72,6 +72,7 @@
         * [$](./rx-document.md#observe-)
         * [remove()](./rx-document.md#remove)
         * [deleted$](./rx-document.md#deleted$)
+        * [toJSON()](./rx-document.md#tojson)
         * [set()](./rx-document.md#set)
         * [save()](./rx-document.md#save)
         * [isRxDocument()](./rx-document.md#isrxdocument)
