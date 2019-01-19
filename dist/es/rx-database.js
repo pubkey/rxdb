@@ -924,9 +924,9 @@ function _spawnPouchDB2(dbName, adapter, collectionName, schemaVersion) {
     adapter: adapterObject(adapter),
     settings: pouchSettings
   };
-  var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator);
+  var pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator, pouchDbParameters.settings);
   runPluginHooks('preCreatePouchDb', pouchDbParameters);
-  return new PouchDB(pouchDbParameters.location, pouchDBOptions, pouchDbParameters.settings);
+  return new PouchDB(pouchDbParameters.location, pouchDBOptions);
 }
 
 function _internalAdminPouch(name, adapter) {

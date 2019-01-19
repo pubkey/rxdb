@@ -408,10 +408,10 @@ var basePrototype = {
     var _this5 = this;
 
     if (this.deleted) {
-      throw _rxError["default"].newRxError('DOC13', {
+      return Promise.reject(_rxError["default"].newRxError('DOC13', {
         document: this,
         id: this.primary
-      });
+      }));
     }
 
     var deletedData = (0, _util.clone)(this._data);

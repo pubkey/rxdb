@@ -378,10 +378,10 @@ export var basePrototype = {
     var _this5 = this;
 
     if (this.deleted) {
-      throw RxError.newRxError('DOC13', {
+      return Promise.reject(RxError.newRxError('DOC13', {
         document: this,
         id: this.primary
-      });
+      }));
     }
 
     var deletedData = clone(this._data);

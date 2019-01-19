@@ -1037,6 +1037,19 @@
     
         <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
             
+                <a href="rx-document.html#tojson">
+            
+                    
+                    toJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+            
                 <a href="rx-document.html#set">
             
                     
@@ -1048,7 +1061,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
             
                 <a href="rx-document.html#save">
             
@@ -1061,7 +1074,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
             
                 <a href="rx-document.html#isrxdocument">
             
@@ -1591,21 +1604,31 @@ myDocument.deleted$.subscribe(state =&gt; lastState = state);
 <span class="hljs-built_in">console</span>.log(myDocument.deleted);
 <span class="hljs-comment">// true</span>
 </code></pre>
+<h3 id="tojson">toJSON()</h3>
+<p>Returns the document&apos;s data as plain json object.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> json = myDocument.toJSON();
+<span class="hljs-built_in">console</span>.dir(json);
+<span class="hljs-comment">/* { passportId: &apos;h1rg9ugdd30o&apos;,
+  firstName: &apos;Carolina&apos;,
+  lastName: &apos;Gibson&apos;,
+  age: 33 ...
+*/</span>
+</code></pre>
 <h3 id="set">set()</h3>
-<p><strong>Only temporary documents</strong>
-To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.</p>
+<p><strong>Only temporary documents</strong></p>
+<p>To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.</p>
 <pre><code class="lang-js">myDocument.set(<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;foobar&apos;</span>);
 <span class="hljs-built_in">console</span>.log(myDocument.get(<span class="hljs-string">&apos;firstName&apos;</span>)); <span class="hljs-comment">// &lt;- is &apos;foobar&apos;</span>
 </code></pre>
 <h3 id="proxy-set">proxy-set</h3>
-<p><strong>Only temporary documents</strong>
-All properties of an <code>RxDocument</code> are assigned as setters to it so you can also directly set values instead of using the set()-function.</p>
+<p><strong>Only temporary documents</strong></p>
+<p>All properties of an <code>RxDocument</code> are assigned as setters to it so you can also directly set values instead of using the set()-function.</p>
 <pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
 myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
 </code></pre>
 <h3 id="save">save()</h3>
-<p><strong>Only temporary documents</strong>
-This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).</p>
+<p><strong>Only temporary documents</strong></p>
+<p>This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).</p>
 <pre><code class="lang-js">myDocument.name = <span class="hljs-string">&apos;foobar&apos;</span>;
 <span class="hljs-keyword">await</span> myDocument.save(); <span class="hljs-comment">// submit the changes to the storage</span>
 </code></pre>
@@ -1660,7 +1683,7 @@ This will update the document in the storage if it has been changed. Call this a
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"isRxCollection()","level":"1.5.2.13","depth":3,"anchor":"#isrxcollection","path":"rx-collection.md","ref":"./rx-collection.md#isrxcollection","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-document.md","mtime":"2018-10-24T23:20:43.570Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-11-13T17:41:59.037Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"isRxCollection()","level":"1.5.2.13","depth":3,"anchor":"#isrxcollection","path":"rx-collection.md","ref":"./rx-collection.md#isrxcollection","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-document.md","mtime":"2019-01-19T15:33:33.599Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-01-19T15:59:28.458Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
