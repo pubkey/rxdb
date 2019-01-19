@@ -1559,6 +1559,23 @@ config.parallel('rx-collection.test.js', () => {
             assert.equal(myDocument.score, 100);
             db.destroy();
         });
+        it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+
+            // test with auto_compaction
+            const collection = await db.collection({
+                name: 'human_compact',
+                schema: schemas.primaryHuman,
+                pouchSettings: {
+                    auto_compaction: true
+                }
+            });
+            assert.ok(collection.pouch.auto_compaction);
+            db.destroy();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {

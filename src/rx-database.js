@@ -655,19 +655,25 @@ export function getPouchLocation(dbName, collectionName, schemaVersion) {
     }
 }
 
-function _spawnPouchDB(dbName, adapter, collectionName, schemaVersion, pouchSettings = {}, pouchSettingsFromRxDatabaseCreator = {}) {
+function _spawnPouchDB(
+    dbName, adapter, collectionName, schemaVersion,
+    pouchSettings = {}, pouchSettingsFromRxDatabaseCreator = {}
+) {
     const pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
     const pouchDbParameters = {
         location: pouchLocation,
         adapter: adapterObject(adapter),
         settings: pouchSettings
     };
-    const pouchDBOptions = Object.assign({}, pouchDbParameters.adapter, pouchSettingsFromRxDatabaseCreator);
+    const pouchDBOptions = Object.assign({},
+        pouchDbParameters.adapter,
+        pouchSettingsFromRxDatabaseCreator,
+        pouchDbParameters.settings
+    );
     runPluginHooks('preCreatePouchDb', pouchDbParameters);
     return new PouchDB(
         pouchDbParameters.location,
-        pouchDBOptions,
-        pouchDbParameters.settings
+        pouchDBOptions
     );
 }
 

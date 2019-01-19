@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Calling `remove()` on a deleted RxDocument should return a rejected promise [#830](https://github.com/pubkey/rxdb/issues/830)
+  - Passing `auto_compaction` to a collection did not work [via gitter](https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b)
 
 ### 8.0.4 (13 November 2018)
 
