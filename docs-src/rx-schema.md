@@ -48,7 +48,7 @@ In this example-schema we define a hero-collection with the following settings:
             "type": "array",
             "maxItems": 5,
             "uniqueItems": true,
-            "item": {
+            "items": {
                 "type": "object",
                 "properties": {
                     "name": {
