@@ -196,7 +196,7 @@ await myCollection.remove();
 ### destroy()
 Destroys the collection's object instance. This is to free up memory and stop all observings and replications.
 ```js
-await myDatabase.destroy();
+await myCollection.destroy();
 ```
 
 
