@@ -55,7 +55,7 @@
         * [dump()](./rx-collection.md#dump)
         * [importDump()](./rx-collection.md#importdump)
         * [sync()](./rx-collection.md#sync)
-        * [remove()](./rx-collection.md#clear)
+        * [remove()](./rx-collection.md#remove)
         * [destroy()](./rx-collection.md#destroy)
         * [isRxCollection()](./rx-collection.md#isrxcollection)
 
