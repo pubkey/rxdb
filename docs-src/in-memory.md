@@ -54,4 +54,4 @@ await memCol.awaitPersistence(); // after this you can be sure that everything i
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./local-documents.md)
+If you are new to RxDB, you should continue [here](./rx-local-document.md)
