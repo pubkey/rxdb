@@ -2,6 +2,8 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+- Move `pouchdb-server` to devDependencies so the build will not run on each install [issue](https://github.com/pubkey/rxdb/issues/884)
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
