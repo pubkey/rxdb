@@ -21,7 +21,7 @@ const funs = {
      * @return {KeyCompressor}
      */
     createKeyCompressor() {
-        throw RxError.pluginMissing('keycompression');
+        throw RxError.pluginMissing('key-compression');
     },
     /**
      * creates a leader-elector for the given database
