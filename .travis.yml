@@ -4,7 +4,7 @@ dist: trusty
 os:
   - linux
 node_js:
-  - "10.6.0"
+  - "11.9.0"
 services:
   - docker
 
