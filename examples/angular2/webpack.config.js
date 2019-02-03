@@ -8,6 +8,8 @@ const doUglify = true;
 module.exports = function(options) {
     const ENV = options.ENV || 'production';
 
+    console.log('ENV: ' + ENV);
+
     const plugins = [];
     plugins.push(new webpack.DefinePlugin({
         'ENV': JSON.stringify(ENV)
