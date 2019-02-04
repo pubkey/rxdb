@@ -13,7 +13,28 @@ import React from 'react';
 const { width, height } = Dimensions.get('window');
 
 import { default as randomToken } from 'random-token';
-import * as RxDB from '../../';
+
+// We have to do a custom build here because the default validate plugin,
+// is-my-json-valid, only works in the node environment.
+// See https://github.com/pubkey/rxdb/blob/c322b95422e37e9ce20513fdfca784077ad79020/docs-src/custom-build.md
+// for more plugins that you can add.
+import RxDB from 'rxdb/plugins/core';
+import RxDBReplicationModule from 'rxdb/plugins/replication';
+RxDB.plugin(RxDBReplicationModule);
+import RxDBAjvValidateModule from 'rxdb/plugins/ajv-validate';
+RxDB.plugin(RxDBAjvValidateModule);
+
+// required if the database has a password
+import RxDBEncryptionModule from 'rxdb/plugins/encryption';
+RxDB.plugin(RxDBEncryptionModule);
+
+// not required but important for development
+import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
+RxDB.plugin(RxDBSchemaCheckModule);
+import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
+RxDB.plugin(RxDBErrorMessagesModule);
+
+
 import schema from './src/Schema';
 
 RxDB.plugin(require('pouchdb-adapter-asyncstorage').default);
@@ -36,27 +57,36 @@ export default class App extends React.Component {
         this.subs = [];
     }
     async createDatabase() {
-        const db = await RxDB.create({
-            name: dbName,
-            adapter: 'asyncstorage',
-            password: 'myLongAndStupidPassword',
-            multiInstance: false,
-        });
-        const heroCollection = await db.collection({
-            name: 'heroes',
-            schema,
-        });
-        heroCollection.sync({
-            remote: syncURL + dbName + '/',
-            options: {
-                live: true,
-                retry: true,
-            },
-        });
-        return db;
+        try {
+            const db = await RxDB.create({
+                name: dbName,
+                adapter: 'asyncstorage',
+                password: 'myLongAndStupidPassword',
+                multiInstance: false,
+            });
+            const heroCollection = await db.collection({
+                name: 'heroes',
+                schema,
+            });
+            heroCollection.sync({
+                remote: syncURL + dbName + '/',
+                options: {
+                    live: true,
+                    retry: true,
+                },
+            });
+            return db;
+        } catch(error) {
+            console.log(error)
+        }
     }
     async componentDidMount() {
-        this.db = await this.createDatabase();
+
+        try {
+            this.db = await this.createDatabase();
+        } catch(err) {
+            console.log(err);
+        }
 
         const sub = this.db.heroes
             .find()
@@ -76,7 +106,11 @@ export default class App extends React.Component {
         console.log('addHero: ' + name);
         const color = this.getRandomColor();
         console.log('color: ' + color);
-        await this.db.heroes.insert({ name, color });
+        try {
+            await this.db.heroes.insert({ name, color });
+        } catch(error) {
+            console.log(error);
+        }
         this.setState({ name: '', color: '' });
     }
     getRandomColor() {
