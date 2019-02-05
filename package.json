@@ -170,7 +170,7 @@
     "watchify": "3.11.0",
     "webpack": "4.29.0",
     "webpack-bundle-analyzer": "3.0.3",
-    "webpack-cli": "3.2.1"
+    "webpack-cli": "3.2.2"
   },
   "// greenkeeper": [
     "// node: native build fails too often",
