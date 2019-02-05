@@ -98,7 +98,7 @@
     "@babel/cli": "7.2.3",
     "@babel/core": "7.2.2",
     "@babel/plugin-check-constants": "7.0.0-beta.38",
-    "@babel/plugin-proposal-object-rest-spread": "7.3.1",
+    "@babel/plugin-proposal-object-rest-spread": "7.3.2",
     "@babel/plugin-transform-member-expression-literals": "7.2.0",
     "@babel/plugin-transform-property-literals": "7.2.0",
     "@babel/plugin-transform-runtime": "7.2.0",
