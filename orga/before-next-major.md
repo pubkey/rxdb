@@ -2,7 +2,23 @@
 
 This list contains things that have to be done but will create breaking changes.
 
-- Move `pouchdb-server` to devDependencies so the build will not run on each install [issue](https://github.com/pubkey/rxdb/issues/884)
+### Move `pouchdb-server` to devDependencies so the build will not run on each install [issue](https://github.com/pubkey/rxdb/issues/884)
+
+### KeyCompression does not work on objects inside of arrays.
+In documents like the following, the properties inside of the array-object will not be compressed `color`
+
+```json
+{
+    "_id": "anyid",
+    "myArray": [
+        {
+            "name": "foobar",
+            "color": "blue"
+        }
+    ]
+}
+```
+
 
 # Maybe
 
