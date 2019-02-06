@@ -9,7 +9,7 @@
     "android": "react-native-scripts android",
     "ios": "react-native-scripts ios",
     "test": "jest",
-    "test:build": "expo export --public-url http://example.com/",
+    "test:bundle": "expo export --public-url http://example.com/",
   },
   "devDependencies": {
     "jest-expo": "~27.0.0",
