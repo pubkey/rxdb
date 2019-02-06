@@ -13,7 +13,7 @@ import React from 'react';
 const { width, height } = Dimensions.get('window');
 
 import { default as randomToken } from 'random-token';
-import * as RxDB from '../../';
+import * as RxDB from 'rxdb';
 import schema from './src/Schema';
 
 RxDB.plugin(require('pouchdb-adapter-asyncstorage').default);

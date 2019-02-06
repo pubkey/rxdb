@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "(cd ../../ && npx yarn pack ../../ --filename ./examples/react-native/rxdb-local.tgz)",
     "start": "react-native-scripts start",
     "eject": "react-native-scripts eject",
     "android": "react-native-scripts android",
@@ -28,6 +29,7 @@
     "random-token": "0.0.8",
     "react": "16.3.1",
     "react-native": "0.55.3",
-    "rxjs": "^6.3.2"
+    "rxdb": "file:rxdb-local.tgz",
+    "rxjs": "6.4.0"
   }
 }

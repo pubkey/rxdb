@@ -5,6 +5,7 @@
 
 # dependencies
 /node_modules
+/rxdb-local.tgz
 
 # misc
 .env.local
