@@ -8,11 +8,12 @@
     "eject": "react-native-scripts eject",
     "android": "react-native-scripts android",
     "ios": "react-native-scripts ios",
-    "test": "jest"
+    "test": "jest",
+    "test:build": "expo export --public-url http://example.com/",
   },
   "devDependencies": {
     "jest-expo": "~27.0.0",
-    "react-native-scripts": "1.14.0",
+    "react-native-scripts": "2.0.1",
     "react-test-renderer": "16.3.1"
   },
   "main": "./node_modules/react-native-scripts/build/bin/crna-entry.js",
@@ -24,6 +25,7 @@
   },
   "dependencies": {
     "expo": "^27.0.1",
+    "expo-cli": "2.9.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
     "random-token": "0.0.8",
