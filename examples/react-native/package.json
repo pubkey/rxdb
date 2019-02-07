@@ -12,7 +12,7 @@
     "test:bundle": "expo export --public-url http://example.com/"
   },
   "devDependencies": {
-    "jest-expo": "~27.0.0",
+    "jest-expo": "27.0.0",
     "react-native-scripts": "2.0.1",
     "react-test-renderer": "16.3.1"
   },
@@ -24,7 +24,7 @@
     ]
   },
   "dependencies": {
-    "expo": "^27.0.1",
+    "expo": "27.0.1",
     "expo-cli": "2.9.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
