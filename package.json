@@ -92,7 +92,8 @@
     "random-token": "0.0.8",
     "spark-md5": "^3.0.0",
     "unload": "2.1.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "util": "^0.11.1"
   },
   "devDependencies": {
     "@babel/cli": "7.2.3",
