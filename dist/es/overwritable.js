@@ -20,7 +20,7 @@ var funs = {
    * @return {KeyCompressor}
    */
   createKeyCompressor: function createKeyCompressor() {
-    throw RxError.pluginMissing('keycompression');
+    throw RxError.pluginMissing('key-compression');
   },
 
   /**
