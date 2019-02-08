@@ -4,19 +4,18 @@
   "private": true,
   "scripts": {
     "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/react-native/rxdb-local.tgz)",
-    "start": "react-native-scripts start",
-    "eject": "react-native-scripts eject",
-    "android": "react-native-scripts android",
-    "ios": "react-native-scripts ios",
+    "start": "expo start",
+    "eject": "expo eject",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
     "test": "jest",
     "test:bundle": "expo export --public-url http://example.com/"
   },
   "devDependencies": {
     "jest-expo": "27.0.0",
-    "react-native-scripts": "2.0.1",
     "react-test-renderer": "16.3.1"
   },
-  "main": "./node_modules/react-native-scripts/build/bin/crna-entry.js",
+  "main": "node_modules/expo/AppEntry.js",
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
