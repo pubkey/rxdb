@@ -12,8 +12,10 @@
     "test:bundle": "expo export --public-url http://example.com/"
   },
   "devDependencies": {
-    "jest-expo": "27.0.0",
-    "react-test-renderer": "16.3.1"
+    "jest-expo": "32.0.0",
+    "react-test-renderer": "16.5.0",
+    "babel-preset-expo": "5.0.0",
+    "expo-cli": "2.10.0"
   },
   "main": "node_modules/expo/AppEntry.js",
   "jest": {
@@ -23,13 +25,13 @@
     ]
   },
   "dependencies": {
-    "expo": "27.0.1",
-    "expo-cli": "2.9.0",
+    "expo": "32.0.0",
+    "react": "16.5.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
+    "global": "4.3.2",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
     "random-token": "0.0.8",
-    "react": "16.3.1",
-    "react-native": "0.55.3",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "6.4.0"
   }
