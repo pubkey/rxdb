@@ -17,7 +17,7 @@ Our way to go is
 First you import the types from RxDB.
 
 ```typescript
-import {
+import RxDB, {
     RxDatabase,
     RxCollection,
     RxJsonSchema,

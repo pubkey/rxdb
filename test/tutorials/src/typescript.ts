@@ -5,15 +5,13 @@
  */
 
 // import types
-import {
+import RxDB, {
     RxDatabase,
     RxCollection,
     RxJsonSchema,
     RxDocument
 } from 'rxdb';
 
-// imports for runtime
-import RxDB from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
 RxDB.plugin(MemoryAdapter);
 
