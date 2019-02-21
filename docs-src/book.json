@@ -8,7 +8,8 @@
         "github",
         "custom-favicon",
         "-sharing",
-        "expandable-chapters"
+        "expandable-chapters",
+        "scripts"
     ],
     "links": {
         "sidebar": {
@@ -26,6 +27,11 @@
         "github": {
             "url": "https://github.com/pubkey/rxdb"
         },
-        "expandable-chapters":{}
+        "expandable-chapters":{},
+        "scripts": {
+           "files": [
+               "./gitter.js"
+           ]
+       }
     }
 }
