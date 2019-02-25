@@ -524,7 +524,7 @@ export const heroArray = {
             'type': 'array',
             'maxItems': 5,
             'uniqueItems': true,
-            'item': {
+            'items': {
                 'type': 'object',
                 'properties': {
                     'name': {
@@ -536,8 +536,7 @@ export const heroArray = {
                 }
             }
         }
-    },
-    'required': ['color']
+    }
 };
 
 export const simpleArrayHero = {

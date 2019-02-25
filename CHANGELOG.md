@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - (typings) Fix `additionalProperties: boolean` is allowed for nested objects
+
 ### 8.0.5 (7 February 2019)
 
 Bugfixes:

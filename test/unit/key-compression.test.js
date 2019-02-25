@@ -53,9 +53,9 @@ config.parallel('key-compression.test.js', () => {
         it('table of schema with array', () => {
             const k = KeyCompressor.create(RxSchema.create(schemas.heroArray));
             const table = k.table;
-            assert.equal(table['skills.item'].length, 2);
-            assert.equal(table['skills.item.name'].length, 2);
-            assert.equal(table['skills.item.damage'].length, 2);
+            assert.equal(table['skills.items'].length, 2);
+            assert.equal(table['skills.items.name'].length, 2);
+            assert.equal(table['skills.items.damage'].length, 2);
         });
         it('do not compress keys with <=3 chars', () => {
             const k = KeyCompressor.create(RxSchema.create({

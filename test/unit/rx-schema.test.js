@@ -554,6 +554,31 @@ config.parallel('rx-schema.test.js', () => {
                     }
                     assert.ok(hasThrown);
                 });
+                it('should respect nested additionalProperties: false', () => {
+                    const jsonSchema = clone(schemas.heroArray);
+                    jsonSchema.properties.skills.items.additionalProperties = false;
+                    const schema = RxSchema.create(jsonSchema);
+                    const obj = {
+                        name: 'foobar',
+                        skills: [
+                            {
+                                name: 'foo',
+                                damage: 10,
+                                nonDefinedField: 'foobar'
+                            }
+                        ],
+                    };
+
+                    let hasThrown = false;
+                    try {
+                        schema.validate(obj);
+                    } catch (err) {
+                        const message = err.parameters.errors[0].message;
+                        assert.equal(message, 'has additional properties');
+                        hasThrown = true;
+                    }
+                    assert.ok(hasThrown);
+                });
                 it('final fields should be required', () => {
                     const schema = RxSchema.create(schemas.humanFinal);
                     let hasThrown = false;

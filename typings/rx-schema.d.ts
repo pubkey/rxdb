@@ -7,6 +7,7 @@ export interface JsonSchema {
     anyOf?: JsonSchema[];
     oneOf?: JsonSchema[];
     additionalItems?: boolean | JsonSchema;
+    additionalProperties?: boolean;
     type?: JsonSchemaTypes | JsonSchemaTypes[];
     description?: string;
     dependencies?: {
@@ -66,7 +67,10 @@ export declare class RxJsonSchema {
     required?: string[];
     compoundIndexes?: string[] | string[][];
     keyCompression?: boolean;
-    additionalProperties?: true;
+    /**
+     * if not set, rxdb will set 'false' as default
+     */
+    additionalProperties?: boolean;
     attachments?: {
             encrypted?: boolean
     };
