@@ -38,8 +38,8 @@ describe('typings.test.js', () => {
         const stdout = [];
         const stderr = [];
         const promise = spawn('ts-node', [
-            // '--no-cache',
-            '--compiler-options', '{"target":"es6", "strict": true, "strictNullChecks": true, "noImplicitAny": true}',
+            '--no-cache',
+            '--compilerOptions', '{"target":"es6", "strict": true, "strictNullChecks": true, "noImplicitAny": true}',
             '--type-check',
             '-p', code
         ]);
