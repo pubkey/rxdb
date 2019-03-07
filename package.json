@@ -162,7 +162,7 @@
     "rimraf": "2.6.3",
     "rxjs": "6.4.0",
     "shelljs": "0.8.3",
-    "ts-node": "8.0.3",
+    "ts-node": "7.0.1",
     "typescript": "3.3.1",
     "uglify-js": "3.4.9",
     "uglifyjs-webpack-plugin": "2.1.2",
