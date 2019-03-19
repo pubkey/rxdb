@@ -9,7 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest --debug --no-cache",
-    "test:bundle": "rimraf -f ./dist && EXPO_DEBUG=true expo export --public-url http://example.com/"
+    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url http://example.com/"
   },
   "devDependencies": {
     "babel-preset-expo": "5.1.1",
