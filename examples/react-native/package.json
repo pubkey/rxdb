@@ -9,7 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest --debug --no-cache",
-    "test:bundle": "expo export --public-url http://example.com/"
+    "test:bundle": "rimraf -f ./dist && EXPO_DEBUG=true expo export --public-url http://example.com/"
   },
   "devDependencies": {
     "babel-preset-expo": "5.1.1",
@@ -17,6 +17,7 @@
     "jest-expo": "32.0.0",
     "react-native-gesture-handler": "1.1.0",
     "react-test-renderer": "16.8.4",
+    "rimraf": "2.6.3",
     "schedule": "0.4.0"
   },
   "main": "node_modules/expo/AppEntry.js",
