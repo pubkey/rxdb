@@ -8,30 +8,27 @@
     "eject": "expo eject",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "test": "jest",
-    "test:bundle": "expo export --public-url http://example.com/"
+    "test": "jest --debug --no-cache",
+    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url http://example.com/"
   },
   "devDependencies": {
+    "babel-preset-expo": "5.1.1",
+    "expo-cli": "2.11.9",
     "jest-expo": "32.0.0",
-    "react-test-renderer": "16.5.0",
-    "babel-preset-expo": "5.0.0",
-    "expo-cli": "2.10.0"
+    "react-native-gesture-handler": "1.1.0",
+    "react-test-renderer": "16.8.4",
+    "rimraf": "2.6.3",
+    "schedule": "0.4.0"
   },
   "main": "node_modules/expo/AppEntry.js",
-  "jest": {
-    "preset": "jest-expo",
-    "transformIgnorePatterns": [
-      "node_modules/(?!(react-native|pouchdb-adapter-asyncstorage)/)"
-    ]
-  },
   "dependencies": {
-    "expo": "32.0.0",
-    "react": "16.5.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
+    "expo": "32.0.6",
     "global": "4.3.2",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
     "random-token": "0.0.8",
+    "react": "16.8.4",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "6.4.0"
   }
