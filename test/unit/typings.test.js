@@ -4,6 +4,7 @@
 import assert from 'assert';
 import * as schemas from './../helper/schemas';
 import config from './config';
+import AsyncTestUtil from 'async-test-util';
 
 describe('typings.test.js', () => {
     const codeBase = `
@@ -471,6 +472,35 @@ describe('typings.test.js', () => {
                 });
             `;
             await transpileCode(code);
+        });
+        it('.toJSON(false) should not have _rev', async () => {
+            const code = codeBase + `
+                (async() => {
+                    const myDb: any = {};
+
+                    type DocType = {
+                        age: number,
+                        firstName: string,
+                        lastName: string,
+                        passportId: string
+                    };
+
+                    const myCollection: RxCollection<DocType> = await myDb.collection({
+                        name: 'humans',
+                        schema: {},
+                        autoMigrate: false,
+                    });
+
+                    const result = await myCollection.findOne().exec();
+                    if(!result) throw new Error('got no doc');
+                    const rev: string = result.toJSON(false)._rev;
+                });
+            `;
+            await AsyncTestUtil.assertThrows(
+                () => transpileCode(code),
+                Error,
+                '_rev'
+            );
         });
         it('.atomicUpdate()', async () => {
             const code = codeBase + `

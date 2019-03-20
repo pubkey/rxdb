@@ -15,7 +15,6 @@ import * as RxSchema from '../../dist/lib/rx-schema';
 config.parallel('rx-document.test.js', () => {
     describe('statics', () => {});
     describe('prototype-merge', () => {
-
         describe('RxSchema.getDocumentPrototype()', () => {
             it('should get an object with all main-fields', async () => {
                 const schema = RxSchema.create(schemas.human);
@@ -523,6 +522,39 @@ config.parallel('rx-document.test.js', () => {
                 );
                 db.destroy();
             });
+        });
+    });
+    describe('.toJSON()', () => {
+        it('should get the documents data as json', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec();
+            const json = doc.toJSON();
+
+            assert.ok(json.passportId);
+            assert.ok(json.firstName);
+            assert.ok(json._id);
+            assert.ok(json._rev); // per default ._rev is also returned
+            c.database.destroy();
+        });
+        it('should get a fresh object each time', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec();
+            const json = doc.toJSON();
+            const json2 = doc.toJSON();
+            assert.ok(json !== json2);
+            c.database.destroy();
+        });
+        it('should not return _rev if not wanted', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec();
+            const json = doc.toJSON(
+                false // no ._rev
+            );
+            assert.ok(json.passportId);
+            assert.ok(json.firstName);
+            assert.ok(json._id);
+            assert.equal(typeof json._rev, 'undefined');
+            c.database.destroy();
         });
     });
     describe('pseudo-Proxy', () => {

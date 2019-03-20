@@ -19,6 +19,10 @@ In documents like the following, the properties inside of the array-object will 
 }
 ```
 
+### RxDocument().toJSON() should not return rev by default
+
+Currently `withRev` has default `true`.
+It should be `false` by default because the user does not expect the revision here.
 
 # Maybe
 

@@ -47,6 +47,8 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
 
     toJSON(): RxDocumentTypeWithRev<RxDocumentType>;
+    toJSON(withRev: false): RxDocumentType;
+
     destroy(): void;
 }
 

@@ -203,8 +203,10 @@ export const basePrototype = {
         return valueObj;
     },
 
-    toJSON() {
-        return clone(this._data);
+    toJSON(withRev = true) {
+        const data = clone(this._data);
+        if (!withRev) delete data._rev;
+        return data;
     },
 
     /**

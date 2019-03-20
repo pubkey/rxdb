@@ -2,8 +2,12 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - `RxDocument().toJSON()` can be called with `.toJSON(false)` and then returns not `_rev` attribute
+
 Bugfixes:
   - (typings) Fix `additionalProperties: boolean` is allowed for nested objects
+
 
 ### 8.0.5 (7 February 2019)
 
