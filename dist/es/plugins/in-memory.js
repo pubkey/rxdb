@@ -1,7 +1,7 @@
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 
 /**
  * This plugin adds RxCollection.inMemory()
@@ -66,14 +66,14 @@ function (_RxCollection$RxColle) {
       var funName = _ref[0],
           fun = _ref[1];
       return _this.__defineGetter__(funName, function () {
-        return fun.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+        return fun.bind(_assertThisInitialized(_this));
       });
     });
     _this.pouch = new PouchDB('rxdb-in-memory-' + randomCouchString(10), adapterObject('memory'), {});
     _this._observable$ = new Subject();
-    _this._changeEventBuffer = ChangeEventBuffer.create(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._changeEventBuffer = ChangeEventBuffer.create(_assertThisInitialized(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
-    _this._oldPouchPut = parentProto._pouchPut.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this._oldPouchPut = parentProto._pouchPut.bind(_assertThisInitialized(_this));
     _this._nonPersistentRevisions = new Set();
     _this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
 
@@ -430,7 +430,7 @@ function _applyChangedDocumentToPouch() {
             return _context3.stop();
         }
       }
-    }, _callee3, this, [[2, 9]]);
+    }, _callee3, null, [[2, 9]]);
   }));
   return _applyChangedDocumentToPouch.apply(this, arguments);
 }

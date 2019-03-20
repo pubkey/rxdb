@@ -216,7 +216,10 @@ var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    return (0, _util.clone)(this._data);
+    var withRev = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+    var data = (0, _util.clone)(this._data);
+    if (!withRev) delete data._rev;
+    return data;
   },
 
   /**
@@ -314,7 +317,7 @@ var basePrototype = {
               return _context.stop();
           }
         }
-      }, _callee, this);
+      }, _callee);
     })));
     return this._atomicQueue.then(function () {
       return _this2;

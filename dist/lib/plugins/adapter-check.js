@@ -98,7 +98,7 @@ function _checkAdapter() {
             return _context.stop();
         }
       }
-    }, _callee, this, [[2, 15]]);
+    }, _callee, null, [[2, 15]]);
   }));
   return _checkAdapter.apply(this, arguments);
 }

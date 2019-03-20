@@ -696,7 +696,7 @@ function _preparePasswordHash2() {
             return _context4.stop();
         }
       }
-    }, _callee4, this, [[4, 10]]);
+    }, _callee4, null, [[4, 10]]);
   }));
   return _preparePasswordHash2.apply(this, arguments);
 }
@@ -765,7 +765,7 @@ function _ensureStorageTokenExists2() {
             return _context5.stop();
         }
       }
-    }, _callee5, this, [[0, 5], [7, 12]]);
+    }, _callee5, null, [[0, 5], [7, 12]]);
   }));
   return _ensureStorageTokenExists2.apply(this, arguments);
 }
@@ -890,7 +890,7 @@ function _prepare() {
             return _context6.stop();
         }
       }
-    }, _callee6, this);
+    }, _callee6);
   }));
   return _prepare.apply(this, arguments);
 }
@@ -1046,7 +1046,7 @@ function _removeDatabase() {
             return _context7.stop();
         }
       }
-    }, _callee7, this);
+    }, _callee7);
   }));
   return _removeDatabase.apply(this, arguments);
 }

@@ -189,7 +189,7 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
               return _context2.stop();
           }
         }
-      }, _callee2, this);
+      }, _callee2);
     }));
     return _getIsAlive.apply(this, arguments);
   }
@@ -217,7 +217,7 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
             return _context.stop();
         }
       }
-    }, _callee, this);
+    }, _callee);
   }))));
 }
 

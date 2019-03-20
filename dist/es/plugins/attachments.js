@@ -376,7 +376,7 @@ function _postMigrateDocument() {
             return _context4.stop();
         }
       }
-    }, _callee4, this);
+    }, _callee4);
   }));
   return _postMigrateDocument.apply(this, arguments);
 }

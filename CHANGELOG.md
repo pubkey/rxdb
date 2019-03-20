@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 8.0.6 (20 March 2019)
 
 Features:
   - `RxDocument().toJSON()` can be called with `.toJSON(false)` and then returns not `_rev` attribute

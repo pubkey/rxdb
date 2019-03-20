@@ -120,7 +120,7 @@ function () {
                         return _context.stop();
                     }
                   }
-                }, _loop, this);
+                }, _loop);
               });
 
             case 11:
@@ -146,7 +146,7 @@ function () {
               return _context2.stop();
           }
         }
-      }, _callee, this);
+      }, _callee);
     }))();
 
     return observer.asObservable();
@@ -514,7 +514,7 @@ function () {
               return _context6.stop();
           }
         }
-      }, _callee5, this);
+      }, _callee5);
     }))();
 
     return observer.asObservable();

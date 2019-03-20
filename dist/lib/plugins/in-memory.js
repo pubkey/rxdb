@@ -18,9 +18,9 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 
 var _rxjs = require("rxjs");
 
@@ -98,14 +98,14 @@ function (_RxCollection$RxColle) {
       var funName = _ref[0],
           fun = _ref[1];
       return _this.__defineGetter__(funName, function () {
-        return fun.bind((0, _assertThisInitialized2["default"])((0, _assertThisInitialized2["default"])(_this)));
+        return fun.bind((0, _assertThisInitialized2["default"])(_this));
       });
     });
     _this.pouch = new _pouchDb["default"]('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'), {});
     _this._observable$ = new _rxjs.Subject();
-    _this._changeEventBuffer = _changeEventBuffer["default"].create((0, _assertThisInitialized2["default"])((0, _assertThisInitialized2["default"])(_this)));
+    _this._changeEventBuffer = _changeEventBuffer["default"].create((0, _assertThisInitialized2["default"])(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
-    _this._oldPouchPut = parentProto._pouchPut.bind((0, _assertThisInitialized2["default"])((0, _assertThisInitialized2["default"])(_this)));
+    _this._oldPouchPut = parentProto._pouchPut.bind((0, _assertThisInitialized2["default"])(_this));
     _this._nonPersistentRevisions = new Set();
     _this._nonPersistentRevisionsSubject = new _rxjs.Subject(); // emits Set.size() when Set is changed
 
@@ -468,7 +468,7 @@ function _applyChangedDocumentToPouch() {
             return _context3.stop();
         }
       }
-    }, _callee3, this, [[2, 9]]);
+    }, _callee3, null, [[2, 9]]);
   }));
   return _applyChangedDocumentToPouch.apply(this, arguments);
 }
