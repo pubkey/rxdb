@@ -7,7 +7,7 @@ Features:
 
 Bugfixes:
   - (typings) Fix `additionalProperties: boolean` is allowed for nested objects
-
+  - (typings) Fix `RxQuery().toJSON()'` was missing
 
 ### 8.0.5 (7 February 2019)
 

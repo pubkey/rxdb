@@ -2,6 +2,9 @@ import { Observable } from 'rxjs';
 import {
     RxCollection
 } from './rx-collection';
+import {
+    PouchdbQuery
+} from './pouch';
 
 export interface RxQueryOptions<T> {
     $eq?: T;
@@ -59,4 +62,5 @@ export declare class RxQuery<RxDocumentType, RxQueryResult> {
     readonly $: Observable<RxQueryResult>;
     remove(): Promise<RxQueryResult>;
     update(updateObj: any): Promise<RxQueryResult>;
+    toJSON(): PouchdbQuery;
 }

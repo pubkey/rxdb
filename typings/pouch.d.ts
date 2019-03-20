@@ -42,6 +42,13 @@ declare type Debug = {
     disable(): void;
 };
 
+export type PouchdbQuery = {
+    selector: any;
+    sort?: any[];
+    limit?: number;
+    skip?: number;
+}
+
 export declare class PouchDB {
     constructor(name: string, options: { adapter: string });
     info(): Promise<any>;
