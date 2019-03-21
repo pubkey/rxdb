@@ -71,7 +71,7 @@
     "rxjs": "^6.1.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.4.0",
+    "@babel/runtime": "7.4.2",
     "broadcast-channel": "2.1.10",
     "clone": "^2.1.1",
     "cors": "2.8.5",
