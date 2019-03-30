@@ -124,7 +124,7 @@
     "exists-file": "3.0.2",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",
-    "gulp": "3.9.1",
+    "gulp": "4.0.0",
     "gulp-mocha": "6.0.0",
     "gzip-size-cli": "3.0.0",
     "http-server": "0.11.1",
