@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "browserify": "14.5.0",
+    "browserify": "16.2.3",
     "catw": "1.0.1",
     "d3": "4.13.0",
     "opentype.js": "0.6.9",
