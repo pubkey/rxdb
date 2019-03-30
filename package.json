@@ -109,7 +109,7 @@
     "@types/core-js": "2.5.0",
     "@types/pouchdb-adapter-memory": "6.1.3",
     "assert": "1.4.1",
-    "async-test-util": "1.7.2",
+    "async-test-util": "1.7.3",
     "brfs": "2.0.2",
     "browserify": "16.2.3",
     "child-process-promise": "2.2.1",
