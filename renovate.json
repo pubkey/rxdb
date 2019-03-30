@@ -6,5 +6,9 @@
   "ignoreDeps": [
     "node",
     "webpack"
-  ]
+  ],
+  "automerge": true,
+  "major": {
+    "automerge": false
+  }
 }
