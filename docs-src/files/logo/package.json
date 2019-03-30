@@ -16,7 +16,7 @@
     "d3": "4.13.0",
     "opentype.js": "0.6.9",
     "text-to-svg": "3.1.5",
-    "vectorize-text": "3.0.2",
+    "vectorize-text": "3.2.1",
     "watchify": "3.9.0"
   }
 }
