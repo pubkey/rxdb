@@ -43,7 +43,7 @@
     "vue-template-compiler": "2.5.17",
     "webpack": "4.29.0",
     "terser-webpack-plugin": "1.2.1",
-    "terser": "3.14.1",
+    "terser": "3.17.0",
     "webpack-dev-server": "3.1.14"
   }
 }
