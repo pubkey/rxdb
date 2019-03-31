@@ -25,7 +25,7 @@
     "@ionic-native/core": "4.20.0",
     "@ionic-native/splash-screen": "4.20.0",
     "@ionic-native/status-bar": "4.20.0",
-    "@ionic/storage": "2.0.1",
+    "@ionic/storage": "2.2.0",
     "crypto-js": "3.1.9-1",
     "ionic-angular": "3.9.4",
     "ionicons": "3.0.0",
