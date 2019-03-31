@@ -11,7 +11,7 @@
   },
   "author": "salomonelli",
   "dependencies": {
-    "babel-polyfill": "6.23.0",
+    "babel-polyfill": "6.26.0",
     "chalk": "2.0.1",
     "keypress": "0.2.1",
     "node": "10.5.0",
