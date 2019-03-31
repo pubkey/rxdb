@@ -83,7 +83,7 @@
     "raw-loader": "1.0.0",
     "rimraf": "2.6.3",
     "style-loader": "0.23.1",
-    "terser-webpack-plugin": "1.2.1",
+    "terser-webpack-plugin": "1.2.3",
     "terser": "3.17.0",
     "testcafe": "0.23.3",
     "testcafe-hammerhead": "14.4.12",
