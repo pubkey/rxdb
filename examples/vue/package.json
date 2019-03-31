@@ -28,7 +28,7 @@
   "devDependencies": {
     "async-test-util": "1.6.3",
     "babel-core": "6.26.3",
-    "babel-loader": "7.1.2",
+    "babel-loader": "7.1.5",
     "babel-polyfill": "6.26.0",
     "babel-preset-es2015": "6.24.1",
     "babel-preset-latest": "6.24.1",
