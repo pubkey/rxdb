@@ -10,5 +10,8 @@
   "automerge": true,
   "major": {
     "automerge": false
-  }
+  },
+  "ignorePaths": [
+    "docs-src/files/logo/package.json"
+  ]
 }
