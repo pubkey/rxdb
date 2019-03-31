@@ -39,7 +39,7 @@
     "rxdb": "5.3.0",
     "rxjs": "5.5.12",
     "sw-toolbox": "3.6.0",
-    "zone.js": "0.8.29"
+    "zone.js": "0.9.0"
   },
   "devDependencies": {
     "@ionic/app-scripts": "2.1.4",
