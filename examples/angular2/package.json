@@ -38,7 +38,7 @@
     "@angular/router": "7.2.3",
     "babel-polyfill": "6.26.0",
     "concurrently": "4.1.0",
-    "core-js": "2.6.3",
+    "core-js": "2.6.5",
     "font-awesome": "4.7.0",
     "hammerjs": "2.0.8",
     "json-loader": "0.5.7",
