@@ -2,18 +2,18 @@
   "name": "rxdb-example-react",
   "version": "3.0.0",
   "dependencies": {
-    "babel-polyfill": "^6.23.0",
-    "concurrently": "^3.3.0",
-    "pouchdb-adapter-http": "^6.1.2",
-    "pouchdb-adapter-idb": "^6.1.2",
-    "pouchdb-replication": "^6.1.2",
-    "pouchdb-server": "^2.3.4",
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2"
+    "babel-polyfill": "6.26.0",
+    "concurrently": "3.6.1",
+    "pouchdb-adapter-http": "6.4.3",
+    "pouchdb-adapter-idb": "6.4.3",
+    "pouchdb-replication": "6.4.3",
+    "pouchdb-server": "2.3.7",
+    "react": "16.8.6",
+    "react-dom": "16.8.6"
   },
   "devDependencies": {
-    "react-scripts": "^0.9.0",
-    "rimraf": "^2.6.1"
+    "react-scripts": "0.9.5",
+    "rimraf": "2.6.3"
   },
   "scripts": {
     "preinstall": "echo \"PREINSTALL\" && npm install --production --prefix ../../",
