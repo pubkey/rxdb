@@ -34,7 +34,7 @@
     "babel-preset-latest": "6.24.1",
     "babel-preset-stage-0": "6.24.1",
     "cross-env": "5.2.0",
-    "css-loader": "0.28.9",
+    "css-loader": "0.28.11",
     "eslint": "5.13.0",
     "file-loader": "1.1.6",
     "local-web-server": "2.6.1",
