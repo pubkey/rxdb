@@ -13,6 +13,7 @@
   },
   "ignorePaths": [
     "docs-src/files/logo/package.json",
-    "docs/files/files/logo/package.json"
+    "docs/files/files/logo/package.json",
+    "docs/files/logo/package.json"
   ]
 }
