@@ -12,6 +12,7 @@
     "automerge": false
   },
   "ignorePaths": [
-    "docs-src/files/logo/package.json"
+    "docs-src/files/logo/package.json",
+    "docs/files/files/logo/package.json"
   ]
 }
