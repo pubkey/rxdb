@@ -42,7 +42,7 @@
     "zone.js": "0.9.0"
   },
   "devDependencies": {
-    "@ionic/app-scripts": "2.1.4",
+    "@ionic/app-scripts": "3.2.3",
     "@ionic/cli-plugin-cordova": "1.6.2",
     "@ionic/cli-plugin-ionic-angular": "1.4.1",
     "concurrently": "4.1.0",
