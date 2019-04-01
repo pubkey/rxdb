@@ -21,7 +21,7 @@
     "rxjs": "6.3.3"
   },
   "devDependencies": {
-    "mocha": "5.2.0",
+    "mocha": "6.0.2",
     "node": "11.4.0",
     "spectron": "5.0.0"
   }
