@@ -1576,6 +1576,61 @@ config.parallel('rx-collection.test.js', () => {
             assert.ok(collection.pouch.auto_compaction);
             db.destroy();
         });
+        it('#939 creating a collection mutates the given parameters-object', async () => {
+            const schema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    weight: {
+                        type: 'number',
+                        default: 0
+                    }
+                }
+            };
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+
+            const collectionParams = {
+                name: 'humans',
+                schema,
+                methods: {
+                    foo() {
+                        return 'bar';
+                    }
+                },
+                statics: {
+                    foo2() {
+                        return 'bar2';
+                    }
+                }
+            };
+            const cloned = clone(collectionParams);
+            await db.collection(
+                collectionParams
+            );
+            assert.deepEqual(Object.keys(cloned), Object.keys(collectionParams));
+            assert.deepEqual(cloned, collectionParams);
+
+            await db.destroy();
+
+            // recreating with the same params-object should work
+            const db2 = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory'
+            });
+            await db2.collection(
+                collectionParams
+            );
+            assert.deepEqual(cloned, collectionParams);
+
+            db2.destroy();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {

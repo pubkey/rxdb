@@ -17,7 +17,6 @@ import overwritable from './overwritable';
 import {
     runPluginHooks
 } from './hooks';
-
 import {
     Subject
 } from 'rxjs';
@@ -155,6 +154,8 @@ export class RxDatabase {
     async collection(args) {
         if (typeof args === 'string') return this.collections[args];
 
+        args = Object.assign({}, args);
+
         args.database = this;
 
         runPluginHooks('preCreateRxCollection', args);
@@ -214,9 +215,7 @@ export class RxDatabase {
                 });
             }
         }
-
         const collection = await RxCollection.create(args);
-
         if (
             Object.keys(collection.schema.encryptedPaths).length > 0 &&
             !this.password

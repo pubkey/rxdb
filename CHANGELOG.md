@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - Fix creating a collection mutates to arguments object [#939](https://github.com/pubkey/rxdb/pull/939)
+
 ### 8.0.6 (20 March 2019)
 
 Features:
