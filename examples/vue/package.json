@@ -22,7 +22,7 @@
     "pouchdb-server": "4.1.0",
     "random-int": "1.0.0",
     "rxjs": "6.4.0",
-    "vue": "2.5.17",
+    "vue": "2.6.10",
     "vue-rx": "6.1.0"
   },
   "devDependencies": {
@@ -40,7 +40,7 @@
     "local-web-server": "2.6.1",
     "testcafe": "0.23.3",
     "vue-loader": "14.2.4",
-    "vue-template-compiler": "2.5.17",
+    "vue-template-compiler": "2.6.10",
     "webpack": "4.29.0",
     "terser-webpack-plugin": "1.2.3",
     "terser": "3.17.0",
