@@ -13,7 +13,7 @@
   "author": "pubkey",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "3.6.1",
+    "concurrently": "4.1.0",
     "local-web-server": "2.6.1",
     "normalize.css": "7.0.0",
     "pouchdb-adapter-http": "6.4.3",
