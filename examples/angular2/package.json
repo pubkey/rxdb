@@ -85,7 +85,7 @@
     "style-loader": "0.23.1",
     "terser-webpack-plugin": "1.2.3",
     "terser": "3.17.0",
-    "testcafe": "0.23.3",
+    "testcafe": "1.1.0",
     "testcafe-hammerhead": "14.5.3",
     "tslint": "5.15.0",
     "typescript": "3.3.1",
