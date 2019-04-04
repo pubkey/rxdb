@@ -15,7 +15,7 @@
   "dependencies": {
     "concurrently": "4.1.0",
     "local-web-server": "2.6.1",
-    "normalize.css": "7.0.0",
+    "normalize.css": "8.0.1",
     "pouchdb-adapter-http": "6.4.3",
     "pouchdb-adapter-localstorage": "6.4.3",
     "pouchdb-replication": "6.4.3",
