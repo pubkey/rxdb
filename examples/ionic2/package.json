@@ -34,7 +34,7 @@
     "pouchdb-adapter-localstorage": "6.4.3",
     "pouchdb-adapter-websql": "6.4.3",
     "pouchdb-replication": "6.4.3",
-    "pouchdb-server": "2.3.7",
+    "pouchdb-server": "4.1.0",
     "random-token": "0.0.8",
     "rxdb": "8.0.6",
     "rxjs": "5.5.12",
