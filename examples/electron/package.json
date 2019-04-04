@@ -18,7 +18,7 @@
     "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-replication": "7.0.0",
     "rxdb": "../../",
-    "rxjs": "6.3.3"
+    "rxjs": "6.4.0"
   },
   "devDependencies": {
     "mocha": "6.0.2",
