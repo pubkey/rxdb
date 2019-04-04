@@ -38,7 +38,7 @@
     "eslint": "5.13.0",
     "file-loader": "3.0.1",
     "local-web-server": "2.6.1",
-    "testcafe": "1.1.0",
+    "testcafe": "1.1.1",
     "vue-loader": "14.2.4",
     "vue-template-compiler": "2.5.17",
     "webpack": "4.29.0",
