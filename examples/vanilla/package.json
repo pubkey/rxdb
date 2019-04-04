@@ -19,7 +19,7 @@
     "pouchdb-adapter-http": "6.4.3",
     "pouchdb-adapter-localstorage": "6.4.3",
     "pouchdb-replication": "6.4.3",
-    "pouchdb-server": "2.3.7"
+    "pouchdb-server": "4.1.0"
   },
   "devDependencies": {
     "ncp": "2.0.0",
