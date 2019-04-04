@@ -32,7 +32,7 @@
     "pouchdb-adapter-http": "6.4.3",
     "pouchdb-adapter-idb": "6.4.3",
     "pouchdb-adapter-localstorage": "6.4.3",
-    "pouchdb-adapter-websql": "6.4.3",
+    "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-replication": "6.4.3",
     "pouchdb-server": "4.1.0",
     "random-token": "0.0.8",
