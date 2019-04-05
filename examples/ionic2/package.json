@@ -46,7 +46,7 @@
     "@ionic/cli-plugin-cordova": "1.6.2",
     "@ionic/cli-plugin-ionic-angular": "1.4.1",
     "concurrently": "4.1.0",
-    "typescript": "2.9.2"
+    "typescript": "3.4.2"
   },
   "description": "An Ionic project"
 }
