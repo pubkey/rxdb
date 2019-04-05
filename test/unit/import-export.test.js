@@ -221,7 +221,7 @@ config.parallel('import-export.test.js', () => {
                     db.destroy();
                     db2.destroy();
                 });
-                it('should not import when schema not matching', async () => {
+                it('should not import if schema not matching', async () => {
                     const db = await RxDatabase.create({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
@@ -250,7 +250,11 @@ config.parallel('import-export.test.js', () => {
                     });
                     await AsyncTestUtil.assertThrows(
                         () => col2.importDump(json),
-                        TypeError
+                        'RxError',
+                        [
+                            'firstName',
+                            'required'
+                        ]
                     );
                     db.destroy();
                 });

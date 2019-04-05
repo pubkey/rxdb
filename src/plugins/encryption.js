@@ -24,15 +24,14 @@ export function decrypt(cipherText, password) {
     return decrypted.toString(cryptoEnc);
 }
 
-const _encryptValue = function (value) {
+const _encryptValue = function(value) {
     return encrypt(JSON.stringify(value), this._password);
 };
 
-const _decryptValue = function (encValue) {
-    const decrypted = decrypt(encValue, this._password);
+const _decryptValue = function(encryptedValue) {
+    const decrypted = decrypt(encryptedValue, this._password);
     return JSON.parse(decrypted);
 };
-
 
 export const rxdb = true;
 export const prototypes = {
@@ -46,7 +45,7 @@ export const prototypes = {
     }
 };
 export const overwritable = {
-    validatePassword: function (password) {
+    validatePassword: function(password) {
         if (password && typeof password !== 'string') {
             throw RxError.newRxTypeError('EN1', {
                 password

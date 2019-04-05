@@ -243,6 +243,55 @@ config.parallel('encryption.test.js', () => {
             assert.ok(db2);
             await db2.destroy();
         });
+        it('#917 Unexpected end of JSON input', async () => {
+            const schema = {
+                title: 'hero schema',
+                description: 'describes a simple hero',
+                version: 0,
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        primary: true
+                    },
+                    color: {
+                        type: 'string',
+                        encrypted: true
+                    },
+                    happy: {
+                        type: 'boolean',
+                        encrypted: true
+                    }
+                },
+                required: ['color']
+            };
+            const dbName = util.randomCouchString(10);
+
+            const db = await RxDB.create({
+                name: dbName,
+                adapter: 'memory',
+                password: 'myLongAndStupidPassword'
+            });
+
+            const collection = await db.collection({
+                name: 'heroes',
+                schema
+            });
+
+            // insert a document
+            const record = await collection.findOne().exec();
+            if (!record) {
+                await collection.upsert({
+                    name: 'big-billy',
+                    color: 'arugula',
+                });
+            }
+
+            // will throw exception
+            await collection.findOne().exec();
+
+            db.destroy();
+        });
     });
 
 });

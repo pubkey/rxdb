@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Fix creating a collection mutates to arguments object [#939](https://github.com/pubkey/rxdb/pull/939)
+  - Fix not having optional encrypted fields in a document throws an error [#917](https://github.com/pubkey/rxdb/issues/917)
 
 ### 8.0.6 (20 March 2019)
 

@@ -39,8 +39,9 @@ export class Crypter {
         obj = clone(obj);
         if (!this._password) return obj;
         Object.keys(this._schema.encryptedPaths)
-            .map(path => {
+            .forEach(path => {
                 const value = objectPath.get(obj, path);
+                if (typeof value === 'undefined') return;
                 const encrypted = this._encryptValue(value);
                 objectPath.set(obj, path, encrypted);
             });
@@ -50,17 +51,16 @@ export class Crypter {
     decrypt(obj) {
         obj = clone(obj);
         if (!this._password) return obj;
-
         Object.keys(this._schema.encryptedPaths)
-            .map(path => {
+            .forEach(path => {
                 const value = objectPath.get(obj, path);
+                if (typeof value === 'undefined') return;
                 const decrypted = this._decryptValue(value);
                 objectPath.set(obj, path, decrypted);
             });
         return obj;
     }
 }
-
 
 export function create(password, schema) {
     return new Crypter(password, schema);
