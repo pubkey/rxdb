@@ -186,11 +186,12 @@ function () {
               return _context.abrupt("return", this.collections[args]);
 
             case 2:
+              args = Object.assign({}, args);
               args.database = this;
               (0, _hooks.runPluginHooks)('preCreateRxCollection', args);
 
               if (!(args.name.charAt(0) === '_')) {
-                _context.next = 6;
+                _context.next = 7;
                 break;
               }
 
@@ -198,9 +199,9 @@ function () {
                 name: args.name
               });
 
-            case 6:
+            case 7:
               if (!this.collections[args.name]) {
-                _context.next = 8;
+                _context.next = 9;
                 break;
               }
 
@@ -208,9 +209,9 @@ function () {
                 name: args.name
               });
 
-            case 8:
+            case 9:
               if (args.schema) {
-                _context.next = 10;
+                _context.next = 11;
                 break;
               }
 
@@ -219,11 +220,11 @@ function () {
                 args: args
               });
 
-            case 10:
+            case 11:
               internalPrimary = _collectionNamePrimary(args.name, args.schema); // check unallowed collection-names
 
               if (!properties().includes(args.name)) {
-                _context.next = 13;
+                _context.next = 14;
                 break;
               }
 
@@ -231,35 +232,35 @@ function () {
                 name: args.name
               });
 
-            case 13:
+            case 14:
               args.schema = _rxSchema["default"].create(args.schema); // check schemaHash
 
               schemaHash = args.schema.hash;
               collectionDoc = null;
-              _context.prev = 16;
-              _context.next = 19;
+              _context.prev = 17;
+              _context.next = 20;
               return this.lockedRun(function () {
                 return _this2._collectionsPouch.get(internalPrimary);
               });
 
-            case 19:
+            case 20:
               collectionDoc = _context.sent;
-              _context.next = 24;
+              _context.next = 25;
               break;
 
-            case 22:
-              _context.prev = 22;
-              _context.t0 = _context["catch"](16);
+            case 23:
+              _context.prev = 23;
+              _context.t0 = _context["catch"](17);
 
-            case 24:
+            case 25:
               if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
-                _context.next = 31;
+                _context.next = 32;
                 break;
               }
 
               // collection already exists with different schema, check if it has documents
               pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-              _context.next = 28;
+              _context.next = 29;
               return pouch.find({
                 selector: {
                   _id: {}
@@ -267,11 +268,11 @@ function () {
                 limit: 1
               });
 
-            case 28:
+            case 29:
               oneDoc = _context.sent;
 
               if (!(oneDoc.docs.length !== 0)) {
-                _context.next = 31;
+                _context.next = 32;
                 break;
               }
 
@@ -281,15 +282,15 @@ function () {
                 schemaHash: schemaHash
               });
 
-            case 31:
-              _context.next = 33;
+            case 32:
+              _context.next = 34;
               return _rxCollection["default"].create(args);
 
-            case 33:
+            case 34:
               collection = _context.sent;
 
               if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
-                _context.next = 36;
+                _context.next = 37;
                 break;
               }
 
@@ -297,14 +298,14 @@ function () {
                 name: args.name
               });
 
-            case 36:
+            case 37:
               if (collectionDoc) {
-                _context.next = 44;
+                _context.next = 45;
                 break;
               }
 
-              _context.prev = 37;
-              _context.next = 40;
+              _context.prev = 38;
+              _context.next = 41;
               return this.lockedRun(function () {
                 return _this2._collectionsPouch.put({
                   _id: internalPrimary,
@@ -314,15 +315,15 @@ function () {
                 });
               });
 
-            case 40:
-              _context.next = 44;
+            case 41:
+              _context.next = 45;
               break;
 
-            case 42:
-              _context.prev = 42;
-              _context.t1 = _context["catch"](37);
+            case 43:
+              _context.prev = 43;
+              _context.t1 = _context["catch"](38);
 
-            case 44:
+            case 45:
               cEvent = _rxChangeEvent["default"].create('RxDatabase.collection', this);
               cEvent.data.v = collection.name;
               cEvent.data.col = '_collections';
@@ -335,12 +336,12 @@ function () {
 
               return _context.abrupt("return", collection);
 
-            case 51:
+            case 52:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, this, [[16, 22], [37, 42]]);
+      }, _callee, this, [[17, 23], [38, 43]]);
     }));
 
     function collection(_x) {

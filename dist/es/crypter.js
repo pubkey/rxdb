@@ -41,8 +41,9 @@ function () {
 
     obj = clone(obj);
     if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).map(function (path) {
+    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
       var value = objectPath.get(obj, path);
+      if (typeof value === 'undefined') return;
 
       var encrypted = _this._encryptValue(value);
 
@@ -56,8 +57,9 @@ function () {
 
     obj = clone(obj);
     if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).map(function (path) {
+    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
       var value = objectPath.get(obj, path);
+      if (typeof value === 'undefined') return;
 
       var decrypted = _this2._decryptValue(value);
 

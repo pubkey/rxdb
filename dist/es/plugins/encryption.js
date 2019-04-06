@@ -20,8 +20,8 @@ var _encryptValue = function _encryptValue(value) {
   return encrypt(JSON.stringify(value), this._password);
 };
 
-var _decryptValue = function _decryptValue(encValue) {
-  var decrypted = decrypt(encValue, this._password);
+var _decryptValue = function _decryptValue(encryptedValue) {
+  var decrypted = decrypt(encryptedValue, this._password);
   return JSON.parse(decrypted);
 };
 
