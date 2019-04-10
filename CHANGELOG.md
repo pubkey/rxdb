@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - Server-plugin did not work with absolute paths and leveldb
+
 ### 8.0.7 (6 April 2019)
 
 Bugfixes:

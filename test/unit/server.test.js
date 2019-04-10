@@ -21,7 +21,7 @@ config.parallel('server.test.js', () => {
     let lastPort = 3000;
     const nexPort = () => lastPort++;
 
-    it('should run and sync', async function() {
+    it('should run and sync', async function () {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
@@ -58,7 +58,7 @@ config.parallel('server.test.js', () => {
         clientCollection.database.destroy();
         serverCollection.database.destroy();
     });
-    it('should send cors when defined', async function() {
+    it('should send cors when defined', async function () {
         this.timeout(12 * 1000);
         const port = nexPort();
         const serverCollection = await humansCollection.create(0);
@@ -109,12 +109,36 @@ config.parallel('server.test.js', () => {
         });
         col2.database.destroy();
     });
+    it('using node-websql with an absoulte path should work', async () => {
+        RxDB.plugin(NodeWebsqlAdapter);
+        const dbName = config.rootPath + 'test_tmp/' + util.randomCouchString(10);
+        const db1 = await RxDB.create({
+            name: dbName,
+            adapter: 'leveldb',
+            multiInstance: false
+        });
+        const col1 = await db1.collection({
+            name: 'human',
+            schema: schemas.human
+        });
+
+        await col1.insert(schemaObjects.human());
+
+        await db1.server({
+            port: nexPort()
+        });
+
+        await col1.insert(schemaObjects.human());
+
+        await AsyncTestUtil.wait(1000);
+        db1.destroy();
+    });
     it('should work on filesystem-storage', async () => {
         RxDB.plugin(NodeWebsqlAdapter);
 
         const port = nexPort();
         const db1 = await RxDB.create({
-            name: '../test_tmp/' + util.randomCouchString(10),
+            name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: 'leveldb',
             multiInstance: false
         });
@@ -124,7 +148,7 @@ config.parallel('server.test.js', () => {
         });
 
         const db2 = await RxDB.create({
-            name: '../test_tmp/' + util.randomCouchString(10),
+            name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: 'leveldb',
             multiInstance: false
         });
@@ -136,6 +160,7 @@ config.parallel('server.test.js', () => {
         db1.server({
             port
         });
+
         await col2.sync({
             remote: 'http://localhost:' + port + '/db/human'
         });

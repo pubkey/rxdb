@@ -31,7 +31,9 @@ const getPrefix = function(db) {
     const splitted = db.name.split('/').filter(str => str !== '');
     splitted.pop(); // last was the name
     if (splitted.length === 0) return '';
-    return splitted.join('/') + '/';
+    let ret = splitted.join('/') + '/';
+    if(db.name.startsWith('/')) ret = '/' + ret;
+    return ret;
 };
 
 /**
@@ -58,7 +60,6 @@ export function spawnServer({
     if (!SERVERS_OF_DB.has(db))
         SERVERS_OF_DB.set(db, []);
 
-
     const pseudo = PouchDB.defaults({
         adapter: db.adapter,
         prefix: getPrefix(db)
@@ -67,13 +68,11 @@ export function spawnServer({
     const app = express();
     APP_OF_DB.set(db, app);
 
-
     // tunnel requests so collection-names can be used as paths
     Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, path, app, colName));
 
     // show error if collection is created afterwards
     DBS_WITH_SERVER.add(db);
-
 
     if (cors) {
         ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS']
