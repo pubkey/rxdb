@@ -172,15 +172,5 @@
     "webpack": "4.29.6",
     "webpack-bundle-analyzer": "3.3.0",
     "webpack-cli": "3.3.0"
-  },
-  "// greenkeeper": [
-    "// node: native build fails too often",
-    "// webpack: too many updates"
-  ],
-  "greenkeeper": {
-    "ignore": [
-      "node",
-      "webpack"
-    ]
   }
 }
