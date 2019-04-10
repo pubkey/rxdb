@@ -39,10 +39,9 @@ describe('typings.test.js', () => {
         const stdout = [];
         const stderr = [];
         const promise = spawn('ts-node', [
-            '--no-cache',
-            '--compilerOptions', '{"target":"es6", "strict": true, "strictNullChecks": true, "noImplicitAny": true}',
+            '--compiler-options', '{"target":"es6", "strict": true}',
             '--type-check',
-            '-p', code
+            '-e', code
         ]);
         const childProcess = promise.childProcess;
         childProcess.stdout.on('data', data => stdout.push(data.toString()));
