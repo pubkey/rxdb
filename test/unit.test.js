@@ -42,10 +42,6 @@ const last = [
     '../test_tmp/unit/last.test.js'
 ];
 
-const typings = [
-    '../test_tmp/unit/typings.test.js'
-];
-
 const performance = [
     '../test_tmp/unit/performance.test.js'
 ];
@@ -57,7 +53,6 @@ const couchdb = [
 module.exports = {
     browser: nodeAndBrowser.concat(last),
     all: nodeAndBrowser.concat(last),
-    typings,
     performance,
     couchdb
 };

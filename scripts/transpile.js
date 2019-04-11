@@ -25,8 +25,7 @@ const DEBUG = false;
  */
 const transpileFolders = {
     'src': 'dist/lib',
-    'test/helper': 'test_tmp/helper',
-    'test/unit': 'test_tmp/unit'
+    'test': 'test_tmp'
 };
 
 nconf.argv()

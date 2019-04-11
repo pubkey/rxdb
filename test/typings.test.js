@@ -2,11 +2,12 @@
  * this checks if typings work as expected
  */
 import assert from 'assert';
-import * as schemas from './../helper/schemas';
-import config from './config';
+import * as schemas from './helper/schemas';
+import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 
-describe('typings.test.js', () => {
+describe('typings.test.js', function() {
+    this.timeout(50 * 1000);
     const codeBase = `
         import {
             create,
@@ -664,7 +665,7 @@ describe('typings.test.js', () => {
              */
             const exec = require('child_process').exec;
             await new Promise((res, rej) => {
-                exec('tsc --p "../test/helper/issue-448/tsconfig.json"', (err, stdout, stderr) => {
+                exec('tsc --p "' + config.rootPath + 'test/helper/issue-448/tsconfig.json"', (err, stdout, stderr) => {
                     if (err || stderr !== '') {
                         // console.log('sterr:'); console.dir(stderr);
                         // console.log('err:'); console.dir(err);
