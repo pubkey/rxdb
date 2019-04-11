@@ -33,16 +33,13 @@ const nodeAndBrowser = [
     '../test_tmp/unit/local-documents.test.js',
     '../test_tmp/unit/in-memory.test.js',
     '../test_tmp/unit/server.test.js',
+    '../test_tmp/unit/plugin.test.js',
     '../test_tmp/unit/attachments.test.js',
     '../test_tmp/unit/version-migration.test.js'
 ];
 
 const last = [
     '../test_tmp/unit/last.test.js'
-];
-
-const nodeOnly = [
-    '../test_tmp/unit/plugin.test.js'
 ];
 
 const typings = [
@@ -59,7 +56,7 @@ const couchdb = [
 
 module.exports = {
     browser: nodeAndBrowser.concat(last),
-    all: nodeAndBrowser.concat(nodeOnly).concat(last),
+    all: nodeAndBrowser.concat(last),
     typings,
     performance,
     couchdb

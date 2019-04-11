@@ -4,7 +4,6 @@
  */
 
 import assert from 'assert';
-// import AsyncTestUtil from 'async-test-util';
 import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
@@ -16,8 +15,11 @@ import {
     clearHook
 } from '../../dist/lib/hooks';
 
+// used so that browserify will not require things in browsers
+const REQUIRE_FUN = require;
 
 config.parallel('plugin.test.js', () => {
+    if (!config.platform.isNode()) return;
     describe('.plugin()', () => {
         it('should not crash when the same plugin is added multiple times', async () => {
             RxDB.plugin(PouchReplicationPlugin);
@@ -31,7 +33,7 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = require('child-process-promise').spawn;
+            const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
             const promise = spawn('mocha', ['../test_tmp/unit/core.node.js']);
@@ -60,7 +62,7 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = require('child-process-promise').spawn;
+            const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
             const promise = spawn('mocha', ['../test_tmp/unit/full.node.js']);
@@ -85,7 +87,7 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = require('child-process-promise').spawn;
+            const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
             const promise = spawn('mocha', ['../test_tmp/unit/in-memory.node.js']);
@@ -114,7 +116,7 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = require('child-process-promise').spawn;
+            const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
             const promise = spawn('mocha', ['../test_tmp/unit/ajv-validate.node.js']);
@@ -143,7 +145,7 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = require('child-process-promise').spawn;
+            const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
             const promise = spawn('mocha', ['../test_tmp/unit/no-validate.node.js']);
