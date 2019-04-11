@@ -37,7 +37,7 @@ config.parallel('rx-database.test.js', () => {
                 if (!config.platform.isNode()) return;
                 if (path.join('..', 'x') !== '..\\x') { // leveldown does not work on windows
                     const db = await RxDatabase.create({
-                        name: '../test_tmp/' + util.randomCouchString(10),
+                        name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
                         adapter: leveldown
                     });
                     assert.equal(db.constructor.name, 'RxDatabase');

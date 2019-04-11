@@ -1317,7 +1317,7 @@ config.parallel('rx-collection.test.js', () => {
                     // use a 'slow' adapter because memory might be to fast
                     const leveldown = require('leveldown');
                     const db = await RxDB.create({
-                        name: '../test_tmp/' + util.randomCouchString(10),
+                        name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
                         adapter: leveldown
                     });
                     const c = await db.collection({
