@@ -9,7 +9,7 @@ import PouchAdapterMemory from 'pouchdb-adapter-memory';
 const leveldown = require('leveldown');
 
 import * as util from '../../dist/lib/util';
-
+import config from '../../test_tmp/unit/config';
 
 const RxDB = require('../../plugins/core/');
 RxDB.plugin(require('../../plugins/in-memory'));
@@ -42,7 +42,7 @@ const schema = {
 describe('in-memory.node.js', () => {
     it('should throw when used without memory-adapter', async () => {
         const db = await RxDB.create({
-            name: '../test_tmp/' + util.randomCouchString(10),
+            name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: leveldown
         });
         const col = await db.collection({
@@ -61,7 +61,7 @@ describe('in-memory.node.js', () => {
     it('should work again when memory-adapter was added', async () => {
         RxDB.plugin(PouchAdapterMemory);
         const db = await RxDB.create({
-            name: '../test_tmp/' + util.randomCouchString(10),
+            name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
             adapter: leveldown
         });
         const col = await db.collection({

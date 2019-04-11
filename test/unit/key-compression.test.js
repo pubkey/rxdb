@@ -303,8 +303,6 @@ config.parallel('key-compression.test.js', () => {
                 .keyCompress();
             const jsonString = JSON.stringify(query);
 
-            console.dir(jsonString);
-
             assert.ok(!jsonString.includes('firstName'));
             assert.ok(jsonString.includes('myFirstName'));
             assert.equal(query.selector[c._keyCompressor.table['firstName']], 'myFirstName');

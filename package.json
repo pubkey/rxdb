@@ -32,10 +32,10 @@
   "types": "./typings/index.d.ts",
   "scripts": {
     "pretest": "npm run transpile",
-    "test": "gulp --gulpfile ./config/gulpfile.js test && karma start ./config/karma.conf.js",
-    "test:fast": "npm run pretest && rimraf -rf config/pouch__all_dbs__ && NODE_ENV=fast gulp --gulpfile ./config/gulpfile.js test",
+    "test": "npm run test:node && npm run test:browser",
+    "test:fast": "npm run pretest && rimraf -rf config/pouch__all_dbs__ && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
-    "test:node": "npm run pretest && gulp --gulpfile ./config/gulpfile.js test",
+    "test:node": "npm run pretest && mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
     "test:typings": "npm run pretest && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",

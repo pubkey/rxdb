@@ -1,48 +1,38 @@
-const nodeAndBrowser = [
-    '../test_tmp/unit/init.test.js',
-    '../test_tmp/unit/util.test.js',
-    '../test_tmp/unit/pouch-db-integration.test.js',
-    '../test_tmp/unit/adapter-check.test.js',
-    '../test_tmp/unit/instance-of-check.test.js',
-    '../test_tmp/unit/rx-schema.test.js',
-    '../test_tmp/unit/key-compression.test.js',
-    '../test_tmp/unit/bug-report.test.js',
-    '../test_tmp/unit/rx-database.test.js',
-    '../test_tmp/unit/rx-collection.test.js',
-    '../test_tmp/unit/rx-document.test.js',
-    '../test_tmp/unit/temporary-document.test.js',
-    '../test_tmp/unit/change-event-buffer.test.js',
-    '../test_tmp/unit/rx-query.test.js',
-    '../test_tmp/unit/idle-queue.test.js',
-    '../test_tmp/unit/query-change-detector.test.js',
-    '../test_tmp/unit/reactive-database.test.js',
-    '../test_tmp/unit/reactive-collection.test.js',
-    '../test_tmp/unit/reactive-query.test.js',
-    '../test_tmp/unit/reactive-document.test.js',
-    '../test_tmp/unit/primary.test.js',
-    '../test_tmp/unit/hooks.test.js',
-    '../test_tmp/unit/orm.test.js',
-    '../test_tmp/unit/population.test.js',
-    '../test_tmp/unit/data-migration.test.js',
-    '../test_tmp/unit/leader-election.test.js',
-    '../test_tmp/unit/replication.test.js',
-    '../test_tmp/unit/encryption.test.js',
-    '../test_tmp/unit/import-export.test.js',
-    '../test_tmp/unit/cross-instance.test.js',
-    '../test_tmp/unit/mod-encryption.test.js',
-    '../test_tmp/unit/local-documents.test.js',
-    '../test_tmp/unit/in-memory.test.js',
-    '../test_tmp/unit/server.test.js',
-    '../test_tmp/unit/plugin.test.js',
-    '../test_tmp/unit/attachments.test.js',
-    '../test_tmp/unit/version-migration.test.js'
-];
-
-const last = [
-    '../test_tmp/unit/last.test.js'
-];
-
-module.exports = {
-    browser: nodeAndBrowser.concat(last),
-    all: nodeAndBrowser.concat(last)
-};
+require('./unit/init.test.js');
+require('./unit/util.test.js');
+require('./unit/pouch-db-integration.test.js');
+require('./unit/adapter-check.test.js');
+require('./unit/instance-of-check.test.js');
+require('./unit/rx-schema.test.js');
+require('./unit/key-compression.test.js');
+require('./unit/bug-report.test.js');
+require('./unit/rx-database.test.js');
+require('./unit/rx-collection.test.js');
+require('./unit/rx-document.test.js');
+require('./unit/temporary-document.test.js');
+require('./unit/change-event-buffer.test.js');
+require('./unit/rx-query.test.js');
+require('./unit/idle-queue.test.js');
+require('./unit/query-change-detector.test.js');
+require('./unit/reactive-database.test.js');
+require('./unit/reactive-collection.test.js');
+require('./unit/reactive-query.test.js');
+require('./unit/reactive-document.test.js');
+require('./unit/primary.test.js');
+require('./unit/hooks.test.js');
+require('./unit/orm.test.js');
+require('./unit/population.test.js');
+require('./unit/data-migration.test.js');
+require('./unit/leader-election.test.js');
+require('./unit/replication.test.js');
+require('./unit/encryption.test.js');
+require('./unit/import-export.test.js');
+require('./unit/cross-instance.test.js');
+require('./unit/mod-encryption.test.js');
+require('./unit/local-documents.test.js');
+require('./unit/in-memory.test.js');
+require('./unit/server.test.js');
+require('./unit/plugin.test.js');
+require('./unit/attachments.test.js');
+require('./unit/version-migration.test.js');
+require('./unit/last.test.js');

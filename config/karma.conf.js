@@ -1,5 +1,3 @@
-const tests = require('../test/unit.test');
-
 const configuration = {
     basePath: '',
     frameworks: [
@@ -7,7 +5,9 @@ const configuration = {
         'browserify',
         'detectBrowsers'
     ],
-    files: tests.browser,
+    files: [
+        '../test_tmp/unit.test.js'
+    ],
     port: 9876,
     colors: true,
     autoWatch: false,
@@ -19,7 +19,7 @@ const configuration = {
     detectBrowsers: {
         enabled: true,
         usePhantomJS: false,
-        postDetection: function(availableBrowser) {
+        postDetection: function (availableBrowser) {
             // return ['Firefox']; // comment in to test specific browser
             const browsers = availableBrowser
                 .filter(b => !['PhantomJS', 'FirefoxAurora', 'FirefoxNightly', 'ChromeCanary'].includes(b))
@@ -47,7 +47,7 @@ const configuration = {
     // Source files that you wanna generate coverage for.
     // Do not include tests or libraries (these files will be instrumented by Istanbul)
     preprocessors: {
-        '../test_tmp/unit/*.test.js': ['browserify']
+        '../test_tmp/unit.test.js': ['browserify']
     },
 
     client: {
@@ -80,6 +80,6 @@ if (process.env.TRAVIS) {
     configuration.concurrency = 1;
 }
 
-module.exports = function(config) {
+module.exports = function (config) {
     config.set(configuration);
 };

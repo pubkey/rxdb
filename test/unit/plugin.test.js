@@ -36,7 +36,7 @@ config.parallel('plugin.test.js', () => {
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
-            const promise = spawn('mocha', ['../test_tmp/unit/core.node.js']);
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/core.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', data => {
                 // comment in to debug
@@ -65,7 +65,7 @@ config.parallel('plugin.test.js', () => {
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
-            const promise = spawn('mocha', ['../test_tmp/unit/full.node.js']);
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', data => stdout.push(data.toString()));
             childProcess.stderr.on('data', data => stderr.push(data.toString()));
@@ -90,7 +90,7 @@ config.parallel('plugin.test.js', () => {
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
-            const promise = spawn('mocha', ['../test_tmp/unit/in-memory.node.js']);
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/in-memory.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', data => {
                 // comment in to debug
@@ -119,7 +119,7 @@ config.parallel('plugin.test.js', () => {
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
-            const promise = spawn('mocha', ['../test_tmp/unit/ajv-validate.node.js']);
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/ajv-validate.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', data => {
                 // comment in to debug
@@ -148,7 +148,7 @@ config.parallel('plugin.test.js', () => {
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
             const stdout = [];
             const stderr = [];
-            const promise = spawn('mocha', ['../test_tmp/unit/no-validate.node.js']);
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/no-validate.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', data => {
                 // comment in to debug
