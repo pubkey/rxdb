@@ -2,11 +2,11 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import BroadcastChannel from 'broadcast-channel';
 import convertHrtime from 'convert-hrtime';
-import * as schemas from './../helper/schemas';
-import * as schemaObjects from './../helper/schema-objects';
+import * as schemas from './helper/schemas';
+import * as schemaObjects from './helper/schema-objects';
 
-import RxDB from '../../dist/lib/index';
-import * as util from '../../dist/lib/util';
+import RxDB from '../dist/lib/index';
+import * as util from '../dist/lib/util';
 RxDB.plugin(require('pouchdb-adapter-memory'));
 
 const elapsedTime = before => {
@@ -60,7 +60,8 @@ const ormMethods = {
 
 
 
-describe('performance.test.js', () => {
+describe('performance.test.js', function() {
+    this.timeout(90 * 1000);
     it('clear broadcast-channel tmp-folder', async () => {
         await BroadcastChannel.clearNodeFolder();
     });
