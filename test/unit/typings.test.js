@@ -20,8 +20,8 @@ describe('typings.test.js', () => {
             RxAttachment,
             RxPlugin,
             plugin
-        } from '../';
-        import RxDB from '../';
+        } from '${config.rootPath}';
+        import RxDB from '${config.rootPath}';
         import * as PouchMemAdapter from 'pouchdb-adapter-memory';
         plugin(PouchMemAdapter);
 
@@ -78,7 +78,7 @@ describe('typings.test.js', () => {
     config.parallel('import', () => {
         it('import default with strict:true', async () => {
             const code = `
-                import rxdb from '../';
+                import rxdb from '${config.rootPath}';
                 import * as PouchMemAdapter from 'pouchdb-adapter-memory';
                 rxdb.plugin(PouchMemAdapter);
             `;
