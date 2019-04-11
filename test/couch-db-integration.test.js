@@ -7,13 +7,13 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../../dist/lib/index';
+import RxDB from '../dist/lib/index';
 RxDB.plugin(require('pouchdb-adapter-memory'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 
-import * as util from '../../dist/lib/util';
-import * as humansCollection from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
+import * as util from '../dist/lib/util';
+import * as humansCollection from './helper/humans-collection';
+import * as schemaObjects from './helper/schema-objects';
 
 describe('couchdb-db-integration.test.js', () => {
     const COUCHDB_URL = 'http://127.0.0.1:5984/';

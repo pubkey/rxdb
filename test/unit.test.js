@@ -42,12 +42,7 @@ const last = [
     '../test_tmp/unit/last.test.js'
 ];
 
-const couchdb = [
-    '../test_tmp/unit/couch-db-integration.test.js'
-];
-
 module.exports = {
     browser: nodeAndBrowser.concat(last),
-    all: nodeAndBrowser.concat(last),
-    couchdb
+    all: nodeAndBrowser.concat(last)
 };
