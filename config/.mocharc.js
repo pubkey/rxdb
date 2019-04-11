@@ -11,6 +11,11 @@ if (process.env.TRAVIS) {
     // that are randomly slow
     mochaSettings.timeout = 90 * 1000;
     mochaSettings.reporter = 'min';
+};
+if (process.env.NODE_PROF) {
+    console.log('profiler actived:');
+    mochaSettings.prof = true;
+    mochaSettings.bail = false;
 }
 
 module.exports = mochaSettings;
