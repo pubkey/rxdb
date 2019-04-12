@@ -20,7 +20,7 @@
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
     "pouchdb-server": "4.1.0",
-    "random-int": "1.0.0",
+    "random-int": "2.0.0",
     "rxjs": "6.4.0",
     "vue": "2.5.17",
     "vue-rx": "6.1.0"
