@@ -26,7 +26,7 @@
     "vue-rx": "6.1.0"
   },
   "devDependencies": {
-    "async-test-util": "1.6.3",
+    "async-test-util": "1.7.3",
     "babel-core": "6.26.3",
     "babel-loader": "7.1.5",
     "babel-polyfill": "6.26.0",
