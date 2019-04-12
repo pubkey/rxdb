@@ -142,7 +142,7 @@
     "karma-safari-launcher": "1.0.0",
     "leveldown": "5.0.1",
     "memdown": "4.0.0",
-    "mocha": "6.1.2",
+    "mocha": "6.1.3",
     "mocha.parallel": "0.15.6",
     "nconf": "0.10.0",
     "node": "11.12.0",
