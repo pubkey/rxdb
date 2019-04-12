@@ -89,7 +89,6 @@
 
 * [RxAttachment](./rx-attachment.md)
 
-
 * [Middleware-hooks](./middleware.md)
 
 * [ORM/DRM](./orm.md)
@@ -111,6 +110,8 @@
 * [Custom Build](./custom-build.md)
 
 * [Plugins](./plugins.md)
+
+* [Adapters](./adapters.md)
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)

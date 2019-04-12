@@ -25,18 +25,23 @@ Depending on the adapter this can also be used to define the storage-folder of y
 
 ### adapter
 
-The storage-adapter defines where the data is actually stored at. You can use a string for [pouchdb-adapters](https://pouchdb.com/adapters.html) or an object for level-adapters. To use an adapter it must before have been added with the RxDB.plugin()-function.
+RxDB uses adapters to define where the data is actually stored at. You can use different adapters depending on which environment your database runs in. This has the advantage that you can use the same RxDB code in different environments and just switch out the adapter.
 
-Before using a level-adapter, you have to add the ``` pouchdb-adapter-leveldb``` module.
-**Please always ensure that your adapter-version is the same as `pouchdb-core` in the [rxdb package.json](https://github.com/pubkey/rxdb/blob/master/package.json). Otherwise you might have strange problems**
-
-Example with level-adapter:
+Example for browsers:
 
 ```javascript
-import memdown from 'memdown';
-RxDB.plugin(require('pouchdb-adapter-leveldb'));
-const db = await RxDB.create({name: 'mydatabase', adapter: memdown});
+
+// this adapter stores the data in indexeddb
+RxDB.plugin(require('pouchdb-adapter-idb'));
+
+const db = await RxDB.create({
+  name: 'mydatabase',
+  adapter: 'idb' // name of the adapter
+});
 ```
+
+** Check out the [List of adapters for RxDB](./adapters.md) to learn which adapter you should use. **
+
 
 ### password
 `(optional)`

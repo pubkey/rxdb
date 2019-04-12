@@ -89,4 +89,4 @@ collection.options.foo(); // 'bar'
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./tutorials/typescript.md)
+If you are new to RxDB, you should continue [here](./adapters.md)
