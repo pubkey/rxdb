@@ -35,7 +35,7 @@
     "babel-preset-stage-0": "6.24.1",
     "cross-env": "5.2.0",
     "css-loader": "0.28.11",
-    "eslint": "5.13.0",
+    "eslint": "5.16.0",
     "file-loader": "3.0.1",
     "local-web-server": "2.6.1",
     "testcafe": "1.1.2",
