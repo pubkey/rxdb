@@ -1233,14 +1233,7 @@
             
         </li>
     
-
-    
-        
-        <li class="divider"></li>
-        
-        
-    
-        <li class="chapter " data-level="2.1" data-path="middleware.html">
+        <li class="chapter " data-level="1.9" data-path="middleware.html">
             
                 <a href="middleware.html">
             
@@ -1253,7 +1246,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.2" data-path="orm.html">
+        <li class="chapter " data-level="1.10" data-path="orm.html">
             
                 <a href="orm.html">
             
@@ -1266,7 +1259,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.3" data-path="population.html">
+        <li class="chapter " data-level="1.11" data-path="population.html">
             
                 <a href="population.html">
             
@@ -1279,7 +1272,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.4" data-path="data-migration.html">
+        <li class="chapter " data-level="1.12" data-path="data-migration.html">
             
                 <a href="data-migration.html">
             
@@ -1292,7 +1285,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.5" data-path="leader-election.html">
+        <li class="chapter " data-level="1.13" data-path="leader-election.html">
             
                 <a href="leader-election.html">
             
@@ -1305,7 +1298,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.6" data-path="replication.html">
+        <li class="chapter " data-level="1.14" data-path="replication.html">
             
                 <a href="replication.html">
             
@@ -1318,7 +1311,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.7" data-path="query-change-detection.html">
+        <li class="chapter " data-level="1.15" data-path="query-change-detection.html">
             
                 <a href="query-change-detection.html">
             
@@ -1331,7 +1324,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.8" data-path="in-memory.html">
+        <li class="chapter " data-level="1.16" data-path="in-memory.html">
             
                 <a href="in-memory.html">
             
@@ -1344,7 +1337,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.9" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1357,7 +1350,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.10" data-path="custom-build.html">
+        <li class="chapter " data-level="1.18" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1370,7 +1363,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.11" data-path="plugins.html">
+        <li class="chapter " data-level="1.19" data-path="plugins.html">
             
                 <a href="plugins.html">
             
@@ -1383,7 +1376,20 @@
             
         </li>
     
-        <li class="chapter " data-level="2.12" >
+        <li class="chapter " data-level="1.20" data-path="adapters.html">
+            
+                <a href="adapters.html">
+            
+                    
+                    Adapters
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.21" >
             
                 <span>
             
@@ -1397,7 +1403,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="2.12.1" data-path="tutorials/typescript.html">
+        <li class="chapter " data-level="1.21.1" data-path="tutorials/typescript.html">
             
                 <a href="tutorials/typescript.html">
             
@@ -1410,7 +1416,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.12.2" data-path="tutorials/server.html">
+        <li class="chapter " data-level="1.21.2" data-path="tutorials/server.html">
             
                 <a href="tutorials/server.html">
             
@@ -1428,7 +1434,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.13" data-path="questions-answers.html">
+        <li class="chapter " data-level="1.22" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1441,7 +1447,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.14" data-path="contribute.html">
+        <li class="chapter " data-level="1.23" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1516,14 +1522,18 @@
 <p>The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same storage-adapter, their data can be assumed as equal and they will share change-events between each other.
 Depending on the adapter this can also be used to define the storage-folder of your data.</p>
 <h3 id="adapter">adapter</h3>
-<p>The storage-adapter defines where the data is actually stored at. You can use a string for <a href="https://pouchdb.com/adapters.html" target="_blank">pouchdb-adapters</a> or an object for level-adapters. To use an adapter it must before have been added with the RxDB.plugin()-function.</p>
-<p>Before using a level-adapter, you have to add the <code>pouchdb-adapter-leveldb</code> module.
-<strong>Please always ensure that your adapter-version is the same as <code>pouchdb-core</code> in the <a href="https://github.com/pubkey/rxdb/blob/master/package.json" target="_blank">rxdb package.json</a>. Otherwise you might have strange problems</strong></p>
-<p>Example with level-adapter:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> memdown <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;memdown&apos;</span>;
-RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-leveldb&apos;</span>));
-<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> RxDB.create({name: <span class="hljs-string">&apos;mydatabase&apos;</span>, adapter: memdown});
+<p>RxDB uses adapters to define where the data is actually stored at. You can use different adapters depending on which environment your database runs in. This has the advantage that you can use the same RxDB code in different environments and just switch out the adapter.</p>
+<p>Example for browsers:</p>
+<pre><code class="lang-javascript">
+<span class="hljs-comment">// this adapter stores the data in indexeddb</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-idb&apos;</span>));
+
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> RxDB.create({
+  name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+  adapter: <span class="hljs-string">&apos;idb&apos;</span> <span class="hljs-comment">// name of the adapter</span>
+});
 </code></pre>
+<p><strong> Check out the <a href="adapters.html">List of adapters for RxDB</a> to learn which adapter you should use. </strong></p>
 <h3 id="password">password</h3>
 <p><code>(optional)</code>
 If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.</p>
@@ -1660,7 +1670,7 @@ RxDB.removeDatabase(<span class="hljs-string">&apos;mydatabasename&apos;</span>,
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.3","depth":1,"next":{"title":"Creation","level":"1.3.1","depth":2,"anchor":"#creation","path":"rx-database.md","ref":"./rx-database.md#creation","articles":[{"title":"name","level":"1.3.1.1","depth":3,"anchor":"#name","path":"rx-database.md","ref":"./rx-database.md#name","articles":[]},{"title":"adapter","level":"1.3.1.2","depth":3,"anchor":"#adapter","path":"rx-database.md","ref":"./rx-database.md#adapter","articles":[]},{"title":"password","level":"1.3.1.3","depth":3,"anchor":"#password","path":"rx-database.md","ref":"./rx-database.md#password","articles":[]},{"title":"multiInstance","level":"1.3.1.4","depth":3,"anchor":"#multiinstance","path":"rx-database.md","ref":"./rx-database.md#multiinstance","articles":[]},{"title":"queryChangeDetection","level":"1.3.1.5","depth":3,"anchor":"#queryChangeDetection","path":"rx-database.md","ref":"./rx-database.md#queryChangeDetection","articles":[]},{"title":"ignoreDuplicate","level":"1.3.1.6","depth":3,"anchor":"#ignoreduplicate","path":"rx-database.md","ref":"./rx-database.md#ignoreduplicate","articles":[]},{"title":"pouchSettings","level":"1.3.1.7","depth":3,"anchor":"#pouchSettings","path":"rx-database.md","ref":"./rx-database.md#pouchSettings","articles":[]}]},"previous":{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"install.md","ref":"./install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-database.md","mtime":"2019-04-05T15:35:13.875Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-04-06T16:09:33.377Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxDatabase","level":"1.3","depth":1,"next":{"title":"Creation","level":"1.3.1","depth":2,"anchor":"#creation","path":"rx-database.md","ref":"./rx-database.md#creation","articles":[{"title":"name","level":"1.3.1.1","depth":3,"anchor":"#name","path":"rx-database.md","ref":"./rx-database.md#name","articles":[]},{"title":"adapter","level":"1.3.1.2","depth":3,"anchor":"#adapter","path":"rx-database.md","ref":"./rx-database.md#adapter","articles":[]},{"title":"password","level":"1.3.1.3","depth":3,"anchor":"#password","path":"rx-database.md","ref":"./rx-database.md#password","articles":[]},{"title":"multiInstance","level":"1.3.1.4","depth":3,"anchor":"#multiinstance","path":"rx-database.md","ref":"./rx-database.md#multiinstance","articles":[]},{"title":"queryChangeDetection","level":"1.3.1.5","depth":3,"anchor":"#queryChangeDetection","path":"rx-database.md","ref":"./rx-database.md#queryChangeDetection","articles":[]},{"title":"ignoreDuplicate","level":"1.3.1.6","depth":3,"anchor":"#ignoreduplicate","path":"rx-database.md","ref":"./rx-database.md#ignoreduplicate","articles":[]},{"title":"pouchSettings","level":"1.3.1.7","depth":3,"anchor":"#pouchSettings","path":"rx-database.md","ref":"./rx-database.md#pouchSettings","articles":[]}]},"previous":{"title":"import","level":"1.2.2","depth":2,"anchor":"#import","path":"install.md","ref":"./install.md#import","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-database.md","mtime":"2019-04-12T19:22:03.825Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-04-12T20:35:08.579Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
