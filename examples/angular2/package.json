@@ -63,7 +63,7 @@
     "@types/requirejs": "2.1.31",
     "angular2-template-loader": "0.6.2",
     "appcache-webpack-plugin": "1.4.0",
-    "async-test-util": "1.6.3",
+    "async-test-util": "1.7.3",
     "awesome-typescript-loader": "5.2.1",
     "babel-core": "6.26.3",
     "babel-loader": "8.0.5",
