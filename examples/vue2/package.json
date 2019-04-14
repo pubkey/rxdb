@@ -20,6 +20,7 @@
     "@types/pouchdb-adapter-idb": "6.1.3",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
+    "pouchdb-server": "4.1.0",
     "random-int": "2.0.0",
     "register-service-worker": "1.6.2",
     "rxdb": "../../",
