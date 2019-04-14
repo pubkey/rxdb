@@ -1,38 +1,11 @@
 <template>
-<div id="app">
-    <h1>RxDB - vuejs</h1>
-    <hero-edit v-if="edit" v-bind:hero="edit" v-on:cancel="edit=null" v-on:submit="edit=null"></hero-edit>
-    <div id="list-box" class="box">
-      <h3>Heroes</h3>
-        <heroes-list v-on:edit="editHero"></heroes-list>
-    </div>
-    <div id="insert-box" class="box">
-        <hero-insert></hero-insert>
-    </div>
-</div>
+  <div id="app">
+    <router-view/>
+  </div>
 </template>
 
-<script>
-import * as Database from './database/Database';
-import HeroesList from './components/heroes-list.vue';
-import HeroInsert from './components/hero-insert.vue';
-import HeroEdit from './components/hero-edit.vue';
-export default {
-    name: 'app',
-    data() {
-        return {
-          edit: null
-        }
-    },
-    methods: {
-      editHero(hero){
-        this.edit = hero;
-      }
-    }
-}
-</script>
+<style lang="less">
 
-<style>
 body,
 html {
     margin: 0;
