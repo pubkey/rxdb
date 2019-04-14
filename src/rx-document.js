@@ -435,11 +435,11 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
                 key,
                 function() {
                     const _this = thisObj ? thisObj : this;
-                    if(!_this.get) {
+                    if(!_this.get || typeof _this.get !== 'function') {
                         /**
-                         * when an object gets added to the state of a vuejs-component,
-                         * it happens that this getter is called with another scope
-                         * to prevent errors, we have to return undefined in this case
+                         * When an object gets added to the state of a vuejs-component,
+                         * it happens that this getter is called with another scope.
+                         * To prevent errors, we have to return undefined in this case
                          */
                         return undefined;
                     }
