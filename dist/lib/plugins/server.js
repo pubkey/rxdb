@@ -52,7 +52,9 @@ var getPrefix = function getPrefix(db) {
   splitted.pop(); // last was the name
 
   if (splitted.length === 0) return '';
-  return splitted.join('/') + '/';
+  var ret = splitted.join('/') + '/';
+  if (db.name.startsWith('/')) ret = '/' + ret;
+  return ret;
 };
 /**
  * tunnel requests so collection-names can be used as paths

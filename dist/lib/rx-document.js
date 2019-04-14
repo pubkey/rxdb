@@ -455,7 +455,18 @@ function defineGetterSetter(schema, valueObj) {
     valueObj.__defineGetter__(key, function () {
       var _this = thisObj ? thisObj : this;
 
-      return _this.get(fullPath);
+      if (!_this.get) {
+        /**
+         * when an object gets added to the state of a vuejs-component,
+         * it happens that this getter is called with another scope
+         * to prevent errors, we have to return undefined in this case
+         */
+        return undefined;
+      }
+
+      var ret = _this.get(fullPath);
+
+      return ret;
     }); // getter - observable$
 
 
