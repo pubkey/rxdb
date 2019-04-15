@@ -107,10 +107,6 @@ class ChangeEventBuffer {
     }
 }
 
-export function create(collection) {
+export default function createChangeEventBuffer(collection) {
     return new ChangeEventBuffer(collection);
 }
-
-export default {
-    create
-};

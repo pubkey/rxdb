@@ -9,10 +9,19 @@ import {
     validateCouchDBString,
     isLevelDown
 } from './util';
-import RxError from './rx-error';
+import {
+    newRxError,
+    pluginMissing
+} from './rx-error';
 import RxCollection from './rx-collection';
-import RxSchema from './rx-schema';
-import RxChangeEvent from './rx-change-event';
+import {
+    createRxSchema
+} from './rx-schema';
+import {
+    isInstanceOf as isInstanceOfRxChangeEvent,
+    createChangeEvent,
+    changeEventfromJSON
+} from './rx-change-event';
 import overwritable from './overwritable';
 import {
     runPluginHooks
@@ -57,7 +66,7 @@ export class RxDatabase {
         // rx
         this.subject = new Subject();
         this.observable$ = this.subject.asObservable().pipe(
-            filter(cEvent => RxChangeEvent.isInstanceOf(cEvent))
+            filter(cEvent => isInstanceOfRxChangeEvent(cEvent))
         );
     }
 
@@ -161,17 +170,17 @@ export class RxDatabase {
         runPluginHooks('preCreateRxCollection', args);
 
         if (args.name.charAt(0) === '_') {
-            throw RxError.newRxError('DB2', {
+            throw newRxError('DB2', {
                 name: args.name
             });
         }
         if (this.collections[args.name]) {
-            throw RxError.newRxError('DB3', {
+            throw newRxError('DB3', {
                 name: args.name
             });
         }
         if (!args.schema) {
-            throw RxError.newRxError('DB4', {
+            throw newRxError('DB4', {
                 name: args.name,
                 args
             });
@@ -181,12 +190,12 @@ export class RxDatabase {
 
         // check unallowed collection-names
         if (properties().includes(args.name)) {
-            throw RxError.newRxError('DB5', {
+            throw newRxError('DB5', {
                 name: args.name
             });
         }
 
-        args.schema = RxSchema.create(args.schema);
+        args.schema = createRxSchema(args.schema);
 
         // check schemaHash
         const schemaHash = args.schema.hash;
@@ -208,7 +217,7 @@ export class RxDatabase {
             });
             if (oneDoc.docs.length !== 0) {
                 // we have one document
-                throw RxError.newRxError('DB6', {
+                throw newRxError('DB6', {
                     name: args.name,
                     previousSchemaHash: collectionDoc.schemaHash,
                     schemaHash
@@ -220,7 +229,7 @@ export class RxDatabase {
             Object.keys(collection.schema.encryptedPaths).length > 0 &&
             !this.password
         ) {
-            throw RxError.newRxError('DB7', {
+            throw newRxError('DB7', {
                 name: args.name
             });
         }
@@ -238,7 +247,7 @@ export class RxDatabase {
             } catch (e) {}
         }
 
-        const cEvent = RxChangeEvent.create(
+        const cEvent = createChangeEvent(
             'RxDatabase.collection',
             this
         );
@@ -294,7 +303,7 @@ export class RxDatabase {
      * @param {?string[]} collections array with collectionNames or null if all
      */
     dump() {
-        throw RxError.pluginMissing('json-dump');
+        throw pluginMissing('json-dump');
     }
 
     /**
@@ -302,14 +311,14 @@ export class RxDatabase {
      * @param {Object} dump
      */
     importDump() {
-        throw RxError.pluginMissing('json-dump');
+        throw pluginMissing('json-dump');
     }
 
     /**
      * spawn server
      */
     server() {
-        throw RxError.pluginMissing('server');
+        throw pluginMissing('server');
     }
 
     /**
@@ -389,7 +398,7 @@ function _isNameAdapterUsed(name, adapter) {
             used = true;
     });
     if (used) {
-        throw RxError.newRxError('DB8', {
+        throw newRxError('DB8', {
             name,
             adapter,
             link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
@@ -435,7 +444,7 @@ export async function _preparePasswordHash(rxDatabase) {
     // different hash was already set by other instance
     if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
         await rxDatabase.destroy();
-        throw RxError.newRxError('DB1', {
+        throw newRxError('DB1', {
             passwordHash: hash(rxDatabase.password),
             existingPasswordHash: pwHashDoc.value
         });
@@ -539,7 +548,7 @@ function _prepareBroadcastChannel(rxDatabase) {
     rxDatabase.broadcastChannel.onmessage = msg => {
         if (msg.st !== rxDatabase.storageToken) return; // not same storage-state
         if (msg.db === rxDatabase.token) return; // same db
-        const changeEvent = RxChangeEvent.fromJSON(msg.d);
+        const changeEvent = changeEventfromJSON(msg.d);
         rxDatabase.broadcastChannel$.next(changeEvent);
     };
 
@@ -592,14 +601,14 @@ export function create({
     // check if pouchdb-adapter
     if (typeof adapter === 'string') {
         if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
-            throw RxError.newRxError('DB9', {
+            throw newRxError('DB9', {
                 adapter
             });
         }
     } else {
         isLevelDown(adapter);
         if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
-            throw RxError.newRxError('DB10', {
+            throw newRxError('DB10', {
                 adapter
             });
         }
@@ -744,6 +753,5 @@ export default {
     checkAdapter,
     isInstanceOf,
     RxDatabase,
-    RxSchema,
     dbCount
 };

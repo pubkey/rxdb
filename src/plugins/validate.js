@@ -4,7 +4,9 @@
  * @link https://github.com/mafintosh/is-my-json-valid
  */
 import isMyJsonValid from 'is-my-json-valid';
-import RxError from '../rx-error';
+import {
+    newRxError
+} from '../rx-error';
 import {
     requestIdleCallbackIfAvailable
 } from '../util';
@@ -30,7 +32,7 @@ function _getValidator(schemaPath = '') {
     if (!validatorsOfHash[schemaPath]) {
         const schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
         if (!schemaPart) {
-            throw RxError.newRxError('VD1', {
+            throw newRxError('VD1', {
                 schemaPath
             });
         }
@@ -51,7 +53,7 @@ const validate = function (obj, schemaPath = '') {
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
-        throw RxError.newRxError('VD2', {
+        throw newRxError('VD2', {
             errors: useValidator.errors,
             schemaPath,
             obj,

@@ -12,7 +12,7 @@ import overwritable from './overwritable';
  * @param  {any} parameters
  * @return {string}
  */
-const parametersToString = (parameters) => {
+function parametersToString(parameters) {
     let ret = '';
     if (Object.keys(parameters).length === 0)
         return ret;
@@ -32,13 +32,13 @@ const parametersToString = (parameters) => {
         .join('\n');
     ret += '}';
     return ret;
-};
+}
 
-const messageForError = (message, parameters) => {
+function messageForError(message, parameters) {
     return 'RxError:' + '\n' +
         message + '\n' +
         parametersToString(parameters);
-};
+}
 
 export class RxError extends Error {
     constructor(code, message, parameters = {}) {
@@ -102,9 +102,3 @@ export function pluginMissing(pluginKey) {
 
 export const newRxError = (code, parameters) => new RxError(code, overwritable.tunnelErrorMessage(code), parameters);
 export const newRxTypeError = (code, parameters) => new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
-
-export default {
-    newRxError,
-    newRxTypeError,
-    pluginMissing
-};

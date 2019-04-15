@@ -45,11 +45,11 @@ export class RxChangeEvent {
 }
 
 
-export function fromJSON(data) {
+export function changeEventfromJSON(data) {
     return new RxChangeEvent(data);
 }
 
-export function fromPouchChange(changeDoc, collection) {
+export function changeEventfromPouchChange(changeDoc, collection) {
     let op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) op = 'REMOVE';
 
@@ -68,7 +68,7 @@ export function fromPouchChange(changeDoc, collection) {
     return new RxChangeEvent(data);
 }
 
-export function create(op, database, collection, doc, value, isLocal = false) {
+export function createChangeEvent(op, database, collection, doc, value, isLocal = false) {
     const data = {
         op: op,
         t: new Date().getTime(),
@@ -86,10 +86,3 @@ export function create(op, database, collection, doc, value, isLocal = false) {
 export function isInstanceOf(obj) {
     return obj instanceof RxChangeEvent;
 }
-
-export default {
-    fromJSON,
-    fromPouchChange,
-    create,
-    isInstanceOf
-};

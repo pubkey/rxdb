@@ -2,7 +2,9 @@
  * functions that can or should be overwritten by plugins
  */
 
-import RxError from './rx-error';
+import {
+    pluginMissing
+} from './rx-error';
 
 const funs = {
     /**
@@ -13,7 +15,7 @@ const funs = {
      * @return {void}
      */
     validatePassword() {
-        throw RxError.pluginMissing('encryption');
+        throw pluginMissing('encryption');
     },
     /**
      * creates a key-compressor for the given schema
@@ -21,7 +23,7 @@ const funs = {
      * @return {KeyCompressor}
      */
     createKeyCompressor() {
-        throw RxError.pluginMissing('key-compression');
+        throw pluginMissing('key-compression');
     },
     /**
      * creates a leader-elector for the given database
@@ -29,7 +31,7 @@ const funs = {
      * @return {LeaderElector}
      */
     createLeaderElector() {
-        throw RxError.pluginMissing('leaderelection');
+        throw pluginMissing('leaderelection');
     },
 
     /**
@@ -37,7 +39,7 @@ const funs = {
      * @return {any} adapter
      */
     checkAdapter() {
-        throw RxError.pluginMissing('adapter-check');
+        throw pluginMissing('adapter-check');
     },
     /**
      * overwritte to map error-codes to text-messages

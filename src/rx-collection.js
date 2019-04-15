@@ -11,18 +11,29 @@ import {
     promiseSeries
 } from './util';
 import RxDocument from './rx-document';
-import RxQuery from './rx-query';
-import RxSchema from './rx-schema';
-import RxChangeEvent from './rx-change-event';
-import RxError from './rx-error';
-import DataMigrator from './data-migrator';
 import {
-    mustMigrate
+    createRxQuery
+} from './rx-query';
+import {
+    isInstanceOf as isInstanceOfRxSchema,
+    createRxSchema
+} from './rx-schema';
+import {
+    createChangeEvent
+} from './rx-change-event';
+import {
+    newRxError,
+    newRxTypeError,
+    pluginMissing
+} from './rx-error';
+import {
+    mustMigrate,
+    createDataMigrator
 } from './data-migrator';
 import Crypter from './crypter';
-import DocCache from './doc-cache';
-import QueryCache from './query-cache';
-import ChangeEventBuffer from './change-event-buffer';
+import createDocCache from './doc-cache';
+import createQueryCache from './query-cache';
+import createChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
 import {
     runPluginHooks
@@ -55,8 +66,8 @@ export class RxCollection {
         this._atomicUpsertQueues = new Map();
         this._statics = statics;
 
-        this._docCache = DocCache.create();
-        this._queryCache = QueryCache.create();
+        this._docCache = createDocCache();
+        this._queryCache = createQueryCache();
 
         // defaults
         this.synced = false;
@@ -79,13 +90,13 @@ export class RxCollection {
         const createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
 
-        this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
+        this._dataMigrator = createDataMigrator(this, this._migrationStrategies);
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
             filter(event => event.data.col === this.name)
         );
-        this._changeEventBuffer = ChangeEventBuffer.create(this);
+        this._changeEventBuffer = createChangeEventBuffer(this);
 
         this._subs.push(
             this._observable$
@@ -358,7 +369,7 @@ export class RxCollection {
         if (RxDocument.isInstanceOf(json)) {
             tempDoc = json;
             if (!json._isTemporary) {
-                throw RxError.newRxError('COL1', {
+                throw newRxError('COL1', {
                     data: json
                 });
             }
@@ -369,7 +380,7 @@ export class RxCollection {
         json = this.schema.fillObjectWithDefaults(json);
 
         if (json._id && this.schema.primaryPath !== '_id') {
-            throw RxError.newRxError('COL2', {
+            throw newRxError('COL2', {
                 data: json
             });
         }
@@ -396,7 +407,7 @@ export class RxCollection {
                 return this._runHooks('post', 'insert', json, newDoc);
             }).then(() => {
                 // event
-                const emitEvent = RxChangeEvent.create(
+                const emitEvent = createChangeEvent(
                     'INSERT',
                     this.database,
                     this,
@@ -417,7 +428,7 @@ export class RxCollection {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
-            throw RxError.newRxError('COL3', {
+            throw newRxError('COL3', {
                 primaryPath: this.schema.primaryPath,
                 data: json
             });
@@ -445,7 +456,7 @@ export class RxCollection {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
-            throw RxError.newRxError('COL4', {
+            throw newRxError('COL4', {
                 data: json
             });
         }
@@ -478,12 +489,12 @@ export class RxCollection {
      */
     find(queryObj) {
         if (typeof queryObj === 'string') {
-            throw RxError.newRxError('COL5', {
+            throw newRxError('COL5', {
                 queryObj
             });
         }
 
-        const query = RxQuery.create('find', queryObj, this);
+        const query = createRxQuery('find', queryObj, this);
         return query;
     }
 
@@ -491,16 +502,16 @@ export class RxCollection {
         let query;
 
         if (typeof queryObj === 'string') {
-            query = RxQuery.create('findOne', {
+            query = createRxQuery('findOne', {
                 _id: queryObj
             }, this);
-        } else query = RxQuery.create('findOne', queryObj, this);
+        } else query = createRxQuery('findOne', queryObj, this);
 
         if (
             typeof queryObj === 'number' ||
             Array.isArray(queryObj)
         ) {
-            throw RxError.newRxTypeError('COL6', {
+            throw newRxTypeError('COL6', {
                 queryObj
             });
         }
@@ -513,7 +524,7 @@ export class RxCollection {
      * @param {boolean} decrypted if true, all encrypted values will be decrypted
      */
     dump() {
-        throw RxError.pluginMissing('json-dump');
+        throw pluginMissing('json-dump');
     }
 
     /**
@@ -521,7 +532,7 @@ export class RxCollection {
      * @param {Array} exportedJSON should be an array of raw-data
      */
     importDump() {
-        throw RxError.pluginMissing('json-dump');
+        throw pluginMissing('json-dump');
     }
 
     /**
@@ -530,21 +541,21 @@ export class RxCollection {
      * TODO this can be removed by listening to the pull-change-events of the RxReplicationState
      */
     watchForChanges() {
-        throw RxError.pluginMissing('watch-for-changes');
+        throw pluginMissing('watch-for-changes');
     }
 
     /**
      * sync with another database
      */
     sync() {
-        throw RxError.pluginMissing('replication');
+        throw pluginMissing('replication');
     }
 
     /**
      * Create a replicated in-memory-collection
      */
     inMemory() {
-        throw RxError.pluginMissing('in-memory');
+        throw pluginMissing('in-memory');
     }
 
 
@@ -553,27 +564,27 @@ export class RxCollection {
      */
     addHook(when, key, fun, parallel = false) {
         if (typeof fun !== 'function') {
-            throw RxError.newRxTypeError('COL7', {
+            throw newRxTypeError('COL7', {
                 key,
                 when
             });
         }
 
         if (!HOOKS_WHEN.includes(when)) {
-            throw RxError.newRxTypeError('COL8', {
+            throw newRxTypeError('COL8', {
                 key,
                 when
             });
         }
 
         if (!HOOKS_KEYS.includes(key)) {
-            throw RxError.newRxError('COL9', {
+            throw newRxError('COL9', {
                 key
             });
         }
 
         if (when === 'post' && key === 'create' && parallel === true) {
-            throw RxError.newRxError('COL10', {
+            throw newRxError('COL10', {
                 when,
                 key,
                 parallel
@@ -691,14 +702,14 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
         typeof migrationStrategies !== 'object' ||
         Array.isArray(migrationStrategies)
     ) {
-        throw RxError.newRxTypeError('COL11', {
+        throw newRxTypeError('COL11', {
             schema
         });
     }
 
     // for every previousVersion there must be strategy
     if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-        throw RxError.newRxError('COL12', {
+        throw newRxError('COL12', {
             have: Object.keys(migrationStrategies),
             should: schema.previousVersions
         });
@@ -712,7 +723,7 @@ const checkMigrationStrategies = function(schema, migrationStrategies) {
         }))
         .filter(strat => typeof strat.s !== 'function')
         .forEach(strat => {
-            throw RxError.newRxTypeError('COL13', {
+            throw newRxTypeError('COL13', {
                 version: strat.v,
                 type: typeof strat,
                 schema
@@ -769,26 +780,26 @@ const checkOrmMethods = function(statics) {
         .entries(statics)
         .forEach(([k, v]) => {
             if (typeof k !== 'string') {
-                throw RxError.newRxTypeError('COL14', {
+                throw newRxTypeError('COL14', {
                     name: k
                 });
             }
 
             if (k.startsWith('_')) {
-                throw RxError.newRxTypeError('COL15', {
+                throw newRxTypeError('COL15', {
                     name: k
                 });
             }
 
             if (typeof v !== 'function') {
-                throw RxError.newRxTypeError('COL16', {
+                throw newRxTypeError('COL16', {
                     name: k,
                     type: typeof k
                 });
             }
 
             if (properties().includes(k) || RxDocument.properties().includes(k)) {
-                throw RxError.newRxError('COL17', {
+                throw newRxError('COL17', {
                     name: k
                 });
             }
@@ -896,8 +907,8 @@ export function create({
     validateCouchDBString(name);
 
     // ensure it is a schema-object
-    if (!RxSchema.isInstanceOf(schema))
-        schema = RxSchema.create(schema);
+    if (!isInstanceOfRxSchema(schema))
+        schema = createRxSchema(schema);
 
     checkMigrationStrategies(schema, migrationStrategies);
 
@@ -908,7 +919,7 @@ export function create({
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {
-            throw RxError.newRxError('COL18', {
+            throw newRxError('COL18', {
                 funName
             });
         });

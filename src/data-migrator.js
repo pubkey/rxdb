@@ -8,11 +8,18 @@ import {
     clone
 } from './util';
 
-import RxSchema from './rx-schema';
+import {
+    createRxSchema
+} from './rx-schema';
 import Crypter from './crypter';
-import RxError from './rx-error';
+import {
+    newRxError
+} from './rx-error';
 import overwritable from './overwritable';
-import hooks from './hooks';
+import {
+    runPluginHooks,
+    runAsyncPluginHooks
+} from './hooks';
 
 import {
     Subject
@@ -33,7 +40,7 @@ class DataMigrator {
      */
     migrate(batchSize = 10) {
         if (this._migrated)
-            throw RxError.newRxError('DM1');
+            throw newRxError('DM1');
         this._migrated = true;
 
         const state = {
@@ -122,7 +129,7 @@ class OldCollection {
     get schema() {
         if (!this._schema) {
             //            delete this.schemaObj._id;
-            this._schema = RxSchema.create(this.schemaObj, false);
+            this._schema = createRxSchema(this.schemaObj, false);
         }
         return this._schema;
     }
@@ -208,7 +215,7 @@ class OldCollection {
         try {
             this.newestCollection.schema.validate(doc);
         } catch (e) {
-            throw RxError.newRxError('DM2', {
+            throw newRxError('DM2', {
                 fromVersion: this.version,
                 toVersion: this.newestCollection.schema.version,
                 finalDoc: doc
@@ -233,7 +240,7 @@ class OldCollection {
         };
 
         if (migrated) {
-            hooks.runPluginHooks(
+            runPluginHooks(
                 'preMigrateDocument',
                 action
             );
@@ -244,7 +251,7 @@ class OldCollection {
             action.res = res;
             action.type = 'success';
 
-            await hooks.runAsyncPluginHooks(
+            await runAsyncPluginHooks(
                 'postMigrateDocument',
                 action
             );
@@ -276,7 +283,7 @@ class OldCollection {
      */
     migrate(batchSize = 10) {
         if (this._migrate)
-            throw RxError.newRxError('DM3');
+            throw newRxError('DM3');
         this._migrate = true;
 
         const observer = new Subject();
@@ -355,10 +362,6 @@ export function mustMigrate(dataMigrator) {
         });
 }
 
-export function create(newestCollection, migrationStrategies) {
+export function createDataMigrator(newestCollection, migrationStrategies) {
     return new DataMigrator(newestCollection, migrationStrategies);
 }
-
-export default {
-    create
-};

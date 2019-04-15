@@ -6,7 +6,9 @@
 import objectPath from 'object-path';
 
 import RxDocument from '../rx-document';
-import RxError from '../rx-error';
+import {
+    newRxError
+} from '../rx-error';
 import {
     getIndexes
 } from '../rx-schema';
@@ -23,7 +25,7 @@ export function checkFieldNameRegex(fieldName) {
     if (fieldName === '_id') return;
 
     if (['properties', 'language'].includes(fieldName)) {
-        throw RxError.newRxError('SC23', {
+        throw newRxError('SC23', {
             fieldName
         });
     }
@@ -31,7 +33,7 @@ export function checkFieldNameRegex(fieldName) {
     const regexStr = '^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$';
     const regex = new RegExp(regexStr);
     if (!fieldName.match(regex)) {
-        throw RxError.newRxError('SC1', {
+        throw newRxError('SC1', {
             regex: regexStr,
             fieldName
         });
@@ -53,7 +55,7 @@ export function validateFieldsDeep(jsonSchema) {
 
         // 'item' only allowed it type=='array'
         if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
-            throw RxError.newRxError('SC2', {
+            throw newRxError('SC2', {
                 fieldName
             });
         }
@@ -63,7 +65,7 @@ export function validateFieldsDeep(jsonSchema) {
          * but must be set via required: []
          */
         if (schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean') {
-            throw RxError.newRxError('SC24', {
+            throw newRxError('SC24', {
                 fieldName
             });
         }
@@ -76,13 +78,13 @@ export function validateFieldsDeep(jsonSchema) {
                     break;
                 case 'array':
                     if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
-                        throw RxError.newRxError('SC3', {
+                        throw newRxError('SC3', {
                             fieldName
                         });
                     }
                     break;
                 default:
-                    throw RxError.newRxError('SC4', {
+                    throw newRxError('SC4', {
                         fieldName
                     });
             }
@@ -90,7 +92,7 @@ export function validateFieldsDeep(jsonSchema) {
 
         // if primary is ref, throw
         if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
-            throw RxError.newRxError('SC5', {
+            throw newRxError('SC5', {
                 fieldName
             });
         }
@@ -101,14 +103,14 @@ export function validateFieldsDeep(jsonSchema) {
         // nested only
         if (isNested) {
             if (schemaObj.primary) {
-                throw RxError.newRxError('SC6', {
+                throw newRxError('SC6', {
                     path,
                     primary: schemaObj.primary
                 });
             }
 
             if (schemaObj.default) {
-                throw RxError.newRxError('SC7', {
+                throw newRxError('SC7', {
                     path
                 });
             }
@@ -121,7 +123,7 @@ export function validateFieldsDeep(jsonSchema) {
                 if (fieldName === '_id' && schemaObj.primary) {
                     return;
                 }
-                throw RxError.newRxError('SC8', {
+                throw newRxError('SC8', {
                     fieldName
                 });
             }
@@ -156,7 +158,7 @@ export function validateFieldsDeep(jsonSchema) {
 export function checkSchema(jsonID) {
     // check _rev
     if (jsonID.properties._rev) {
-        throw RxError.newRxError('SC10', {
+        throw newRxError('SC10', {
             schema: jsonID
         });
     }
@@ -166,7 +168,7 @@ export function checkSchema(jsonID) {
         typeof jsonID.version !== 'number' ||
         jsonID.version < 0
     ) {
-        throw RxError.newRxError('SC11', {
+        throw newRxError('SC11', {
             version: jsonID.version
         });
     }
@@ -179,7 +181,7 @@ export function checkSchema(jsonID) {
         // check primary
         if (value.primary) {
             if (primaryPath) {
-                throw RxError.newRxError('SC12', {
+                throw newRxError('SC12', {
                     value
                 });
             }
@@ -187,22 +189,22 @@ export function checkSchema(jsonID) {
             primaryPath = key;
 
             if (value.index) {
-                throw RxError.newRxError('SC13', {
+                throw newRxError('SC13', {
                     value
                 });
             }
             if (value.unique) {
-                throw RxError.newRxError('SC14', {
+                throw newRxError('SC14', {
                     value
                 });
             }
             if (value.encrypted) {
-                throw RxError.newRxError('SC15', {
+                throw newRxError('SC15', {
                     value
                 });
             }
             if (value.type !== 'string') {
-                throw RxError.newRxError('SC16', {
+                throw newRxError('SC16', {
                     value
                 });
             }
@@ -210,7 +212,7 @@ export function checkSchema(jsonID) {
 
         // check if RxDocument-property
         if (RxDocument.properties().includes(key)) {
-            throw RxError.newRxError('SC17', {
+            throw newRxError('SC17', {
                 key
             });
         }
@@ -219,20 +221,20 @@ export function checkSchema(jsonID) {
     // check format of jsonID.compoundIndexes
     if (jsonID.compoundIndexes) {
         if (!Array.isArray(jsonID.compoundIndexes)) {
-            throw RxError.newRxError('SC18', {
+            throw newRxError('SC18', {
                 compoundIndexes: jsonID.compoundIndexes
             });
         }
         jsonID.compoundIndexes.forEach(ar => {
             if (!Array.isArray(ar)) {
-                throw RxError.newRxError('SC19', {
+                throw newRxError('SC19', {
                     compoundIndexes: jsonID.compoundIndexes
                 });
             }
 
             ar.forEach(str => {
                 if (typeof str !== 'string') {
-                    throw RxError.newRxError('SC20', {
+                    throw newRxError('SC20', {
                         compoundIndexes: jsonID.compoundIndexes
                     });
                 }
@@ -248,7 +250,7 @@ export function checkSchema(jsonID) {
             const path = 'properties.' + key.replace(/\./g, '.properties.');
             const schemaObj = objectPath.get(jsonID, path);
             if (!schemaObj || typeof schemaObj !== 'object') {
-                throw RxError.newRxError('SC21', {
+                throw newRxError('SC21', {
                     key
                 });
             }
@@ -263,7 +265,7 @@ export function checkSchema(jsonID) {
             index.schemaObj.type !== 'number'
         )
         .forEach(index => {
-            throw RxError.newRxError('SC22', {
+            throw newRxError('SC22', {
                 key: index.key,
                 type: index.schemaObj.type
             });

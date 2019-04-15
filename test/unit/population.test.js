@@ -5,15 +5,17 @@ import * as faker from 'faker';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
+import {
+    createRxSchema
+} from '../../dist/lib/rx-schema';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
 
 config.parallel('population.test.js', () => {
-    describe('RxSchema.create', () => {
+    describe('createRxSchema', () => {
         describe('positive', () => {
             it('should allow to create a schema with a relation', async () => {
-                const schema = RxSchema.create({
+                const schema = createRxSchema({
                     version: 0,
                     properties: {
                         bestFriend: {
@@ -25,7 +27,7 @@ config.parallel('population.test.js', () => {
                 assert.equal(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create a schema with a relation in nested', async () => {
-                const schema = RxSchema.create({
+                const schema = createRxSchema({
                     version: 0,
                     properties: {
                         foo: {
@@ -42,7 +44,7 @@ config.parallel('population.test.js', () => {
                 assert.equal(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create relation of array', async () => {
-                const schema = RxSchema.create({
+                const schema = createRxSchema({
                     version: 0,
                     properties: {
                         friends: {
@@ -60,7 +62,7 @@ config.parallel('population.test.js', () => {
         describe('negative', () => {
             it('throw if primary is ref', () => {
                 assert.throws(
-                    () => RxSchema.create({
+                    () => createRxSchema({
                         version: 0,
                         properties: {
                             bestFriend: {
@@ -75,7 +77,7 @@ config.parallel('population.test.js', () => {
             });
             it('throw if ref-type is no string', () => {
                 assert.throws(
-                    () => RxSchema.create({
+                    () => createRxSchema({
                         version: 0,
                         properties: {
                             bestFriend: {
@@ -88,7 +90,7 @@ config.parallel('population.test.js', () => {
             });
             it('throw if ref-type is no string (array)', () => {
                 assert.throws(
-                    () => RxSchema.create({
+                    () => createRxSchema({
                         version: 0,
                         properties: {
                             friends: {

@@ -5,8 +5,14 @@ import {
     trimDots,
     getHeightOfRevision
 } from './util';
-import RxChangeEvent from './rx-change-event';
-import RxError from './rx-error';
+import {
+    createChangeEvent
+} from './rx-change-event';
+import {
+    newRxError,
+    newRxTypeError,
+    pluginMissing
+} from './rx-error';
 import {
     runPluginHooks
 } from './hooks';
@@ -114,24 +120,24 @@ export const basePrototype = {
      */
     get$(path) {
         if (path.includes('.item.')) {
-            throw RxError.newRxError('DOC1', {
+            throw newRxError('DOC1', {
                 path
             });
         }
 
         if (path === this.primaryPath)
-            throw RxError.newRxError('DOC2');
+            throw newRxError('DOC2');
 
         // final fields cannot be modified and so also not observed
         if (this.collection.schema.finalFields.includes(path)) {
-            throw RxError.newRxError('DOC3', {
+            throw newRxError('DOC3', {
                 path
             });
         }
 
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         if (!schemaObj) {
-            throw RxError.newRxError('DOC4', {
+            throw newRxError('DOC4', {
                 path
             });
         }
@@ -152,12 +158,12 @@ export const basePrototype = {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!schemaObj) {
-            throw RxError.newRxError('DOC5', {
+            throw newRxError('DOC5', {
                 path
             });
         }
         if (!schemaObj.ref) {
-            throw RxError.newRxError('DOC6', {
+            throw newRxError('DOC6', {
                 path,
                 schemaObj
             });
@@ -165,7 +171,7 @@ export const basePrototype = {
 
         const refCollection = this.collection.database.collections[schemaObj.ref];
         if (!refCollection) {
-            throw RxError.newRxError('DOC7', {
+            throw newRxError('DOC7', {
                 ref: schemaObj.ref,
                 path,
                 schemaObj
@@ -219,14 +225,14 @@ export const basePrototype = {
 
         // setters can only be used on temporary documents
         if (!this._isTemporary) {
-            throw RxError.newRxTypeError('DOC16', {
+            throw newRxTypeError('DOC16', {
                 objPath,
                 value
             });
         }
 
         if (typeof objPath !== 'string') {
-            throw RxError.newRxTypeError('DOC15', {
+            throw newRxTypeError('DOC15', {
                 objPath,
                 value
             });
@@ -240,7 +246,7 @@ export const basePrototype = {
         pathEls.pop();
         const rootPath = pathEls.join('.');
         if (typeof objectPath.get(this._data, rootPath) === 'undefined') {
-            throw RxError.newRxError('DOC10', {
+            throw newRxError('DOC10', {
                 childpath: objPath,
                 rootPath
             });
@@ -256,19 +262,19 @@ export const basePrototype = {
      * @param  {object} updateObj mongodb-like syntax
      */
     update() {
-        throw RxError.pluginMissing('update');
+        throw pluginMissing('update');
     },
     putAttachment() {
-        throw RxError.pluginMissing('attachments');
+        throw pluginMissing('attachments');
     },
     getAttachment() {
-        throw RxError.pluginMissing('attachments');
+        throw pluginMissing('attachments');
     },
     allAttachments() {
-        throw RxError.pluginMissing('attachments');
+        throw pluginMissing('attachments');
     },
     get allAttachments$() {
-        throw RxError.pluginMissing('attachments');
+        throw pluginMissing('attachments');
     },
 
     /**
@@ -310,7 +316,7 @@ export const basePrototype = {
 
         // deleted documents cannot be changed
         if (this._deleted$.getValue()) {
-            throw RxError.newRxError('DOC11', {
+            throw newRxError('DOC11', {
                 id: this.primary,
                 document: this
             });
@@ -327,14 +333,14 @@ export const basePrototype = {
             })
             .then(ret => {
                 if (!ret.ok) {
-                    throw RxError.newRxError('DOC12', {
+                    throw newRxError('DOC12', {
                         data: ret
                     });
                 }
                 newData._rev = ret.rev;
 
                 // emit event
-                const changeEvent = RxChangeEvent.create(
+                const changeEvent = createChangeEvent(
                     'UPDATE',
                     this.collection.database,
                     this.collection,
@@ -355,7 +361,7 @@ export const basePrototype = {
     save() {
         // .save() cannot be called on non-temporary-documents
         if (!this._isTemporary) {
-            throw RxError.newRxError('DOC17', {
+            throw newRxError('DOC17', {
                 id: this.primary,
                 document: this
             });
@@ -381,7 +387,7 @@ export const basePrototype = {
      */
     remove() {
         if (this.deleted) {
-            return Promise.reject(RxError.newRxError('DOC13', {
+            return Promise.reject(newRxError('DOC13', {
                 document: this,
                 id: this.primary
             }));
@@ -398,7 +404,7 @@ export const basePrototype = {
                 return this.collection._pouchPut(deletedData);
             })
             .then(() => {
-                this.$emit(RxChangeEvent.create(
+                this.$emit(createChangeEvent(
                     'REMOVE',
                     this.collection.database,
                     this.collection,
@@ -411,7 +417,7 @@ export const basePrototype = {
             .then(() => this);
     },
     destroy() {
-        throw RxError.newRxError('DOC14');
+        throw newRxError('DOC14');
     }
 };
 

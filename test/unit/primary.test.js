@@ -13,7 +13,9 @@ import assert from 'assert';
 import clone from 'clone';
 
 import config from './config';
-import * as RxSchema from '../../dist/lib/rx-schema';
+import {
+    createRxSchema
+} from '../../dist/lib/rx-schema';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
@@ -26,7 +28,7 @@ config.parallel('primary.test.js', () => {
         describe('.create()', () => {
             describe('positive', () => {
                 it('use in schema', async () => {
-                    const schema = RxSchema.create(schemas.primaryHuman);
+                    const schema = createRxSchema(schemas.primaryHuman);
                     assert.equal(typeof schema.primaryPath, 'string');
                 });
             });
@@ -34,17 +36,17 @@ config.parallel('primary.test.js', () => {
                 it('throw if primary is also index', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.index = true;
-                    assert.throws(() => RxSchema.create(schemaObj), Error);
+                    assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is also unique', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.unique = true;
-                    assert.throws(() => RxSchema.create(schemaObj), Error);
+                    assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is no string', () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.type = 'integer';
-                    assert.throws(() => RxSchema.create(schemaObj), Error);
+                    assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is defined twice', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
@@ -52,19 +54,19 @@ config.parallel('primary.test.js', () => {
                         type: 'string',
                         primary: true
                     };
-                    assert.throws(() => RxSchema.create(schemaObj), Error);
+                    assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is encrypted', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId.encrypted = true;
-                    assert.throws(() => RxSchema.create(schemaObj), Error);
+                    assert.throws(() => createRxSchema(schemaObj), Error);
                 });
             });
         });
         describe('.validate()', () => {
             describe('positive', () => {
                 it('should validate the human', () => {
-                    const schema = RxSchema.create(schemas.primaryHuman);
+                    const schema = createRxSchema(schemas.primaryHuman);
                     const obj = schemaObjects.simpleHuman();
                     assert.ok(schema.validate(obj));
                 });
@@ -72,7 +74,7 @@ config.parallel('primary.test.js', () => {
 
             describe('positive', () => {
                 it('should validate when primary key is _id', () => {
-                    const schema = RxSchema.create(schemas._idPrimary);
+                    const schema = createRxSchema(schemas._idPrimary);
                     const obj = schemaObjects._idPrimary();
                     assert.ok(schema.validate(obj));
                 });
@@ -80,7 +82,7 @@ config.parallel('primary.test.js', () => {
 
             describe('negative', () => {
                 it('should not validate the human without primary', () => {
-                    const schema = RxSchema.create(schemas.primaryHuman);
+                    const schema = createRxSchema(schemas.primaryHuman);
                     const obj = {
                         firstName: util.randomCouchString(10),
                         lastName: util.randomCouchString(10)
@@ -88,7 +90,7 @@ config.parallel('primary.test.js', () => {
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('should not validate with primary object', () => {
-                    const schema = RxSchema.create(schemas.primaryHuman);
+                    const schema = createRxSchema(schemas.primaryHuman);
                     const obj = {
                         passportId: {},
                         firstName: util.randomCouchString(10),

@@ -10,14 +10,16 @@ import * as util from '../../dist/lib/util';
 import * as RxDB from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/index';
 import * as RxCollection from '../../dist/lib/rx-collection';
-import * as RxSchema from '../../dist/lib/rx-schema';
+import {
+    createRxSchema
+} from '../../dist/lib/rx-schema';
 
 config.parallel('rx-document.test.js', () => {
     describe('statics', () => {});
     describe('prototype-merge', () => {
         describe('RxSchema.getDocumentPrototype()', () => {
             it('should get an object with all main-fields', async () => {
-                const schema = RxSchema.create(schemas.human);
+                const schema = createRxSchema(schemas.human);
                 assert.ok(schema);
                 const proto = schema.getDocumentPrototype();
                 assert.ok(proto);

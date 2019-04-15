@@ -10,7 +10,10 @@ import {
 } from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 
-import RxError from '../rx-error';
+import {
+    newRxTypeError,
+    newRxError
+} from '../rx-error';
 
 const minPassLength = 8;
 
@@ -47,12 +50,12 @@ export const prototypes = {
 export const overwritable = {
     validatePassword: function(password) {
         if (password && typeof password !== 'string') {
-            throw RxError.newRxTypeError('EN1', {
+            throw newRxTypeError('EN1', {
                 password
             });
         }
         if (password && password.length < minPassLength) {
-            throw RxError.newRxError('EN2', {
+            throw newRxError('EN2', {
                 minPassLength,
                 password
             });

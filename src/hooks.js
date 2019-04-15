@@ -78,9 +78,3 @@ export function runAsyncPluginHooks(hookKey, obj) {
 export function clearHook(type, fun) {
     HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }
-
-export default {
-    runPluginHooks,
-    runAsyncPluginHooks,
-    HOOKS
-};

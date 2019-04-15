@@ -18,7 +18,9 @@ import {
 } from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
-import RxError from '../rx-error';
+import {
+    newRxError
+} from '../rx-error';
 import PouchDB from '../pouch-db';
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 
@@ -64,7 +66,7 @@ export class RxReplicationState {
 
 function setPouchEventEmitter(rxRepState, evEmitter) {
     if (rxRepState._pouchEventEmitterObject)
-        throw RxError.newRxError('RC1');
+        throw newRxError('RC1');
     rxRepState._pouchEventEmitterObject = evEmitter;
 
     // change
@@ -184,7 +186,7 @@ export function sync({
         PouchDB.isInstanceOf(remote) &&
         INTERNAL_POUCHDBS.has(remote)
     ) {
-        throw RxError.newRxError('RC3', {
+        throw newRxError('RC3', {
             database: this.database.name,
             collection: this.name
         });
@@ -197,7 +199,7 @@ export function sync({
     }
 
     if (query && this !== query.collection) {
-        throw RxError.newRxError('RC2', {
+        throw newRxError('RC2', {
             query
         });
     }

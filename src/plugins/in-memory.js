@@ -25,10 +25,14 @@ import {
 } from '../util';
 import Core from '../core';
 import Crypter from '../crypter';
-import ChangeEventBuffer from '../change-event-buffer';
-import RxSchema from '../rx-schema';
+import createChangeEventBuffer from '../change-event-buffer';
+import {
+    createRxSchema
+} from '../rx-schema';
 import PouchDB from '../pouch-db';
-import RxError from '../rx-error';
+import {
+    newRxError
+} from '../rx-error';
 
 // add the watch-for-changes-plugin
 import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
@@ -76,7 +80,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         );
 
         this._observable$ = new Subject();
-        this._changeEventBuffer = ChangeEventBuffer.create(this);
+        this._changeEventBuffer = createChangeEventBuffer(this);
 
         const parentProto = Object.getPrototypeOf(parentCollection);
         this._oldPouchPut = parentProto._pouchPut.bind(this);
@@ -180,7 +184,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * replicate with it's parent instead
      */
     sync() {
-        throw RxError.newRxError('IM2');
+        throw newRxError('IM2');
     }
 }
 
@@ -207,7 +211,7 @@ function toCleanSchema(rxSchema) {
     };
     removeEncryption(newSchemaJson, newSchemaJson);
 
-    return RxSchema.create(newSchemaJson);
+    return createRxSchema(newSchemaJson);
 }
 
 /**
@@ -339,7 +343,7 @@ export async function spawnInMemory() {
         INIT_DONE = true;
         // ensure memory-adapter is added
         if (!PouchDB.adapters || !PouchDB.adapters.memory)
-            throw RxError.newRxError('IM1');
+            throw newRxError('IM1');
     }
 
     if (collectionCacheMap.has(this)) {

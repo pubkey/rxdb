@@ -95,7 +95,6 @@ export default {
     isRxDocument,
     isRxQuery,
     isRxSchema,
-    RxSchema,
     PouchDB,
     QueryChangeDetector,
     RxDatabase

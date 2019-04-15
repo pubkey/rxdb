@@ -9,7 +9,9 @@ import {
     promiseWait,
     nextTick
 } from '../util';
-import RxChangeEvent from '../rx-change-event';
+import {
+    changeEventfromPouchChange
+} from '../rx-change-event';
 
 /**
  * listens to changes of the internal pouchdb
@@ -67,7 +69,7 @@ function _handleSingleChange(collection, change) {
             // already handled by internal event-stream
             if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
 
-            const cE = RxChangeEvent.fromPouchChange(docData, collection);
+            const cE = changeEventfromPouchChange(docData, collection);
 
             collection.$emit(cE);
             return true;

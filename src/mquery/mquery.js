@@ -7,7 +7,10 @@ import {
     merge,
     mergeClone
 } from './mquery_utils';
-import RxError from '../rx-error';
+import {
+    newRxTypeError,
+    newRxError
+} from '../rx-error';
 import {
     clone
 } from '../util';
@@ -65,7 +68,7 @@ class MQuery {
         if ('object' === type && !Array.isArray(arguments[0]))
             return this.merge(arguments[0]);
 
-        throw RxError.newRxTypeError('MQ1', {
+        throw newRxTypeError('MQ1', {
             path: arguments[0]
         });
     }
@@ -230,7 +233,7 @@ class MQuery {
      */
     elemMatch() {
         if (null === arguments[0])
-            throw RxError.newRxTypeError('MQ2');
+            throw newRxTypeError('MQ2');
 
         let fn;
         let path;
@@ -251,7 +254,7 @@ class MQuery {
             path = arguments[0];
             criteria = arguments[1];
         } else
-            throw RxError.newRxTypeError('MQ2');
+            throw newRxTypeError('MQ2');
 
         if (fn) {
             criteria = new MQuery;
@@ -310,7 +313,7 @@ class MQuery {
             return this;
         }
 
-        throw RxError.newRxTypeError('MQ3', {
+        throw newRxTypeError('MQ3', {
             args: arguments
         });
     }
@@ -328,7 +331,7 @@ class MQuery {
             return this;
 
         if (!MQuery.canMerge(source)) {
-            throw RxError.newRxTypeError('MQ4', {
+            throw newRxTypeError('MQ4', {
                 source
             });
         }
@@ -388,7 +391,7 @@ class MQuery {
      */
     _ensurePath(method) {
         if (!this._path) {
-            throw RxError.newRxError('MQ5', {
+            throw newRxError('MQ5', {
                 method
             });
         }
@@ -427,7 +430,7 @@ class MQuery {
  */
 function push(opts, field, value) {
     if (Array.isArray(opts.sort)) {
-        throw RxError.newRxTypeError('MQ6', {
+        throw newRxTypeError('MQ6', {
             opts,
             field,
             value
@@ -445,7 +448,7 @@ function push(opts, field, value) {
     const val = String(value || 1).toLowerCase();
     if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
         if (Array.isArray(value)) value = '[' + value + ']';
-        throw RxError.newRxTypeError('MQ7', {
+        throw newRxTypeError('MQ7', {
             field,
             value
         });
@@ -463,7 +466,7 @@ function push(opts, field, value) {
 function _pushArr(opts, field, value) {
     opts.sort = opts.sort || [];
     if (!Array.isArray(opts.sort)) {
-        throw RxError.newRxTypeError('MQ8', {
+        throw newRxTypeError('MQ8', {
             opts,
             field,
             value

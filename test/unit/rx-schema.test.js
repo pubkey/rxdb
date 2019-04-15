@@ -3,6 +3,9 @@ import clone from 'clone';
 
 import config from './config';
 import * as RxSchema from '../../dist/lib/rx-schema';
+import {
+    createRxSchema
+} from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -325,28 +328,28 @@ config.parallel('rx-schema.test.js', () => {
         describe('.create()', () => {
             describe('positive', () => {
                 it('create human', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     assert.equal(schema.constructor.name, 'RxSchema');
                 });
                 it('create nested', () => {
-                    const schema = RxSchema.create(schemas.nestedHuman);
+                    const schema = createRxSchema(schemas.nestedHuman);
                     assert.equal(schema.constructor.name, 'RxSchema');
                 });
                 it('create point', () => {
-                    const schema = RxSchema.create(schemas.point);
+                    const schema = createRxSchema(schemas.point);
                     assert.equal(schema.constructor.name, 'RxSchema');
                 });
                 it('should have indexes human', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     assert.equal(schema.indexes[0], 'passportId');
                 });
             });
             describe('negative', () => {
                 it('broken schema (nostringIndex)', () => {
-                    assert.throws(() => RxSchema.create(schemas.nostringIndex), Error);
+                    assert.throws(() => createRxSchema(schemas.nostringIndex), Error);
                 });
                 it('first-level field is "language" is forbitten', () => {
-                    assert.throws(() => RxSchema.create({
+                    assert.throws(() => createRxSchema({
                         title: 'schema',
                         version: 0,
                         description: 'dot in fieldname',
@@ -436,7 +439,7 @@ config.parallel('rx-schema.test.js', () => {
     describe('instance', () => {
         describe('.normalized', () => {
             it('should normalize if schema has not been normalized yet', () => {
-                const schema = RxSchema.create(schemas.humanNormalizeSchema1);
+                const schema = createRxSchema(schemas.humanNormalizeSchema1);
                 const normalized = schema.normalized;
                 assert.notEqual(schema._normalized, null);
                 assert.notEqual(normalized, null);
@@ -444,7 +447,7 @@ config.parallel('rx-schema.test.js', () => {
         });
         describe('.previousVersions', () => {
             it('get empty array when current==0', () => {
-                const schema = RxSchema.create({
+                const schema = createRxSchema({
                     title: 'schema',
                     version: 0,
                     properties: {
@@ -456,7 +459,7 @@ config.parallel('rx-schema.test.js', () => {
                 assert.deepEqual(schema.previousVersions, []);
             });
             it('get valid array when current==5', () => {
-                const schema = RxSchema.create({
+                const schema = createRxSchema({
                     title: 'schema',
                     version: 5,
                     properties: {
@@ -471,14 +474,14 @@ config.parallel('rx-schema.test.js', () => {
         describe('.hash', () => {
             describe('positive', () => {
                 it('should hash', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const hash = schema.hash;
                     assert.equal(typeof hash, 'string');
                     assert.ok(hash.length > 10);
                 });
                 it('should normalize one schema with two different orders and generate for each the same hash', () => {
-                    const schema1 = RxSchema.create(schemas.humanNormalizeSchema1);
-                    const schema2 = RxSchema.create(schemas.humanNormalizeSchema2);
+                    const schema1 = createRxSchema(schemas.humanNormalizeSchema1);
+                    const schema2 = createRxSchema(schemas.humanNormalizeSchema2);
                     const hash1 = schema1.hash;
                     const hash2 = schema2.hash;
                     assert.equal(hash1, hash2);
@@ -488,26 +491,26 @@ config.parallel('rx-schema.test.js', () => {
         describe('.validate()', () => {
             describe('positive', () => {
                 it('validate one human', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate one point', () => {
-                    const schema = RxSchema.create(schemas.point);
+                    const schema = createRxSchema(schemas.point);
                     const obj = schemaObjects.point();
                     obj._id = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate without non-required', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generateId();
                     delete obj.age;
                     schema.validate(obj);
                 });
                 it('validate nested', () => {
-                    const schema = RxSchema.create(schemas.nestedHuman);
+                    const schema = createRxSchema(schemas.nestedHuman);
                     const obj = schemaObjects.nestedHuman();
                     obj._id = util.generateId();
                     schema.validate(obj);
@@ -515,34 +518,34 @@ config.parallel('rx-schema.test.js', () => {
             });
             describe('negative', () => {
                 it('required field not given', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generateId();
                     delete obj.lastName;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overflow maximum int', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generateId();
                     obj.age = 1000;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overadditional property', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generateId();
                     obj.token = util.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     obj._id = util.generateId();
                     schema.validate(obj);
                 });
                 it('accessible error-parameters', () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
                     let hasThrown = false;
                     try {
@@ -557,7 +560,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('should respect nested additionalProperties: false', () => {
                     const jsonSchema = clone(schemas.heroArray);
                     jsonSchema.properties.skills.items.additionalProperties = false;
-                    const schema = RxSchema.create(jsonSchema);
+                    const schema = createRxSchema(jsonSchema);
                     const obj = {
                         name: 'foobar',
                         skills: [
@@ -580,7 +583,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.ok(hasThrown);
                 });
                 it('final fields should be required', () => {
-                    const schema = RxSchema.create(schemas.humanFinal);
+                    const schema = createRxSchema(schemas.humanFinal);
                     let hasThrown = false;
                     const obj = {
                         passportId: 'foobar',
@@ -597,7 +600,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.ok(hasThrown);
                 });
                 it('should show fields with undefined in the error-params', async () => {
-                    const schema = RxSchema.create(schemas.humanFinal);
+                    const schema = createRxSchema(schemas.humanFinal);
                     let error = null;
                     try {
                         schema.validate({
@@ -618,7 +621,7 @@ config.parallel('rx-schema.test.js', () => {
         describe('.validateChange()', () => {
             describe('positive', () => {
                 it('should allow a valid change', async () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const dataBefore = schemaObjects.human();
                     const dataAfter = clone(dataBefore);
                     dataAfter.age = 100;
@@ -628,7 +631,7 @@ config.parallel('rx-schema.test.js', () => {
             });
             describe('negative', () => {
                 it('should not allow to change the primary', async () => {
-                    const schema = RxSchema.create(schemas.primaryHuman);
+                    const schema = createRxSchema(schemas.primaryHuman);
                     const dataBefore = schemaObjects.human();
                     const dataAfter = clone(dataBefore);
                     dataAfter.passportId = 'foobar';
@@ -640,7 +643,7 @@ config.parallel('rx-schema.test.js', () => {
                     );
                 });
                 it('should not allow to change a final field', async () => {
-                    const schema = RxSchema.create(schemas.humanFinal);
+                    const schema = createRxSchema(schemas.humanFinal);
                     const dataBefore = schemaObjects.human();
                     dataBefore.age = 1;
                     const dataAfter = clone(dataBefore);
@@ -657,18 +660,18 @@ config.parallel('rx-schema.test.js', () => {
         describe('.getSchemaByObjectPath()', () => {
             describe('positive', () => {
                 it('get firstLevel', async () => {
-                    const schema = RxSchema.create(schemas.human);
+                    const schema = createRxSchema(schemas.human);
                     const schemaObj = schema.getSchemaByObjectPath('passportId');
                     assert.equal(schemaObj.index, true);
                     assert.equal(schemaObj.type, 'string');
                 });
                 it('get deeper', async () => {
-                    const schema = RxSchema.create(schemas.nestedHuman);
+                    const schema = createRxSchema(schemas.nestedHuman);
                     const schemaObj = schema.getSchemaByObjectPath('mainSkill');
                     assert.ok(schemaObj.properties);
                 });
                 it('get nested', async () => {
-                    const schema = RxSchema.create(schemas.nestedHuman);
+                    const schema = createRxSchema(schemas.nestedHuman);
                     const schemaObj = schema.getSchemaByObjectPath('mainSkill.name');
                     assert.equal(schemaObj.type, 'string');
                 });
@@ -678,7 +681,7 @@ config.parallel('rx-schema.test.js', () => {
         describe('.fillObjectWithDefaults()', () => {
             describe('positive', () => {
                 it('should fill all unset fields', () => {
-                    const schema = RxSchema.create(schemas.humanDefault);
+                    const schema = createRxSchema(schemas.humanDefault);
                     const data = {
                         foo: 'bar'
                     };
@@ -688,7 +691,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(filled.age, 20);
                 });
                 it('should not overwrite given values', () => {
-                    const schema = RxSchema.create(schemas.humanDefault);
+                    const schema = createRxSchema(schemas.humanDefault);
                     const data = {
                         foo: 'bar',
                         age: 40

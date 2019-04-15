@@ -7,7 +7,9 @@ import {
     clone
 } from './util';
 
-import RxError from './rx-error';
+import {
+    pluginMissing
+} from './rx-error';
 
 export class Crypter {
     constructor(password, schema) {
@@ -22,7 +24,7 @@ export class Crypter {
      * @return {string}
      */
     _encryptValue() {
-        throw RxError.pluginMissing('encryption');
+        throw pluginMissing('encryption');
     }
 
     /**
@@ -32,7 +34,7 @@ export class Crypter {
      * @return {any}
      */
     _decryptValue() {
-        throw RxError.pluginMissing('encryption');
+        throw pluginMissing('encryption');
     }
 
     encrypt(obj) {

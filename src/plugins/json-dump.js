@@ -4,9 +4,15 @@
 import {
     hash
 } from '../util';
-import RxQuery from '../rx-query';
-import RxError from '../rx-error';
-import RxChangeEvent from '../rx-change-event';
+import {
+    createRxQuery
+} from '../rx-query';
+import {
+    newRxError
+} from '../rx-error';
+import {
+    createChangeEvent
+} from '../rx-change-event';
 
 /**
  * @return {Promise}
@@ -49,7 +55,7 @@ const importDumpRxDatabase = function (dump) {
         .filter(col => !this.collections[col.name])
         .map(col => col.name);
     if (missingCollections.length > 0) {
-        throw RxError.newRxError('JD1', {
+        throw newRxError('JD1', {
             missingCollections
         });
     }
@@ -76,7 +82,7 @@ const dumpRxCollection = function (decrypted = false) {
         json.encrypted = true;
     }
 
-    const query = RxQuery.create('find', {}, this);
+    const query = createRxQuery('find', {}, this);
 
     return this._pouchFind(query, null, encrypted)
         .then(docs => {
@@ -94,7 +100,7 @@ const dumpRxCollection = function (decrypted = false) {
 const importDumpRxCollection = function (exportedJSON) {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
-        throw RxError.newRxError('JD2', {
+        throw newRxError('JD2', {
             schemaHash: exportedJSON.schemaHash,
             own: this.schema.hash
         });
@@ -105,7 +111,7 @@ const importDumpRxCollection = function (exportedJSON) {
         exportedJSON.encrypted &&
         exportedJSON.passwordHash !== hash(this.database.password)
     ) {
-        throw RxError.newRxError('JD3', {
+        throw newRxError('JD3', {
             passwordHash: exportedJSON.passwordHash,
             own: hash(this.database.password)
         });
@@ -121,7 +127,7 @@ const importDumpRxCollection = function (exportedJSON) {
             return this._pouchPut(doc).then(() => {
                 const primary = doc[this.schema.primaryPath];
                 // emit changeEvents
-                const emitEvent = RxChangeEvent.create(
+                const emitEvent = createChangeEvent(
                     'INSERT',
                     this.database,
                     this,

@@ -8,7 +8,10 @@ import {
     trimDots,
     flattenObject
 } from './util';
-import RxError from './rx-error';
+import {
+    newRxError,
+    pluginMissing
+} from './rx-error';
 import {
     runPluginHooks
 } from './hooks';
@@ -118,7 +121,7 @@ export class RxSchema {
     validateChange(dataBefore, dataAfter) {
         this.finalFields.forEach(fieldName => {
             if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
-                throw RxError.newRxError('DOC9', {
+                throw newRxError('DOC9', {
                     dataBefore,
                     dataAfter,
                     fieldName
@@ -136,7 +139,7 @@ export class RxSchema {
      * @param {Object} obj equal to input-obj
      */
     validate() {
-        throw RxError.pluginMissing('validate');
+        throw pluginMissing('validate');
     }
 
 
@@ -351,7 +354,7 @@ const fillWithDefaultSettings = function(schemaObj) {
     return schemaObj;
 };
 
-export function create(jsonID, runPreCreateHooks = true) {
+export function createRxSchema(jsonID, runPreCreateHooks = true) {
     if (runPreCreateHooks)
         runPluginHooks('preCreateRxSchema', jsonID);
     const schema = new RxSchema(fillWithDefaultSettings(jsonID));
@@ -362,15 +365,3 @@ export function create(jsonID, runPreCreateHooks = true) {
 export function isInstanceOf(obj) {
     return obj instanceof RxSchema;
 }
-
-export default {
-    RxSchema,
-    getEncryptedPaths,
-    hasCrypt,
-    getIndexes,
-    getPrimary,
-    getFinalFields,
-    normalize,
-    create,
-    isInstanceOf
-};

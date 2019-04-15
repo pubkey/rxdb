@@ -3,17 +3,21 @@ import {
 } from 'rxjs/operators';
 
 
-import RxChangeEvent from './../rx-change-event';
+import {
+    createChangeEvent
+} from './../rx-change-event';
 import {
     nextTick,
     isElectronRenderer
 } from './../util';
-import RxError from '../rx-error';
+import {
+    newRxError
+} from '../rx-error';
 
 function ensureSchemaSupportsAttachments(doc) {
     const schemaJson = doc.collection.schema.jsonID;
     if (!schemaJson.attachments) {
-        throw RxError.newRxError('AT1', {
+        throw newRxError('AT1', {
             link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
         });
     }
@@ -22,7 +26,7 @@ function ensureSchemaSupportsAttachments(doc) {
 function resyncRxDocument(doc) {
     return doc.collection.pouch.get(doc.primary).then(docData => {
         const data = doc.collection._handleFromPouch(docData);
-        const changeEvent = RxChangeEvent.create(
+        const changeEvent = createChangeEvent(
             'UPDATE',
             doc.collection.database,
             doc.collection,

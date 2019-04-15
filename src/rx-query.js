@@ -7,7 +7,11 @@ import {
     clone
 } from './util';
 import QueryChangeDetector from './query-change-detector';
-import RxError from './rx-error';
+import {
+    newRxError,
+    newRxTypeError,
+    pluginMissing
+} from './rx-error';
 import {
     runPluginHooks
 } from './hooks';
@@ -110,7 +114,7 @@ export class RxQuery {
                 docsPromise = this.collection._pouchFind(this, 1);
                 break;
             default:
-                throw RxError.newRxError('QU1', {
+                throw newRxError('QU1', {
                     op: this.op
                 });
         }
@@ -225,7 +229,7 @@ export class RxQuery {
 
         if (options.limit) {
             if (typeof options.limit !== 'number') {
-                throw RxError.newRxTypeError('QU2', {
+                throw newRxTypeError('QU2', {
                     limit: options.limit
                 });
             }
@@ -234,7 +238,7 @@ export class RxQuery {
 
         if (options.skip) {
             if (typeof options.skip !== 'number') {
-                throw RxError.newRxTypeError('QU3', {
+                throw newRxTypeError('QU3', {
                     skip: options.skip
                 });
             }
@@ -312,7 +316,7 @@ export class RxQuery {
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
     update() {
-        throw RxError.pluginMissing('update');
+        throw pluginMissing('update');
     }
 
     /**
@@ -323,7 +327,7 @@ export class RxQuery {
         const clonedThis = this._clone();
 
         if (this.mquery._path === this.collection.schema.primaryPath) {
-            throw RxError.newRxError('QU4', {
+            throw newRxError('QU4', {
                 path: this.mquery._path
             });
         }
@@ -355,7 +359,7 @@ export class RxQuery {
 
     limit(amount) {
         if (this.op === 'findOne')
-            throw RxError.newRxError('QU6');
+            throw newRxError('QU6');
         else {
             const clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
@@ -398,15 +402,15 @@ function protoMerge(rxQueryProto, mQueryProtoKeys) {
 }
 
 let protoMerged = false;
-export function create(op, queryObj, collection) {
+export function createRxQuery(op, queryObj, collection) {
     // checks
     if (queryObj && typeof queryObj !== 'object') {
-        throw RxError.newRxTypeError('QU7', {
+        throw newRxTypeError('QU7', {
             queryObj
         });
     }
     if (Array.isArray(queryObj)) {
-        throw RxError.newRxTypeError('QU8', {
+        throw newRxTypeError('QU8', {
             queryObj
         });
     }
@@ -429,7 +433,7 @@ export function create(op, queryObj, collection) {
  * throws an error that says that the key is not in the schema
  */
 function _throwNotInSchema(key) {
-    throw RxError.newRxError('QU5', {
+    throw newRxError('QU5', {
         key
     });
 }
@@ -548,9 +552,3 @@ function __ensureEqual(rxQuery) {
 export function isInstanceOf(obj) {
     return obj instanceof RxQuery;
 }
-
-export default {
-    create,
-    RxQuery,
-    isInstanceOf
-};

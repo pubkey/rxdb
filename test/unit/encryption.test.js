@@ -7,7 +7,9 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxSchema from '../../dist/lib/rx-schema';
+import {
+    createRxSchema
+} from '../../dist/lib/rx-schema';
 import * as Crypter from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
 import RxDB from '../../dist/lib';
@@ -16,7 +18,7 @@ config.parallel('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
             it('get an encrypted path', async () => {
-                const schema = RxSchema.create(schemas.encryptedHuman);
+                const schema = createRxSchema(schemas.encryptedHuman);
                 const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 1);
                 assert.equal(Object.keys(encPaths)[0], 'secret');
@@ -26,7 +28,7 @@ config.parallel('encryption.test.js', () => {
                 });
             });
             it('get all encrypted paths', async () => {
-                const schema = RxSchema.create(schemas.encryptedDeepHuman);
+                const schema = createRxSchema(schemas.encryptedDeepHuman);
                 const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 4);
                 assert.equal(Object.keys(encPaths)[0], 'firstLevelPassword');
@@ -35,7 +37,7 @@ config.parallel('encryption.test.js', () => {
                 assert.equal(Object.keys(encPaths)[3], 'nestedSecret.darkhole');
             });
             it('get no encrypted path', async () => {
-                const schema = RxSchema.create(schemas.human);
+                const schema = createRxSchema(schemas.human);
                 const encPaths = schema.encryptedPaths;
                 assert.equal(Object.keys(encPaths).length, 0);
             });
@@ -44,13 +46,13 @@ config.parallel('encryption.test.js', () => {
     });
     describe('Crypter.js', () => {
         it('create', () => {
-            const schema = RxSchema.create(schemas.human);
+            const schema = createRxSchema(schemas.human);
             const c = Crypter.create('foobar', schema);
             assert.equal(c.constructor.name, 'Crypter');
         });
         describe('._encryptValue()', () => {
             it('string', () => {
-                const schema = RxSchema.create(schemas.human);
+                const schema = createRxSchema(schemas.human);
                 const c = Crypter.create('mypw', schema);
                 const value = 'foobar';
                 const encrypted = c._encryptValue(value);
@@ -59,7 +61,7 @@ config.parallel('encryption.test.js', () => {
                 assert.ok(encrypted.length > value.length);
             });
             it('object', () => {
-                const schema = RxSchema.create(schemas.human);
+                const schema = createRxSchema(schemas.human);
                 const c = Crypter.create('mypw', schema);
                 const value = {
                     foo: 'bar'
@@ -72,7 +74,7 @@ config.parallel('encryption.test.js', () => {
         });
         describe('._decryptValue()', () => {
             it('string', () => {
-                const schema = RxSchema.create(schemas.human);
+                const schema = createRxSchema(schemas.human);
                 const c = Crypter.create('mypw', schema);
                 const value = 'foobar';
                 const encrypted = c._encryptValue(value);
@@ -80,7 +82,7 @@ config.parallel('encryption.test.js', () => {
                 assert.deepEqual(decrypted, value);
             });
             it('object', () => {
-                const schema = RxSchema.create(schemas.human);
+                const schema = createRxSchema(schemas.human);
                 const c = Crypter.create('mypw', schema);
                 const value = {
                     foo: 'bar'
@@ -93,7 +95,7 @@ config.parallel('encryption.test.js', () => {
 
         describe('.encrypt()', () => {
             it('string', () => {
-                const schema = RxSchema.create(schemas.encryptedHuman);
+                const schema = createRxSchema(schemas.encryptedHuman);
                 const c = Crypter.create('mypw', schema);
                 const value = schemaObjects.encryptedHuman();
                 const encrypted = c.encrypt(value);
@@ -102,7 +104,7 @@ config.parallel('encryption.test.js', () => {
                 assert.equal(value.passportId, encrypted.passportId);
             });
             it('object', () => {
-                const schema = RxSchema.create(schemas.encryptedObjectHuman);
+                const schema = createRxSchema(schemas.encryptedObjectHuman);
                 const c = Crypter.create('mypw', schema);
                 const value = schemaObjects.encryptedObjectHuman();
                 const encrypted = c.encrypt(value);
@@ -113,7 +115,7 @@ config.parallel('encryption.test.js', () => {
         });
         describe('.decrypt()', () => {
             it('string', () => {
-                const schema = RxSchema.create(schemas.encryptedHuman);
+                const schema = createRxSchema(schemas.encryptedHuman);
                 const c = Crypter.create('mypw', schema);
                 const value = schemaObjects.encryptedHuman();
                 const encrypted = c.encrypt(value);
@@ -121,7 +123,7 @@ config.parallel('encryption.test.js', () => {
                 assert.deepEqual(decrypted, value);
             });
             it('object', () => {
-                const schema = RxSchema.create(schemas.encryptedObjectHuman);
+                const schema = createRxSchema(schemas.encryptedObjectHuman);
                 const c = Crypter.create('mypw', schema);
                 const value = schemaObjects.encryptedObjectHuman();
                 const encrypted = c.encrypt(value);

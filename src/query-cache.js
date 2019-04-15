@@ -28,10 +28,6 @@ class QueryCache {
     }
 }
 
-export function create() {
+export default function createQueryCache() {
     return new QueryCache();
 }
-
-export default {
-    create
-};

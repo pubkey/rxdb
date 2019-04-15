@@ -9,7 +9,9 @@ if (config.platform.isNode())
 const path = require('path');
 
 import * as RxDatabase from '../../dist/lib/index';
-import * as RxSchema from '../../dist/lib/rx-schema';
+import {
+    createRxSchema
+} from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -260,7 +262,7 @@ config.parallel('rx-database.test.js', () => {
                     schema: schemas.human
                 });
                 const colDoc = await db._collectionsPouch.get('human0-' + schemas.human.version);
-                const compareSchema = RxSchema.create(schemas.human);
+                const compareSchema = createRxSchema(schemas.human);
                 assert.deepEqual(compareSchema.normalized, colDoc.schema);
                 db.destroy();
             });

@@ -3,7 +3,10 @@
  * which should be easy to change
  */
 import randomToken from 'random-token';
-import RxError from './rx-error';
+import {
+    newRxError,
+    newRxTypeError
+} from './rx-error';
 import {
     default as deepClone
 } from 'clone';
@@ -14,7 +17,7 @@ import {
  */
 export function isLevelDown(adapter) {
     if (!adapter || typeof adapter.super_ !== 'function') {
-        throw RxError.newRxError('UT4', {
+        throw newRxError('UT4', {
             adapter
         });
     }
@@ -193,7 +196,7 @@ export function validateCouchDBString(name) {
         typeof name !== 'string' ||
         name.length === 0
     ) {
-        throw RxError.newRxTypeError('UT1', {
+        throw newRxTypeError('UT1', {
             name
         });
     }
@@ -209,7 +212,7 @@ export function validateCouchDBString(name) {
     const regStr = '^[a-z][_$a-z0-9]*$';
     const reg = new RegExp(regStr);
     if (!name.match(reg)) {
-        throw RxError.newRxError('UT2', {
+        throw newRxError('UT2', {
             regex: regStr,
             givenName: name,
         });
@@ -284,7 +287,7 @@ export function pouchReplicationFunction(pouch, {
     if (!pull && push) return pouch.replicate.to.bind(pouch);
     if (pull && !push) return pouch.replicate.from.bind(pouch);
     if (!pull && !push) {
-        throw RxError.newRxError('UT3', {
+        throw newRxError('UT3', {
             pull,
             push
         });

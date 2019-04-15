@@ -15,10 +15,6 @@ class DocCache {
     }
 }
 
-export function create() {
+export default function createDocCache() {
     return new DocCache();
 }
-
-export default {
-    create
-};
