@@ -17,7 +17,7 @@
     "node": "10.10.0",
     "request": "2.88.0",
     "request-promise-native": "1.0.7",
-    "ts-node": "8.0.3",
+    "ts-node": "8.1.0",
     "typescript": "3.4.3"
   }
 }
