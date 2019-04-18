@@ -161,7 +161,7 @@
     "rxjs": "6.4.0",
     "shelljs": "0.8.3",
     "ts-node": "8.1.0",
-    "typescript": "3.4.3",
+    "typescript": "3.4.4",
     "uglify-js": "3.5.4",
     "uglifyjs-webpack-plugin": "2.1.2",
     "walk-sync": "1.1.3",
