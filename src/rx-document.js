@@ -209,9 +209,12 @@ export const basePrototype = {
         return valueObj;
     },
 
-    toJSON(withRev = true) {
+    toJSON(withRevAndAttachments = true) {
         const data = clone(this._data);
-        if (!withRev) delete data._rev;
+        if (!withRevAndAttachments) {
+            delete data._rev;
+            delete data._attachments;
+        }
         return data;
     },
 

@@ -558,6 +558,36 @@ config.parallel('rx-document.test.js', () => {
             assert.equal(typeof json._rev, 'undefined');
             c.database.destroy();
         });
+        it('should not return _attachments if not wanted', async () => {
+            const db = await RxDatabase.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = AsyncTestUtil.clone(schemas.human);
+            schemaJson.attachments = {};
+            const c = await db.collection({
+                name: 'humans',
+                schema: schemaJson
+            });
+            const doc = await c.insert(schemaObjects.human());
+            await doc.putAttachment({
+                id: 'sampledata',
+                data: 'foo bar',
+                type: 'application/octet-stream'
+            });
+
+            const withMeta = doc.toJSON(true);
+            assert.ok(withMeta._rev);
+            assert.ok(withMeta._attachments);
+
+            const withoutMeta = doc.toJSON(false);
+            assert.equal(typeof withoutMeta._rev, 'undefined');
+            assert.equal(typeof withoutMeta._attachments, 'undefined');
+
+            db.destroy();
+        });
     });
     describe('pseudo-Proxy', () => {
         describe('get', () => {
