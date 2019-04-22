@@ -44,12 +44,12 @@ config.parallel('attachments.test.js', () => {
             const doc = await c.findOne().exec();
             const attachments = await Promise.all(
                 new Array(4)
-                .fill(0)
-                .map(() => doc.putAttachment({
-                    id: AsyncTestUtil.randomString(5) + '.txt',
-                    data: 'meow I am a kitty with a knife ' + AsyncTestUtil.randomString(5),
-                    type: 'text/plain'
-                }))
+                    .fill(0)
+                    .map(() => doc.putAttachment({
+                        id: AsyncTestUtil.randomString(5) + '.txt',
+                        data: 'meow I am a kitty with a knife ' + AsyncTestUtil.randomString(5),
+                        type: 'text/plain'
+                    }))
             );
             assert.equal(attachments.length, 4);
             assert.ok(attachments[1].id);
@@ -201,12 +201,12 @@ config.parallel('attachments.test.js', () => {
             const doc = await c.findOne().exec();
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => doc.putAttachment({
-                    id: AsyncTestUtil.randomString(5) + '.txt',
-                    data: 'meow I am a kitty with a knife ' + AsyncTestUtil.randomString(500),
-                    type: 'text/plain'
-                }))
+                    .fill(0)
+                    .map(() => doc.putAttachment({
+                        id: AsyncTestUtil.randomString(5) + '.txt',
+                        data: 'meow I am a kitty with a knife ' + AsyncTestUtil.randomString(500),
+                        type: 'text/plain'
+                    }))
             );
             const attachments = doc.allAttachments();
             assert.equal(attachments.length, 10);
@@ -482,6 +482,28 @@ config.parallel('attachments.test.js', () => {
             const data = await attachment2.getStringData();
             assert.equal(data, 'foo bar');
             await myDB.destroy();
+        });
+        it('calling allAttachments() fails when document has none', async () => {
+            const name = util.randomCouchString(10);
+            const db = await RxDatabase.create({
+                name,
+                adapter: 'memory',
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = AsyncTestUtil.clone(schemas.human);
+            schemaJson.attachments = {};
+            const c = await db.collection({
+                name: 'humans',
+                schema: schemaJson
+            });
+            await c.insert(schemaObjects.human());
+            const doc = await c.findOne().exec();
+
+            const attachments = await doc.allAttachments();
+            assert.equal(attachments.length, 0);
+
+            db.destroy();
         });
     });
 });

@@ -5,6 +5,7 @@
 Bugfixes:
   - Server-plugin did not work with absolute paths and leveldb
   - Vue threw `get is not a function` when a RxDocument was added to a component's state
+  - `RxDocument.allAttachments()` did throw an error when the document has no `RxAttachment`
 
 ### 8.0.7 (6 April 2019)
 

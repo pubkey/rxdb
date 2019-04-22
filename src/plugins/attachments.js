@@ -233,6 +233,10 @@ export function getAttachment(id) {
 export function allAttachments() {
     ensureSchemaSupportsAttachments(this);
     const docData = this._dataSync$.getValue();
+
+    // if there are no attachments, the field is missing
+    if(!docData._attachments) return [];
+
     return Object.keys(docData._attachments)
         .map(id => {
             return RxAttachment.fromPouchDocument(
