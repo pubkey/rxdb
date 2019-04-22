@@ -3,7 +3,7 @@
  */
 import objectPath from 'object-path';
 import { clone } from './util';
-import RxError from './rx-error';
+import { pluginMissing } from './rx-error';
 export var Crypter =
 /*#__PURE__*/
 function () {
@@ -22,7 +22,7 @@ function () {
   var _proto = Crypter.prototype;
 
   _proto._encryptValue = function _encryptValue() {
-    throw RxError.pluginMissing('encryption');
+    throw pluginMissing('encryption');
   }
   /**
    * decrypt and json-parse an encrypted value
@@ -33,7 +33,7 @@ function () {
   ;
 
   _proto._decryptValue = function _decryptValue() {
-    throw RxError.pluginMissing('encryption');
+    throw pluginMissing('encryption');
   };
 
   _proto.encrypt = function encrypt(obj) {

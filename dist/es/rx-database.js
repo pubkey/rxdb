@@ -6,10 +6,10 @@ import IdleQueue from 'custom-idle-queue';
 import BroadcastChannel from 'broadcast-channel';
 import PouchDB from './pouch-db';
 import { adapterObject, hash, validateCouchDBString, isLevelDown } from './util';
-import RxError from './rx-error';
+import { newRxError, pluginMissing } from './rx-error';
 import RxCollection from './rx-collection';
-import RxSchema from './rx-schema';
-import RxChangeEvent from './rx-change-event';
+import { createRxSchema } from './rx-schema';
+import { isInstanceOf as isInstanceOfRxChangeEvent, createChangeEvent, changeEventfromJSON } from './rx-change-event';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
@@ -44,7 +44,7 @@ function () {
 
     this.subject = new Subject();
     this.observable$ = this.subject.asObservable().pipe(filter(function (cEvent) {
-      return RxChangeEvent.isInstanceOf(cEvent);
+      return isInstanceOfRxChangeEvent(cEvent);
     }));
   }
 
@@ -158,7 +158,7 @@ function () {
                 break;
               }
 
-              throw RxError.newRxError('DB2', {
+              throw newRxError('DB2', {
                 name: args.name
               });
 
@@ -168,7 +168,7 @@ function () {
                 break;
               }
 
-              throw RxError.newRxError('DB3', {
+              throw newRxError('DB3', {
                 name: args.name
               });
 
@@ -178,7 +178,7 @@ function () {
                 break;
               }
 
-              throw RxError.newRxError('DB4', {
+              throw newRxError('DB4', {
                 name: args.name,
                 args: args
               });
@@ -191,12 +191,12 @@ function () {
                 break;
               }
 
-              throw RxError.newRxError('DB5', {
+              throw newRxError('DB5', {
                 name: args.name
               });
 
             case 14:
-              args.schema = RxSchema.create(args.schema); // check schemaHash
+              args.schema = createRxSchema(args.schema); // check schemaHash
 
               schemaHash = args.schema.hash;
               collectionDoc = null;
@@ -239,7 +239,7 @@ function () {
                 break;
               }
 
-              throw RxError.newRxError('DB6', {
+              throw newRxError('DB6', {
                 name: args.name,
                 previousSchemaHash: collectionDoc.schemaHash,
                 schemaHash: schemaHash
@@ -257,7 +257,7 @@ function () {
                 break;
               }
 
-              throw RxError.newRxError('DB7', {
+              throw newRxError('DB7', {
                 name: args.name
               });
 
@@ -287,7 +287,7 @@ function () {
               _context.t1 = _context["catch"](38);
 
             case 45:
-              cEvent = RxChangeEvent.create('RxDatabase.collection', this);
+              cEvent = createChangeEvent('RxDatabase.collection', this);
               cEvent.data.v = collection.name;
               cEvent.data.col = '_collections';
               this.$emit(cEvent);
@@ -393,7 +393,7 @@ function () {
   ;
 
   _proto.dump = function dump() {
-    throw RxError.pluginMissing('json-dump');
+    throw pluginMissing('json-dump');
   }
   /**
    * import json
@@ -402,7 +402,7 @@ function () {
   ;
 
   _proto.importDump = function importDump() {
-    throw RxError.pluginMissing('json-dump');
+    throw pluginMissing('json-dump');
   }
   /**
    * spawn server
@@ -410,7 +410,7 @@ function () {
   ;
 
   _proto.server = function server() {
-    throw RxError.pluginMissing('server');
+    throw pluginMissing('server');
   }
   /**
    * destroys the database-instance and all collections
@@ -558,7 +558,7 @@ function _isNameAdapterUsed(name, adapter) {
   });
 
   if (used) {
-    throw RxError.newRxError('DB8', {
+    throw newRxError('DB8', {
       name: name,
       adapter: adapter,
       link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
@@ -643,7 +643,7 @@ function _preparePasswordHash2() {
             return rxDatabase.destroy();
 
           case 16:
-            throw RxError.newRxError('DB1', {
+            throw newRxError('DB1', {
               passwordHash: hash(rxDatabase.password),
               existingPasswordHash: pwHashDoc.value
             });
@@ -794,7 +794,7 @@ function _prepareBroadcastChannel(rxDatabase) {
 
     if (msg.db === rxDatabase.token) return; // same db
 
-    var changeEvent = RxChangeEvent.fromJSON(msg.d);
+    var changeEvent = changeEventfromJSON(msg.d);
     rxDatabase.broadcastChannel$.next(changeEvent);
   }; // TODO only subscribe when sth is listening to the event-chain
 
@@ -869,7 +869,7 @@ export function create(_ref) {
 
   if (typeof adapter === 'string') {
     if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
-      throw RxError.newRxError('DB9', {
+      throw newRxError('DB9', {
         adapter: adapter
       });
     }
@@ -877,7 +877,7 @@ export function create(_ref) {
     isLevelDown(adapter);
 
     if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
-      throw RxError.newRxError('DB10', {
+      throw newRxError('DB10', {
         adapter: adapter
       });
     }
@@ -1020,6 +1020,5 @@ export default {
   checkAdapter: checkAdapter,
   isInstanceOf: isInstanceOf,
   RxDatabase: RxDatabase,
-  RxSchema: RxSchema,
   dbCount: dbCount
 };

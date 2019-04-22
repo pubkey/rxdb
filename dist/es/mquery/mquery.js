@@ -3,7 +3,7 @@
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
 import { isObject, merge as _merge, mergeClone } from './mquery_utils';
-import RxError from '../rx-error';
+import { newRxTypeError, newRxError } from '../rx-error';
 import { clone as _clone } from '../util';
 
 var MQuery =
@@ -62,7 +62,7 @@ function () {
     }
 
     if ('object' === type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
-    throw RxError.newRxTypeError('MQ1', {
+    throw newRxTypeError('MQ1', {
       path: arguments[0]
     });
   }
@@ -241,7 +241,7 @@ function () {
   ;
 
   _proto.elemMatch = function elemMatch() {
-    if (null === arguments[0]) throw RxError.newRxTypeError('MQ2');
+    if (null === arguments[0]) throw newRxTypeError('MQ2');
     var fn;
     var path;
     var criteria;
@@ -262,7 +262,7 @@ function () {
     } else if (arguments[1] && isObject(arguments[1])) {
       path = arguments[0];
       criteria = arguments[1];
-    } else throw RxError.newRxTypeError('MQ2');
+    } else throw newRxTypeError('MQ2');
 
     if (fn) {
       criteria = new MQuery();
@@ -329,7 +329,7 @@ function () {
       return this;
     }
 
-    throw RxError.newRxTypeError('MQ3', {
+    throw newRxTypeError('MQ3', {
       args: arguments
     });
   }
@@ -347,7 +347,7 @@ function () {
     if (!source) return this;
 
     if (!MQuery.canMerge(source)) {
-      throw RxError.newRxTypeError('MQ4', {
+      throw newRxTypeError('MQ4', {
         source: source
       });
     }
@@ -405,7 +405,7 @@ function () {
 
   _proto._ensurePath = function _ensurePath(method) {
     if (!this._path) {
-      throw RxError.newRxError('MQ5', {
+      throw newRxError('MQ5', {
         method: method
       });
     }
@@ -446,7 +446,7 @@ function () {
 
 function push(opts, field, value) {
   if (Array.isArray(opts.sort)) {
-    throw RxError.newRxTypeError('MQ6', {
+    throw newRxTypeError('MQ6', {
       opts: opts,
       field: field,
       value: value
@@ -466,7 +466,7 @@ function push(opts, field, value) {
 
   if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
     if (Array.isArray(value)) value = '[' + value + ']';
-    throw RxError.newRxTypeError('MQ7', {
+    throw newRxTypeError('MQ7', {
       field: field,
       value: value
     });
@@ -482,7 +482,7 @@ function _pushArr(opts, field, value) {
   opts.sort = opts.sort || [];
 
   if (!Array.isArray(opts.sort)) {
-    throw RxError.newRxTypeError('MQ8', {
+    throw newRxTypeError('MQ8', {
       opts: opts,
       field: field,
       value: value

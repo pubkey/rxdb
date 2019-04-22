@@ -5,7 +5,7 @@
  */
 import { encrypt as cryptoAes_encrypt, decrypt as cryptoAes_decrypt } from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
-import RxError from '../rx-error';
+import { newRxTypeError, newRxError } from '../rx-error';
 var minPassLength = 8;
 export function encrypt(value, password) {
   var encrypted = cryptoAes_encrypt(value, password);
@@ -39,13 +39,13 @@ export var prototypes = {
 export var overwritable = {
   validatePassword: function validatePassword(password) {
     if (password && typeof password !== 'string') {
-      throw RxError.newRxTypeError('EN1', {
+      throw newRxTypeError('EN1', {
         password: password
       });
     }
 
     if (password && password.length < minPassLength) {
-      throw RxError.newRxError('EN2', {
+      throw newRxError('EN2', {
         minPassLength: minPassLength,
         password: password
       });

@@ -9,7 +9,7 @@ exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _isMyJsonValid = _interopRequireDefault(require("is-my-json-valid"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _util = require("../util");
 
@@ -41,7 +41,7 @@ function _getValidator() {
     var schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
 
     if (!schemaPart) {
-      throw _rxError["default"].newRxError('VD1', {
+      throw (0, _rxError.newRxError)('VD1', {
         schemaPath: schemaPath
       });
     }
@@ -67,7 +67,7 @@ var validate = function validate(obj) {
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
-    throw _rxError["default"].newRxError('VD2', {
+    throw (0, _rxError.newRxError)('VD2', {
       errors: useValidator.errors,
       schemaPath: schemaPath,
       obj: obj,

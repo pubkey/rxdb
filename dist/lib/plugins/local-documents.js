@@ -21,11 +21,11 @@ var _rxDatabase = _interopRequireDefault(require("../rx-database"));
 
 var _rxCollection = _interopRequireDefault(require("../rx-collection"));
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
+var _rxChangeEvent = require("../rx-change-event");
 
 var _docCache = _interopRequireDefault(require("../doc-cache"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _util = require("../util");
 
@@ -40,7 +40,7 @@ var DOC_CACHE_BY_PARENT = new WeakMap();
 
 var _getDocCache = function _getDocCache(parent) {
   if (!DOC_CACHE_BY_PARENT.has(parent)) {
-    DOC_CACHE_BY_PARENT.set(parent, _docCache["default"].create());
+    DOC_CACHE_BY_PARENT.set(parent, (0, _docCache["default"])());
   }
 
   return DOC_CACHE_BY_PARENT.get(parent);
@@ -137,7 +137,7 @@ var RxLocalDocumentPrototype = {
 
   get allAttachments$() {
     // this is overwritten here because we cannot re-set getters on the prototype
-    throw _rxError["default"].newRxError('LD1', {
+    throw (0, _rxError.newRxError)('LD1', {
       document: this
     });
   },
@@ -161,7 +161,7 @@ var RxLocalDocumentPrototype = {
     if (!this._data) return undefined;
 
     if (typeof objPath !== 'string') {
-      throw _rxError["default"].newRxTypeError('LD2', {
+      throw (0, _rxError.newRxTypeError)('LD2', {
         objPath: objPath
       });
     }
@@ -173,12 +173,12 @@ var RxLocalDocumentPrototype = {
   },
   get$: function get$(path) {
     if (path.includes('.item.')) {
-      throw _rxError["default"].newRxError('LD3', {
+      throw (0, _rxError.newRxError)('LD3', {
         path: path
       });
     }
 
-    if (path === this.primaryPath) throw _rxError["default"].newRxError('LD4');
+    if (path === this.primaryPath) throw (0, _rxError.newRxError)('LD4');
     return this._dataSync$.pipe((0, _operators.map)(function (data) {
       return _objectPath["default"].get(data, path);
     }), (0, _operators.distinctUntilChanged)()).asObservable();
@@ -193,7 +193,7 @@ var RxLocalDocumentPrototype = {
     }
 
     if (objPath === '_id') {
-      throw _rxError["default"].newRxError('LD5', {
+      throw (0, _rxError.newRxError)('LD5', {
         objPath: objPath,
         value: value
       });
@@ -225,7 +225,7 @@ var RxLocalDocumentPrototype = {
 
               this._dataSync$.next(newData);
 
-              changeEvent = _rxChangeEvent["default"].create('UPDATE', _rxDatabase["default"].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection["default"].isInstanceOf(this.parent) ? this.parent : null, this, (0, _util.clone)(this._data), true);
+              changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', _rxDatabase["default"].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection["default"].isInstanceOf(this.parent) ? this.parent : null, this, (0, _util.clone)(this._data), true);
               this.$emit(changeEvent);
 
             case 9:
@@ -253,7 +253,7 @@ var RxLocalDocumentPrototype = {
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this2.parent)["delete"](_this2.id);
 
-      var changeEvent = _rxChangeEvent["default"].create('REMOVE', _rxDatabase["default"].isInstanceOf(_this2.parent) ? _this2.parent : _this2.parent.database, _rxCollection["default"].isInstanceOf(_this2.parent) ? _this2.parent : null, _this2, (0, _util.clone)(_this2._data), true);
+      var changeEvent = (0, _rxChangeEvent.createChangeEvent)('REMOVE', _rxDatabase["default"].isInstanceOf(_this2.parent) ? _this2.parent : _this2.parent.database, _rxCollection["default"].isInstanceOf(_this2.parent) ? _this2.parent : null, _this2, (0, _util.clone)(_this2._data), true);
 
       _this2.$emit(changeEvent);
     });
@@ -279,7 +279,7 @@ var _init = function _init() {
 
   var getThrowingFun = function getThrowingFun(k) {
     return function () {
-      throw _rxError["default"].newRxError('LD6', {
+      throw (0, _rxError.newRxError)('LD6', {
         functionName: k
       });
     };
@@ -321,7 +321,7 @@ var insertLocal = function insertLocal(id, data) {
   data = (0, _util.clone)(data);
   return this.getLocal(id).then(function (existing) {
     if (existing) {
-      throw _rxError["default"].newRxError('LD7', {
+      throw (0, _rxError.newRxError)('LD7', {
         id: id,
         data: data
       });

@@ -48,10 +48,10 @@ function () {
 
   return RxChangeEvent;
 }();
-export function fromJSON(data) {
+export function changeEventfromJSON(data) {
   return new RxChangeEvent(data);
 }
-export function fromPouchChange(changeDoc, collection) {
+export function changeEventfromPouchChange(changeDoc, collection) {
   var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
   if (changeDoc._deleted) op = 'REMOVE'; // decompress / primarySwap
 
@@ -67,7 +67,7 @@ export function fromPouchChange(changeDoc, collection) {
   };
   return new RxChangeEvent(data);
 }
-export function create(op, database, collection, doc, value) {
+export function createChangeEvent(op, database, collection, doc, value) {
   var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
   var data = {
     op: op,
@@ -84,9 +84,3 @@ export function create(op, database, collection, doc, value) {
 export function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;
 }
-export default {
-  fromJSON: fromJSON,
-  fromPouchChange: fromPouchChange,
-  create: create,
-  isInstanceOf: isInstanceOf
-};

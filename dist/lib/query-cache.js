@@ -3,8 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = void 0;
+exports["default"] = createQueryCache;
 
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
@@ -44,11 +43,6 @@ function () {
   return QueryCache;
 }();
 
-function create() {
+function createQueryCache() {
   return new QueryCache();
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;

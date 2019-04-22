@@ -3,8 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = void 0;
+exports["default"] = createChangeEventBuffer;
 
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
@@ -131,11 +130,6 @@ function () {
   return ChangeEventBuffer;
 }();
 
-function create(collection) {
+function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;

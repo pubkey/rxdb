@@ -78,7 +78,6 @@ export default {
   isRxDocument: isRxDocument,
   isRxQuery: isRxQuery,
   isRxSchema: isRxSchema,
-  RxSchema: RxSchema,
   PouchDB: PouchDB,
   QueryChangeDetector: QueryChangeDetector,
   RxDatabase: RxDatabase

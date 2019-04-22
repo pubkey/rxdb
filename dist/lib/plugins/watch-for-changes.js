@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,7 +12,7 @@ var _operators = require("rxjs/operators");
 
 var _util = require("../util");
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
+var _rxChangeEvent = require("../rx-change-event");
 
 /**
  * listens to changes of the internal pouchdb
@@ -73,9 +71,7 @@ function _handleSingleChange(collection, change) {
     var docData = change.doc; // already handled by internal event-stream
 
     if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-
-    var cE = _rxChangeEvent["default"].fromPouchChange(docData, collection);
-
+    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection);
     collection.$emit(cE);
     return true;
   });

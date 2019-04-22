@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9,11 +7,11 @@ exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = 
 
 var _util = require("../util");
 
-var _rxQuery = _interopRequireDefault(require("../rx-query"));
+var _rxQuery = require("../rx-query");
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
+var _rxChangeEvent = require("../rx-change-event");
 
 /**
  * this plugin adds the json export/import capabilities to RxDB
@@ -69,7 +67,7 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   });
 
   if (missingCollections.length > 0) {
-    throw _rxError["default"].newRxError('JD1', {
+    throw (0, _rxError.newRxError)('JD1', {
       missingCollections: missingCollections
     });
   }
@@ -95,8 +93,7 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = _rxQuery["default"].create('find', {}, this);
-
+  var query = (0, _rxQuery.createRxQuery)('find', {}, this);
   return this._pouchFind(query, null, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
@@ -115,7 +112,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
 
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
-    throw _rxError["default"].newRxError('JD2', {
+    throw (0, _rxError.newRxError)('JD2', {
       schemaHash: exportedJSON.schemaHash,
       own: this.schema.hash
     });
@@ -123,7 +120,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
 
 
   if (exportedJSON.encrypted && exportedJSON.passwordHash !== (0, _util.hash)(this.database.password)) {
-    throw _rxError["default"].newRxError('JD3', {
+    throw (0, _rxError.newRxError)('JD3', {
       passwordHash: exportedJSON.passwordHash,
       own: (0, _util.hash)(this.database.password)
     });
@@ -140,8 +137,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
     return _this3._pouchPut(doc).then(function () {
       var primary = doc[_this3.schema.primaryPath]; // emit changeEvents
 
-      var emitEvent = _rxChangeEvent["default"].create('INSERT', _this3.database, _this3, null, doc);
-
+      var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this3.database, _this3, null, doc);
       emitEvent.data.doc = primary;
 
       _this3.$emit(emitEvent);

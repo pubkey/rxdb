@@ -17,7 +17,7 @@ var _cors = _interopRequireDefault(require("cors"));
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _core = _interopRequireDefault(require("../core"));
 
@@ -121,11 +121,10 @@ function spawnServer(_ref) {
 
 function ensureNoMoreCollections(args) {
   if (DBS_WITH_SERVER.has(args.database)) {
-    var err = _rxError["default"].newRxError('S1', {
+    var err = (0, _rxError.newRxError)('S1', {
       collection: args.name,
       database: args.database.name
     });
-
     throw err;
   }
 }

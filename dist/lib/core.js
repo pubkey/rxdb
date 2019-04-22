@@ -9,11 +9,11 @@ exports["default"] = exports.isRxSchema = exports.isRxQuery = exports.isRxDocume
 
 var _rxDatabase = _interopRequireDefault(require("./rx-database"));
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
 var _rxDocument = _interopRequireDefault(require("./rx-document"));
 
-var _rxQuery = _interopRequireDefault(require("./rx-query"));
+var _rxQuery = require("./rx-query");
 
 var _rxCollection = _interopRequireDefault(require("./rx-collection"));
 
@@ -33,7 +33,7 @@ var removeDatabase = _rxDatabase["default"].removeDatabase;
 exports.removeDatabase = removeDatabase;
 var checkAdapter = _rxDatabase["default"].checkAdapter;
 exports.checkAdapter = checkAdapter;
-var plugin = _plugin["default"].addPlugin;
+var plugin = _plugin["default"];
 exports.plugin = plugin;
 var isRxDatabase = _rxDatabase["default"].isInstanceOf;
 exports.isRxDatabase = isRxDatabase;
@@ -43,9 +43,9 @@ var isRxCollection = _rxCollection["default"].isInstanceOf;
 exports.isRxCollection = isRxCollection;
 var isRxDocument = _rxDocument["default"].isInstanceOf;
 exports.isRxDocument = isRxDocument;
-var isRxQuery = _rxQuery["default"].isInstanceOf;
+var isRxQuery = _rxQuery.isInstanceOf;
 exports.isRxQuery = isRxQuery;
-var isRxSchema = _rxSchema["default"].isInstanceOf;
+var isRxSchema = _rxSchema.isInstanceOf;
 exports.isRxSchema = isRxSchema;
 var _default = {
   create: create,
@@ -58,7 +58,6 @@ var _default = {
   isRxDocument: isRxDocument,
   isRxQuery: isRxQuery,
   isRxSchema: isRxSchema,
-  RxSchema: _rxSchema["default"],
   PouchDB: _pouchDb["default"],
   QueryChangeDetector: _queryChangeDetector["default"],
   RxDatabase: _rxDatabase["default"]

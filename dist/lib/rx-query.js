@@ -5,9 +5,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
+exports.createRxQuery = createRxQuery;
 exports.isInstanceOf = isInstanceOf;
-exports["default"] = exports.RxQuery = void 0;
+exports.RxQuery = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -25,7 +25,7 @@ var _util = require("./util");
 
 var _queryChangeDetector = _interopRequireDefault(require("./query-change-detector"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
@@ -125,7 +125,7 @@ function () {
         break;
 
       default:
-        throw _rxError["default"].newRxError('QU1', {
+        throw (0, _rxError.newRxError)('QU1', {
           op: this.op
         });
     }
@@ -204,7 +204,7 @@ function () {
 
     if (options.limit) {
       if (typeof options.limit !== 'number') {
-        throw _rxError["default"].newRxTypeError('QU2', {
+        throw (0, _rxError.newRxTypeError)('QU2', {
           limit: options.limit
         });
       }
@@ -214,7 +214,7 @@ function () {
 
     if (options.skip) {
       if (typeof options.skip !== 'number') {
-        throw _rxError["default"].newRxTypeError('QU3', {
+        throw (0, _rxError.newRxTypeError)('QU3', {
           skip: options.skip
         });
       }
@@ -299,7 +299,7 @@ function () {
   ;
 
   _proto.update = function update() {
-    throw _rxError["default"].pluginMissing('update');
+    throw (0, _rxError.pluginMissing)('update');
   }
   /**
    * regex cannot run on primary _id
@@ -311,7 +311,7 @@ function () {
     var clonedThis = this._clone();
 
     if (this.mquery._path === this.collection.schema.primaryPath) {
-      throw _rxError["default"].newRxError('QU4', {
+      throw (0, _rxError.newRxError)('QU4', {
         path: this.mquery._path
       });
     }
@@ -345,7 +345,7 @@ function () {
   };
 
   _proto.limit = function limit(amount) {
-    if (this.op === 'findOne') throw _rxError["default"].newRxError('QU6');else {
+    if (this.op === 'findOne') throw (0, _rxError.newRxError)('QU6');else {
       var clonedThis = this._clone();
 
       clonedThis.mquery.limit(amount);
@@ -443,16 +443,16 @@ function protoMerge(rxQueryProto, mQueryProtoKeys) {
 
 var protoMerged = false;
 
-function create(op, queryObj, collection) {
+function createRxQuery(op, queryObj, collection) {
   // checks
   if (queryObj && (0, _typeof2["default"])(queryObj) !== 'object') {
-    throw _rxError["default"].newRxTypeError('QU7', {
+    throw (0, _rxError.newRxTypeError)('QU7', {
       queryObj: queryObj
     });
   }
 
   if (Array.isArray(queryObj)) {
-    throw _rxError["default"].newRxTypeError('QU8', {
+    throw (0, _rxError.newRxTypeError)('QU8', {
       queryObj: queryObj
     });
   }
@@ -475,7 +475,7 @@ function create(op, queryObj, collection) {
 
 
 function _throwNotInSchema(key) {
-  throw _rxError["default"].newRxError('QU5', {
+  throw (0, _rxError.newRxError)('QU5', {
     key: key
   });
 }
@@ -611,10 +611,3 @@ function __ensureEqual(rxQuery) {
 function isInstanceOf(obj) {
   return obj instanceof RxQuery;
 }
-
-var _default = {
-  create: create,
-  RxQuery: RxQuery,
-  isInstanceOf: isInstanceOf
-};
-exports["default"] = _default;

@@ -3,10 +3,10 @@
  * basically it changes the internal prototypes
  * by passing them to the plugins-functions
  */
-import RxSchema from './rx-schema';
+import { RxSchema } from './rx-schema';
 import Crypter from './crypter';
 import { basePrototype as RxDocumentPrototype } from './rx-document';
-import RxQuery from './rx-query';
+import { RxQuery } from './rx-query';
 import RxCollection from './rx-collection';
 import RxDatabase from './rx-database';
 import PouchDB from './pouch-db';
@@ -18,15 +18,15 @@ import { HOOKS } from './hooks';
  */
 
 var PROTOTYPES = {
-  RxSchema: RxSchema.RxSchema.prototype,
+  RxSchema: RxSchema.prototype,
   Crypter: Crypter.Crypter.prototype,
   RxDocument: RxDocumentPrototype,
-  RxQuery: RxQuery.RxQuery.prototype,
+  RxQuery: RxQuery.prototype,
   RxCollection: RxCollection.RxCollection.prototype,
   RxDatabase: RxDatabase.RxDatabase.prototype
 };
 var ADDED_PLUGINS = new Set();
-export function addPlugin(plugin) {
+export default function addPlugin(plugin) {
   // do nothing if added before
   if (ADDED_PLUGINS.has(plugin)) return;else ADDED_PLUGINS.add(plugin);
 
@@ -63,7 +63,3 @@ export function addPlugin(plugin) {
     });
   }
 }
-export default {
-  addPlugin: addPlugin,
-  overwritable: overwritable
-};

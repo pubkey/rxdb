@@ -15,10 +15,10 @@ import RxCollection from '../rx-collection';
 import { clone, randomCouchString, adapterObject } from '../util';
 import Core from '../core';
 import Crypter from '../crypter';
-import ChangeEventBuffer from '../change-event-buffer';
-import RxSchema from '../rx-schema';
+import createChangeEventBuffer from '../change-event-buffer';
+import { createRxSchema } from '../rx-schema';
 import PouchDB from '../pouch-db';
-import RxError from '../rx-error'; // add the watch-for-changes-plugin
+import { newRxError } from '../rx-error'; // add the watch-for-changes-plugin
 
 import RxDBWatchForChangesPlugin from '../plugins/watch-for-changes';
 Core.plugin(RxDBWatchForChangesPlugin);
@@ -71,7 +71,7 @@ function (_RxCollection$RxColle) {
     });
     _this.pouch = new PouchDB('rxdb-in-memory-' + randomCouchString(10), adapterObject('memory'), {});
     _this._observable$ = new Subject();
-    _this._changeEventBuffer = ChangeEventBuffer.create(_assertThisInitialized(_this));
+    _this._changeEventBuffer = createChangeEventBuffer(_assertThisInitialized(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
     _this._oldPouchPut = parentProto._pouchPut.bind(_assertThisInitialized(_this));
     _this._nonPersistentRevisions = new Set();
@@ -241,7 +241,7 @@ function (_RxCollection$RxColle) {
   ;
 
   _proto.sync = function sync() {
-    throw RxError.newRxError('IM2');
+    throw newRxError('IM2');
   };
 
   return InMemoryRxCollection;
@@ -272,7 +272,7 @@ function toCleanSchema(rxSchema) {
   };
 
   removeEncryption(newSchemaJson, newSchemaJson);
-  return RxSchema.create(newSchemaJson);
+  return createRxSchema(newSchemaJson);
 }
 /**
  * replicates all documents from the parent to the inMemoryCollection
@@ -466,7 +466,7 @@ function _spawnInMemory() {
               break;
             }
 
-            throw RxError.newRxError('IM1');
+            throw newRxError('IM1');
 
           case 4:
             if (!collectionCacheMap.has(this)) {

@@ -32,7 +32,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _randomToken = _interopRequireDefault(require("random-token"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -51,7 +51,7 @@ var _isElectron = _interopRequireDefault(require("is-electron"));
  */
 function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
-    throw _rxError["default"].newRxError('UT4', {
+    throw (0, _rxError.newRxError)('UT4', {
       adapter: adapter
     });
   }
@@ -234,7 +234,7 @@ function trimDots(str) {
 
 function validateCouchDBString(name) {
   if (typeof name !== 'string' || name.length === 0) {
-    throw _rxError["default"].newRxTypeError('UT1', {
+    throw (0, _rxError.newRxTypeError)('UT1', {
       name: name
     });
   } // do not check, if foldername is given
@@ -247,7 +247,7 @@ function validateCouchDBString(name) {
   var reg = new RegExp(regStr);
 
   if (!name.match(reg)) {
-    throw _rxError["default"].newRxError('UT2', {
+    throw (0, _rxError.newRxError)('UT2', {
       regex: regStr,
       givenName: name
     });
@@ -320,7 +320,7 @@ function pouchReplicationFunction(pouch, _ref) {
   if (pull && !push) return pouch.replicate.from.bind(pouch);
 
   if (!pull && !push) {
-    throw _rxError["default"].newRxError('UT3', {
+    throw (0, _rxError.newRxError)('UT3', {
       pull: pull,
       push: push
     });

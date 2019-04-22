@@ -7,8 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports._getOldCollections = _getOldCollections;
 exports.mustMigrate = mustMigrate;
-exports.create = create;
-exports["default"] = void 0;
+exports.createDataMigrator = createDataMigrator;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -20,15 +19,15 @@ var _pouchDb = _interopRequireDefault(require("./pouch-db"));
 
 var _util = require("./util");
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
-var _hooks = _interopRequireDefault(require("./hooks"));
+var _hooks = require("./hooks");
 
 var _rxjs = require("rxjs");
 
@@ -58,7 +57,7 @@ function () {
     var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrated) throw _rxError["default"].newRxError('DM1');
+    if (this._migrated) throw (0, _rxError.newRxError)('DM1');
     this._migrated = true;
     var state = {
       done: false,
@@ -339,7 +338,7 @@ function () {
             case 15:
               _context4.prev = 15;
               _context4.t0 = _context4["catch"](11);
-              throw _rxError["default"].newRxError('DM2', {
+              throw (0, _rxError.newRxError)('DM2', {
                 fromVersion: this.version,
                 toVersion: this.newestCollection.schema.version,
                 finalDoc: doc
@@ -396,8 +395,7 @@ function () {
                 break;
               }
 
-              _hooks["default"].runPluginHooks('preMigrateDocument', action); // save to newest collection
-
+              (0, _hooks.runPluginHooks)('preMigrateDocument', action); // save to newest collection
 
               delete migrated._rev;
               _context5.next = 9;
@@ -408,7 +406,7 @@ function () {
               action.res = res;
               action.type = 'success';
               _context5.next = 14;
-              return _hooks["default"].runAsyncPluginHooks('postMigrateDocument', action);
+              return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
 
             case 14:
               _context5.next = 17;
@@ -469,7 +467,7 @@ function () {
     var _this5 = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrate) throw _rxError["default"].newRxError('DM3');
+    if (this._migrate) throw (0, _rxError.newRxError)('DM3');
     this._migrate = true;
     var observer = new _rxjs.Subject();
     /**
@@ -559,7 +557,7 @@ function () {
     get: function get() {
       if (!this._schema) {
         //            delete this.schemaObj._id;
-        this._schema = _rxSchema["default"].create(this.schemaObj, false);
+        this._schema = (0, _rxSchema.createRxSchema)(this.schemaObj, false);
       }
 
       return this._schema;
@@ -623,11 +621,6 @@ function mustMigrate(dataMigrator) {
   });
 }
 
-function create(newestCollection, migrationStrategies) {
+function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;

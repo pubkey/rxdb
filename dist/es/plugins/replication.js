@@ -11,7 +11,7 @@ import { skipUntil } from 'rxjs/operators';
 import { promiseWait, clone, pouchReplicationFunction } from '../util';
 import Core from '../core';
 import RxCollection from '../rx-collection';
-import RxError from '../rx-error';
+import { newRxError } from '../rx-error';
 import PouchDB from '../pouch-db';
 import RxDBWatchForChangesPlugin from './watch-for-changes'; // add pouchdb-replication-plugin
 
@@ -61,7 +61,7 @@ function () {
 }();
 
 function setPouchEventEmitter(rxRepState, evEmitter) {
-  if (rxRepState._pouchEventEmitterObject) throw RxError.newRxError('RC1');
+  if (rxRepState._pouchEventEmitterObject) throw newRxError('RC1');
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
   rxRepState._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
@@ -218,7 +218,7 @@ export function sync(_ref2) {
   options = clone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (PouchDB.isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
-    throw RxError.newRxError('RC3', {
+    throw newRxError('RC3', {
       database: this.database.name,
       collection: this.name
     });
@@ -231,7 +231,7 @@ export function sync(_ref2) {
   }
 
   if (query && this !== query.collection) {
-    throw RxError.newRxError('RC2', {
+    throw newRxError('RC2', {
       query: query
     });
   }

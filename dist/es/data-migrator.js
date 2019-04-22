@@ -8,11 +8,11 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
  */
 import PouchDB from './pouch-db';
 import { clone } from './util';
-import RxSchema from './rx-schema';
+import { createRxSchema } from './rx-schema';
 import Crypter from './crypter';
-import RxError from './rx-error';
+import { newRxError } from './rx-error';
 import overwritable from './overwritable';
-import hooks from './hooks';
+import { runPluginHooks, runAsyncPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 
 var DataMigrator =
@@ -37,7 +37,7 @@ function () {
     var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrated) throw RxError.newRxError('DM1');
+    if (this._migrated) throw newRxError('DM1');
     this._migrated = true;
     var state = {
       done: false,
@@ -319,7 +319,7 @@ function () {
             case 15:
               _context4.prev = 15;
               _context4.t0 = _context4["catch"](11);
-              throw RxError.newRxError('DM2', {
+              throw newRxError('DM2', {
                 fromVersion: this.version,
                 toVersion: this.newestCollection.schema.version,
                 finalDoc: doc
@@ -376,7 +376,7 @@ function () {
                 break;
               }
 
-              hooks.runPluginHooks('preMigrateDocument', action); // save to newest collection
+              runPluginHooks('preMigrateDocument', action); // save to newest collection
 
               delete migrated._rev;
               _context5.next = 9;
@@ -387,7 +387,7 @@ function () {
               action.res = res;
               action.type = 'success';
               _context5.next = 14;
-              return hooks.runAsyncPluginHooks('postMigrateDocument', action);
+              return runAsyncPluginHooks('postMigrateDocument', action);
 
             case 14:
               _context5.next = 17;
@@ -448,7 +448,7 @@ function () {
     var _this5 = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrate) throw RxError.newRxError('DM3');
+    if (this._migrate) throw newRxError('DM3');
     this._migrate = true;
     var observer = new Subject();
     /**
@@ -539,7 +539,7 @@ function () {
     get: function get() {
       if (!this._schema) {
         //            delete this.schemaObj._id;
-        this._schema = RxSchema.create(this.schemaObj, false);
+        this._schema = createRxSchema(this.schemaObj, false);
       }
 
       return this._schema;
@@ -602,9 +602,6 @@ export function mustMigrate(dataMigrator) {
     if (oldCols.length === 0) return false;else return true;
   });
 }
-export function create(newestCollection, migrationStrategies) {
+export function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
-export default {
-  create: create
-};

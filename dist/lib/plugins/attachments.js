@@ -18,17 +18,17 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _operators = require("rxjs/operators");
 
-var _rxChangeEvent = _interopRequireDefault(require("./../rx-change-event"));
+var _rxChangeEvent = require("./../rx-change-event");
 
 var _util = require("./../util");
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonID;
 
   if (!schemaJson.attachments) {
-    throw _rxError["default"].newRxError('AT1', {
+    throw (0, _rxError.newRxError)('AT1', {
       link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
     });
   }
@@ -38,8 +38,7 @@ function resyncRxDocument(doc) {
   return doc.collection.pouch.get(doc.primary).then(function (docData) {
     var data = doc.collection._handleFromPouch(docData);
 
-    var changeEvent = _rxChangeEvent["default"].create('UPDATE', doc.collection.database, doc.collection, doc, data);
-
+    var changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', doc.collection.database, doc.collection, doc, data);
     doc.$emit(changeEvent);
   });
 }
@@ -332,8 +331,10 @@ function allAttachments() {
 
   ensureSchemaSupportsAttachments(this);
 
-  var docData = this._dataSync$.getValue();
+  var docData = this._dataSync$.getValue(); // if there are no attachments, the field is missing
 
+
+  if (!docData._attachments) return [];
   return Object.keys(docData._attachments).map(function (id) {
     return RxAttachment.fromPouchDocument(id, docData._attachments[id], _this2);
   });

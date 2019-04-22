@@ -36,11 +36,11 @@ var _crypter = _interopRequireDefault(require("../crypter"));
 
 var _changeEventBuffer = _interopRequireDefault(require("../change-event-buffer"));
 
-var _rxSchema = _interopRequireDefault(require("../rx-schema"));
+var _rxSchema = require("../rx-schema");
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _watchForChanges = _interopRequireDefault(require("../plugins/watch-for-changes"));
 
@@ -103,7 +103,7 @@ function (_RxCollection$RxColle) {
     });
     _this.pouch = new _pouchDb["default"]('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'), {});
     _this._observable$ = new _rxjs.Subject();
-    _this._changeEventBuffer = _changeEventBuffer["default"].create((0, _assertThisInitialized2["default"])(_this));
+    _this._changeEventBuffer = (0, _changeEventBuffer["default"])((0, _assertThisInitialized2["default"])(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
     _this._oldPouchPut = parentProto._pouchPut.bind((0, _assertThisInitialized2["default"])(_this));
     _this._nonPersistentRevisions = new Set();
@@ -273,7 +273,7 @@ function (_RxCollection$RxColle) {
   ;
 
   _proto.sync = function sync() {
-    throw _rxError["default"].newRxError('IM2');
+    throw (0, _rxError.newRxError)('IM2');
   };
 
   return InMemoryRxCollection;
@@ -307,7 +307,7 @@ function toCleanSchema(rxSchema) {
   };
 
   removeEncryption(newSchemaJson, newSchemaJson);
-  return _rxSchema["default"].create(newSchemaJson);
+  return (0, _rxSchema.createRxSchema)(newSchemaJson);
 }
 /**
  * replicates all documents from the parent to the inMemoryCollection
@@ -504,7 +504,7 @@ function _spawnInMemory() {
               break;
             }
 
-            throw _rxError["default"].newRxError('IM1');
+            throw (0, _rxError.newRxError)('IM1');
 
           case 4:
             if (!collectionCacheMap.has(this)) {

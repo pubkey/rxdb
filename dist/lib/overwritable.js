@@ -1,13 +1,11 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 /**
  * functions that can or should be overwritten by plugins
@@ -21,7 +19,7 @@ var funs = {
    * @return {void}
    */
   validatePassword: function validatePassword() {
-    throw _rxError["default"].pluginMissing('encryption');
+    throw (0, _rxError.pluginMissing)('encryption');
   },
 
   /**
@@ -30,7 +28,7 @@ var funs = {
    * @return {KeyCompressor}
    */
   createKeyCompressor: function createKeyCompressor() {
-    throw _rxError["default"].pluginMissing('key-compression');
+    throw (0, _rxError.pluginMissing)('key-compression');
   },
 
   /**
@@ -39,7 +37,7 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw _rxError["default"].pluginMissing('leaderelection');
+    throw (0, _rxError.pluginMissing)('leaderelection');
   },
 
   /**
@@ -47,7 +45,7 @@ var funs = {
    * @return {any} adapter
    */
   checkAdapter: function checkAdapter() {
-    throw _rxError["default"].pluginMissing('adapter-check');
+    throw (0, _rxError.pluginMissing)('adapter-check');
   },
 
   /**

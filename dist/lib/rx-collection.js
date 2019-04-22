@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
@@ -27,15 +25,15 @@ var _util = require("./util");
 
 var _rxDocument = _interopRequireDefault(require("./rx-document"));
 
-var _rxQuery = _interopRequireDefault(require("./rx-query"));
+var _rxQuery = require("./rx-query");
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
-var _rxChangeEvent = _interopRequireDefault(require("./rx-change-event"));
+var _rxChangeEvent = require("./rx-change-event");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
-var _dataMigrator = _interopRequireWildcard(require("./data-migrator"));
+var _dataMigrator = require("./data-migrator");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
 
@@ -73,8 +71,8 @@ function () {
     this.options = options;
     this._atomicUpsertQueues = new Map();
     this._statics = statics;
-    this._docCache = _docCache["default"].create();
-    this._queryCache = _queryCache["default"].create(); // defaults
+    this._docCache = (0, _docCache["default"])();
+    this._queryCache = (0, _queryCache["default"])(); // defaults
 
     this.synced = false;
     this.hooks = {};
@@ -101,12 +99,12 @@ function () {
 
     var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
-    this._dataMigrator = _dataMigrator["default"].create(this, this._migrationStrategies);
+    this._dataMigrator = (0, _dataMigrator.createDataMigrator)(this, this._migrationStrategies);
     this._crypter = _crypter["default"].create(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
       return event.data.col === _this.name;
     }));
-    this._changeEventBuffer = _changeEventBuffer["default"].create(this);
+    this._changeEventBuffer = (0, _changeEventBuffer["default"])(this);
 
     this._subs.push(this._observable$.pipe((0, _operators.filter)(function (cE) {
       return !cE.data.isLocal;
@@ -411,7 +409,7 @@ function () {
       tempDoc = json;
 
       if (!json._isTemporary) {
-        throw _rxError["default"].newRxError('COL1', {
+        throw (0, _rxError.newRxError)('COL1', {
           data: json
         });
       }
@@ -423,7 +421,7 @@ function () {
     json = this.schema.fillObjectWithDefaults(json);
 
     if (json._id && this.schema.primaryPath !== '_id') {
-      throw _rxError["default"].newRxError('COL2', {
+      throw (0, _rxError.newRxError)('COL2', {
         data: json
       });
     } // fill _id
@@ -446,7 +444,7 @@ function () {
       return _this6._runHooks('post', 'insert', json, newDoc);
     }).then(function () {
       // event
-      var emitEvent = _rxChangeEvent["default"].create('INSERT', _this6.database, _this6, newDoc, json);
+      var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this6.database, _this6, newDoc, json);
 
       _this6.$emit(emitEvent);
 
@@ -466,7 +464,7 @@ function () {
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {
-      throw _rxError["default"].newRxError('COL3', {
+      throw (0, _rxError.newRxError)('COL3', {
         primaryPath: this.schema.primaryPath,
         data: json
       });
@@ -499,7 +497,7 @@ function () {
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {
-      throw _rxError["default"].newRxError('COL4', {
+      throw (0, _rxError.newRxError)('COL4', {
         data: json
       });
     } // ensure that it wont try 2 parallel runs
@@ -539,13 +537,12 @@ function () {
 
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
-      throw _rxError["default"].newRxError('COL5', {
+      throw (0, _rxError.newRxError)('COL5', {
         queryObj: queryObj
       });
     }
 
-    var query = _rxQuery["default"].create('find', queryObj, this);
-
+    var query = (0, _rxQuery.createRxQuery)('find', queryObj, this);
     return query;
   };
 
@@ -553,13 +550,13 @@ function () {
     var query;
 
     if (typeof queryObj === 'string') {
-      query = _rxQuery["default"].create('findOne', {
+      query = (0, _rxQuery.createRxQuery)('findOne', {
         _id: queryObj
       }, this);
-    } else query = _rxQuery["default"].create('findOne', queryObj, this);
+    } else query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
 
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
-      throw _rxError["default"].newRxTypeError('COL6', {
+      throw (0, _rxError.newRxTypeError)('COL6', {
         queryObj: queryObj
       });
     }
@@ -573,7 +570,7 @@ function () {
   ;
 
   _proto.dump = function dump() {
-    throw _rxError["default"].pluginMissing('json-dump');
+    throw (0, _rxError.pluginMissing)('json-dump');
   }
   /**
    * imports the json-data into the collection
@@ -582,7 +579,7 @@ function () {
   ;
 
   _proto.importDump = function importDump() {
-    throw _rxError["default"].pluginMissing('json-dump');
+    throw (0, _rxError.pluginMissing)('json-dump');
   }
   /**
    * waits for external changes to the database
@@ -592,7 +589,7 @@ function () {
   ;
 
   _proto.watchForChanges = function watchForChanges() {
-    throw _rxError["default"].pluginMissing('watch-for-changes');
+    throw (0, _rxError.pluginMissing)('watch-for-changes');
   }
   /**
    * sync with another database
@@ -600,7 +597,7 @@ function () {
   ;
 
   _proto.sync = function sync() {
-    throw _rxError["default"].pluginMissing('replication');
+    throw (0, _rxError.pluginMissing)('replication');
   }
   /**
    * Create a replicated in-memory-collection
@@ -608,7 +605,7 @@ function () {
   ;
 
   _proto.inMemory = function inMemory() {
-    throw _rxError["default"].pluginMissing('in-memory');
+    throw (0, _rxError.pluginMissing)('in-memory');
   }
   /**
    * HOOKS
@@ -619,27 +616,27 @@ function () {
     var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
     if (typeof fun !== 'function') {
-      throw _rxError["default"].newRxTypeError('COL7', {
+      throw (0, _rxError.newRxTypeError)('COL7', {
         key: key,
         when: when
       });
     }
 
     if (!HOOKS_WHEN.includes(when)) {
-      throw _rxError["default"].newRxTypeError('COL8', {
+      throw (0, _rxError.newRxTypeError)('COL8', {
         key: key,
         when: when
       });
     }
 
     if (!HOOKS_KEYS.includes(key)) {
-      throw _rxError["default"].newRxError('COL9', {
+      throw (0, _rxError.newRxError)('COL9', {
         key: key
       });
     }
 
     if (when === 'post' && key === 'create' && parallel === true) {
-      throw _rxError["default"].newRxError('COL10', {
+      throw (0, _rxError.newRxError)('COL10', {
         when: when,
         key: key,
         parallel: parallel
@@ -822,14 +819,14 @@ exports.RxCollection = RxCollection;
 var checkMigrationStrategies = function checkMigrationStrategies(schema, migrationStrategies) {
   // migrationStrategies must be object not array
   if ((0, _typeof2["default"])(migrationStrategies) !== 'object' || Array.isArray(migrationStrategies)) {
-    throw _rxError["default"].newRxTypeError('COL11', {
+    throw (0, _rxError.newRxTypeError)('COL11', {
       schema: schema
     });
   } // for every previousVersion there must be strategy
 
 
   if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-    throw _rxError["default"].newRxError('COL12', {
+    throw (0, _rxError.newRxError)('COL12', {
       have: Object.keys(migrationStrategies),
       should: schema.previousVersions
     });
@@ -844,7 +841,7 @@ var checkMigrationStrategies = function checkMigrationStrategies(schema, migrati
   }).filter(function (strat) {
     return typeof strat.s !== 'function';
   }).forEach(function (strat) {
-    throw _rxError["default"].newRxTypeError('COL13', {
+    throw (0, _rxError.newRxTypeError)('COL13', {
       version: strat.v,
       type: (0, _typeof2["default"])(strat),
       schema: schema
@@ -907,26 +904,26 @@ var checkOrmMethods = function checkOrmMethods(statics) {
         v = _ref[1];
 
     if (typeof k !== 'string') {
-      throw _rxError["default"].newRxTypeError('COL14', {
+      throw (0, _rxError.newRxTypeError)('COL14', {
         name: k
       });
     }
 
     if (k.startsWith('_')) {
-      throw _rxError["default"].newRxTypeError('COL15', {
+      throw (0, _rxError.newRxTypeError)('COL15', {
         name: k
       });
     }
 
     if (typeof v !== 'function') {
-      throw _rxError["default"].newRxTypeError('COL16', {
+      throw (0, _rxError.newRxTypeError)('COL16', {
         name: k,
         type: (0, _typeof2["default"])(k)
       });
     }
 
     if (properties().includes(k) || _rxDocument["default"].properties().includes(k)) {
-      throw _rxError["default"].newRxError('COL17', {
+      throw (0, _rxError.newRxError)('COL17', {
         name: k
       });
     }
@@ -1038,7 +1035,7 @@ function create(_ref3) {
       options = _ref3$options === void 0 ? {} : _ref3$options;
   (0, _util.validateCouchDBString)(name); // ensure it is a schema-object
 
-  if (!_rxSchema["default"].isInstanceOf(schema)) schema = _rxSchema["default"].create(schema);
+  if (!(0, _rxSchema.isInstanceOf)(schema)) schema = (0, _rxSchema.createRxSchema)(schema);
   checkMigrationStrategies(schema, migrationStrategies); // check ORM-methods
 
   checkOrmMethods(statics);
@@ -1047,7 +1044,7 @@ function create(_ref3) {
   Object.keys(methods).filter(function (funName) {
     return schema.topLevelFields.includes(funName);
   }).forEach(function (funName) {
-    throw _rxError["default"].newRxError('COL18', {
+    throw (0, _rxError.newRxError)('COL18', {
       funName: funName
     });
   });

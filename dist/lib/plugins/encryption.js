@@ -1,7 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
 Object.defineProperty(exports, "__esModule", {
@@ -15,7 +13,7 @@ var _aes = require("crypto-js/aes");
 
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 /**
  * this plugin adds the encrpytion-capabilities to rxdb
@@ -59,13 +57,13 @@ exports.prototypes = prototypes;
 var overwritable = {
   validatePassword: function validatePassword(password) {
     if (password && typeof password !== 'string') {
-      throw _rxError["default"].newRxTypeError('EN1', {
+      throw (0, _rxError.newRxTypeError)('EN1', {
         password: password
       });
     }
 
     if (password && password.length < minPassLength) {
-      throw _rxError["default"].newRxError('EN2', {
+      throw (0, _rxError.newRxError)('EN2', {
         minPassLength: minPassLength,
         password: password
       });

@@ -12,7 +12,7 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 /**
  * handle the en/decryption of documents-data
@@ -35,7 +35,7 @@ function () {
   var _proto = Crypter.prototype;
 
   _proto._encryptValue = function _encryptValue() {
-    throw _rxError["default"].pluginMissing('encryption');
+    throw (0, _rxError.pluginMissing)('encryption');
   }
   /**
    * decrypt and json-parse an encrypted value
@@ -46,7 +46,7 @@ function () {
   ;
 
   _proto._decryptValue = function _decryptValue() {
-    throw _rxError["default"].pluginMissing('encryption');
+    throw (0, _rxError.pluginMissing)('encryption');
   };
 
   _proto.encrypt = function encrypt(obj) {

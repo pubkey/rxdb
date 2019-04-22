@@ -5,18 +5,17 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.addPlugin = addPlugin;
-exports["default"] = void 0;
+exports["default"] = addPlugin;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
 
 var _rxDocument = require("./rx-document");
 
-var _rxQuery = _interopRequireDefault(require("./rx-query"));
+var _rxQuery = require("./rx-query");
 
 var _rxCollection = _interopRequireDefault(require("./rx-collection"));
 
@@ -39,10 +38,10 @@ var _hooks = require("./hooks");
  * @type {Object}
  */
 var PROTOTYPES = {
-  RxSchema: _rxSchema["default"].RxSchema.prototype,
+  RxSchema: _rxSchema.RxSchema.prototype,
   Crypter: _crypter["default"].Crypter.prototype,
   RxDocument: _rxDocument.basePrototype,
-  RxQuery: _rxQuery["default"].RxQuery.prototype,
+  RxQuery: _rxQuery.RxQuery.prototype,
   RxCollection: _rxCollection["default"].RxCollection.prototype,
   RxDatabase: _rxDatabase["default"].RxDatabase.prototype
 };
@@ -86,9 +85,3 @@ function addPlugin(plugin) {
     });
   }
 }
-
-var _default = {
-  addPlugin: addPlugin,
-  overwritable: _overwritable["default"]
-};
-exports["default"] = _default;

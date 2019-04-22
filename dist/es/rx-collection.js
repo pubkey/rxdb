@@ -4,16 +4,15 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import { filter } from 'rxjs/operators';
 import { clone, validateCouchDBString, ucfirst, nextTick, generateId, promiseSeries } from './util';
 import RxDocument from './rx-document';
-import RxQuery from './rx-query';
-import RxSchema from './rx-schema';
-import RxChangeEvent from './rx-change-event';
-import RxError from './rx-error';
-import DataMigrator from './data-migrator';
-import { mustMigrate } from './data-migrator';
+import { createRxQuery } from './rx-query';
+import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
+import { createChangeEvent } from './rx-change-event';
+import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
+import { mustMigrate, createDataMigrator } from './data-migrator';
 import Crypter from './crypter';
-import DocCache from './doc-cache';
-import QueryCache from './query-cache';
-import ChangeEventBuffer from './change-event-buffer';
+import createDocCache from './doc-cache';
+import createQueryCache from './query-cache';
+import createChangeEventBuffer from './change-event-buffer';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
 export var RxCollection =
@@ -40,8 +39,8 @@ function () {
     this.options = options;
     this._atomicUpsertQueues = new Map();
     this._statics = statics;
-    this._docCache = DocCache.create();
-    this._queryCache = QueryCache.create(); // defaults
+    this._docCache = createDocCache();
+    this._queryCache = createQueryCache(); // defaults
 
     this.synced = false;
     this.hooks = {};
@@ -68,12 +67,12 @@ function () {
 
     var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
-    this._dataMigrator = DataMigrator.create(this, this._migrationStrategies);
+    this._dataMigrator = createDataMigrator(this, this._migrationStrategies);
     this._crypter = Crypter.create(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe(filter(function (event) {
       return event.data.col === _this.name;
     }));
-    this._changeEventBuffer = ChangeEventBuffer.create(this);
+    this._changeEventBuffer = createChangeEventBuffer(this);
 
     this._subs.push(this._observable$.pipe(filter(function (cE) {
       return !cE.data.isLocal;
@@ -377,7 +376,7 @@ function () {
       tempDoc = json;
 
       if (!json._isTemporary) {
-        throw RxError.newRxError('COL1', {
+        throw newRxError('COL1', {
           data: json
         });
       }
@@ -389,7 +388,7 @@ function () {
     json = this.schema.fillObjectWithDefaults(json);
 
     if (json._id && this.schema.primaryPath !== '_id') {
-      throw RxError.newRxError('COL2', {
+      throw newRxError('COL2', {
         data: json
       });
     } // fill _id
@@ -412,7 +411,7 @@ function () {
       return _this6._runHooks('post', 'insert', json, newDoc);
     }).then(function () {
       // event
-      var emitEvent = RxChangeEvent.create('INSERT', _this6.database, _this6, newDoc, json);
+      var emitEvent = createChangeEvent('INSERT', _this6.database, _this6, newDoc, json);
 
       _this6.$emit(emitEvent);
 
@@ -432,7 +431,7 @@ function () {
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {
-      throw RxError.newRxError('COL3', {
+      throw newRxError('COL3', {
         primaryPath: this.schema.primaryPath,
         data: json
       });
@@ -465,7 +464,7 @@ function () {
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {
-      throw RxError.newRxError('COL4', {
+      throw newRxError('COL4', {
         data: json
       });
     } // ensure that it wont try 2 parallel runs
@@ -505,12 +504,12 @@ function () {
 
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
-      throw RxError.newRxError('COL5', {
+      throw newRxError('COL5', {
         queryObj: queryObj
       });
     }
 
-    var query = RxQuery.create('find', queryObj, this);
+    var query = createRxQuery('find', queryObj, this);
     return query;
   };
 
@@ -518,13 +517,13 @@ function () {
     var query;
 
     if (typeof queryObj === 'string') {
-      query = RxQuery.create('findOne', {
+      query = createRxQuery('findOne', {
         _id: queryObj
       }, this);
-    } else query = RxQuery.create('findOne', queryObj, this);
+    } else query = createRxQuery('findOne', queryObj, this);
 
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
-      throw RxError.newRxTypeError('COL6', {
+      throw newRxTypeError('COL6', {
         queryObj: queryObj
       });
     }
@@ -538,7 +537,7 @@ function () {
   ;
 
   _proto.dump = function dump() {
-    throw RxError.pluginMissing('json-dump');
+    throw pluginMissing('json-dump');
   }
   /**
    * imports the json-data into the collection
@@ -547,7 +546,7 @@ function () {
   ;
 
   _proto.importDump = function importDump() {
-    throw RxError.pluginMissing('json-dump');
+    throw pluginMissing('json-dump');
   }
   /**
    * waits for external changes to the database
@@ -557,7 +556,7 @@ function () {
   ;
 
   _proto.watchForChanges = function watchForChanges() {
-    throw RxError.pluginMissing('watch-for-changes');
+    throw pluginMissing('watch-for-changes');
   }
   /**
    * sync with another database
@@ -565,7 +564,7 @@ function () {
   ;
 
   _proto.sync = function sync() {
-    throw RxError.pluginMissing('replication');
+    throw pluginMissing('replication');
   }
   /**
    * Create a replicated in-memory-collection
@@ -573,7 +572,7 @@ function () {
   ;
 
   _proto.inMemory = function inMemory() {
-    throw RxError.pluginMissing('in-memory');
+    throw pluginMissing('in-memory');
   }
   /**
    * HOOKS
@@ -584,27 +583,27 @@ function () {
     var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
     if (typeof fun !== 'function') {
-      throw RxError.newRxTypeError('COL7', {
+      throw newRxTypeError('COL7', {
         key: key,
         when: when
       });
     }
 
     if (!HOOKS_WHEN.includes(when)) {
-      throw RxError.newRxTypeError('COL8', {
+      throw newRxTypeError('COL8', {
         key: key,
         when: when
       });
     }
 
     if (!HOOKS_KEYS.includes(key)) {
-      throw RxError.newRxError('COL9', {
+      throw newRxError('COL9', {
         key: key
       });
     }
 
     if (when === 'post' && key === 'create' && parallel === true) {
-      throw RxError.newRxError('COL10', {
+      throw newRxError('COL10', {
         when: when,
         key: key,
         parallel: parallel
@@ -783,14 +782,14 @@ function () {
 var checkMigrationStrategies = function checkMigrationStrategies(schema, migrationStrategies) {
   // migrationStrategies must be object not array
   if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
-    throw RxError.newRxTypeError('COL11', {
+    throw newRxTypeError('COL11', {
       schema: schema
     });
   } // for every previousVersion there must be strategy
 
 
   if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-    throw RxError.newRxError('COL12', {
+    throw newRxError('COL12', {
       have: Object.keys(migrationStrategies),
       should: schema.previousVersions
     });
@@ -805,7 +804,7 @@ var checkMigrationStrategies = function checkMigrationStrategies(schema, migrati
   }).filter(function (strat) {
     return typeof strat.s !== 'function';
   }).forEach(function (strat) {
-    throw RxError.newRxTypeError('COL13', {
+    throw newRxTypeError('COL13', {
       version: strat.v,
       type: typeof strat,
       schema: schema
@@ -866,26 +865,26 @@ var checkOrmMethods = function checkOrmMethods(statics) {
         v = _ref[1];
 
     if (typeof k !== 'string') {
-      throw RxError.newRxTypeError('COL14', {
+      throw newRxTypeError('COL14', {
         name: k
       });
     }
 
     if (k.startsWith('_')) {
-      throw RxError.newRxTypeError('COL15', {
+      throw newRxTypeError('COL15', {
         name: k
       });
     }
 
     if (typeof v !== 'function') {
-      throw RxError.newRxTypeError('COL16', {
+      throw newRxTypeError('COL16', {
         name: k,
         type: typeof k
       });
     }
 
     if (properties().includes(k) || RxDocument.properties().includes(k)) {
-      throw RxError.newRxError('COL17', {
+      throw newRxError('COL17', {
         name: k
       });
     }
@@ -996,7 +995,7 @@ export function create(_ref3) {
       options = _ref3$options === void 0 ? {} : _ref3$options;
   validateCouchDBString(name); // ensure it is a schema-object
 
-  if (!RxSchema.isInstanceOf(schema)) schema = RxSchema.create(schema);
+  if (!isInstanceOfRxSchema(schema)) schema = createRxSchema(schema);
   checkMigrationStrategies(schema, migrationStrategies); // check ORM-methods
 
   checkOrmMethods(statics);
@@ -1005,7 +1004,7 @@ export function create(_ref3) {
   Object.keys(methods).filter(function (funName) {
     return schema.topLevelFields.includes(funName);
   }).forEach(function (funName) {
-    throw RxError.newRxError('COL18', {
+    throw newRxError('COL18', {
       funName: funName
     });
   });

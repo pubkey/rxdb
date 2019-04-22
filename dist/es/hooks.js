@@ -88,8 +88,3 @@ export function clearHook(type, fun) {
     return h !== fun;
   });
 }
-export default {
-  runPluginHooks: runPluginHooks,
-  runAsyncPluginHooks: runAsyncPluginHooks,
-  HOOKS: HOOKS
-};

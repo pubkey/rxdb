@@ -3,8 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = void 0;
+exports["default"] = createDocCache;
 
 // TODO add a function to run a cache-clear
 var DocCache =
@@ -31,11 +30,6 @@ function () {
   return DocCache;
 }();
 
-function create() {
+function createDocCache() {
   return new DocCache();
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;

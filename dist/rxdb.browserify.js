@@ -24,8 +24,7 @@ window['RxDB'] = _index["default"];
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = void 0;
+exports["default"] = createChangeEventBuffer;
 
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
@@ -152,14 +151,9 @@ function () {
   return ChangeEventBuffer;
 }();
 
-function create(collection) {
+function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;
 
 },{}],3:[function(require,module,exports){
 "use strict";
@@ -173,11 +167,11 @@ exports["default"] = exports.isRxSchema = exports.isRxQuery = exports.isRxDocume
 
 var _rxDatabase = _interopRequireDefault(require("./rx-database"));
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
 var _rxDocument = _interopRequireDefault(require("./rx-document"));
 
-var _rxQuery = _interopRequireDefault(require("./rx-query"));
+var _rxQuery = require("./rx-query");
 
 var _rxCollection = _interopRequireDefault(require("./rx-collection"));
 
@@ -197,7 +191,7 @@ var removeDatabase = _rxDatabase["default"].removeDatabase;
 exports.removeDatabase = removeDatabase;
 var checkAdapter = _rxDatabase["default"].checkAdapter;
 exports.checkAdapter = checkAdapter;
-var plugin = _plugin["default"].addPlugin;
+var plugin = _plugin["default"];
 exports.plugin = plugin;
 var isRxDatabase = _rxDatabase["default"].isInstanceOf;
 exports.isRxDatabase = isRxDatabase;
@@ -207,9 +201,9 @@ var isRxCollection = _rxCollection["default"].isInstanceOf;
 exports.isRxCollection = isRxCollection;
 var isRxDocument = _rxDocument["default"].isInstanceOf;
 exports.isRxDocument = isRxDocument;
-var isRxQuery = _rxQuery["default"].isInstanceOf;
+var isRxQuery = _rxQuery.isInstanceOf;
 exports.isRxQuery = isRxQuery;
-var isRxSchema = _rxSchema["default"].isInstanceOf;
+var isRxSchema = _rxSchema.isInstanceOf;
 exports.isRxSchema = isRxSchema;
 var _default = {
   create: create,
@@ -222,7 +216,6 @@ var _default = {
   isRxDocument: isRxDocument,
   isRxQuery: isRxQuery,
   isRxSchema: isRxSchema,
-  RxSchema: _rxSchema["default"],
   PouchDB: _pouchDb["default"],
   QueryChangeDetector: _queryChangeDetector["default"],
   RxDatabase: _rxDatabase["default"]
@@ -244,7 +237,7 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 /**
  * handle the en/decryption of documents-data
@@ -267,7 +260,7 @@ function () {
   var _proto = Crypter.prototype;
 
   _proto._encryptValue = function _encryptValue() {
-    throw _rxError["default"].pluginMissing('encryption');
+    throw (0, _rxError.pluginMissing)('encryption');
   }
   /**
    * decrypt and json-parse an encrypted value
@@ -278,7 +271,7 @@ function () {
   ;
 
   _proto._decryptValue = function _decryptValue() {
-    throw _rxError["default"].pluginMissing('encryption');
+    throw (0, _rxError.pluginMissing)('encryption');
   };
 
   _proto.encrypt = function encrypt(obj) {
@@ -340,8 +333,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports._getOldCollections = _getOldCollections;
 exports.mustMigrate = mustMigrate;
-exports.create = create;
-exports["default"] = void 0;
+exports.createDataMigrator = createDataMigrator;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -353,15 +345,15 @@ var _pouchDb = _interopRequireDefault(require("./pouch-db"));
 
 var _util = require("./util");
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
-var _hooks = _interopRequireDefault(require("./hooks"));
+var _hooks = require("./hooks");
 
 var _rxjs = require("rxjs");
 
@@ -391,7 +383,7 @@ function () {
     var _this = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrated) throw _rxError["default"].newRxError('DM1');
+    if (this._migrated) throw (0, _rxError.newRxError)('DM1');
     this._migrated = true;
     var state = {
       done: false,
@@ -672,7 +664,7 @@ function () {
             case 15:
               _context4.prev = 15;
               _context4.t0 = _context4["catch"](11);
-              throw _rxError["default"].newRxError('DM2', {
+              throw (0, _rxError.newRxError)('DM2', {
                 fromVersion: this.version,
                 toVersion: this.newestCollection.schema.version,
                 finalDoc: doc
@@ -729,8 +721,7 @@ function () {
                 break;
               }
 
-              _hooks["default"].runPluginHooks('preMigrateDocument', action); // save to newest collection
-
+              (0, _hooks.runPluginHooks)('preMigrateDocument', action); // save to newest collection
 
               delete migrated._rev;
               _context5.next = 9;
@@ -741,7 +732,7 @@ function () {
               action.res = res;
               action.type = 'success';
               _context5.next = 14;
-              return _hooks["default"].runAsyncPluginHooks('postMigrateDocument', action);
+              return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
 
             case 14:
               _context5.next = 17;
@@ -802,7 +793,7 @@ function () {
     var _this5 = this;
 
     var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-    if (this._migrate) throw _rxError["default"].newRxError('DM3');
+    if (this._migrate) throw (0, _rxError.newRxError)('DM3');
     this._migrate = true;
     var observer = new _rxjs.Subject();
     /**
@@ -892,7 +883,7 @@ function () {
     get: function get() {
       if (!this._schema) {
         //            delete this.schemaObj._id;
-        this._schema = _rxSchema["default"].create(this.schemaObj, false);
+        this._schema = (0, _rxSchema.createRxSchema)(this.schemaObj, false);
       }
 
       return this._schema;
@@ -956,14 +947,9 @@ function mustMigrate(dataMigrator) {
   });
 }
 
-function create(newestCollection, migrationStrategies) {
+function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;
 
 },{"./crypter":4,"./hooks":7,"./overwritable":11,"./pouch-db":27,"./rx-error":34,"./rx-schema":36,"./util":37,"@babel/runtime/helpers/asyncToGenerator":40,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/regenerator":51,"rxjs":501}],6:[function(require,module,exports){
 "use strict";
@@ -971,8 +957,7 @@ exports["default"] = _default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = void 0;
+exports["default"] = createDocCache;
 
 // TODO add a function to run a cache-clear
 var DocCache =
@@ -999,14 +984,9 @@ function () {
   return DocCache;
 }();
 
-function create() {
+function createDocCache() {
   return new DocCache();
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;
 
 },{}],7:[function(require,module,exports){
 "use strict";
@@ -1017,7 +997,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
 exports.clearHook = clearHook;
-exports["default"] = exports.HOOKS = void 0;
+exports.HOOKS = void 0;
 
 /**
  * stores the hooks that where added by the plugins
@@ -1113,13 +1093,6 @@ function clearHook(type, fun) {
     return h !== fun;
   });
 }
-
-var _default = {
-  runPluginHooks: runPluginHooks,
-  runAsyncPluginHooks: runAsyncPluginHooks,
-  HOOKS: HOOKS
-};
-exports["default"] = _default;
 
 },{}],8:[function(require,module,exports){
 "use strict";
@@ -1254,7 +1227,6 @@ var _default = {
   isRxDocument: isRxDocument,
   isRxQuery: isRxQuery,
   isRxSchema: isRxSchema,
-  RxSchema: RxSchema,
   PouchDB: PouchDB,
   QueryChangeDetector: QueryChangeDetector,
   RxDatabase: RxDatabase
@@ -1275,7 +1247,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _mquery_utils = require("./mquery_utils");
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _util = require("../util");
 
@@ -1339,7 +1311,7 @@ function () {
     }
 
     if ('object' === type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
-    throw _rxError["default"].newRxTypeError('MQ1', {
+    throw (0, _rxError.newRxTypeError)('MQ1', {
       path: arguments[0]
     });
   }
@@ -1518,7 +1490,7 @@ function () {
   ;
 
   _proto.elemMatch = function elemMatch() {
-    if (null === arguments[0]) throw _rxError["default"].newRxTypeError('MQ2');
+    if (null === arguments[0]) throw (0, _rxError.newRxTypeError)('MQ2');
     var fn;
     var path;
     var criteria;
@@ -1539,7 +1511,7 @@ function () {
     } else if (arguments[1] && (0, _mquery_utils.isObject)(arguments[1])) {
       path = arguments[0];
       criteria = arguments[1];
-    } else throw _rxError["default"].newRxTypeError('MQ2');
+    } else throw (0, _rxError.newRxTypeError)('MQ2');
 
     if (fn) {
       criteria = new MQuery();
@@ -1606,7 +1578,7 @@ function () {
       return this;
     }
 
-    throw _rxError["default"].newRxTypeError('MQ3', {
+    throw (0, _rxError.newRxTypeError)('MQ3', {
       args: arguments
     });
   }
@@ -1624,7 +1596,7 @@ function () {
     if (!source) return this;
 
     if (!MQuery.canMerge(source)) {
-      throw _rxError["default"].newRxTypeError('MQ4', {
+      throw (0, _rxError.newRxTypeError)('MQ4', {
         source: source
       });
     }
@@ -1679,7 +1651,7 @@ function () {
 
   _proto._ensurePath = function _ensurePath(method) {
     if (!this._path) {
-      throw _rxError["default"].newRxError('MQ5', {
+      throw (0, _rxError.newRxError)('MQ5', {
         method: method
       });
     }
@@ -1720,7 +1692,7 @@ function () {
 
 function push(opts, field, value) {
   if (Array.isArray(opts.sort)) {
-    throw _rxError["default"].newRxTypeError('MQ6', {
+    throw (0, _rxError.newRxTypeError)('MQ6', {
       opts: opts,
       field: field,
       value: value
@@ -1740,7 +1712,7 @@ function push(opts, field, value) {
 
   if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
     if (Array.isArray(value)) value = '[' + value + ']';
-    throw _rxError["default"].newRxTypeError('MQ7', {
+    throw (0, _rxError.newRxTypeError)('MQ7', {
       field: field,
       value: value
     });
@@ -1756,7 +1728,7 @@ function _pushArr(opts, field, value) {
   opts.sort = opts.sort || [];
 
   if (!Array.isArray(opts.sort)) {
-    throw _rxError["default"].newRxTypeError('MQ8', {
+    throw (0, _rxError.newRxTypeError)('MQ8', {
       opts: opts,
       field: field,
       value: value
@@ -1874,14 +1846,12 @@ function isObject(arg) {
 },{"../util":37}],11:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 /**
  * functions that can or should be overwritten by plugins
@@ -1895,7 +1865,7 @@ var funs = {
    * @return {void}
    */
   validatePassword: function validatePassword() {
-    throw _rxError["default"].pluginMissing('encryption');
+    throw (0, _rxError.pluginMissing)('encryption');
   },
 
   /**
@@ -1904,7 +1874,7 @@ var funs = {
    * @return {KeyCompressor}
    */
   createKeyCompressor: function createKeyCompressor() {
-    throw _rxError["default"].pluginMissing('key-compression');
+    throw (0, _rxError.pluginMissing)('key-compression');
   },
 
   /**
@@ -1913,7 +1883,7 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw _rxError["default"].pluginMissing('leaderelection');
+    throw (0, _rxError.pluginMissing)('leaderelection');
   },
 
   /**
@@ -1921,7 +1891,7 @@ var funs = {
    * @return {any} adapter
    */
   checkAdapter: function checkAdapter() {
-    throw _rxError["default"].pluginMissing('adapter-check');
+    throw (0, _rxError.pluginMissing)('adapter-check');
   },
 
   /**
@@ -1937,7 +1907,7 @@ var funs = {
 var _default = funs;
 exports["default"] = _default;
 
-},{"./rx-error":34,"@babel/runtime/helpers/interopRequireDefault":45}],12:[function(require,module,exports){
+},{"./rx-error":34}],12:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -1945,18 +1915,17 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.addPlugin = addPlugin;
-exports["default"] = void 0;
+exports["default"] = addPlugin;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
 
 var _rxDocument = require("./rx-document");
 
-var _rxQuery = _interopRequireDefault(require("./rx-query"));
+var _rxQuery = require("./rx-query");
 
 var _rxCollection = _interopRequireDefault(require("./rx-collection"));
 
@@ -1979,10 +1948,10 @@ var _hooks = require("./hooks");
  * @type {Object}
  */
 var PROTOTYPES = {
-  RxSchema: _rxSchema["default"].RxSchema.prototype,
+  RxSchema: _rxSchema.RxSchema.prototype,
   Crypter: _crypter["default"].Crypter.prototype,
   RxDocument: _rxDocument.basePrototype,
-  RxQuery: _rxQuery["default"].RxQuery.prototype,
+  RxQuery: _rxQuery.RxQuery.prototype,
   RxCollection: _rxCollection["default"].RxCollection.prototype,
   RxDatabase: _rxDatabase["default"].RxDatabase.prototype
 };
@@ -2026,12 +1995,6 @@ function addPlugin(plugin) {
     });
   }
 }
-
-var _default = {
-  addPlugin: addPlugin,
-  overwritable: _overwritable["default"]
-};
-exports["default"] = _default;
 
 },{"./crypter":4,"./hooks":7,"./overwritable":11,"./pouch-db":27,"./rx-collection":31,"./rx-database":32,"./rx-document":33,"./rx-query":35,"./rx-schema":36,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49}],13:[function(require,module,exports){
 "use strict";
@@ -2176,17 +2139,17 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 
 var _operators = require("rxjs/operators");
 
-var _rxChangeEvent = _interopRequireDefault(require("./../rx-change-event"));
+var _rxChangeEvent = require("./../rx-change-event");
 
 var _util = require("./../util");
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonID;
 
   if (!schemaJson.attachments) {
-    throw _rxError["default"].newRxError('AT1', {
+    throw (0, _rxError.newRxError)('AT1', {
       link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
     });
   }
@@ -2196,8 +2159,7 @@ function resyncRxDocument(doc) {
   return doc.collection.pouch.get(doc.primary).then(function (docData) {
     var data = doc.collection._handleFromPouch(docData);
 
-    var changeEvent = _rxChangeEvent["default"].create('UPDATE', doc.collection.database, doc.collection, doc, data);
-
+    var changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', doc.collection.database, doc.collection, doc, data);
     doc.$emit(changeEvent);
   });
 }
@@ -2490,8 +2452,10 @@ function allAttachments() {
 
   ensureSchemaSupportsAttachments(this);
 
-  var docData = this._dataSync$.getValue();
+  var docData = this._dataSync$.getValue(); // if there are no attachments, the field is missing
 
+
+  if (!docData._attachments) return [];
   return Object.keys(docData._attachments).map(function (id) {
     return RxAttachment.fromPouchDocument(id, docData._attachments[id], _this2);
   });
@@ -2614,8 +2578,6 @@ exports["default"] = _default;
 },{"../rx-error":34,"./../rx-change-event":30,"./../util":37,"@babel/runtime/helpers/asyncToGenerator":40,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/regenerator":51,"buffer":69,"rxjs/operators":697}],15:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
 Object.defineProperty(exports, "__esModule", {
@@ -2629,7 +2591,7 @@ var _aes = require("crypto-js/aes");
 
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 /**
  * this plugin adds the encrpytion-capabilities to rxdb
@@ -2673,13 +2635,13 @@ exports.prototypes = prototypes;
 var overwritable = {
   validatePassword: function validatePassword(password) {
     if (password && typeof password !== 'string') {
-      throw _rxError["default"].newRxTypeError('EN1', {
+      throw (0, _rxError.newRxTypeError)('EN1', {
         password: password
       });
     }
 
     if (password && password.length < minPassLength) {
-      throw _rxError["default"].newRxError('EN2', {
+      throw (0, _rxError.newRxError)('EN2', {
         minPassLength: minPassLength,
         password: password
       });
@@ -2694,7 +2656,7 @@ var _default = {
 };
 exports["default"] = _default;
 
-},{"../rx-error":34,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/interopRequireWildcard":46,"crypto-js/aes":357,"crypto-js/enc-utf8":361}],16:[function(require,module,exports){
+},{"../rx-error":34,"@babel/runtime/helpers/interopRequireWildcard":46,"crypto-js/aes":357,"crypto-js/enc-utf8":361}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2901,11 +2863,11 @@ var _crypter = _interopRequireDefault(require("../crypter"));
 
 var _changeEventBuffer = _interopRequireDefault(require("../change-event-buffer"));
 
-var _rxSchema = _interopRequireDefault(require("../rx-schema"));
+var _rxSchema = require("../rx-schema");
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _watchForChanges = _interopRequireDefault(require("../plugins/watch-for-changes"));
 
@@ -2968,7 +2930,7 @@ function (_RxCollection$RxColle) {
     });
     _this.pouch = new _pouchDb["default"]('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'), {});
     _this._observable$ = new _rxjs.Subject();
-    _this._changeEventBuffer = _changeEventBuffer["default"].create((0, _assertThisInitialized2["default"])(_this));
+    _this._changeEventBuffer = (0, _changeEventBuffer["default"])((0, _assertThisInitialized2["default"])(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
     _this._oldPouchPut = parentProto._pouchPut.bind((0, _assertThisInitialized2["default"])(_this));
     _this._nonPersistentRevisions = new Set();
@@ -3138,7 +3100,7 @@ function (_RxCollection$RxColle) {
   ;
 
   _proto.sync = function sync() {
-    throw _rxError["default"].newRxError('IM2');
+    throw (0, _rxError.newRxError)('IM2');
   };
 
   return InMemoryRxCollection;
@@ -3172,7 +3134,7 @@ function toCleanSchema(rxSchema) {
   };
 
   removeEncryption(newSchemaJson, newSchemaJson);
-  return _rxSchema["default"].create(newSchemaJson);
+  return (0, _rxSchema.createRxSchema)(newSchemaJson);
 }
 /**
  * replicates all documents from the parent to the inMemoryCollection
@@ -3369,7 +3331,7 @@ function _spawnInMemory() {
               break;
             }
 
-            throw _rxError["default"].newRxError('IM1');
+            throw (0, _rxError.newRxError)('IM1');
 
           case 4:
             if (!collectionCacheMap.has(this)) {
@@ -3425,8 +3387,6 @@ exports["default"] = _default;
 },{"../change-event-buffer":2,"../core":3,"../crypter":4,"../plugins/watch-for-changes":26,"../pouch-db":27,"../rx-collection":31,"../rx-error":34,"../rx-schema":36,"../util":37,"@babel/runtime/helpers/assertThisInitialized":39,"@babel/runtime/helpers/asyncToGenerator":40,"@babel/runtime/helpers/inheritsLoose":44,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49,"@babel/runtime/regenerator":51,"rxjs":501,"rxjs/operators":697}],18:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -3434,11 +3394,11 @@ exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = 
 
 var _util = require("../util");
 
-var _rxQuery = _interopRequireDefault(require("../rx-query"));
+var _rxQuery = require("../rx-query");
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
+var _rxChangeEvent = require("../rx-change-event");
 
 /**
  * this plugin adds the json export/import capabilities to RxDB
@@ -3494,7 +3454,7 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   });
 
   if (missingCollections.length > 0) {
-    throw _rxError["default"].newRxError('JD1', {
+    throw (0, _rxError.newRxError)('JD1', {
       missingCollections: missingCollections
     });
   }
@@ -3520,8 +3480,7 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = _rxQuery["default"].create('find', {}, this);
-
+  var query = (0, _rxQuery.createRxQuery)('find', {}, this);
   return this._pouchFind(query, null, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
@@ -3540,7 +3499,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
 
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
-    throw _rxError["default"].newRxError('JD2', {
+    throw (0, _rxError.newRxError)('JD2', {
       schemaHash: exportedJSON.schemaHash,
       own: this.schema.hash
     });
@@ -3548,7 +3507,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
 
 
   if (exportedJSON.encrypted && exportedJSON.passwordHash !== (0, _util.hash)(this.database.password)) {
-    throw _rxError["default"].newRxError('JD3', {
+    throw (0, _rxError.newRxError)('JD3', {
       passwordHash: exportedJSON.passwordHash,
       own: (0, _util.hash)(this.database.password)
     });
@@ -3565,8 +3524,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
     return _this3._pouchPut(doc).then(function () {
       var primary = doc[_this3.schema.primaryPath]; // emit changeEvents
 
-      var emitEvent = _rxChangeEvent["default"].create('INSERT', _this3.database, _this3, null, doc);
-
+      var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this3.database, _this3, null, doc);
       emitEvent.data.doc = primary;
 
       _this3.$emit(emitEvent);
@@ -3597,7 +3555,7 @@ var _default = {
 };
 exports["default"] = _default;
 
-},{"../rx-change-event":30,"../rx-error":34,"../rx-query":35,"../util":37,"@babel/runtime/helpers/interopRequireDefault":45}],19:[function(require,module,exports){
+},{"../rx-change-event":30,"../rx-error":34,"../rx-query":35,"../util":37}],19:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -3938,11 +3896,11 @@ var _rxDatabase = _interopRequireDefault(require("../rx-database"));
 
 var _rxCollection = _interopRequireDefault(require("../rx-collection"));
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
+var _rxChangeEvent = require("../rx-change-event");
 
 var _docCache = _interopRequireDefault(require("../doc-cache"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _util = require("../util");
 
@@ -3957,7 +3915,7 @@ var DOC_CACHE_BY_PARENT = new WeakMap();
 
 var _getDocCache = function _getDocCache(parent) {
   if (!DOC_CACHE_BY_PARENT.has(parent)) {
-    DOC_CACHE_BY_PARENT.set(parent, _docCache["default"].create());
+    DOC_CACHE_BY_PARENT.set(parent, (0, _docCache["default"])());
   }
 
   return DOC_CACHE_BY_PARENT.get(parent);
@@ -4054,7 +4012,7 @@ var RxLocalDocumentPrototype = {
 
   get allAttachments$() {
     // this is overwritten here because we cannot re-set getters on the prototype
-    throw _rxError["default"].newRxError('LD1', {
+    throw (0, _rxError.newRxError)('LD1', {
       document: this
     });
   },
@@ -4078,7 +4036,7 @@ var RxLocalDocumentPrototype = {
     if (!this._data) return undefined;
 
     if (typeof objPath !== 'string') {
-      throw _rxError["default"].newRxTypeError('LD2', {
+      throw (0, _rxError.newRxTypeError)('LD2', {
         objPath: objPath
       });
     }
@@ -4090,12 +4048,12 @@ var RxLocalDocumentPrototype = {
   },
   get$: function get$(path) {
     if (path.includes('.item.')) {
-      throw _rxError["default"].newRxError('LD3', {
+      throw (0, _rxError.newRxError)('LD3', {
         path: path
       });
     }
 
-    if (path === this.primaryPath) throw _rxError["default"].newRxError('LD4');
+    if (path === this.primaryPath) throw (0, _rxError.newRxError)('LD4');
     return this._dataSync$.pipe((0, _operators.map)(function (data) {
       return _objectPath["default"].get(data, path);
     }), (0, _operators.distinctUntilChanged)()).asObservable();
@@ -4110,7 +4068,7 @@ var RxLocalDocumentPrototype = {
     }
 
     if (objPath === '_id') {
-      throw _rxError["default"].newRxError('LD5', {
+      throw (0, _rxError.newRxError)('LD5', {
         objPath: objPath,
         value: value
       });
@@ -4142,7 +4100,7 @@ var RxLocalDocumentPrototype = {
 
               this._dataSync$.next(newData);
 
-              changeEvent = _rxChangeEvent["default"].create('UPDATE', _rxDatabase["default"].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection["default"].isInstanceOf(this.parent) ? this.parent : null, this, (0, _util.clone)(this._data), true);
+              changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', _rxDatabase["default"].isInstanceOf(this.parent) ? this.parent : this.parent.database, _rxCollection["default"].isInstanceOf(this.parent) ? this.parent : null, this, (0, _util.clone)(this._data), true);
               this.$emit(changeEvent);
 
             case 9:
@@ -4170,7 +4128,7 @@ var RxLocalDocumentPrototype = {
     return this.parentPouch.remove(removeId, this._data._rev).then(function () {
       _getDocCache(_this2.parent)["delete"](_this2.id);
 
-      var changeEvent = _rxChangeEvent["default"].create('REMOVE', _rxDatabase["default"].isInstanceOf(_this2.parent) ? _this2.parent : _this2.parent.database, _rxCollection["default"].isInstanceOf(_this2.parent) ? _this2.parent : null, _this2, (0, _util.clone)(_this2._data), true);
+      var changeEvent = (0, _rxChangeEvent.createChangeEvent)('REMOVE', _rxDatabase["default"].isInstanceOf(_this2.parent) ? _this2.parent : _this2.parent.database, _rxCollection["default"].isInstanceOf(_this2.parent) ? _this2.parent : null, _this2, (0, _util.clone)(_this2._data), true);
 
       _this2.$emit(changeEvent);
     });
@@ -4196,7 +4154,7 @@ var _init = function _init() {
 
   var getThrowingFun = function getThrowingFun(k) {
     return function () {
-      throw _rxError["default"].newRxError('LD6', {
+      throw (0, _rxError.newRxError)('LD6', {
         functionName: k
       });
     };
@@ -4238,7 +4196,7 @@ var insertLocal = function insertLocal(id, data) {
   data = (0, _util.clone)(data);
   return this.getLocal(id).then(function (existing) {
     if (existing) {
-      throw _rxError["default"].newRxError('LD7', {
+      throw (0, _rxError.newRxError)('LD7', {
         id: id,
         data: data
       });
@@ -4441,7 +4399,7 @@ var _core = _interopRequireDefault(require("../core"));
 
 var _rxCollection = _interopRequireDefault(require("../rx-collection"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
@@ -4503,7 +4461,7 @@ function () {
 exports.RxReplicationState = RxReplicationState;
 
 function setPouchEventEmitter(rxRepState, evEmitter) {
-  if (rxRepState._pouchEventEmitterObject) throw _rxError["default"].newRxError('RC1');
+  if (rxRepState._pouchEventEmitterObject) throw (0, _rxError.newRxError)('RC1');
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
   rxRepState._subs.push((0, _rxjs.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
@@ -4661,7 +4619,7 @@ function sync(_ref2) {
   options = (0, _util.clone)(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (_pouchDb["default"].isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
-    throw _rxError["default"].newRxError('RC3', {
+    throw (0, _rxError.newRxError)('RC3', {
       database: this.database.name,
       collection: this.name
     });
@@ -4674,7 +4632,7 @@ function sync(_ref2) {
   }
 
   if (query && this !== query.collection) {
-    throw _rxError["default"].newRxError('RC2', {
+    throw (0, _rxError.newRxError)('RC2', {
       query: query
     });
   }
@@ -4740,7 +4698,7 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxDocument = _interopRequireDefault(require("../rx-document"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _rxSchema = require("../rx-schema");
 
@@ -4761,7 +4719,7 @@ function checkFieldNameRegex(fieldName) {
   if (fieldName === '_id') return;
 
   if (['properties', 'language'].includes(fieldName)) {
-    throw _rxError["default"].newRxError('SC23', {
+    throw (0, _rxError.newRxError)('SC23', {
       fieldName: fieldName
     });
   }
@@ -4770,7 +4728,7 @@ function checkFieldNameRegex(fieldName) {
   var regex = new RegExp(regexStr);
 
   if (!fieldName.match(regex)) {
-    throw _rxError["default"].newRxError('SC1', {
+    throw (0, _rxError.newRxError)('SC1', {
       regex: regexStr,
       fieldName: fieldName
     });
@@ -4788,7 +4746,7 @@ function validateFieldsDeep(jsonSchema) {
     if (typeof fieldName === 'string' && (0, _typeof2["default"])(schemaObj) === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
-      throw _rxError["default"].newRxError('SC2', {
+      throw (0, _rxError.newRxError)('SC2', {
         fieldName: fieldName
       });
     }
@@ -4799,7 +4757,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean') {
-      throw _rxError["default"].newRxError('SC24', {
+      throw (0, _rxError.newRxError)('SC24', {
         fieldName: fieldName
       });
     } // if ref given, must be type=='string' or type=='array' with string-items
@@ -4812,7 +4770,7 @@ function validateFieldsDeep(jsonSchema) {
 
         case 'array':
           if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
-            throw _rxError["default"].newRxError('SC3', {
+            throw (0, _rxError.newRxError)('SC3', {
               fieldName: fieldName
             });
           }
@@ -4820,7 +4778,7 @@ function validateFieldsDeep(jsonSchema) {
           break;
 
         default:
-          throw _rxError["default"].newRxError('SC4', {
+          throw (0, _rxError.newRxError)('SC4', {
             fieldName: fieldName
           });
       }
@@ -4828,7 +4786,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
-      throw _rxError["default"].newRxError('SC5', {
+      throw (0, _rxError.newRxError)('SC5', {
         fieldName: fieldName
       });
     }
@@ -4837,14 +4795,14 @@ function validateFieldsDeep(jsonSchema) {
 
     if (isNested) {
       if (schemaObj.primary) {
-        throw _rxError["default"].newRxError('SC6', {
+        throw (0, _rxError.newRxError)('SC6', {
           path: path,
           primary: schemaObj.primary
         });
       }
 
       if (schemaObj["default"]) {
-        throw _rxError["default"].newRxError('SC7', {
+        throw (0, _rxError.newRxError)('SC7', {
           path: path
         });
       }
@@ -4858,7 +4816,7 @@ function validateFieldsDeep(jsonSchema) {
           return;
         }
 
-        throw _rxError["default"].newRxError('SC8', {
+        throw (0, _rxError.newRxError)('SC8', {
           fieldName: fieldName
         });
       }
@@ -4892,14 +4850,14 @@ function validateFieldsDeep(jsonSchema) {
 function checkSchema(jsonID) {
   // check _rev
   if (jsonID.properties._rev) {
-    throw _rxError["default"].newRxError('SC10', {
+    throw (0, _rxError.newRxError)('SC10', {
       schema: jsonID
     });
   } // check version
 
 
   if (!jsonID.hasOwnProperty('version') || typeof jsonID.version !== 'number' || jsonID.version < 0) {
-    throw _rxError["default"].newRxError('SC11', {
+    throw (0, _rxError.newRxError)('SC11', {
       version: jsonID.version
     });
   }
@@ -4911,7 +4869,7 @@ function checkSchema(jsonID) {
 
     if (value.primary) {
       if (primaryPath) {
-        throw _rxError["default"].newRxError('SC12', {
+        throw (0, _rxError.newRxError)('SC12', {
           value: value
         });
       }
@@ -4919,25 +4877,25 @@ function checkSchema(jsonID) {
       primaryPath = key;
 
       if (value.index) {
-        throw _rxError["default"].newRxError('SC13', {
+        throw (0, _rxError.newRxError)('SC13', {
           value: value
         });
       }
 
       if (value.unique) {
-        throw _rxError["default"].newRxError('SC14', {
+        throw (0, _rxError.newRxError)('SC14', {
           value: value
         });
       }
 
       if (value.encrypted) {
-        throw _rxError["default"].newRxError('SC15', {
+        throw (0, _rxError.newRxError)('SC15', {
           value: value
         });
       }
 
       if (value.type !== 'string') {
-        throw _rxError["default"].newRxError('SC16', {
+        throw (0, _rxError.newRxError)('SC16', {
           value: value
         });
       }
@@ -4945,7 +4903,7 @@ function checkSchema(jsonID) {
 
 
     if (_rxDocument["default"].properties().includes(key)) {
-      throw _rxError["default"].newRxError('SC17', {
+      throw (0, _rxError.newRxError)('SC17', {
         key: key
       });
     }
@@ -4953,21 +4911,21 @@ function checkSchema(jsonID) {
 
   if (jsonID.compoundIndexes) {
     if (!Array.isArray(jsonID.compoundIndexes)) {
-      throw _rxError["default"].newRxError('SC18', {
+      throw (0, _rxError.newRxError)('SC18', {
         compoundIndexes: jsonID.compoundIndexes
       });
     }
 
     jsonID.compoundIndexes.forEach(function (ar) {
       if (!Array.isArray(ar)) {
-        throw _rxError["default"].newRxError('SC19', {
+        throw (0, _rxError.newRxError)('SC19', {
           compoundIndexes: jsonID.compoundIndexes
         });
       }
 
       ar.forEach(function (str) {
         if (typeof str !== 'string') {
-          throw _rxError["default"].newRxError('SC20', {
+          throw (0, _rxError.newRxError)('SC20', {
             compoundIndexes: jsonID.compoundIndexes
           });
         }
@@ -4987,7 +4945,7 @@ function checkSchema(jsonID) {
     var schemaObj = _objectPath["default"].get(jsonID, path);
 
     if (!schemaObj || (0, _typeof2["default"])(schemaObj) !== 'object') {
-      throw _rxError["default"].newRxError('SC21', {
+      throw (0, _rxError.newRxError)('SC21', {
         key: key
       });
     }
@@ -4999,7 +4957,7 @@ function checkSchema(jsonID) {
   }).filter(function (index) {
     return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
   }).forEach(function (index) {
-    throw _rxError["default"].newRxError('SC22', {
+    throw (0, _rxError.newRxError)('SC22', {
       key: index.key,
       type: index.schemaObj.type
     });
@@ -5136,7 +5094,7 @@ exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _isMyJsonValid = _interopRequireDefault(require("is-my-json-valid"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _util = require("../util");
 
@@ -5168,7 +5126,7 @@ function _getValidator() {
     var schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
 
     if (!schemaPart) {
-      throw _rxError["default"].newRxError('VD1', {
+      throw (0, _rxError.newRxError)('VD1', {
         schemaPath: schemaPath
       });
     }
@@ -5194,7 +5152,7 @@ var validate = function validate(obj) {
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
-    throw _rxError["default"].newRxError('VD2', {
+    throw (0, _rxError.newRxError)('VD2', {
       errors: useValidator.errors,
       schemaPath: schemaPath,
       obj: obj,
@@ -5237,8 +5195,6 @@ exports["default"] = _default;
 },{"../rx-error":34,"../util":37,"@babel/runtime/helpers/interopRequireDefault":45,"is-my-json-valid":382}],26:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -5251,7 +5207,7 @@ var _operators = require("rxjs/operators");
 
 var _util = require("../util");
 
-var _rxChangeEvent = _interopRequireDefault(require("../rx-change-event"));
+var _rxChangeEvent = require("../rx-change-event");
 
 /**
  * listens to changes of the internal pouchdb
@@ -5310,9 +5266,7 @@ function _handleSingleChange(collection, change) {
     var docData = change.doc; // already handled by internal event-stream
 
     if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-
-    var cE = _rxChangeEvent["default"].fromPouchChange(docData, collection);
-
+    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection);
     collection.$emit(cE);
     return true;
   });
@@ -5332,7 +5286,7 @@ var _default = {
 };
 exports["default"] = _default;
 
-},{"../rx-change-event":30,"../util":37,"@babel/runtime/helpers/interopRequireDefault":45,"rxjs":501,"rxjs/operators":697}],27:[function(require,module,exports){
+},{"../rx-change-event":30,"../util":37,"rxjs":501,"rxjs/operators":697}],27:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -5346,7 +5300,7 @@ var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
 var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 /**
  * this handles the pouchdb-instance
@@ -5389,7 +5343,7 @@ _pouchdbCore["default"].countAllUndeleted = function (pouchdb) {
 
 _pouchdbCore["default"].getBatch = function (pouchdb, limit) {
   if (limit <= 1) {
-    throw _rxError["default"].newRxError('P1', {
+    throw (0, _rxError.newRxError)('P1', {
       limit: limit
     });
   }
@@ -5420,8 +5374,7 @@ exports["default"] = _default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
-exports["default"] = void 0;
+exports["default"] = createQueryCache;
 
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
@@ -5461,14 +5414,9 @@ function () {
   return QueryCache;
 }();
 
-function create() {
+function createQueryCache() {
   return new QueryCache();
 }
-
-var _default = {
-  create: create
-};
-exports["default"] = _default;
 
 },{}],29:[function(require,module,exports){
 "use strict";
@@ -5875,11 +5823,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fromJSON = fromJSON;
-exports.fromPouchChange = fromPouchChange;
-exports.create = create;
+exports.changeEventfromJSON = changeEventfromJSON;
+exports.changeEventfromPouchChange = changeEventfromPouchChange;
+exports.createChangeEvent = createChangeEvent;
 exports.isInstanceOf = isInstanceOf;
-exports["default"] = exports.RxChangeEvent = void 0;
+exports.RxChangeEvent = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -5934,11 +5882,11 @@ function () {
 
 exports.RxChangeEvent = RxChangeEvent;
 
-function fromJSON(data) {
+function changeEventfromJSON(data) {
   return new RxChangeEvent(data);
 }
 
-function fromPouchChange(changeDoc, collection) {
+function changeEventfromPouchChange(changeDoc, collection) {
   var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
   if (changeDoc._deleted) op = 'REMOVE'; // decompress / primarySwap
 
@@ -5955,7 +5903,7 @@ function fromPouchChange(changeDoc, collection) {
   return new RxChangeEvent(data);
 }
 
-function create(op, database, collection, doc, value) {
+function createChangeEvent(op, database, collection, doc, value) {
   var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
   var data = {
     op: op,
@@ -5974,18 +5922,8 @@ function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;
 }
 
-var _default = {
-  fromJSON: fromJSON,
-  fromPouchChange: fromPouchChange,
-  create: create,
-  isInstanceOf: isInstanceOf
-};
-exports["default"] = _default;
-
 },{"./util":37,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45}],31:[function(require,module,exports){
 "use strict";
-
-var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
@@ -6012,15 +5950,15 @@ var _util = require("./util");
 
 var _rxDocument = _interopRequireDefault(require("./rx-document"));
 
-var _rxQuery = _interopRequireDefault(require("./rx-query"));
+var _rxQuery = require("./rx-query");
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
-var _rxChangeEvent = _interopRequireDefault(require("./rx-change-event"));
+var _rxChangeEvent = require("./rx-change-event");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
-var _dataMigrator = _interopRequireWildcard(require("./data-migrator"));
+var _dataMigrator = require("./data-migrator");
 
 var _crypter = _interopRequireDefault(require("./crypter"));
 
@@ -6058,8 +5996,8 @@ function () {
     this.options = options;
     this._atomicUpsertQueues = new Map();
     this._statics = statics;
-    this._docCache = _docCache["default"].create();
-    this._queryCache = _queryCache["default"].create(); // defaults
+    this._docCache = (0, _docCache["default"])();
+    this._queryCache = (0, _queryCache["default"])(); // defaults
 
     this.synced = false;
     this.hooks = {};
@@ -6086,12 +6024,12 @@ function () {
 
     var createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
-    this._dataMigrator = _dataMigrator["default"].create(this, this._migrationStrategies);
+    this._dataMigrator = (0, _dataMigrator.createDataMigrator)(this, this._migrationStrategies);
     this._crypter = _crypter["default"].create(this.database.password, this.schema);
     this._observable$ = this.database.$.pipe((0, _operators.filter)(function (event) {
       return event.data.col === _this.name;
     }));
-    this._changeEventBuffer = _changeEventBuffer["default"].create(this);
+    this._changeEventBuffer = (0, _changeEventBuffer["default"])(this);
 
     this._subs.push(this._observable$.pipe((0, _operators.filter)(function (cE) {
       return !cE.data.isLocal;
@@ -6396,7 +6334,7 @@ function () {
       tempDoc = json;
 
       if (!json._isTemporary) {
-        throw _rxError["default"].newRxError('COL1', {
+        throw (0, _rxError.newRxError)('COL1', {
           data: json
         });
       }
@@ -6408,7 +6346,7 @@ function () {
     json = this.schema.fillObjectWithDefaults(json);
 
     if (json._id && this.schema.primaryPath !== '_id') {
-      throw _rxError["default"].newRxError('COL2', {
+      throw (0, _rxError.newRxError)('COL2', {
         data: json
       });
     } // fill _id
@@ -6431,7 +6369,7 @@ function () {
       return _this6._runHooks('post', 'insert', json, newDoc);
     }).then(function () {
       // event
-      var emitEvent = _rxChangeEvent["default"].create('INSERT', _this6.database, _this6, newDoc, json);
+      var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this6.database, _this6, newDoc, json);
 
       _this6.$emit(emitEvent);
 
@@ -6451,7 +6389,7 @@ function () {
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {
-      throw _rxError["default"].newRxError('COL3', {
+      throw (0, _rxError.newRxError)('COL3', {
         primaryPath: this.schema.primaryPath,
         data: json
       });
@@ -6484,7 +6422,7 @@ function () {
     var primary = json[this.schema.primaryPath];
 
     if (!primary) {
-      throw _rxError["default"].newRxError('COL4', {
+      throw (0, _rxError.newRxError)('COL4', {
         data: json
       });
     } // ensure that it wont try 2 parallel runs
@@ -6524,13 +6462,12 @@ function () {
 
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
-      throw _rxError["default"].newRxError('COL5', {
+      throw (0, _rxError.newRxError)('COL5', {
         queryObj: queryObj
       });
     }
 
-    var query = _rxQuery["default"].create('find', queryObj, this);
-
+    var query = (0, _rxQuery.createRxQuery)('find', queryObj, this);
     return query;
   };
 
@@ -6538,13 +6475,13 @@ function () {
     var query;
 
     if (typeof queryObj === 'string') {
-      query = _rxQuery["default"].create('findOne', {
+      query = (0, _rxQuery.createRxQuery)('findOne', {
         _id: queryObj
       }, this);
-    } else query = _rxQuery["default"].create('findOne', queryObj, this);
+    } else query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
 
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
-      throw _rxError["default"].newRxTypeError('COL6', {
+      throw (0, _rxError.newRxTypeError)('COL6', {
         queryObj: queryObj
       });
     }
@@ -6558,7 +6495,7 @@ function () {
   ;
 
   _proto.dump = function dump() {
-    throw _rxError["default"].pluginMissing('json-dump');
+    throw (0, _rxError.pluginMissing)('json-dump');
   }
   /**
    * imports the json-data into the collection
@@ -6567,7 +6504,7 @@ function () {
   ;
 
   _proto.importDump = function importDump() {
-    throw _rxError["default"].pluginMissing('json-dump');
+    throw (0, _rxError.pluginMissing)('json-dump');
   }
   /**
    * waits for external changes to the database
@@ -6577,7 +6514,7 @@ function () {
   ;
 
   _proto.watchForChanges = function watchForChanges() {
-    throw _rxError["default"].pluginMissing('watch-for-changes');
+    throw (0, _rxError.pluginMissing)('watch-for-changes');
   }
   /**
    * sync with another database
@@ -6585,7 +6522,7 @@ function () {
   ;
 
   _proto.sync = function sync() {
-    throw _rxError["default"].pluginMissing('replication');
+    throw (0, _rxError.pluginMissing)('replication');
   }
   /**
    * Create a replicated in-memory-collection
@@ -6593,7 +6530,7 @@ function () {
   ;
 
   _proto.inMemory = function inMemory() {
-    throw _rxError["default"].pluginMissing('in-memory');
+    throw (0, _rxError.pluginMissing)('in-memory');
   }
   /**
    * HOOKS
@@ -6604,27 +6541,27 @@ function () {
     var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
     if (typeof fun !== 'function') {
-      throw _rxError["default"].newRxTypeError('COL7', {
+      throw (0, _rxError.newRxTypeError)('COL7', {
         key: key,
         when: when
       });
     }
 
     if (!HOOKS_WHEN.includes(when)) {
-      throw _rxError["default"].newRxTypeError('COL8', {
+      throw (0, _rxError.newRxTypeError)('COL8', {
         key: key,
         when: when
       });
     }
 
     if (!HOOKS_KEYS.includes(key)) {
-      throw _rxError["default"].newRxError('COL9', {
+      throw (0, _rxError.newRxError)('COL9', {
         key: key
       });
     }
 
     if (when === 'post' && key === 'create' && parallel === true) {
-      throw _rxError["default"].newRxError('COL10', {
+      throw (0, _rxError.newRxError)('COL10', {
         when: when,
         key: key,
         parallel: parallel
@@ -6807,14 +6744,14 @@ exports.RxCollection = RxCollection;
 var checkMigrationStrategies = function checkMigrationStrategies(schema, migrationStrategies) {
   // migrationStrategies must be object not array
   if ((0, _typeof2["default"])(migrationStrategies) !== 'object' || Array.isArray(migrationStrategies)) {
-    throw _rxError["default"].newRxTypeError('COL11', {
+    throw (0, _rxError.newRxTypeError)('COL11', {
       schema: schema
     });
   } // for every previousVersion there must be strategy
 
 
   if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-    throw _rxError["default"].newRxError('COL12', {
+    throw (0, _rxError.newRxError)('COL12', {
       have: Object.keys(migrationStrategies),
       should: schema.previousVersions
     });
@@ -6829,7 +6766,7 @@ var checkMigrationStrategies = function checkMigrationStrategies(schema, migrati
   }).filter(function (strat) {
     return typeof strat.s !== 'function';
   }).forEach(function (strat) {
-    throw _rxError["default"].newRxTypeError('COL13', {
+    throw (0, _rxError.newRxTypeError)('COL13', {
       version: strat.v,
       type: (0, _typeof2["default"])(strat),
       schema: schema
@@ -6892,26 +6829,26 @@ var checkOrmMethods = function checkOrmMethods(statics) {
         v = _ref[1];
 
     if (typeof k !== 'string') {
-      throw _rxError["default"].newRxTypeError('COL14', {
+      throw (0, _rxError.newRxTypeError)('COL14', {
         name: k
       });
     }
 
     if (k.startsWith('_')) {
-      throw _rxError["default"].newRxTypeError('COL15', {
+      throw (0, _rxError.newRxTypeError)('COL15', {
         name: k
       });
     }
 
     if (typeof v !== 'function') {
-      throw _rxError["default"].newRxTypeError('COL16', {
+      throw (0, _rxError.newRxTypeError)('COL16', {
         name: k,
         type: (0, _typeof2["default"])(k)
       });
     }
 
     if (properties().includes(k) || _rxDocument["default"].properties().includes(k)) {
-      throw _rxError["default"].newRxError('COL17', {
+      throw (0, _rxError.newRxError)('COL17', {
         name: k
       });
     }
@@ -7023,7 +6960,7 @@ function create(_ref3) {
       options = _ref3$options === void 0 ? {} : _ref3$options;
   (0, _util.validateCouchDBString)(name); // ensure it is a schema-object
 
-  if (!_rxSchema["default"].isInstanceOf(schema)) schema = _rxSchema["default"].create(schema);
+  if (!(0, _rxSchema.isInstanceOf)(schema)) schema = (0, _rxSchema.createRxSchema)(schema);
   checkMigrationStrategies(schema, migrationStrategies); // check ORM-methods
 
   checkOrmMethods(statics);
@@ -7032,7 +6969,7 @@ function create(_ref3) {
   Object.keys(methods).filter(function (funName) {
     return schema.topLevelFields.includes(funName);
   }).forEach(function (funName) {
-    throw _rxError["default"].newRxError('COL18', {
+    throw (0, _rxError.newRxError)('COL18', {
       funName: funName
     });
   });
@@ -7067,7 +7004,7 @@ var _default = {
 };
 exports["default"] = _default;
 
-},{"./change-event-buffer":2,"./crypter":4,"./data-migrator":5,"./doc-cache":6,"./hooks":7,"./overwritable":11,"./query-cache":28,"./rx-change-event":30,"./rx-document":33,"./rx-error":34,"./rx-query":35,"./rx-schema":36,"./util":37,"@babel/runtime/helpers/asyncToGenerator":40,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/interopRequireWildcard":46,"@babel/runtime/helpers/typeof":49,"@babel/runtime/regenerator":51,"rxjs/operators":697}],32:[function(require,module,exports){
+},{"./change-event-buffer":2,"./crypter":4,"./data-migrator":5,"./doc-cache":6,"./hooks":7,"./overwritable":11,"./query-cache":28,"./rx-change-event":30,"./rx-document":33,"./rx-error":34,"./rx-query":35,"./rx-schema":36,"./util":37,"@babel/runtime/helpers/asyncToGenerator":40,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49,"@babel/runtime/regenerator":51,"rxjs/operators":697}],32:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -7105,13 +7042,13 @@ var _pouchDb = _interopRequireDefault(require("./pouch-db"));
 
 var _util = require("./util");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _rxCollection = _interopRequireDefault(require("./rx-collection"));
 
-var _rxSchema = _interopRequireDefault(require("./rx-schema"));
+var _rxSchema = require("./rx-schema");
 
-var _rxChangeEvent = _interopRequireDefault(require("./rx-change-event"));
+var _rxChangeEvent = require("./rx-change-event");
 
 var _overwritable = _interopRequireDefault(require("./overwritable"));
 
@@ -7151,7 +7088,7 @@ function () {
 
     this.subject = new _rxjs.Subject();
     this.observable$ = this.subject.asObservable().pipe((0, _operators.filter)(function (cEvent) {
-      return _rxChangeEvent["default"].isInstanceOf(cEvent);
+      return (0, _rxChangeEvent.isInstanceOf)(cEvent);
     }));
   }
 
@@ -7265,7 +7202,7 @@ function () {
                 break;
               }
 
-              throw _rxError["default"].newRxError('DB2', {
+              throw (0, _rxError.newRxError)('DB2', {
                 name: args.name
               });
 
@@ -7275,7 +7212,7 @@ function () {
                 break;
               }
 
-              throw _rxError["default"].newRxError('DB3', {
+              throw (0, _rxError.newRxError)('DB3', {
                 name: args.name
               });
 
@@ -7285,7 +7222,7 @@ function () {
                 break;
               }
 
-              throw _rxError["default"].newRxError('DB4', {
+              throw (0, _rxError.newRxError)('DB4', {
                 name: args.name,
                 args: args
               });
@@ -7298,12 +7235,12 @@ function () {
                 break;
               }
 
-              throw _rxError["default"].newRxError('DB5', {
+              throw (0, _rxError.newRxError)('DB5', {
                 name: args.name
               });
 
             case 14:
-              args.schema = _rxSchema["default"].create(args.schema); // check schemaHash
+              args.schema = (0, _rxSchema.createRxSchema)(args.schema); // check schemaHash
 
               schemaHash = args.schema.hash;
               collectionDoc = null;
@@ -7346,7 +7283,7 @@ function () {
                 break;
               }
 
-              throw _rxError["default"].newRxError('DB6', {
+              throw (0, _rxError.newRxError)('DB6', {
                 name: args.name,
                 previousSchemaHash: collectionDoc.schemaHash,
                 schemaHash: schemaHash
@@ -7364,7 +7301,7 @@ function () {
                 break;
               }
 
-              throw _rxError["default"].newRxError('DB7', {
+              throw (0, _rxError.newRxError)('DB7', {
                 name: args.name
               });
 
@@ -7394,7 +7331,7 @@ function () {
               _context.t1 = _context["catch"](38);
 
             case 45:
-              cEvent = _rxChangeEvent["default"].create('RxDatabase.collection', this);
+              cEvent = (0, _rxChangeEvent.createChangeEvent)('RxDatabase.collection', this);
               cEvent.data.v = collection.name;
               cEvent.data.col = '_collections';
               this.$emit(cEvent);
@@ -7500,7 +7437,7 @@ function () {
   ;
 
   _proto.dump = function dump() {
-    throw _rxError["default"].pluginMissing('json-dump');
+    throw (0, _rxError.pluginMissing)('json-dump');
   }
   /**
    * import json
@@ -7509,7 +7446,7 @@ function () {
   ;
 
   _proto.importDump = function importDump() {
-    throw _rxError["default"].pluginMissing('json-dump');
+    throw (0, _rxError.pluginMissing)('json-dump');
   }
   /**
    * spawn server
@@ -7517,7 +7454,7 @@ function () {
   ;
 
   _proto.server = function server() {
-    throw _rxError["default"].pluginMissing('server');
+    throw (0, _rxError.pluginMissing)('server');
   }
   /**
    * destroys the database-instance and all collections
@@ -7668,7 +7605,7 @@ function _isNameAdapterUsed(name, adapter) {
   });
 
   if (used) {
-    throw _rxError["default"].newRxError('DB8', {
+    throw (0, _rxError.newRxError)('DB8', {
       name: name,
       adapter: adapter,
       link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
@@ -7754,7 +7691,7 @@ function _preparePasswordHash2() {
             return rxDatabase.destroy();
 
           case 16:
-            throw _rxError["default"].newRxError('DB1', {
+            throw (0, _rxError.newRxError)('DB1', {
               passwordHash: (0, _util.hash)(rxDatabase.password),
               existingPasswordHash: pwHashDoc.value
             });
@@ -7908,8 +7845,7 @@ function _prepareBroadcastChannel(rxDatabase) {
 
     if (msg.db === rxDatabase.token) return; // same db
 
-    var changeEvent = _rxChangeEvent["default"].fromJSON(msg.d);
-
+    var changeEvent = (0, _rxChangeEvent.changeEventfromJSON)(msg.d);
     rxDatabase.broadcastChannel$.next(changeEvent);
   }; // TODO only subscribe when sth is listening to the event-chain
 
@@ -7984,7 +7920,7 @@ function create(_ref) {
 
   if (typeof adapter === 'string') {
     if (!_pouchDb["default"].adapters || !_pouchDb["default"].adapters[adapter]) {
-      throw _rxError["default"].newRxError('DB9', {
+      throw (0, _rxError.newRxError)('DB9', {
         adapter: adapter
       });
     }
@@ -7992,7 +7928,7 @@ function create(_ref) {
     (0, _util.isLevelDown)(adapter);
 
     if (!_pouchDb["default"].adapters || !_pouchDb["default"].adapters.leveldb) {
-      throw _rxError["default"].newRxError('DB10', {
+      throw (0, _rxError.newRxError)('DB10', {
         adapter: adapter
       });
     }
@@ -8140,7 +8076,6 @@ var _default = {
   checkAdapter: checkAdapter,
   isInstanceOf: isInstanceOf,
   RxDatabase: RxDatabase,
-  RxSchema: _rxSchema["default"],
   dbCount: dbCount
 };
 exports["default"] = _default;
@@ -8170,9 +8105,9 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
-var _rxChangeEvent = _interopRequireDefault(require("./rx-change-event"));
+var _rxChangeEvent = require("./rx-change-event");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
@@ -8284,15 +8219,15 @@ var basePrototype = {
    */
   get$: function get$(path) {
     if (path.includes('.item.')) {
-      throw _rxError["default"].newRxError('DOC1', {
+      throw (0, _rxError.newRxError)('DOC1', {
         path: path
       });
     }
 
-    if (path === this.primaryPath) throw _rxError["default"].newRxError('DOC2'); // final fields cannot be modified and so also not observed
+    if (path === this.primaryPath) throw (0, _rxError.newRxError)('DOC2'); // final fields cannot be modified and so also not observed
 
     if (this.collection.schema.finalFields.includes(path)) {
-      throw _rxError["default"].newRxError('DOC3', {
+      throw (0, _rxError.newRxError)('DOC3', {
         path: path
       });
     }
@@ -8300,7 +8235,7 @@ var basePrototype = {
     var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
 
     if (!schemaObj) {
-      throw _rxError["default"].newRxError('DOC4', {
+      throw (0, _rxError.newRxError)('DOC4', {
         path: path
       });
     }
@@ -8320,13 +8255,13 @@ var basePrototype = {
     var value = this.get(path);
 
     if (!schemaObj) {
-      throw _rxError["default"].newRxError('DOC5', {
+      throw (0, _rxError.newRxError)('DOC5', {
         path: path
       });
     }
 
     if (!schemaObj.ref) {
-      throw _rxError["default"].newRxError('DOC6', {
+      throw (0, _rxError.newRxError)('DOC6', {
         path: path,
         schemaObj: schemaObj
       });
@@ -8335,7 +8270,7 @@ var basePrototype = {
     var refCollection = this.collection.database.collections[schemaObj.ref];
 
     if (!refCollection) {
-      throw _rxError["default"].newRxError('DOC7', {
+      throw (0, _rxError.newRxError)('DOC7', {
         ref: schemaObj.ref,
         path: path,
         schemaObj: schemaObj
@@ -8364,9 +8299,14 @@ var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    var withRev = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
     var data = (0, _util.clone)(this._data);
-    if (!withRev) delete data._rev;
+
+    if (!withRevAndAttachments) {
+      delete data._rev;
+      delete data._attachments;
+    }
+
     return data;
   },
 
@@ -8379,14 +8319,14 @@ var basePrototype = {
   set: function set(objPath, value) {
     // setters can only be used on temporary documents
     if (!this._isTemporary) {
-      throw _rxError["default"].newRxTypeError('DOC16', {
+      throw (0, _rxError.newRxTypeError)('DOC16', {
         objPath: objPath,
         value: value
       });
     }
 
     if (typeof objPath !== 'string') {
-      throw _rxError["default"].newRxTypeError('DOC15', {
+      throw (0, _rxError.newRxTypeError)('DOC15', {
         objPath: objPath,
         value: value
       });
@@ -8400,7 +8340,7 @@ var basePrototype = {
     var rootPath = pathEls.join('.');
 
     if (typeof _objectPath["default"].get(this._data, rootPath) === 'undefined') {
-      throw _rxError["default"].newRxError('DOC10', {
+      throw (0, _rxError.newRxError)('DOC10', {
         childpath: objPath,
         rootPath: rootPath
       });
@@ -8417,20 +8357,20 @@ var basePrototype = {
    * @param  {object} updateObj mongodb-like syntax
    */
   update: function update() {
-    throw _rxError["default"].pluginMissing('update');
+    throw (0, _rxError.pluginMissing)('update');
   },
   putAttachment: function putAttachment() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
   getAttachment: function getAttachment() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
   allAttachments: function allAttachments() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
 
   get allAttachments$() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
 
   /**
@@ -8492,7 +8432,7 @@ var basePrototype = {
     newData = (0, _util.clone)(newData); // deleted documents cannot be changed
 
     if (this._deleted$.getValue()) {
-      throw _rxError["default"].newRxError('DOC11', {
+      throw (0, _rxError.newRxError)('DOC11', {
         id: this.primary,
         document: this
       });
@@ -8506,14 +8446,14 @@ var basePrototype = {
       return _this3.collection._pouchPut((0, _util.clone)(newData));
     }).then(function (ret) {
       if (!ret.ok) {
-        throw _rxError["default"].newRxError('DOC12', {
+        throw (0, _rxError.newRxError)('DOC12', {
           data: ret
         });
       }
 
       newData._rev = ret.rev; // emit event
 
-      var changeEvent = _rxChangeEvent["default"].create('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
+      var changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
 
       _this3.$emit(changeEvent);
 
@@ -8531,7 +8471,7 @@ var basePrototype = {
 
     // .save() cannot be called on non-temporary-documents
     if (!this._isTemporary) {
-      throw _rxError["default"].newRxError('DOC17', {
+      throw (0, _rxError.newRxError)('DOC17', {
         id: this.primary,
         document: this
       });
@@ -8559,7 +8499,7 @@ var basePrototype = {
     var _this5 = this;
 
     if (this.deleted) {
-      return Promise.reject(_rxError["default"].newRxError('DOC13', {
+      return Promise.reject((0, _rxError.newRxError)('DOC13', {
         document: this,
         id: this.primary
       }));
@@ -8575,7 +8515,7 @@ var basePrototype = {
 
       return _this5.collection._pouchPut(deletedData);
     }).then(function () {
-      _this5.$emit(_rxChangeEvent["default"].create('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
+      _this5.$emit((0, _rxChangeEvent.createChangeEvent)('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
 
       return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {
@@ -8583,7 +8523,7 @@ var basePrototype = {
     });
   },
   destroy: function destroy() {
-    throw _rxError["default"].newRxError('DOC14');
+    throw (0, _rxError.newRxError)('DOC14');
   }
 };
 exports.basePrototype = basePrototype;
@@ -8603,11 +8543,11 @@ function defineGetterSetter(schema, valueObj) {
     valueObj.__defineGetter__(key, function () {
       var _this = thisObj ? thisObj : this;
 
-      if (!_this.get) {
+      if (!_this.get || typeof _this.get !== 'function') {
         /**
-         * when an object gets added to the state of a vuejs-component,
-         * it happens that this getter is called with another scope
-         * to prevent errors, we have to return undefined in this case
+         * When an object gets added to the state of a vuejs-component,
+         * it happens that this getter is called with another scope.
+         * To prevent errors, we have to return undefined in this case
          */
         return undefined;
       }
@@ -8694,7 +8634,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.pluginMissing = pluginMissing;
-exports["default"] = exports.newRxTypeError = exports.newRxError = exports.RxTypeError = exports.RxError = void 0;
+exports.newRxTypeError = exports.newRxError = exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -8715,7 +8655,7 @@ var _overwritable = _interopRequireDefault(require("./overwritable"));
  * @param  {any} parameters
  * @return {string}
  */
-var parametersToString = function parametersToString(parameters) {
+function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
   ret += 'Given parameters: {\n';
@@ -8732,11 +8672,11 @@ var parametersToString = function parametersToString(parameters) {
   }).join('\n');
   ret += '}';
   return ret;
-};
+}
 
-var messageForError = function messageForError(message, parameters) {
+function messageForError(message, parameters) {
   return 'RxError:' + '\n' + message + '\n' + parametersToString(parameters);
-};
+}
 
 var RxError =
 /*#__PURE__*/
@@ -8839,12 +8779,6 @@ var newRxTypeError = function newRxTypeError(code, parameters) {
 };
 
 exports.newRxTypeError = newRxTypeError;
-var _default = {
-  newRxError: newRxError,
-  newRxTypeError: newRxTypeError,
-  pluginMissing: pluginMissing
-};
-exports["default"] = _default;
 
 },{"./overwritable":11,"./util":37,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/inheritsLoose":44,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/wrapNativeSuper":50}],35:[function(require,module,exports){
 "use strict";
@@ -8854,9 +8788,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.create = create;
+exports.createRxQuery = createRxQuery;
 exports.isInstanceOf = isInstanceOf;
-exports["default"] = exports.RxQuery = void 0;
+exports.RxQuery = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -8874,7 +8808,7 @@ var _util = require("./util");
 
 var _queryChangeDetector = _interopRequireDefault(require("./query-change-detector"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
@@ -8974,7 +8908,7 @@ function () {
         break;
 
       default:
-        throw _rxError["default"].newRxError('QU1', {
+        throw (0, _rxError.newRxError)('QU1', {
           op: this.op
         });
     }
@@ -9053,7 +8987,7 @@ function () {
 
     if (options.limit) {
       if (typeof options.limit !== 'number') {
-        throw _rxError["default"].newRxTypeError('QU2', {
+        throw (0, _rxError.newRxTypeError)('QU2', {
           limit: options.limit
         });
       }
@@ -9063,7 +8997,7 @@ function () {
 
     if (options.skip) {
       if (typeof options.skip !== 'number') {
-        throw _rxError["default"].newRxTypeError('QU3', {
+        throw (0, _rxError.newRxTypeError)('QU3', {
           skip: options.skip
         });
       }
@@ -9148,7 +9082,7 @@ function () {
   ;
 
   _proto.update = function update() {
-    throw _rxError["default"].pluginMissing('update');
+    throw (0, _rxError.pluginMissing)('update');
   }
   /**
    * regex cannot run on primary _id
@@ -9160,7 +9094,7 @@ function () {
     var clonedThis = this._clone();
 
     if (this.mquery._path === this.collection.schema.primaryPath) {
-      throw _rxError["default"].newRxError('QU4', {
+      throw (0, _rxError.newRxError)('QU4', {
         path: this.mquery._path
       });
     }
@@ -9194,7 +9128,7 @@ function () {
   };
 
   _proto.limit = function limit(amount) {
-    if (this.op === 'findOne') throw _rxError["default"].newRxError('QU6');else {
+    if (this.op === 'findOne') throw (0, _rxError.newRxError)('QU6');else {
       var clonedThis = this._clone();
 
       clonedThis.mquery.limit(amount);
@@ -9292,16 +9226,16 @@ function protoMerge(rxQueryProto, mQueryProtoKeys) {
 
 var protoMerged = false;
 
-function create(op, queryObj, collection) {
+function createRxQuery(op, queryObj, collection) {
   // checks
   if (queryObj && (0, _typeof2["default"])(queryObj) !== 'object') {
-    throw _rxError["default"].newRxTypeError('QU7', {
+    throw (0, _rxError.newRxTypeError)('QU7', {
       queryObj: queryObj
     });
   }
 
   if (Array.isArray(queryObj)) {
-    throw _rxError["default"].newRxTypeError('QU8', {
+    throw (0, _rxError.newRxTypeError)('QU8', {
       queryObj: queryObj
     });
   }
@@ -9324,7 +9258,7 @@ function create(op, queryObj, collection) {
 
 
 function _throwNotInSchema(key) {
-  throw _rxError["default"].newRxError('QU5', {
+  throw (0, _rxError.newRxError)('QU5', {
     key: key
   });
 }
@@ -9461,13 +9395,6 @@ function isInstanceOf(obj) {
   return obj instanceof RxQuery;
 }
 
-var _default = {
-  create: create,
-  RxQuery: RxQuery,
-  isInstanceOf: isInstanceOf
-};
-exports["default"] = _default;
-
 },{"./hooks":7,"./mquery/mquery":9,"./query-change-detector":29,"./rx-error":34,"./util":37,"@babel/runtime/helpers/asyncToGenerator":40,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49,"@babel/runtime/regenerator":51,"deep-equal":369,"rxjs":501,"rxjs/operators":697}],36:[function(require,module,exports){
 "use strict";
 
@@ -9482,9 +9409,9 @@ exports.getIndexes = getIndexes;
 exports.getPrimary = getPrimary;
 exports.getFinalFields = getFinalFields;
 exports.normalize = normalize;
-exports.create = create;
+exports.createRxSchema = createRxSchema;
 exports.isInstanceOf = isInstanceOf;
-exports["default"] = exports.RxSchema = void 0;
+exports.RxSchema = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -9496,7 +9423,7 @@ var _deepEqual = _interopRequireDefault(require("deep-equal"));
 
 var _util = require("./util");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
@@ -9553,7 +9480,7 @@ function () {
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _deepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
-        throw _rxError["default"].newRxError('DOC9', {
+        throw (0, _rxError.newRxError)('DOC9', {
           dataBefore: dataBefore,
           dataAfter: dataAfter,
           fieldName: fieldName
@@ -9572,7 +9499,7 @@ function () {
   ;
 
   _proto.validate = function validate() {
-    throw _rxError["default"].pluginMissing('validate');
+    throw (0, _rxError.pluginMissing)('validate');
   };
 
   /**
@@ -9863,7 +9790,7 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   return schemaObj;
 };
 
-function create(jsonID) {
+function createRxSchema(jsonID) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
   if (runPreCreateHooks) (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonID);
   var schema = new RxSchema(fillWithDefaultSettings(jsonID));
@@ -9874,19 +9801,6 @@ function create(jsonID) {
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
-
-var _default = {
-  RxSchema: RxSchema,
-  getEncryptedPaths: getEncryptedPaths,
-  hasCrypt: hasCrypt,
-  getIndexes: getIndexes,
-  getPrimary: getPrimary,
-  getFinalFields: getFinalFields,
-  normalize: normalize,
-  create: create,
-  isInstanceOf: isInstanceOf
-};
-exports["default"] = _default;
 
 },{"./hooks":7,"./rx-document":33,"./rx-error":34,"./util":37,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49,"deep-equal":369,"object-path":386}],37:[function(require,module,exports){
 "use strict";
@@ -9923,7 +9837,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _randomToken = _interopRequireDefault(require("random-token"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -9942,7 +9856,7 @@ var _isElectron = _interopRequireDefault(require("is-electron"));
  */
 function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
-    throw _rxError["default"].newRxError('UT4', {
+    throw (0, _rxError.newRxError)('UT4', {
       adapter: adapter
     });
   }
@@ -10125,7 +10039,7 @@ function trimDots(str) {
 
 function validateCouchDBString(name) {
   if (typeof name !== 'string' || name.length === 0) {
-    throw _rxError["default"].newRxTypeError('UT1', {
+    throw (0, _rxError.newRxTypeError)('UT1', {
       name: name
     });
   } // do not check, if foldername is given
@@ -10138,7 +10052,7 @@ function validateCouchDBString(name) {
   var reg = new RegExp(regStr);
 
   if (!name.match(reg)) {
-    throw _rxError["default"].newRxError('UT2', {
+    throw (0, _rxError.newRxError)('UT2', {
       regex: regStr,
       givenName: name
     });
@@ -10211,7 +10125,7 @@ function pouchReplicationFunction(pouch, _ref) {
   if (pull && !push) return pouch.replicate.from.bind(pouch);
 
   if (!pull && !push) {
-    throw _rxError["default"].newRxError('UT3', {
+    throw (0, _rxError.newRxError)('UT3', {
       pull: pull,
       push: push
     });
@@ -12080,14 +11994,8 @@ function microSeconds() {
   }
 }
 },{}],65:[function(require,module,exports){
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : {
-    default: obj
-  };
-}
-
-module.exports = _interopRequireDefault;
-},{}],66:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"dup":45}],66:[function(require,module,exports){
 
 },{}],67:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
@@ -24071,8 +23979,14 @@ function _tryIdleCall(idleQueue) {
 var _default = IdleQueue;
 exports["default"] = _default;
 },{}],368:[function(require,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"dup":65}],369:[function(require,module,exports){
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : {
+    default: obj
+  };
+}
+
+module.exports = _interopRequireDefault;
+},{}],369:[function(require,module,exports){
 var pSlice = Array.prototype.slice;
 var objectKeys = require('./lib/keys.js');
 var isArguments = require('./lib/is_arguments.js');
@@ -51141,8 +51055,8 @@ var _default = {
 };
 exports["default"] = _default;
 },{"./browser.js":699,"./node.js":66,"@babel/runtime/helpers/interopRequireDefault":701,"@babel/runtime/helpers/typeof":702,"detect-node":372}],701:[function(require,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"dup":65}],702:[function(require,module,exports){
+arguments[4][368][0].apply(exports,arguments)
+},{"dup":368}],702:[function(require,module,exports){
 arguments[4][49][0].apply(exports,arguments)
 },{"dup":49}],703:[function(require,module,exports){
 'use strict';

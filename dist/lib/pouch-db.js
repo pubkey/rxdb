@@ -11,7 +11,7 @@ var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
 var _pouchdbFind = _interopRequireDefault(require("pouchdb-find"));
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 /**
  * this handles the pouchdb-instance
@@ -54,7 +54,7 @@ _pouchdbCore["default"].countAllUndeleted = function (pouchdb) {
 
 _pouchdbCore["default"].getBatch = function (pouchdb, limit) {
   if (limit <= 1) {
-    throw _rxError["default"].newRxError('P1', {
+    throw (0, _rxError.newRxError)('P1', {
       limit: limit
     });
   }

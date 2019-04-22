@@ -5,11 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fromJSON = fromJSON;
-exports.fromPouchChange = fromPouchChange;
-exports.create = create;
+exports.changeEventfromJSON = changeEventfromJSON;
+exports.changeEventfromPouchChange = changeEventfromPouchChange;
+exports.createChangeEvent = createChangeEvent;
 exports.isInstanceOf = isInstanceOf;
-exports["default"] = exports.RxChangeEvent = void 0;
+exports.RxChangeEvent = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -64,11 +64,11 @@ function () {
 
 exports.RxChangeEvent = RxChangeEvent;
 
-function fromJSON(data) {
+function changeEventfromJSON(data) {
   return new RxChangeEvent(data);
 }
 
-function fromPouchChange(changeDoc, collection) {
+function changeEventfromPouchChange(changeDoc, collection) {
   var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
   if (changeDoc._deleted) op = 'REMOVE'; // decompress / primarySwap
 
@@ -85,7 +85,7 @@ function fromPouchChange(changeDoc, collection) {
   return new RxChangeEvent(data);
 }
 
-function create(op, database, collection, doc, value) {
+function createChangeEvent(op, database, collection, doc, value) {
   var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
   var data = {
     op: op,
@@ -103,11 +103,3 @@ function create(op, database, collection, doc, value) {
 function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;
 }
-
-var _default = {
-  fromJSON: fromJSON,
-  fromPouchChange: fromPouchChange,
-  create: create,
-  isInstanceOf: isInstanceOf
-};
-exports["default"] = _default;

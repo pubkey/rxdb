@@ -25,7 +25,7 @@ var _core = _interopRequireDefault(require("../core"));
 
 var _rxCollection = _interopRequireDefault(require("../rx-collection"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
@@ -87,7 +87,7 @@ function () {
 exports.RxReplicationState = RxReplicationState;
 
 function setPouchEventEmitter(rxRepState, evEmitter) {
-  if (rxRepState._pouchEventEmitterObject) throw _rxError["default"].newRxError('RC1');
+  if (rxRepState._pouchEventEmitterObject) throw (0, _rxError.newRxError)('RC1');
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
   rxRepState._subs.push((0, _rxjs.fromEvent)(evEmitter, 'change').subscribe(function (ev) {
@@ -245,7 +245,7 @@ function sync(_ref2) {
   options = (0, _util.clone)(options); // prevent #641 by not allowing internal pouchdbs as remote
 
   if (_pouchDb["default"].isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
-    throw _rxError["default"].newRxError('RC3', {
+    throw (0, _rxError.newRxError)('RC3', {
       database: this.database.name,
       collection: this.name
     });
@@ -258,7 +258,7 @@ function sync(_ref2) {
   }
 
   if (query && this !== query.collection) {
-    throw _rxError["default"].newRxError('RC2', {
+    throw (0, _rxError.newRxError)('RC2', {
       query: query
     });
   }

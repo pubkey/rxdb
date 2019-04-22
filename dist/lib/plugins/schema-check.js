@@ -16,7 +16,7 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxDocument = _interopRequireDefault(require("../rx-document"));
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _rxSchema = require("../rx-schema");
 
@@ -37,7 +37,7 @@ function checkFieldNameRegex(fieldName) {
   if (fieldName === '_id') return;
 
   if (['properties', 'language'].includes(fieldName)) {
-    throw _rxError["default"].newRxError('SC23', {
+    throw (0, _rxError.newRxError)('SC23', {
       fieldName: fieldName
     });
   }
@@ -46,7 +46,7 @@ function checkFieldNameRegex(fieldName) {
   var regex = new RegExp(regexStr);
 
   if (!fieldName.match(regex)) {
-    throw _rxError["default"].newRxError('SC1', {
+    throw (0, _rxError.newRxError)('SC1', {
       regex: regexStr,
       fieldName: fieldName
     });
@@ -64,7 +64,7 @@ function validateFieldsDeep(jsonSchema) {
     if (typeof fieldName === 'string' && (0, _typeof2["default"])(schemaObj) === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
-      throw _rxError["default"].newRxError('SC2', {
+      throw (0, _rxError.newRxError)('SC2', {
         fieldName: fieldName
       });
     }
@@ -75,7 +75,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean') {
-      throw _rxError["default"].newRxError('SC24', {
+      throw (0, _rxError.newRxError)('SC24', {
         fieldName: fieldName
       });
     } // if ref given, must be type=='string' or type=='array' with string-items
@@ -88,7 +88,7 @@ function validateFieldsDeep(jsonSchema) {
 
         case 'array':
           if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
-            throw _rxError["default"].newRxError('SC3', {
+            throw (0, _rxError.newRxError)('SC3', {
               fieldName: fieldName
             });
           }
@@ -96,7 +96,7 @@ function validateFieldsDeep(jsonSchema) {
           break;
 
         default:
-          throw _rxError["default"].newRxError('SC4', {
+          throw (0, _rxError.newRxError)('SC4', {
             fieldName: fieldName
           });
       }
@@ -104,7 +104,7 @@ function validateFieldsDeep(jsonSchema) {
 
 
     if (schemaObj.hasOwnProperty('ref') && schemaObj.primary) {
-      throw _rxError["default"].newRxError('SC5', {
+      throw (0, _rxError.newRxError)('SC5', {
         fieldName: fieldName
       });
     }
@@ -113,14 +113,14 @@ function validateFieldsDeep(jsonSchema) {
 
     if (isNested) {
       if (schemaObj.primary) {
-        throw _rxError["default"].newRxError('SC6', {
+        throw (0, _rxError.newRxError)('SC6', {
           path: path,
           primary: schemaObj.primary
         });
       }
 
       if (schemaObj["default"]) {
-        throw _rxError["default"].newRxError('SC7', {
+        throw (0, _rxError.newRxError)('SC7', {
           path: path
         });
       }
@@ -134,7 +134,7 @@ function validateFieldsDeep(jsonSchema) {
           return;
         }
 
-        throw _rxError["default"].newRxError('SC8', {
+        throw (0, _rxError.newRxError)('SC8', {
           fieldName: fieldName
         });
       }
@@ -168,14 +168,14 @@ function validateFieldsDeep(jsonSchema) {
 function checkSchema(jsonID) {
   // check _rev
   if (jsonID.properties._rev) {
-    throw _rxError["default"].newRxError('SC10', {
+    throw (0, _rxError.newRxError)('SC10', {
       schema: jsonID
     });
   } // check version
 
 
   if (!jsonID.hasOwnProperty('version') || typeof jsonID.version !== 'number' || jsonID.version < 0) {
-    throw _rxError["default"].newRxError('SC11', {
+    throw (0, _rxError.newRxError)('SC11', {
       version: jsonID.version
     });
   }
@@ -187,7 +187,7 @@ function checkSchema(jsonID) {
 
     if (value.primary) {
       if (primaryPath) {
-        throw _rxError["default"].newRxError('SC12', {
+        throw (0, _rxError.newRxError)('SC12', {
           value: value
         });
       }
@@ -195,25 +195,25 @@ function checkSchema(jsonID) {
       primaryPath = key;
 
       if (value.index) {
-        throw _rxError["default"].newRxError('SC13', {
+        throw (0, _rxError.newRxError)('SC13', {
           value: value
         });
       }
 
       if (value.unique) {
-        throw _rxError["default"].newRxError('SC14', {
+        throw (0, _rxError.newRxError)('SC14', {
           value: value
         });
       }
 
       if (value.encrypted) {
-        throw _rxError["default"].newRxError('SC15', {
+        throw (0, _rxError.newRxError)('SC15', {
           value: value
         });
       }
 
       if (value.type !== 'string') {
-        throw _rxError["default"].newRxError('SC16', {
+        throw (0, _rxError.newRxError)('SC16', {
           value: value
         });
       }
@@ -221,7 +221,7 @@ function checkSchema(jsonID) {
 
 
     if (_rxDocument["default"].properties().includes(key)) {
-      throw _rxError["default"].newRxError('SC17', {
+      throw (0, _rxError.newRxError)('SC17', {
         key: key
       });
     }
@@ -229,21 +229,21 @@ function checkSchema(jsonID) {
 
   if (jsonID.compoundIndexes) {
     if (!Array.isArray(jsonID.compoundIndexes)) {
-      throw _rxError["default"].newRxError('SC18', {
+      throw (0, _rxError.newRxError)('SC18', {
         compoundIndexes: jsonID.compoundIndexes
       });
     }
 
     jsonID.compoundIndexes.forEach(function (ar) {
       if (!Array.isArray(ar)) {
-        throw _rxError["default"].newRxError('SC19', {
+        throw (0, _rxError.newRxError)('SC19', {
           compoundIndexes: jsonID.compoundIndexes
         });
       }
 
       ar.forEach(function (str) {
         if (typeof str !== 'string') {
-          throw _rxError["default"].newRxError('SC20', {
+          throw (0, _rxError.newRxError)('SC20', {
             compoundIndexes: jsonID.compoundIndexes
           });
         }
@@ -263,7 +263,7 @@ function checkSchema(jsonID) {
     var schemaObj = _objectPath["default"].get(jsonID, path);
 
     if (!schemaObj || (0, _typeof2["default"])(schemaObj) !== 'object') {
-      throw _rxError["default"].newRxError('SC21', {
+      throw (0, _rxError.newRxError)('SC21', {
         key: key
       });
     }
@@ -275,7 +275,7 @@ function checkSchema(jsonID) {
   }).filter(function (index) {
     return index.schemaObj.type !== 'string' && index.schemaObj.type !== 'integer' && index.schemaObj.type !== 'number';
   }).forEach(function (index) {
-    throw _rxError["default"].newRxError('SC22', {
+    throw (0, _rxError.newRxError)('SC22', {
       key: index.key,
       type: index.schemaObj.type
     });

@@ -11,9 +11,9 @@ exports.getIndexes = getIndexes;
 exports.getPrimary = getPrimary;
 exports.getFinalFields = getFinalFields;
 exports.normalize = normalize;
-exports.create = create;
+exports.createRxSchema = createRxSchema;
 exports.isInstanceOf = isInstanceOf;
-exports["default"] = exports.RxSchema = void 0;
+exports.RxSchema = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -25,7 +25,7 @@ var _deepEqual = _interopRequireDefault(require("deep-equal"));
 
 var _util = require("./util");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
@@ -82,7 +82,7 @@ function () {
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     this.finalFields.forEach(function (fieldName) {
       if (!(0, _deepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
-        throw _rxError["default"].newRxError('DOC9', {
+        throw (0, _rxError.newRxError)('DOC9', {
           dataBefore: dataBefore,
           dataAfter: dataAfter,
           fieldName: fieldName
@@ -101,7 +101,7 @@ function () {
   ;
 
   _proto.validate = function validate() {
-    throw _rxError["default"].pluginMissing('validate');
+    throw (0, _rxError.pluginMissing)('validate');
   };
 
   /**
@@ -392,7 +392,7 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   return schemaObj;
 };
 
-function create(jsonID) {
+function createRxSchema(jsonID) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
   if (runPreCreateHooks) (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonID);
   var schema = new RxSchema(fillWithDefaultSettings(jsonID));
@@ -403,16 +403,3 @@ function create(jsonID) {
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
-
-var _default = {
-  RxSchema: RxSchema,
-  getEncryptedPaths: getEncryptedPaths,
-  hasCrypt: hasCrypt,
-  getIndexes: getIndexes,
-  getPrimary: getPrimary,
-  getFinalFields: getFinalFields,
-  normalize: normalize,
-  create: create,
-  isInstanceOf: isInstanceOf
-};
-exports["default"] = _default;

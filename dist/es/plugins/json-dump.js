@@ -2,9 +2,9 @@
  * this plugin adds the json export/import capabilities to RxDB
  */
 import { hash } from '../util';
-import RxQuery from '../rx-query';
-import RxError from '../rx-error';
-import RxChangeEvent from '../rx-change-event';
+import { createRxQuery } from '../rx-query';
+import { newRxError } from '../rx-error';
+import { createChangeEvent } from '../rx-change-event';
 /**
  * @return {Promise}
  */
@@ -56,7 +56,7 @@ var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   });
 
   if (missingCollections.length > 0) {
-    throw RxError.newRxError('JD1', {
+    throw newRxError('JD1', {
       missingCollections: missingCollections
     });
   }
@@ -82,7 +82,7 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = RxQuery.create('find', {}, this);
+  var query = createRxQuery('find', {}, this);
   return this._pouchFind(query, null, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
@@ -101,7 +101,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
 
   // check schemaHash
   if (exportedJSON.schemaHash !== this.schema.hash) {
-    throw RxError.newRxError('JD2', {
+    throw newRxError('JD2', {
       schemaHash: exportedJSON.schemaHash,
       own: this.schema.hash
     });
@@ -109,7 +109,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
 
 
   if (exportedJSON.encrypted && exportedJSON.passwordHash !== hash(this.database.password)) {
-    throw RxError.newRxError('JD3', {
+    throw newRxError('JD3', {
       passwordHash: exportedJSON.passwordHash,
       own: hash(this.database.password)
     });
@@ -126,7 +126,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
     return _this3._pouchPut(doc).then(function () {
       var primary = doc[_this3.schema.primaryPath]; // emit changeEvents
 
-      var emitEvent = RxChangeEvent.create('INSERT', _this3.database, _this3, null, doc);
+      var emitEvent = createChangeEvent('INSERT', _this3.database, _this3, null, doc);
       emitEvent.data.doc = primary;
 
       _this3.$emit(emitEvent);

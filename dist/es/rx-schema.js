@@ -2,7 +2,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
 import { clone, hash, sortObject, trimDots, flattenObject } from './util';
-import RxError from './rx-error';
+import { newRxError, pluginMissing } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
 export var RxSchema =
@@ -54,7 +54,7 @@ function () {
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
     this.finalFields.forEach(function (fieldName) {
       if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
-        throw RxError.newRxError('DOC9', {
+        throw newRxError('DOC9', {
           dataBefore: dataBefore,
           dataAfter: dataAfter,
           fieldName: fieldName
@@ -73,7 +73,7 @@ function () {
   ;
 
   _proto.validate = function validate() {
-    throw RxError.pluginMissing('validate');
+    throw pluginMissing('validate');
   };
 
   /**
@@ -355,7 +355,7 @@ var fillWithDefaultSettings = function fillWithDefaultSettings(schemaObj) {
   return schemaObj;
 };
 
-export function create(jsonID) {
+export function createRxSchema(jsonID) {
   var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
   if (runPreCreateHooks) runPluginHooks('preCreateRxSchema', jsonID);
   var schema = new RxSchema(fillWithDefaultSettings(jsonID));
@@ -365,14 +365,3 @@ export function create(jsonID) {
 export function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
-export default {
-  RxSchema: RxSchema,
-  getEncryptedPaths: getEncryptedPaths,
-  hasCrypt: hasCrypt,
-  getIndexes: getIndexes,
-  getPrimary: getPrimary,
-  getFinalFields: getFinalFields,
-  normalize: normalize,
-  create: create,
-  isInstanceOf: isInstanceOf
-};

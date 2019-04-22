@@ -22,9 +22,9 @@ var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _util = require("./util");
 
-var _rxChangeEvent = _interopRequireDefault(require("./rx-change-event"));
+var _rxChangeEvent = require("./rx-change-event");
 
-var _rxError = _interopRequireDefault(require("./rx-error"));
+var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
@@ -136,15 +136,15 @@ var basePrototype = {
    */
   get$: function get$(path) {
     if (path.includes('.item.')) {
-      throw _rxError["default"].newRxError('DOC1', {
+      throw (0, _rxError.newRxError)('DOC1', {
         path: path
       });
     }
 
-    if (path === this.primaryPath) throw _rxError["default"].newRxError('DOC2'); // final fields cannot be modified and so also not observed
+    if (path === this.primaryPath) throw (0, _rxError.newRxError)('DOC2'); // final fields cannot be modified and so also not observed
 
     if (this.collection.schema.finalFields.includes(path)) {
-      throw _rxError["default"].newRxError('DOC3', {
+      throw (0, _rxError.newRxError)('DOC3', {
         path: path
       });
     }
@@ -152,7 +152,7 @@ var basePrototype = {
     var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
 
     if (!schemaObj) {
-      throw _rxError["default"].newRxError('DOC4', {
+      throw (0, _rxError.newRxError)('DOC4', {
         path: path
       });
     }
@@ -172,13 +172,13 @@ var basePrototype = {
     var value = this.get(path);
 
     if (!schemaObj) {
-      throw _rxError["default"].newRxError('DOC5', {
+      throw (0, _rxError.newRxError)('DOC5', {
         path: path
       });
     }
 
     if (!schemaObj.ref) {
-      throw _rxError["default"].newRxError('DOC6', {
+      throw (0, _rxError.newRxError)('DOC6', {
         path: path,
         schemaObj: schemaObj
       });
@@ -187,7 +187,7 @@ var basePrototype = {
     var refCollection = this.collection.database.collections[schemaObj.ref];
 
     if (!refCollection) {
-      throw _rxError["default"].newRxError('DOC7', {
+      throw (0, _rxError.newRxError)('DOC7', {
         ref: schemaObj.ref,
         path: path,
         schemaObj: schemaObj
@@ -216,9 +216,14 @@ var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    var withRev = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
     var data = (0, _util.clone)(this._data);
-    if (!withRev) delete data._rev;
+
+    if (!withRevAndAttachments) {
+      delete data._rev;
+      delete data._attachments;
+    }
+
     return data;
   },
 
@@ -231,14 +236,14 @@ var basePrototype = {
   set: function set(objPath, value) {
     // setters can only be used on temporary documents
     if (!this._isTemporary) {
-      throw _rxError["default"].newRxTypeError('DOC16', {
+      throw (0, _rxError.newRxTypeError)('DOC16', {
         objPath: objPath,
         value: value
       });
     }
 
     if (typeof objPath !== 'string') {
-      throw _rxError["default"].newRxTypeError('DOC15', {
+      throw (0, _rxError.newRxTypeError)('DOC15', {
         objPath: objPath,
         value: value
       });
@@ -252,7 +257,7 @@ var basePrototype = {
     var rootPath = pathEls.join('.');
 
     if (typeof _objectPath["default"].get(this._data, rootPath) === 'undefined') {
-      throw _rxError["default"].newRxError('DOC10', {
+      throw (0, _rxError.newRxError)('DOC10', {
         childpath: objPath,
         rootPath: rootPath
       });
@@ -269,20 +274,20 @@ var basePrototype = {
    * @param  {object} updateObj mongodb-like syntax
    */
   update: function update() {
-    throw _rxError["default"].pluginMissing('update');
+    throw (0, _rxError.pluginMissing)('update');
   },
   putAttachment: function putAttachment() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
   getAttachment: function getAttachment() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
   allAttachments: function allAttachments() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
 
   get allAttachments$() {
-    throw _rxError["default"].pluginMissing('attachments');
+    throw (0, _rxError.pluginMissing)('attachments');
   },
 
   /**
@@ -344,7 +349,7 @@ var basePrototype = {
     newData = (0, _util.clone)(newData); // deleted documents cannot be changed
 
     if (this._deleted$.getValue()) {
-      throw _rxError["default"].newRxError('DOC11', {
+      throw (0, _rxError.newRxError)('DOC11', {
         id: this.primary,
         document: this
       });
@@ -358,14 +363,14 @@ var basePrototype = {
       return _this3.collection._pouchPut((0, _util.clone)(newData));
     }).then(function (ret) {
       if (!ret.ok) {
-        throw _rxError["default"].newRxError('DOC12', {
+        throw (0, _rxError.newRxError)('DOC12', {
           data: ret
         });
       }
 
       newData._rev = ret.rev; // emit event
 
-      var changeEvent = _rxChangeEvent["default"].create('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
+      var changeEvent = (0, _rxChangeEvent.createChangeEvent)('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
 
       _this3.$emit(changeEvent);
 
@@ -383,7 +388,7 @@ var basePrototype = {
 
     // .save() cannot be called on non-temporary-documents
     if (!this._isTemporary) {
-      throw _rxError["default"].newRxError('DOC17', {
+      throw (0, _rxError.newRxError)('DOC17', {
         id: this.primary,
         document: this
       });
@@ -411,7 +416,7 @@ var basePrototype = {
     var _this5 = this;
 
     if (this.deleted) {
-      return Promise.reject(_rxError["default"].newRxError('DOC13', {
+      return Promise.reject((0, _rxError.newRxError)('DOC13', {
         document: this,
         id: this.primary
       }));
@@ -427,7 +432,7 @@ var basePrototype = {
 
       return _this5.collection._pouchPut(deletedData);
     }).then(function () {
-      _this5.$emit(_rxChangeEvent["default"].create('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
+      _this5.$emit((0, _rxChangeEvent.createChangeEvent)('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
 
       return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {
@@ -435,7 +440,7 @@ var basePrototype = {
     });
   },
   destroy: function destroy() {
-    throw _rxError["default"].newRxError('DOC14');
+    throw (0, _rxError.newRxError)('DOC14');
   }
 };
 exports.basePrototype = basePrototype;
@@ -455,11 +460,11 @@ function defineGetterSetter(schema, valueObj) {
     valueObj.__defineGetter__(key, function () {
       var _this = thisObj ? thisObj : this;
 
-      if (!_this.get) {
+      if (!_this.get || typeof _this.get !== 'function') {
         /**
-         * when an object gets added to the state of a vuejs-component,
-         * it happens that this getter is called with another scope
-         * to prevent errors, we have to return undefined in this case
+         * When an object gets added to the state of a vuejs-component,
+         * it happens that this getter is called with another scope.
+         * To prevent errors, we have to return undefined in this case
          */
         return undefined;
       }

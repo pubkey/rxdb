@@ -2,7 +2,7 @@ import express from 'express';
 import ExpressPouchDB from 'express-pouchdb';
 import corsFn from 'cors';
 import PouchDB from '../pouch-db';
-import RxError from '../rx-error';
+import { newRxError } from '../rx-error';
 import Core from '../core';
 import ReplicationPlugin from './replication';
 Core.plugin(ReplicationPlugin);
@@ -97,7 +97,7 @@ export function spawnServer(_ref) {
 
 function ensureNoMoreCollections(args) {
   if (DBS_WITH_SERVER.has(args.database)) {
-    var err = RxError.newRxError('S1', {
+    var err = newRxError('S1', {
       collection: args.name,
       database: args.database.name
     });

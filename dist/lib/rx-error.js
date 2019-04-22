@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.pluginMissing = pluginMissing;
-exports["default"] = exports.newRxTypeError = exports.newRxError = exports.RxTypeError = exports.RxError = void 0;
+exports.newRxTypeError = exports.newRxError = exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -27,7 +27,7 @@ var _overwritable = _interopRequireDefault(require("./overwritable"));
  * @param  {any} parameters
  * @return {string}
  */
-var parametersToString = function parametersToString(parameters) {
+function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
   ret += 'Given parameters: {\n';
@@ -44,11 +44,11 @@ var parametersToString = function parametersToString(parameters) {
   }).join('\n');
   ret += '}';
   return ret;
-};
+}
 
-var messageForError = function messageForError(message, parameters) {
+function messageForError(message, parameters) {
   return 'RxError:' + '\n' + message + '\n' + parametersToString(parameters);
-};
+}
 
 var RxError =
 /*#__PURE__*/
@@ -151,9 +151,3 @@ var newRxTypeError = function newRxTypeError(code, parameters) {
 };
 
 exports.newRxTypeError = newRxTypeError;
-var _default = {
-  newRxError: newRxError,
-  newRxTypeError: newRxTypeError,
-  pluginMissing: pluginMissing
-};
-exports["default"] = _default;

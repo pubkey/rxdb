@@ -4,7 +4,7 @@
  * @link https://github.com/epoberezkin/ajv
  */
 import Ajv from 'ajv';
-import RxError from '../rx-error';
+import { newRxError } from '../rx-error';
 import { requestIdleCallbackIfAvailable } from '../util';
 /**
  * cache the validators by the schema-hash
@@ -29,7 +29,7 @@ export function _getValidator(rxSchema) {
     var schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
 
     if (!schemaPart) {
-      throw RxError.newRxError('VD1', {
+      throw newRxError('VD1', {
         schemaPath: schemaPath
       });
     } // const ajv = new Ajv({errorDataPath: 'property'});
@@ -56,7 +56,7 @@ function validate(obj) {
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
-    throw RxError.newRxError('VD2', {
+    throw newRxError('VD2', {
       errors: useValidator.errors,
       schemaPath: schemaPath,
       obj: obj,

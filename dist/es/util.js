@@ -3,7 +3,7 @@
  * which should be easy to change
  */
 import randomToken from 'random-token';
-import RxError from './rx-error';
+import { newRxError, newRxTypeError } from './rx-error';
 import { default as deepClone } from 'clone';
 /**
  * check if the given module is a leveldown-adapter
@@ -12,7 +12,7 @@ import { default as deepClone } from 'clone';
 
 export function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
-    throw RxError.newRxError('UT4', {
+    throw newRxError('UT4', {
       adapter: adapter
     });
   }
@@ -184,7 +184,7 @@ export function trimDots(str) {
 
 export function validateCouchDBString(name) {
   if (typeof name !== 'string' || name.length === 0) {
-    throw RxError.newRxTypeError('UT1', {
+    throw newRxTypeError('UT1', {
       name: name
     });
   } // do not check, if foldername is given
@@ -197,7 +197,7 @@ export function validateCouchDBString(name) {
   var reg = new RegExp(regStr);
 
   if (!name.match(reg)) {
-    throw RxError.newRxError('UT2', {
+    throw newRxError('UT2', {
       regex: regStr,
       givenName: name
     });
@@ -267,7 +267,7 @@ export function pouchReplicationFunction(pouch, _ref) {
   if (pull && !push) return pouch.replicate.from.bind(pouch);
 
   if (!pull && !push) {
-    throw RxError.newRxError('UT3', {
+    throw newRxError('UT3', {
       pull: pull,
       push: push
     });

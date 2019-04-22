@@ -11,7 +11,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _mquery_utils = require("./mquery_utils");
 
-var _rxError = _interopRequireDefault(require("../rx-error"));
+var _rxError = require("../rx-error");
 
 var _util = require("../util");
 
@@ -75,7 +75,7 @@ function () {
     }
 
     if ('object' === type && !Array.isArray(arguments[0])) return this.merge(arguments[0]);
-    throw _rxError["default"].newRxTypeError('MQ1', {
+    throw (0, _rxError.newRxTypeError)('MQ1', {
       path: arguments[0]
     });
   }
@@ -254,7 +254,7 @@ function () {
   ;
 
   _proto.elemMatch = function elemMatch() {
-    if (null === arguments[0]) throw _rxError["default"].newRxTypeError('MQ2');
+    if (null === arguments[0]) throw (0, _rxError.newRxTypeError)('MQ2');
     var fn;
     var path;
     var criteria;
@@ -275,7 +275,7 @@ function () {
     } else if (arguments[1] && (0, _mquery_utils.isObject)(arguments[1])) {
       path = arguments[0];
       criteria = arguments[1];
-    } else throw _rxError["default"].newRxTypeError('MQ2');
+    } else throw (0, _rxError.newRxTypeError)('MQ2');
 
     if (fn) {
       criteria = new MQuery();
@@ -342,7 +342,7 @@ function () {
       return this;
     }
 
-    throw _rxError["default"].newRxTypeError('MQ3', {
+    throw (0, _rxError.newRxTypeError)('MQ3', {
       args: arguments
     });
   }
@@ -360,7 +360,7 @@ function () {
     if (!source) return this;
 
     if (!MQuery.canMerge(source)) {
-      throw _rxError["default"].newRxTypeError('MQ4', {
+      throw (0, _rxError.newRxTypeError)('MQ4', {
         source: source
       });
     }
@@ -415,7 +415,7 @@ function () {
 
   _proto._ensurePath = function _ensurePath(method) {
     if (!this._path) {
-      throw _rxError["default"].newRxError('MQ5', {
+      throw (0, _rxError.newRxError)('MQ5', {
         method: method
       });
     }
@@ -456,7 +456,7 @@ function () {
 
 function push(opts, field, value) {
   if (Array.isArray(opts.sort)) {
-    throw _rxError["default"].newRxTypeError('MQ6', {
+    throw (0, _rxError.newRxTypeError)('MQ6', {
       opts: opts,
       field: field,
       value: value
@@ -476,7 +476,7 @@ function push(opts, field, value) {
 
   if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
     if (Array.isArray(value)) value = '[' + value + ']';
-    throw _rxError["default"].newRxTypeError('MQ7', {
+    throw (0, _rxError.newRxTypeError)('MQ7', {
       field: field,
       value: value
     });
@@ -492,7 +492,7 @@ function _pushArr(opts, field, value) {
   opts.sort = opts.sort || [];
 
   if (!Array.isArray(opts.sort)) {
-    throw _rxError["default"].newRxTypeError('MQ8', {
+    throw (0, _rxError.newRxTypeError)('MQ8', {
       opts: opts,
       field: field,
       value: value

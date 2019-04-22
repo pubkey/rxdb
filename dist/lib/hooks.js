@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
 exports.clearHook = clearHook;
-exports["default"] = exports.HOOKS = void 0;
+exports.HOOKS = void 0;
 
 /**
  * stores the hooks that where added by the plugins
@@ -102,10 +102,3 @@ function clearHook(type, fun) {
     return h !== fun;
   });
 }
-
-var _default = {
-  runPluginHooks: runPluginHooks,
-  runAsyncPluginHooks: runAsyncPluginHooks,
-  HOOKS: HOOKS
-};
-exports["default"] = _default;

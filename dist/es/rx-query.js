@@ -5,7 +5,7 @@ import deepEqual from 'deep-equal';
 import MQuery from './mquery/mquery';
 import { sortObject, stringifyFilter, clone } from './util';
 import QueryChangeDetector from './query-change-detector';
-import RxError from './rx-error';
+import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { merge, BehaviorSubject } from 'rxjs';
 import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
@@ -101,7 +101,7 @@ function () {
         break;
 
       default:
-        throw RxError.newRxError('QU1', {
+        throw newRxError('QU1', {
           op: this.op
         });
     }
@@ -180,7 +180,7 @@ function () {
 
     if (options.limit) {
       if (typeof options.limit !== 'number') {
-        throw RxError.newRxTypeError('QU2', {
+        throw newRxTypeError('QU2', {
           limit: options.limit
         });
       }
@@ -190,7 +190,7 @@ function () {
 
     if (options.skip) {
       if (typeof options.skip !== 'number') {
-        throw RxError.newRxTypeError('QU3', {
+        throw newRxTypeError('QU3', {
           skip: options.skip
         });
       }
@@ -275,7 +275,7 @@ function () {
   ;
 
   _proto.update = function update() {
-    throw RxError.pluginMissing('update');
+    throw pluginMissing('update');
   }
   /**
    * regex cannot run on primary _id
@@ -287,7 +287,7 @@ function () {
     var clonedThis = this._clone();
 
     if (this.mquery._path === this.collection.schema.primaryPath) {
-      throw RxError.newRxError('QU4', {
+      throw newRxError('QU4', {
         path: this.mquery._path
       });
     }
@@ -321,7 +321,7 @@ function () {
   };
 
   _proto.limit = function limit(amount) {
-    if (this.op === 'findOne') throw RxError.newRxError('QU6');else {
+    if (this.op === 'findOne') throw newRxError('QU6');else {
       var clonedThis = this._clone();
 
       clonedThis.mquery.limit(amount);
@@ -417,16 +417,16 @@ function protoMerge(rxQueryProto, mQueryProtoKeys) {
 }
 
 var protoMerged = false;
-export function create(op, queryObj, collection) {
+export function createRxQuery(op, queryObj, collection) {
   // checks
   if (queryObj && typeof queryObj !== 'object') {
-    throw RxError.newRxTypeError('QU7', {
+    throw newRxTypeError('QU7', {
       queryObj: queryObj
     });
   }
 
   if (Array.isArray(queryObj)) {
-    throw RxError.newRxTypeError('QU8', {
+    throw newRxTypeError('QU8', {
       queryObj: queryObj
     });
   }
@@ -448,7 +448,7 @@ export function create(op, queryObj, collection) {
  */
 
 function _throwNotInSchema(key) {
-  throw RxError.newRxError('QU5', {
+  throw newRxError('QU5', {
     key: key
   });
 }
@@ -584,8 +584,3 @@ function __ensureEqual(rxQuery) {
 export function isInstanceOf(obj) {
   return obj instanceof RxQuery;
 }
-export default {
-  create: create,
-  RxQuery: RxQuery,
-  isInstanceOf: isInstanceOf
-};

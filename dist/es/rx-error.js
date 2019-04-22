@@ -13,7 +13,7 @@ import overwritable from './overwritable';
  * @return {string}
  */
 
-var parametersToString = function parametersToString(parameters) {
+function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
   ret += 'Given parameters: {\n';
@@ -30,11 +30,11 @@ var parametersToString = function parametersToString(parameters) {
   }).join('\n');
   ret += '}';
   return ret;
-};
+}
 
-var messageForError = function messageForError(message, parameters) {
+function messageForError(message, parameters) {
   return 'RxError:' + '\n' + message + '\n' + parametersToString(parameters);
-};
+}
 
 export var RxError =
 /*#__PURE__*/
@@ -126,9 +126,4 @@ export var newRxError = function newRxError(code, parameters) {
 };
 export var newRxTypeError = function newRxTypeError(code, parameters) {
   return new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
-};
-export default {
-  newRxError: newRxError,
-  newRxTypeError: newRxTypeError,
-  pluginMissing: pluginMissing
 };
