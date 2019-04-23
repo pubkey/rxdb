@@ -30,6 +30,6 @@
     "react": "16.8.6",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "6.4.0"
+    "rxjs": "6.5.1"
   }
 }
