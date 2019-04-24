@@ -173,23 +173,25 @@ const RxLocalDocumentPrototype = {
         objectPath.set(this._data, objPath, value);
         return this;
     },
-    async _saveData(newData) {
+    _saveData(newData) {
         newData = clone(newData);
         newData._id = LOCAL_PREFIX + this.id;
 
-        const res = await this.parentPouch.put(newData);
-        newData._rev = res.rev;
-        this._dataSync$.next(newData);
+        return this.parentPouch.put(newData)
+            .then(res => {
+                newData._rev = res.rev;
+                this._dataSync$.next(newData);
 
-        const changeEvent = createChangeEvent(
-            'UPDATE',
-            RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
-            RxCollection.isInstanceOf(this.parent) ? this.parent : null,
-            this,
-            clone(this._data),
-            true
-        );
-        this.$emit(changeEvent);
+                const changeEvent = createChangeEvent(
+                    'UPDATE',
+                    RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
+                    RxCollection.isInstanceOf(this.parent) ? this.parent : null,
+                    this,
+                    clone(this._data),
+                    true
+                );
+                this.$emit(changeEvent);
+            });
     },
     /**
      * @return {Promise}
@@ -299,28 +301,32 @@ const insertLocal = function (id, data) {
 /**
  * save the local-document-data
  * overwrites existing if exists
- * @return {RxLocalDocument}
+ * @return {Promise<RxLocalDocument>}
  */
-const upsertLocal = async function (id, data) {
+function upsertLocal(id, data) {
     if (RxCollection.isInstanceOf(this) && this._isInMemory)
         return this._parentCollection.upsertLocal(id, data);
 
-    const existing = await this.getLocal(id);
+    return this.getLocal(id)
+        .then(existing => {
+            if (!existing) {
+                // create new one
+                const doc = this.insertLocal(id, data);
+                return doc;
+            } else {
+                // update existing
+                data._rev = existing._data._rev;
+                return existing.atomicUpdate(() => data).then(() => existing);
+            }
+        });
+}
 
-    if (!existing) {
-        // create new one
-        const doc = this.insertLocal(id, data);
-        return doc;
-    } else {
-        // update existing
-        data._rev = existing._data._rev;
-        await existing.atomicUpdate(() => data);
-        return existing;
-    }
-};
-
-
-const getLocal = async function (id) {
+/**
+ * 
+ * @param {*} id 
+ * @return {Promise<RxLocalDocument>}
+ */
+function getLocal(id) {
     if (RxCollection.isInstanceOf(this) && this._isInMemory)
         return this._parentCollection.getLocal(id);
 
@@ -329,20 +335,17 @@ const getLocal = async function (id) {
 
     // check in doc-cache
     const found = docCache.get(id);
+    if (found) return Promise.resolve(found);
 
-    // check in pouch
-    if (!found) {
-        try {
-            const docData = await pouch.get(LOCAL_PREFIX + id);
+    // if not found, check in pouch
+    return pouch.get(LOCAL_PREFIX + id)
+        .then(docData => {
             if (!docData) return null;
             const doc = RxLocalDocument.create(id, docData, this);
             return doc;
-        } catch (err) {
-            return null;
-        }
-    }
-    return found;
-};
+        })
+        .catch(() => null);
+}
 
 export const rxdb = true;
 export const prototypes = {

@@ -7,7 +7,8 @@ import {
     adapterObject,
     hash,
     validateCouchDBString,
-    isLevelDown
+    isLevelDown,
+    promiseWait
 } from './util';
 import {
     newRxError,
@@ -76,11 +77,11 @@ export class RxDatabase {
             .then(docsRes => {
                 return Promise.all(
                     docsRes.rows
-                    .map(row => ({
-                        _id: row.key,
-                        _rev: row.value.rev
-                    }))
-                    .map(doc => colPouch.remove(doc._id, doc._rev))
+                        .map(row => ({
+                            _id: row.key,
+                            _rev: row.value.rev
+                        }))
+                        .map(doc => colPouch.remove(doc._id, doc._rev))
                 );
             });
     }
@@ -158,10 +159,11 @@ export class RxDatabase {
     /**
      * create or fetch a collection
      * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
-     * @return {Collection}
+     * @return {Promise<RxCollection>}
      */
-    async collection(args) {
-        if (typeof args === 'string') return this.collections[args];
+    collection(args) {
+        if (typeof args === 'string')
+            return Promise.resolve(this.collections[args]);
 
         args = Object.assign({}, args);
 
@@ -199,66 +201,74 @@ export class RxDatabase {
 
         // check schemaHash
         const schemaHash = args.schema.hash;
-        let collectionDoc = null;
-        try {
-            collectionDoc = await this.lockedRun(
-                () => this._collectionsPouch.get(internalPrimary)
-            );
-        } catch (e) {}
 
-        if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
-            // collection already exists with different schema, check if it has documents
-            const pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-            const oneDoc = await pouch.find({
-                selector: {
-                    _id: {}
-                },
-                limit: 1
-            });
-            if (oneDoc.docs.length !== 0) {
-                // we have one document
-                throw newRxError('DB6', {
-                    name: args.name,
-                    previousSchemaHash: collectionDoc.schemaHash,
-                    schemaHash
-                });
-            }
-        }
-        const collection = await RxCollection.create(args);
-        if (
-            Object.keys(collection.schema.encryptedPaths).length > 0 &&
-            !this.password
-        ) {
-            throw newRxError('DB7', {
-                name: args.name
-            });
-        }
+        let colDoc;
+        let col;
+        return this.lockedRun(
+            () => this._collectionsPouch.get(internalPrimary)
+        )
+            .catch(() => null)
+            .then(collectionDoc => {
+                colDoc = collectionDoc;
 
-        if (!collectionDoc) {
-            try {
-                await this.lockedRun(
-                    () => this._collectionsPouch.put({
-                        _id: internalPrimary,
-                        schemaHash,
-                        schema: collection.schema.normalized,
-                        version: collection.schema.version
-                    })
+                if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
+                    // collection already exists with different schema, check if it has documents
+                    const pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
+                    return pouch.find({
+                        selector: {
+                            _id: {}
+                        },
+                        limit: 1
+                    }).then(oneDoc => {
+                        if (oneDoc.docs.length !== 0) {
+                            // we have one document
+                            throw newRxError('DB6', {
+                                name: args.name,
+                                previousSchemaHash: collectionDoc.schemaHash,
+                                schemaHash
+                            });
+                        }
+                        return collectionDoc;
+                    });
+                } else return collectionDoc;
+            })
+            .then(() => RxCollection.create(args))
+            .then(collection => {
+                col = collection;
+                if (
+                    Object.keys(collection.schema.encryptedPaths).length > 0 &&
+                    !this.password
+                ) {
+                    throw newRxError('DB7', {
+                        name: args.name
+                    });
+                }
+
+                if (!colDoc) {
+                    return this.lockedRun(
+                        () => this._collectionsPouch.put({
+                            _id: internalPrimary,
+                            schemaHash,
+                            schema: collection.schema.normalized,
+                            version: collection.schema.version
+                        })
+                    ).catch(() => { });
+                }
+            })
+            .then(() => {
+                const cEvent = createChangeEvent(
+                    'RxDatabase.collection',
+                    this
                 );
-            } catch (e) {}
-        }
+                cEvent.data.v = col.name;
+                cEvent.data.col = '_collections';
+                this.$emit(cEvent);
 
-        const cEvent = createChangeEvent(
-            'RxDatabase.collection',
-            this
-        );
-        cEvent.data.v = collection.name;
-        cEvent.data.col = '_collections';
-        this.$emit(cEvent);
+                this.collections[args.name] = col;
+                this.__defineGetter__(args.name, () => this.collections[args.name]);
 
-        this.collections[args.name] = collection;
-        this.__defineGetter__(args.name, () => this.collections[args.name]);
-
-        return collection;
+                return col;
+            });
     }
 
     /**
@@ -266,22 +276,21 @@ export class RxDatabase {
      * @param  {string}  collectionName
      * @return {Promise}
      */
-    async removeCollection(collectionName) {
+    removeCollection(collectionName) {
         if (this.collections[collectionName])
-            await this.collections[collectionName].destroy();
+            this.collections[collectionName].destroy();
 
         // remove schemas from internal db
-        const knownVersions = await _removeAllOfCollection(this, collectionName);
-        // get all relevant pouchdb-instances
-        const pouches = knownVersions
-            .map(v => this._spawnPouchDB(collectionName, v));
-
-        // remove documents
-        return Promise.all(
-            pouches.map(pouch => this.lockedRun(
-                () => pouch.destroy()
-            ))
-        );
+        return _removeAllOfCollection(this, collectionName)
+            // get all relevant pouchdb-instances
+            .then(knownVersions => knownVersions
+                .map(v => this._spawnPouchDB(collectionName, v)))
+            // remove documents
+            .then(pouches => Promise.all(
+                pouches.map(pouch => this.lockedRun(
+                    () => pouch.destroy()
+                ))
+            ));
     }
 
 
@@ -325,8 +334,8 @@ export class RxDatabase {
      * destroys the database-instance and all collections
      * @return {Promise}
      */
-    async destroy() {
-        if (this.destroyed) return;
+    destroy() {
+        if (this.destroyed) return Promise.resolve();
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
         this.destroyed = true;
@@ -341,18 +350,17 @@ export class RxDatabase {
         }
 
         if (this._leaderElector)
-            await this._leaderElector.destroy();
+            this._leaderElector.destroy();
+
         this._subs.map(sub => sub.unsubscribe());
 
         // destroy all collections
-        await Promise.all(Object.keys(this.collections)
+        return Promise.all(Object.keys(this.collections)
             .map(key => this.collections[key])
             .map(col => col.destroy())
-        );
-
-
-        // remove combination from USED_COMBINATIONS-map
-        _removeUsedCombination(this.name, this.adapter);
+        )
+            // remove combination from USED_COMBINATIONS-map
+            .then(() => _removeUsedCombination(this.name, this.adapter));
     }
 
     /**
@@ -417,40 +425,39 @@ function _removeUsedCombination(name, adapter) {
 /**
  * validates and inserts the password-hash
  * to ensure there is/was no other instance with a different password
+ * @return {Promise}
  */
-export async function _preparePasswordHash(rxDatabase) {
-    if (!rxDatabase.password) return false;
+export function _preparePasswordHash(rxDatabase) {
+    if (!rxDatabase.password) return Promise.resolve(false);
 
     const pwHash = hash(rxDatabase.password);
 
-    let pwHashDoc = null;
-    try {
-        pwHashDoc = await rxDatabase._adminPouch.get('_local/pwHash');
-    } catch (e) {}
+    return rxDatabase._adminPouch.get('_local/pwHash')
+        .catch(() => null)
+        .then(pwHashDoc => {
+            /**
+             * if pwHash was not saved, we save it,
+             * this operation might throw because another instance runs save at the same time,
+             * also we do not await the output because it does not mather
+             */
+            if (!pwHashDoc) {
+                rxDatabase._adminPouch.put({
+                    _id: '_local/pwHash',
+                    value: pwHash
+                }).catch(() => null);
+            }
 
-
-    /**
-     * if pwHash was not saved, we save it,
-     * this operation might throw because another instance runs save at the same time,
-     * also we do not await the output because it does not mather
-     */
-    if (!pwHashDoc) {
-        rxDatabase._adminPouch.put({
-            _id: '_local/pwHash',
-            value: pwHash
-        }).catch(() => null);
-    }
-
-    // different hash was already set by other instance
-    if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
-        await rxDatabase.destroy();
-        throw newRxError('DB1', {
-            passwordHash: hash(rxDatabase.password),
-            existingPasswordHash: pwHashDoc.value
+            // different hash was already set by other instance
+            if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
+                return rxDatabase.destroy().then(() => {
+                    throw newRxError('DB1', {
+                        passwordHash: hash(rxDatabase.password),
+                        existingPasswordHash: pwHashDoc.value
+                    });
+                });
+            }
+            return true;
         });
-    }
-
-    return true;
 }
 
 
@@ -458,22 +465,21 @@ export async function _preparePasswordHash(rxDatabase) {
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
+ * @return {Promise<string>}
  */
-export async function _ensureStorageTokenExists(rxDatabase) {
-    try {
-        await rxDatabase._adminPouch.get('_local/storageToken');
-    } catch (err) {
-        // no doc exists -> insert
-        try {
-            await rxDatabase._adminPouch.put({
+export function _ensureStorageTokenExists(rxDatabase) {
+    return rxDatabase._adminPouch.get('_local/storageToken')
+        .catch(() => {
+            // no doc exists -> insert
+            return rxDatabase._adminPouch.put({
                 _id: '_local/storageToken',
                 value: randomToken(10)
-            });
-        } catch (err2) {}
-        await new Promise(res => setTimeout(res, 0));
-    }
-    const storageTokenDoc2 = await rxDatabase._adminPouch.get('_local/storageToken');
-    return storageTokenDoc2.value;
+            })
+                .catch(() => { })
+                .then(() => promiseWait(0));
+        })
+        .then(() => rxDatabase._adminPouch.get('_local/storageToken'))
+        .then(storageTokenDoc2 => storageTokenDoc2.value);
 }
 
 /**
@@ -530,9 +536,9 @@ export function _removeAllOfCollection(rxDatabase, collectionName) {
             });
         return Promise.all(
             relevantDocs
-            .map(doc => rxDatabase.lockedRun(
-                () => rxDatabase._collectionsPouch.remove(doc)
-            ))
+                .map(doc => rxDatabase.lockedRun(
+                    () => rxDatabase._collectionsPouch.remove(doc)
+                ))
         ).then(() => relevantDocs.map(doc => doc.version));
     });
 }
@@ -563,28 +569,26 @@ function _prepareBroadcastChannel(rxDatabase) {
 
 /**
  * do the async things for this database
+ * @return {Promise}
  */
-async function prepare(rxDatabase) {
+function prepare(rxDatabase) {
     rxDatabase._adminPouch = _internalAdminPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
     rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
 
     // ensure admin-pouch is useable
-    await rxDatabase._adminPouch.info();
-
-    // validate/insert password-hash
-    const [
-        storageToken
-    ] = await Promise.all([
-        _ensureStorageTokenExists(rxDatabase),
-        _preparePasswordHash(rxDatabase)
-    ]);
-    rxDatabase.storageToken = storageToken;
-
-    if (rxDatabase.multiInstance) {
-        _prepareBroadcastChannel(rxDatabase);
-    }
+    return rxDatabase._adminPouch.info().then(() => {
+        // validate/insert password-hash
+        return Promise.all([
+            _ensureStorageTokenExists(rxDatabase),
+            _preparePasswordHash(rxDatabase)
+        ]);
+    }).then(([storageToken]) => {
+        rxDatabase.storageToken = storageToken;
+        if (rxDatabase.multiInstance) {
+            _prepareBroadcastChannel(rxDatabase);
+        }
+    });
 }
-
 
 export function create({
     name,
@@ -703,32 +707,30 @@ function _internalCollectionsPouch(name, adapter, pouchSettingsFromRxDatabaseCre
  *
  * @return {Promise}
  */
-export async function removeDatabase(databaseName, adapter) {
+export function removeDatabase(databaseName, adapter) {
     const adminPouch = _internalAdminPouch(databaseName, adapter);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
 
-    const collectionsData = await collectionsPouch.allDocs({
+    return collectionsPouch.allDocs({
         include_docs: true
-    });
-
-    // remove collections
-    await Promise.all(
-        collectionsData.rows
-        .map(colDoc => colDoc.id)
-        .map(id => {
-            const split = id.split('-');
-            const name = split[0];
-            const version = parseInt(split[1], 10);
-            const pouch = _spawnPouchDB(databaseName, adapter, name, version);
-            return pouch.destroy();
-        })
-    );
-
-    // remove internals
-    return Promise.all([
-        collectionsPouch.destroy(),
-        adminPouch.destroy()
-    ]);
+    })
+        // remove collections
+        .then(collectionsData => Promise.all(
+            collectionsData.rows
+                .map(colDoc => colDoc.id)
+                .map(id => {
+                    const split = id.split('-');
+                    const name = split[0];
+                    const version = parseInt(split[1], 10);
+                    const pouch = _spawnPouchDB(databaseName, adapter, name, version);
+                    return pouch.destroy();
+                })
+        ))
+        // remove internals
+        .then(() => Promise.all([
+            collectionsPouch.destroy(),
+            adminPouch.destroy()
+        ]));
 }
 
 /**

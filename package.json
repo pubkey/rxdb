@@ -33,7 +33,7 @@
   "scripts": {
     "pretest": "npm run transpile",
     "test": "npm run test:node && npm run test:browser",
-    "test:fast": "npm run pretest && rimraf -rf config/pouch__all_dbs__ && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:fast": "npm run pretest && rimraf -rf pouch__all_dbs__ && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
     "test:node": "npm run pretest && mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:browser": "npm run pretest && karma start ./config/karma.conf.js --single-run",

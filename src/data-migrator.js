@@ -5,7 +5,8 @@
 
 import PouchDB from './pouch-db';
 import {
-    clone
+    clone,
+    toPromise
 } from './util';
 
 import {
@@ -59,60 +60,72 @@ class DataMigrator {
          * We did this because it is not possible to create new Observer(async(...))
          * @link https://github.com/ReactiveX/rxjs/issues/4074
          */
-        (async () => {
-            const oldCols = await _getOldCollections(this);
+        (() => {
+            let oldCols;
+            return _getOldCollections(this)
+                .then(ret => {
+                    oldCols = ret;
+                    return Promise.all(
+                        oldCols.map(oldCol => oldCol.countAllUndeleted())
+                    );
+                })
+                .then(countAll => {
+                    const totalCount = countAll.reduce((cur, prev) => prev = cur + prev, 0);
+                    state.total = totalCount;
+                    observer.next(clone(state));
+                }).then(() => {
+                    let currentCol = oldCols.shift();
 
-            const countAll = await Promise.all(
-                oldCols.map(oldCol => oldCol.countAllUndeleted())
-            );
-            const totalCount = countAll.reduce((cur, prev) => prev = cur + prev, 0);
-
-            state.total = totalCount;
-            observer.next(clone(state));
-
-            let currentCol = oldCols.shift();
-            while (currentCol) {
-                const migrationState$ = currentCol.migrate(batchSize);
-                await new Promise(res => {
-                    const sub = migrationState$.subscribe(
-                        subState => {
-                            state.handled++;
-                            state[subState.type] = state[subState.type] + 1;
-                            state.percent = Math.round(state.handled / state.total * 100);
-                            observer.next(clone(state));
-                        },
-                        e => {
-                            sub.unsubscribe();
-                            observer.error(e);
-                        }, () => {
-                            sub.unsubscribe();
-                            res();
+                    let currentPromise = Promise.resolve();
+                    while (currentCol) {
+                        const migrationState$ = currentCol.migrate(batchSize);
+                        currentPromise = currentPromise.then(() => {
+                            return new Promise(res => {
+                                const sub = migrationState$.subscribe(
+                                    subState => {
+                                        state.handled++;
+                                        state[subState.type] = state[subState.type] + 1;
+                                        state.percent = Math.round(state.handled / state.total * 100);
+                                        observer.next(clone(state));
+                                    },
+                                    e => {
+                                        sub.unsubscribe();
+                                        observer.error(e);
+                                    }, () => {
+                                        sub.unsubscribe();
+                                        res();
+                                    });
+                            });
                         });
+                        currentCol = oldCols.shift();
+                    }
+                    return currentPromise;
+                })
+                .then(() => {
+                    state.done = true;
+                    state.percent = 100;
+                    observer.next(clone(state));
+                    observer.complete();
                 });
-                currentCol = oldCols.shift();
-            }
-
-            state.done = true;
-            state.percent = 100;
-            observer.next(clone(state));
-
-            observer.complete();
         })();
 
 
         return observer.asObservable();
     }
 
-    async migratePromise(batchSize) {
+    /**
+     * @return {Promise}
+     */
+    migratePromise(batchSize) {
         if (!this._migratePromise) {
-
-            const must = await mustMigrate(this);
-            if (!must) return Promise.resolve(false);
-
-            this._migratePromise = new Promise((res, rej) => {
-                const state$ = this.migrate(batchSize);
-                state$.subscribe(null, rej, res);
-            });
+            this._migratePromise = mustMigrate(this)
+                .then(must => {
+                    if (!must) return Promise.resolve(false);
+                    else return new Promise((res, rej) => {
+                        const state$ = this.migrate(batchSize);
+                        state$.subscribe(null, rej, res);
+                    });
+                });
         }
         return this._migratePromise;
     }
@@ -194,76 +207,89 @@ class OldCollection {
     }
 
     /**
+     * @return {Promise<object|null>}
+     */
+    _runStrategyIfNotNull(version, docOrNull) {
+        if (docOrNull === null) return Promise.resolve(null);
+        const ret = this.dataMigrator.migrationStrategies[version + ''](docOrNull);
+        const retPromise = toPromise(ret);
+        return retPromise;
+    }
+
+    /**
      * runs the doc-data through all following migrationStrategies
      * so it will match the newest schema.
      * @throws Error if final doc does not match final schema or migrationStrategy crashes
-     * @return {Object|null} final object or null if migrationStrategy deleted it
+     * @return {Promise<Object|null>} final object or null if migrationStrategy deleted it
      */
-    async migrateDocumentData(doc) {
+    migrateDocumentData(doc) {
         doc = clone(doc);
         let nextVersion = this.version + 1;
 
-        // run throught migrationStrategies
+        // run the document throught migrationStrategies
+        let currentPromise = Promise.resolve(doc);
         while (nextVersion <= this.newestCollection.schema.version) {
-            doc = await this.dataMigrator.migrationStrategies[nextVersion + ''](doc);
+            const version = nextVersion;
+            currentPromise = currentPromise.then(docOrNull => this._runStrategyIfNotNull(version, docOrNull));
             nextVersion++;
-            if (doc === null)
-                return null;
         }
 
-        // check final schema
-        try {
-            this.newestCollection.schema.validate(doc);
-        } catch (e) {
-            throw newRxError('DM2', {
-                fromVersion: this.version,
-                toVersion: this.newestCollection.schema.version,
-                finalDoc: doc
-            });
-        }
-        return doc;
+        return currentPromise.then(doc => {
+            if (doc === null) return Promise.resolve(null);
+
+            // check final schema
+            try {
+                this.newestCollection.schema.validate(doc);
+            } catch (e) {
+                throw newRxError('DM2', {
+                    fromVersion: this.version,
+                    toVersion: this.newestCollection.schema.version,
+                    finalDoc: doc
+                });
+            }
+            return doc;
+        });
     }
 
 
 
     /**
      * transform docdata and save to new collection
-     * @return {{type: string, doc: {}}} status-action with status and migrated document
+     * @return {Promise<{type: string, doc: {}}>} status-action with status and migrated document
      */
-    async _migrateDocument(doc) {
-        const migrated = await this.migrateDocumentData(doc);
+    _migrateDocument(doc) {
         const action = {
             doc,
-            migrated,
             oldCollection: this,
             newestCollection: this.newestCollection
         };
+        return this.migrateDocumentData(doc)
+            .then(migrated => {
+                action.migrated = migrated;
+                if (migrated) {
+                    runPluginHooks(
+                        'preMigrateDocument',
+                        action
+                    );
 
-        if (migrated) {
-            runPluginHooks(
-                'preMigrateDocument',
-                action
-            );
-
-            // save to newest collection
-            delete migrated._rev;
-            const res = await this.newestCollection._pouchPut(migrated, true);
-            action.res = res;
-            action.type = 'success';
-
-            await runAsyncPluginHooks(
-                'postMigrateDocument',
-                action
-            );
-        } else action.type = 'deleted';
-
-
-        // remove from old collection
-        try {
-            await this.pouchdb.remove(this._handleToPouch(doc));
-        } catch (e) {}
-
-        return action;
+                    // save to newest collection
+                    delete migrated._rev;
+                    return this.newestCollection._pouchPut(migrated, true)
+                        .then(res => {
+                            action.res = res;
+                            action.type = 'success';
+                            return runAsyncPluginHooks(
+                                'postMigrateDocument',
+                                action
+                            );
+                        });
+                } else action.type = 'deleted';
+            })
+            .then(() => {
+                // remove from old collection
+                return this.pouchdb.remove(this._handleToPouch(doc)).catch(() => { });
+            })
+            .then(() => action);
     }
 
 
@@ -292,29 +318,36 @@ class OldCollection {
          * TODO this is a side-effect which might throw
          * @see DataMigrator.migrate()
          */
-        (async () => {
-            let batch = await this.getBatch(batchSize);
+        (() => {
             let error;
-            do {
-                await Promise.all(
-                    batch.map(doc => this._migrateDocument(doc)
-                        .then(action => observer.next(action))
-                    )
-                ).catch(e => error = e);
+            const handleOneBatch = () => {
+                return this.getBatch(batchSize)
+                    .then(batch => {
+                        if (batch.length === 0) {
+                            allBatchesDone();
+                            return false;
+                        } else {
+                            return Promise.all(
+                                batch.map(doc => this._migrateDocument(doc)
+                                    .then(action => observer.next(action))
+                                )
+                            ).catch(e => error = e).then(true);
+                        }
+                    })
+                    .then(next => {
+                        if (!next) return;
+                        if (error)
+                            observer.error(error);
+                        else handleOneBatch();
+                    });
+            };
+            handleOneBatch();
 
-                if (error) {
-                    observer.error(error);
-                    return;
-                }
-
-                // reset batch so loop can run again
-                batch = await this.getBatch(batchSize);
-            } while (!error && batch.length > 0);
-
-            // remove this oldCollection
-            await this.delete();
-
-            observer.complete();
+            const allBatchesDone = () => {
+                // remove this oldCollection
+                return this.delete()
+                    .then(() => observer.complete());
+            };
         })();
 
         return observer.asObservable();
@@ -339,8 +372,8 @@ export function _getOldCollections(dataMigrator) {
     return Promise
         .all(
             dataMigrator.currentSchema.previousVersions
-            .map(v => dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v))
-            .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
+                .map(v => dataMigrator.database._collectionsPouch.get(dataMigrator.name + '-' + v))
+                .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
         )
         .then(oldColDocs => oldColDocs
             .filter(colDoc => colDoc !== null)

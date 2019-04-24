@@ -43,6 +43,9 @@ const collectionPromiseCacheMap = new WeakMap();
 const BULK_DOC_OPTIONS = {
     new_edits: true
 };
+const BULK_DOC_OPTIONS_FALSE = {
+    new_edits: false
+};
 
 export class InMemoryRxCollection extends RxCollection.RxCollection {
     constructor(parentCollection, pouchSettings = {}) {
@@ -89,51 +92,48 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
 
-    async prepare() {
-
-        await setIndexes(this.schema, this.pouch);
-
-        this._subs.push(
-            this._observable$.subscribe(cE => {
-                // when data changes, send it to RxDocument in docCache
-                const doc = this._docCache.get(cE.data.doc);
-                if (doc) doc._handleChangeEvent(cE);
+    prepare() {
+        return setIndexes(this.schema, this.pouch)
+            .then(() => {
+                this._subs.push(
+                    this._observable$.subscribe(cE => {
+                        // when data changes, send it to RxDocument in docCache
+                        const doc = this._docCache.get(cE.data.doc);
+                        if (doc) doc._handleChangeEvent(cE);
+                    })
+                );
             })
-        );
-
-        /* REPLICATION BETWEEN THIS AND PARENT */
-
-        // initial sync parent's docs to own
-        await replicateExistingDocuments(this._parentCollection, this);
-
-
-        /**
-         * call watchForChanges() on both sides,
-         * to ensure none-rxdb-changes like replication
-         * will fire into the change-event-stream
-         */
-        this._parentCollection.watchForChanges();
-        this.watchForChanges();
+            // initial sync parent's docs to own
+            .then(() => replicateExistingDocuments(this._parentCollection, this))
+            .then(() => {
+                /**
+                 * call watchForChanges() on both sides,
+                 * to ensure none-rxdb-changes like replication
+                 * will fire into the change-event-stream
+                 */
+                this._parentCollection.watchForChanges();
+                this.watchForChanges();
 
 
-        /**
-         * create an ongoing replications between both sides
-         */
-        const thisToParentSub = streamChangedDocuments(this)
-            .pipe(
-                mergeMap(doc => applyChangedDocumentToPouch(this._parentCollection, doc)
-                    .then(() => doc._rev)
-                )
-            )
-            .subscribe(changeRev => {
-                this._nonPersistentRevisions.delete(changeRev);
-                this._nonPersistentRevisionsSubject.next(this._nonPersistentRevisions.size);
+                /**
+                 * create an ongoing replications between both sides
+                 */
+                const thisToParentSub = streamChangedDocuments(this)
+                    .pipe(
+                        mergeMap(doc => applyChangedDocumentToPouch(this._parentCollection, doc)
+                            .then(() => doc._rev)
+                        )
+                    )
+                    .subscribe(changeRev => {
+                        this._nonPersistentRevisions.delete(changeRev);
+                        this._nonPersistentRevisionsSubject.next(this._nonPersistentRevisions.size);
+                    });
+                this._subs.push(thisToParentSub);
+
+                const parentToThisSub = streamChangedDocuments(this._parentCollection)
+                    .subscribe(doc => applyChangedDocumentToPouch(this, doc));
+                this._subs.push(parentToThisSub);
             });
-        this._subs.push(thisToParentSub);
-
-        const parentToThisSub = streamChangedDocuments(this._parentCollection)
-            .subscribe(doc => applyChangedDocumentToPouch(this, doc));
-        this._subs.push(parentToThisSub);
     }
 
     /**
@@ -154,10 +154,11 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
      * the _pouchPut is wrapped
      * @overwrite
      */
-    async _pouchPut(obj, overwrite) {
-        const ret = await this._oldPouchPut(obj, overwrite);
-        this._nonPersistentRevisions.add(ret.rev);
-        return ret;
+    _pouchPut(obj, overwrite) {
+        return this._oldPouchPut(obj, overwrite).then(ret => {
+            this._nonPersistentRevisions.add(ret.rev);
+            return ret;
+        });
     }
 
 
@@ -225,7 +226,6 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
         attachments: false,
         include_docs: true
     }).then(allRows => {
-
         const docs = allRows
             .rows
             .map(row => row.doc)
@@ -234,13 +234,12 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
             // swap back primary because keyCompression:false
             .map(doc => fromCollection.schema.swapPrimaryToId(doc));
 
-        if (docs.length === 0) return []; // nothing to replicate
+        if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
         else {
             return toCollection.pouch.bulkDocs({
                 docs
-            }, {
-                new_edits: false
-            }).then(() => docs);
+            }, BULK_DOC_OPTIONS_FALSE)
+                .then(() => docs);
         }
     });
 }
@@ -254,13 +253,13 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
 export function setIndexes(schema, pouch) {
     return Promise.all(
         schema.indexes
-        .map(indexAr => {
-            return pouch.createIndex({
-                index: {
-                    fields: indexAr
-                }
-            });
-        })
+            .map(indexAr => {
+                return pouch.createIndex({
+                    index: {
+                        fields: indexAr
+                    }
+                });
+            })
     );
 }
 
@@ -276,11 +275,11 @@ export function streamChangedDocuments(rxCollection, prevFilter = () => true) {
     if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
 
     const observable = ObservableFromEvent(rxCollection.pouch
-            .changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }), 'change')
+        .changes({
+            since: 'now',
+            live: true,
+            include_docs: true
+        }), 'change')
         .pipe(
             map(changeAr => changeAr[0]), // rxjs emits an array for whatever reason
             filter(change => {
@@ -302,35 +301,32 @@ export function streamChangedDocuments(rxCollection, prevFilter = () => true) {
  * @param  {any} docData
  * @return {Promise<any>} promise that resolved with the transformed doc-data
  */
-export async function applyChangedDocumentToPouch(rxCollection, docData) {
+export function applyChangedDocumentToPouch(rxCollection, docData) {
     if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
 
     const transformedDoc = rxCollection._handleToPouch(docData);
 
-    try {
-        const oldDoc = await rxCollection.pouch.get(transformedDoc._id);
-        transformedDoc._rev = oldDoc._rev;
-    } catch (err) {
-        // doc not found, do not use a revision
-        delete transformedDoc._rev;
-    }
+    return rxCollection.pouch.get(transformedDoc._id)
+        .then(oldDoc => transformedDoc._rev = oldDoc._rev)
+        .catch(() => {
+            // doc not found, do not use a revision
+            delete transformedDoc._rev;
+        }).then(() => rxCollection.pouch.bulkDocs({
+            docs: [transformedDoc]
+        }, BULK_DOC_OPTIONS))
+        .then(bulkRet => {
+            if (bulkRet.length > 0 && !bulkRet[0].ok) {
+                throw new Error(JSON.stringify(bulkRet[0]));
+            }
+            // set the flag so this does not appear in the own event-stream again
+            const emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
+            rxCollection._doNotEmitSet.add(emitFlag);
 
-    const bulkRet = await rxCollection.pouch.bulkDocs({
-        docs: [transformedDoc]
-    }, BULK_DOC_OPTIONS);
+            // remove from the list later to not have a memory-leak
+            setTimeout(() => rxCollection._doNotEmitSet.delete(emitFlag), 30 * 1000);
 
-    if (bulkRet.length > 0 && !bulkRet[0].ok) {
-        throw new Error(JSON.stringify(bulkRet[0]));
-    }
-
-    // set the flag so this does not appear in the own event-stream again
-    const emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
-    rxCollection._doNotEmitSet.add(emitFlag);
-
-    // remove from the list later to not have a memory-leak
-    setTimeout(() => rxCollection._doNotEmitSet.delete(emitFlag), 30 * 1000);
-
-    return transformedDoc;
+            return transformedDoc;
+        });
 }
 
 let INIT_DONE = false;
@@ -338,7 +334,7 @@ let INIT_DONE = false;
  * called in the proto of RxCollection
  * @return {Promise<RxCollection>}
  */
-export async function spawnInMemory() {
+export function spawnInMemory() {
     if (!INIT_DONE) {
         INIT_DONE = true;
         // ensure memory-adapter is added
@@ -348,8 +344,8 @@ export async function spawnInMemory() {
 
     if (collectionCacheMap.has(this)) {
         // already exists for this collection -> wait until synced
-        await collectionPromiseCacheMap.get(this);
-        return collectionCacheMap.get(this);
+        return collectionPromiseCacheMap.get(this)
+            .then(() => collectionCacheMap.get(this));
     }
 
     const col = new InMemoryRxCollection(this);
@@ -357,8 +353,7 @@ export async function spawnInMemory() {
     collectionCacheMap.set(this, col);
     collectionPromiseCacheMap.set(this, preparePromise);
 
-    await preparePromise;
-    return col;
+    return preparePromise.then(() => col);
 }
 
 

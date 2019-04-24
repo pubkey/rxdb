@@ -235,31 +235,29 @@ export class RxCollection {
      * @param {boolean} [overwrite=false] if true, it will overwrite existing document
      * @return {Promise}
      */
-    async _pouchPut(obj, overwrite = false) {
+    _pouchPut(obj, overwrite = false) {
         obj = this._handleToPouch(obj);
-        let ret = null;
-        try {
-            ret = await this.database.lockedRun(
-                () => this.pouch.put(obj)
-            );
-        } catch (e) {
+        return this.database.lockedRun(
+            () => this.pouch.put(obj)
+        ).catch(e => {
             if (overwrite && e.status === 409) {
-                const exist = await this.database.lockedRun(
+
+                return this.database.lockedRun(
                     () => this.pouch.get(obj._id)
-                );
-                obj._rev = exist._rev;
-                ret = await this.database.lockedRun(
-                    () => this.pouch.put(obj)
-                );
+                ).then(exist => {
+                    obj._rev = exist._rev;
+                    return this.database.lockedRun(
+                        () => this.pouch.put(obj)
+                    );
+                });
             } else throw e;
-        }
-        return ret;
+        });
     }
 
     /**
      * get document from pouchdb by its _id
-     * @param  {[type]} key [description]
-     * @return {[type]}     [description]
+     * @param  {string} key _id of the document
+     * @return {Promise<object>} the document
      */
     _pouchGet(key) {
         return this

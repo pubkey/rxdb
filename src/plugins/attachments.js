@@ -117,37 +117,36 @@ export class RxAttachment {
         _assignMethodsToAttachment(this);
     }
 
-    async remove() {
-        await this.doc.collection.pouch.removeAttachment(
+    /**
+     * @return {Promise}
+     */
+    remove() {
+        return this.doc.collection.pouch.removeAttachment(
             this.doc.primary,
             this.id,
             this.doc._data._rev
-        );
-
-        await resyncRxDocument(this.doc);
+        ).then(() => resyncRxDocument(this.doc));
     }
 
     /**
      * returns the data for the attachment
      * @return {Promise<Buffer|Blob>}
      */
-    async getData() {
-        let data = await this.doc.collection.pouch.getAttachment(this.doc.primary, this.id);
-
-        if (shouldEncrypt(this.doc)) {
-            const dataString = await blobBufferUtil.toString(data);
-            data = blobBufferUtil.createBlobBuffer(
-                this.doc.collection._crypter._decryptValue(dataString),
-                this.type
-            );
-        }
-
-        return data;
+    getData() {
+        return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
+            .then(data => {
+                if (shouldEncrypt(this.doc)) {
+                    return blobBufferUtil.toString(data)
+                        .then(dataString => blobBufferUtil.createBlobBuffer(
+                            this.doc.collection._crypter._decryptValue(dataString),
+                            this.type
+                        ));
+                } else return data;
+            });
     }
 
-    async getStringData() {
-        const bufferBlob = await this.getData();
-        return await blobBufferUtil.toString(bufferBlob);
+    getStringData() {
+        return this.getData().then(bufferBlob => blobBufferUtil.toString(bufferBlob));
     }
 }
 
@@ -235,7 +234,7 @@ export function allAttachments() {
     const docData = this._dataSync$.getValue();
 
     // if there are no attachments, the field is missing
-    if(!docData._attachments) return [];
+    if (!docData._attachments) return [];
 
     return Object.keys(docData._attachments)
         .map(id => {
@@ -252,27 +251,33 @@ export function preMigrateDocument(action) {
     return action;
 }
 
-export async function postMigrateDocument(action) {
+/**
+ * @return {Promise}
+ */
+export function postMigrateDocument(action) {
     const primaryPath = action.oldCollection.schema.primaryPath;
 
     const attachments = action.doc._attachments;
-    if (!attachments) return action;
+    if (!attachments) return Promise.resolve(action);
 
+    let currentPromise = Promise.resolve();
     for (const id in attachments) {
         const stubData = attachments[id];
         const primary = action.doc[primaryPath];
-        let data = await action.oldCollection.pouchdb.getAttachment(primary, id);
-        data = await blobBufferUtil.toString(data);
-
-        const res = await action.newestCollection.pouch.putAttachment(
-            primary,
-            id,
-            action.res.rev,
-            blobBufferUtil.createBlobBuffer(data, stubData.content_type),
-            stubData.content_type
-        );
-        action.res = res;
+        currentPromise = currentPromise
+            .then(() => action.oldCollection.pouchdb.getAttachment(primary, id))
+            .then(data => blobBufferUtil.toString(data))
+            .then(data => action.newestCollection.pouch.putAttachment(
+                primary,
+                id,
+                action.res.rev,
+                blobBufferUtil.createBlobBuffer(data, stubData.content_type),
+                stubData.content_type
+            ))
+            .then(res => action.res = res);
     }
+
+    return currentPromise;
 }
 
 export const rxdb = true;

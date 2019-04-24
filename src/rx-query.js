@@ -185,7 +185,7 @@ export class RxQuery {
      * just subscribe and use the first result
      * @return {Promise<RxDocument|RxDocument[]>} found documents
      */
-    async exec() {
+    exec() {
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of pouchdb,

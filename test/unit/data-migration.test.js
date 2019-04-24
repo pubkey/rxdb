@@ -25,9 +25,9 @@ config.parallel('data-migration.test.js', () => {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 db.destroy();
@@ -56,9 +56,9 @@ config.parallel('data-migration.test.js', () => {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 db.destroy();
@@ -95,7 +95,7 @@ config.parallel('data-migration.test.js', () => {
                         schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
-                            foo: function() {}
+                            foo: function () { }
                         }
                     }),
                     'RxError'
@@ -114,7 +114,7 @@ config.parallel('data-migration.test.js', () => {
                         schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
-                            '1.1': function() {}
+                            '1.1': function () { }
                         }
                     }),
                     'RxError'
@@ -152,8 +152,8 @@ config.parallel('data-migration.test.js', () => {
                         schema: schemas.simpleHumanV3,
                         autoMigrate: false,
                         migrationStrategies: {
-                            1: () => {},
-                            3: () => {}
+                            1: () => { },
+                            3: () => { }
                         }
                     }),
                     'RxError'
@@ -175,9 +175,9 @@ config.parallel('data-migration.test.js', () => {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 const old = await DataMigrator._getOldCollections(col._dataMigrator);
@@ -208,9 +208,9 @@ config.parallel('data-migration.test.js', () => {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => {},
-                        2: () => {},
-                        3: () => {}
+                        1: () => { },
+                        2: () => { },
+                        3: () => { }
                     }
                 });
                 const old = await DataMigrator._getOldCollections(col2._dataMigrator);
@@ -417,18 +417,15 @@ config.parallel('data-migration.test.js', () => {
                     const olds = await DataMigrator._getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
-                    const pw8 = AsyncTestUtil.waitResolveable(1000);
-
                     // batchSize is doc.length / 2 to make sure it takes a bit
                     const state$ = oldCol.migrate(5);
                     const states = [];
                     state$.subscribe(state => {
                         assert.equal(state.type, 'deleted');
                         states.push(state);
-                    }, () => {}, pw8.resolve);
+                    });
 
-                    await pw8.promise;
-                    assert.equal(states.length, 10);
+                    await AsyncTestUtil.waitUntil(() => states.length === 10);
                     col.database.destroy();
                 });
                 it('should throw when document cannot be migrated', async () => {

@@ -15,18 +15,24 @@ export function update(updateObj) {
     return this._saveData(newDocData, oldDocData);
 }
 
-export async function RxQueryUpdate(updateObj) {
-    const docs = await this.exec();
-    if (!docs) return null;
-    if (Array.isArray(docs)) {
-        await Promise.all(
-            docs.map(doc => doc.update(updateObj))
-        );
-    } else {
-        // via findOne()
-        await docs.update(updateObj);
-    }
-    return docs;
+/**
+ * 
+ * @param {*} updateObj 
+ * @return {Promise}
+ */
+export function RxQueryUpdate(updateObj) {
+    return this.exec()
+        .then(docs => {
+            if (!docs) return null;
+            if (Array.isArray(docs)) {
+                return Promise.all(
+                    docs.map(doc => doc.update(updateObj))
+                ).then(() => docs);
+            } else {
+                // via findOne()
+                return docs.update(updateObj).then(() => docs);
+            }
+        });
 }
 
 

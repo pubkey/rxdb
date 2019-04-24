@@ -3,7 +3,8 @@ import objectPath from 'object-path';
 import {
     clone,
     trimDots,
-    getHeightOfRevision
+    getHeightOfRevision,
+    toPromise
 } from './util';
 import {
     createChangeEvent
@@ -287,15 +288,13 @@ export const basePrototype = {
      */
     atomicUpdate(fun) {
         this._atomicQueue = this._atomicQueue
-            .then(async () => {
+            .then(() => {
                 const oldData = clone(this._dataSync$.getValue());
-
-                // use await here because it's unknown if a promise is returned
-                const newData = await fun(clone(this._dataSync$.getValue()), this);
-
-                return this._saveData(newData, oldData);
+                const ret = fun(clone(this._dataSync$.getValue()), this);
+                const retPromise = toPromise(ret);
+                return retPromise
+                    .then(newData => this._saveData(newData, oldData));
             });
-
         return this._atomicQueue.then(() => this);
     },
 
@@ -442,9 +441,9 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
             // getter - value
             valueObj.__defineGetter__(
                 key,
-                function() {
+                function () {
                     const _this = thisObj ? thisObj : this;
-                    if(!_this.get || typeof _this.get !== 'function') {
+                    if (!_this.get || typeof _this.get !== 'function') {
                         /**
                          * When an object gets added to the state of a vuejs-component,
                          * it happens that this getter is called with another scope.
@@ -458,7 +457,7 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
             );
             // getter - observable$
             Object.defineProperty(valueObj, key + '$', {
-                get: function() {
+                get: function () {
                     const _this = thisObj ? thisObj : this;
                     return _this.get$(fullPath);
                 },
@@ -467,7 +466,7 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
             });
             // getter - populate_
             Object.defineProperty(valueObj, key + '_', {
-                get: function() {
+                get: function () {
                     const _this = thisObj ? thisObj : this;
                     return _this.populate(fullPath);
                 },
@@ -475,7 +474,7 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
                 configurable: false
             });
             // setter - value
-            valueObj.__defineSetter__(key, function(val) {
+            valueObj.__defineSetter__(key, function (val) {
                 const _this = thisObj ? thisObj : this;
                 return _this.set(fullPath, val);
             });

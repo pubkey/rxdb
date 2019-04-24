@@ -15,42 +15,51 @@ import {
  */
 export const POUCHDB_LOCATION = 'rxdb-adapter-check';
 
-export async function checkAdapter(adapter) {
+/**
+ * 
+ * @param {*} adapter
+ * @return {Promise}
+ */
+export function checkAdapter(adapter) {
     // id of the document which is stored and removed to ensure everything works
     const _id = POUCHDB_LOCATION + '-' + generateId();
-    let recoveredDoc = null;
+
+    let pouch;
     try {
-        const pouch = new PouchDB(
+        pouch = new PouchDB(
             POUCHDB_LOCATION,
             adapterObject(adapter), {
                 auto_compaction: true,
                 revs_limit: 1
             }
         );
-        await pouch.info(); // ensure that we wait until db is useable
+    } catch (err) {
+        return Promise.resolve(false);
+    }
 
+    let recoveredDoc;
+    return pouch.info() // ensure that we wait until db is useable
         // ensure write works
-        await pouch.put({
+        .then(() => pouch.put({
             _id,
             value: {
                 ok: true,
                 time: new Date().getTime()
             }
-        });
-
+        }))
         // ensure read works
-        recoveredDoc = await pouch.get(_id);
-
+        .then(() => pouch.get(_id))
+        .then(doc => recoveredDoc = doc)
         // ensure remove works
-        await pouch.remove(recoveredDoc);
-    } catch (err) {
-        return false;
-    }
-
-    if (recoveredDoc && recoveredDoc.value && recoveredDoc.value.ok)
-        return true;
-    else
-        return false;
+        .then(() => pouch.remove(recoveredDoc))
+        .then(() => true)
+        .then(() => {
+            if (recoveredDoc && recoveredDoc.value && recoveredDoc.value.ok)
+                return true;
+            else
+                return false;
+        })
+        .catch(() => false);
 
     /**
      * NOTICE:

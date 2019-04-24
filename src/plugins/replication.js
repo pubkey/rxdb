@@ -50,7 +50,7 @@ export class RxReplicationState {
         // create getters
         Object.keys(this._subjects).forEach(key => {
             Object.defineProperty(this, key + '$', {
-                get: function() {
+                get: function () {
                     return this._subjects[key].asObservable();
                 }
             });
@@ -72,64 +72,65 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     // change
     rxRepState._subs.push(
         fromEvent(evEmitter, 'change')
-        .subscribe(ev => rxRepState._subjects.change.next(ev))
+            .subscribe(ev => rxRepState._subjects.change.next(ev))
     );
 
     // denied
     rxRepState._subs.push(
         fromEvent(evEmitter, 'denied')
-        .subscribe(ev => rxRepState._subjects.denied.next(ev))
+            .subscribe(ev => rxRepState._subjects.denied.next(ev))
     );
 
     // docs
     rxRepState._subs.push(
         fromEvent(evEmitter, 'change')
-        .subscribe(ev => {
-            if (
-                rxRepState._subjects.docs.observers.length === 0 ||
-                ev.direction !== 'pull'
-            ) return;
+            .subscribe(ev => {
+                if (
+                    rxRepState._subjects.docs.observers.length === 0 ||
+                    ev.direction !== 'pull'
+                ) return;
 
-            ev.change.docs
-                .filter(doc => doc.language !== 'query') // remove internal docs
-                .map(doc => rxRepState.collection._handleFromPouch(doc)) // do primary-swap and keycompression
-                .forEach(doc => rxRepState._subjects.docs.next(doc));
-        }));
+                ev.change.docs
+                    .filter(doc => doc.language !== 'query') // remove internal docs
+                    .map(doc => rxRepState.collection._handleFromPouch(doc)) // do primary-swap and keycompression
+                    .forEach(doc => rxRepState._subjects.docs.next(doc));
+            }));
 
     // error
     rxRepState._subs.push(
         fromEvent(evEmitter, 'error')
-        .subscribe(ev => rxRepState._subjects.error.next(ev))
+            .subscribe(ev => rxRepState._subjects.error.next(ev))
     );
 
     // active
     rxRepState._subs.push(
         fromEvent(evEmitter, 'active')
-        .subscribe(() => rxRepState._subjects.active.next(true))
+            .subscribe(() => rxRepState._subjects.active.next(true))
     );
     rxRepState._subs.push(
         fromEvent(evEmitter, 'paused')
-        .subscribe(() => rxRepState._subjects.active.next(false))
+            .subscribe(() => rxRepState._subjects.active.next(false))
     );
 
     // complete
     rxRepState._subs.push(
         fromEvent(evEmitter, 'complete')
-        .subscribe(info => {
-
-            /**
-             * when complete fires, it might be that not all changeEvents
-             * have passed throught, because of the delay of .wachtForChanges()
-             * Therefore we have to first ensure that all previous changeEvents have been handled
-             */
-            const unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
-
-            Promise.all(unhandledEvents).then(() => rxRepState._subjects.complete.next(info));
-        })
+            .subscribe(info => {
+                /**
+                 * when complete fires, it might be that not all changeEvents
+                 * have passed throught, because of the delay of .wachtForChanges()
+                 * Therefore we have to first ensure that all previous changeEvents have been handled
+                 */
+                const unhandledEvents = Array.from(rxRepState.collection._watchForChangesUnhandled);
+                Promise.all(unhandledEvents).then(() => rxRepState._subjects.complete.next(info));
+            })
     );
 
-    // alive
-    async function getIsAlive(emitter) {
+
+    /**
+     * @return {Promise}
+     */
+    function getIsAlive(emitter) {
         // "state" will live in emitter.state if single direction replication
         // or in emitter.push.state & emitter.pull.state when syncing for both
         let state = emitter.state;
@@ -144,20 +145,20 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
         // If it's active, we can't determine whether the connection is active
         // or not yet
         if (state === 'active') {
-            await new Promise(resolve => setTimeout(resolve, 15));
-            return getIsAlive(emitter);
+            return promiseWait(15).then(() => getIsAlive(emitter));
         }
 
         const isAlive = state !== 'stopped';
-        return isAlive;
+        return Promise.resolve(isAlive);
     }
+
     rxRepState._subs.push(
         fromEvent(evEmitter, 'paused')
             .pipe(
                 skipUntil(fromEvent(evEmitter, 'active'))
-            ).subscribe(async () => {
-                const isAlive = await getIsAlive(rxRepState._pouchEventEmitterObject);
-                rxRepState._subjects.alive.next(isAlive);
+            ).subscribe(() => {
+                getIsAlive(rxRepState._pouchEventEmitterObject)
+                    .then(isAlive => rxRepState._subjects.alive.next(isAlive));
             })
     );
 }
@@ -231,7 +232,7 @@ export const prototypes = {
 export const overwritable = {};
 
 export const hooks = {
-    createRxCollection: function(collection) {
+    createRxCollection: function (collection) {
         INTERNAL_POUCHDBS.add(collection.pouch);
     }
 };

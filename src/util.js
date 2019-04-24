@@ -44,7 +44,6 @@ export function fastUnsecureHash(obj) {
     return hash;
 }
 
-
 /**
  *  spark-md5 is used here
  *  because pouchdb uses the same
@@ -56,8 +55,6 @@ export function hash(obj) {
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
     return Md5.hash(msg);
 }
-
-
 
 /**
  * generate a new _id as db-primary-key
@@ -82,6 +79,19 @@ export function nextTick() {
  */
 export function promiseWait(ms = 0) {
     return new Promise(res => setTimeout(res, ms));
+}
+
+/**
+ * @param {any | Promise} maybePromise
+ * @return {Promise}
+ */
+export function toPromise(maybePromise) {
+    if (maybePromise && typeof maybePromise.then === 'function') {
+        // is promise
+        return maybePromise;
+    } else {
+        return Promise.resolve(maybePromise);
+    }
 }
 
 export function requestIdlePromise(timeout = null) {
