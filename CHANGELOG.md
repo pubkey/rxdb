@@ -1,5 +1,10 @@
 # Changelog
 
+### comming soon
+
+Typings:
+  - `RxDocument.getAttachment()` and `RxDocument.allAttachments()` did not return promises
+
 ### 8.1.0 (22 April 2019)
 
 Bugfixes:

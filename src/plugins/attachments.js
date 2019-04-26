@@ -1,8 +1,6 @@
 import {
     map
 } from 'rxjs/operators';
-
-
 import {
     createChangeEvent
 } from './../rx-change-event';
@@ -36,7 +34,6 @@ function resyncRxDocument(doc) {
         doc.$emit(changeEvent);
     });
 }
-
 
 export const blobBufferUtil = {
     /**
@@ -150,7 +147,7 @@ export class RxAttachment {
     }
 }
 
-RxAttachment.fromPouchDocument = (id, pouchDocAttachment, rxDocument) => {
+export function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
     return new RxAttachment({
         doc: rxDocument,
         id,
@@ -159,7 +156,7 @@ RxAttachment.fromPouchDocument = (id, pouchDocAttachment, rxDocument) => {
         digest: pouchDocAttachment.digest,
         rev: pouchDocAttachment.revpos
     });
-};
+}
 
 function shouldEncrypt(doc) {
     return !!doc.collection.schema.jsonID.attachments.encrypted;
@@ -191,7 +188,7 @@ export function putAttachment({
         .then(() => this.collection.pouch.get(this.primary))
         .then(docData => {
             const attachmentData = docData._attachments[id];
-            const attachment = RxAttachment.fromPouchDocument(
+            const attachment = fromPouchDocument(
                 id,
                 attachmentData,
                 this
@@ -217,7 +214,7 @@ export function getAttachment(id) {
         return null;
 
     const attachmentData = docData._attachments[id];
-    const attachment = RxAttachment.fromPouchDocument(
+    const attachment = fromPouchDocument(
         id,
         attachmentData,
         this
@@ -238,7 +235,7 @@ export function allAttachments() {
 
     return Object.keys(docData._attachments)
         .map(id => {
-            return RxAttachment.fromPouchDocument(
+            return fromPouchDocument(
                 id,
                 docData._attachments[id],
                 this
@@ -299,7 +296,7 @@ export const prototypes = {
                         map(entries => {
                             return entries
                                 .map(([id, attachmentData]) => {
-                                    return RxAttachment.fromPouchDocument(
+                                    return fromPouchDocument(
                                         id,
                                         attachmentData,
                                         this
