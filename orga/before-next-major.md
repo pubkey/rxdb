@@ -24,6 +24,11 @@ In documents like the following, the properties inside of the array-object will 
 Currently `withRev` has default `true`.
 It should be `false` by default because the user does not expect the revision here.
 
+### Replace crypto-js
+
+The dependency `crypto-js` is not tree-shakeable or works with rollup out of the box.
+We should use a lighter module that does the aes-encryption. See `config/rollup.config.js`
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument

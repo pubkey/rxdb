@@ -59,6 +59,9 @@ jobs:
       script: npm run build:size
       env: LABEL=build:size
     - stage: other
+      script: npm run build:rollup
+      env: LABEL=build:rollup
+    - stage: other
       script: (cd ./test/tutorials/ && npm install > "/dev/null" 2>&1 && travis_retry npm test)
       env: LABEL=docs
 
