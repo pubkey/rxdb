@@ -47,7 +47,7 @@
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
     "pouchdb-server": "4.1.0",
-    "regenerator": "0.13.3",
+    "regenerator": "0.14.1",
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "../../",
     "rxjs": "6.5.1",
