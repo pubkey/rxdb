@@ -53,7 +53,7 @@ export interface RxJsonSchemaTopLevel extends JsonSchema {
     final?: boolean;
 }
 
-export declare class RxJsonSchema {
+export declare class RxJsonSchema<T = any> {
     title?: string;
     description?: string;
     version: number;
@@ -63,8 +63,8 @@ export declare class RxJsonSchema {
      * retry this in later typescript-versions
      */
     type: 'object' | string;
-    properties: { [key: string]: RxJsonSchemaTopLevel };
-    required?: string[];
+    properties: { [key in keyof T]: RxJsonSchemaTopLevel };
+    required?: (keyof T)[];
     compoundIndexes?: string[] | string[][];
     keyCompression?: boolean;
     /**
@@ -72,19 +72,19 @@ export declare class RxJsonSchema {
      */
     additionalProperties?: boolean;
     attachments?: {
-            encrypted?: boolean
+        encrypted?: boolean;
     };
 }
 
 export declare class RxSchema<T = any> {
-    readonly jsonID: RxJsonSchema;
+    readonly jsonID: RxJsonSchema<T>;
     getSchemaByObjectPath(path: keyof T): JsonSchema;
     readonly encryptedPaths: any;
     validate(obj: any, schemaPath?: string): void;
     readonly hash: string;
     readonly topLevelFields: keyof T[];
     readonly previousVersions: any[];
-    readonly defaultValues: { [P in keyof T]: T[P]; };
+    readonly defaultValues: { [P in keyof T]: T[P] };
 
-    static create(jsonSchema: RxJsonSchema): RxSchema;
+    static create<T>(jsonSchema: RxJsonSchema<T>): RxSchema;
 }

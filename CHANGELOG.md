@@ -1,9 +1,10 @@
 # Changelog
 
-### comming soon
+### coming soon
 
 Typings:
   - `RxDocument.getAttachment()` and `RxDocument.allAttachments()` did not return promises
+  - ADD RxJsonSchema<T> generic for better TypeScript experience
 
 ### 8.1.0 (22 April 2019)
 
