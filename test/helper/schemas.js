@@ -724,3 +724,39 @@ export const point = {
     },
     required: ['x', 'y']
 };
+
+export const humanMinimal = {
+    title: 'human schema',
+    description: 'describes a human being',
+    version: 0,
+    keyCompression: true,
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        age: {
+            type: 'integer'
+        }
+    },
+    required: ['passportId', 'age']
+};
+
+export const humanMinimalBroken = {
+    title: 'human schema',
+    description: 'describes a human being',
+    version: 0,
+    keyCompression: true,
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        broken: {
+            type: 'integer'
+        }
+    },
+    required: ['passportId', 'broken']
+};

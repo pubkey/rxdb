@@ -94,7 +94,7 @@ const myDatabase: MyDatabase = await RxDB.create<MyDatabaseCollections>({
     adapter: 'memory'
 });
 
-const heroSchema: RxJsonSchema = {
+const heroSchema: RxJsonSchema<HeroDocType> = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,

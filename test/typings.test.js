@@ -197,6 +197,65 @@ describe('typings.test.js', function() {
 
         });
     });
+
+    config.parallel('schema', () => {
+        describe('positive', () => {
+            it('should allow creating generic schema based on a model', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const databaseCreator: RxDatabaseCreator = {
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        };
+                        const myDb: RxDatabase = await create(databaseCreator);
+
+                        const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimal)};
+                        const myCollection: RxCollection<any> = await myDb.collection<DefaultDocType>({
+                            name: 'humans',
+                            schema: minimalHuman,
+                        });
+                        
+                        await myDb.destroy();
+                    })();
+                `;
+                await transpileCode(code);
+            });
+        });
+        describe('negative', () => {
+            it('should not allow wrong properties when passing a model', async () => {
+                const brokenCode = codeBase + `
+                    (async() => {
+                        const databaseCreator: RxDatabaseCreator = {
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false
+                        };
+                        const myDb: RxDatabase = await create(databaseCreator);
+
+                        const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimalBroken)};
+                        const myCollection: RxCollection<any> = await myDb.collection<DefaultDocType>({
+                            name: 'humans',
+                            schema: minimalHuman,
+                        });
+
+                        await myDb.destroy();
+                    })();
+                `;
+                let thrown = false;
+                try {
+                    await transpileCode(brokenCode);
+                } catch (err) {
+                    thrown = true;
+                }
+                assert.ok(thrown);
+            });
+            
+        });
+    });
+
     config.parallel('collection', () => {
         describe('positive', () => {
             it('collection-creation', async () => {
