@@ -25,7 +25,7 @@
     "register-service-worker": "1.6.2",
     "rxdb": "../../",
     "vue": "2.6.10",
-    "vue-class-component": "7.0.2",
+    "vue-class-component": "7.1.0",
     "vue-property-decorator": "8.1.1",
     "vue-router": "3.0.6"
   },
