@@ -161,7 +161,7 @@
     "rollup": "1.11.3",
     "rollup-plugin-commonjs": "9.3.4",
     "rollup-plugin-node-resolve": "4.2.3",
-    "rxjs": "6.5.1",
+    "rxjs": "6.5.2",
     "shelljs": "0.8.3",
     "ts-node": "8.1.0",
     "typescript": "3.4.5",
