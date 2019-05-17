@@ -91,7 +91,7 @@
     "typescript": "3.4.5",
     "url-loader": "1.1.2",
     "webpack": "4.29.0",
-    "webpack-dev-middleware": "3.6.2",
+    "webpack-dev-middleware": "3.7.0",
     "webpack-dev-server": "3.4.0",
     "webpack-merge": "4.2.1"
   }
