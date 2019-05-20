@@ -88,7 +88,7 @@ We optimized, double-checked and made boilerplates so you can directly start to 
 npm install rxdb --save
 
 # peerDependencies
-npm install rxjs babel-polyfill --save
+npm install rxjs --save
 ```
 
 ### Import:

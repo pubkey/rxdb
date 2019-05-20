@@ -14,9 +14,15 @@ You also need to install the peer-dependency `rxjs` if you not have installed it
 
 ## polyfills
 
-RxDB is coded with es8 and transpiled to es5\. This means you have to install [polyfills](<https://en.wikipedia.org/wiki/Polyfill_(programming)>) to support older browsers. For example you can use the babel-polyfills with:
+RxDB is coded with es8 and transpiled to es5\. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use the babel-polyfills with:
 
-`npm i babel-polyfill --save`
+`npm i @babel/polyfill --save`
+
+If you need polyfills, you have to import them in your code.
+
+```js
+require('@babel/polyfill');
+```
 
 ## Latest
 
