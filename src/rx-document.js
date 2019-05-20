@@ -39,41 +39,45 @@ export function createRxDocumentConstructor(proto = basePrototype) {
         this._deleted$ = new BehaviorSubject(false);
 
         this._atomicQueue = Promise.resolve();
+
+        /**
+         * because of the prototype-merge,
+         * we can not use the native instanceof operator
+         */
+        this.isInstanceOfRxDocument = true;
     };
     constructor.prototype = proto;
     return constructor;
 }
 
 export const basePrototype = {
-    /**
-     * because of the prototype-merge,
-     * we can not use the native instanceof operator
-     */
-    get isInstanceOfRxDocument() {
-        return true;
-    },
     get _data() {
         /**
          * Might be undefined when vuejs-devtools are used
          * @link https://github.com/pubkey/rxdb/issues/1126
          */
-        if(!this._dataSync$) return undefined;
+        if (!this.isInstanceOfRxDocument) return undefined;
 
         return this._dataSync$.getValue();
     },
     get primaryPath() {
+        if (!this.isInstanceOfRxDocument) return undefined;
         return this.collection.schema.primaryPath;
     },
     get primary() {
+        if (!this.isInstanceOfRxDocument) return undefined;
         return this._data[this.primaryPath];
     },
     get revision() {
+        if (!this.isInstanceOfRxDocument) return undefined;
         return this._data._rev;
     },
     get deleted$() {
+        if (!this.isInstanceOfRxDocument) return undefined;
         return this._deleted$.asObservable();
     },
     get deleted() {
+        if (!this.isInstanceOfRxDocument) return undefined;
         return this._deleted$.getValue();
     },
 
