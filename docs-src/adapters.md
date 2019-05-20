@@ -122,7 +122,57 @@ const database = await RxDB.create({
 
 ## react-native-sqlite
 
-Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter. For usage, [see here](https://github.com/craftzdog/pouchdb-adapter-react-native-sqlite).
+Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter.
+To use it, you have to do some steps from [this tutorial](https://dev.to/craftzdog/hacking-pouchdb-to-use-on-react-native-1gjh).
+
+First install `pouchdb-adapter-react-native-sqlite` and `react-native-sqlite-2`.
+```bash
+npm install pouchdb-adapter-react-native-sqlite react-native-sqlite-2
+```
+
+Then you have to [link](https://facebook.github.io/react-native/docs/linking-libraries-ios) the library.
+```bash
+react-native link react-native-sqlite-2
+```
+
+You also have to add some polyfills which are need but not included in react-native.
+
+```bash
+npm install base-64 events
+```
+
+```js
+import {decode, encode} from 'base-64'
+
+if (!global.btoa) {
+    global.btoa = encode;
+}
+
+if (!global.atob) {
+    global.atob = decode;
+}
+
+// Avoid using node dependent modules
+process.browser = true;
+```
+
+Then you can use it inside of your code.
+
+```js
+import * as RxDB from 'rxdb';
+import SQLite from 'react-native-sqlite-2'
+import SQLiteAdapterFactory from 'pouchdb-adapter-react-native-sqlite'
+
+const SQLiteAdapter = SQLiteAdapterFactory(SQLite)
+
+RxDB.plugin(SQLiteAdapter);
+RxDB.plugin(require('pouchdb-adapter-http'));
+
+const database = await RxDB.create({
+    name: 'mydatabase',
+    adapter: 'react-native-sqlite' // the name of your adapter
+});
+```
 
 
 ## asyncstorage-down
