@@ -2,6 +2,9 @@
 
 ### coming soon
 
+Bugfixes:
+  - Vue devtools broke the application [#1126](https://github.com/pubkey/rxdb/issues/1126)
+
 Typings:
   - `RxDocument.getAttachment()` and `RxDocument.allAttachments()` did not return promises
   - ADD RxJsonSchema<T> generic for better TypeScript experience

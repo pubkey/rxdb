@@ -53,6 +53,12 @@ export const basePrototype = {
         return true;
     },
     get _data() {
+        /**
+         * Might be undefined when vuejs-devtools are used
+         * @link https://github.com/pubkey/rxdb/issues/1126
+         */
+        if(!this._dataSync$) return undefined;
+
         return this._dataSync$.getValue();
     },
     get primaryPath() {
