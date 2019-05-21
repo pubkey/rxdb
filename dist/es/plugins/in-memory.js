@@ -1,5 +1,3 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 
@@ -26,6 +24,9 @@ var collectionCacheMap = new WeakMap();
 var collectionPromiseCacheMap = new WeakMap();
 var BULK_DOC_OPTIONS = {
   new_edits: true
+};
+var BULK_DOC_OPTIONS_FALSE = {
+  new_edits: false
 };
 export var InMemoryRxCollection =
 /*#__PURE__*/
@@ -82,81 +83,52 @@ function (_RxCollection$RxColle) {
 
   var _proto = InMemoryRxCollection.prototype;
 
-  _proto.prepare =
-  /*#__PURE__*/
-  function () {
-    var _prepare = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee() {
-      var _this2 = this;
+  _proto.prepare = function prepare() {
+    var _this2 = this;
 
-      var thisToParentSub, parentToThisSub;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return setIndexes(this.schema, this.pouch);
+    return setIndexes(this.schema, this.pouch).then(function () {
+      _this2._subs.push(_this2._observable$.subscribe(function (cE) {
+        // when data changes, send it to RxDocument in docCache
+        var doc = _this2._docCache.get(cE.data.doc);
 
-            case 2:
-              this._subs.push(this._observable$.subscribe(function (cE) {
-                // when data changes, send it to RxDocument in docCache
-                var doc = _this2._docCache.get(cE.data.doc);
+        if (doc) doc._handleChangeEvent(cE);
+      }));
+    }) // initial sync parent's docs to own
+    .then(function () {
+      return replicateExistingDocuments(_this2._parentCollection, _this2);
+    }).then(function () {
+      /**
+       * call watchForChanges() on both sides,
+       * to ensure none-rxdb-changes like replication
+       * will fire into the change-event-stream
+       */
+      _this2._parentCollection.watchForChanges();
 
-                if (doc) doc._handleChangeEvent(cE);
-              }));
-              /* REPLICATION BETWEEN THIS AND PARENT */
-              // initial sync parent's docs to own
+      _this2.watchForChanges();
+      /**
+       * create an ongoing replications between both sides
+       */
 
 
-              _context.next = 5;
-              return replicateExistingDocuments(this._parentCollection, this);
+      var thisToParentSub = streamChangedDocuments(_this2).pipe(mergeMap(function (doc) {
+        return applyChangedDocumentToPouch(_this2._parentCollection, doc).then(function () {
+          return doc._rev;
+        });
+      })).subscribe(function (changeRev) {
+        _this2._nonPersistentRevisions["delete"](changeRev);
 
-            case 5:
-              /**
-               * call watchForChanges() on both sides,
-               * to ensure none-rxdb-changes like replication
-               * will fire into the change-event-stream
-               */
-              this._parentCollection.watchForChanges();
+        _this2._nonPersistentRevisionsSubject.next(_this2._nonPersistentRevisions.size);
+      });
 
-              this.watchForChanges();
-              /**
-               * create an ongoing replications between both sides
-               */
+      _this2._subs.push(thisToParentSub);
 
-              thisToParentSub = streamChangedDocuments(this).pipe(mergeMap(function (doc) {
-                return applyChangedDocumentToPouch(_this2._parentCollection, doc).then(function () {
-                  return doc._rev;
-                });
-              })).subscribe(function (changeRev) {
-                _this2._nonPersistentRevisions["delete"](changeRev);
+      var parentToThisSub = streamChangedDocuments(_this2._parentCollection).subscribe(function (doc) {
+        return applyChangedDocumentToPouch(_this2, doc);
+      });
 
-                _this2._nonPersistentRevisionsSubject.next(_this2._nonPersistentRevisions.size);
-              });
-
-              this._subs.push(thisToParentSub);
-
-              parentToThisSub = streamChangedDocuments(this._parentCollection).subscribe(function (doc) {
-                return applyChangedDocumentToPouch(_this2, doc);
-              });
-
-              this._subs.push(parentToThisSub);
-
-            case 11:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    function prepare() {
-      return _prepare.apply(this, arguments);
-    }
-
-    return prepare;
-  }()
+      _this2._subs.push(parentToThisSub);
+    });
+  }
   /**
    * waits until all writes are persistent
    * in the parent collection
@@ -179,41 +151,15 @@ function (_RxCollection$RxColle) {
    */
   ;
 
-  _proto._pouchPut =
-  /*#__PURE__*/
-  function () {
-    var _pouchPut2 = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee2(obj, overwrite) {
-      var ret;
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return this._oldPouchPut(obj, overwrite);
+  _proto._pouchPut = function _pouchPut(obj, overwrite) {
+    var _this4 = this;
 
-            case 2:
-              ret = _context2.sent;
+    return this._oldPouchPut(obj, overwrite).then(function (ret) {
+      _this4._nonPersistentRevisions.add(ret.rev);
 
-              this._nonPersistentRevisions.add(ret.rev);
-
-              return _context2.abrupt("return", ret);
-
-            case 5:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function _pouchPut(_x, _x2) {
-      return _pouchPut2.apply(this, arguments);
-    }
-
-    return _pouchPut;
-  }()
+      return ret;
+    });
+  }
   /**
    * @overwrite
    */
@@ -298,13 +244,11 @@ export function replicateExistingDocuments(fromCollection, toCollection) {
     .map(function (doc) {
       return fromCollection.schema.swapPrimaryToId(doc);
     });
-    if (docs.length === 0) return []; // nothing to replicate
+    if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
     else {
         return toCollection.pouch.bulkDocs({
           docs: docs
-        }, {
-          new_edits: false
-        }).then(function () {
+        }, BULK_DOC_OPTIONS_FALSE).then(function () {
           return docs;
         });
       }
@@ -366,75 +310,37 @@ export function streamChangedDocuments(rxCollection) {
  * @return {Promise<any>} promise that resolved with the transformed doc-data
  */
 
-export function applyChangedDocumentToPouch(_x3, _x4) {
-  return _applyChangedDocumentToPouch.apply(this, arguments);
+export function applyChangedDocumentToPouch(rxCollection, docData) {
+  if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
+
+  var transformedDoc = rxCollection._handleToPouch(docData);
+
+  return rxCollection.pouch.get(transformedDoc._id).then(function (oldDoc) {
+    return transformedDoc._rev = oldDoc._rev;
+  })["catch"](function () {
+    // doc not found, do not use a revision
+    delete transformedDoc._rev;
+  }).then(function () {
+    return rxCollection.pouch.bulkDocs({
+      docs: [transformedDoc]
+    }, BULK_DOC_OPTIONS);
+  }).then(function (bulkRet) {
+    if (bulkRet.length > 0 && !bulkRet[0].ok) {
+      throw new Error(JSON.stringify(bulkRet[0]));
+    } // set the flag so this does not appear in the own event-stream again
+
+
+    var emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
+
+    rxCollection._doNotEmitSet.add(emitFlag); // remove from the list later to not have a memory-leak
+
+
+    setTimeout(function () {
+      return rxCollection._doNotEmitSet["delete"](emitFlag);
+    }, 30 * 1000);
+    return transformedDoc;
+  });
 }
-
-function _applyChangedDocumentToPouch() {
-  _applyChangedDocumentToPouch = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee3(rxCollection, docData) {
-    var transformedDoc, oldDoc, bulkRet, emitFlag;
-    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
-            transformedDoc = rxCollection._handleToPouch(docData);
-            _context3.prev = 2;
-            _context3.next = 5;
-            return rxCollection.pouch.get(transformedDoc._id);
-
-          case 5:
-            oldDoc = _context3.sent;
-            transformedDoc._rev = oldDoc._rev;
-            _context3.next = 12;
-            break;
-
-          case 9:
-            _context3.prev = 9;
-            _context3.t0 = _context3["catch"](2);
-            // doc not found, do not use a revision
-            delete transformedDoc._rev;
-
-          case 12:
-            _context3.next = 14;
-            return rxCollection.pouch.bulkDocs({
-              docs: [transformedDoc]
-            }, BULK_DOC_OPTIONS);
-
-          case 14:
-            bulkRet = _context3.sent;
-
-            if (!(bulkRet.length > 0 && !bulkRet[0].ok)) {
-              _context3.next = 17;
-              break;
-            }
-
-            throw new Error(JSON.stringify(bulkRet[0]));
-
-          case 17:
-            // set the flag so this does not appear in the own event-stream again
-            emitFlag = transformedDoc._id + ':' + bulkRet[0].rev;
-
-            rxCollection._doNotEmitSet.add(emitFlag); // remove from the list later to not have a memory-leak
-
-
-            setTimeout(function () {
-              return rxCollection._doNotEmitSet["delete"](emitFlag);
-            }, 30 * 1000);
-            return _context3.abrupt("return", transformedDoc);
-
-          case 21:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3, null, [[2, 9]]);
-  }));
-  return _applyChangedDocumentToPouch.apply(this, arguments);
-}
-
 var INIT_DONE = false;
 /**
  * called in the proto of RxCollection
@@ -442,65 +348,29 @@ var INIT_DONE = false;
  */
 
 export function spawnInMemory() {
-  return _spawnInMemory.apply(this, arguments);
+  var _this5 = this;
+
+  if (!INIT_DONE) {
+    INIT_DONE = true; // ensure memory-adapter is added
+
+    if (!PouchDB.adapters || !PouchDB.adapters.memory) throw newRxError('IM1');
+  }
+
+  if (collectionCacheMap.has(this)) {
+    // already exists for this collection -> wait until synced
+    return collectionPromiseCacheMap.get(this).then(function () {
+      return collectionCacheMap.get(_this5);
+    });
+  }
+
+  var col = new InMemoryRxCollection(this);
+  var preparePromise = col.prepare();
+  collectionCacheMap.set(this, col);
+  collectionPromiseCacheMap.set(this, preparePromise);
+  return preparePromise.then(function () {
+    return col;
+  });
 }
-
-function _spawnInMemory() {
-  _spawnInMemory = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee4() {
-    var col, preparePromise;
-    return _regeneratorRuntime.wrap(function _callee4$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            if (INIT_DONE) {
-              _context4.next = 4;
-              break;
-            }
-
-            INIT_DONE = true; // ensure memory-adapter is added
-
-            if (!(!PouchDB.adapters || !PouchDB.adapters.memory)) {
-              _context4.next = 4;
-              break;
-            }
-
-            throw newRxError('IM1');
-
-          case 4:
-            if (!collectionCacheMap.has(this)) {
-              _context4.next = 8;
-              break;
-            }
-
-            _context4.next = 7;
-            return collectionPromiseCacheMap.get(this);
-
-          case 7:
-            return _context4.abrupt("return", collectionCacheMap.get(this));
-
-          case 8:
-            col = new InMemoryRxCollection(this);
-            preparePromise = col.prepare();
-            collectionCacheMap.set(this, col);
-            collectionPromiseCacheMap.set(this, preparePromise);
-            _context4.next = 14;
-            return preparePromise;
-
-          case 14:
-            return _context4.abrupt("return", col);
-
-          case 15:
-          case "end":
-            return _context4.stop();
-        }
-      }
-    }, _callee4, this);
-  }));
-  return _spawnInMemory.apply(this, arguments);
-}
-
 export var rxdb = true;
 export var prototypes = {
   RxCollection: function RxCollection(proto) {

@@ -1,6 +1,6 @@
 # Changelog
 
-### coming soon
+### 8.2.0 (21 May 2019)
 
 Bugfixes:
   - Vue devtools broke the application [#1126](https://github.com/pubkey/rxdb/issues/1126)

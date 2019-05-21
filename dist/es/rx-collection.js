@@ -1,5 +1,3 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter } from 'rxjs/operators';
 import { clone, validateCouchDBString, ucfirst, nextTick, generateId, promiseSeries } from './util';
@@ -200,87 +198,30 @@ function () {
    */
   ;
 
-  _proto._pouchPut =
-  /*#__PURE__*/
-  function () {
-    var _pouchPut2 = _asyncToGenerator(
-    /*#__PURE__*/
-    _regeneratorRuntime.mark(function _callee(obj) {
-      var _this2 = this;
+  _proto._pouchPut = function _pouchPut(obj) {
+    var _this2 = this;
 
-      var overwrite,
-          ret,
-          exist,
-          _args = arguments;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              overwrite = _args.length > 1 && _args[1] !== undefined ? _args[1] : false;
-              obj = this._handleToPouch(obj);
-              ret = null;
-              _context.prev = 3;
-              _context.next = 6;
-              return this.database.lockedRun(function () {
-                return _this2.pouch.put(obj);
-              });
-
-            case 6:
-              ret = _context.sent;
-              _context.next = 22;
-              break;
-
-            case 9:
-              _context.prev = 9;
-              _context.t0 = _context["catch"](3);
-
-              if (!(overwrite && _context.t0.status === 409)) {
-                _context.next = 21;
-                break;
-              }
-
-              _context.next = 14;
-              return this.database.lockedRun(function () {
-                return _this2.pouch.get(obj._id);
-              });
-
-            case 14:
-              exist = _context.sent;
-              obj._rev = exist._rev;
-              _context.next = 18;
-              return this.database.lockedRun(function () {
-                return _this2.pouch.put(obj);
-              });
-
-            case 18:
-              ret = _context.sent;
-              _context.next = 22;
-              break;
-
-            case 21:
-              throw _context.t0;
-
-            case 22:
-              return _context.abrupt("return", ret);
-
-            case 23:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this, [[3, 9]]);
-    }));
-
-    function _pouchPut(_x) {
-      return _pouchPut2.apply(this, arguments);
-    }
-
-    return _pouchPut;
-  }()
+    var overwrite = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    obj = this._handleToPouch(obj);
+    return this.database.lockedRun(function () {
+      return _this2.pouch.put(obj);
+    })["catch"](function (e) {
+      if (overwrite && e.status === 409) {
+        return _this2.database.lockedRun(function () {
+          return _this2.pouch.get(obj._id);
+        }).then(function (exist) {
+          obj._rev = exist._rev;
+          return _this2.database.lockedRun(function () {
+            return _this2.pouch.put(obj);
+          });
+        });
+      } else throw e;
+    });
+  }
   /**
    * get document from pouchdb by its _id
-   * @param  {[type]} key [description]
-   * @return {[type]}     [description]
+   * @param  {string} key _id of the document
+   * @return {Promise<object>} the document
    */
   ;
 

@@ -12,10 +12,6 @@ exports.properties = properties;
 exports.isInstanceOf = isInstanceOf;
 exports["default"] = exports.basePrototype = void 0;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _objectPath = _interopRequireDefault(require("object-path"));
@@ -43,6 +39,12 @@ function createRxDocumentConstructor() {
     this._dataSync$ = new _rxjs.BehaviorSubject((0, _util.clone)(jsonData));
     this._deleted$ = new _rxjs.BehaviorSubject(false);
     this._atomicQueue = Promise.resolve();
+    /**
+     * because of the prototype-merge,
+     * we can not use the native instanceof operator
+     */
+
+    this.isInstanceOfRxDocument = true;
   };
 
   constructor.prototype = proto;
@@ -50,35 +52,37 @@ function createRxDocumentConstructor() {
 }
 
 var basePrototype = {
-  /**
-   * because of the prototype-merge,
-   * we can not use the native instanceof operator
-   */
-  get isInstanceOfRxDocument() {
-    return true;
-  },
-
   get _data() {
+    /**
+     * Might be undefined when vuejs-devtools are used
+     * @link https://github.com/pubkey/rxdb/issues/1126
+     */
+    if (!this.isInstanceOfRxDocument) return undefined;
     return this._dataSync$.getValue();
   },
 
   get primaryPath() {
+    if (!this.isInstanceOfRxDocument) return undefined;
     return this.collection.schema.primaryPath;
   },
 
   get primary() {
+    if (!this.isInstanceOfRxDocument) return undefined;
     return this._data[this.primaryPath];
   },
 
   get revision() {
+    if (!this.isInstanceOfRxDocument) return undefined;
     return this._data._rev;
   },
 
   get deleted$() {
+    if (!this.isInstanceOfRxDocument) return undefined;
     return this._deleted$.asObservable();
   },
 
   get deleted() {
+    if (!this.isInstanceOfRxDocument) return undefined;
     return this._deleted$.getValue();
   },
 
@@ -298,32 +302,14 @@ var basePrototype = {
   atomicUpdate: function atomicUpdate(fun) {
     var _this2 = this;
 
-    this._atomicQueue = this._atomicQueue.then(
-    /*#__PURE__*/
-    (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee() {
-      var oldData, newData;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              oldData = (0, _util.clone)(_this2._dataSync$.getValue()); // use await here because it's unknown if a promise is returned
-
-              _context.next = 3;
-              return fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
-
-            case 3:
-              newData = _context.sent;
-              return _context.abrupt("return", _this2._saveData(newData, oldData));
-
-            case 5:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee);
-    })));
+    this._atomicQueue = this._atomicQueue.then(function () {
+      var oldData = (0, _util.clone)(_this2._dataSync$.getValue());
+      var ret = fun((0, _util.clone)(_this2._dataSync$.getValue()), _this2);
+      var retPromise = (0, _util.toPromise)(ret);
+      return retPromise.then(function (newData) {
+        return _this2._saveData(newData, oldData);
+      });
+    });
     return this._atomicQueue.then(function () {
       return _this2;
     });

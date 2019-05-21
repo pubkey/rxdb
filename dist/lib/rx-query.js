@@ -11,10 +11,6 @@ exports.RxQuery = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 var _deepEqual = _interopRequireDefault(require("deep-equal"));
@@ -148,36 +144,18 @@ function () {
    * just subscribe and use the first result
    * @return {Promise<RxDocument|RxDocument[]>} found documents
    */
-  _proto.exec =
-  /*#__PURE__*/
-  function () {
-    var _exec = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee() {
-      var _this = this;
+  _proto.exec = function exec() {
+    var _this = this;
 
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              return _context.abrupt("return", _ensureEqual(this).then(function () {
-                return _this.$.pipe((0, _operators.first)()).toPromise();
-              }));
-
-            case 1:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this);
-    }));
-
-    function exec() {
-      return _exec.apply(this, arguments);
-    }
-
-    return exec;
-  }();
+    /**
+     * run _ensureEqual() here,
+     * this will make sure that errors in the query which throw inside of pouchdb,
+     * will be thrown at this execution context
+     */
+    return _ensureEqual(this).then(function () {
+      return _this.$.pipe((0, _operators.first)()).toPromise();
+    });
+  };
 
   _proto.toJSON = function toJSON() {
     if (this._toJSON) return this._toJSON;

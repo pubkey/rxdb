@@ -1592,7 +1592,45 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
 });
 </code></pre>
 <h2 id="react-native-sqlite">react-native-sqlite</h2>
-<p>Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter. For usage, <a href="https://github.com/craftzdog/pouchdb-adapter-react-native-sqlite" target="_blank">see here</a>.</p>
+<p>Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter.
+To use it, you have to do some steps from <a href="https://dev.to/craftzdog/hacking-pouchdb-to-use-on-react-native-1gjh" target="_blank">this tutorial</a>.</p>
+<p>First install <code>pouchdb-adapter-react-native-sqlite</code> and <code>react-native-sqlite-2</code>.</p>
+<pre><code class="lang-bash">npm install pouchdb-adapter-react-native-sqlite react-native-sqlite-2
+</code></pre>
+<p>Then you have to <a href="https://facebook.github.io/react-native/docs/linking-libraries-ios" target="_blank">link</a> the library.</p>
+<pre><code class="lang-bash">react-native link react-native-sqlite-2
+</code></pre>
+<p>You also have to add some polyfills which are need but not included in react-native.</p>
+<pre><code class="lang-bash">npm install base-64 events
+</code></pre>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> {decode, encode} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;base-64&apos;</span>
+
+<span class="hljs-keyword">if</span> (!global.btoa) {
+    global.btoa = encode;
+}
+
+<span class="hljs-keyword">if</span> (!global.atob) {
+    global.atob = decode;
+}
+
+<span class="hljs-comment">// Avoid using node dependent modules</span>
+process.browser = <span class="hljs-literal">true</span>;
+</code></pre>
+<p>Then you can use it inside of your code.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> RxDB <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> SQLite <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;react-native-sqlite-2&apos;</span>
+<span class="hljs-keyword">import</span> SQLiteAdapterFactory <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;pouchdb-adapter-react-native-sqlite&apos;</span>
+
+<span class="hljs-keyword">const</span> SQLiteAdapter = SQLiteAdapterFactory(SQLite)
+
+RxDB.plugin(SQLiteAdapter);
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> RxDB.create({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    adapter: <span class="hljs-string">&apos;react-native-sqlite&apos;</span> <span class="hljs-comment">// the name of your adapter</span>
+});
+</code></pre>
 <h2 id="asyncstorage-down">asyncstorage-down</h2>
 <p>A leveldown adapter that stores on asyncstorage.</p>
 <pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-asyncstorage-down --save</span>
@@ -1657,7 +1695,7 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Adapters","level":"1.20","depth":1,"next":{"title":"Tutorials","level":"1.21","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"1.21.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"1.21.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"previous":{"title":"Plugins","level":"1.19","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"adapters.md","mtime":"2019-04-12T19:23:39.989Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-04-22T20:36:55.654Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Adapters","level":"1.20","depth":1,"next":{"title":"Tutorials","level":"1.21","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"1.21.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"Using the Server Plugin","level":"1.21.2","depth":2,"path":"tutorials/server.md","ref":"./tutorials/server.md","articles":[]}]},"previous":{"title":"Plugins","level":"1.19","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"adapters.md","mtime":"2019-05-20T15:47:04.466Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-05-21T17:03:25.622Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

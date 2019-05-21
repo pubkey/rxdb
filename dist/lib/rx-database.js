@@ -19,10 +19,6 @@ exports.isInstanceOf = isInstanceOf;
 exports.dbCount = dbCount;
 exports["default"] = exports.RxDatabase = void 0;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 var _randomToken = _interopRequireDefault(require("random-token"));
@@ -161,195 +157,117 @@ function () {
   /**
    * create or fetch a collection
    * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
-   * @return {Collection}
+   * @return {Promise<RxCollection>}
    */
   ;
 
-  _proto.collection =
-  /*#__PURE__*/
-  function () {
-    var _collection = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee(args) {
-      var _this2 = this;
+  _proto.collection = function collection(args) {
+    var _this2 = this;
 
-      var internalPrimary, schemaHash, collectionDoc, pouch, oneDoc, collection, cEvent;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (!(typeof args === 'string')) {
-                _context.next = 2;
-                break;
-              }
+    if (typeof args === 'string') return Promise.resolve(this.collections[args]);
+    args = Object.assign({}, args);
+    args.database = this;
+    (0, _hooks.runPluginHooks)('preCreateRxCollection', args);
 
-              return _context.abrupt("return", this.collections[args]);
-
-            case 2:
-              args = Object.assign({}, args);
-              args.database = this;
-              (0, _hooks.runPluginHooks)('preCreateRxCollection', args);
-
-              if (!(args.name.charAt(0) === '_')) {
-                _context.next = 7;
-                break;
-              }
-
-              throw (0, _rxError.newRxError)('DB2', {
-                name: args.name
-              });
-
-            case 7:
-              if (!this.collections[args.name]) {
-                _context.next = 9;
-                break;
-              }
-
-              throw (0, _rxError.newRxError)('DB3', {
-                name: args.name
-              });
-
-            case 9:
-              if (args.schema) {
-                _context.next = 11;
-                break;
-              }
-
-              throw (0, _rxError.newRxError)('DB4', {
-                name: args.name,
-                args: args
-              });
-
-            case 11:
-              internalPrimary = _collectionNamePrimary(args.name, args.schema); // check unallowed collection-names
-
-              if (!properties().includes(args.name)) {
-                _context.next = 14;
-                break;
-              }
-
-              throw (0, _rxError.newRxError)('DB5', {
-                name: args.name
-              });
-
-            case 14:
-              args.schema = (0, _rxSchema.createRxSchema)(args.schema); // check schemaHash
-
-              schemaHash = args.schema.hash;
-              collectionDoc = null;
-              _context.prev = 17;
-              _context.next = 20;
-              return this.lockedRun(function () {
-                return _this2._collectionsPouch.get(internalPrimary);
-              });
-
-            case 20:
-              collectionDoc = _context.sent;
-              _context.next = 25;
-              break;
-
-            case 23:
-              _context.prev = 23;
-              _context.t0 = _context["catch"](17);
-
-            case 25:
-              if (!(collectionDoc && collectionDoc.schemaHash !== schemaHash)) {
-                _context.next = 32;
-                break;
-              }
-
-              // collection already exists with different schema, check if it has documents
-              pouch = this._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
-              _context.next = 29;
-              return pouch.find({
-                selector: {
-                  _id: {}
-                },
-                limit: 1
-              });
-
-            case 29:
-              oneDoc = _context.sent;
-
-              if (!(oneDoc.docs.length !== 0)) {
-                _context.next = 32;
-                break;
-              }
-
-              throw (0, _rxError.newRxError)('DB6', {
-                name: args.name,
-                previousSchemaHash: collectionDoc.schemaHash,
-                schemaHash: schemaHash
-              });
-
-            case 32:
-              _context.next = 34;
-              return _rxCollection["default"].create(args);
-
-            case 34:
-              collection = _context.sent;
-
-              if (!(Object.keys(collection.schema.encryptedPaths).length > 0 && !this.password)) {
-                _context.next = 37;
-                break;
-              }
-
-              throw (0, _rxError.newRxError)('DB7', {
-                name: args.name
-              });
-
-            case 37:
-              if (collectionDoc) {
-                _context.next = 45;
-                break;
-              }
-
-              _context.prev = 38;
-              _context.next = 41;
-              return this.lockedRun(function () {
-                return _this2._collectionsPouch.put({
-                  _id: internalPrimary,
-                  schemaHash: schemaHash,
-                  schema: collection.schema.normalized,
-                  version: collection.schema.version
-                });
-              });
-
-            case 41:
-              _context.next = 45;
-              break;
-
-            case 43:
-              _context.prev = 43;
-              _context.t1 = _context["catch"](38);
-
-            case 45:
-              cEvent = (0, _rxChangeEvent.createChangeEvent)('RxDatabase.collection', this);
-              cEvent.data.v = collection.name;
-              cEvent.data.col = '_collections';
-              this.$emit(cEvent);
-              this.collections[args.name] = collection;
-
-              this.__defineGetter__(args.name, function () {
-                return _this2.collections[args.name];
-              });
-
-              return _context.abrupt("return", collection);
-
-            case 52:
-            case "end":
-              return _context.stop();
-          }
-        }
-      }, _callee, this, [[17, 23], [38, 43]]);
-    }));
-
-    function collection(_x) {
-      return _collection.apply(this, arguments);
+    if (args.name.charAt(0) === '_') {
+      throw (0, _rxError.newRxError)('DB2', {
+        name: args.name
+      });
     }
 
-    return collection;
-  }()
+    if (this.collections[args.name]) {
+      throw (0, _rxError.newRxError)('DB3', {
+        name: args.name
+      });
+    }
+
+    if (!args.schema) {
+      throw (0, _rxError.newRxError)('DB4', {
+        name: args.name,
+        args: args
+      });
+    }
+
+    var internalPrimary = _collectionNamePrimary(args.name, args.schema); // check unallowed collection-names
+
+
+    if (properties().includes(args.name)) {
+      throw (0, _rxError.newRxError)('DB5', {
+        name: args.name
+      });
+    }
+
+    args.schema = (0, _rxSchema.createRxSchema)(args.schema); // check schemaHash
+
+    var schemaHash = args.schema.hash;
+    var colDoc;
+    var col;
+    return this.lockedRun(function () {
+      return _this2._collectionsPouch.get(internalPrimary);
+    })["catch"](function () {
+      return null;
+    }).then(function (collectionDoc) {
+      colDoc = collectionDoc;
+
+      if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
+        // collection already exists with different schema, check if it has documents
+        var pouch = _this2._spawnPouchDB(args.name, args.schema.version, args.pouchSettings);
+
+        return pouch.find({
+          selector: {
+            _id: {}
+          },
+          limit: 1
+        }).then(function (oneDoc) {
+          if (oneDoc.docs.length !== 0) {
+            // we have one document
+            throw (0, _rxError.newRxError)('DB6', {
+              name: args.name,
+              previousSchemaHash: collectionDoc.schemaHash,
+              schemaHash: schemaHash
+            });
+          }
+
+          return collectionDoc;
+        });
+      } else return collectionDoc;
+    }).then(function () {
+      return _rxCollection["default"].create(args);
+    }).then(function (collection) {
+      col = collection;
+
+      if (Object.keys(collection.schema.encryptedPaths).length > 0 && !_this2.password) {
+        throw (0, _rxError.newRxError)('DB7', {
+          name: args.name
+        });
+      }
+
+      if (!colDoc) {
+        return _this2.lockedRun(function () {
+          return _this2._collectionsPouch.put({
+            _id: internalPrimary,
+            schemaHash: schemaHash,
+            schema: collection.schema.normalized,
+            version: collection.schema.version
+          });
+        })["catch"](function () {});
+      }
+    }).then(function () {
+      var cEvent = (0, _rxChangeEvent.createChangeEvent)('RxDatabase.collection', _this2);
+      cEvent.data.v = col.name;
+      cEvent.data.col = '_collections';
+
+      _this2.$emit(cEvent);
+
+      _this2.collections[args.name] = col;
+
+      _this2.__defineGetter__(args.name, function () {
+        return _this2.collections[args.name];
+      });
+
+      return col;
+    });
+  }
   /**
    * delete all data of the collection and its previous versions
    * @param  {string}  collectionName
@@ -357,58 +275,25 @@ function () {
    */
   ;
 
-  _proto.removeCollection =
-  /*#__PURE__*/
-  function () {
-    var _removeCollection = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee2(collectionName) {
-      var _this3 = this;
+  _proto.removeCollection = function removeCollection(collectionName) {
+    var _this3 = this;
 
-      var knownVersions, pouches;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              if (!this.collections[collectionName]) {
-                _context2.next = 3;
-                break;
-              }
+    if (this.collections[collectionName]) this.collections[collectionName].destroy(); // remove schemas from internal db
 
-              _context2.next = 3;
-              return this.collections[collectionName].destroy();
-
-            case 3:
-              _context2.next = 5;
-              return _removeAllOfCollection(this, collectionName);
-
-            case 5:
-              knownVersions = _context2.sent;
-              // get all relevant pouchdb-instances
-              pouches = knownVersions.map(function (v) {
-                return _this3._spawnPouchDB(collectionName, v);
-              }); // remove documents
-
-              return _context2.abrupt("return", Promise.all(pouches.map(function (pouch) {
-                return _this3.lockedRun(function () {
-                  return pouch.destroy();
-                });
-              })));
-
-            case 8:
-            case "end":
-              return _context2.stop();
-          }
-        }
-      }, _callee2, this);
-    }));
-
-    function removeCollection(_x2) {
-      return _removeCollection.apply(this, arguments);
-    }
-
-    return removeCollection;
-  }()
+    return _removeAllOfCollection(this, collectionName) // get all relevant pouchdb-instances
+    .then(function (knownVersions) {
+      return knownVersions.map(function (v) {
+        return _this3._spawnPouchDB(collectionName, v);
+      });
+    }) // remove documents
+    .then(function (pouches) {
+      return Promise.all(pouches.map(function (pouch) {
+        return _this3.lockedRun(function () {
+          return pouch.destroy();
+        });
+      }));
+    });
+  }
   /**
    * runs the given function between idleQueue-locking
    * @return {any}
@@ -455,80 +340,41 @@ function () {
    */
   ;
 
-  _proto.destroy =
-  /*#__PURE__*/
-  function () {
-    var _destroy = (0, _asyncToGenerator2["default"])(
-    /*#__PURE__*/
-    _regenerator["default"].mark(function _callee3() {
-      var _this4 = this;
+  _proto.destroy = function destroy() {
+    var _this4 = this;
 
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              if (!this.destroyed) {
-                _context3.next = 2;
-                break;
-              }
+    if (this.destroyed) return Promise.resolve();
+    (0, _hooks.runPluginHooks)('preDestroyRxDatabase', this);
+    DB_COUNT--;
+    this.destroyed = true;
 
-              return _context3.abrupt("return");
-
-            case 2:
-              (0, _hooks.runPluginHooks)('preDestroyRxDatabase', this);
-              DB_COUNT--;
-              this.destroyed = true;
-
-              if (this.broadcastChannel) {
-                /**
-                 * The broadcast-channel gets closed lazy
-                 * to ensure that all pending change-events
-                 * get emitted
-                 */
-                setTimeout(function () {
-                  return _this4.broadcastChannel.close();
-                }, 1000);
-              }
-
-              if (!this._leaderElector) {
-                _context3.next = 9;
-                break;
-              }
-
-              _context3.next = 9;
-              return this._leaderElector.destroy();
-
-            case 9:
-              this._subs.map(function (sub) {
-                return sub.unsubscribe();
-              }); // destroy all collections
-
-
-              _context3.next = 12;
-              return Promise.all(Object.keys(this.collections).map(function (key) {
-                return _this4.collections[key];
-              }).map(function (col) {
-                return col.destroy();
-              }));
-
-            case 12:
-              // remove combination from USED_COMBINATIONS-map
-              _removeUsedCombination(this.name, this.adapter);
-
-            case 13:
-            case "end":
-              return _context3.stop();
-          }
-        }
-      }, _callee3, this);
-    }));
-
-    function destroy() {
-      return _destroy.apply(this, arguments);
+    if (this.broadcastChannel) {
+      /**
+       * The broadcast-channel gets closed lazy
+       * to ensure that all pending change-events
+       * get emitted
+       */
+      setTimeout(function () {
+        return _this4.broadcastChannel.close();
+      }, 1000);
     }
 
-    return destroy;
-  }()
+    if (this._leaderElector) this._leaderElector.destroy();
+
+    this._subs.map(function (sub) {
+      return sub.unsubscribe();
+    }); // destroy all collections
+
+
+    return Promise.all(Object.keys(this.collections).map(function (key) {
+      return _this4.collections[key];
+    }).map(function (col) {
+      return col.destroy();
+    })) // remove combination from USED_COMBINATIONS-map
+    .then(function () {
+      return _removeUsedCombination(_this4.name, _this4.adapter);
+    });
+  }
   /**
    * deletes the database and its stored data
    * @return {Promise}
@@ -614,96 +460,65 @@ function _removeUsedCombination(name, adapter) {
 /**
  * validates and inserts the password-hash
  * to ensure there is/was no other instance with a different password
+ * @return {Promise}
  */
 
 
-function _preparePasswordHash(_x3) {
-  return _preparePasswordHash2.apply(this, arguments);
+function _preparePasswordHash(rxDatabase) {
+  if (!rxDatabase.password) return Promise.resolve(false);
+  var pwHash = (0, _util.hash)(rxDatabase.password);
+  return rxDatabase._adminPouch.get('_local/pwHash')["catch"](function () {
+    return null;
+  }).then(function (pwHashDoc) {
+    /**
+     * if pwHash was not saved, we save it,
+     * this operation might throw because another instance runs save at the same time,
+     * also we do not await the output because it does not mather
+     */
+    if (!pwHashDoc) {
+      rxDatabase._adminPouch.put({
+        _id: '_local/pwHash',
+        value: pwHash
+      })["catch"](function () {
+        return null;
+      });
+    } // different hash was already set by other instance
+
+
+    if (pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value) {
+      return rxDatabase.destroy().then(function () {
+        throw (0, _rxError.newRxError)('DB1', {
+          passwordHash: (0, _util.hash)(rxDatabase.password),
+          existingPasswordHash: pwHashDoc.value
+        });
+      });
+    }
+
+    return true;
+  });
 }
 /**
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
+ * @return {Promise<string>}
  */
 
 
-function _preparePasswordHash2() {
-  _preparePasswordHash2 = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee4(rxDatabase) {
-    var pwHash, pwHashDoc;
-    return _regenerator["default"].wrap(function _callee4$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            if (rxDatabase.password) {
-              _context4.next = 2;
-              break;
-            }
-
-            return _context4.abrupt("return", false);
-
-          case 2:
-            pwHash = (0, _util.hash)(rxDatabase.password);
-            pwHashDoc = null;
-            _context4.prev = 4;
-            _context4.next = 7;
-            return rxDatabase._adminPouch.get('_local/pwHash');
-
-          case 7:
-            pwHashDoc = _context4.sent;
-            _context4.next = 12;
-            break;
-
-          case 10:
-            _context4.prev = 10;
-            _context4.t0 = _context4["catch"](4);
-
-          case 12:
-            /**
-             * if pwHash was not saved, we save it,
-             * this operation might throw because another instance runs save at the same time,
-             * also we do not await the output because it does not mather
-             */
-            if (!pwHashDoc) {
-              rxDatabase._adminPouch.put({
-                _id: '_local/pwHash',
-                value: pwHash
-              })["catch"](function () {
-                return null;
-              });
-            } // different hash was already set by other instance
-
-
-            if (!(pwHashDoc && rxDatabase.password && pwHash !== pwHashDoc.value)) {
-              _context4.next = 17;
-              break;
-            }
-
-            _context4.next = 16;
-            return rxDatabase.destroy();
-
-          case 16:
-            throw (0, _rxError.newRxError)('DB1', {
-              passwordHash: (0, _util.hash)(rxDatabase.password),
-              existingPasswordHash: pwHashDoc.value
-            });
-
-          case 17:
-            return _context4.abrupt("return", true);
-
-          case 18:
-          case "end":
-            return _context4.stop();
-        }
-      }
-    }, _callee4, null, [[4, 10]]);
-  }));
-  return _preparePasswordHash2.apply(this, arguments);
-}
-
-function _ensureStorageTokenExists(_x4) {
-  return _ensureStorageTokenExists2.apply(this, arguments);
+function _ensureStorageTokenExists(rxDatabase) {
+  return rxDatabase._adminPouch.get('_local/storageToken')["catch"](function () {
+    // no doc exists -> insert
+    return rxDatabase._adminPouch.put({
+      _id: '_local/storageToken',
+      value: (0, _randomToken["default"])(10)
+    })["catch"](function () {}).then(function () {
+      return (0, _util.promiseWait)(0);
+    });
+  }).then(function () {
+    return rxDatabase._adminPouch.get('_local/storageToken');
+  }).then(function (storageTokenDoc2) {
+    return storageTokenDoc2.value;
+  });
 }
 /**
  * writes the changeEvent to the broadcastChannel
@@ -711,65 +526,6 @@ function _ensureStorageTokenExists(_x4) {
  * @return {Promise<boolean>}
  */
 
-
-function _ensureStorageTokenExists2() {
-  _ensureStorageTokenExists2 = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee5(rxDatabase) {
-    var storageTokenDoc2;
-    return _regenerator["default"].wrap(function _callee5$(_context5) {
-      while (1) {
-        switch (_context5.prev = _context5.next) {
-          case 0:
-            _context5.prev = 0;
-            _context5.next = 3;
-            return rxDatabase._adminPouch.get('_local/storageToken');
-
-          case 3:
-            _context5.next = 16;
-            break;
-
-          case 5:
-            _context5.prev = 5;
-            _context5.t0 = _context5["catch"](0);
-            _context5.prev = 7;
-            _context5.next = 10;
-            return rxDatabase._adminPouch.put({
-              _id: '_local/storageToken',
-              value: (0, _randomToken["default"])(10)
-            });
-
-          case 10:
-            _context5.next = 14;
-            break;
-
-          case 12:
-            _context5.prev = 12;
-            _context5.t1 = _context5["catch"](7);
-
-          case 14:
-            _context5.next = 16;
-            return new Promise(function (res) {
-              return setTimeout(res, 0);
-            });
-
-          case 16:
-            _context5.next = 18;
-            return rxDatabase._adminPouch.get('_local/storageToken');
-
-          case 18:
-            storageTokenDoc2 = _context5.sent;
-            return _context5.abrupt("return", storageTokenDoc2.value);
-
-          case 20:
-          case "end":
-            return _context5.stop();
-        }
-      }
-    }, _callee5, null, [[0, 5], [7, 12]]);
-  }));
-  return _ensureStorageTokenExists2.apply(this, arguments);
-}
 
 function writeToSocket(rxDatabase, changeEvent) {
   if (rxDatabase.multiInstance && !changeEvent.isIntern() && rxDatabase.broadcastChannel) {
@@ -849,66 +605,41 @@ function _prepareBroadcastChannel(rxDatabase) {
 }
 /**
  * do the async things for this database
+ * @return {Promise}
  */
 
 
-function prepare(_x5) {
-  return _prepare.apply(this, arguments);
+function prepare(rxDatabase) {
+  rxDatabase._adminPouch = _internalAdminPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
+  rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings); // ensure admin-pouch is useable
+
+  return rxDatabase._adminPouch.info().then(function () {
+    // validate/insert password-hash
+    return Promise.all([_ensureStorageTokenExists(rxDatabase), _preparePasswordHash(rxDatabase)]);
+  }).then(function (_ref) {
+    var storageToken = _ref[0];
+    rxDatabase.storageToken = storageToken;
+
+    if (rxDatabase.multiInstance) {
+      _prepareBroadcastChannel(rxDatabase);
+    }
+  });
 }
 
-function _prepare() {
-  _prepare = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee6(rxDatabase) {
-    var _ref2, storageToken;
-
-    return _regenerator["default"].wrap(function _callee6$(_context6) {
-      while (1) {
-        switch (_context6.prev = _context6.next) {
-          case 0:
-            rxDatabase._adminPouch = _internalAdminPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
-            rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings); // ensure admin-pouch is useable
-
-            _context6.next = 4;
-            return rxDatabase._adminPouch.info();
-
-          case 4:
-            _context6.next = 6;
-            return Promise.all([_ensureStorageTokenExists(rxDatabase), _preparePasswordHash(rxDatabase)]);
-
-          case 6:
-            _ref2 = _context6.sent;
-            storageToken = _ref2[0];
-            rxDatabase.storageToken = storageToken;
-
-            if (rxDatabase.multiInstance) {
-              _prepareBroadcastChannel(rxDatabase);
-            }
-
-          case 10:
-          case "end":
-            return _context6.stop();
-        }
-      }
-    }, _callee6);
-  }));
-  return _prepare.apply(this, arguments);
-}
-
-function create(_ref) {
-  var name = _ref.name,
-      adapter = _ref.adapter,
-      password = _ref.password,
-      _ref$multiInstance = _ref.multiInstance,
-      multiInstance = _ref$multiInstance === void 0 ? true : _ref$multiInstance,
-      _ref$queryChangeDetec = _ref.queryChangeDetection,
-      queryChangeDetection = _ref$queryChangeDetec === void 0 ? false : _ref$queryChangeDetec,
-      _ref$ignoreDuplicate = _ref.ignoreDuplicate,
-      ignoreDuplicate = _ref$ignoreDuplicate === void 0 ? false : _ref$ignoreDuplicate,
-      _ref$options = _ref.options,
-      options = _ref$options === void 0 ? {} : _ref$options,
-      _ref$pouchSettings = _ref.pouchSettings,
-      pouchSettings = _ref$pouchSettings === void 0 ? {} : _ref$pouchSettings;
+function create(_ref2) {
+  var name = _ref2.name,
+      adapter = _ref2.adapter,
+      password = _ref2.password,
+      _ref2$multiInstance = _ref2.multiInstance,
+      multiInstance = _ref2$multiInstance === void 0 ? true : _ref2$multiInstance,
+      _ref2$queryChangeDete = _ref2.queryChangeDetection,
+      queryChangeDetection = _ref2$queryChangeDete === void 0 ? false : _ref2$queryChangeDete,
+      _ref2$ignoreDuplicate = _ref2.ignoreDuplicate,
+      ignoreDuplicate = _ref2$ignoreDuplicate === void 0 ? false : _ref2$ignoreDuplicate,
+      _ref2$options = _ref2.options,
+      options = _ref2$options === void 0 ? {} : _ref2$options,
+      _ref2$pouchSettings = _ref2.pouchSettings,
+      pouchSettings = _ref2$pouchSettings === void 0 ? {} : _ref2$pouchSettings;
   (0, _util.validateCouchDBString)(name); // check if pouchdb-adapter
 
   if (typeof adapter === 'string') {
@@ -998,58 +729,36 @@ function _internalCollectionsPouch(name, adapter) {
  */
 
 
-function removeDatabase(_x6, _x7) {
-  return _removeDatabase.apply(this, arguments);
+function removeDatabase(databaseName, adapter) {
+  var adminPouch = _internalAdminPouch(databaseName, adapter);
+
+  var collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
+
+  return collectionsPouch.allDocs({
+    include_docs: true
+  }) // remove collections
+  .then(function (collectionsData) {
+    return Promise.all(collectionsData.rows.map(function (colDoc) {
+      return colDoc.id;
+    }).map(function (id) {
+      var split = id.split('-');
+      var name = split[0];
+      var version = parseInt(split[1], 10);
+
+      var pouch = _spawnPouchDB2(databaseName, adapter, name, version);
+
+      return pouch.destroy();
+    }));
+  }) // remove internals
+  .then(function () {
+    return Promise.all([collectionsPouch.destroy(), adminPouch.destroy()]);
+  });
 }
 /**
  * check is the given adapter can be used
  * @return {Promise}
  */
 
-
-function _removeDatabase() {
-  _removeDatabase = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee7(databaseName, adapter) {
-    var adminPouch, collectionsPouch, collectionsData;
-    return _regenerator["default"].wrap(function _callee7$(_context7) {
-      while (1) {
-        switch (_context7.prev = _context7.next) {
-          case 0:
-            adminPouch = _internalAdminPouch(databaseName, adapter);
-            collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
-            _context7.next = 4;
-            return collectionsPouch.allDocs({
-              include_docs: true
-            });
-
-          case 4:
-            collectionsData = _context7.sent;
-            _context7.next = 7;
-            return Promise.all(collectionsData.rows.map(function (colDoc) {
-              return colDoc.id;
-            }).map(function (id) {
-              var split = id.split('-');
-              var name = split[0];
-              var version = parseInt(split[1], 10);
-
-              var pouch = _spawnPouchDB2(databaseName, adapter, name, version);
-
-              return pouch.destroy();
-            }));
-
-          case 7:
-            return _context7.abrupt("return", Promise.all([collectionsPouch.destroy(), adminPouch.destroy()]));
-
-          case 8:
-          case "end":
-            return _context7.stop();
-        }
-      }
-    }, _callee7);
-  }));
-  return _removeDatabase.apply(this, arguments);
-}
 
 function checkAdapter(adapter) {
   return _overwritable["default"].checkAdapter(adapter);

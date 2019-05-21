@@ -11,6 +11,7 @@ exports.hash = hash;
 exports.generateId = generateId;
 exports.nextTick = nextTick;
 exports.promiseWait = promiseWait;
+exports.toPromise = toPromise;
 exports.requestIdlePromise = requestIdlePromise;
 exports.promiseSeries = promiseSeries;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
@@ -125,6 +126,20 @@ function promiseWait() {
   return new Promise(function (res) {
     return setTimeout(res, ms);
   });
+}
+/**
+ * @param {any | Promise} maybePromise
+ * @return {Promise}
+ */
+
+
+function toPromise(maybePromise) {
+  if (maybePromise && typeof maybePromise.then === 'function') {
+    // is promise
+    return maybePromise;
+  } else {
+    return Promise.resolve(maybePromise);
+  }
 }
 
 function requestIdlePromise() {

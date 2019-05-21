@@ -8,10 +8,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.checkAdapter = checkAdapter;
 exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.POUCHDB_LOCATION = void 0;
 
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
 
 var _util = require("../util");
@@ -27,80 +23,63 @@ var _util = require("../util");
  * there will not be many created databases
  */
 var POUCHDB_LOCATION = 'rxdb-adapter-check';
+/**
+ * 
+ * @param {*} adapter
+ * @return {Promise}
+ */
+
 exports.POUCHDB_LOCATION = POUCHDB_LOCATION;
 
-function checkAdapter(_x) {
-  return _checkAdapter.apply(this, arguments);
-}
+function checkAdapter(adapter) {
+  // id of the document which is stored and removed to ensure everything works
+  var _id = POUCHDB_LOCATION + '-' + (0, _util.generateId)();
 
-function _checkAdapter() {
-  _checkAdapter = (0, _asyncToGenerator2["default"])(
-  /*#__PURE__*/
-  _regenerator["default"].mark(function _callee(adapter) {
-    var _id, recoveredDoc, pouch;
+  var pouch;
 
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            // id of the document which is stored and removed to ensure everything works
-            _id = POUCHDB_LOCATION + '-' + (0, _util.generateId)();
-            recoveredDoc = null;
-            _context.prev = 2;
-            pouch = new _pouchDb["default"](POUCHDB_LOCATION, (0, _util.adapterObject)(adapter), {
-              auto_compaction: true,
-              revs_limit: 1
-            });
-            _context.next = 6;
-            return pouch.info();
+  try {
+    pouch = new _pouchDb["default"](POUCHDB_LOCATION, (0, _util.adapterObject)(adapter), {
+      auto_compaction: true,
+      revs_limit: 1
+    });
+  } catch (err) {
+    return Promise.resolve(false);
+  }
 
-          case 6:
-            _context.next = 8;
-            return pouch.put({
-              _id: _id,
-              value: {
-                ok: true,
-                time: new Date().getTime()
-              }
-            });
-
-          case 8:
-            _context.next = 10;
-            return pouch.get(_id);
-
-          case 10:
-            recoveredDoc = _context.sent;
-            _context.next = 13;
-            return pouch.remove(recoveredDoc);
-
-          case 13:
-            _context.next = 18;
-            break;
-
-          case 15:
-            _context.prev = 15;
-            _context.t0 = _context["catch"](2);
-            return _context.abrupt("return", false);
-
-          case 18:
-            if (!(recoveredDoc && recoveredDoc.value && recoveredDoc.value.ok)) {
-              _context.next = 22;
-              break;
-            }
-
-            return _context.abrupt("return", true);
-
-          case 22:
-            return _context.abrupt("return", false);
-
-          case 23:
-          case "end":
-            return _context.stop();
-        }
+  var recoveredDoc;
+  return pouch.info() // ensure that we wait until db is useable
+  // ensure write works
+  .then(function () {
+    return pouch.put({
+      _id: _id,
+      value: {
+        ok: true,
+        time: new Date().getTime()
       }
-    }, _callee, null, [[2, 15]]);
-  }));
-  return _checkAdapter.apply(this, arguments);
+    });
+  }) // ensure read works
+  .then(function () {
+    return pouch.get(_id);
+  }).then(function (doc) {
+    return recoveredDoc = doc;
+  }) // ensure remove works
+  .then(function () {
+    return pouch.remove(recoveredDoc);
+  }).then(function () {
+    return true;
+  }).then(function () {
+    if (recoveredDoc && recoveredDoc.value && recoveredDoc.value.ok) return true;else return false;
+  })["catch"](function () {
+    return false;
+  });
+  /**
+   * NOTICE:
+   * Do not remove the pouchdb-instance after the test
+   * The problem is that when this function is call in parallel,
+   * for example when you restore the tabs from a browser-session and open
+   * the same website multiple times at the same time,
+   * calling destroy would possibly crash the other call
+   */
 }
 
 var rxdb = true;

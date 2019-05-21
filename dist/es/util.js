@@ -83,6 +83,19 @@ export function promiseWait() {
     return setTimeout(res, ms);
   });
 }
+/**
+ * @param {any | Promise} maybePromise
+ * @return {Promise}
+ */
+
+export function toPromise(maybePromise) {
+  if (maybePromise && typeof maybePromise.then === 'function') {
+    // is promise
+    return maybePromise;
+  } else {
+    return Promise.resolve(maybePromise);
+  }
+}
 export function requestIdlePromise() {
   var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 

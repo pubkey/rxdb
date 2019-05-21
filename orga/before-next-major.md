@@ -32,6 +32,15 @@ It should be `false` by default because the user does not expect the revision he
 The dependency `crypto-js` is not tree-shakeable or works with rollup out of the box.
 We should use a lighter module that does the aes-encryption. See `config/rollup.config.js`
 
+### Rewrite prototype-merge
+
+Each collection creates it's own constructor for RxDocuments.
+This has a performance-benefit over using the Proxy-API which is also not supported in IE11.
+To create the constructor, the collection merges prototypes from RxDocument, RxSchema and the ORM-functions.
+The current implementation of this prototype-merging is very complicated and has hacky workarrounds to work with vue-devtools.
+We should rewrite it to a single pure function that returns the constructor.
+Instead of mergin the prototype into a single object, we should chain them together.
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
