@@ -6,6 +6,8 @@ export * from './rx-schema';
 
 import {
     PouchReplicationOptions,
+    PouchSyncHandler,
+    PouchSyncHandlerEvents,
     PouchSettings,
     PouchDB
 } from './pouch';

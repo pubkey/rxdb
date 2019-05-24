@@ -1,5 +1,10 @@
 # Changelog
 
+### comming soon
+
+Typings:
+  - ADD typings to access the `PouchSyncHandler` of `RxReplicationState`
+
 ### 8.2.0 (21 May 2019)
 
 Bugfixes:

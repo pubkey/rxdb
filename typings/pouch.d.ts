@@ -37,6 +37,12 @@ export interface PouchSettings {
     iosDatabaseLocation?: string;
 }
 
+export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
+export type PouchSyncHandler = {
+    on(ev: PouchSyncHandlerEvents, fn: (el: any) => void);
+    cancel(): void;
+};
+
 declare type Debug = {
     enable(what: string): void;
     disable(): void;
@@ -73,6 +79,7 @@ export declare class PouchDB {
         options?: any,
     ): Promise<any>;
     changes(options?: PouchReplicationOptions): any;
+    sync(options?: PouchReplicationOptions): PouchSyncHandler;
     close(): Promise<void>;
     putAttachment(
         docId: string,

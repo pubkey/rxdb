@@ -346,7 +346,8 @@ describe('typings.test.js', function() {
                                 foo: string
                         };
                         const myCollection: RxCollection<docType> = await myDb.collection({
-                            name: 'humans',                            schema: mySchema,
+                            name: 'humans',
+                            schema: mySchema,
                             autoMigrate: false,
                             options: {
                                 foo2: 'bar2'
@@ -357,6 +358,38 @@ describe('typings.test.js', function() {
                             foo: 'bar'
                         });
                         const docs = await myCollection.pouch.allDocs();
+                    })();
+                `;
+                await transpileCode(code);
+            });
+            it('access PouchSyncHandler', async () => {
+                const code = codeBase + `
+                    (async() => {
+                        const myDb: RxDatabase = await create({
+                            name: 'mydb',
+                            adapter: 'memory',
+                            multiInstance: false,
+                            ignoreDuplicate: false,
+                            options: {
+                                foo1: 'bar1'
+                            }
+                        });
+                        const mySchema: RxJsonSchema = ${JSON.stringify(schemas.human)};
+                        type docType = {
+                                foo: string
+                        };
+                        const myCollection: RxCollection<docType> = await myDb.collection({
+                            name: 'humans',
+                            schema: mySchema
+                        });
+                        const replicationState = myCollection.sync({
+                            remote: 'http://localhost:9090/'
+                        });
+                        const syncHandler = replicationState._pouchEventEmitterObject;
+                        if(!syncHandler) return;
+                        syncHandler.on('paused', (anything: any) => {
+                            
+                        });
                     })();
                 `;
                 await transpileCode(code);

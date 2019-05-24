@@ -2,7 +2,8 @@ import { Observable } from 'rxjs';
 
 import { RxQuery } from '../rx-query.d';
 import {
-    PouchReplicationOptions
+    PouchReplicationOptions,
+    PouchSyncHandler
 } from '../pouch';
 
 export declare class RxReplicationState {
@@ -17,6 +18,10 @@ export declare class RxReplicationState {
 
     // if you do a custom sync, put the thing you get back from pouch here
     setPouchEventEmitter(pouchSyncState: any): void;
+
+    // can be used for debuging or custom event-handling
+    // will be set some time after sync() is called
+    _pouchEventEmitterObject: PouchSyncHandler | null;
 }
 
 export interface SyncOptions {
