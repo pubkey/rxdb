@@ -30,9 +30,9 @@
     "vue-router": "3.0.6"
   },
   "devDependencies": {
-    "@vue/cli-plugin-pwa": "3.7.0",
-    "@vue/cli-plugin-typescript": "3.7.0",
-    "@vue/cli-service": "3.7.0",
+    "@vue/cli-plugin-pwa": "3.8.0",
+    "@vue/cli-plugin-typescript": "3.8.1",
+    "@vue/cli-service": "3.8.0",
     "concurrently": "4.1.0",
     "less": "3.0.4",
     "less-loader": "5.0.0",
