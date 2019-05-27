@@ -100,7 +100,7 @@ RxDB.plugin(require('pouchdb-adapter-node-websql'));
 
 const database = await RxDB.create({
     name: 'mydatabase',
-    adapter: 'node-websql' // the name of your adapter
+    adapter: 'websql' // the name of your adapter
 });
 ```
 
