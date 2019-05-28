@@ -1,6 +1,9 @@
 # Changelog
 
-### comming soon
+### coming soon
+
+Features:
+  - Add a [z-schema](https://github.com/zaggino/z-schema) validator plugin
 
 Typings:
   - ADD typings to access the `PouchSyncHandler` of `RxReplicationState`
