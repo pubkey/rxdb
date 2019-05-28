@@ -40,7 +40,10 @@ function _getValidator() {
         }
   
         const validator = new ZSchema();
-        validatorsOfHash[schemaPath] = (obj) => validator.validate(obj, schemaPart);
+        validatorsOfHash[schemaPath] = (obj) => {
+            validator.validate(obj, schemaPart);
+            return validator;
+        };
     }
   
     return validatorsOfHash[schemaPath];
@@ -54,12 +57,19 @@ function _getValidator() {
  * @return {any} obj if validation successful
  */
 const validate = function (obj, schemaPath = '') {
-    const useValidator = this._getValidator(schemaPath);
-    const isValid = useValidator(obj);
-    if (isValid) return obj;
+    const validator = this._getValidator(schemaPath);
+    const useValidator = validator(obj);
+    /** @type {ZSchema.SchemaErrorDetail[]} */
+    const errors = useValidator.getLastErrors();
+    if (!errors) return obj;
     else {
+        const formattedZSchemaErrors = errors.map(({ title, description, message }) => ({
+            title,
+            description,
+            message
+        }));
         throw newRxError('VD2', {
-            errors: useValidator.errors,
+            errors: formattedZSchemaErrors,
             schemaPath,
             obj,
             schema: this.jsonID
@@ -68,10 +78,8 @@ const validate = function (obj, schemaPath = '') {
 };
 
 const runAfterSchemaCreated = rxSchema => {
-    // pre-generate the isMyJsonValid-validator from the schema
-    requestIdleCallbackIfAvailable(() => {
-        rxSchema._getValidator();
-    });
+    // pre-generate the validator-z-schema from the schema
+    requestIdleCallbackIfAvailable(() => _getValidator(rxSchema));
 };
 
 export const rxdb = true;
