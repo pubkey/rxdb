@@ -31,11 +31,18 @@ export interface RxDatabaseCreator {
     pouchSettings?: PouchSettings;
 }
 
+export interface PouchServerOptions {
+    inMemoryConfig?: boolean;
+    logPath?: string;
+}
+
 // options for the server-plugin
 export interface ServerOptions {
     path?: string;
     port?: number;
     cors?: boolean;
+    express?: any;
+    pouchServerOptions?: PouchServerOptions;
 }
 
 export type RxDatabase<Collections = { [key: string]: RxCollection }> = RxDatabaseBase<Collections> & Collections;
