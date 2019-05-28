@@ -140,6 +140,35 @@ config.parallel('plugin.test.js', () => {
             }
         });
     });
+    describe('validate-z-schema.node.js', () => {
+        it('should allow everything', async () => {
+            if (!config.platform.isNode())
+                return;
+
+            const spawn = REQUIRE_FUN('child-process-promise').spawn;
+            const stdout = [];
+            const stderr = [];
+            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/validate-z-schema.node.js']);
+            const childProcess = promise.childProcess;
+            childProcess.stdout.on('data', data => {
+                // comment in to debug
+                // console.log(':: ' + data.toString());
+                stdout.push(data.toString());
+            });
+            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            try {
+                await promise;
+            } catch (err) {
+                console.log('errrrr');
+                console.dir(stdout);
+                throw new Error(`could not run validate-z-schema.node.js.
+                            # Error: ${err}
+                            # Output: ${stdout}
+                            # ErrOut: ${stderr}
+                            `);
+            }
+        });
+    });
     describe('no-validate.node.js', () => {
         it('should allow everything', async () => {
             if (!config.platform.isNode())
