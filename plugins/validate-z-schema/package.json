@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-validate-z-schema",
+  "main": "../../dist/lib/plugins/validate-z-schema.js",
+  "jsnext:main": "../../dist/es/plugins/validate-z-schema.js",
+  "module": "../../dist/es/plugins/validate-z-schema.js"
+}
