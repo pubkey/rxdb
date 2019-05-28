@@ -11,8 +11,6 @@ import {
     requestIdleCallbackIfAvailable
 } from '../util';
 
-const validator = new ZSchema();
-
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
@@ -26,20 +24,25 @@ const validatorsCache = {};
  * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-function _getValidator(schemaPath = '') {
+function _getValidator() {
+    const schemaPath = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
     const hash = this.hash;
-    if (!validatorsCache[hash])
-        validatorsCache[hash] = {};
+    if (!validatorsCache[hash]) validatorsCache[hash] = {};
     const validatorsOfHash = validatorsCache[hash];
+  
     if (!validatorsOfHash[schemaPath]) {
         const schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
+    
         if (!schemaPart) {
             throw newRxError('VD1', {
-                schemaPath
+                schemaPath: schemaPath
             });
         }
-        validatorsOfHash[schemaPath] = validator(schemaPart);
+  
+        const validator = new ZSchema();
+        validatorsOfHash[schemaPath] = (obj) => validator.validate(obj, schemaPart);
     }
+  
     return validatorsOfHash[schemaPath];
 }
 

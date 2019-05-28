@@ -1,6 +1,9 @@
 # Changelog
 
-### comming soon
+### coming soon
+
+Features:
+  - Add a [z-schema](https://github.com/zaggino/z-schema) validator plugin
 
 Bugfixes:
   - Collection change event was emitted before the actual change happened
