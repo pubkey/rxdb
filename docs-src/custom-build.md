@@ -45,6 +45,18 @@ RxDB.plugin(RxDBAjvValidateModule);
 RxDB.plugin(require('rxdb/plugins/ajv-validate'));
 ```
 
+### validate-z-schema
+
+Both `is-my-json-valid` and `ajv-validate` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
+
+```javascript
+// es6-import
+import RxDBZSchemaValidateModule from 'rxdb/plugins/validate-z-schema';
+RxDB.plugin(RxDBZSchemaValidateModule);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/validate-z-schema'));
+```
 
 ### no-validate
 
