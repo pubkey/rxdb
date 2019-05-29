@@ -24,9 +24,8 @@ const validatorsCache = {};
  * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-function _getValidator() {
-    const schemaPath = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-    const hash = this.hash;
+function _getValidator(rxSchema, schemaPath = '') {
+    const hash = rxSchema.hash;
     if (!validatorsCache[hash]) validatorsCache[hash] = {};
     const validatorsOfHash = validatorsCache[hash];
   
