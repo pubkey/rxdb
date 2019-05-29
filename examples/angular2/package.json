@@ -88,7 +88,7 @@
     "testcafe": "1.2.0",
     "testcafe-hammerhead": "14.6.6",
     "tslint": "5.16.0",
-    "typescript": "3.4.5",
+    "typescript": "3.5.1",
     "url-loader": "1.1.2",
     "webpack": "4.29.0",
     "webpack-dev-middleware": "3.7.0",
