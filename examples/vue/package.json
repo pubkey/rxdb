@@ -38,7 +38,7 @@
     "less-loader": "5.0.0",
     "local-web-server": "2.6.1",
     "testcafe": "1.2.0",
-    "typescript": "3.4.5",
+    "typescript": "3.5.1",
     "vue-template-compiler": "2.6.10"
   }
 }
