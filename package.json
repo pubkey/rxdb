@@ -160,7 +160,7 @@
     "rimraf": "2.6.3",
     "rollup": "1.12.5",
     "rollup-plugin-commonjs": "10.0.0",
-    "rollup-plugin-node-resolve": "5.0.0",
+    "rollup-plugin-node-resolve": "5.0.1",
     "rxjs": "6.5.2",
     "shelljs": "0.8.3",
     "ts-node": "8.2.0",
