@@ -97,7 +97,6 @@ npm install rxjs --save
   <summary>ES7</summary>
 
 ```javascript
-import 'babel-polyfill'; // only needed when you dont have polyfills
 import RxDB from 'rxdb';
 const db = await RxDB.create({
     name: 'heroesdb',
@@ -116,7 +115,6 @@ db.heroes.insert({ name: 'Bob' });                          // insert document
   <summary>ES5</summary>
 
 ```javascript
-require('babel-polyfill'); // only needed when you dont have polyfills
 var RxDB = require('rxdb');
 RxDB.create({
     name: 'heroesdb',
@@ -287,20 +285,16 @@ For example you can use websql in the browser, localstorage in mobile-browsers a
 </summary>
 
 ```js
-// this requires the localstorage-adapter
-RxDB.plugin(require('pouchdb-adapter-localstorage'));
-// this creates a database with the localstorage-adapter
-const db = await RxDB.create('heroesDB', 'localstorage');
+// this requires the indexeddb-adapter
+RxDB.plugin(require('pouchdb-adapter-idb'));
+// this creates a database with the indexeddb-adapter
+const database = await RxDB.create({
+    name: 'mydatabase',
+    adapter: 'idb' // the name of your adapter
+});
 ```
 
-Some adapters you can use:
-
--   [indexedDB](https://www.npmjs.com/package/pouchdb-adapter-idb)
--   [localstorage](https://www.npmjs.com/package/pouchdb-adapter-localstorage)
--   [fruitdown](https://www.npmjs.com/package/pouchdb-adapter-fruitdown)
--   [memory](https://www.npmjs.com/package/pouchdb-adapter-memory)
--   [websql](https://www.npmjs.com/package/pouchdb-adapter-websql)
--   [Or any leveldown-adapter](https://github.com/Level/levelup/wiki/Modules#storage-back-ends)
+There is a [big ecosystem](https://rxdb.info/adapters.html) of adapters you can use.
     </details>
 
 <details>
