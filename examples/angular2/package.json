@@ -70,7 +70,7 @@
     "babel-preset-env": "1.7.0",
     "copy-webpack-plugin": "5.0.3",
     "css-loader": "2.1.1",
-    "es6-promise": "4.2.6",
+    "es6-promise": "4.2.8",
     "extract-text-webpack-plugin": "3.0.2",
     "file-loader": "3.0.1",
     "fsmonitor": "0.2.4",
