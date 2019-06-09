@@ -74,7 +74,7 @@ if (process.env.TRAVIS) {
      * overwrite reporters-default
      * So no big list will be shown at log
      */
-    configuration.reporters = [];
+    // configuration.reporters = [];
 
     // how many browser should be started simultanous
     configuration.concurrency = 1;
