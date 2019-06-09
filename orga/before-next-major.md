@@ -41,6 +41,10 @@ The current implementation of this prototype-merging is very complicated and has
 We should rewrite it to a single pure function that returns the constructor.
 Instead of mergin the prototype into a single object, we should chain them together.
 
+### merge checks into dev-mode-plugin
+Currently we have the schema-check plugin which checks that the schema of a collection is correct. Other checks like [this](https://github.com/pubkey/rxdb/blob/fc3a38717137d1daf53db8be02ebc43bb7159ed1/src/rx-collection.js#L697) are still included in the codebase.
+We should create a seperate `dev-mode`-plugin which includes all checks and error-messages for the dev-mode.
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
