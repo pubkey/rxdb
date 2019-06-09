@@ -195,6 +195,20 @@ const schemaWithFinalAge = {
 };
 ```
 
+
+## encryption
+
+By setting a field to `encrypted: true` it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
+You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
+
+```json
+"mySecretField": {
+    "type": "string",
+    "encrypted": true
+},
+```
+
+
 ## NOTICE: Not everything within the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass a invalid schema into it.

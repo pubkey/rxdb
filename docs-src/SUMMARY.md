@@ -36,6 +36,7 @@
     * [attachments](./rx-schema.md#attachments)
     * [default](./rx-schema.md#default)
     * [final](./rx-schema.md#final)
+    * [encryption](./rx-schema.md#encryption)
 
 * [RxCollection](./rx-collection.md)
     * [Creation](./rx-collection.md#creating-a-collection)
