@@ -12,7 +12,7 @@ This page is an overview over the different adapters with recommendations on wha
 In any environment, you can use the memory-adapter. It stores the data in the javascript runtime memory. This means it is not persistent and the data is lost when the process terminates.
 
 Use this adapter when:
-  - You want to have a realy good performance
+  - You want to have a really good performance
   - You do not want persistent state, for example in your test suite
 
 ```js
