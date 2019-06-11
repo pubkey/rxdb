@@ -62,6 +62,7 @@
 | 📤📥  | **Import/Export** of the database-state (json), awesome for coding with [TDD](https://en.wikipedia.org/wiki/Test-driven_development)                                                                                                    |
 | 📡  | **Multi-Window** to synchronise data between different browser-windows or nodejs-processes                                                                                                                                              |
 | 💅 | **ORM-capabilities** to easily handle data-code-relations and customize functions of documents and collections                                                                                                                                                                               |
+| 🔷  | Full **TypeScript** support for fast and secure coding                                                                                                                                              |
 
 ## Platform-support
 
