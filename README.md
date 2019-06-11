@@ -12,8 +12,13 @@
 
 <h1 align="center">RxDB</h1>
 <p align="center">
-  <strong>A realtime Database for the Web</strong>
+  <strong>A realtime Database for JavaScript Applications</strong>
 </p>
+
+<p align="justify">
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is NoSQL-database for all JavaScript Applications like Websites, hybrid Apps, Electron-Apps and NodeJs. Reactive means that you can not only query the current state, but subscribe to all state-changes like the changestream, the result of a query or even a single field of a document. This is especially useful for UI-based apps that always display the realtime state to the user. Because RxDB is based on glorious PouchDB, it supports the CouchDB replication-protocol which lets you replicate data between multiple clients and servers in an easy and convenient way in realtime.
+</p>
+
 
 <div align="center">
   <h3>
@@ -71,7 +76,6 @@ RxDB is made so that you can use **exactly the same code** at
 -   ![electron](docs-src/files/icons/electron.png) [Electron](https://electronjs.org/)
 -   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://facebook.github.io/react-native/)
 -   ![cordova](docs-src/files/icons/cordova.png) [Cordova/Phonegap](https://cordova.apache.org/)
--   ![nativescript](docs-src/files/icons/nativescript.png) [Nativescript](https://www.nativescript.org/)
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
