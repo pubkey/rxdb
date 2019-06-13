@@ -32,7 +32,7 @@
   "devDependencies": {
     "@vue/cli-plugin-pwa": "3.8.0",
     "@vue/cli-plugin-typescript": "3.8.1",
-    "@vue/cli-service": "3.8.0",
+    "@vue/cli-service": "3.8.3",
     "concurrently": "4.1.0",
     "less": "3.9.0",
     "less-loader": "5.0.0",
