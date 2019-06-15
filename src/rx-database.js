@@ -262,10 +262,11 @@ export class RxDatabase {
                 );
                 cEvent.data.v = col.name;
                 cEvent.data.col = '_collections';
-                this.$emit(cEvent);
 
                 this.collections[args.name] = col;
                 this.__defineGetter__(args.name, () => this.collections[args.name]);
+
+                this.$emit(cEvent);
 
                 return col;
             });
