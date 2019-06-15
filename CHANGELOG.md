@@ -2,6 +2,9 @@
 
 ### comming soon
 
+Bugfixes:
+  - Collection change event was emitted before the actual change happened
+
 Typings:
   - ADD typings to access the `PouchSyncHandler` of `RxReplicationState`
 
