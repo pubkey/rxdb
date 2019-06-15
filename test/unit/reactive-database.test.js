@@ -28,7 +28,7 @@ describe('reactive-database.test.js', () => {
                         first()
                     ).toPromise().then(event => {
                         assert.notEqual(db[event.data.v], undefined);
-                        return event
+                        return event;
                     });
                 assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.equal(changeEvent.data.v, 'myname');
