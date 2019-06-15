@@ -163,7 +163,7 @@
     "rollup-plugin-node-resolve": "5.0.2",
     "rxjs": "6.5.2",
     "shelljs": "0.8.3",
-    "ts-node": "8.2.0",
+    "ts-node": "8.3.0",
     "typescript": "3.5.2",
     "uglify-js": "3.6.0",
     "uglifyjs-webpack-plugin": "2.1.3",
