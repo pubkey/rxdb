@@ -26,7 +26,10 @@ describe('reactive-database.test.js', () => {
                     .pipe(
                         filter(cEvent => cEvent.data.op === 'RxDatabase.collection'),
                         first()
-                    ).toPromise();
+                    ).toPromise().then(event => {
+                        assert.notEqual(db[event.data.v], undefined);
+                        return event
+                    });
                 assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
                 assert.equal(changeEvent.data.v, 'myname');
                 db.destroy();
