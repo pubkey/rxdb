@@ -36,7 +36,7 @@
     "concurrently": "4.1.0",
     "less": "3.9.0",
     "less-loader": "5.0.0",
-    "local-web-server": "3.0.1",
+    "local-web-server": "3.0.2",
     "testcafe": "1.2.1",
     "typescript": "3.5.2",
     "vue-template-compiler": "2.6.10"
