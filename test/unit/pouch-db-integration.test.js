@@ -343,13 +343,14 @@ config.parallel('pouch-db-integration.test.js', () => {
             });
 
             // overwrite via bulkDocs
+            const bulkOptions = {
+                new_edits: false
+            };
             await pouch.bulkDocs([{
                 _id: 'foobar',
                 foo: 'bar',
                 _rev: '2-6c5d4399ffe848f395069eab42630eee'
-            }], {
-                new_edits: false
-            });
+            }], bulkOptions);
 
             // find again
             const foundAfter = await pouch.find({
@@ -363,9 +364,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 foo: 'bar',
                 _rev: '3-13af8c9a835820969a8a273b18783a70',
                 _deleted: true
-            }, {
-                new_edits: false
-            });
+            }, bulkOptions);
             assert.equal(x.length, 0);
 
             /**
@@ -497,6 +496,55 @@ config.parallel('pouch-db-integration.test.js', () => {
 
             // process.exit();
             pouch.destroy();
+        });
+        it('v7.1.1 has strange timing-problem', async () => {
+            if (!config.platform.isNode()) return;
+
+            /**
+             * TODO run this in node with the new version of pouchdb
+             * we have to wait until this is fixed:
+             * @link https://github.com/pouchdb/pouchdb/issues/7810
+             */
+            if (config.platform.isNode()) return;
+
+
+            const PouchDB = require('pouchdb-core');
+            PouchDB.plugin(require('pouchdb-find'));
+            PouchDB.plugin(require('pouchdb-adapter-memory'));
+
+            /*            const c = await humansCollection.create(0);
+                        const db = c.pouch;*/
+            const db = new PouchDB(
+                util.randomCouchString(10),
+                {
+                    adapter: 'memory'
+                }
+            );
+            //            await db.info();
+            await db.createIndex({
+                index: {
+                    fields: [
+                        'passportId'
+                    ]
+                }
+            });
+            await db.put({
+                _id: 'foobar',
+                passportId: 'z3i7q29g4yr1',
+                firstName: 'Edison',
+                lastName: 'Keebler',
+                age: 24
+            });
+
+            const docs = await db.find({
+                selector: {
+                    _id: {}
+                },
+                limit: 1
+            });
+
+            console.dir(docs);
+            assert.equal(docs.docs.length, 1);
         });
     });
 });
