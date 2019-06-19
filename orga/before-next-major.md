@@ -19,8 +19,7 @@ In documents like the following, the properties inside of the array-object will 
 }
 ```
 
-The best approach will be to create a separate module `jsonschema-key-compression` which works without rxdb.
-This can then be better optimised for speed and size and also is easier to unit-test.
+The best approach will be to use [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) instead of the own key-compression
 
 ### RxDocument().toJSON() should not return rev by default
 
