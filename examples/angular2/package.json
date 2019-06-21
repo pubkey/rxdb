@@ -87,7 +87,7 @@
     "terser": "4.0.0",
     "testcafe": "1.2.1",
     "testcafe-hammerhead": "14.6.9",
-    "tslint": "5.17.0",
+    "tslint": "5.18.0",
     "typescript": "3.5.2",
     "url-loader": "1.1.2",
     "webpack": "4.29.0",
