@@ -158,7 +158,7 @@
     "request-promise": "4.2.4",
     "request-promise-native": "1.0.7",
     "rimraf": "2.6.3",
-    "rollup": "1.15.6",
+    "rollup": "1.16.1",
     "rollup-plugin-commonjs": "10.0.0",
     "rollup-plugin-node-resolve": "5.0.3",
     "rxjs": "6.5.2",
