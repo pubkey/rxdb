@@ -15,6 +15,7 @@ test_tmp/
 .travis.yml
 ISSUE_TEMPLATE.md
 PULL_REQUEST_TEMPLATE.md
+pouch__all_dbs__/
 
 log.txt
 processed.txt

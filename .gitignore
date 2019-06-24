@@ -14,5 +14,6 @@ config/isolate-*
 config/log.txt
 config/pouch__all_dbs__/
 pouch__all_dbs__/
+pouch__all_dbs__/
 .DS_Store
 .DS_Store?
