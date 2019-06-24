@@ -531,7 +531,7 @@ describe('replication.test.js', () => {
                 });
 
                 // insert and w8 for sync
-                let pw8 = AsyncTestUtil.waitResolveable(1400);
+                const pw8 = AsyncTestUtil.waitResolveable(1400);
                 let results = null;
                 c2.find().$.subscribe(res => {
                     results = res;
@@ -546,16 +546,16 @@ describe('replication.test.js', () => {
 
                 // update and w8 for sync
                 let lastValue = null;
-                pw8 = AsyncTestUtil.waitResolveable(1400);
+                const newPromiseWait = AsyncTestUtil.waitResolveable(1400);
                 doc2
                     .get$('firstName')
                     .subscribe(newValue => {
                         lastValue = newValue;
-                        if (lastValue === 'foobar') pw8.resolve();
+                        if (lastValue === 'foobar') newPromiseWait.resolve();
                     });
                 await doc.atomicSet('firstName', 'foobar');
 
-                await pw8.promise;
+                await newPromiseWait.promise;
                 assert.equal(lastValue, 'foobar');
 
                 syncC.database.destroy();

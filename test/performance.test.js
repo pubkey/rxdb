@@ -1,3 +1,5 @@
+/* eslint require-atomic-updates: 0 */
+
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import BroadcastChannel from 'broadcast-channel';

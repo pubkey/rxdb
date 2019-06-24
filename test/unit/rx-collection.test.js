@@ -1200,11 +1200,12 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const obj = schemaObjects.simpleHuman();
                     await collection.insert(obj);
-                    obj.firstName = 'foobar';
-
-                    delete obj.passportId;
+                    const cloned = clone(obj);
+                    
+                    cloned.firstName = 'foobar';
+                    delete cloned.passportId;
                     await AsyncTestUtil.assertThrows(
-                        () => collection.upsert(obj),
+                        () => collection.upsert(cloned),
                         'RxError',
                         'without primary'
                     );
@@ -1220,9 +1221,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.primaryHuman
                     });
                     const obj = schemaObjects.simpleHuman();
-                    await collection.insert(obj);
                     obj.firstName = 'foobar';
-
                     obj.foo = 'bar';
                     await AsyncTestUtil.assertThrows(
                         () => collection.upsert(obj),

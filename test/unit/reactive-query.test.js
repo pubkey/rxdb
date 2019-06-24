@@ -39,7 +39,7 @@ config.parallel('reactive-query.test.js', () => {
             const c = await humansCollection.create(1);
             const query = c.find();
             let lastValue = [];
-            let pw8 = AsyncTestUtil.waitResolveable(500);
+            const pw8 = AsyncTestUtil.waitResolveable(500);
             query.$.subscribe(newResults => {
                 lastValue = newResults;
                 if (newResults) pw8.resolve();
@@ -48,9 +48,9 @@ config.parallel('reactive-query.test.js', () => {
             assert.equal(lastValue.length, 1);
 
             const addHuman = schemaObjects.human();
-            pw8 = AsyncTestUtil.waitResolveable(500);
+            const newPromiseWait = AsyncTestUtil.waitResolveable(500);
             await c.insert(addHuman);
-            await pw8.promise;
+            await newPromiseWait.promise;
             assert.equal(lastValue.length, 2);
 
             let isHere = false;
@@ -96,10 +96,10 @@ config.parallel('reactive-query.test.js', () => {
             assert.deepEqual(lastValue, lastValue2);
             c.database.destroy();
         });
-        it('get new values on Document.save', async () => {
+        it('get new values on RxDocument.save', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec();
-            let pw8 = AsyncTestUtil.waitResolveable(500);
+            const pw8 = AsyncTestUtil.waitResolveable(500);
 
             let values;
             const querySub = c.find({
@@ -113,9 +113,9 @@ config.parallel('reactive-query.test.js', () => {
             assert.equal(values.length, 1);
 
             // change doc so query does not match
-            pw8 = AsyncTestUtil.waitResolveable(500);
+            const newPromiseWait = AsyncTestUtil.waitResolveable(500);
             await doc.atomicSet('firstName', 'foobar');
-            await pw8.promise;
+            await newPromiseWait.promise;
             assert.equal(values.length, 0);
             querySub.unsubscribe();
             c.database.destroy();
@@ -139,7 +139,7 @@ config.parallel('reactive-query.test.js', () => {
             const c = await humansCollection.createAgeIndex(10);
             // take only 9 of 10
             const valuesAr = [];
-            let pw8 = AsyncTestUtil.waitResolveable(300);
+            const pw8 = AsyncTestUtil.waitResolveable(300);
             const querySub = c.find()
                 .limit(9)
                 .sort('age')
@@ -161,10 +161,10 @@ config.parallel('reactive-query.test.js', () => {
             assert.equal(valuesAr.length, 1);
 
             // edit+save doc
-            pw8 = AsyncTestUtil.waitResolveable(300);
+            const newPromiseWait = AsyncTestUtil.waitResolveable(300);
 
             await doc.atomicSet('firstName', 'foobar');
-            await pw8.promise;
+            await newPromiseWait.promise;
 
             await util.promiseWait(20);
             assert.equal(valuesAr.length, 1);

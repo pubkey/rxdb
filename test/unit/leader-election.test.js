@@ -106,7 +106,7 @@ config.parallel('leader-election.test.js', () => {
         it('when the leader dies, a new one should be elected', async function () {
             this.timeout(5 * 1000);
             const name = util.randomCouchString(10);
-            let dbs = [];
+            const dbs = [];
             while (dbs.length < 6) {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
@@ -130,27 +130,26 @@ config.parallel('leader-election.test.js', () => {
                 .filter(db => db.leaderElector.isLeader === true)[0];
             const leaderToken = leader.token;
             await leader.destroy();
-            dbs = dbs.filter(db => db !== leader);
-
+            const nonDeadDbs = dbs.filter(db => db !== leader);
 
             await AsyncTestUtil.waitUntil(async () => {
-                const leaderCount = dbs
+                const leaderCount = nonDeadDbs
                     .filter(db => db.leaderElector.isLeader === true)
                     .length;
                 return leaderCount === 1;
             });
-            const leaderCount2 = dbs
+            const leaderCount2 = nonDeadDbs
                 .filter(db => db.leaderElector.isLeader === true)
                 .length;
             assert.equal(leaderCount2, 1);
 
-            const leader2 = dbs
+            const leader2 = nonDeadDbs
                 .filter(db => db.token !== leaderToken)
                 .filter(db => db.leaderElector.isLeader === true)[0];
             const leaderToken2 = leader2.token;
 
             assert.notEqual(leaderToken, leaderToken2);
-            await Promise.all(dbs.map(db => db.destroy()));
+            await Promise.all(nonDeadDbs.map(db => db.destroy()));
         });
     });
     describe('integration', () => {
