@@ -44,7 +44,7 @@ To import `rxdb`, add this to your javascript file:
 // es6
 import RxDB from 'rxdb';
 
-// es5
+// CommonJS
 var RxDB = require('rxdb');
 ```
 
@@ -54,7 +54,7 @@ If you have not included es8-polyfills, you also have to import `babel-polyfill`
 // es6
 import 'babel-polyfill';
 
-// es5
+// CommonJS
 require('babel-polyfill');
 ```
 
