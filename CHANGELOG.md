@@ -3,10 +3,10 @@
 ### coming soon
 
 Features:
-  - Add a [z-schema](https://github.com/zaggino/z-schema) validator plugin
+  - Add a [z-schema](https://github.com/zaggino/z-schema) validator plugin [#1157](https://github.com/pubkey/rxdb/pull/1157). Thanks [@phil-lgr](https://github.com/phil-lgr)
 
 Bugfixes:
-  - Collection change event was emitted before the actual change happened
+  - Collection change event was emitted before the actual change happened [#1225](https://github.com/pubkey/rxdb/pull/1225). Thanks [@milanpro](https://github.com/milanpro)
 
 Typings:
   - ADD typings to access the `PouchSyncHandler` of `RxReplicationState`
