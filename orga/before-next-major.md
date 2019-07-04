@@ -44,6 +44,15 @@ Instead of mergin the prototype into a single object, we should chain them toget
 Currently we have the schema-check plugin which checks that the schema of a collection is correct. Other checks like [this](https://github.com/pubkey/rxdb/blob/fc3a38717137d1daf53db8be02ebc43bb7159ed1/src/rx-collection.js#L697) are still included in the codebase.
 We should create a seperate `dev-mode`-plugin which includes all checks and error-messages for the dev-mode.
 
+### Add typescript
+Most of the bugs from the last year could have been prevented by using typescript.
+Planned steps:
+* Rename the src-files to `.ts`
+* Setup [@babel/typescript](https://babeljs.io/docs/en/babel-preset-typescript) which can remove the typings on build
+* Set `strict: false`
+* Add typing incrementally
+* Set `strict: true` and fix all errors
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
