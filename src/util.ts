@@ -334,13 +334,13 @@ export function shuffleArray(arr) {
  * transforms the given adapter into a pouch-compatible object
  * @return {Object} adapterObject
  */
-export function adapterObject(adapter) {
-    let adapterObj = {
+export function adapterObject(adapter: any) {
+    let adapterObj: any = {
         db: adapter
     };
     if (typeof adapter === 'string') {
         adapterObj = {
-            adapter: adapter
+            adapter
         };
     }
     return adapterObj;
