@@ -568,6 +568,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.4.9" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#encryption">
+            
+                    
+                    encryption
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -1506,15 +1519,16 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="leader-election">Leader-Election</h1>
-<p>Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..</p>
+<p>RxDB comes with a leader-election which elects a leading instance between different instances in the same javascript runtime.
+Before you read this, please check out on how many of your open browser-tabs you have opened the same website more than once. Count them, I will wait..</p>
 <p>So if you would now inspect the traffic that theses open tabs produce, you can see that many of them send exact the same data over wire for every tab. No matter if the data is sent with an open websocket or by polling.</p>
-<h1 id="use-case-example">Use-case-example</h1>
+<h2 id="use-case-example">Use-case-example</h2>
 <p>Imagine we have a website which displays the current temperature of the visitors location in various charts, numbers or heatmaps. To always display the live-data, the website opens a websocket to our API-Server which sends the current temperature every 10 seconds. Using the way most sites are currently build, we can now open it in 5 browser-tabs and it will open 5 websockets which send data 6*5=30 times per minute. This will not only waste the power of your clients device, but also wastes your api-servers resources by opening redundant connections.</p>
-<h1 id="solution">Solution</h1>
+<h2 id="solution">Solution</h2>
 <p>The solution to this redundancy is the usage of a <a href="https://en.wikipedia.org/wiki/Leader_election" target="_blank">leader-election</a>-algorithm which makes sure that always exactly one tab is managing the remote-data-access. The managing tab is the elected leader and stays leader until it is closed. No matter how many tabs are opened or closed, there must be always exactly <strong>one</strong> leader.
 You could now start implementing a messaging-system between your browser-tabs, hand out which one is leader, solve conflicts and reassign a new leader when the old one &apos;dies&apos;.
 Or just use RxDB which does all these things for you.</p>
-<h1 id="code-example">Code-example</h1>
+<h2 id="code-example">Code-example</h2>
 <p>To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> RxDB.create({
   name: <span class="hljs-string">&apos;weatherDB&apos;</span>,
@@ -1539,11 +1553,14 @@ db.waitForLeadership()
     }, <span class="hljs-number">1000</span> * <span class="hljs-number">10</span>);
   });
 </code></pre>
-<h1 id="live-example">Live-Example</h1>
+<h2 id="live-example">Live-Example</h2>
 <p>In this example the leader is marked with the crown &#x265B;</p>
 <p><img src="files/leader-election.gif" alt="reactive.gif"></p>
-<h1 id="try-it-out">Try it out</h1>
+<h2 id="try-it-out">Try it out</h2>
 <p>Run the <a href="../examples/vanilla">vanillaJS-example</a> where the leading tab is marked with a crown on the top-right-corner.</p>
+<h2 id="notice">Notice</h2>
+<p>The leader election is implemented via the  <a href="https://github.com/pubkey/broadcast-channel#using-the-leaderelection" target="_blank">broadcast-channel module</a>.
+The leader is elected between different processes on the same javascript-runtime. Like multiple tabs in the same browser or mupltiple NodeJs-processes on the same machine. It will not run between different replicated instances.</p>
 <hr>
 <p>If you are new to RxDB, you should continue <a href="replication.html">here</a></p>
 
@@ -1589,7 +1606,7 @@ db.waitForLeadership()
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.13","depth":1,"next":{"title":"Replication","level":"1.14","depth":1,"path":"replication.md","ref":"./replication.md","articles":[]},"previous":{"title":"DataMigration","level":"1.12","depth":1,"path":"data-migration.md","ref":"./data-migration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"leader-election.md","mtime":"2019-04-05T15:35:13.875Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-05-21T17:03:25.622Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"LeaderElection","level":"1.13","depth":1,"next":{"title":"Replication","level":"1.14","depth":1,"path":"replication.md","ref":"./replication.md","articles":[]},"previous":{"title":"DataMigration","level":"1.12","depth":1,"path":"data-migration.md","ref":"./data-migration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"leader-election.md","mtime":"2019-06-09T21:16:45.687Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-07-05T14:42:49.007Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

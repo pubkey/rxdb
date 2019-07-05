@@ -1,6 +1,6 @@
 # Changelog
 
-### coming soon
+### 8.2.1 (5 July 2019)
 
 Features:
   - Add a [z-schema](https://github.com/zaggino/z-schema) validator plugin [#1157](https://github.com/pubkey/rxdb/pull/1157). Thanks [@phil-lgr](https://github.com/phil-lgr)

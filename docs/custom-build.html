@@ -568,6 +568,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.4.9" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#encryption">
+            
+                    
+                    encryption
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -1536,6 +1549,15 @@ RxDB.plugin(RxDBAjvValidateModule);
 <span class="hljs-comment">// es5-require</span>
 RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/ajv-validate&apos;</span>));
 </code></pre>
+<h3 id="validate-z-schema">validate-z-schema</h3>
+<p>Both <code>is-my-json-valid</code> and <code>ajv-validate</code> use <code>eval()</code> to perform validation which might not be wanted when <code>&apos;unsafe-eval&apos;</code> is not allowed in Content Security Policies. This one is using <a href="https://github.com/zaggino/z-schema" target="_blank">z-schema</a> as validator which doesn&apos;t use <code>eval</code>.</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBZSchemaValidateModule <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/validate-z-schema&apos;</span>;
+RxDB.plugin(RxDBZSchemaValidateModule);
+
+<span class="hljs-comment">// es5-require</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/validate-z-schema&apos;</span>));
+</code></pre>
 <h3 id="no-validate">no-validate</h3>
 <p>A validation module that does nothing at handles all data as valid. Use this as an alternative for the normal validator when you can rely on the input of the database.
 This is meant for production to reduce the build-size, do not use this in dev-mode.</p>
@@ -1730,7 +1752,7 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.18","depth":1,"next":{"title":"Plugins","level":"1.19","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.17","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2019-04-05T15:35:13.839Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-05-21T17:03:25.622Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Build","level":"1.18","depth":1,"next":{"title":"Plugins","level":"1.19","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"previous":{"title":"LocalDocuments","level":"1.17","depth":1,"path":"rx-local-document.md","ref":"./rx-local-document.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"custom-build.md","mtime":"2019-07-05T14:36:04.881Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-07-05T14:42:49.007Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

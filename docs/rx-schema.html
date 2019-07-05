@@ -568,6 +568,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.4.9" data-path="rx-schema.html">
+            
+                <a href="rx-schema.html#encryption">
+            
+                    
+                    encryption
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -1676,6 +1689,14 @@ Final fields cannot be observed because they anyway will not change.</p>
   },
 };
 </code></pre>
+<h2 id="encryption">encryption</h2>
+<p>By setting a field to <code>encrypted: true</code> it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the <code>RxDocument</code>, you can access the unencrypted value.
+You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.</p>
+<pre><code class="lang-json"><span class="hljs-string">&quot;mySecretField&quot;</span>: {
+    <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
+    <span class="hljs-string">&quot;encrypted&quot;</span>: <span class="hljs-literal">true</span>
+},
+</code></pre>
 <h2 id="notice-not-everything-within-the-jsonschema-spec-is-allowed">NOTICE: Not everything within the jsonschema-spec is allowed</h2>
 <p>The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of <a href="http://json-schema.org/" target="_blank">json-schema.org</a>.
 For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$</code> and <code>additionalProperties</code> is always set to <code>false</code>. But don&apos;t worry, RxDB will instantly throw an error when you pass a invalid schema into it.</p>
@@ -1724,7 +1745,7 @@ For example, fieldnames must match the regex <code>^[a-zA-Z][[a-zA-Z0-9_]*]?[a-z
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.4","depth":1,"next":{"title":"Example","level":"1.4.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.3.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"2019-04-05T15:35:13.875Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-05-21T17:03:25.622Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxSchema","level":"1.4","depth":1,"next":{"title":"Example","level":"1.4.1","depth":2,"anchor":"#example","path":"rx-schema.md","ref":"./rx-schema.md#example","articles":[]},"previous":{"title":"isRxDatabase()","level":"1.3.2.10","depth":3,"anchor":"#isrxdatabase","path":"rx-database.md","ref":"./rx-database.md#isrxdatabase","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-schema.md","mtime":"2019-06-09T21:23:10.194Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-07-05T14:42:49.007Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

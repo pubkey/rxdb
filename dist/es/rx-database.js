@@ -221,14 +221,13 @@ function () {
       var cEvent = createChangeEvent('RxDatabase.collection', _this2);
       cEvent.data.v = col.name;
       cEvent.data.col = '_collections';
-
-      _this2.$emit(cEvent);
-
       _this2.collections[args.name] = col;
 
       _this2.__defineGetter__(args.name, function () {
         return _this2.collections[args.name];
       });
+
+      _this2.$emit(cEvent);
 
       return col;
     });
