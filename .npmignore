@@ -7,15 +7,19 @@ orga/
 scripts/
 test/
 test_tmp/
-.babelrc
+babel.config.js
 .editorconfig
 .eslintrc.json
+.eslintignore
 .gitignore
 .transpile_state.json
 .travis.yml
+renovate.json
 ISSUE_TEMPLATE.md
 PULL_REQUEST_TEMPLATE.md
 pouch__all_dbs__/
+config.json
 
+perf.md
 log.txt
 processed.txt
