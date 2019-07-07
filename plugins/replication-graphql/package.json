@@ -1,0 +1,6 @@
+{
+  "name": "rxdb-plugin-replication-graphql",
+  "main": "../../dist/lib/plugins/replication-graphql.js",
+  "jsnext:main": "../../dist/es/plugins/replication-graphql.js",
+  "module": "../../dist/es/plugins/replication-graphql.js"
+}

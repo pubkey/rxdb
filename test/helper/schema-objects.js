@@ -115,8 +115,7 @@ export function humanWithTimestamp() {
         id: randomToken(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100),
-        updatedAt: randomNumber(now - 1000 * 60 * 60 * 24 * 7, now),
-        deleted: randomBoolean()
+        updatedAt: randomNumber(now - 1000 * 60 * 60 * 24 * 7, now)
     };
 }
 

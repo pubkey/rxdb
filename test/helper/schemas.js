@@ -782,10 +782,7 @@ export const humanWithTimestamp = {
         },
         updatedAt: {
             type: 'number'
-        },
-        deleted: {
-            type: 'boolean'
         }
     },
-    required: ['id', 'name', 'age', 'updatedAt', 'deleted']
+    required: ['id', 'name', 'age', 'updatedAt']
 };

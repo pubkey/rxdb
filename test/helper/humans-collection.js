@@ -310,6 +310,29 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
     return collection;
 }
 
+export async function createHumanWithTimestamp(amount = 0, name = util.randomCouchString(10)) {
+    const db = await RxDatabase.create({
+        name,
+        adapter: 'memory',
+        multiInstance: true,
+        queryChangeDetection: true,
+        ignoreDuplicate: true
+    });
+    // setTimeout(() => db.destroy(), dbLifetime);
+    const collection = await db.collection({
+        name: 'encryptedhuman',
+        schema: schemas.humanWithTimestamp
+    });
+
+    // insert data
+    const fns = [];
+    for (let i = 0; i < amount; i++)
+        fns.push(collection.insert(schemaObjects.humanWithTimestamp()));
+    await Promise.all(fns);
+
+    return collection;
+}
+
 
 export async function createMigrationCollection(
     amount = 0,

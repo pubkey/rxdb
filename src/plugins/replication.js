@@ -224,12 +224,10 @@ export function sync({
 
 export const rxdb = true;
 export const prototypes = {
-    RxCollection: (proto) => {
+    RxCollection: proto => {
         proto.sync = sync;
     }
 };
-
-export const overwritable = {};
 
 export const hooks = {
     createRxCollection: function (collection) {
@@ -240,7 +238,6 @@ export const hooks = {
 export default {
     rxdb,
     prototypes,
-    overwritable,
     hooks,
     sync
 };
