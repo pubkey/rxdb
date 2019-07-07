@@ -760,3 +760,32 @@ export const humanMinimalBroken = {
     },
     required: ['passportId', 'broken']
 };
+
+
+/**
+ * used in the graphql-test
+ * contains timestamps and deleted-flag
+ */
+export const humanWithTimestamp = {
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string'
+        },
+        age: {
+            type: 'number'
+        },
+        updatedAt: {
+            type: 'number'
+        },
+        deleted: {
+            type: 'boolean'
+        }
+    },
+    required: ['id', 'name', 'age', 'updatedAt', 'deleted']
+};

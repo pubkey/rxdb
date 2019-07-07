@@ -126,6 +126,7 @@
     "exists-file": "3.0.2",
     "faker": "4.1.0",
     "gitbook-cli": "2.3.2",
+    "graphql": "^14.4.2",
     "gzip-size-cli": "3.0.0",
     "karma": "4.1.0",
     "karma-babel-preprocessor": "8.0.0",
