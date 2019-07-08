@@ -6,32 +6,16 @@
 
 import * as schemaObjects from './schema-objects';
 import {
+    randomBoolean
+} from 'async-test-util';
+import {
     buildSchema
 } from 'graphql';
 
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-const app = express();
 
 let lastPort = 16121;
-
-/**
- * schema in graphql
- * matches ./schemas.js#humanWithTimestamp
- */
-const schema = buildSchema(`
-    type Query {
-        info: Int
-        feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
-    }
-    type Human {
-        id: ID!,
-        name: String!,
-        age: Int!,
-        updatedAt: Int!,
-        deleted: Boolean!
-    }
-`);
 
 function sortByUpdatedAtAndPrimary(a, b) {
     if (a.updatedAt > b.updatedAt) return 1;
@@ -44,30 +28,47 @@ function sortByUpdatedAtAndPrimary(a, b) {
     }
 }
 
-export async function spawn(testDataAmount = 0) {
+export async function spawn(documents = []) {
+    const app = express();
     lastPort++;
 
-    // initial state
-    const documents = new Array(testDataAmount)
-        .fill(0)
-        .map(() => schemaObjects.humanWithTimestamp());
+    /**
+     * schema in graphql
+     * matches ./schemas.js#humanWithTimestamp
+     */
+    const schema = buildSchema(`
+    type Query {
+        info: Int
+        feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
+    }
+    type Human {
+        id: ID!,
+        name: String!,
+        age: Int!,
+        updatedAt: Int!,
+        deleted: Boolean!
+    }
+    `);
 
     // The root provides a resolver function for each API endpoint
     const root = {
         info: () => 1,
         feedForRxDBReplication: args => {
-            console.log('feed resolver:');
+            console.log('feedForRxDBReplication');
             console.dir(args);
-
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
             const filterForMinUpdatedAt = sortedDocuments.filter(doc => doc.updatedAt >= args.minUpdatedAt);
 
-            // limit
-            const limited = filterForMinUpdatedAt.slice(0, args.limit);
+            // remove latest document
+            const withoutLatest = filterForMinUpdatedAt.filter(doc => doc.updatedAt !== args.minUpdatedAt || doc.id !== args.lastId);
 
+            // limit
+            const limited = withoutLatest.slice(0, args.limit);
+
+            console.log('return docs:');
             console.dir(limited);
             return limited;
         }

@@ -60,7 +60,7 @@ const _getChangeSub = parent => {
     return CHANGE_SUB_BY_PARENT.get(parent);
 };
 
-const LOCAL_PREFIX = '_local/';
+export const LOCAL_PREFIX = '_local/';
 
 const RxDocumentParent = RxDocument.createRxDocumentConstructor();
 export class RxLocalDocument extends RxDocumentParent {

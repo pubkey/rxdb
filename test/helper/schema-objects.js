@@ -110,12 +110,12 @@ export function refHumanNested(bestFriend) {
 }
 
 export function humanWithTimestamp() {
-    const now = new Date().getTime();
+    const now = new Date().getTime() / 1000;
     return {
         id: randomToken(12),
         name: faker.name.firstName(),
         age: randomNumber(1, 100),
-        updatedAt: randomNumber(now - 1000 * 60 * 60 * 24 * 7, now)
+        updatedAt: Math.round(randomNumber(now - 60 * 60 * 24 * 7, now))
     };
 }
 

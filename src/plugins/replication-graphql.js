@@ -48,7 +48,9 @@ export class RxGraphQlReplicationState {
         fromRemoteModifier
     ) {
         this.collection = collection;
+        this.client = client;
         this.endpointHash = endpointHash;
+        this.deletedFlag = deletedFlag;
         this.queryBuilder = queryBuilder; // function
         this.fromRemoteModifier = fromRemoteModifier; // function
         this._subs = [];
@@ -79,23 +81,28 @@ export class RxGraphQlReplicationState {
     }
 
     async _run() {
-        const latestDocument = getLatestDocument(this.collection, this.endpointHash);
-        const query = this.queryBuilder(latestDocument);
+        const latestDocument = await getLatestDocument(this.collection, this.endpointHash);
+        const latestDocumentData = latestDocument ? latestDocument.doc : null;
+        const query = this.queryBuilder(latestDocumentData);
         const result = await this.client.query(query);
 
         // this assumes that there will be always only one property in the response
         // is this correct?
+        console.log('result:');
+        console.dir(result);
         const data = result.data[Object.keys(result.data)[0]];
 
         const modified = data.map(doc => this.fromRemoteModifier(doc));
 
+        // clone now because the other objects will get mutated
+        const newLatestDocument = clone(modified[modified.length - 1]);
+
         await Promise.all(modified.map(doc => this.handleDocumentFromRemote(doc)));
 
         if (modified.length === 0) {
-            // no more docs, wait for ping
+            console.log('no more docs, wait for ping');
         } else {
-            const newLatestDocument = modified[modified.length - 1];
-            setLatestDocument(
+            await setLatestDocument(
                 this.collection,
                 this.endpointHash,
                 newLatestDocument
@@ -106,27 +113,74 @@ export class RxGraphQlReplicationState {
         }
     }
 
+    async handleDocumentFromRemote(doc) {
+        const primaryKey = this.collection.schema.primaryPath;
+        const primaryValue = doc[primaryKey];
+        delete doc[primaryKey];
+        doc._id = primaryValue;
+        const deletedValue = doc[this.deletedFlag];
+        doc._deleted = deletedValue;
+        delete doc[this.deletedFlag];
+
+
+        const pouchState = await getDocFromPouchOrNull(
+            this.collection,
+            primaryValue
+        );
+
+        if (pouchState) {
+            if (pouchState.attachments) doc.attachments = pouchState.attachments;
+            doc._rev = pouchState._rev;
+        }
+
+        //console.log('toPouch');
+        //console.dir(doc);
+        await this.collection.pouch.put(doc);
+        //console.log('toPouch DONE');
+        //console.dir(doc);
+    }
+
     cancel() {
         // TODO
         this._subjects.canceled.next(true);
     }
 }
 
-export async function getLatestDocument(collection, endpointHash) {
-    const id = LOCAL_PREFIX + 'rxdb-replication-graphql-latest-document-' + endpointHash;
+
+export function getDocFromPouchOrNull(collection, id) {
     return collection.pouch.get(id)
         .then(docData => {
-            return docData.doc;
+            console.log('docData:');
+            console.dir(docData);
+            return docData;
         })
         .catch(() => null);
 }
 
+const localDocId = endpointHash => LOCAL_PREFIX + 'rxdb-replication-graphql-latest-document-' + endpointHash;
+
+export async function getLatestDocument(collection, endpointHash) {
+    const got = await getDocFromPouchOrNull(collection, localDocId(endpointHash));
+    console.log('got getLatestDocument');
+    console.dir(got);
+    return got;
+}
+
 export async function setLatestDocument(collection, endpointHash, doc) {
-    const id = LOCAL_PREFIX + 'rxdb-replication-graphql-latest-document-' + endpointHash;
+    console.log('setLatestDocument()');
+    const id = localDocId(endpointHash);
+    const before = await getLatestDocument(collection, endpointHash);
+    console.log('before:');
+    console.dir(before);
     const data = {
         _id: id,
         doc
+    };
+    if (before) {
+        data._rev = before._rev;
     }
+    console.log('save as latests:');
+    console.dir(data);
     return collection.pouch.put(data);
 }
 
@@ -141,8 +195,8 @@ export function syncGraphQl({
     live = false,
     deletedFlag = 'deleted',
     queryBuilder,
-    fromRemoteModifier,
-    toRemoteModifier
+    fromRemoteModifier = d => d,
+    toRemoteModifier = d => d
 }) {
     const collection = this;
 
@@ -151,6 +205,8 @@ export function syncGraphQl({
         url: endpoint,
         headers
     });
+
+    console.dir(client);
 
     const replicationState = new RxGraphQlReplicationState(
         collection,

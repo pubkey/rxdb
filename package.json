@@ -167,6 +167,7 @@
     "rollup-plugin-node-resolve": "5.2.0",
     "rxjs": "6.5.2",
     "shelljs": "0.8.3",
+    "source-map-support": "^0.5.12",
     "ts-node": "8.3.0",
     "typescript": "3.5.2",
     "uglify-js": "3.6.0",

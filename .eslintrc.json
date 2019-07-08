@@ -265,6 +265,7 @@
             "single"
         ],
         "radix": "off",
+        "require-atomic-updates": "off",
         "require-await": "off",
         "require-jsdoc": "off",
         "rest-spread-spacing": [
