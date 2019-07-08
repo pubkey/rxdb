@@ -26,9 +26,6 @@ import {
 import {
     hash
 } from '../util';
-import {
-    LOCAL_PREFIX
-} from './local-documents';
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 
 /**
@@ -122,7 +119,7 @@ export class RxGraphQlReplicationState {
         doc._deleted = deletedValue;
         delete doc[this.deletedFlag];
 
-
+        // TODO use db.allDocs with option.keys
         const pouchState = await getDocFromPouchOrNull(
             this.collection,
             primaryValue
@@ -157,6 +154,7 @@ export function getDocFromPouchOrNull(collection, id) {
         .catch(() => null);
 }
 
+const LOCAL_PREFIX = '_local/';
 const localDocId = endpointHash => LOCAL_PREFIX + 'rxdb-replication-graphql-latest-document-' + endpointHash;
 
 export async function getLatestDocument(collection, endpointHash) {
@@ -226,10 +224,6 @@ export function syncGraphQl({
 
     return replicationState;
 }
-
-
-
-
 
 export const rxdb = true;
 export const prototypes = {

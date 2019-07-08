@@ -21,11 +21,9 @@ import {
     first
 } from 'rxjs/operators';
 
-let request;
 let SpawnServer;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/graphql-server');
-    request = require('request-promise');
     RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
 }
 describe('replication-graphql.test.js', () => {
@@ -89,6 +87,9 @@ describe('replication-graphql.test.js', () => {
 
             await AsyncTestUtil.waitUntil(async () => {
                 const docs = await c.find().exec();
+                console.log('docs.length');
+                console.dir(docs.length);
+                // console.dir(docs.map(d => d.toJSON()));
                 return docs.length === batchSize;
             });
 
@@ -98,7 +99,8 @@ describe('replication-graphql.test.js', () => {
         it('should pull all documents in multiple batches', async () => {
             const c = await humansCollection.createHumanWithTimestamp(0);
             const amount = batchSize * 4;
-            const server = await SpawnServer.spawn(getTestData(amount));
+            const testData = getTestData(amount);
+            const server = await SpawnServer.spawn(testData);
 
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
@@ -115,10 +117,16 @@ describe('replication-graphql.test.js', () => {
             await AsyncTestUtil.waitUntil(async () => {
                 const docs = await c.find().exec();
                 console.log('aaaaaa');
-                //                console.dir(docs.map(d => d.toJSON()));
+                // console.dir(docs.map(d => d.toJSON()));
                 console.dir(docs.length);
                 return docs.length === amount;
             });
+
+            // all of test-data should be in the database
+            const docs = await c.find().exec();
+            const ids = docs.map(d => d.primary);
+            const notInDb = testData.find(doc => !ids.includes(doc.id));
+            if (notInDb) throw new Error('not in db: ' + notInDb.id);
 
             server.close();
             c.database.destroy();
