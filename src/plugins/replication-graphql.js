@@ -8,7 +8,11 @@ import {
     Subject,
     fromEvent
 } from 'rxjs';
-import { skipUntil } from 'rxjs/operators';
+import {
+    skipUntil,
+    first,
+    filter
+} from 'rxjs/operators';
 import graphQlClient from 'graphql-client';
 
 
@@ -42,7 +46,9 @@ export class RxGraphQlReplicationState {
         endpointHash,
         deletedFlag,
         queryBuilder,
-        fromRemoteModifier
+        fromRemoteModifier,
+        live,
+        retryTime
     ) {
         this.collection = collection;
         this.client = client;
@@ -50,12 +56,14 @@ export class RxGraphQlReplicationState {
         this.deletedFlag = deletedFlag;
         this.queryBuilder = queryBuilder; // function
         this.fromRemoteModifier = fromRemoteModifier; // function
+        this.live = live;
+        this.retryTime = retryTime;
         this._subs = [];
         this._runningPromise = Promise.resolve();
         this._subjects = {
             recieved: new Subject(), // all documents that are recieved from the endpoint
             send: new Subject(), // all documents that are send to the endpoint
-            error: new Subject(), // all errors that are revieced from the endpoint
+            error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
             complete: new BehaviorSubject(false), // true when a non-live replication has finished
             canceled: new BehaviorSubject(false), // true when the replication was canceled
             active: new BehaviorSubject(false) // true when something is running, false when not
@@ -71,34 +79,63 @@ export class RxGraphQlReplicationState {
         });
     }
 
+    isStopped() {
+        return this._subjects.complete._value || this._subjects.canceled._value;
+    }
+
+    awaitCompletion() {
+        return this.complete$.pipe(
+            filter(v => v === true),
+            first()
+        ).toPromise();
+    }
+
 
     // ensures this._run() does not run in parallel
     async run() {
-        this._runningPromise = this._runningPromise.then(() => this._run());
+        if (this.isStopped()) return;
+        this._runningPromise = this._runningPromise.then(async () => {
+            this._subjects.active.next(true);
+            this._run();
+            this._subjects.active.next(false);
+        });
     }
 
     async _run() {
         const latestDocument = await getLatestDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument.doc : null;
         const query = this.queryBuilder(latestDocumentData);
-        const result = await this.client.query(query);
+
+        let result;
+        try {
+            result = await this.client.query(query);
+        } catch (err) {
+            this._subjects.error.next(err);
+            setTimeout(() => this.run(), this.retryTime);
+            // TODO retry after some time
+            return;
+
+        }
 
         // this assumes that there will be always only one property in the response
         // is this correct?
-        console.log('result:');
-        console.dir(result);
+        // console.log('result:');
+        // console.dir(result);
         const data = result.data[Object.keys(result.data)[0]];
 
         const modified = data.map(doc => this.fromRemoteModifier(doc));
 
-        // clone now because the other objects will get mutated
-        const newLatestDocument = clone(modified[modified.length - 1]);
-
         await Promise.all(modified.map(doc => this.handleDocumentFromRemote(doc)));
+        modified.map(doc => this._subjects.recieved.next(doc));
 
         if (modified.length === 0) {
-            console.log('no more docs, wait for ping');
+            if (this.live) {
+                console.log('no more docs, wait for ping');
+            } else {
+                this._subjects.complete.next(true);
+            }
         } else {
+            const newLatestDocument = modified[modified.length - 1];
             await setLatestDocument(
                 this.collection,
                 this.endpointHash,
@@ -110,14 +147,15 @@ export class RxGraphQlReplicationState {
         }
     }
 
+    async runPush() {
+        // TODO
+    }
+
     async handleDocumentFromRemote(doc) {
-        const primaryKey = this.collection.schema.primaryPath;
-        const primaryValue = doc[primaryKey];
-        delete doc[primaryKey];
-        doc._id = primaryValue;
         const deletedValue = doc[this.deletedFlag];
-        doc._deleted = deletedValue;
-        delete doc[this.deletedFlag];
+        const toPouch = this.collection._handleToPouch(doc);
+        toPouch._deleted = deletedValue;
+        const primaryValue = toPouch._id;
 
         // TODO use db.allDocs with option.keys
         const pouchState = await getDocFromPouchOrNull(
@@ -126,13 +164,14 @@ export class RxGraphQlReplicationState {
         );
 
         if (pouchState) {
-            if (pouchState.attachments) doc.attachments = pouchState.attachments;
-            doc._rev = pouchState._rev;
+            if (pouchState.attachments) toPouch.attachments = pouchState.attachments;
+            toPouch._rev = pouchState._rev;
         }
 
         //console.log('toPouch');
         //console.dir(doc);
-        await this.collection.pouch.put(doc);
+        await this.collection.pouch.put(toPouch);
+        toPouch[this.deletedFlag] = deletedValue;
         //console.log('toPouch DONE');
         //console.dir(doc);
     }
@@ -159,17 +198,12 @@ const localDocId = endpointHash => LOCAL_PREFIX + 'rxdb-replication-graphql-late
 
 export async function getLatestDocument(collection, endpointHash) {
     const got = await getDocFromPouchOrNull(collection, localDocId(endpointHash));
-    console.log('got getLatestDocument');
-    console.dir(got);
     return got;
 }
 
 export async function setLatestDocument(collection, endpointHash, doc) {
-    console.log('setLatestDocument()');
     const id = localDocId(endpointHash);
     const before = await getLatestDocument(collection, endpointHash);
-    console.log('before:');
-    console.dir(before);
     const data = {
         _id: id,
         doc
@@ -177,10 +211,11 @@ export async function setLatestDocument(collection, endpointHash, doc) {
     if (before) {
         data._rev = before._rev;
     }
-    console.log('save as latests:');
-    console.dir(data);
     return collection.pouch.put(data);
 }
+
+// does nothing
+const DEFAULT_MODIFIER = d => d;
 
 export function syncGraphQl({
     endpoint,
@@ -193,8 +228,9 @@ export function syncGraphQl({
     live = false,
     deletedFlag = 'deleted',
     queryBuilder,
-    fromRemoteModifier = d => d,
-    toRemoteModifier = d => d
+    fromRemoteModifier = DEFAULT_MODIFIER,
+    toRemoteModifier = DEFAULT_MODIFIER,
+    retryTime = 1000 * 5 // in seconds
 }) {
     const collection = this;
 
@@ -212,7 +248,9 @@ export function syncGraphQl({
         endpointHash,
         deletedFlag,
         queryBuilder,
-        fromRemoteModifier
+        fromRemoteModifier,
+        live,
+        retryTime
     );
 
     // run internal so .sync() does not have to be async
