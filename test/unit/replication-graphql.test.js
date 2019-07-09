@@ -60,13 +60,17 @@ describe('replication-graphql.test.js', () => {
     describe('graphql-server.js', () => {
         it('spawn, reach and close a server', async () => {
             const server = await SpawnServer.spawn();
-            const client = graphQlClient({
-                url: server.url
-            });
-            const res = await client.query(`{
+            const res = await server.client.query(`{
                  info
             }`);
             assert.equal(res.data.info, 1);
+            server.close();
+        });
+        it('server.setDocument()', async () => {
+            const server = await SpawnServer.spawn();
+            const doc = getTestData(1).pop();
+            const res = await server.setDocument(doc);
+            assert.equal(res.data.setHuman.id, doc.id);
             server.close();
         });
     });

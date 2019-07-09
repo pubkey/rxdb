@@ -5,6 +5,7 @@
  */
 
 import * as schemaObjects from './schema-objects';
+import graphQlClient from 'graphql-client';
 import {
     randomBoolean
 } from 'async-test-util';
@@ -41,6 +42,16 @@ export async function spawn(documents = []) {
         info: Int
         feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
     }
+    type Mutation {
+        setHuman(human: HumanInput): Human
+    }
+    input HumanInput {
+        id: ID!,
+        name: String!,
+        age: Int!,
+        updatedAt: Int!,
+        deleted: Boolean!
+    }
     type Human {
         id: ID!,
         name: String!,
@@ -71,6 +82,14 @@ export async function spawn(documents = []) {
             console.log('return docs:');
             console.dir(limited);
             return limited;
+        },
+        setHuman: args => {
+            console.log('setHuman()');
+            const doc = args.human;
+            documents = documents.filter(d => d.id !== doc.id);
+            doc.updatedAt = new Date().getTime();
+            documents.push(doc);
+            return doc;
         }
     };
 
@@ -82,10 +101,32 @@ export async function spawn(documents = []) {
     }));
 
     const ret = 'http://localhost:' + lastPort + path;
+    const client = graphQlClient({
+        url: ret
+    });
     return new Promise(res => {
         const server = app.listen(lastPort, function () {
             res({
+                client,
                 url: ret,
+                async setDocument(doc) {
+                    const result = await client.query(
+
+                        `
+                        mutation CreateHuman($human: HumanInput) {
+                            setHuman(human: $human) {
+                                id,
+                                name
+                            }
+                          }
+                        
+`,
+                        {
+                            human: doc
+                        }
+                    );
+                    return result;
+                },
                 close(now = false) {
                     if (now) {
                         server.close();
