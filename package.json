@@ -72,7 +72,7 @@
     "rxjs": "^6.1.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.5.3",
+    "@babel/runtime": "7.5.4",
     "broadcast-channel": "2.1.12",
     "clone": "^2.1.1",
     "cors": "2.8.5",
@@ -99,14 +99,14 @@
   },
   "devDependencies": {
     "@babel/cli": "7.5.0",
-    "@babel/core": "7.5.0",
+    "@babel/core": "7.5.4",
     "@babel/plugin-check-constants": "7.0.0-beta.38",
-    "@babel/plugin-proposal-object-rest-spread": "7.5.3",
+    "@babel/plugin-proposal-object-rest-spread": "7.5.4",
     "@babel/plugin-transform-member-expression-literals": "7.2.0",
     "@babel/plugin-transform-property-literals": "7.2.0",
     "@babel/plugin-transform-runtime": "7.5.0",
     "@babel/polyfill": "7.4.4",
-    "@babel/preset-env": "7.5.3",
+    "@babel/preset-env": "7.5.4",
     "@babel/types": "7.5.0",
     "@types/core-js": "2.5.2",
     "@types/pouchdb-adapter-memory": "6.1.3",
