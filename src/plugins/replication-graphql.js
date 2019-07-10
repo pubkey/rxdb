@@ -48,7 +48,8 @@ export class RxGraphQlReplicationState {
         queryBuilder,
         fromRemoteModifier,
         live,
-        retryTime
+        liveInterval,
+        retryTime,
     ) {
         this.collection = collection;
         this.client = client;
@@ -57,6 +58,7 @@ export class RxGraphQlReplicationState {
         this.queryBuilder = queryBuilder; // function
         this.fromRemoteModifier = fromRemoteModifier; // function
         this.live = live;
+        this.liveInterval = liveInterval;
         this.retryTime = retryTime;
         this._subs = [];
         this._runningPromise = Promise.resolve();
@@ -64,12 +66,24 @@ export class RxGraphQlReplicationState {
             recieved: new Subject(), // all documents that are recieved from the endpoint
             send: new Subject(), // all documents that are send to the endpoint
             error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
-            complete: new BehaviorSubject(false), // true when a non-live replication has finished
             canceled: new BehaviorSubject(false), // true when the replication was canceled
-            active: new BehaviorSubject(false) // true when something is running, false when not
+            active: new BehaviorSubject(false), // true when something is running, false when not
+            initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
         };
 
-        // create getters
+        this._prepare();
+    }
+
+    /**
+     * things that are more complex to not belong into the constructor
+     */
+    _prepare() {
+        // stop sync when collection gets destroyed
+        this.collection.onDestroy.then(() => {
+            this.cancel();
+        });
+
+        // create getters for the observables
         Object.keys(this._subjects).forEach(key => {
             Object.defineProperty(this, key + '$', {
                 get: function () {
@@ -77,14 +91,28 @@ export class RxGraphQlReplicationState {
                 }
             });
         });
+
+        // start sync-interval
+        if (this.live) {
+            (async () => {
+                while (!this.isStopped()) {
+                    await promiseWait(this.liveInterval);
+                    if (this.isStopped()) return;
+                    console.log('run via interval once()');
+                    await this.run();
+                }
+            })();
+        }
     }
 
     isStopped() {
-        return this._subjects.complete._value || this._subjects.canceled._value;
+        if (!this.live && this._subjects.initialReplicationComplete._value) return true;
+        if (this._subjects.canceled._value) return true;
+        else return false;
     }
 
-    awaitCompletion() {
-        return this.complete$.pipe(
+    awaitInitialReplication() {
+        return this.initialReplicationComplete$.pipe(
             filter(v => v === true),
             first()
         ).toPromise();
@@ -93,15 +121,22 @@ export class RxGraphQlReplicationState {
 
     // ensures this._run() does not run in parallel
     async run() {
-        if (this.isStopped()) return;
+        if (this.isStopped()) {
+            console.log('RxGraphQlReplicationState.run(): exit because stopped');
+            return;
+        }
         this._runningPromise = this._runningPromise.then(async () => {
             this._subjects.active.next(true);
-            this._run();
+            await this._run();
             this._subjects.active.next(false);
         });
+        return this._runningPromise;
     }
 
     async _run() {
+        console.log('RxGraphQlReplicationState._run(): start');
+        if (this.isStopped()) return;
+
         const latestDocument = await getLatestDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument.doc : null;
         const query = this.queryBuilder(latestDocumentData);
@@ -112,9 +147,7 @@ export class RxGraphQlReplicationState {
         } catch (err) {
             this._subjects.error.next(err);
             setTimeout(() => this.run(), this.retryTime);
-            // TODO retry after some time
             return;
-
         }
 
         // this assumes that there will be always only one property in the response
@@ -132,8 +165,10 @@ export class RxGraphQlReplicationState {
             if (this.live) {
                 console.log('no more docs, wait for ping');
             } else {
-                this._subjects.complete.next(true);
+                console.log('RxGraphQlReplicationState._run(): no more docs and not live; complete = true');
+                if (this._subjects.active._value === true) this._subjects.active.next(false);
             }
+            this._subjects.initialReplicationComplete.next(true);
         } else {
             const newLatestDocument = modified[modified.length - 1];
             await setLatestDocument(
@@ -154,6 +189,7 @@ export class RxGraphQlReplicationState {
     async handleDocumentFromRemote(doc) {
         const deletedValue = doc[this.deletedFlag];
         const toPouch = this.collection._handleToPouch(doc);
+        console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
         toPouch._deleted = deletedValue;
         const primaryValue = toPouch._id;
 
@@ -174,11 +210,13 @@ export class RxGraphQlReplicationState {
         toPouch[this.deletedFlag] = deletedValue;
         //console.log('toPouch DONE');
         //console.dir(doc);
+        console.log('handleDocumentFromRemote(' + toPouch._id + ') done');
     }
 
     cancel() {
-        // TODO
+        if (this.isStopped()) return;
         this._subjects.canceled.next(true);
+        // TODO
     }
 }
 
@@ -186,8 +224,6 @@ export class RxGraphQlReplicationState {
 export function getDocFromPouchOrNull(collection, id) {
     return collection.pouch.get(id)
         .then(docData => {
-            console.log('docData:');
-            console.dir(docData);
             return docData;
         })
         .catch(() => null);
@@ -230,7 +266,8 @@ export function syncGraphQl({
     queryBuilder,
     fromRemoteModifier = DEFAULT_MODIFIER,
     toRemoteModifier = DEFAULT_MODIFIER,
-    retryTime = 1000 * 5 // in seconds
+    liveInterval = 1000 * 5, // in ms
+    retryTime = 1000 * 5 // in ms
 }) {
     const collection = this;
 
@@ -240,8 +277,6 @@ export function syncGraphQl({
         headers
     });
 
-    console.dir(client);
-
     const replicationState = new RxGraphQlReplicationState(
         collection,
         client,
@@ -250,6 +285,7 @@ export function syncGraphQl({
         queryBuilder,
         fromRemoteModifier,
         live,
+        liveInterval,
         retryTime
     );
 

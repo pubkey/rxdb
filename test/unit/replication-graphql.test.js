@@ -76,8 +76,10 @@ describe('replication-graphql.test.js', () => {
     });
     config.parallel('live:false pull only', () => {
         it('should pull all documents in one batch', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
-            const server = await SpawnServer.spawn(getTestData(batchSize));
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(getTestData(batchSize))
+            ]);
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
                 direction: {
@@ -100,10 +102,12 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
         it('should pull all documents in multiple batches', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
             const amount = batchSize * 4;
             const testData = getTestData(amount);
-            const server = await SpawnServer.spawn(testData);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
 
             c.syncGraphQl({
                 endpoint: server.url,
@@ -133,10 +137,12 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
         it('should handle deleted documents', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
             const doc = schemaObjects.humanWithTimestamp();
             doc.deleted = true;
-            const server = await SpawnServer.spawn([doc]);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn([doc])
+            ]);
 
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
@@ -148,7 +154,7 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted',
                 queryBuilder
             });
-            await replicationState.awaitCompletion();
+            await replicationState.awaitInitialReplication();
             const docs = await c.find().exec();
             assert.equal(docs.length, 0);
 
@@ -156,10 +162,13 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
         it('should retry on errors', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
             const amount = batchSize * 4;
             const testData = getTestData(amount);
-            const server = await SpawnServer.spawn(testData);
+
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
 
             const replicationState = c.syncGraphQl({
                 endpoint: ERROR_URL,
@@ -184,7 +193,7 @@ describe('replication-graphql.test.js', () => {
                 replicationState.client = client;
             });
 
-            await replicationState.awaitCompletion();
+            await replicationState.awaitInitialReplication();
             const docs = await c.find().exec();
             assert.equal(docs.length, amount);
 
@@ -194,9 +203,11 @@ describe('replication-graphql.test.js', () => {
     });
     config.parallel('observables', () => {
         it('should emit the recieved documents when replicating', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
             const testData = getTestData(batchSize);
-            const server = await SpawnServer.spawn(testData);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
 
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
@@ -212,7 +223,7 @@ describe('replication-graphql.test.js', () => {
             const emitted = [];
             const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
 
-            await replicationState.awaitCompletion();
+            await replicationState.awaitInitialReplication();
             assert.equal(emitted.length, batchSize);
             assert.deepEqual(testData, emitted);
 
@@ -221,8 +232,10 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
         it('should complete the replicationState afterwards', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
-            const server = await SpawnServer.spawn();
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn()
+            ]);
 
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
@@ -234,17 +247,20 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted',
                 queryBuilder
             });
-            await replicationState.awaitCompletion();
+            await replicationState.awaitInitialReplication();
             assert.equal(replicationState.isStopped(), true);
 
             server.close();
             c.database.destroy();
         });
         it('should emit the correct amount of active-changes', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
             const amount = batchSize * 2;
             const testData = getTestData(amount);
-            const server = await SpawnServer.spawn(testData);
+
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
 
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
@@ -260,7 +276,8 @@ describe('replication-graphql.test.js', () => {
             const emitted = [];
             const sub = replicationState.active$.subscribe(d => emitted.push(d));
 
-            await replicationState.awaitCompletion();
+            await replicationState.awaitInitialReplication();
+            console.dir(emitted);
 
             assert.equal(emitted.length, 7);
             const last = emitted.pop();
@@ -294,28 +311,79 @@ describe('replication-graphql.test.js', () => {
         });
     });
     config.parallel('live:true pull only', () => {
-        it('should also get documents that come in afterwards', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
-            const server = await SpawnServer.spawn(getTestData(1));
+        it('should also get documents that come in afterwards with active .run()', async () => {
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(getTestData(1))
+            ]);
             const replicationState = c.syncGraphQl({
                 endpoint: server.url,
                 direction: {
                     pull: true,
                     push: false
                 },
-                live: false,
+                live: true,
                 deletedFlag: 'deleted',
                 queryBuilder
             });
 
 
             // wait until first replication is done
-            const activeChanges = [];
-            const sub = replicationState.active$.subscribe(v => activeChanges.push(v));
-            await AsyncTestUtil.waitUntil(() => activeChanges.length === 5);
+            await replicationState.awaitInitialReplication();
 
+            // add document & trigger pull
+            const doc = getTestData(1).pop();
+            await server.setDocument(doc);
+            await replicationState.run();
 
-            sub.unsubscribe();
+            const docs = await c.find().exec();
+            assert.equal(docs.length, 2);
+
+            server.close();
+            await c.database.destroy();
+
+            // replication should be canceled when collection is destroyed
+            assert.ok(replicationState.isStopped());
+        });
+        it('should also get documents that come in afterwards with interval .run()', async () => {
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(getTestData(1))
+            ]);
+            const replicationState = c.syncGraphQl({
+                endpoint: server.url,
+                direction: {
+                    pull: true,
+                    push: false
+                },
+                live: true,
+                deletedFlag: 'deleted',
+                queryBuilder,
+                liveInterval: 50
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            // add document & trigger pull
+            const doc = getTestData(1).pop();
+            await server.setDocument(doc);
+
+            await AsyncTestUtil.waitUntil(async () => {
+                /**
+                 * TODO we have a strange bug here,
+                 * if we do not use the internal pouch 
+                 * but the RxCollection instead,
+                 * it will never result in docs.length === 2
+                 * This might have something todo with the query change detection
+                 */
+                const result = await c.pouch.find({
+                    selector: {
+                        _id: {}
+                    }
+                });
+                return result.docs.length === 2;
+            });
+
             server.close();
             c.database.destroy();
         });

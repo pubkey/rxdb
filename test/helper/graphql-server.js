@@ -65,7 +65,7 @@ export async function spawn(documents = []) {
     const root = {
         info: () => 1,
         feedForRxDBReplication: args => {
-            console.log('feedForRxDBReplication');
+            console.log('## feedForRxDBReplication');
             console.dir(args);
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
@@ -84,11 +84,13 @@ export async function spawn(documents = []) {
             return limited;
         },
         setHuman: args => {
-            console.log('setHuman()');
+            console.log('## setHuman()');
+            console.dir(args);
             const doc = args.human;
             documents = documents.filter(d => d.id !== doc.id);
-            doc.updatedAt = new Date().getTime();
+            doc.updatedAt = Math.round(new Date().getTime() / 1000);
             documents.push(doc);
+            console.dir(documents);
             return doc;
         }
     };
@@ -116,7 +118,7 @@ export async function spawn(documents = []) {
                         mutation CreateHuman($human: HumanInput) {
                             setHuman(human: $human) {
                                 id,
-                                name
+                                updatedAt
                             }
                           }
                         
@@ -125,7 +127,11 @@ export async function spawn(documents = []) {
                             human: doc
                         }
                     );
+                    console.dir(result);
                     return result;
+                },
+                overwriteDocuments(docs) {
+                    documents = docs.slice();
                 },
                 close(now = false) {
                     if (now) {
