@@ -144,6 +144,9 @@ export class RxGraphQlReplicationState {
         let result;
         try {
             result = await this.client.query(query);
+            if (result.errors) {
+                throw new Error(result.errors);
+            }
         } catch (err) {
             this._subjects.error.next(err);
             setTimeout(() => this.run(), this.retryTime);
@@ -191,7 +194,10 @@ export class RxGraphQlReplicationState {
         const toPouch = this.collection._handleToPouch(doc);
         console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
         toPouch._deleted = deletedValue;
+        delete toPouch[this.deletedFlag];
         const primaryValue = toPouch._id;
+
+        console.dir(toPouch);
 
         // TODO use db.allDocs with option.keys
         const pouchState = await getDocFromPouchOrNull(
@@ -204,8 +210,8 @@ export class RxGraphQlReplicationState {
             toPouch._rev = pouchState._rev;
         }
 
-        //console.log('toPouch');
-        //console.dir(doc);
+        console.log('write toPouch:');
+        console.dir(toPouch);
         await this.collection.pouch.put(toPouch);
         toPouch[this.deletedFlag] = deletedValue;
         //console.log('toPouch DONE');
@@ -270,6 +276,9 @@ export function syncGraphQl({
     retryTime = 1000 * 5 // in ms
 }) {
     const collection = this;
+
+    // ensure the collection is listening to plain-pouchdb writes
+    collection.watchForChanges();
 
     const endpointHash = hash(endpoint);
     const client = graphQlClient({

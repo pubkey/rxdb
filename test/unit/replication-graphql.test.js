@@ -357,9 +357,9 @@ describe('replication-graphql.test.js', () => {
                     push: false
                 },
                 live: true,
+                liveInterval: 50,
                 deletedFlag: 'deleted',
-                queryBuilder,
-                liveInterval: 50
+                queryBuilder
             });
 
             await replicationState.awaitInitialReplication();
@@ -369,20 +369,50 @@ describe('replication-graphql.test.js', () => {
             await server.setDocument(doc);
 
             await AsyncTestUtil.waitUntil(async () => {
-                /**
-                 * TODO we have a strange bug here,
-                 * if we do not use the internal pouch 
-                 * but the RxCollection instead,
-                 * it will never result in docs.length === 2
-                 * This might have something todo with the query change detection
-                 */
-                const result = await c.pouch.find({
-                    selector: {
-                        _id: {}
-                    }
-                });
-                return result.docs.length === 2;
+                const docs = await c.find().exec();
+                return docs.length === 2;
             });
+
+            server.close();
+            c.database.destroy();
+        });
+        it('should overwrite the local doc if the remote gets deleted', async () => {
+            const testData = getTestData(batchSize);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
+            const replicationState = c.syncGraphQl({
+                endpoint: server.url,
+                direction: {
+                    pull: true,
+                    push: false
+                },
+                live: true,
+                deletedFlag: 'deleted',
+                queryBuilder
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            const docs = await c.find().exec();
+            assert.equal(docs.length, batchSize);
+
+            const firstDoc = AsyncTestUtil.clone(testData[0]);
+            firstDoc.deleted = true;
+
+            await server.setDocument(firstDoc);
+            await replicationState.run();
+
+            /**
+             * TODO we have to wait here,
+             * or c.find() will not have the deletion noticed
+             * This is a bug, we should not have to wait here.
+             */
+            await AsyncTestUtil.wait(100);
+
+            const docs2 = await c.find().exec();
+            assert.equal(docs2.length, batchSize - 1);
 
             server.close();
             c.database.destroy();
