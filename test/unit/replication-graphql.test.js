@@ -408,6 +408,7 @@ describe('replication-graphql.test.js', () => {
              * TODO we have to wait here,
              * or c.find() will not have the deletion noticed
              * This is a bug, we should not have to wait here.
+             * If we run the query with pouchdb, it will has the correct results
              */
             await AsyncTestUtil.wait(100);
 
@@ -417,5 +418,43 @@ describe('replication-graphql.test.js', () => {
             server.close();
             c.database.destroy();
         });
+        it('should overwrite the local doc if it was deleted', async () => {
+            const c = await humansCollection.createHumanWithTimestamp(0);
+            const localDoc = schemaObjects.humanWithTimestamp();
+            const rxDoc = await c.insert(localDoc);
+            console.log('rxDoc:');
+            console.dir(rxDoc.toJSON());
+            await rxDoc.remove();
+
+            const docs = await c.find().exec();
+            assert.equal(docs.length, 0);
+
+            const server = await SpawnServer.spawn();
+            const replicationState = c.syncGraphQl({
+                endpoint: server.url,
+                direction: {
+                    pull: true,
+                    push: false
+                },
+                live: true,
+                deletedFlag: 'deleted',
+                queryBuilder
+            });
+            localDoc.deleted = false;
+            await server.setDocument(localDoc);
+
+            await replicationState.run();
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsAfter = await c.find().exec();
+                console.log('docsAfter:');
+                console.dir(docsAfter.map(d => d.toJSON()));
+                return docsAfter.length === 1;
+            });
+
+            server.close();
+            c.database.destroy();
+        });
+
     });
 });

@@ -200,6 +200,15 @@ export class RxGraphQlReplicationState {
         console.dir(toPouch);
 
         // TODO use db.allDocs with option.keys
+
+/*        console.log('primary value: ' + primaryValue);
+        const pouchResult = await this.collection.pouch.allDocs({
+            include_docs: false,
+            keys: [primaryValue]
+        });
+        console.log('pouchResult:');
+        console.log(JSON.stringify(pouchResult, null, 2));*/
+
         const pouchState = await getDocFromPouchOrNull(
             this.collection,
             primaryValue
