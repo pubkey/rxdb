@@ -42,7 +42,7 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
 
     // attachments
     putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
-    getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods>;
+    getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
 
