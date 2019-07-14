@@ -10,7 +10,9 @@ import {
 } from 'rxjs';
 import {
     skipUntil,
+    tap,
     first,
+    map,
     filter
 } from 'rxjs/operators';
 import graphQlClient from 'graphql-client';
@@ -197,17 +199,15 @@ export class RxGraphQlReplicationState {
         delete toPouch[this.deletedFlag];
         const primaryValue = toPouch._id;
 
-        console.dir(toPouch);
-
         // TODO use db.allDocs with option.keys
 
-/*        console.log('primary value: ' + primaryValue);
-        const pouchResult = await this.collection.pouch.allDocs({
-            include_docs: false,
-            keys: [primaryValue]
-        });
-        console.log('pouchResult:');
-        console.log(JSON.stringify(pouchResult, null, 2));*/
+        /*        console.log('primary value: ' + primaryValue);
+                const pouchResult = await this.collection.pouch.allDocs({
+                    include_docs: false,
+                    keys: [primaryValue]
+                });
+                console.log('pouchResult:');
+                console.log(JSON.stringify(pouchResult, null, 2));*/
 
         const pouchState = await getDocFromPouchOrNull(
             this.collection,
@@ -219,11 +219,19 @@ export class RxGraphQlReplicationState {
             toPouch._rev = pouchState._rev;
         }
 
-        console.log('write toPouch:');
-        console.dir(toPouch);
+        // console.log('write toPouch:');
+        // console.dir(toPouch);
         await this.collection.pouch.put(toPouch);
         toPouch[this.deletedFlag] = deletedValue;
-        //console.log('toPouch DONE');
+        // console.log('toPouch DONE');
+
+        await this.collection.$.pipe(
+            tap(eV => eV.data),
+            map(eV => eV.data.doc),
+            filter(id => id === toPouch._id),
+            first()
+        ).toPromise();
+
         //console.dir(doc);
         console.log('handleDocumentFromRemote(' + toPouch._id + ') done');
     }

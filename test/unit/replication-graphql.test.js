@@ -309,6 +309,40 @@ describe('replication-graphql.test.js', () => {
             replicationState.cancel();
             c.database.destroy();
         });
+        it('should not exit .run() before the batch is inserted and its events have been emitted', async () => {
+            const c = await humansCollection.createHumanWithTimestamp(0);
+            const server = await SpawnServer.spawn(getTestData(1));
+
+            const replicationState = c.syncGraphQl({
+                endpoint: server.url,
+                direction: {
+                    pull: true,
+                    push: false
+                },
+                live: true,
+                deletedFlag: 'deleted',
+                queryBuilder
+            });
+            await replicationState.run();
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsAfter = await c.find().exec();
+                return docsAfter.length === 1;
+            });
+
+
+            const doc = schemaObjects.humanWithTimestamp();
+            doc.deleted = false;
+            await server.setDocument(doc);
+
+            await replicationState.run();
+            // directly after .run(), the doc must be available
+            const docsAfter = await c.find().exec();
+            assert.equal(docsAfter.length, 2);
+
+            server.close();
+            c.database.destroy();
+        });
     });
     config.parallel('live:true pull only', () => {
         it('should also get documents that come in afterwards with active .run()', async () => {
@@ -404,14 +438,6 @@ describe('replication-graphql.test.js', () => {
             await server.setDocument(firstDoc);
             await replicationState.run();
 
-            /**
-             * TODO we have to wait here,
-             * or c.find() will not have the deletion noticed
-             * This is a bug, we should not have to wait here.
-             * If we run the query with pouchdb, it will has the correct results
-             */
-            await AsyncTestUtil.wait(100);
-
             const docs2 = await c.find().exec();
             assert.equal(docs2.length, batchSize - 1);
 
@@ -442,15 +468,10 @@ describe('replication-graphql.test.js', () => {
             });
             localDoc.deleted = false;
             await server.setDocument(localDoc);
-
             await replicationState.run();
 
-            await AsyncTestUtil.waitUntil(async () => {
-                const docsAfter = await c.find().exec();
-                console.log('docsAfter:');
-                console.dir(docsAfter.map(d => d.toJSON()));
-                return docsAfter.length === 1;
-            });
+            const docsAfter = await c.find().exec();
+            assert.equal(docsAfter.length, 1);
 
             server.close();
             c.database.destroy();
