@@ -57,7 +57,7 @@ describe('replication-graphql.test.js', () => {
             }
         }`;
     };
-    describe('graphql-server.js', () => {
+    config.parallel('graphql-server.js', () => {
         it('spawn, reach and close a server', async () => {
             const server = await SpawnServer.spawn();
             const res = await server.client.query(`{
@@ -72,6 +72,34 @@ describe('replication-graphql.test.js', () => {
             const res = await server.setDocument(doc);
             assert.equal(res.data.setHuman.id, doc.id);
             server.close();
+        });
+    });
+    /**
+     * we assume some behavior of pouchdb
+     * which is ensured with these tests
+     */
+    config.parallel('assumptions', () => {
+        it('should be possible to retrieve deleted documents in pouchdb', async () => {
+            await AsyncTestUtil.wait(1000);
+            console.log('##'.repeat(25));
+            console.log('##'.repeat(25));
+            console.log('##'.repeat(25));
+            const c = await humansCollection.createHumanWithTimestamp(2);
+            const doc = await c.findOne().exec();
+            await doc.remove();
+
+            // get deleted and undeleted from pouch
+            const deletedDocs = await c.pouch.allDocs({
+                include_docs: true,
+                deleted: 'ok'
+            });
+            assert.equal(deletedDocs.rows.length, 2);
+            const deletedDoc = deletedDocs.rows.find(d => d.value.deleted);
+            const notDeletedDoc = deletedDocs.rows.find(d => !d.value.deleted);
+            assert.ok(deletedDoc);
+            assert.ok(notDeletedDoc);
+
+            c.database.destroy();
         });
     });
     config.parallel('live:false pull only', () => {
@@ -528,5 +556,9 @@ describe('replication-graphql.test.js', () => {
             server.close();
             c.database.destroy();
         });
+    });
+
+    config.parallel('live:false push only', () => {
+
     });
 });
