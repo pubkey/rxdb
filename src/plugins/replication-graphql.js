@@ -5,11 +5,9 @@
 
 import {
     BehaviorSubject,
-    Subject,
-    fromEvent
+    Subject
 } from 'rxjs';
 import {
-    skipUntil,
     tap,
     first,
     map,
@@ -19,9 +17,7 @@ import graphQlClient from 'graphql-client';
 
 
 import {
-    promiseWait,
-    clone,
-    pouchReplicationFunction
+    promiseWait
 } from '../util';
 
 import Core from '../core';
@@ -44,24 +40,30 @@ Core.plugin(RxDBWatchForChangesPlugin);
 export class RxGraphQlReplicationState {
     constructor(
         collection,
-        client,
-        endpointHash,
+        url,
+        headers,
+        pull,
+        push,
         deletedFlag,
-        queryBuilder,
-        fromRemoteModifier,
         live,
         liveInterval,
-        retryTime,
+        retryTime
     ) {
         this.collection = collection;
-        this.client = client;
-        this.endpointHash = endpointHash;
+        this.client = graphQlClient({
+            url,
+            headers
+        });
+        this.endpointHash = hash(url);
+
+        this.pull = pull;
+        this.push = push;
+
         this.deletedFlag = deletedFlag;
-        this.queryBuilder = queryBuilder; // function
-        this.fromRemoteModifier = fromRemoteModifier; // function
         this.live = live;
         this.liveInterval = liveInterval;
         this.retryTime = retryTime;
+
         this._subs = [];
         this._runningPromise = Promise.resolve();
         this._subjects = {
@@ -141,7 +143,7 @@ export class RxGraphQlReplicationState {
 
         const latestDocument = await getLatestDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument.doc : null;
-        const query = this.queryBuilder(latestDocumentData);
+        const query = this.pull.queryBuilder(latestDocumentData);
 
         let result;
         try {
@@ -161,7 +163,7 @@ export class RxGraphQlReplicationState {
         // console.dir(result);
         const data = result.data[Object.keys(result.data)[0]];
 
-        const modified = data.map(doc => this.fromRemoteModifier(doc));
+        const modified = data.map(doc => this.pull.modifier(doc));
 
         await Promise.all(modified.map(doc => this.handleDocumentFromRemote(doc)));
         modified.map(doc => this._subjects.recieved.next(doc));
@@ -277,39 +279,37 @@ export async function setLatestDocument(collection, endpointHash, doc) {
 const DEFAULT_MODIFIER = d => d;
 
 export function syncGraphQl({
-    endpoint,
+    url,
     headers = {},
     waitForLeadership = true,
-    direction = {
-        pull: true,
-        push: true
-    },
+    pull = {},
+    push = {},
+    deletedFlag,
     live = false,
-    deletedFlag = 'deleted',
-    queryBuilder,
-    fromRemoteModifier = DEFAULT_MODIFIER,
-    toRemoteModifier = DEFAULT_MODIFIER,
     liveInterval = 1000 * 5, // in ms
     retryTime = 1000 * 5 // in ms
 }) {
     const collection = this;
 
+    // fill in defaults for pull & push
+    if (pull) {
+        if (!pull.modifier) pull.modifier = DEFAULT_MODIFIER;
+    }
+    if (push) {
+        if (!push.modifier) push.modifier = DEFAULT_MODIFIER;
+    }
+
+
     // ensure the collection is listening to plain-pouchdb writes
     collection.watchForChanges();
 
-    const endpointHash = hash(endpoint);
-    const client = graphQlClient({
-        url: endpoint,
-        headers
-    });
-
     const replicationState = new RxGraphQlReplicationState(
         collection,
-        client,
-        endpointHash,
+        url,
+        headers,
+        pull,
+        push,
         deletedFlag,
-        queryBuilder,
-        fromRemoteModifier,
         live,
         liveInterval,
         retryTime

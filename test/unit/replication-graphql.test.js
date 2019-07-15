@@ -13,9 +13,6 @@ RxDB.plugin(graphQlPlugin);
 import graphQlClient from 'graphql-client';
 
 import {
-    fromEvent
-} from 'rxjs';
-import {
     map,
     filter,
     first
@@ -81,12 +78,10 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(getTestData(batchSize))
             ]);
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
                 deletedFlag: 'deleted',
                 queryBuilder
             });
@@ -110,14 +105,11 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
 
@@ -145,14 +137,11 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
             await replicationState.awaitInitialReplication();
             const docs = await c.find().exec();
@@ -171,14 +160,11 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             const replicationState = c.syncGraphQl({
-                endpoint: ERROR_URL,
-                direction: {
-                    pull: true,
-                    push: false
+                url: ERROR_URL,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
             replicationState.retryTime = 100;
 
@@ -210,14 +196,11 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
             const emitted = [];
@@ -238,14 +221,11 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
             await replicationState.awaitInitialReplication();
             assert.equal(replicationState.isStopped(), true);
@@ -263,14 +243,11 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
             const emitted = [];
@@ -290,14 +267,11 @@ describe('replication-graphql.test.js', () => {
         it('should emit an error when the server is not reachable', async () => {
             const c = await humansCollection.createHumanWithTimestamp(0);
             const replicationState = c.syncGraphQl({
-                endpoint: ERROR_URL,
-                direction: {
-                    pull: true,
-                    push: false
+                url: ERROR_URL,
+                pull: {
+                    queryBuilder
                 },
-                live: false,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
             const error = await replicationState.error$.pipe(
@@ -314,14 +288,12 @@ describe('replication-graphql.test.js', () => {
             const server = await SpawnServer.spawn(getTestData(1));
 
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
                 live: true,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
             await replicationState.run();
 
@@ -329,7 +301,6 @@ describe('replication-graphql.test.js', () => {
                 const docsAfter = await c.find().exec();
                 return docsAfter.length === 1;
             });
-
 
             const doc = schemaObjects.humanWithTimestamp();
             doc.deleted = false;
@@ -351,14 +322,12 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(getTestData(1))
             ]);
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
                 live: true,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
 
@@ -385,15 +354,13 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(getTestData(1))
             ]);
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
                 live: true,
                 liveInterval: 50,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
             await replicationState.awaitInitialReplication();
@@ -417,14 +384,12 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
                 live: true,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
 
             await replicationState.awaitInitialReplication();
@@ -444,12 +409,10 @@ describe('replication-graphql.test.js', () => {
             server.close();
             c.database.destroy();
         });
-        it('should overwrite the local doc if it was deleted', async () => {
+        it('should overwrite the local doc if it was deleted locally', async () => {
             const c = await humansCollection.createHumanWithTimestamp(0);
             const localDoc = schemaObjects.humanWithTimestamp();
             const rxDoc = await c.insert(localDoc);
-            console.log('rxDoc:');
-            console.dir(rxDoc.toJSON());
             await rxDoc.remove();
 
             const docs = await c.find().exec();
@@ -457,14 +420,12 @@ describe('replication-graphql.test.js', () => {
 
             const server = await SpawnServer.spawn();
             const replicationState = c.syncGraphQl({
-                endpoint: server.url,
-                direction: {
-                    pull: true,
-                    push: false
+                url: server.url,
+                pull: {
+                    queryBuilder
                 },
                 live: true,
-                deletedFlag: 'deleted',
-                queryBuilder
+                deletedFlag: 'deleted'
             });
             localDoc.deleted = false;
             await server.setDocument(localDoc);
@@ -476,6 +437,5 @@ describe('replication-graphql.test.js', () => {
             server.close();
             c.database.destroy();
         });
-
     });
 });
