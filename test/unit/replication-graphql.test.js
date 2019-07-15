@@ -5,9 +5,13 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, {
+    clone
+} from 'async-test-util';
 import RxDB from '../../dist/lib/index';
 import graphQlPlugin from '../../plugins/replication-graphql';
+import * as schemas from '../helper/schemas';
+
 RxDB.plugin(graphQlPlugin);
 
 import graphQlClient from 'graphql-client';
@@ -36,7 +40,7 @@ describe('replication-graphql.test.js', () => {
             });
     };
     const queryBuilder = doc => {
-        console.dir(doc);
+        // console.dir(doc);
         if (doc === null) {
             doc = {
                 id: '',
@@ -53,7 +57,6 @@ describe('replication-graphql.test.js', () => {
             }
         }`;
     };
-
     describe('graphql-server.js', () => {
         it('spawn, reach and close a server', async () => {
             const server = await SpawnServer.spawn();
@@ -313,6 +316,94 @@ describe('replication-graphql.test.js', () => {
 
             server.close();
             c.database.destroy();
+        });
+    });
+    config.parallel('integrations', () => {
+        it('should work with encryption', async () => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                queryChangeDetection: true,
+                ignoreDuplicate: true,
+                password: util.randomCouchString(10)
+            });
+            const schema = clone(schemas.humanWithTimestamp);
+            schema.properties.name.encrypted = true;
+            const collection = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            const testData = getTestData(1);
+            testData[0].name = 'Alice';
+            const server = await SpawnServer.spawn(testData);
+
+            const replicationState = collection.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+            await replicationState.awaitInitialReplication();
+
+            const docs = await collection.find().exec();
+            assert.equal(docs.length, 1);
+            assert.equal(docs[0].name, 'Alice');
+
+            const pouchDocs = await collection.pouch.find({
+                selector: {
+                    _id: {}
+                }
+            });
+            assert.ok(pouchDocs.docs[0].name !== 'Alice');
+
+            db.destroy();
+        });
+        it('should work with keyCompression', async () => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                queryChangeDetection: true,
+                ignoreDuplicate: true,
+                password: util.randomCouchString(10)
+            });
+            const schema = clone(schemas.humanWithTimestamp);
+            schema.keyCompression = true;
+            const collection = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            const testData = getTestData(1);
+            testData[0].name = 'Alice';
+            const server = await SpawnServer.spawn(testData);
+
+            const replicationState = collection.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+            await replicationState.awaitInitialReplication();
+
+            const docs = await collection.find().exec();
+            assert.equal(docs.length, 1);
+            assert.equal(docs[0].name, 'Alice');
+
+            const pouchDocs = await collection.pouch.find({
+                selector: {
+                    _id: {}
+                }
+            });
+
+            // first key must be compressed
+            assert.ok(Object.keys(pouchDocs.docs[0])[0].startsWith('|'));
+
+            db.destroy();
         });
     });
     config.parallel('live:true pull only', () => {

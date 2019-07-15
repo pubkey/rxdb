@@ -320,7 +320,7 @@ export async function createHumanWithTimestamp(amount = 0, name = util.randomCou
     });
     // setTimeout(() => db.destroy(), dbLifetime);
     const collection = await db.collection({
-        name: 'encryptedhuman',
+        name: 'humans',
         schema: schemas.humanWithTimestamp
     });
 

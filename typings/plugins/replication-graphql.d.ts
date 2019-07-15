@@ -28,10 +28,10 @@ export type SyncOptionsGraphQl = {
     waitForLeadership?: boolean; // default=true
     pull?: {
         queryBuilder: (doc: any) => string;
-        pullModifier?: (doc: any) => any;
+        modifier?: (doc: any) => any;
     };
     push?: {
-        pushModifier?: (doc: any) => any;
+        modifier?: (doc: any) => any;
     };
     deletedFlag: string;
     live?: boolean; // default=false
