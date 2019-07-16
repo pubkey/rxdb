@@ -5,6 +5,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
+import PouchDB from '../../dist/lib/pouch-db';
 import AsyncTestUtil, {
     clone
 } from 'async-test-util';
@@ -80,16 +81,13 @@ describe('replication-graphql.test.js', () => {
      */
     config.parallel('assumptions', () => {
         it('should be possible to retrieve deleted documents in pouchdb', async () => {
-            await AsyncTestUtil.wait(1000);
-            console.log('##'.repeat(25));
-            console.log('##'.repeat(25));
-            console.log('##'.repeat(25));
             const c = await humansCollection.createHumanWithTimestamp(2);
+            const pouch = c.pouch;
             const doc = await c.findOne().exec();
             await doc.remove();
 
             // get deleted and undeleted from pouch
-            const deletedDocs = await c.pouch.allDocs({
+            const deletedDocs = await pouch.allDocs({
                 include_docs: true,
                 deleted: 'ok'
             });
@@ -100,6 +98,183 @@ describe('replication-graphql.test.js', () => {
             assert.ok(notDeletedDoc);
 
             c.database.destroy();
+        });
+        it('should be possible to set a custom _rev', async () => {
+            const c = await humansCollection.createHumanWithTimestamp(1);
+            const pouch = c.pouch;
+            const doc = await c.findOne().exec();
+            const docData = doc.toJSON();
+            const customRev = '2-fadae8ee3847d0748381f13988e95502-rxdb-from-graphql';
+            docData._id = docData.id;
+            docData._rev = customRev;
+            docData.name = 'Alice';
+
+            await pouch.bulkDocs(
+                {
+                    docs: [docData]
+                },
+                {
+                    new_edits: false
+                }
+            );
+
+
+            const pouchDocs = await pouch.find({
+                selector: {
+                    _id: {}
+                }
+            });
+            assert.equal(pouchDocs.docs.length, 1);
+            assert.equal(pouchDocs.docs[0]._rev, customRev);
+            assert.equal(pouchDocs.docs[0].name, 'Alice');
+
+            c.database.destroy();
+        });
+        it('should be possible to delete documents via PouchDB().bulkDocs() with new_edits: false', async () => {
+            console.log('-'.repeat(22));
+            const pouch = new PouchDB(
+                'pouchdb-test-delete-document-via-bulk-docs',
+                {
+                    adapter: 'memory'
+                }
+            );
+
+            const putRes = await pouch.put({
+                _id: 'Alice',
+                age: 42
+            });
+            console.dir(putRes);
+
+            await pouch.bulkDocs(
+                {
+                    docs: [
+                        {
+                            _id: 'Alice',
+                            _deleted: true,
+                            _rev: '2-a2'
+                        }
+                    ],
+                    new_edits: false
+                },
+                {
+                }
+            );
+
+            const docsAfter = await pouch.allDocs({
+                include_docs: true
+            });
+            console.dir(docsAfter.rows);
+            assert.equal(docsAfter.rows.length, 0);
+
+            process.exit();
+            pouch.destroy();
+        });
+        it('should be possible to set a custom _rev when deleting', async () => {
+            /**
+             * TODO 
+             * @link https://github.com/pouchdb/pouchdb/issues/7841
+             */
+            return;
+            console.log('-'.repeat(22));
+            const pouch = new PouchDB(
+                'pouchdb-test-setting-custom-rev-when-deleting',
+                {
+                    adapter: 'memory'
+                }
+            );
+
+            const docsInsert = [{
+                _id: 'Alice',
+                age: 42
+            }, {
+                _id: 'Bob',
+                age: 43
+            }];
+
+            await Promise.all(docsInsert.map(doc => pouch.put(doc)));
+
+            // overwrite Bob's _rev with an update
+            await pouch.bulkDocs(
+                [
+                    {
+                        _id: 'Bob',
+                        age: 63,
+                        _rev: '2-my-custom-rev-1'
+                    }
+                ],
+                {
+                    new_edits: false
+                }
+            );
+            let pouchDocs = await pouch.allDocs({
+                include_docs: true
+            });
+            console.dir(pouchDocs.rows);
+            assert.equal(pouchDocs.rows.find(row => row.id === 'Bob').doc._rev, '2-my-custom-rev-1');
+
+            console.log('-'.repeat(42));
+
+            const aliceRev = pouchDocs.rows.find(row => row.id === 'Alice').doc._rev;
+            console.log('aliceRev: ' + aliceRev);
+
+            // overwrite Alice's _rev with a delete
+            await pouch.bulkDocs(
+                {
+                    docs: [
+                        {
+                            _id: 'Alice',
+                            age: 62,
+                            _rev: aliceRev,
+                            _deleted: true
+                        }
+                    ]
+                },
+                {
+                    new_edits: false
+                }
+            );
+            pouchDocs = await pouch.allDocs({
+                include_docs: true
+            });
+            console.dir(pouchDocs.rows);
+
+
+            pouch.destroy();
+
+            /*
+
+            const c = await humansCollection.createHumanWithTimestamp(1);
+            const pouch = c.pouch;
+            const doc = await c.findOne().exec();
+            const docData = doc.toJSON();
+            const customRev = '2-fadae8ee3847d0748381f13988e95502';
+            docData._id = docData.id;
+            docData._rev = customRev;
+            docData.name = 'Alice';
+            docData._deleted = true;
+            console.dir(docData);
+
+            await pouch.bulkDocs(
+
+                [docData]
+                ,
+                {
+                    new_edits: false
+                }
+            );
+
+
+            const pouchDocs = await pouch.find({
+                selector: {
+                    _id: {}
+                }
+            });
+            console.dir(pouchDocs);
+            assert.equal(pouchDocs.docs.length, 1);
+            assert.equal(pouchDocs.docs[0]._rev, customRev);
+*/
+            process.exit();
+            //          c.database.destroy();
         });
     });
     config.parallel('live:false pull only', () => {
