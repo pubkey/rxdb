@@ -130,8 +130,7 @@ describe('replication-graphql.test.js', () => {
 
             c.database.destroy();
         });
-        it('should be possible to delete documents via PouchDB().bulkDocs() with new_edits: false', async () => {
-            console.log('-'.repeat(22));
+        it('should be possible to delete documents via PouchDB().bulkDocs() with new_edits: false and a custom _rev', async () => {
             const pouch = new PouchDB(
                 'pouchdb-test-delete-document-via-bulk-docs',
                 {
@@ -139,20 +138,41 @@ describe('replication-graphql.test.js', () => {
                 }
             );
 
-            const putRes = await pouch.put({
+            const putResult = await pouch.put({
                 _id: 'Alice',
                 age: 42
             });
-            console.dir(putRes);
+            // update once to increase revs
+            await pouch.put({
+                _id: 'Alice',
+                age: 43,
+                _rev: putResult.rev
+            });
+
+            const allDocs = await pouch.allDocs({});
+            const bulkGetDocs = await pouch.bulkGet({
+                docs: [
+                    {
+                        id: 'Alice',
+                        rev: allDocs.rows[0].value.rev
+                    }
+                ],
+                revs: true,
+                latest: true
+            });
+
+            const overwriteDoc = bulkGetDocs.results[0].docs[0].ok;
+
+            const addRev = 'ZZZ-rxdb-from-graphql';
+            overwriteDoc._revisions.ids.unshift(addRev);
+            overwriteDoc._revisions.start = 3;
+            overwriteDoc._deleted = true;
+            overwriteDoc._rev = '3-' + addRev;
 
             await pouch.bulkDocs(
                 {
                     docs: [
-                        {
-                            _id: 'Alice',
-                            _deleted: true,
-                            _rev: '2-a2'
-                        }
+                        overwriteDoc
                     ],
                     new_edits: false
                 },
@@ -163,118 +183,16 @@ describe('replication-graphql.test.js', () => {
             const docsAfter = await pouch.allDocs({
                 include_docs: true
             });
-            console.dir(docsAfter.rows);
             assert.equal(docsAfter.rows.length, 0);
 
-            process.exit();
-            pouch.destroy();
-        });
-        it('should be possible to set a custom _rev when deleting', async () => {
-            /**
-             * TODO 
-             * @link https://github.com/pouchdb/pouchdb/issues/7841
-             */
-            return;
-            console.log('-'.repeat(22));
-            const pouch = new PouchDB(
-                'pouchdb-test-setting-custom-rev-when-deleting',
-                {
-                    adapter: 'memory'
-                }
-            );
 
-            const docsInsert = [{
-                _id: 'Alice',
-                age: 42
-            }, {
-                _id: 'Bob',
-                age: 43
-            }];
-
-            await Promise.all(docsInsert.map(doc => pouch.put(doc)));
-
-            // overwrite Bob's _rev with an update
-            await pouch.bulkDocs(
-                [
-                    {
-                        _id: 'Bob',
-                        age: 63,
-                        _rev: '2-my-custom-rev-1'
-                    }
-                ],
-                {
-                    new_edits: false
-                }
-            );
-            let pouchDocs = await pouch.allDocs({
-                include_docs: true
+            const docsAfterWithDeleted = await pouch.allDocs({
+                include_docs: true,
+                deleted: 'ok'
             });
-            console.dir(pouchDocs.rows);
-            assert.equal(pouchDocs.rows.find(row => row.id === 'Bob').doc._rev, '2-my-custom-rev-1');
-
-            console.log('-'.repeat(42));
-
-            const aliceRev = pouchDocs.rows.find(row => row.id === 'Alice').doc._rev;
-            console.log('aliceRev: ' + aliceRev);
-
-            // overwrite Alice's _rev with a delete
-            await pouch.bulkDocs(
-                {
-                    docs: [
-                        {
-                            _id: 'Alice',
-                            age: 62,
-                            _rev: aliceRev,
-                            _deleted: true
-                        }
-                    ]
-                },
-                {
-                    new_edits: false
-                }
-            );
-            pouchDocs = await pouch.allDocs({
-                include_docs: true
-            });
-            console.dir(pouchDocs.rows);
-
+            assert.equal(docsAfterWithDeleted.rows.length, 1);
 
             pouch.destroy();
-
-            /*
-
-            const c = await humansCollection.createHumanWithTimestamp(1);
-            const pouch = c.pouch;
-            const doc = await c.findOne().exec();
-            const docData = doc.toJSON();
-            const customRev = '2-fadae8ee3847d0748381f13988e95502';
-            docData._id = docData.id;
-            docData._rev = customRev;
-            docData.name = 'Alice';
-            docData._deleted = true;
-            console.dir(docData);
-
-            await pouch.bulkDocs(
-
-                [docData]
-                ,
-                {
-                    new_edits: false
-                }
-            );
-
-
-            const pouchDocs = await pouch.find({
-                selector: {
-                    _id: {}
-                }
-            });
-            console.dir(pouchDocs);
-            assert.equal(pouchDocs.docs.length, 1);
-            assert.equal(pouchDocs.docs[0]._rev, customRev);
-*/
-            process.exit();
-            //          c.database.destroy();
         });
     });
     config.parallel('live:false pull only', () => {
