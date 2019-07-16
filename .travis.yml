@@ -7,6 +7,7 @@ node_js:
   - "11.9.0"
 services:
   - docker
+cache: false
 
 before_install:
   - export CHROME_BIN=chromium-browser
