@@ -7,11 +7,25 @@ import {
     getDocFromPouchOrNull
 } from './helper';
 
-
 /**
- * used to save checkpoint while itterating the pouchdb-documents
- * so when the db starts again, we do not have to get all documents again
+ * when the replication starts,
+ * we need a way to find out where it ended the last time.
+ *
+ * For push-replication, we use the pouchdb-sequence:
+ * We get the documents newer then the last sequence-id
+ * and push them to the server.
+ * 
+ * For pull-replication, we use the last document we got from the server:
+ * We send the last document to the queryBuilder()
+ * and recieve newer documents sorted in a batch
  */
+
+
+
+//
+// things for push-checkpoint
+//
+
 
 const pushSequenceId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-push-sequence-' + endpointHash;
 
@@ -52,7 +66,9 @@ export async function setLastPushSequence(
 
 
 
-
+//
+// things for pull-checkpoint
+//
 
 
 const pullLastDocumentId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-latest-document-' + endpointHash;
