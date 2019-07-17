@@ -41,8 +41,7 @@ describe('replication-graphql.test.js', () => {
             });
     };
     const queryBuilder = doc => {
-        // console.dir(doc);
-        if (doc === null) {
+        if (!doc) {
             doc = {
                 id: '',
                 updatedAt: 0
@@ -311,6 +310,15 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
     });
+    config.parallel('SequenceCheckpoint()', () => {
+        it('should get all documents metadata when called the first time', async () => {
+            const c = await humansCollection.createHumanWithTimestamp(5);
+
+            const unpushed = await
+
+                c.database.destroy();
+        });
+    });
     config.parallel('observables', () => {
         it('should emit the recieved documents when replicating', async () => {
             const testData = getTestData(batchSize);
@@ -530,7 +538,7 @@ describe('replication-graphql.test.js', () => {
     config.parallel('live:true pull only', () => {
         it('should also get documents that come in afterwards with active .run()', async () => {
             const [c, server] = await Promise.all([
-                humansCollection.createHumanWithTimestamp(0),
+                humansCollection.createHumanWithTimestamp(0),// if this is false, the replication does nothing at start
                 SpawnServer.spawn(getTestData(1))
             ]);
             const replicationState = c.syncGraphQl({

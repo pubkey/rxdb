@@ -17,18 +17,32 @@ import graphQlClient from 'graphql-client';
 
 
 import {
-    promiseWait
-} from '../util';
+    promiseWait,
+    LOCAL_PREFIX
+} from '../../util';
 
-import Core from '../core';
-import RxCollection from '../rx-collection';
+import Core from '../../core';
+import RxCollection from '../../rx-collection';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import {
     hash
-} from '../util';
-import RxDBWatchForChangesPlugin from './watch-for-changes';
+} from '../../util';
+
+
+import {
+    DEFAULT_MODIFIER,
+    getDocFromPouchOrNull
+} from './helper';
+import {
+    getLastPushSequence,
+    setLastPushSequence,
+    getLastPullDocument,
+    setLastPullDocument
+} from './crawling-checkpoint';
+
+import RxDBWatchForChangesPlugin from '../watch-for-changes';
 
 /**
  * add the watch-for-changes-plugin
@@ -95,18 +109,6 @@ export class RxGraphQlReplicationState {
                 }
             });
         });
-
-        // start sync-interval
-        if (this.live) {
-            (async () => {
-                while (!this.isStopped()) {
-                    await promiseWait(this.liveInterval);
-                    if (this.isStopped()) return;
-                    console.log('run via interval once()');
-                    await this.run();
-                }
-            })();
-        }
     }
 
     isStopped() {
@@ -121,7 +123,6 @@ export class RxGraphQlReplicationState {
             first()
         ).toPromise();
     }
-
 
     // ensures this._run() does not run in parallel
     async run() {
@@ -141,8 +142,8 @@ export class RxGraphQlReplicationState {
         console.log('RxGraphQlReplicationState._run(): start');
         if (this.isStopped()) return;
 
-        const latestDocument = await getLatestDocument(this.collection, this.endpointHash);
-        const latestDocumentData = latestDocument ? latestDocument.doc : null;
+        const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
+        const latestDocumentData = latestDocument ? latestDocument : null;
         const query = this.pull.queryBuilder(latestDocumentData);
 
         let result;
@@ -178,7 +179,7 @@ export class RxGraphQlReplicationState {
             this._subjects.initialReplicationComplete.next(true);
         } else {
             const newLatestDocument = modified[modified.length - 1];
-            await setLatestDocument(
+            await setLastPullDocument(
                 this.collection,
                 this.endpointHash,
                 newLatestDocument
@@ -245,39 +246,6 @@ export class RxGraphQlReplicationState {
     }
 }
 
-
-export function getDocFromPouchOrNull(collection, id) {
-    return collection.pouch.get(id)
-        .then(docData => {
-            return docData;
-        })
-        .catch(() => null);
-}
-
-const LOCAL_PREFIX = '_local/';
-const localDocId = endpointHash => LOCAL_PREFIX + 'rxdb-replication-graphql-latest-document-' + endpointHash;
-
-export async function getLatestDocument(collection, endpointHash) {
-    const got = await getDocFromPouchOrNull(collection, localDocId(endpointHash));
-    return got;
-}
-
-export async function setLatestDocument(collection, endpointHash, doc) {
-    const id = localDocId(endpointHash);
-    const before = await getLatestDocument(collection, endpointHash);
-    const data = {
-        _id: id,
-        doc
-    };
-    if (before) {
-        data._rev = before._rev;
-    }
-    return collection.pouch.put(data);
-}
-
-// does nothing
-const DEFAULT_MODIFIER = d => d;
-
 export function syncGraphQl({
     url,
     headers = {},
@@ -287,7 +255,8 @@ export function syncGraphQl({
     deletedFlag,
     live = false,
     liveInterval = 1000 * 5, // in ms
-    retryTime = 1000 * 5 // in ms
+    retryTime = 1000 * 5, // in ms
+    autoStart = true // if this is false, the replication does nothing at start
 }) {
     const collection = this;
 
@@ -318,8 +287,22 @@ export function syncGraphQl({
     // run internal so .sync() does not have to be async
     const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
     waitTillRun.then(() => {
-        this.watchForChanges();
+        if (!autoStart) return;
+
+        // trigger run once
         replicationState.run();
+
+        // start sync-interval
+        if (replicationState.live) {
+            (async () => {
+                while (!replicationState.isStopped()) {
+                    await promiseWait(replicationState.liveInterval);
+                    if (replicationState.isStopped()) return;
+                    console.log('run via interval once()');
+                    await replicationState.run();
+                }
+            })();
+        }
     });
 
     return replicationState;

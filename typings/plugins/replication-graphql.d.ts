@@ -37,4 +37,5 @@ export type SyncOptionsGraphQl = {
     live?: boolean; // default=false
     liveInterval?: number; // time in ms
     retryTime?: number; // time in ms
+    autoStart?; // if this is false, the replication does nothing at start
 }
