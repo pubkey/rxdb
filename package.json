@@ -128,7 +128,7 @@
     "gitbook-cli": "2.3.2",
     "gzip-size-cli": "3.0.0",
     "karma": "4.2.0",
-    "karma-babel-preprocessor": "8.0.0",
+    "karma-babel-preprocessor": "8.0.1",
     "karma-browserify": "6.1.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-coverage": "1.1.2",
