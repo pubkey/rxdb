@@ -27,7 +27,7 @@ import {
 //
 
 
-const pushSequenceId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-push-sequence-' + endpointHash;
+const pushSequenceId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
  * @return {number} last sequence checkpoint
@@ -71,7 +71,7 @@ export async function setLastPushSequence(
 //
 
 
-const pullLastDocumentId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-latest-document-' + endpointHash;
+const pullLastDocumentId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
 export async function getLastPullDocument(collection, endpointHash) {
     const localDoc = await getDocFromPouchOrNull(collection, pullLastDocumentId(endpointHash));

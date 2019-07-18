@@ -18,6 +18,13 @@ RxDB.plugin(graphQlPlugin);
 import graphQlClient from 'graphql-client';
 
 import {
+    getLastPushSequence,
+    setLastPushSequence,
+    getLastPullDocument,
+    setLastPullDocument
+} from '../../dist/lib/plugins/replication-graphql/crawling-checkpoint';
+
+import {
     map,
     filter,
     first
@@ -194,6 +201,119 @@ describe('replication-graphql.test.js', () => {
             pouch.destroy();
         });
     });
+    config.parallel('crawling-checkpoint', () => {
+        const endpointHash = util.hash('foobar');
+        config.parallel('.setLastPushSequence()', () => {
+            it('should set the last push sequence', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const ret = await setLastPushSequence(
+                    c,
+                    endpointHash,
+                    1
+                );
+                assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
+                c.database.destroy();
+            });
+            it('should be able to run multiple times', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                await setLastPushSequence(
+                    c,
+                    endpointHash,
+                    1
+                );
+                await setLastPushSequence(
+                    c,
+                    endpointHash,
+                    2
+                );
+                c.database.destroy();
+            });
+        });
+        config.parallel('.getLastPushSequence()', () => {
+            it('should get null if not set before', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const ret = await getLastPushSequence(
+                    c,
+                    endpointHash
+                );
+                assert.equal(ret, 0);
+                c.database.destroy();
+            });
+            it('should get the value if set before', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                await setLastPushSequence(
+                    c,
+                    endpointHash,
+                    5
+                );
+                const ret = await getLastPushSequence(
+                    c,
+                    endpointHash
+                );
+                assert.equal(ret, 5);
+                c.database.destroy();
+            });
+        });
+        config.parallel('.setLastPullDocument()', () => {
+            it('should set the document', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec();
+                const docData = doc.toJSON(true);
+                const ret = await setLastPullDocument(
+                    c,
+                    endpointHash,
+                    docData
+                );
+                assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
+                c.database.destroy();
+            });
+            it('should be able to run multiple times', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec();
+                const docData = doc.toJSON(true);
+                await setLastPullDocument(
+                    c,
+                    endpointHash,
+                    docData
+                );
+                const ret = await setLastPullDocument(
+                    c,
+                    endpointHash,
+                    docData
+                );
+                assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
+                c.database.destroy();
+            });
+        });
+        config.parallel('.getLastPullDocument()', () => {
+            it('should return null if no doc set', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                const ret = await getLastPullDocument(
+                    c,
+                    endpointHash
+                );
+                assert.equal(ret, null);
+                c.database.destroy();
+            });
+            it('should return the doc if it was set', async () => {
+                const c = await humansCollection.createHumanWithTimestamp(1);
+                const doc = await c.findOne().exec();
+                const docData = doc.toJSON(true);
+                docData.name = 'foobar';
+                await setLastPullDocument(
+                    c,
+                    endpointHash,
+                    docData
+                );
+                const ret = await getLastPullDocument(
+                    c,
+                    endpointHash
+                );
+                assert.equal(ret.name, 'foobar');
+                c.database.destroy();
+            });
+        });
+    });
     config.parallel('live:false pull only', () => {
         it('should pull all documents in one batch', async () => {
             const [c, server] = await Promise.all([
@@ -314,9 +434,9 @@ describe('replication-graphql.test.js', () => {
         it('should get all documents metadata when called the first time', async () => {
             const c = await humansCollection.createHumanWithTimestamp(5);
 
-            const unpushed = await
+            //            const unpushed = await
 
-                c.database.destroy();
+            c.database.destroy();
         });
     });
     config.parallel('observables', () => {
