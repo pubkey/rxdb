@@ -20,6 +20,7 @@ import graphQlClient from 'graphql-client';
 import {
     getLastPushSequence,
     setLastPushSequence,
+    getChangesSinceLastPushSequence,
     getLastPullDocument,
     setLastPullDocument
 } from '../../dist/lib/plugins/replication-graphql/crawling-checkpoint';
@@ -251,6 +252,71 @@ describe('replication-graphql.test.js', () => {
                     endpointHash
                 );
                 assert.equal(ret, 5);
+                c.database.destroy();
+            });
+        });
+        config.parallel('.getChangesSinceLastPushSequence()', () => {
+            it('should get all changes', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const changes = await getChangesSinceLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+                assert.equal(changes.results.length, amount);
+                assert.ok(changes.results[0].doc.name);
+                c.database.destroy();
+            });
+            it('should get only the newest update to documents', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const oneDoc = await c.findOne().exec();
+                await oneDoc.atomicSet('age', 1);
+                const changes = await getChangesSinceLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+                assert.equal(changes.results.length, amount);
+                c.database.destroy();
+            });
+            it('should not get more changes then the limit', async () => {
+                const amount = 30;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const changes = await getChangesSinceLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+                assert.equal(changes.results.length, 10);
+                c.database.destroy();
+            });
+            it('should get deletions', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const oneDoc = await c.findOne().exec();
+                await oneDoc.remove();
+                const changes = await getChangesSinceLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+                assert.equal(changes.results.length, amount);
+                const deleted = changes.results.find(change => change.doc._deleted === true);
+                assert.ok(deleted);
+                c.database.destroy();
+            });
+            it('should have resolved the primary', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const changes = await getChangesSinceLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+                const first = changes.results[0];
+                assert.ok(first.doc.id);
                 c.database.destroy();
             });
         });

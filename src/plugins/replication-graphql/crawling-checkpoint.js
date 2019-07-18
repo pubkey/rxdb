@@ -64,6 +64,41 @@ export async function setLastPushSequence(
 }
 
 
+/**
+ * 
+ * @param {*} collection 
+ * @param {*} endpointHash 
+ * @param {*} batchSize 
+ * @return {Promise<{results: {id: string, seq: number, changes: {rev: string}[]}[], last_seq: number}>}
+ */
+export async function getChangesSinceLastPushSequence(
+    collection,
+    endpointHash,
+    batchSize = 10,
+) {
+    const lastPushSequence = await getLastPushSequence(
+        collection,
+        endpointHash
+    );
+    const changes = await collection.pouch.changes({
+        since: lastPushSequence,
+        limit: batchSize,
+        include_docs: true
+    });
+
+    // continue here:
+    // filter out changes with revisions resulting from the pull-stream
+
+
+    changes.results.forEach(change => {
+        change.doc = collection._handleFromPouch(change.doc);
+    });
+
+
+    return changes;
+}
+
+
 
 
 //
@@ -77,7 +112,6 @@ export async function getLastPullDocument(collection, endpointHash) {
     const localDoc = await getDocFromPouchOrNull(collection, pullLastDocumentId(endpointHash));
     if (!localDoc) return null;
     else {
-        console.log('got !!');
         return localDoc.doc;
     }
 }
