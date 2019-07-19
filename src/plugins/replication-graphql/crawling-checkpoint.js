@@ -4,7 +4,8 @@ import {
 
 import {
     PLUGIN_IDENT,
-    getDocFromPouchOrNull
+    getDocFromPouchOrNull,
+    wasRevisionfromPullReplication
 } from './helper';
 
 /**
@@ -86,8 +87,16 @@ export async function getChangesSinceLastPushSequence(
         include_docs: true
     });
 
-    // continue here:
-    // filter out changes with revisions resulting from the pull-stream
+    /**
+     * filter out changes with revisions resulting from the pull-stream
+     * so that they will not be upstreamed again
+     */
+    changes.results = changes.results.filter(change => {
+        return !wasRevisionfromPullReplication(
+            endpointHash,
+            change.doc._rev
+        );
+    });
 
 
     changes.results.forEach(change => {

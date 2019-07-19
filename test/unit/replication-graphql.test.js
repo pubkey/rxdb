@@ -11,6 +11,9 @@ import AsyncTestUtil, {
 } from 'async-test-util';
 import RxDB from '../../dist/lib/index';
 import graphQlPlugin from '../../plugins/replication-graphql';
+import {
+    createRevisionForPulledDocument
+} from '../../dist/lib/plugins/replication-graphql/helper';
 import * as schemas from '../helper/schemas';
 
 RxDB.plugin(graphQlPlugin);
@@ -317,6 +320,34 @@ describe('replication-graphql.test.js', () => {
                 );
                 const first = changes.results[0];
                 assert.ok(first.doc.id);
+                c.database.destroy();
+            });
+            it('should have filtered out replicated docs from the endpoint', async () => {
+                const amount = 5;
+                const c = await humansCollection.createHumanWithTimestamp(amount);
+                const toPouch = schemaObjects.humanWithTimestamp();
+                toPouch._rev = '1-' + createRevisionForPulledDocument(
+                    endpointHash,
+                    toPouch
+                );
+
+                await c.pouch.bulkDocs([c._handleToPouch(toPouch)], {
+                    new_edits: false
+                });
+
+                const allDocs = await c.find().exec();
+                assert.equal(allDocs.length, amount + 1);
+
+                const changes = await getChangesSinceLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+
+                assert.equal(changes.results.length, amount);
+                const shouldNotBeFound = changes.results.find(change => change.id === toPouch.id);
+                assert.ok(!shouldNotBeFound);
+                assert.equal(changes.last_seq, amount + 1);
                 c.database.destroy();
             });
         });
