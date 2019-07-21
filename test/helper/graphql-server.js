@@ -133,6 +133,9 @@ export async function spawn(documents = []) {
                 overwriteDocuments(docs) {
                     documents = docs.slice();
                 },
+                getDocuments() {
+                    return documents;
+                },
                 close(now = false) {
                     if (now) {
                         server.close();

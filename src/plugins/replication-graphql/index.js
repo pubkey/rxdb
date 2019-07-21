@@ -39,7 +39,8 @@ import {
     getLastPushSequence,
     setLastPushSequence,
     getLastPullDocument,
-    setLastPullDocument
+    setLastPullDocument,
+    getChangesSinceLastPushSequence
 } from './crawling-checkpoint';
 
 import RxDBWatchForChangesPlugin from '../watch-for-changes';
@@ -132,14 +133,44 @@ export class RxGraphQlReplicationState {
         }
         this._runningPromise = this._runningPromise.then(async () => {
             this._subjects.active.next(true);
-            await this._run();
+            const willRetry = await this._run();
             this._subjects.active.next(false);
+
+            if (!willRetry && this._subjects.initialReplicationComplete._value === false)
+                this._subjects.initialReplicationComplete.next(true);
         });
         return this._runningPromise;
     }
 
     async _run() {
-        console.log('RxGraphQlReplicationState._run(): start');
+
+        let willRetry = false;
+
+        if (this.push) {
+            const ok = await this.runPush();
+            if (!ok) {
+                willRetry = true;
+                setTimeout(() => this.run(), this.retryTime);
+            }
+        }
+
+        if (this.pull) {
+            const ok = await this.runPull();
+            if (!ok) {
+                willRetry = true;
+                setTimeout(() => this.run(), this.retryTime);
+            }
+        }
+
+        return willRetry;
+
+    }
+
+    /**
+     * @return {boolean} true if no errors occured
+     */
+    async runPull() {
+        console.log('RxGraphQlReplicationState.runPull(): start');
         if (this.isStopped()) return;
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
@@ -155,7 +186,7 @@ export class RxGraphQlReplicationState {
         } catch (err) {
             this._subjects.error.next(err);
             setTimeout(() => this.run(), this.retryTime);
-            return;
+            return false;
         }
 
         // this assumes that there will be always only one property in the response
@@ -174,9 +205,7 @@ export class RxGraphQlReplicationState {
                 console.log('no more docs, wait for ping');
             } else {
                 console.log('RxGraphQlReplicationState._run(): no more docs and not live; complete = true');
-                if (this._subjects.active._value === true) this._subjects.active.next(false);
             }
-            this._subjects.initialReplicationComplete.next(true);
         } else {
             const newLatestDocument = modified[modified.length - 1];
             await setLastPullDocument(
@@ -186,12 +215,25 @@ export class RxGraphQlReplicationState {
             );
 
             // we have more docs, re-run
-            this.run();
+            await this.runPull();
         }
+
+        return true;
     }
 
     async runPush() {
+
+        const changes = await getChangesSinceLastPushSequence(
+            this.collection,
+            this.endpointHash,
+            this.push.batchSize
+        );
+
+
+        console.log(JSON.stringify(changes));
+
         // TODO
+        return true;
     }
 
     async handleDocumentFromRemote(doc) {
@@ -250,8 +292,8 @@ export function syncGraphQl({
     url,
     headers = {},
     waitForLeadership = true,
-    pull = {},
-    push = {},
+    pull,
+    push,
     deletedFlag,
     live = false,
     liveInterval = 1000 * 5, // in ms

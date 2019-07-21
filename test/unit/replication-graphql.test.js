@@ -527,15 +527,6 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
     });
-    config.parallel('SequenceCheckpoint()', () => {
-        it('should get all documents metadata when called the first time', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(5);
-
-            //            const unpushed = await
-
-            c.database.destroy();
-        });
-    });
     config.parallel('observables', () => {
         it('should emit the recieved documents when replicating', async () => {
             const testData = getTestData(batchSize);
@@ -603,9 +594,12 @@ describe('replication-graphql.test.js', () => {
             const sub = replicationState.active$.subscribe(d => emitted.push(d));
 
             await replicationState.awaitInitialReplication();
+
+
+            console.log('aaaa');
             console.dir(emitted);
 
-            assert.equal(emitted.length, 7);
+            assert.equal(emitted.length, 3);
             const last = emitted.pop();
             assert.equal(last, false);
 
@@ -664,98 +658,10 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
     });
-    config.parallel('integrations', () => {
-        it('should work with encryption', async () => {
-            const db = await RxDB.create({
-                name: util.randomCouchString(10),
-                adapter: 'memory',
-                multiInstance: true,
-                queryChangeDetection: true,
-                ignoreDuplicate: true,
-                password: util.randomCouchString(10)
-            });
-            const schema = clone(schemas.humanWithTimestamp);
-            schema.properties.name.encrypted = true;
-            const collection = await db.collection({
-                name: 'humans',
-                schema
-            });
-
-            const testData = getTestData(1);
-            testData[0].name = 'Alice';
-            const server = await SpawnServer.spawn(testData);
-
-            const replicationState = collection.syncGraphQl({
-                url: server.url,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted'
-            });
-            await replicationState.awaitInitialReplication();
-
-            const docs = await collection.find().exec();
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0].name, 'Alice');
-
-            const pouchDocs = await collection.pouch.find({
-                selector: {
-                    _id: {}
-                }
-            });
-            assert.ok(pouchDocs.docs[0].name !== 'Alice');
-
-            db.destroy();
-        });
-        it('should work with keyCompression', async () => {
-            const db = await RxDB.create({
-                name: util.randomCouchString(10),
-                adapter: 'memory',
-                multiInstance: true,
-                queryChangeDetection: true,
-                ignoreDuplicate: true,
-                password: util.randomCouchString(10)
-            });
-            const schema = clone(schemas.humanWithTimestamp);
-            schema.keyCompression = true;
-            const collection = await db.collection({
-                name: 'humans',
-                schema
-            });
-
-            const testData = getTestData(1);
-            testData[0].name = 'Alice';
-            const server = await SpawnServer.spawn(testData);
-
-            const replicationState = collection.syncGraphQl({
-                url: server.url,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted'
-            });
-            await replicationState.awaitInitialReplication();
-
-            const docs = await collection.find().exec();
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0].name, 'Alice');
-
-            const pouchDocs = await collection.pouch.find({
-                selector: {
-                    _id: {}
-                }
-            });
-
-            // first key must be compressed
-            assert.ok(Object.keys(pouchDocs.docs[0])[0].startsWith('|'));
-
-            db.destroy();
-        });
-    });
     config.parallel('live:true pull only', () => {
         it('should also get documents that come in afterwards with active .run()', async () => {
             const [c, server] = await Promise.all([
-                humansCollection.createHumanWithTimestamp(0),// if this is false, the replication does nothing at start
+                humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn(getTestData(1))
             ]);
             const replicationState = c.syncGraphQl({
@@ -877,6 +783,116 @@ describe('replication-graphql.test.js', () => {
     });
 
     config.parallel('live:false push only', () => {
+        it('should send all documents in one batch', async () => {
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(batchSize),
+                SpawnServer.spawn()
+            ]);
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
 
+            await replicationState.awaitInitialReplication();
+
+            const docsOnServer = server.getDocuments();
+            assert.equal(docsOnServer.length, batchSize);
+
+            c.database.destroy();
+        });
     });
+
+    config.parallel('integrations', () => {
+        it('should work with encryption', async () => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                queryChangeDetection: true,
+                ignoreDuplicate: true,
+                password: util.randomCouchString(10)
+            });
+            const schema = clone(schemas.humanWithTimestamp);
+            schema.properties.name.encrypted = true;
+            const collection = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            const testData = getTestData(1);
+            testData[0].name = 'Alice';
+            const server = await SpawnServer.spawn(testData);
+
+            const replicationState = collection.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+            await replicationState.awaitInitialReplication();
+
+            const docs = await collection.find().exec();
+            assert.equal(docs.length, 1);
+            assert.equal(docs[0].name, 'Alice');
+
+            const pouchDocs = await collection.pouch.find({
+                selector: {
+                    _id: {}
+                }
+            });
+            assert.ok(pouchDocs.docs[0].name !== 'Alice');
+
+            db.destroy();
+        });
+        it('should work with keyCompression', async () => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                queryChangeDetection: true,
+                ignoreDuplicate: true,
+                password: util.randomCouchString(10)
+            });
+            const schema = clone(schemas.humanWithTimestamp);
+            schema.keyCompression = true;
+            const collection = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            const testData = getTestData(1);
+            testData[0].name = 'Alice';
+            const server = await SpawnServer.spawn(testData);
+
+            const replicationState = collection.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+            await replicationState.awaitInitialReplication();
+
+            const docs = await collection.find().exec();
+            assert.equal(docs.length, 1);
+            assert.equal(docs[0].name, 'Alice');
+
+            const pouchDocs = await collection.pouch.find({
+                selector: {
+                    _id: {}
+                }
+            });
+
+            // first key must be compressed
+            assert.ok(Object.keys(pouchDocs.docs[0])[0].startsWith('|'));
+
+            db.destroy();
+        });
+    });
+
 });
