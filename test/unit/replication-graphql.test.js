@@ -280,7 +280,6 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should get the value if set multiple times', async () => {
-                console.log('+++'.repeat(10));
                 const endpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 await setLastPushSequence(
@@ -579,137 +578,6 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
     });
-    config.parallel('observables', () => {
-        it('should emit the recieved documents when replicating', async () => {
-            const testData = getTestData(batchSize);
-            const [c, server] = await Promise.all([
-                humansCollection.createHumanWithTimestamp(0),
-                SpawnServer.spawn(testData)
-            ]);
-
-            const replicationState = c.syncGraphQl({
-                url: server.url,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted'
-            });
-
-            const emitted = [];
-            const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
-
-            await replicationState.awaitInitialReplication();
-            assert.equal(emitted.length, batchSize);
-            assert.deepEqual(testData, emitted);
-
-            sub.unsubscribe();
-            server.close();
-            c.database.destroy();
-        });
-        it('should complete the replicationState afterwards', async () => {
-            const [c, server] = await Promise.all([
-                humansCollection.createHumanWithTimestamp(0),
-                SpawnServer.spawn()
-            ]);
-
-            const replicationState = c.syncGraphQl({
-                url: server.url,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted'
-            });
-            await replicationState.awaitInitialReplication();
-            assert.equal(replicationState.isStopped(), true);
-
-            server.close();
-            c.database.destroy();
-        });
-        it('should emit the correct amount of active-changes', async () => {
-            const amount = batchSize * 2;
-            const testData = getTestData(amount);
-
-            const [c, server] = await Promise.all([
-                humansCollection.createHumanWithTimestamp(0),
-                SpawnServer.spawn(testData)
-            ]);
-
-            const replicationState = c.syncGraphQl({
-                url: server.url,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted'
-            });
-
-            const emitted = [];
-            const sub = replicationState.active$.subscribe(d => emitted.push(d));
-
-            await replicationState.awaitInitialReplication();
-
-
-            console.log('aaaa');
-            console.dir(emitted);
-
-            assert.equal(emitted.length, 3);
-            const last = emitted.pop();
-            assert.equal(last, false);
-
-            sub.unsubscribe();
-            server.close();
-            c.database.destroy();
-        });
-        it('should emit an error when the server is not reachable', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
-            const replicationState = c.syncGraphQl({
-                url: ERROR_URL,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted'
-            });
-
-            const error = await replicationState.error$.pipe(
-                first()
-            ).toPromise();
-
-            assert.ok(error.toString().includes('foobar'));
-
-            replicationState.cancel();
-            c.database.destroy();
-        });
-        it('should not exit .run() before the batch is inserted and its events have been emitted', async () => {
-            const c = await humansCollection.createHumanWithTimestamp(0);
-            const server = await SpawnServer.spawn(getTestData(1));
-
-            const replicationState = c.syncGraphQl({
-                url: server.url,
-                pull: {
-                    queryBuilder
-                },
-                live: true,
-                deletedFlag: 'deleted'
-            });
-            await replicationState.run();
-
-            await AsyncTestUtil.waitUntil(async () => {
-                const docsAfter = await c.find().exec();
-                return docsAfter.length === 1;
-            });
-
-            const doc = schemaObjects.humanWithTimestamp();
-            doc.deleted = false;
-            await server.setDocument(doc);
-
-            await replicationState.run();
-            // directly after .run(), the doc must be available
-            const docsAfter = await c.find().exec();
-            assert.equal(docsAfter.length, 2);
-
-            server.close();
-            c.database.destroy();
-        });
-    });
     config.parallel('live:true pull only', () => {
         it('should also get documents that come in afterwards with active .run()', async () => {
             const [c, server] = await Promise.all([
@@ -878,6 +746,201 @@ describe('replication-graphql.test.js', () => {
             const docsOnServer = server.getDocuments();
             assert.equal(docsOnServer.length, amount);
 
+            c.database.destroy();
+        });
+        it('should send deletions', async () => {
+            console.log('+++'.repeat(10));
+
+            const amount = batchSize;
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(amount),
+                SpawnServer.spawn()
+            ]);
+
+            const doc = await c.findOne().exec();
+            console.log('remove doc: ' + doc.primary);
+            await doc.remove();
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
+
+            await replicationState.awaitInitialReplication();
+            const docsOnServer = server.getDocuments();
+
+            const shouldBeDeleted = docsOnServer.find(d => d.id === doc.primary);
+            assert.equal(shouldBeDeleted.deleted, true);
+
+            c.database.destroy();
+        });
+    });
+
+    config.parallel('observables', () => {
+        it('should emit the recieved documents when pulling', async () => {
+            const testData = getTestData(batchSize);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+
+            const emitted = [];
+            const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
+
+            await replicationState.awaitInitialReplication();
+            assert.equal(emitted.length, batchSize);
+            assert.deepEqual(testData, emitted);
+
+            sub.unsubscribe();
+            server.close();
+            c.database.destroy();
+        });
+        it('should emit the send documents when pushing', async () => {
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(batchSize),
+                SpawnServer.spawn()
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    queryBuilder: pushQueryBuilder,
+                    batchSize
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
+
+            const emitted = [];
+            const sub = replicationState.send$.subscribe(doc => emitted.push(doc));
+            await replicationState.awaitInitialReplication();
+
+            assert.equal(emitted.length, batchSize);
+
+            const docs = await c.find().exec();
+            assert.deepEqual(
+                emitted.map(d => d.id).sort(),
+                docs.map(d => d.primary).sort()
+            );
+
+            sub.unsubscribe();
+            server.close();
+            c.database.destroy();
+        });
+        it('should complete the replicationState afterwards', async () => {
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn()
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+            await replicationState.awaitInitialReplication();
+            assert.equal(replicationState.isStopped(), true);
+
+            server.close();
+            c.database.destroy();
+        });
+        it('should emit the correct amount of active-changes', async () => {
+            const amount = batchSize * 2;
+            const testData = getTestData(amount);
+
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+
+            const emitted = [];
+            const sub = replicationState.active$.subscribe(d => emitted.push(d));
+
+            await replicationState.awaitInitialReplication();
+
+
+            console.log('aaaa');
+            console.dir(emitted);
+
+            assert.equal(emitted.length, 3);
+            const last = emitted.pop();
+            assert.equal(last, false);
+
+            sub.unsubscribe();
+            server.close();
+            c.database.destroy();
+        });
+        it('should emit an error when the server is not reachable', async () => {
+            const c = await humansCollection.createHumanWithTimestamp(0);
+            const replicationState = c.syncGraphQl({
+                url: ERROR_URL,
+                pull: {
+                    queryBuilder
+                },
+                deletedFlag: 'deleted'
+            });
+
+            const error = await replicationState.error$.pipe(
+                first()
+            ).toPromise();
+
+            assert.ok(error.toString().includes('foobar'));
+
+            replicationState.cancel();
+            c.database.destroy();
+        });
+        it('should not exit .run() before the batch is inserted and its events have been emitted', async () => {
+            const c = await humansCollection.createHumanWithTimestamp(0);
+            const server = await SpawnServer.spawn(getTestData(1));
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                live: true,
+                deletedFlag: 'deleted'
+            });
+            await replicationState.run();
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsAfter = await c.find().exec();
+                return docsAfter.length === 1;
+            });
+
+            const doc = schemaObjects.humanWithTimestamp();
+            doc.deleted = false;
+            await server.setDocument(doc);
+
+            await replicationState.run();
+            // directly after .run(), the doc must be available
+            const docsAfter = await c.find().exec();
+            assert.equal(docsAfter.length, 2);
+
+            server.close();
             c.database.destroy();
         });
     });

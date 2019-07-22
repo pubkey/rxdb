@@ -231,8 +231,14 @@ export class RxGraphQlReplicationState {
 
         const changesWithDocs = changes.results.map(change => {
             let doc = change.doc;
-            doc.deleted = false; // TODO use value from change
+
+            console.log('aaaaaaa');
+            console.dir(change);
+
+            doc[this.deletedFlag] = !!change.deleted;
             delete doc._rev;
+            delete doc._deleted;
+            delete doc._attachments;
 
             doc = this.push.modifier(doc);
 
@@ -243,6 +249,7 @@ export class RxGraphQlReplicationState {
             };
         });
 
+        console.log('changesWithDocs:');
         console.log(JSON.stringify(changesWithDocs, null, 2));
 
         /**
@@ -266,8 +273,11 @@ export class RxGraphQlReplicationState {
                 const pushObj = this.push.queryBuilder(changeWithDoc.doc);
                 const result = await this.client.query(pushObj.query, pushObj.variables);
                 if (result.errors) {
+                    console.log('push error:');
+                    console.dir(result.errors);
                     throw new Error(result.errors);
                 } else {
+                    this._subjects.send.next(changeWithDoc.doc);
                     lastSuccessfullChange = changeWithDoc;
                 }
             }

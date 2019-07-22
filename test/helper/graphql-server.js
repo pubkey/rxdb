@@ -90,7 +90,7 @@ export async function spawn(documents = []) {
             documents = documents.filter(d => d.id !== doc.id);
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
             documents.push(doc);
-            console.dir(documents);
+            // console.dir(documents);
             return doc;
         }
     };
