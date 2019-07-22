@@ -229,10 +229,81 @@ export class RxGraphQlReplicationState {
             this.push.batchSize
         );
 
+        const changesWithDocs = changes.results.map(change => {
+            let doc = change.doc;
+            doc.deleted = false; // TODO use value from change
+            delete doc._rev;
 
-        console.log(JSON.stringify(changes));
+            doc = this.push.modifier(doc);
 
-        // TODO
+            const seq = change.seq;
+            return {
+                doc,
+                seq
+            };
+        });
+
+        console.log(JSON.stringify(changesWithDocs, null, 2));
+
+        /**
+         * TODO atm we send one request for each document,
+         * can we send all documents in one request?
+         * @link https://github.com/graphql/graphql-spec/issues/138#issuecomment-169426222
+         */
+
+
+        let lastSuccessfullChange = null;
+        try {
+
+            /**
+             * we cannot run all queries parallel
+             * because then we would not know
+             * where to start again on errors
+             * so we run through the docs in series
+             */
+            for (let i = 0; i < changesWithDocs.length; i++) {
+                const changeWithDoc = changesWithDocs[i];
+                const pushObj = this.push.queryBuilder(changeWithDoc.doc);
+                const result = await this.client.query(pushObj.query, pushObj.variables);
+                if (result.errors) {
+                    throw new Error(result.errors);
+                } else {
+                    lastSuccessfullChange = changeWithDoc;
+                }
+            }
+        } catch (err) {
+
+            if (lastSuccessfullChange) {
+                await setLastPushSequence(
+                    this.collection,
+                    this.endpointHash,
+                    lastSuccessfullChange.seq
+                );
+            }
+
+            this._subjects.error.next(err);
+            setTimeout(() => this.run(), this.retryTime);
+            return false;
+        }
+
+        // all docs where successfull, so we use the seq of the changes-fetch
+        await setLastPushSequence(
+            this.collection,
+            this.endpointHash,
+            changes.last_seq
+        );
+
+        if (changes.results.length === 0) {
+            if (this.live) {
+                console.log('no more docs to push, wait for ping');
+            } else {
+                console.log('RxGraphQlReplicationState._runPull(): no more docs to push and not live; complete = true');
+            }
+        } else {
+            // we have more docs, re-run
+            await this.runPush();
+        }
+
         return true;
     }
 

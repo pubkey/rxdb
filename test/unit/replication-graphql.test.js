@@ -43,6 +43,8 @@ describe('replication-graphql.test.js', () => {
     const ERROR_URL = 'http://localhost:15898/foobar';
     if (!config.platform.isNode()) return;
     const batchSize = 5;
+    const getEndpointHash = () => util.hash(AsyncTestUtil.randomString(10));
+    const endpointHash = getEndpointHash(); // used when we not care about it's value
     const getTestData = (amount) => {
         return new Array(amount).fill(0)
             .map(() => schemaObjects.humanWithTimestamp())
@@ -67,6 +69,24 @@ describe('replication-graphql.test.js', () => {
                 deleted
             }
         }`;
+    };
+    const pushQueryBuilder = doc => {
+        const query = `
+            mutation CreateHuman($human: HumanInput) {
+                setHuman(human: $human) {
+                    id,
+                    updatedAt
+                }
+           }
+        `;
+        const variables = {
+            human: doc
+        };
+
+        return {
+            query,
+            variables
+        };
     };
     config.parallel('graphql-server.js', () => {
         it('spawn, reach and close a server', async () => {
@@ -206,19 +226,19 @@ describe('replication-graphql.test.js', () => {
         });
     });
     config.parallel('crawling-checkpoint', () => {
-        const endpointHash = util.hash('foobar');
         config.parallel('.setLastPushSequence()', () => {
             it('should set the last push sequence', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await setLastPushSequence(
                     c,
-                    endpointHash,
+                    getEndpointHash(),
                     1
                 );
                 assert.ok(ret.id.startsWith(util.LOCAL_PREFIX));
                 c.database.destroy();
             });
             it('should be able to run multiple times', async () => {
+                const endpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 await setLastPushSequence(
                     c,
@@ -235,6 +255,7 @@ describe('replication-graphql.test.js', () => {
         });
         config.parallel('.getLastPushSequence()', () => {
             it('should get null if not set before', async () => {
+                const endpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await getLastPushSequence(
                     c,
@@ -244,6 +265,7 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should get the value if set before', async () => {
+                const endpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 await setLastPushSequence(
                     c,
@@ -255,6 +277,36 @@ describe('replication-graphql.test.js', () => {
                     endpointHash
                 );
                 assert.equal(ret, 5);
+                c.database.destroy();
+            });
+            it('should get the value if set multiple times', async () => {
+                console.log('+++'.repeat(10));
+                const endpointHash = getEndpointHash();
+                const c = await humansCollection.createHumanWithTimestamp(0);
+                await setLastPushSequence(
+                    c,
+                    endpointHash,
+                    5
+                );
+                const ret = await getLastPushSequence(
+                    c,
+                    endpointHash
+                );
+                assert.equal(ret, 5);
+
+                await setLastPushSequence(
+                    c,
+                    endpointHash,
+                    10
+                );
+                const ret2 = await getLastPushSequence(
+                    c,
+                    endpointHash
+                );
+                assert.equal(ret2, 10);
+
+
+
                 c.database.destroy();
             });
         });
@@ -791,7 +843,8 @@ describe('replication-graphql.test.js', () => {
             const replicationState = c.syncGraphQl({
                 url: server.url,
                 push: {
-                    batchSize
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
                 },
                 live: false,
                 deletedFlag: 'deleted'
@@ -801,6 +854,29 @@ describe('replication-graphql.test.js', () => {
 
             const docsOnServer = server.getDocuments();
             assert.equal(docsOnServer.length, batchSize);
+
+            c.database.destroy();
+        });
+        it('should send all documents in multiple batches', async () => {
+            const amount = batchSize * 3;
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(amount),
+                SpawnServer.spawn()
+            ]);
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            const docsOnServer = server.getDocuments();
+            assert.equal(docsOnServer.length, amount);
 
             c.database.destroy();
         });

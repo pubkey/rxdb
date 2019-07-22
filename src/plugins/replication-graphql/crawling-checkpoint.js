@@ -24,7 +24,7 @@ import {
 
 
 //
-// things for push-checkpoint
+// things for the push-checkpoint
 //
 
 
@@ -60,8 +60,12 @@ export async function setLastPushSequence(
             _id,
             value: seq
         };
+    } else {
+        doc.value = seq;
     }
-    return collection.pouch.put(doc);
+
+    const res = await collection.pouch.put(doc);
+    return res;
 }
 
 
@@ -81,6 +85,9 @@ export async function getChangesSinceLastPushSequence(
         collection,
         endpointHash
     );
+
+    console.log('getChangesSinceLastPushSequence(' + endpointHash + '): ' + lastPushSequence);
+
     const changes = await collection.pouch.changes({
         since: lastPushSequence,
         limit: batchSize,

@@ -22,6 +22,11 @@ export declare class RxGraphQlReplicationState {
 
 }
 
+export type RxGraphQlReplicationPushQueryBuilder = (doc: any) => {
+    query: string;
+    variables: any;
+};
+
 export type SyncOptionsGraphQl = {
     url: string;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
@@ -31,7 +36,9 @@ export type SyncOptionsGraphQl = {
         modifier?: (doc: any) => any;
     };
     push?: {
+        queryBuilder: RxGraphQlReplicationPushQueryBuilder;
         modifier?: (doc: any) => any;
+        batchSize?: number;
     };
     deletedFlag: string;
     live?: boolean; // default=false
