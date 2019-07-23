@@ -86,8 +86,6 @@ export async function getChangesSinceLastPushSequence(
         endpointHash
     );
 
-    console.log('getChangesSinceLastPushSequence(' + endpointHash + '): ' + lastPushSequence);
-
     const changes = await collection.pouch.changes({
         since: lastPushSequence,
         limit: batchSize,

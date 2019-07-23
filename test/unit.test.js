@@ -1,8 +1,7 @@
 require('./unit/init.test.js');
 require('./unit/util.test.js');
 require('./unit/pouch-db-integration.test.js');
-require('./unit/replication-graphql.test.js'); // TODO move down under replication
-/*require('./unit/adapter-check.test.js');
+require('./unit/adapter-check.test.js');
 require('./unit/instance-of-check.test.js');
 require('./unit/rx-schema.test.js');
 require('./unit/key-compression.test.js');
@@ -26,6 +25,7 @@ require('./unit/population.test.js');
 require('./unit/data-migration.test.js');
 require('./unit/leader-election.test.js');
 require('./unit/replication.test.js');
+require('./unit/replication-graphql.test.js');
 require('./unit/encryption.test.js');
 require('./unit/import-export.test.js');
 require('./unit/cross-instance.test.js');
@@ -36,4 +36,4 @@ require('./unit/server.test.js');
 require('./unit/plugin.test.js');
 require('./unit/attachments.test.js');
 require('./unit/version-migration.test.js');
-require('./unit/last.test.js');*/
+require('./unit/last.test.js');

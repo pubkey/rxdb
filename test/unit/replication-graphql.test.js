@@ -229,7 +229,7 @@ describe('replication-graphql.test.js', () => {
         });
     });
     config.parallel('helper', () => {
-        config.parallel('.createRevisionForPulledDocument()', () => {
+        describe('.createRevisionForPulledDocument()', () => {
             it('should create a revision', () => {
                 const rev = createRevisionForPulledDocument(
                     endpointHash,
@@ -239,7 +239,7 @@ describe('replication-graphql.test.js', () => {
                 assert.ok(rev.length > 10);
             });
         });
-        config.parallel('.wasRevisionfromPullReplication()', () => {
+        describe('.wasRevisionfromPullReplication()', () => {
             it('should be true on equal endpointHash', () => {
                 const rev = createRevisionForPulledDocument(
                     endpointHash,
@@ -267,7 +267,7 @@ describe('replication-graphql.test.js', () => {
         });
     });
     config.parallel('crawling-checkpoint', () => {
-        config.parallel('.setLastPushSequence()', () => {
+        describe('.setLastPushSequence()', () => {
             it('should set the last push sequence', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await setLastPushSequence(
@@ -294,7 +294,7 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
         });
-        config.parallel('.getLastPushSequence()', () => {
+        describe('.getLastPushSequence()', () => {
             it('should get null if not set before', async () => {
                 const endpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
@@ -347,7 +347,7 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
         });
-        config.parallel('.getChangesSinceLastPushSequence()', () => {
+        describe('.getChangesSinceLastPushSequence()', () => {
             it('should get all changes', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
@@ -440,7 +440,7 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
         });
-        config.parallel('.setLastPullDocument()', () => {
+        describe('.setLastPullDocument()', () => {
             it('should set the document', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(1);
                 const doc = await c.findOne().exec();
@@ -471,7 +471,7 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
         });
-        config.parallel('.getLastPullDocument()', () => {
+        describe('.getLastPullDocument()', () => {
             it('should return null if no doc set', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await getLastPullDocument(
@@ -518,7 +518,6 @@ describe('replication-graphql.test.js', () => {
 
             await AsyncTestUtil.waitUntil(async () => {
                 const docs = await c.find().exec();
-                // console.dir(docs.map(d => d.toJSON()));
                 return docs.length === batchSize;
             });
 
@@ -545,7 +544,6 @@ describe('replication-graphql.test.js', () => {
 
             await AsyncTestUtil.waitUntil(async () => {
                 const docs = await c.find().exec();
-                // console.dir(docs.map(d => d.toJSON()));
                 return docs.length === amount;
             });
 
@@ -824,7 +822,6 @@ describe('replication-graphql.test.js', () => {
             ]);
 
             const doc = await c.findOne().exec();
-            console.log('remove doc: ' + doc.primary);
             await doc.remove();
 
             const replicationState = c.syncGraphQl({
@@ -1074,10 +1071,6 @@ describe('replication-graphql.test.js', () => {
             const sub = replicationState.active$.subscribe(d => emitted.push(d));
 
             await replicationState.awaitInitialReplication();
-
-
-            console.log('aaaa');
-            console.dir(emitted);
 
             assert.equal(emitted.length, 3);
             const last = emitted.pop();

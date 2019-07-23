@@ -129,7 +129,7 @@ export class RxGraphQlReplicationState {
     // ensures this._run() does not run in parallel
     async run() {
         if (this.isStopped()) {
-            console.log('RxGraphQlReplicationState.run(): exit because stopped');
+            // console.log('RxGraphQlReplicationState.run(): exit because stopped');
             return;
         }
         this._runningPromise = this._runningPromise.then(async () => {
@@ -171,7 +171,7 @@ export class RxGraphQlReplicationState {
      * @return {boolean} true if no errors occured
      */
     async runPull() {
-        console.log('RxGraphQlReplicationState.runPull(): start');
+        // console.log('RxGraphQlReplicationState.runPull(): start');
         if (this.isStopped()) return;
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
@@ -203,9 +203,9 @@ export class RxGraphQlReplicationState {
 
         if (modified.length === 0) {
             if (this.live) {
-                console.log('no more docs, wait for ping');
+                // console.log('no more docs, wait for ping');
             } else {
-                console.log('RxGraphQlReplicationState._run(): no more docs and not live; complete = true');
+                // console.log('RxGraphQlReplicationState._run(): no more docs and not live; complete = true');
             }
         } else {
             const newLatestDocument = modified[modified.length - 1];
@@ -232,9 +232,6 @@ export class RxGraphQlReplicationState {
 
         const changesWithDocs = changes.results.map(change => {
             let doc = change.doc;
-
-            console.log('aaaaaaa');
-            console.dir(change);
 
             doc[this.deletedFlag] = !!change.deleted;
             delete doc._rev;
@@ -306,9 +303,9 @@ export class RxGraphQlReplicationState {
 
         if (changes.results.length === 0) {
             if (this.live) {
-                console.log('no more docs to push, wait for ping');
+                // console.log('no more docs to push, wait for ping');
             } else {
-                console.log('RxGraphQlReplicationState._runPull(): no more docs to push and not live; complete = true');
+                // console.log('RxGraphQlReplicationState._runPull(): no more docs to push and not live; complete = true');
             }
         } else {
             // we have more docs, re-run
@@ -321,7 +318,7 @@ export class RxGraphQlReplicationState {
     async handleDocumentFromRemote(doc) {
         const deletedValue = doc[this.deletedFlag];
         const toPouch = this.collection._handleToPouch(doc);
-        console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
+        // console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
         toPouch._deleted = deletedValue;
         delete toPouch[this.deletedFlag];
         const primaryValue = toPouch._id;
@@ -360,7 +357,7 @@ export class RxGraphQlReplicationState {
         ).toPromise();
 
         //console.dir(doc);
-        console.log('handleDocumentFromRemote(' + toPouch._id + ') done');
+        // console.log('handleDocumentFromRemote(' + toPouch._id + ') done');
     }
 
     cancel() {
@@ -425,7 +422,7 @@ export function syncGraphQl({
                 while (!replicationState.isStopped()) {
                     await promiseWait(replicationState.liveInterval);
                     if (replicationState.isStopped()) return;
-                    console.log('run via interval once()');
+                    // console.log('run via interval once()');
                     await replicationState.run();
                 }
             })();
@@ -443,7 +440,7 @@ export function syncGraphQl({
                         replicationState.endpointHash,
                         rev
                     )) {
-                        console.log('got pouchdb changes: trigger run ' + rev);
+                        // console.log('got pouchdb changes: trigger run ' + rev);
                         replicationState.run();
                     }
                 });
