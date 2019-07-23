@@ -9,7 +9,6 @@ import randomToken from 'random-token';
 import randomInt from 'random-int';
 
 import {
-    randomBoolean,
     randomNumber
 } from 'async-test-util';
 

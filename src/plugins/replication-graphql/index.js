@@ -17,15 +17,10 @@ import graphQlClient from 'graphql-client';
 
 
 import {
-    promiseWait,
-    LOCAL_PREFIX
+    promiseWait
 } from '../../util';
 
 import Core from '../../core';
-import RxCollection from '../../rx-collection';
-import {
-    newRxError
-} from '../../rx-error';
 import {
     hash
 } from '../../util';
@@ -37,7 +32,6 @@ import {
     wasRevisionfromPullReplication
 } from './helper';
 import {
-    getLastPushSequence,
     setLastPushSequence,
     getLastPullDocument,
     setLastPullDocument,

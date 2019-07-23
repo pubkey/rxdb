@@ -4,11 +4,7 @@
  * @link https://graphql.org/graphql-js/running-an-express-graphql-server/
  */
 
-import * as schemaObjects from './schema-objects';
 import graphQlClient from 'graphql-client';
-import {
-    randomBoolean
-} from 'async-test-util';
 import {
     buildSchema
 } from 'graphql';

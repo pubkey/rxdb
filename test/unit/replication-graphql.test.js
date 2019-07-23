@@ -31,8 +31,6 @@ import {
 } from '../../dist/lib/plugins/replication-graphql/helper';
 
 import {
-    map,
-    filter,
     first
 } from 'rxjs/operators';
 
