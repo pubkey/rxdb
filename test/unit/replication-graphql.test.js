@@ -702,7 +702,7 @@ describe('replication-graphql.test.js', () => {
         });
     });
 
-    config.parallel('live:false push only', () => {
+    config.parallel('push only', () => {
         it('should send all documents in one batch', async () => {
             const [c, server] = await Promise.all([
                 humansCollection.createHumanWithTimestamp(batchSize),
@@ -749,8 +749,6 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
         it('should send deletions', async () => {
-            console.log('+++'.repeat(10));
-
             const amount = batchSize;
             const [c, server] = await Promise.all([
                 humansCollection.createHumanWithTimestamp(amount),
@@ -776,6 +774,49 @@ describe('replication-graphql.test.js', () => {
 
             const shouldBeDeleted = docsOnServer.find(d => d.id === doc.primary);
             assert.equal(shouldBeDeleted.deleted, true);
+
+            c.database.destroy();
+        });
+        it('should trigger push on db-changes that have not resulted from the replication', async () => {
+            console.log('+++'.repeat(10));
+
+            const amount = batchSize;
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(amount),
+                SpawnServer.spawn()
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                live: true,
+                liveInterval: 1000 * 60, // height
+                deletedFlag: 'deleted'
+            });
+
+            await replicationState.awaitInitialReplication();
+
+
+            const docsOnServer = server.getDocuments();
+            assert.equal(docsOnServer.length, amount);
+
+            // check for inserts
+            await c.insert(schemaObjects.humanWithTimestamp());
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsOnServer = server.getDocuments();
+                return docsOnServer.length === amount + 1;
+            });
+
+            // check for deletes
+            await c.findOne().remove();
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsOnServer = server.getDocuments();
+                const oneShouldBeDeleted = docsOnServer.find(d => d.deleted === true);
+                return !!oneShouldBeDeleted;
+            });
 
             c.database.destroy();
         });

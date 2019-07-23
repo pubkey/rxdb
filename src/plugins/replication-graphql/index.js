@@ -33,7 +33,8 @@ import {
 
 import {
     DEFAULT_MODIFIER,
-    getDocFromPouchOrNull
+    getDocFromPouchOrNull,
+    wasRevisionfromPullReplication
 } from './helper';
 import {
     getLastPushSequence,
@@ -364,6 +365,9 @@ export class RxGraphQlReplicationState {
 
     cancel() {
         if (this.isStopped()) return;
+
+        if (this.changesSub) this.changesSub.cancel();
+
         this._subjects.canceled.next(true);
         // TODO
     }
@@ -425,6 +429,30 @@ export function syncGraphQl({
                     await replicationState.run();
                 }
             })();
+
+            if (push) {
+                replicationState.changesSub = collection.pouch.changes({
+                    since: 'now',
+                    live: true,
+                    include_docs: true
+                }).on('change', function (change) {
+
+                    console.log('aaaaaaaabbbb');
+                    console.dir(change);
+
+                    if (replicationState.isStopped()) return;
+
+                    const rev = change.doc._rev;
+                    if (!wasRevisionfromPullReplication(
+                        replicationState.endpointHash,
+                        rev
+                    )) {
+                        console.log('got pouchdb changes: trigger run ' + rev);
+                        replicationState.run();
+                    }
+                });
+
+            }
         }
     });
 
