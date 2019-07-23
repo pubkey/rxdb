@@ -37,5 +37,6 @@ export function wasRevisionfromPullReplication(
     revision
 ) {
     const ending = '-' + endpointHash.substring(0, 8) + '-' + PLUGIN_IDENT;
-    return revision.endsWith(ending);
+    const ret = revision.endsWith(ending);
+    return ret;
 }

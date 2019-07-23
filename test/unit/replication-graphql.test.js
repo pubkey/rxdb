@@ -11,9 +11,6 @@ import AsyncTestUtil, {
 } from 'async-test-util';
 import RxDB from '../../dist/lib/index';
 import graphQlPlugin from '../../plugins/replication-graphql';
-import {
-    createRevisionForPulledDocument
-} from '../../dist/lib/plugins/replication-graphql/helper';
 import * as schemas from '../helper/schemas';
 
 RxDB.plugin(graphQlPlugin);
@@ -27,6 +24,11 @@ import {
     getLastPullDocument,
     setLastPullDocument
 } from '../../dist/lib/plugins/replication-graphql/crawling-checkpoint';
+
+import {
+    createRevisionForPulledDocument,
+    wasRevisionfromPullReplication
+} from '../../dist/lib/plugins/replication-graphql/helper';
 
 import {
     map,
@@ -44,6 +46,7 @@ describe('replication-graphql.test.js', () => {
     if (!config.platform.isNode()) return;
     const batchSize = 5;
     const getEndpointHash = () => util.hash(AsyncTestUtil.randomString(10));
+    const getTimestamp = () => Math.round(new Date().getTime() / 1000);
     const endpointHash = getEndpointHash(); // used when we not care about it's value
     const getTestData = (amount) => {
         return new Array(amount).fill(0)
@@ -225,6 +228,44 @@ describe('replication-graphql.test.js', () => {
             pouch.destroy();
         });
     });
+    config.parallel('helper', () => {
+        config.parallel('.createRevisionForPulledDocument()', () => {
+            it('should create a revision', () => {
+                const rev = createRevisionForPulledDocument(
+                    endpointHash,
+                    {}
+                );
+
+                assert.ok(rev.length > 10);
+            });
+        });
+        config.parallel('.wasRevisionfromPullReplication()', () => {
+            it('should be true on equal endpointHash', () => {
+                const rev = createRevisionForPulledDocument(
+                    endpointHash,
+                    {}
+                );
+                const ok = wasRevisionfromPullReplication(
+                    endpointHash,
+                    rev
+                );
+
+                assert.ok(ok);
+            });
+            it('should be false on non-equal endpointHash', () => {
+                const rev = createRevisionForPulledDocument(
+                    getEndpointHash(),
+                    {}
+                );
+                const ok = wasRevisionfromPullReplication(
+                    getEndpointHash(),
+                    rev
+                );
+
+                assert.equal(ok, false);
+            });
+        });
+    });
     config.parallel('crawling-checkpoint', () => {
         config.parallel('.setLastPushSequence()', () => {
             it('should set the last push sequence', async () => {
@@ -303,9 +344,6 @@ describe('replication-graphql.test.js', () => {
                     endpointHash
                 );
                 assert.equal(ret2, 10);
-
-
-
                 c.database.destroy();
             });
         });
@@ -500,6 +538,7 @@ describe('replication-graphql.test.js', () => {
                 pull: {
                     queryBuilder
                 },
+                live: false,
                 deletedFlag: 'deleted'
             });
 
@@ -515,6 +554,33 @@ describe('replication-graphql.test.js', () => {
             const ids = docs.map(d => d.primary);
             const notInDb = testData.find(doc => !ids.includes(doc.id));
             if (notInDb) throw new Error('not in db: ' + notInDb.id);
+
+            server.close();
+            c.database.destroy();
+        });
+        it('should pull all documents when they have the same timestamp because they are also sorted by id', async () => {
+            const amount = batchSize * 2;
+            const testData = getTestData(amount);
+            const timestamp = getTimestamp();
+            testData.forEach(d => d.updatedAt = timestamp);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn(testData)
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            const docsInDb = await c.find().exec();
+            assert.equal(docsInDb.length, amount);
 
             server.close();
             c.database.destroy();
@@ -723,6 +789,7 @@ describe('replication-graphql.test.js', () => {
             const docsOnServer = server.getDocuments();
             assert.equal(docsOnServer.length, batchSize);
 
+            server.close();
             c.database.destroy();
         });
         it('should send all documents in multiple batches', async () => {
@@ -746,6 +813,7 @@ describe('replication-graphql.test.js', () => {
             const docsOnServer = server.getDocuments();
             assert.equal(docsOnServer.length, amount);
 
+            server.close();
             c.database.destroy();
         });
         it('should send deletions', async () => {
@@ -775,11 +843,10 @@ describe('replication-graphql.test.js', () => {
             const shouldBeDeleted = docsOnServer.find(d => d.id === doc.primary);
             assert.equal(shouldBeDeleted.deleted, true);
 
+            server.close();
             c.database.destroy();
         });
         it('should trigger push on db-changes that have not resulted from the replication', async () => {
-            console.log('+++'.repeat(10));
-
             const amount = batchSize;
             const [c, server] = await Promise.all([
                 humansCollection.createHumanWithTimestamp(amount),
@@ -818,6 +885,92 @@ describe('replication-graphql.test.js', () => {
                 return !!oneShouldBeDeleted;
             });
 
+            server.close();
+            c.database.destroy();
+        });
+    });
+    config.parallel('push and pull', () => {
+        it('should push and pull all docs; live: false', async () => {
+            const amount = batchSize * 4;
+            const testData = getTestData(amount);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(amount),
+                SpawnServer.spawn(testData)
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                pull: {
+                    queryBuilder
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            const docsOnServer = server.getDocuments();
+            assert.equal(docsOnServer.length, amount * 2);
+
+            const docsOnDb = await c.find().exec();
+            assert.equal(docsOnDb.length, amount * 2);
+
+            server.close();
+            c.database.destroy();
+        });
+        it('should push and pull all docs; live: true', async () => {
+            const amount = batchSize * 4;
+            const testData = getTestData(amount);
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(amount),
+                SpawnServer.spawn(testData)
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                pull: {
+                    queryBuilder
+                },
+                live: true,
+                deletedFlag: 'deleted',
+                liveInterval: 60 * 1000
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            const docsOnServer = server.getDocuments();
+            assert.equal(docsOnServer.length, amount * 2);
+
+            const docsOnDb = await c.find().exec();
+            assert.equal(docsOnDb.length, amount * 2);
+
+
+            // insert one on local and one on server
+            const doc = schemaObjects.humanWithTimestamp();
+            doc.deleted = false;
+            await server.setDocument(doc);
+            await c.insert(schemaObjects.humanWithTimestamp());
+
+            await replicationState.run();
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsOnServer2 = server.getDocuments();
+                return docsOnServer2.length === (amount * 2) + 2;
+            });
+            await AsyncTestUtil.waitUntil(async () => {
+                const docsOnDb2 = server.getDocuments();
+                return docsOnDb2.length === (amount * 2) + 2;
+            });
+
+            server.close();
             c.database.destroy();
         });
     });

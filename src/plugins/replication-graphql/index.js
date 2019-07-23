@@ -250,8 +250,8 @@ export class RxGraphQlReplicationState {
             };
         });
 
-        console.log('changesWithDocs:');
-        console.log(JSON.stringify(changesWithDocs, null, 2));
+        // console.log('changesWithDocs:');
+        // console.log(JSON.stringify(changesWithDocs, null, 2));
 
         /**
          * TODO atm we send one request for each document,
@@ -436,10 +436,6 @@ export function syncGraphQl({
                     live: true,
                     include_docs: true
                 }).on('change', function (change) {
-
-                    console.log('aaaaaaaabbbb');
-                    console.dir(change);
-
                     if (replicationState.isStopped()) return;
 
                     const rev = change.doc._rev;
