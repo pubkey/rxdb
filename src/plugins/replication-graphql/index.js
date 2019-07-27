@@ -74,6 +74,7 @@ export class RxGraphQlReplicationState {
         this.liveInterval = liveInterval;
         this.retryTime = retryTime;
 
+        this._runQueueCount = 0;
         this._subs = [];
         this._runningPromise = Promise.resolve();
         this._subjects = {
@@ -126,6 +127,12 @@ export class RxGraphQlReplicationState {
             // console.log('RxGraphQlReplicationState.run(): exit because stopped');
             return;
         }
+
+        if (this._runQueueCount > 2) {
+            return this._runningPromise;
+        }
+
+        this._runQueueCount++;
         this._runningPromise = this._runningPromise.then(async () => {
             this._subjects.active.next(true);
             const willRetry = await this._run();
@@ -133,6 +140,8 @@ export class RxGraphQlReplicationState {
 
             if (!willRetry && this._subjects.initialReplicationComplete._value === false)
                 this._subjects.initialReplicationComplete.next(true);
+
+            this._runQueueCount--;
         });
         return this._runningPromise;
     }
