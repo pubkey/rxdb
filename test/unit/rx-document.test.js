@@ -890,5 +890,22 @@ config.parallel('rx-document.test.js', () => {
             );
             c.database.destroy();
         });
+        it('#1325 populate should return null when value is falsy', async () => {
+            const collection = await humansCollection.createRelated();
+            const doc = await collection.findOne({
+                bestFriend: { $exists: true }
+            }).exec();
+
+            await doc.update({
+                $set: {
+                    bestFriend: ''
+                }
+            });
+            const populate = await doc.populate('bestFriend');
+
+            assert.equal(populate, null);
+
+            collection.database.destroy();
+        });
     });
 });
