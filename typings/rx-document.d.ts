@@ -28,7 +28,7 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
-    populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any>;
+    populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
 
     // change data of document
     atomicUpdate(fun: AtomicUpdateFunction<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
