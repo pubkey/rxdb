@@ -92,21 +92,30 @@ export async function getChangesSinceLastPushSequence(
         include_docs: true
     });
 
-    /**
-     * filter out changes with revisions resulting from the pull-stream
-     * so that they will not be upstreamed again
-     */
     changes.results = changes.results.filter(change => {
-        return !wasRevisionfromPullReplication(
+        /**
+         * filter out changes with revisions resulting from the pull-stream
+         * so that they will not be upstreamed again
+         */
+        if (wasRevisionfromPullReplication(
             endpointHash,
             change.doc._rev
-        );
+        )) return false;
+
+        /**
+         * filter out internal docs
+         * that are used for views or indexes in pouchdb
+         */
+        if (change.id.startsWith('_design/')) return false;
+
+        return true;
     });
 
 
     changes.results.forEach(change => {
         change.doc = collection._handleFromPouch(change.doc);
     });
+
 
 
     return changes;

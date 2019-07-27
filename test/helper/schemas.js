@@ -764,7 +764,7 @@ export const humanMinimalBroken = {
 
 /**
  * used in the graphql-test
- * contains timestamps and deleted-flag
+ * contains timestamp
  */
 export const humanWithTimestamp = {
     version: 0,

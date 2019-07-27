@@ -639,42 +639,6 @@ describe('replication-graphql.test.js', () => {
             server.close();
             c.database.destroy();
         });
-        it('should not stack up run()-calls more then 2', async () => {
-            const [c, server] = await Promise.all([
-                humansCollection.createHumanWithTimestamp(0),
-                SpawnServer.spawn()
-            ]);
-
-            const replicationState = c.syncGraphQl({
-                url: ERROR_URL,
-                pull: {
-                    queryBuilder
-                },
-                deletedFlag: 'deleted',
-                live: false
-            });
-
-            // change replicationState._run to count the calls
-            const oldRun = replicationState._run.bind(replicationState);
-            let count = 0;
-            const newRun = function () {
-                count++;
-                return oldRun();
-            };
-            replicationState._run = newRun;
-
-            const amount = 50;
-            // call .run() often
-            await Promise.all(
-                new Array(amount).fill().map(() => replicationState.run())
-            );
-
-            assert.ok(count < 10);
-            assert.equal(replicationState._runQueueCount, 0);
-
-            server.close();
-            c.database.destroy();
-        });
     });
     config.parallel('live:true pull only', () => {
         it('should also get documents that come in afterwards with active .run()', async () => {
@@ -919,6 +883,45 @@ describe('replication-graphql.test.js', () => {
             server.close();
             c.database.destroy();
         });
+        it('should not send index-documents', async () => {
+            const server = await SpawnServer.spawn();
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+
+            const schema = clone(schemas.humanWithTimestamp);
+            schema.properties.name.index = true;
+            const collection = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            const replicationState = collection.syncGraphQl({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                live: false,
+                deletedFlag: 'deleted'
+            });
+
+            const emitted = [];
+            replicationState.error$.subscribe(err => {
+                emitted.push(err);
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            const docsOnServer = server.getDocuments();
+            assert.equal(docsOnServer.length, 0);
+            assert.equal(emitted.length, 0);
+
+            server.close();
+            db.destroy();
+        });
     });
     config.parallel('push and pull', () => {
         it('should push and pull all docs; live: false', async () => {
@@ -1003,6 +1006,113 @@ describe('replication-graphql.test.js', () => {
 
             server.close();
             c.database.destroy();
+        });
+        it('should not stack up run()-calls more then 2', async () => {
+            const [c, server] = await Promise.all([
+                humansCollection.createHumanWithTimestamp(0),
+                SpawnServer.spawn()
+            ]);
+
+            const replicationState = c.syncGraphQl({
+                url: ERROR_URL,
+                pull: {
+                    queryBuilder
+                },
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                deletedFlag: 'deleted',
+                live: false
+            });
+
+            // change replicationState._run to count the calls
+            const oldRun = replicationState._run.bind(replicationState);
+            let count = 0;
+            const newRun = function () {
+                count++;
+                return oldRun();
+            };
+            replicationState._run = newRun;
+
+            const amount = 50;
+            // call .run() often
+            await Promise.all(
+                new Array(amount).fill().map(() => replicationState.run())
+            );
+
+            assert.ok(count < 10);
+            assert.equal(replicationState._runQueueCount, 0);
+
+            server.close();
+            c.database.destroy();
+        });
+        it('should work with multiInstance', async () => {
+            const name = util.randomCouchString(10);
+            const server = await SpawnServer.spawn();
+
+            const db1 = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+            const db2 = await RxDB.create({
+                name,
+                adapter: 'memory',
+                ignoreDuplicate: true
+            });
+
+            const collection1 = await db1.collection({
+                name: 'humans',
+                schema: schemas.humanWithTimestamp
+            });
+            const collection2 = await db2.collection({
+                name: 'humans',
+                schema: schemas.humanWithTimestamp
+            });
+
+            collection1.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                deletedFlag: 'deleted',
+                live: true
+            });
+            collection2.syncGraphQl({
+                url: server.url,
+                pull: {
+                    queryBuilder
+                },
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                deletedFlag: 'deleted',
+                live: false
+            });
+
+
+            // insert to collection1
+            await collection1.insert(schemaObjects.humanWithTimestamp());
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await collection2.find().exec();
+                return docs.length === 1;
+            });
+
+            // insert to collection2
+            await collection2.insert(schemaObjects.humanWithTimestamp());
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await collection1.find().exec();
+                return docs.length === 2;
+            });
+
+            db1.destroy();
+            db2.destroy();
         });
     });
 
