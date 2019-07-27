@@ -371,6 +371,7 @@ export async function createMigrationCollection(
 
 
 export async function createRelated(name = util.randomCouchString(10)) {
+    RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await RxDatabase.create({
         name,
         adapter: 'memory',
