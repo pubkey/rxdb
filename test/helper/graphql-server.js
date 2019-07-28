@@ -5,9 +5,14 @@
  */
 
 import graphQlClient from 'graphql-client';
+import { PubSub } from 'graphql-subscriptions';
 import {
-    buildSchema
+    buildSchema,
+    execute,
+    subscribe
 } from 'graphql';
+import { createServer } from 'http';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
 
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
@@ -27,35 +32,50 @@ function sortByUpdatedAtAndPrimary(a, b) {
 
 export async function spawn(documents = []) {
     const app = express();
-    lastPort++;
+    const port = lastPort++;
 
     /**
      * schema in graphql
      * matches ./schemas.js#humanWithTimestamp
      */
     const schema = buildSchema(`
-    type Query {
-        info: Int
-        feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
-    }
-    type Mutation {
-        setHuman(human: HumanInput): Human
-    }
-    input HumanInput {
-        id: ID!,
-        name: String!,
-        age: Int!,
-        updatedAt: Int!,
-        deleted: Boolean!
-    }
-    type Human {
-        id: ID!,
-        name: String!,
-        age: Int!,
-        updatedAt: Int!,
-        deleted: Boolean!
-    }
+        type Query {
+            info: Int
+            feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
+        }
+        type Mutation {
+            setHuman(human: HumanInput): Human
+        }
+        input HumanInput {
+            id: ID!,
+            name: String!,
+            age: Int!,
+            updatedAt: Int!,
+            deleted: Boolean!
+        }
+        type Human {
+            id: ID!,
+            name: String!,
+            age: Int!,
+            updatedAt: Int!,
+            deleted: Boolean!
+        }
+        type Subscription {
+            humanChanged: Human
+        }
+
+        schema {
+            query: Query
+            mutation: Mutation
+            subscription: Subscription
+        }
     `);
+
+    const pubsub = new PubSub();
+    /*pubsub.subscribe('humanChanged', data => {
+        console.log('pubsub recieved!!');
+        console.dir(data);
+    });*/
 
     // The root provides a resolver function for each API endpoint
     const root = {
@@ -97,8 +117,16 @@ export async function spawn(documents = []) {
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
             documents.push(doc);
             // console.dir(documents);
+
+            pubsub.publish(
+                'humanChanged',
+                {
+                    humanChanged: doc
+                }
+            );
             return doc;
-        }
+        },
+        humanChanged: pubsub.asyncIterator('humanChanged')
     };
 
     const path = '/graphql';
@@ -108,13 +136,39 @@ export async function spawn(documents = []) {
         graphiql: true,
     }));
 
-    const ret = 'http://localhost:' + lastPort + path;
+    const ret = 'http://localhost:' + port + path;
     const client = graphQlClient({
         url: ret
     });
     return new Promise(res => {
-        const server = app.listen(lastPort, function () {
+        const server = app.listen(port, function () {
+
+            const wsPort = port + 500;
+            const ws = createServer(server);
+            ws.listen(wsPort, () => {
+                console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
+            });
+
+            // Set up the WebSocket for handling GraphQL subscriptions
+            const subServer = new SubscriptionServer(
+                {
+                    execute,
+                    subscribe,
+                    schema,
+                    context: {
+                        pubsub,
+                    },
+                    rootValue: root
+                }, {
+                    server: ws,
+                    path: '/subscriptions',
+                }
+            );
+
             res({
+                port,
+                wsPort,
+                subServer,
                 client,
                 url: ret,
                 async setDocument(doc) {
@@ -145,10 +199,12 @@ export async function spawn(documents = []) {
                 close(now = false) {
                     if (now) {
                         server.close();
+                        subServer.close();
                     } else {
                         return new Promise(res2 => {
                             setTimeout(() => {
                                 server.close();
+                                subServer.close();
                                 res2();
                             }, 1000);
                         });

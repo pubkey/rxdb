@@ -16,6 +16,11 @@ import * as schemas from '../helper/schemas';
 RxDB.plugin(graphQlPlugin);
 
 import graphQlClient from 'graphql-client';
+import {
+    SubscriptionClient
+} from 'subscriptions-transport-ws';
+import ws from 'ws';
+
 
 import {
     getLastPushSequence,
@@ -103,6 +108,43 @@ describe('replication-graphql.test.js', () => {
             const doc = getTestData(1).pop();
             const res = await server.setDocument(doc);
             assert.equal(res.data.setHuman.id, doc.id);
+            server.close();
+        });
+        it('should be able to use the ws-subscriptions', async () => {
+            const server = await SpawnServer.spawn();
+
+            const endpointUrl = 'ws://localhost:' + server.wsPort + '/subscriptions';
+            const client = new SubscriptionClient(endpointUrl, {
+                reconnect: true,
+            }, ws);
+
+            const query = `subscription onHumanChanged {
+                humanChanged {
+                    id
+                }
+            }`;
+
+            const ret = client.request({ query });
+            const emitted = [];
+            ret.subscribe({
+                next(data) {
+                    emitted.push(data);
+                },
+                error(error) {
+                    console.log('got error:');
+                    console.dir(error);
+                }
+            });
+
+            // we have to wait here until the connection is established
+            await AsyncTestUtil.wait(300);
+
+            const doc = getTestData(1).pop();
+            await server.setDocument(doc);
+
+            await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+            assert.ok(emitted[0].data.humanChanged.id);
+
             server.close();
         });
     });
