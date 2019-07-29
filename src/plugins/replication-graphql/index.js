@@ -8,9 +8,7 @@ import {
     Subject
 } from 'rxjs';
 import {
-    tap,
     first,
-    map,
     filter
 } from 'rxjs/operators';
 import graphQlClient from 'graphql-client';
@@ -22,14 +20,16 @@ import {
 
 import Core from '../../core';
 import {
-    hash
+    hash,
+    clone
 } from '../../util';
 
 
 import {
     DEFAULT_MODIFIER,
-    getDocFromPouchOrNull,
-    wasRevisionfromPullReplication
+    wasRevisionfromPullReplication,
+    createRevisionForPulledDocument,
+    getDocsWithRevisionsFromPouch
 } from './helper';
 import {
     setLastPushSequence,
@@ -39,6 +39,9 @@ import {
 } from './crawling-checkpoint';
 
 import RxDBWatchForChangesPlugin from '../watch-for-changes';
+import {
+    changeEventfromPouchChange
+} from '../../rx-change-event';
 
 /**
  * add the watch-for-changes-plugin
@@ -124,7 +127,6 @@ export class RxGraphQlReplicationState {
     // ensures this._run() does not run in parallel
     async run() {
         if (this.isStopped()) {
-            // console.log('RxGraphQlReplicationState.run(): exit because stopped');
             return;
         }
 
@@ -147,7 +149,6 @@ export class RxGraphQlReplicationState {
     }
 
     async _run() {
-
         let willRetry = false;
 
         if (this.push) {
@@ -195,13 +196,16 @@ export class RxGraphQlReplicationState {
 
         // this assumes that there will be always only one property in the response
         // is this correct?
-        // console.log('result:');
-        // console.dir(result);
         const data = result.data[Object.keys(result.data)[0]];
 
         const modified = data.map(doc => this.pull.modifier(doc));
 
-        await Promise.all(modified.map(doc => this.handleDocumentFromRemote(doc)));
+        const docIds = modified.map(doc => doc[this.collection.schema.primaryPath]);
+        const docsWithRevisions = await getDocsWithRevisionsFromPouch(
+            this.collection,
+            docIds
+        );
+        await Promise.all(modified.map(doc => this.handleDocumentFromRemote(doc, docsWithRevisions)));
         modified.map(doc => this._subjects.recieved.next(doc));
 
         if (modified.length === 0) {
@@ -226,6 +230,7 @@ export class RxGraphQlReplicationState {
     }
 
     async runPush() {
+        // console.log('RxGraphQlReplicationState.runPush(): start');
 
         const changes = await getChangesSinceLastPushSequence(
             this.collection,
@@ -250,19 +255,8 @@ export class RxGraphQlReplicationState {
             };
         });
 
-        // console.log('changesWithDocs:');
-        // console.log(JSON.stringify(changesWithDocs, null, 2));
-
-        /**
-         * TODO atm we send one request for each document,
-         * can we send all documents in one request?
-         * @link https://github.com/graphql/graphql-spec/issues/138#issuecomment-169426222
-         */
-
-
         let lastSuccessfullChange = null;
         try {
-
             /**
              * we cannot run all queries parallel
              * because then we would not know
@@ -274,8 +268,6 @@ export class RxGraphQlReplicationState {
                 const pushObj = this.push.queryBuilder(changeWithDoc.doc);
                 const result = await this.client.query(pushObj.query, pushObj.variables);
                 if (result.errors) {
-                    console.log('push error:');
-                    console.dir(result.errors);
                     throw new Error(result.errors);
                 } else {
                     this._subjects.send.next(changeWithDoc.doc);
@@ -318,7 +310,7 @@ export class RxGraphQlReplicationState {
         return true;
     }
 
-    async handleDocumentFromRemote(doc) {
+    async handleDocumentFromRemote(doc, docsWithRevisions) {
         const deletedValue = doc[this.deletedFlag];
         const toPouch = this.collection._handleToPouch(doc);
         // console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
@@ -326,41 +318,48 @@ export class RxGraphQlReplicationState {
         delete toPouch[this.deletedFlag];
         const primaryValue = toPouch._id;
 
-        // TODO use db.allDocs with option.keys
+        const pouchState = docsWithRevisions[primaryValue];
+        let newRevision = createRevisionForPulledDocument(
+            this.endpointHash,
+            toPouch
+        );
+        if (pouchState) {
+            const newRevisionHeight = pouchState.revisions.start + 1;
+            const revisionId = newRevision;
+            newRevision = newRevisionHeight + '-' + newRevision;
+            toPouch._revisions = {
+                start: newRevisionHeight,
+                ids: pouchState.revisions.ids
+            };
+            toPouch._revisions.ids.unshift(revisionId);
+        } else {
+            newRevision = '1-' + newRevision;
+        }
+        toPouch._rev = newRevision;
 
-        /*        console.log('primary value: ' + primaryValue);
-                const pouchResult = await this.collection.pouch.allDocs({
-                    include_docs: false,
-                    keys: [primaryValue]
-                });
-                console.log('pouchResult:');
-                console.log(JSON.stringify(pouchResult, null, 2));*/
-
-        const pouchState = await getDocFromPouchOrNull(
-            this.collection,
-            primaryValue
+        await this.collection.pouch.bulkDocs(
+            [
+                toPouch
+            ], {
+                new_edits: false
+            }
         );
 
-        if (pouchState) {
-            if (pouchState.attachments) toPouch.attachments = pouchState.attachments;
-            toPouch._rev = pouchState._rev;
-        }
-
-        // console.log('write toPouch:');
-        // console.dir(toPouch);
-        await this.collection.pouch.put(toPouch);
-        toPouch[this.deletedFlag] = deletedValue;
-        // console.log('toPouch DONE');
-
-        await this.collection.$.pipe(
-            tap(eV => eV.data),
-            map(eV => eV.data.doc),
-            filter(id => id === toPouch._id),
-            first()
-        ).toPromise();
-
-        //console.dir(doc);
-        // console.log('handleDocumentFromRemote(' + toPouch._id + ') done');
+        /**
+         * because bulkDocs with new_edits: false
+         * does not stream changes to the pouchdb,
+         * we create the event and emit it,
+         * so other instances get informed about it
+         */
+        const originalDoc = clone(toPouch);
+        originalDoc._deleted = deletedValue;
+        delete originalDoc[this.deletedFlag];
+        originalDoc._rev = newRevision;
+        const cE = changeEventfromPouchChange(
+            originalDoc,
+            this.collection
+        );
+        this.collection.$emit(cE);
     }
 
     cancel() {
@@ -425,7 +424,6 @@ export function syncGraphQl({
                 while (!replicationState.isStopped()) {
                     await promiseWait(replicationState.liveInterval);
                     if (replicationState.isStopped()) return;
-                    // console.log('run via interval once()');
                     await replicationState.run();
                 }
             })();
@@ -443,7 +441,6 @@ export function syncGraphQl({
                         replicationState.endpointHash,
                         rev
                     )) {
-                        // console.log('got pouchdb changes: trigger run ' + rev);
                         replicationState.run();
                     }
                 });

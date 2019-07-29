@@ -76,6 +76,9 @@ ul {
     position: relative;
 }
 
+#heroes-list {
+    width: 100%;
+}
 ul#heroes-list li {
     width: 100%;
     float: left;
@@ -101,4 +104,13 @@ ul#heroes-list li {
     color: #afaf18;
     margin-right: -10px;
     display: none;
+}
+
+
+.name {
+    float: left;
+}
+.delete-icon {
+    cursor: pointer;
+    float: right;
 }

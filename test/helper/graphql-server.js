@@ -99,14 +99,15 @@ export async function spawn(documents = []) {
 
             // limit
             const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
+
             /*
-                        console.log('sortedDocuments:');
-                        console.dir(sortedDocuments);
-                        console.log('filterForMinUpdatedAt:');
-                        console.dir(filterForMinUpdatedAtAndId);
-                        console.log('return docs:');
-                        console.dir(limited);
-            */
+            console.log('sortedDocuments:');
+            console.dir(sortedDocuments);
+            console.log('filterForMinUpdatedAt:');
+            console.dir(filterForMinUpdatedAtAndId);
+            console.log('return docs:');
+            console.dir(limited);
+*/
             return limited;
         },
         setHuman: args => {
@@ -146,70 +147,67 @@ export async function spawn(documents = []) {
             const wsPort = port + 500;
             const ws = createServer(server);
             ws.listen(wsPort, () => {
-                console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
-            });
-
-            // Set up the WebSocket for handling GraphQL subscriptions
-            const subServer = new SubscriptionServer(
-                {
-                    execute,
-                    subscribe,
-                    schema,
-                    context: {
-                        pubsub,
-                    },
-                    rootValue: root
-                }, {
-                    server: ws,
-                    path: '/subscriptions',
-                }
-            );
-
-            res({
-                port,
-                wsPort,
-                subServer,
-                client,
-                url: ret,
-                async setDocument(doc) {
-                    const result = await client.query(
-
-                        `
-                        mutation CreateHuman($human: HumanInput) {
-                            setHuman(human: $human) {
-                                id,
-                                updatedAt
-                            }
-                          }
-                        
-`,
-                        {
-                            human: doc
-                        }
-                    );
-                    // console.dir(result);
-                    return result;
-                },
-                overwriteDocuments(docs) {
-                    documents = docs.slice();
-                },
-                getDocuments() {
-                    return documents;
-                },
-                close(now = false) {
-                    if (now) {
-                        server.close();
-                        subServer.close();
-                    } else {
-                        return new Promise(res2 => {
-                            setTimeout(() => {
-                                server.close();
-                                subServer.close();
-                                res2();
-                            }, 1000);
-                        });
+                // console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
+                // Set up the WebSocket for handling GraphQL subscriptions
+                const subServer = new SubscriptionServer(
+                    {
+                        execute,
+                        subscribe,
+                        schema,
+                        context: {
+                            pubsub,
+                        },
+                        rootValue: root
+                    }, {
+                        server: ws,
+                        path: '/subscriptions',
                     }
+                );
+
+                res({
+                    port,
+                    wsPort,
+                    subServer,
+                    client,
+                    url: ret,
+                    async setDocument(doc) {
+                        const result = await client.query(
+                            `
+            mutation CreateHuman($human: HumanInput) {
+                setHuman(human: $human) {
+                    id,
+                    updatedAt
                 }
+              }
+            
+                        `, {
+                                human: doc
+                            }
+                        );
+                        // console.dir(result);
+                        return result;
+                    },
+                    overwriteDocuments(docs) {
+                        documents = docs.slice();
+                    },
+                    getDocuments() {
+                        return documents;
+                    },
+                    close(now = false) {
+                        if (now) {
+                            server.close();
+                            subServer.close();
+                        } else {
+                            return new Promise(res2 => {
+                                setTimeout(() => {
+                                    server.close();
+                                    subServer.close();
+                                    res2();
+                                }, 1000);
+                            });
+                        }
+                    }
+                });
             });
         });
     });

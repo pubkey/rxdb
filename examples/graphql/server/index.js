@@ -1,12 +1,17 @@
-import {
-    buildSchema
-} from 'graphql';
-
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const cors = require('cors');
+const { PubSub } = require('graphql-subscriptions');
+import {
+    buildSchema,
+    execute,
+    subscribe
+} from 'graphql';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { createServer } from 'http';
 
 const port = 10102;
+const wsPort = 10103;
 const path = '/graphql';
 
 function sortByUpdatedAtAndPrimary(a, b) {
@@ -47,7 +52,17 @@ export async function run() {
         updatedAt: Int!,
         deleted: Boolean!
     }
+    type Subscription {
+        humanChanged: Human
+    }
+    schema {
+        query: Query
+        mutation: Mutation
+        subscription: Subscription
+    }
     `);
+
+    const pubsub = new PubSub();
 
     // The root provides a resolver function for each API endpoint
     const root = {
@@ -79,9 +94,19 @@ export async function run() {
             documents = documents.filter(d => d.id !== doc.id);
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
             documents.push(doc);
+
+            pubsub.publish(
+                'humanChanged',
+                {
+                    humanChanged: doc
+                }
+            );
+            console.log('published humanChanged ' + doc.id);
+
             // console.dir(documents);
             return doc;
-        }
+        },
+        humanChanged: pubsub.asyncIterator('humanChanged')
     };
 
     app.use(path, graphqlHTTP({
@@ -91,7 +116,28 @@ export async function run() {
     }));
 
     const server = app.listen(port, function () {
-        console.log('Started server at http://localhost:'+ port + path);
+
+        const ws = createServer(server);
+        ws.listen(wsPort, () => {
+            console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
+        });
+        // Set up the WebSocket for handling GraphQL subscriptions
+        const subServer = new SubscriptionServer(
+            {
+                execute,
+                subscribe,
+                schema,
+                context: {
+                    pubsub,
+                },
+                rootValue: root
+            }, {
+                server: ws,
+                path: '/subscriptions',
+            }
+        );
+
+        console.log('Started server at http://localhost:' + port + path);
     });
 
 }

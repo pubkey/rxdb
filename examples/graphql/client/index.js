@@ -1,4 +1,7 @@
 import './style.css';
+import {
+    SubscriptionClient
+} from 'subscriptions-transport-ws';
 import RxDB from '../../../';
 
 RxDB.plugin(require('pouchdb-adapter-idb'));
@@ -103,7 +106,31 @@ async function run() {
             queryBuilder
         },
         live: true,
+        liveInterval: 1000 * 5, // we set this very height because we trigger sync-calls graphql-subscriptions
         deletedFlag: 'deleted'
+    });
+
+    // setup graphql-subscriptions for pull-trigger
+    const endpointUrl = 'ws://localhost:10103/subscriptions';
+    const wsClient = new SubscriptionClient(endpointUrl, {
+        reconnect: true,
+    });
+    const query = `subscription onHumanChanged {
+        humanChanged {
+            id
+        }
+    }`;
+    const ret = wsClient.request({ query });
+    ret.subscribe({
+        next(data) {
+            console.log('subscription emitted => trigger run');
+            console.dir(data);
+            replicationState.run();
+        },
+        error(error) {
+            console.log('got error:');
+            console.dir(error);
+        }
     });
 
     // show replication-errors in logs
@@ -128,12 +155,26 @@ async function run() {
                     '<li>' +
                     '<div class="color-box" style="background:' + hero.color + '"></div>' +
                     '<div class="name">' + hero.name + '</div>' +
+                    '<div class="delete-icon" onclick="window.deleteHero(\'' + hero.primary + '\')">DELETE</div>' +
                     '</li>';
             });
         });
 
 
     // set up click handlers
+    window.deleteHero = async (id) => {
+        console.log('delete doc ' + id);
+        const doc = await collection.findOne(id).exec();
+        if (doc) {
+            console.log('got doc, remove it');
+            try {
+                await doc.remove();
+            } catch (err) {
+                console.error('could not remove doc');
+                console.dir(err);
+            }
+        }
+    };
     insertButton.onclick = async function () {
         const name = document.querySelector('input[name="name"]').value;
         const color = document.querySelector('input[name="color"]').value;
