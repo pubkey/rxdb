@@ -16,9 +16,6 @@ import * as schemas from '../helper/schemas';
 RxDB.plugin(graphQlPlugin);
 
 import graphQlClient from 'graphql-client';
-import {
-    SubscriptionClient
-} from 'subscriptions-transport-ws';
 
 import {
     getLastPushSequence,
@@ -38,15 +35,14 @@ import {
     first
 } from 'rxjs/operators';
 
-let SpawnServer;
-if (config.platform.isNode()) {
-    SpawnServer = require('../helper/graphql-server');
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
-}
 describe('replication-graphql.test.js', () => {
     if (!config.platform.isNode()) return;
+    const REQUIRE_FUN = require;
+    RxDB.PouchDB.plugin(REQUIRE_FUN('pouchdb-adapter-http'));
+    const SpawnServer = REQUIRE_FUN('../helper/graphql-server');
+    const ws = REQUIRE_FUN('ws');
+    const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
     const ERROR_URL = 'http://localhost:15898/foobar';
-    const ws = require('ws');
     const batchSize = 5;
     const getEndpointHash = () => util.hash(AsyncTestUtil.randomString(10));
     const getTimestamp = () => Math.round(new Date().getTime() / 1000);
