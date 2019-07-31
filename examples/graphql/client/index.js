@@ -7,6 +7,14 @@ import RxDB from '../../../';
 RxDB.plugin(require('pouchdb-adapter-idb'));
 RxDB.plugin(require('../../../plugins/replication-graphql'));
 
+
+import {
+    GRAPHQL_PORT,
+    GRAPHQL_PATH,
+    GRAPHQL_SUBSCRIPTION_PORT,
+    GRAPHQL_SUBSCRIPTION_PATH
+} from '../shared';
+
 const insertButton = document.querySelector('#insert-button');
 const heroesList = document.querySelector('#heroes-list');
 const leaderIcon = document.querySelector('#leader-icon');
@@ -34,7 +42,7 @@ const heroSchema = {
 };
 
 console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':10102/graphql';
+const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
 
 const batchSize = 5;
 const queryBuilder = doc => {
@@ -106,15 +114,39 @@ async function run() {
             queryBuilder
         },
         live: true,
-        liveInterval: 1000 * 5, // we set this very height because we trigger sync-calls graphql-subscriptions
+        /**
+         * TODO
+         * we have to set this to a low value, because the subscription-trigger
+         * does not work sometimes. See below at the SubscriptionClient
+         */
+        liveInterval: 1000 * 5,
         deletedFlag: 'deleted'
     });
 
     // setup graphql-subscriptions for pull-trigger
-    const endpointUrl = 'ws://localhost:10103/subscriptions';
+    const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
+    /**
+     * TODO
+     * the subscriptions are randomly not triggered
+     * My investigation shows that this is because the server
+     * does not emit the websocket-messages.
+     * This should be fixed, likely on the server-side
+     */
     const wsClient = new SubscriptionClient(endpointUrl, {
         reconnect: true,
+        onConnect: () => {
+            console.log('SubscriptionClient.onConnect()');
+        },
+        connectionCallback: (error) => {
+            console.log('SubscriptionClient.connectionCallback:');
+            console.dir(error);
+        },
+        reconnectionAttempts: 10000,
+        inactivityTimeout: 0,
+        timeout: 1000 * 60
     });
+
+
     const query = `subscription onHumanChanged {
         humanChanged {
             id
@@ -139,7 +171,7 @@ async function run() {
         console.dir(err);
     });
 
-    // reactive show heroes list
+    // subscribe to heroes list and render the list on change
     collection.find()
         .sort({
             name: 1

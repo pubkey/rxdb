@@ -6,12 +6,14 @@
     "dev": "webpack-dev-server",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "node -r esm ./server/index.js",
+    "server2": "node -r esm ./server/test.js",
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "pubkey",
   "license": "ISC",
   "dependencies": {
+    "apollo-server-express": "^2.8.0",
     "concurrently": "4.1.1",
     "cors": "^2.8.5",
     "express-graphql": "0.9.0",

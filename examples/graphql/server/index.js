@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const graphqlHTTP = require('express-graphql');
 const cors = require('cors');
-const { PubSub } = require('graphql-subscriptions');
+import { PubSub } from 'graphql-subscriptions';
 import {
     buildSchema,
     execute,
@@ -10,9 +10,12 @@ import {
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { createServer } from 'http';
 
-const port = 10102;
-const wsPort = 10103;
-const path = '/graphql';
+import {
+    GRAPHQL_PORT,
+    GRAPHQL_PATH,
+    GRAPHQL_SUBSCRIPTION_PORT,
+    GRAPHQL_SUBSCRIPTION_PATH
+} from '../shared';
 
 function sortByUpdatedAtAndPrimary(a, b) {
     if (a.updatedAt > b.updatedAt) return 1;
@@ -105,41 +108,60 @@ export async function run() {
 
             // console.dir(documents);
             return doc;
-        },
-        humanChanged: pubsub.asyncIterator('humanChanged')
+        }
     };
 
-    app.use(path, graphqlHTTP({
+    app.use(GRAPHQL_PATH, graphqlHTTP({
         schema: schema,
         rootValue: root,
         graphiql: true,
     }));
 
-    const server = app.listen(port, function () {
 
-        const ws = createServer(server);
-        ws.listen(wsPort, () => {
-            console.log(`GraphQL Server is now running on http://localhost:${wsPort}`);
-        });
-        // Set up the WebSocket for handling GraphQL subscriptions
+    const server = app.listen(GRAPHQL_PORT, function () {
+        console.log('Started graphql-endpoint at http://localhost:' +
+            GRAPHQL_PORT + GRAPHQL_PATH
+        );
+    });
+
+
+    const appSubscription = express();
+    const serverSubscription = createServer(appSubscription);
+    serverSubscription.listen(GRAPHQL_SUBSCRIPTION_PORT, () => {
+        console.log(
+            'Started graphql-subscription endpoint at http://localhost:' +
+            GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH
+        );
         const subServer = new SubscriptionServer(
             {
                 execute,
                 subscribe,
                 schema,
-                context: {
-                    pubsub,
-                },
-                rootValue: root
-            }, {
-                server: ws,
-                path: '/subscriptions',
+                rootValue: {
+                    humanChanged: pubsub.asyncIterator('humanChanged')
+                }
+            },
+            {
+                server: serverSubscription,
+                path: GRAPHQL_SUBSCRIPTION_PATH,
             }
         );
-
-        console.log('Started server at http://localhost:' + port + path);
     });
 
+
+    // comment this in for testing of the subscriptions
+    /*
+    setInterval(() => {
+        pubsub.publish(
+            'humanChanged',
+            {
+                humanChanged: {
+                    id: 'foobar'
+                }
+            }
+        );
+        console.log('published humanChanged');
+    }, 1000); */
 }
 
 run();
