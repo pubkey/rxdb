@@ -80,3 +80,6 @@ jobs:
     - stage: examples
       script: (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=node
+    - stage: examples
+      script: (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      env: LABEL=graphql

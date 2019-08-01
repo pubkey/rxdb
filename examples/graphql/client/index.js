@@ -81,10 +81,27 @@ const pushQueryBuilder = doc => {
     };
 };
 
+/**
+ * In the e2e-test we get the database-name from the get-parameter
+ * In normal mode, the database name is 'heroesdb'
+ */
+
+function getDatabaseName() {
+    const url_string = window.location.href;
+    const url = new URL(url_string);
+    const dbNameFromUrl = url.searchParams.get('database');
+
+    let ret = 'heroesdb';
+    if (dbNameFromUrl) {
+        console.log('databaseName from url: ' + dbNameFromUrl);
+        ret += dbNameFromUrl;
+    }
+    return ret;
+}
 
 async function run() {
     const db = await RxDB.create({
-        name: 'heroesdb',
+        name: getDatabaseName(),
         adapter: 'idb',
         password: 'myLongAndStupidPassword'
     });
@@ -119,7 +136,7 @@ async function run() {
          * we have to set this to a low value, because the subscription-trigger
          * does not work sometimes. See below at the SubscriptionClient
          */
-        liveInterval: 1000 * 5,
+        liveInterval: 1000 * 2,
         deletedFlag: 'deleted'
     });
 
@@ -171,6 +188,17 @@ async function run() {
         console.dir(err);
     });
 
+    /**
+     * We await the inital replication
+     * so that the client never shows outdated data.
+     * You should not do this if you want to have an
+     * offline-first client, because the inital sync
+     * will not run through without a connection to the
+     * server.
+     */
+    await replicationState.awaitInitialReplication();
+    console.log('awaitInitialReplication: done');
+
     // subscribe to heroes list and render the list on change
     collection.find()
         .sort({
@@ -184,7 +212,7 @@ async function run() {
             heroesList.innerHTML = '';
             heroes.forEach(function (hero) {
                 heroesList.innerHTML = heroesList.innerHTML +
-                    '<li>' +
+                    '<li class="hero-item">' +
                     '<div class="color-box" style="background:' + hero.color + '"></div>' +
                     '<div class="name">' + hero.name + '</div>' +
                     '<div class="delete-icon" onclick="window.deleteHero(\'' + hero.primary + '\')">DELETE</div>' +

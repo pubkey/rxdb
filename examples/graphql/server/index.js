@@ -1,4 +1,5 @@
 import express from 'express';
+import * as path from 'path';
 const graphqlHTTP = require('express-graphql');
 const cors = require('cors');
 import { PubSub } from 'graphql-subscriptions';
@@ -111,6 +112,10 @@ export async function run() {
         }
     };
 
+    // server multitab.html - used in the e2e test
+    app.use('/static', express.static(path.join(__dirname, '/static')));
+
+    // server graphql-endpoint
     app.use(GRAPHQL_PATH, graphqlHTTP({
         schema: schema,
         rootValue: root,
