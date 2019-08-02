@@ -389,6 +389,9 @@ export function flattenObject(ob) {
  * @return {number}
  */
 export function getHeightOfRevision(revString) {
+    if(!revString) {
+        return 0;
+    }
     const first = revString.split('-')[0];
     return parseInt(first);
 }
