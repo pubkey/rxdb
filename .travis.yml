@@ -1,6 +1,7 @@
 language:        node_js
 sudo:            required
 dist: trusty
+cache: false
 os:
   - linux
 node_js:
