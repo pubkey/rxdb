@@ -24,6 +24,7 @@
     "local-web-server": "3.0.7",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "7.0.0",
+    "rxdb": "../../",
     "subscriptions-transport-ws": "0.9.16"
   },
   "devDependencies": {

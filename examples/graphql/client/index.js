@@ -2,10 +2,10 @@ import './style.css';
 import {
     SubscriptionClient
 } from 'subscriptions-transport-ws';
-import RxDB from '../../../';
+import RxDB from 'rxdb';
 
 RxDB.plugin(require('pouchdb-adapter-idb'));
-RxDB.plugin(require('../../../plugins/replication-graphql'));
+RxDB.plugin(require('rxdb/plugins/replication-graphql'));
 
 
 import {
