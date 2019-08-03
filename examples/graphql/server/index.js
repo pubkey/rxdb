@@ -18,6 +18,13 @@ import {
     GRAPHQL_SUBSCRIPTION_PATH
 } from '../shared';
 
+function log(msg) {
+    const prefix = '# GraphQL Server: ';
+    if (typeof msg === 'string')
+        console.log(prefix + msg);
+    else console.log(prefix + JSON.stringify(msg, null, 2));
+}
+
 function sortByUpdatedAtAndPrimary(a, b) {
     if (a.updatedAt > b.updatedAt) return 1;
     if (a.updatedAt < b.updatedAt) return -1;
@@ -72,8 +79,8 @@ export async function run() {
     const root = {
         info: () => 1,
         feedForRxDBReplication: args => {
-            console.log('## feedForRxDBReplication()');
-            console.dir(args);
+            log('## feedForRxDBReplication()');
+            log(args);
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
@@ -92,8 +99,8 @@ export async function run() {
             return limited;
         },
         setHuman: args => {
-            console.log('## setHuman()');
-            console.dir(args);
+            log('## setHuman()');
+            log(args);
             const doc = args.human;
             documents = documents.filter(d => d.id !== doc.id);
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
@@ -105,9 +112,8 @@ export async function run() {
                     humanChanged: doc
                 }
             );
-            console.log('published humanChanged ' + doc.id);
+            log('published humanChanged ' + doc.id);
 
-            // console.dir(documents);
             return doc;
         }
     };
@@ -124,7 +130,7 @@ export async function run() {
 
 
     const server = app.listen(GRAPHQL_PORT, function () {
-        console.log('Started graphql-endpoint at http://localhost:' +
+        log('Started graphql-endpoint at http://localhost:' +
             GRAPHQL_PORT + GRAPHQL_PATH
         );
     });
@@ -133,7 +139,7 @@ export async function run() {
     const appSubscription = express();
     const serverSubscription = createServer(appSubscription);
     serverSubscription.listen(GRAPHQL_SUBSCRIPTION_PORT, () => {
-        console.log(
+        log(
             'Started graphql-subscription endpoint at http://localhost:' +
             GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH
         );

@@ -22,8 +22,13 @@ async function waitUntilPageIsLoaded() {
         const ret = !content.includes('..'); // dots mean that something is loading
         if (!ret) console.log(content);
         return ret;
-    });
+    }, 0, 500);
     console.log('waitUntilPageIsLoaded(): done');
+}
+
+async function assertNoErrors(t) {
+    const { error } = await t.getBrowserConsoleMessages();
+    await t.expect(error[0]).notOk();
 }
 
 async function deleteAll(t) {
@@ -63,13 +68,15 @@ test('insert/remove a hero', async t => {
         const heroElements = Selector('#heroes-list .hero-item');
         const amount = await heroElements.count;
         return amount === 1;
-    });
+    }, 0, 500);
 
     const heroElements = Selector('#heroes-list .hero-item');
     await t.expect(heroElements.textContent).contains('Kelso', 'list-item contains name');
 
     // remove again
     await t.click('.delete-icon');
+
+    await assertNoErrors(t);
 });
 
 
@@ -112,7 +119,7 @@ test.page(
             const heroElements = Selector('#heroes-list .hero-item');
             const amount = await heroElements.count;
             return amount === 1;
-        });
+        }, 0, 500);
 
         const heroListElement = Selector('#heroes-list .hero-item:last-of-type');
         await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
@@ -126,8 +133,12 @@ test.page(
         await t.switchToIframe('#frame_0');
         await AsyncTestUtil.waitUntil(async () => {
             console.log('wait until the hero is deleted on the other frame');
+            await assertNoErrors(t);
             const heroElements = Selector('#heroes-list .hero-item');
             const amount = await heroElements.count;
             return amount === 0;
-        });
+        }, 0, 500);
+        console.log('wait until the hero is deleted on the other frame: done');
+
+        await assertNoErrors(t);
     });
