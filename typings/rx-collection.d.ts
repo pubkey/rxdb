@@ -33,8 +33,8 @@ import {
 } from './plugins/replication';
 
 import {
-    SyncOptionsGraphQl,
-    RxGraphQlReplicationState
+    SyncOptionsGraphQL,
+    RxGraphQLReplicationState
 } from './plugins/replication-graphql';
 
 
@@ -112,7 +112,7 @@ export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     // if you do custom-sync, use this
     createRxReplicationState(): RxReplicationState;
 
-    syncGraphQl(options: SyncOptionsGraphQl): RxGraphQlReplicationState;
+    syncGraphQl(options: SyncOptionsGraphQL): RxGraphQLReplicationState;
 
     /**
      * creates an in-memory replicated version of this collection
