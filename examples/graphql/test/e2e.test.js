@@ -17,6 +17,7 @@ fixture`Example page`
 async function waitUntilPageIsLoaded() {
     console.log('waitUntilPageIsLoaded()');
     await AsyncTestUtil.waitUntil(async () => {
+        console.log('...');
         const heroList = Selector('#heroes-list');
         const content = await heroList.textContent;
         return !content.includes('..'); // dots mean that something is loading
