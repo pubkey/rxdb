@@ -92,8 +92,8 @@ test.page(
         await t.switchToIframe('#frame_1');
         await waitUntilPageIsLoaded();
 
-        // wait until the hero is replicated to the other frame
         await AsyncTestUtil.waitUntil(async () => {
+            console.log('wait until the hero is replicated to the other frame');
             const heroElements = Selector('#heroes-list .hero-item');
             const amount = await heroElements.count;
             return amount === 1;
@@ -108,8 +108,8 @@ test.page(
         // check if deletion was replicated
         await t.switchToMainWindow();
         await t.switchToIframe('#frame_0');
-        // wait until the hero is deleted on the other frame
         await AsyncTestUtil.waitUntil(async () => {
+            console.log('wait until the hero is deleted on the other frame');
             const heroElements = Selector('#heroes-list .hero-item');
             const amount = await heroElements.count;
             return amount === 0;
