@@ -2,12 +2,12 @@
   "name": "rxdb-example-graphql",
   "version": "1.1.0",
   "scripts": {
-    "build": "webpack",
     "dev": "webpack-dev-server",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "node -r esm ./server/index.js",
     "server2": "node -r esm ./server/test.js",
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
+    "build": "webpack --env.ENV production",
     "test:e2e": "testcafe chromium test/ --selector-timeout 30000",
     "test": "concurrently \"npm run server\" \"npm run dev\" \"npm run test:e2e\" --kill-others --success first"
   },
