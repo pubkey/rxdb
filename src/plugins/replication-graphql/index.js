@@ -11,7 +11,7 @@ import {
     first,
     filter
 } from 'rxjs/operators';
-import graphQlClient from 'graphql-client';
+import GraphQLClient from 'graphql-client';
 
 
 import {
@@ -50,7 +50,7 @@ import {
 Core.plugin(RxDBWatchForChangesPlugin);
 
 
-export class RxGraphQlReplicationState {
+export class RxGraphQLReplicationState {
     constructor(
         collection,
         url,
@@ -63,7 +63,7 @@ export class RxGraphQlReplicationState {
         retryTime
     ) {
         this.collection = collection;
-        this.client = graphQlClient({
+        this.client = GraphQLClient({
             url,
             headers
         });
@@ -175,16 +175,16 @@ export class RxGraphQlReplicationState {
      * @return {boolean} true if no errors occured
      */
     async runPull() {
-        // console.log('RxGraphQlReplicationState.runPull(): start');
+        // console.log('RxGraphQLReplicationState.runPull(): start');
         if (this.isStopped()) return;
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
-        const query = this.pull.queryBuilder(latestDocumentData);
+        const pullGraphQL = this.pull.queryBuilder(latestDocumentData);
 
         let result;
         try {
-            result = await this.client.query(query);
+            result = await this.client.query(pullGraphQL.query, pullGraphQL.variables);
             if (result.errors) {
                 throw new Error(result.errors);
             }
@@ -212,7 +212,7 @@ export class RxGraphQlReplicationState {
             if (this.live) {
                 // console.log('no more docs, wait for ping');
             } else {
-                // console.log('RxGraphQlReplicationState._run(): no more docs and not live; complete = true');
+                // console.log('RxGraphQLReplicationState._run(): no more docs and not live; complete = true');
             }
         } else {
             const newLatestDocument = modified[modified.length - 1];
@@ -230,7 +230,7 @@ export class RxGraphQlReplicationState {
     }
 
     async runPush() {
-        // console.log('RxGraphQlReplicationState.runPush(): start');
+        // console.log('RxGraphQLReplicationState.runPush(): start');
 
         const changes = await getChangesSinceLastPushSequence(
             this.collection,
@@ -300,7 +300,7 @@ export class RxGraphQlReplicationState {
             if (this.live) {
                 // console.log('no more docs to push, wait for ping');
             } else {
-                // console.log('RxGraphQlReplicationState._runPull(): no more docs to push and not live; complete = true');
+                // console.log('RxGraphQLReplicationState._runPull(): no more docs to push and not live; complete = true');
             }
         } else {
             // we have more docs, re-run
@@ -372,7 +372,7 @@ export class RxGraphQlReplicationState {
     }
 }
 
-export function syncGraphQl({
+export function syncGraphQL({
     url,
     headers = {},
     waitForLeadership = true,
@@ -380,7 +380,7 @@ export function syncGraphQl({
     push,
     deletedFlag,
     live = false,
-    liveInterval = 1000 * 5, // in ms
+    liveInterval = 1000 * 10, // in ms
     retryTime = 1000 * 5, // in ms
     autoStart = true // if this is false, the replication does nothing at start
 }) {
@@ -398,7 +398,7 @@ export function syncGraphQl({
     // ensure the collection is listening to plain-pouchdb writes
     collection.watchForChanges();
 
-    const replicationState = new RxGraphQlReplicationState(
+    const replicationState = new RxGraphQLReplicationState(
         collection,
         url,
         headers,
@@ -455,7 +455,7 @@ export function syncGraphQl({
 export const rxdb = true;
 export const prototypes = {
     RxCollection: proto => {
-        proto.syncGraphQl = syncGraphQl;
+        proto.syncGraphQL = syncGraphQL;
     }
 };
 

@@ -1,4 +1,4 @@
-# RxDB VanillaJS example
+# RxDB GraphQL example
 
 This is an example usage of RxDB with with the graphql-replication-plugin.
 It represents a simple hero-list which is two-way-replicated with the server.

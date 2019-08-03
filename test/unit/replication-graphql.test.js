@@ -10,12 +10,12 @@ import AsyncTestUtil, {
     clone
 } from 'async-test-util';
 import RxDB from '../../dist/lib/index';
-import graphQlPlugin from '../../plugins/replication-graphql';
+import GraphQLPlugin from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 
-RxDB.plugin(graphQlPlugin);
+RxDB.plugin(GraphQLPlugin);
 
-import graphQlClient from 'graphql-client';
+import GraphQLClient from 'graphql-client';
 
 import {
     getLastPushSequence,
@@ -62,7 +62,7 @@ describe('replication-graphql.test.js', () => {
                 updatedAt: 0
             };
         }
-        return `{
+        const query = `{
             feedForRxDBReplication(lastId: "${doc.id}", minUpdatedAt: ${doc.updatedAt}, limit: ${batchSize}) {
                 id
                 name
@@ -71,6 +71,11 @@ describe('replication-graphql.test.js', () => {
                 deleted
             }
         }`;
+        const variables = {};
+        return {
+            query,
+            variables
+        };
     };
     const pushQueryBuilder = doc => {
         const query = `
@@ -677,7 +682,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn(getTestData(batchSize))
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -699,7 +704,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn(getTestData(batchSize))
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -737,7 +742,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            c.syncGraphQl({
+            c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -771,7 +776,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -796,7 +801,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn([doc])
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -819,7 +824,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: ERROR_URL,
                 pull: {
                     queryBuilder
@@ -833,7 +838,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.error$.pipe(
                 first()
             ).toPromise().then(() => {
-                const client = graphQlClient({
+                const client = GraphQLClient({
                     url: server.url
                 });
                 replicationState.client = client;
@@ -853,7 +858,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn(getTestData(1))
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -885,7 +890,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn(getTestData(1))
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -915,7 +920,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn(testData)
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -951,7 +956,7 @@ describe('replication-graphql.test.js', () => {
             assert.equal(docs.length, 0);
 
             const server = await SpawnServer.spawn();
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -977,7 +982,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(batchSize),
                 SpawnServer.spawn()
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1001,7 +1006,7 @@ describe('replication-graphql.test.js', () => {
                 humansCollection.createHumanWithTimestamp(amount),
                 SpawnServer.spawn()
             ]);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1029,7 +1034,7 @@ describe('replication-graphql.test.js', () => {
             const doc = await c.findOne().exec();
             await doc.remove();
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1055,7 +1060,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn()
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1105,7 +1110,7 @@ describe('replication-graphql.test.js', () => {
                 schema
             });
 
-            const replicationState = collection.syncGraphQl({
+            const replicationState = collection.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1139,7 +1144,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1171,7 +1176,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1227,7 +1232,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     batchSize,
@@ -1280,7 +1285,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn()
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: ERROR_URL,
                 pull: {
                     queryBuilder
@@ -1338,7 +1343,7 @@ describe('replication-graphql.test.js', () => {
                 schema: schemas.humanWithTimestamp
             });
 
-            collection1.syncGraphQl({
+            collection1.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1350,7 +1355,7 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted',
                 live: true
             });
-            collection2.syncGraphQl({
+            collection2.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1391,7 +1396,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1416,7 +1421,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn()
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 push: {
                     queryBuilder: pushQueryBuilder,
@@ -1448,7 +1453,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn()
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1470,7 +1475,7 @@ describe('replication-graphql.test.js', () => {
                 SpawnServer.spawn(testData)
             ]);
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1493,7 +1498,7 @@ describe('replication-graphql.test.js', () => {
         });
         it('should emit an error when the server is not reachable', async () => {
             const c = await humansCollection.createHumanWithTimestamp(0);
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: ERROR_URL,
                 pull: {
                     queryBuilder
@@ -1514,7 +1519,7 @@ describe('replication-graphql.test.js', () => {
             const c = await humansCollection.createHumanWithTimestamp(0);
             const server = await SpawnServer.spawn(getTestData(1));
 
-            const replicationState = c.syncGraphQl({
+            const replicationState = c.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1564,7 +1569,7 @@ describe('replication-graphql.test.js', () => {
             testData[0].name = 'Alice';
             const server = await SpawnServer.spawn(testData);
 
-            const replicationState = collection.syncGraphQl({
+            const replicationState = collection.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder
@@ -1606,7 +1611,7 @@ describe('replication-graphql.test.js', () => {
             testData[0].name = 'Alice';
             const server = await SpawnServer.spawn(testData);
 
-            const replicationState = collection.syncGraphQl({
+            const replicationState = collection.syncGraphQL({
                 url: server.url,
                 pull: {
                     queryBuilder

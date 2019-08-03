@@ -6,7 +6,7 @@ import {
     PouchSyncHandler
 } from '../pouch';
 
-export declare class RxGraphQlReplicationState {
+export declare class RxGraphQLReplicationState {
     recieved$: Observable<any>;
     send$: Observable<any>;
     error$: Observable<any>;
@@ -22,21 +22,21 @@ export declare class RxGraphQlReplicationState {
 
 }
 
-export type RxGraphQlReplicationPushQueryBuilder = (doc: any) => {
+export type RxGraphQLReplicationQueryBuilder = (doc: any) => {
     query: string;
     variables: any;
 };
 
-export type SyncOptionsGraphQl = {
+export type SyncOptionsGraphQL = {
     url: string;
     headers?: { [k: string]: string }; // send with all requests to the endpoint
     waitForLeadership?: boolean; // default=true
     pull?: {
-        queryBuilder: (doc: any) => string;
+        queryBuilder: RxGraphQLReplicationQueryBuilder;
         modifier?: (doc: any) => any;
     };
     push?: {
-        queryBuilder: RxGraphQlReplicationPushQueryBuilder;
+        queryBuilder: RxGraphQLReplicationQueryBuilder;
         modifier?: (doc: any) => any;
         batchSize?: number;
     };

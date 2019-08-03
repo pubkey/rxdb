@@ -550,9 +550,9 @@ export class RxCollection {
     }
 
     /**
-     * sync with a graphql endpoint
+     * sync with a GraphQL endpoint
      */
-    syncGraphQl() {
+    syncGraphQL() {
         throw pluginMissing('replication-graphql');
     }
 
