@@ -14,9 +14,10 @@ fixture`Example page`
 /**
  * wait until everything loaded and first query has run
  */
-async function waitUntilPageIsLoaded() {
+async function waitUntilPageIsLoaded(t) {
     console.log('waitUntilPageIsLoaded()');
     await AsyncTestUtil.waitUntil(async () => {
+        await assertNoErrors(t);
         const heroList = Selector('#heroes-list');
         const content = await heroList.textContent;
         const ret = !content.includes('..'); // dots mean that something is loading
@@ -26,9 +27,17 @@ async function waitUntilPageIsLoaded() {
     console.log('waitUntilPageIsLoaded(): done');
 }
 
+/**
+ * Checks if there where errors on the browser console.
+ * If yes, this will kill the process
+ */
 async function assertNoErrors(t) {
     const { error } = await t.getBrowserConsoleMessages();
-    await t.expect(error[0]).notOk();
+    if (error.length > 0) {
+        console.error('assertNoErrors got ' + error.length + ' errors:');
+        console.dir(error);
+        process.kill(process.pid);
+    }
 }
 
 async function deleteAll(t) {
@@ -41,7 +50,8 @@ async function deleteAll(t) {
 
 test('insert/remove a hero', async t => {
     console.log('start test insert/remove a hero');
-    await waitUntilPageIsLoaded();
+    await waitUntilPageIsLoaded(t);
+    await assertNoErrors(t);
     await deleteAll(t);
 
     // clear previous heroes
@@ -90,11 +100,11 @@ test.page(
         // clear both iframes
         console.log('clear both iframes');
         await t.switchToIframe('#frame_0');
-        await waitUntilPageIsLoaded();
+        await waitUntilPageIsLoaded(t);
         await deleteAll(t);
         await t.switchToMainWindow();
         await t.switchToIframe('#frame_1');
-        await waitUntilPageIsLoaded();
+        await waitUntilPageIsLoaded(t);
         await deleteAll(t);
 
         // insert one hero
@@ -112,7 +122,7 @@ test.page(
         console.log('check if in other iframe');
         await t.switchToMainWindow();
         await t.switchToIframe('#frame_1');
-        await waitUntilPageIsLoaded();
+        await waitUntilPageIsLoaded(t);
 
         await AsyncTestUtil.waitUntil(async () => {
             console.log('wait until the hero is replicated to the other frame');

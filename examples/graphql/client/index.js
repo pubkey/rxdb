@@ -126,6 +126,7 @@ async function run() {
 
 
     // set up replication
+    heroesList.innerHTML = 'Start replication..';
     const replicationState = collection.syncGraphQl({
         url: syncURL,
         push: {
@@ -154,6 +155,7 @@ async function run() {
      * does not emit the websocket-messages.
      * This should be fixed, likely on the server-side
      */
+    heroesList.innerHTML = 'Start subscription..';
     const wsClient = new SubscriptionClient(endpointUrl, {
         reconnect: true,
         onConnect: () => {
@@ -189,7 +191,7 @@ async function run() {
 
     // show replication-errors in logs
     replicationState.error$.subscribe(err => {
-        console.log('replication error:');
+        console.error('replication error:');
         console.dir(err);
     });
 
@@ -206,24 +208,23 @@ async function run() {
     console.log('awaitInitialReplication: done');
 
     // subscribe to heroes list and render the list on change
+    heroesList.innerHTML = 'Subscribe to query..';
     collection.find()
         .sort({
             name: 1
         })
         .$.subscribe(function (heroes) {
-            if (!heroes) {
-                heroesList.innerHTML = 'Loading..';
-                return;
-            }
-            heroesList.innerHTML = '';
+            let html = '';
             heroes.forEach(function (hero) {
-                heroesList.innerHTML = heroesList.innerHTML +
-                    '<li class="hero-item">' +
-                    '<div class="color-box" style="background:' + hero.color + '"></div>' +
-                    '<div class="name">' + hero.name + '</div>' +
-                    '<div class="delete-icon" onclick="window.deleteHero(\'' + hero.primary + '\')">DELETE</div>' +
-                    '</li>';
+                html += `
+                    <li class="hero-item">
+                        <div class="color-box" style="background:${hero.color}"></div>
+                        <div class="name">${hero.name}</div>
+                        <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
+                    </li>
+                `;
             });
+            heroesList.innerHTML = html;
         });
 
 
