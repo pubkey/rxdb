@@ -67,20 +67,20 @@ jobs:
       env: LABEL=docs
 
     - stage: examples
-      script: (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
+      script: npm run build && (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
       env: LABEL=angular
     - stage: examples
-      script: (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
+      script: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
       env: LABEL=vue
     - stage: examples
-      script: (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: npm run build && (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=electron
     - stage: examples
-      script: (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
+      script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
       env: LABEL=react-native
     - stage: examples
-      script: (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: npm run build && (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=node
     - stage: examples
-      script: (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test)
+      script: npm run build && (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test)
       env: LABEL=graphql
