@@ -52,7 +52,7 @@ const queryBuilder = doc => {
             updatedAt: 0
         };
     }
-    return `{
+    const query = `{
         feedForRxDBReplication(lastId: "${doc.id}", minUpdatedAt: ${doc.updatedAt}, limit: ${batchSize}) {
             id
             name
@@ -61,6 +61,10 @@ const queryBuilder = doc => {
             deleted
         }
     }`;
+    return {
+        query,
+        variables: {}
+    };
 };
 const pushQueryBuilder = doc => {
     const query = `

@@ -15,11 +15,13 @@ fixture`Example page`
  * wait until everything loaded and first query has run
  */
 async function waitUntilPageIsLoaded() {
+    console.log('waitUntilPageIsLoaded()');
     await AsyncTestUtil.waitUntil(async () => {
         const heroList = Selector('#heroes-list');
         const content = await heroList.textContent;
         return !content.includes('..'); // dots mean that something is loading
     });
+    console.log('waitUntilPageIsLoaded(): done');
 }
 
 async function deleteAll(t) {
@@ -31,6 +33,7 @@ async function deleteAll(t) {
 }
 
 test('insert/remove a hero', async t => {
+    console.log('start test insert/remove a hero');
     await waitUntilPageIsLoaded();
     await deleteAll(t);
 
@@ -52,7 +55,13 @@ test('insert/remove a hero', async t => {
 
     // submit
     await t.click('#insert-button');
-    await AsyncTestUtil.wait(200);
+
+    await AsyncTestUtil.waitUntil(async () => {
+        console.log('wait until the hero is emitted in the query');
+        const heroElements = Selector('#heroes-list .hero-item');
+        const amount = await heroElements.count;
+        return amount === 1;
+    });
 
     const heroElements = Selector('#heroes-list .hero-item');
     await t.expect(heroElements.textContent).contains('Kelso', 'list-item contains name');
@@ -67,8 +76,10 @@ test.page(
 )(
     'replication: insert/delete hero and check other tab',
     async t => {
+        console.log('replication: insert/delete hero and check other tab');
 
         // clear both iframes
+        console.log('clear both iframes');
         await t.switchToIframe('#frame_0');
         await waitUntilPageIsLoaded();
         await deleteAll(t);
@@ -78,6 +89,7 @@ test.page(
         await deleteAll(t);
 
         // insert one hero
+        console.log('insert one hero');
         await t.switchToMainWindow();
         await t.switchToIframe('#frame_0');
         await Selector('#insert-box button');
@@ -88,6 +100,7 @@ test.page(
 
 
         // check if in other iframe
+        console.log('check if in other iframe');
         await t.switchToMainWindow();
         await t.switchToIframe('#frame_1');
         await waitUntilPageIsLoaded();
@@ -103,6 +116,7 @@ test.page(
         await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
 
         // delete hero
+        console.log('delete hero');
         await deleteAll(t);
 
         // check if deletion was replicated
