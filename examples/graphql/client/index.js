@@ -104,13 +104,13 @@ function getDatabaseName() {
 }
 
 async function run() {
+    heroesList.innerHTML = 'Create database..';
     const db = await RxDB.create({
         name: getDatabaseName(),
         adapter: 'idb',
         password: 'myLongAndStupidPassword'
     });
     window.db = db;
-    heroesList.innerHTML = 'Create collection..';
 
     // display crown when tab is leader
     db.waitForLeadership().then(function () {
@@ -118,6 +118,7 @@ async function run() {
         leaderIcon.style.display = 'block';
     });
 
+    heroesList.innerHTML = 'Create collection..';
     const collection = await db.collection({
         name: 'hero',
         schema: heroSchema
@@ -200,6 +201,7 @@ async function run() {
      * will not run through without a connection to the
      * server.
      */
+    heroesList.innerHTML = 'Await initial replication..';
     await replicationState.awaitInitialReplication();
     console.log('awaitInitialReplication: done');
 
