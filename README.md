@@ -16,7 +16,10 @@
 </p>
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps and NodeJs. Reactive means that you can not only query the current state, but <b>subscribe</b> to all state-changes like the result of a query or even a single field of a document. This is useful for <b>UI-based</b> apps that always display the realtime state to the user. Because RxDB is based on glorious <b>PouchDB</b>, it supports the CouchDB replication-protocol which lets you <b>replicate</b> data between multiple clients and servers in an easy and convenient way.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps and NodeJs.
+  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state-changes like the result of a query or even a single field of a document.
+  This is useful for <b>UI-based</b> apps that always display the realtime state to the user.
+  RxDB can do a realtime replication with any CouchDB compliant endpoint and also with GraphQL endpoints.
 </p>
 
 
@@ -55,7 +58,7 @@
 | 💻📱  | **Multiplatform support** for browsers, nodejs, electron, cordova, react-native and every other javascript-runtime                                                                                                                      |
 | 📨 | **Reactive** data-handling based on [RxJS](https://github.com/ReactiveX/rxjs)                                                                                                                                                           |
 | 🚣 | **Offline first** let your app still work when the users has no internet                                          
-| 🔄  | **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant |
+| 🔄  | **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant. There is also a plugin for a **GraphQL replication** |
 | 📄  | **Schema-based** with the easy-to-learn standard of [json-schema](https://json-schema.org/)                                                                                                                                                                        |
 | 🍊  | **Mango-Query** exactly like you know from mongoDB and mongoose                                                                                                                                                                         |
 | 🔐  | **Encryption** of single data-fields to protect your users data                                                                                                                                                                         |
