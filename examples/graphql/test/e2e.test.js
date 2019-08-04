@@ -8,7 +8,7 @@ import {
 } from '../shared';
 
 fixture`Example page`
-    .page`http://0.0.0.0:8888/`;
+    .page`http://localhost:8888/`;
 
 
 /**
@@ -92,7 +92,7 @@ test('insert/remove a hero', async t => {
 
 
 test.page(
-    'http://0.0.0.0:' + GRAPHQL_PORT + '/static/multitab.html?frames=2'
+    'http://localhost:' + GRAPHQL_PORT + '/static/multitab.html?frames=2'
 )(
     'replication: insert/delete hero and check other tab',
     async t => {
