@@ -1,5 +1,4 @@
 language: node_js
-dist: trusty
 cache: false
 os:
   - linux
