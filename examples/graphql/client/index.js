@@ -145,9 +145,15 @@ async function run() {
         liveInterval: 1000 * 2,
         deletedFlag: 'deleted'
     });
+    // show replication-errors in logs
+    heroesList.innerHTML = 'Subscribe to errors..';
+    replicationState.error$.subscribe(err => {
+        console.error('replication error:');
+        console.dir(err);
+    });
+
 
     // setup graphql-subscriptions for pull-trigger
-    const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
     /**
      * TODO
      * the subscriptions are randomly not triggered
@@ -156,6 +162,7 @@ async function run() {
      * This should be fixed, likely on the server-side
      */
     heroesList.innerHTML = 'Start subscription..';
+    const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
     const wsClient = new SubscriptionClient(endpointUrl, {
         reconnect: true,
         onConnect: () => {
@@ -187,12 +194,6 @@ async function run() {
             console.log('got error:');
             console.dir(error);
         }
-    });
-
-    // show replication-errors in logs
-    replicationState.error$.subscribe(err => {
-        console.error('replication error:');
-        console.dir(err);
     });
 
     /**

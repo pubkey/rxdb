@@ -34,13 +34,14 @@ async function waitUntilPageIsLoaded(t) {
 async function assertNoErrors(t) {
     const { error } = await t.getBrowserConsoleMessages();
     if (error.length > 0) {
-        console.error('assertNoErrors got ' + error.length + ' errors:');
+        console.log('assertNoErrors got ' + error.length + ' errors:');
         console.dir(error);
         process.kill(process.pid);
     }
 }
 
 async function deleteAll(t) {
+    console.log('deleteAll()');
     const heroElements = Selector('#heroes-list .hero-item');
     const amount = await heroElements.count;
     for (let i = 0; i < amount; i++) {
