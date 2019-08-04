@@ -32,10 +32,12 @@ async function waitUntilPageIsLoaded(t) {
  * If yes, this will kill the process
  */
 async function assertNoErrors(t) {
-    const { error } = await t.getBrowserConsoleMessages();
-    if (error.length > 0) {
-        console.log('assertNoErrors got ' + error.length + ' errors:');
-        console.dir(error);
+    const logs = await t.getBrowserConsoleMessages();
+    console.log('logs:');
+    console.dir(logs);
+    if (logs.error.length > 0) {
+        console.log('assertNoErrors got ' + logs.error.length + ' errors:');
+        console.dir(logs.error);
         process.kill(process.pid);
     }
 }
