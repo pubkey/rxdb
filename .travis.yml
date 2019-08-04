@@ -83,5 +83,5 @@ jobs:
 #      script: npm run build && (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
 #      env: LABEL=node
     - stage: examples
-      script: npm run build && (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test)
+      script: npm run build && (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:ci)
       env: LABEL=graphql

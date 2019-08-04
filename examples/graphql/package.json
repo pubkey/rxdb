@@ -9,7 +9,9 @@
     "build": "webpack --env.ENV production",
     "build:serve": "ws -p 8888 -d dist/",
     "test:e2e": " testcafe -b && testcafe chrome test/",
-    "test": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
+    "test:e2e:travis": " testcafe -b && testcafe chrome:headless test/",
+    "test": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
+    "test:ci": "concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e:travis\" --kill-others --success first"
   },
   "author": "pubkey",
   "dependencies": {
