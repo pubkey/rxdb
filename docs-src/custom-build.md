@@ -106,7 +106,7 @@ RxDB.plugin(require('rxdb/plugins/schema-check'));
 
 ### replication
 
-Adds the [replication](./replication.md)-functionality to RxDB.
+Adds the [replication](./replication.md)-functionality to RxDB which allows you to replicate the database with a CouchDB compliant endpoint.
 
 ```javascript
 // es6-import
@@ -116,6 +116,21 @@ RxDB.plugin(RxDBReplicationModule);
 // es5-require
 RxDB.plugin(require('rxdb/plugins/replication'));
 ```
+
+### replication-graphql
+Allows you to do a replication with a GraphQL endpoint.
+
+See: [Replication with GraphQL](./replication-graphql.md)
+
+```js
+// es6-import
+import RxDBReplicationGraphQL from 'rxdb/plugins/replication-graphql';
+RxDB.plugin(RxDBReplicationGraphQL);
+
+// es5-require
+RxDB.plugin(require('rxdb/plugins/replication-graphql'));
+```
+
 
 ### attachments
 
@@ -272,6 +287,7 @@ RxDB.plugin(RxDBServerModule);
 // es5-require
 RxDB.plugin(require('rxdb/plugins/server'));
 ```
+
 
 --------------------------------------------------------------------------------
 

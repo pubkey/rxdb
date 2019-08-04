@@ -1,5 +1,5 @@
 console.log('######## init.test.js ########');
-
+require('source-map-support').install();
 import '@babel/polyfill';
 import config from './config';
 import BroadcastChannel from 'broadcast-channel';

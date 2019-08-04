@@ -33,7 +33,7 @@ if (config.platform.isNode()) {
 
 describe('replication.test.js', () => {
     if (!config.platform.isNode()) return;
-    describe('spawnServer.js', () => {
+    describe('spawn-server.js', () => {
         it('spawn and reach a server', async () => {
             const server = await SpawnServer.spawn();
             let path = server.url.split('/');

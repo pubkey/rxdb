@@ -1,18 +1,21 @@
-language:        node_js
-sudo:            required
+language: node_js
+sudo: required
 cache: false
 dist: trusty
 os:
   - linux
 node_js:
-  - "11.9.0"
+  - "12.7.0"
+
 services:
+  - xvfb
   - docker
 
+addons:
+  chrome: stable
+  firefox: latest
+
 before_install:
-  - export CHROME_BIN=chromium-browser
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
 
 stages:
@@ -67,17 +70,22 @@ jobs:
       env: LABEL=docs
 
     - stage: examples
-      script: (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
+      script: npm run build && (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
       env: LABEL=angular
     - stage: examples
-      script: (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
+      script: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
       env: LABEL=vue
     - stage: examples
-      script: (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: npm run build && (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=electron
     - stage: examples
-      script: (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
+      script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
       env: LABEL=react-native
     - stage: examples
-      script: (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      script: npm run build && (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
       env: LABEL=node
+
+# testcafe fails on the graphql example for whatever reason. Fix this when you have the time
+#    - stage: examples
+#      script: npm run build && (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:ci)
+#      env: LABEL=graphql

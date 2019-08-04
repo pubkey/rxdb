@@ -100,7 +100,9 @@
 
 * [LeaderElection](./leader-election.md)
 
-* [Replication](./replication.md)
+* [Replication CouchDB](./replication.md)
+
+* [Replication GraphQL](./replication-graphql.md)
 
 * [QueryChangeDetection](./query-change-detection.md)
 

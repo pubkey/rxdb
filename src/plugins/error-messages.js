@@ -155,7 +155,11 @@ const CODES = {
     IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
 
     // plugins/server.js
-    S1: 'You cannot create collections after calling RxDatabase.server()'
+    S1: 'You cannot create collections after calling RxDatabase.server()',
+
+    // plugins/replication-graphql.js
+    QL1: 'TODO'
+
 };
 
 export const rxdb = true;

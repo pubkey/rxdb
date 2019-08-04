@@ -3,8 +3,14 @@
  */
 
 import faker from 'faker';
+
+// TODO replace these 2 with methods of async-test-util
 import randomToken from 'random-token';
 import randomInt from 'random-int';
+
+import {
+    randomNumber
+} from 'async-test-util';
 
 export function human(passportId) {
     if (!passportId) passportId = randomToken(12);
@@ -99,6 +105,16 @@ export function refHumanNested(bestFriend) {
         foo: {
             bestFriend
         }
+    };
+}
+
+export function humanWithTimestamp() {
+    const now = new Date().getTime() / 1000;
+    return {
+        id: randomToken(12),
+        name: faker.name.firstName(),
+        age: randomNumber(1, 100),
+        updatedAt: Math.round(randomNumber(now - 60 * 60 * 24 * 7, now))
     };
 }
 
