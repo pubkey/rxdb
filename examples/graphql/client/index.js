@@ -89,7 +89,6 @@ const pushQueryBuilder = doc => {
  * In the e2e-test we get the database-name from the get-parameter
  * In normal mode, the database name is 'heroesdb'
  */
-
 function getDatabaseName() {
     const url_string = window.location.href;
     const url = new URL(url_string);
@@ -161,7 +160,7 @@ async function run() {
      * does not emit the websocket-messages.
      * This should be fixed, likely on the server-side
      */
-    heroesList.innerHTML = 'Start subscription..';
+    heroesList.innerHTML = 'Create SubscriptionClient..';
     const endpointUrl = 'ws://localhost:' + GRAPHQL_SUBSCRIPTION_PORT + GRAPHQL_SUBSCRIPTION_PATH;
     const wsClient = new SubscriptionClient(endpointUrl, {
         reconnect: true,
@@ -178,6 +177,7 @@ async function run() {
     });
 
 
+    heroesList.innerHTML = 'Subscribe to GraphQL Subscriptions..';
     const query = `subscription onHumanChanged {
         humanChanged {
             id
@@ -206,7 +206,6 @@ async function run() {
      */
     heroesList.innerHTML = 'Await initial replication..';
     await replicationState.awaitInitialReplication();
-    console.log('awaitInitialReplication: done');
 
     // subscribe to heroes list and render the list on change
     heroesList.innerHTML = 'Subscribe to query..';

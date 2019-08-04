@@ -8,8 +8,9 @@
     "server2": "node -r esm ./server/test.js",
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack --env.ENV production",
+    "build:serve": "ws -p 8888 -d dist/",
     "test:e2e": "testcafe chromium test/ --selector-timeout 30000",
-    "test": "concurrently \"npm run server\" \"npm run dev\" \"npm run test:e2e\" --kill-others --success first"
+    "test": "npm run build && concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:e2e\" --kill-others --success first"
   },
   "author": "pubkey",
   "license": "ISC",
