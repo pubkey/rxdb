@@ -384,6 +384,7 @@ export function syncGraphQL({
     retryTime = 1000 * 5, // in ms
     autoStart = true // if this is false, the replication does nothing at start
 }) {
+    console.log('syncGraphQL(): 1');
     const collection = this;
 
     // fill in defaults for pull & push
@@ -396,8 +397,10 @@ export function syncGraphQL({
 
 
     // ensure the collection is listening to plain-pouchdb writes
+    console.log('syncGraphQL(): 2');
     collection.watchForChanges();
 
+    console.log('syncGraphQL(): 3');
     const replicationState = new RxGraphQLReplicationState(
         collection,
         url,
@@ -409,6 +412,7 @@ export function syncGraphQL({
         liveInterval,
         retryTime
     );
+    console.log('syncGraphQL(): 4');
 
     if (!autoStart) return replicationState;
 
@@ -421,13 +425,16 @@ export function syncGraphQL({
 
         // start sync-interval
         if (replicationState.live) {
-            (async () => {
-                while (!replicationState.isStopped()) {
-                    await promiseWait(replicationState.liveInterval);
-                    if (replicationState.isStopped()) return;
-                    await replicationState.run();
-                }
-            })();
+
+            if (pull) {
+                (async () => {
+                    while (!replicationState.isStopped()) {
+                        await promiseWait(replicationState.liveInterval);
+                        if (replicationState.isStopped()) return;
+                        await replicationState.run();
+                    }
+                })();
+            }
 
             if (push) {
                 replicationState.changesSub = collection.pouch.changes({
