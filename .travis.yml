@@ -12,7 +12,7 @@ services:
 
 addons:
   chrome: stable
-  firefox: stable
+  firefox: latest
 
 before_install:
   - docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
