@@ -8,7 +8,7 @@
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack --env.ENV production",
     "build:serve": "ws -p 8888 -d dist/",
-    "test:e2e": "testcafe chrome test/ --no-sandbox --selector-timeout 30000",
+    "test:e2e": "testcafe chromium --no-sandbox --disable-gpu --selector-timeout 30000 test/",
     "test": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:e2e\" --kill-others --success first"
   },
   "author": "pubkey",
