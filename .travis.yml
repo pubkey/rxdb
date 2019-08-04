@@ -5,7 +5,7 @@ cache: false
 os:
   - linux
 node_js:
-  - "11.9.0"
+  - " 12.7.0"
 services:
   - docker
 
