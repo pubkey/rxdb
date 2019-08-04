@@ -384,7 +384,6 @@ export function syncGraphQL({
     retryTime = 1000 * 5, // in ms
     autoStart = true // if this is false, the replication does nothing at start
 }) {
-    console.log('syncGraphQL(): 1');
     const collection = this;
 
     // fill in defaults for pull & push
