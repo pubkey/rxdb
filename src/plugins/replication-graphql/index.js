@@ -410,10 +410,11 @@ export function syncGraphQL({
         retryTime
     );
 
+    if (!autoStart) return replicationState;
+
     // run internal so .sync() does not have to be async
     const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
     waitTillRun.then(() => {
-        if (!autoStart) return;
 
         // trigger run once
         replicationState.run();
