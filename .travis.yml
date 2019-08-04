@@ -29,59 +29,59 @@ jobs:
     - stage: install
       script: travis_retry npm install --depth 0 --silent
 
-#    - stage: build
-#      script: npm run build
-#    - stage: unit tests
-#      script: travis_retry npm run test:node
-#      env: LABEL=test:node
-#    - stage: unit tests
-#      script: travis_retry npm run test:fast
-#      env: LABEL=test:fast
-#    - stage: unit tests
-#      script: travis_retry npm run test:browser
-#      env: LABEL=test:browser
-#    - stage: unit tests
-#      script: travis_retry npm run test:couchdb
-#      env: LABEL=test:couchdb
-#    - stage: unit tests
-#      script: travis_retry npm run test:performance
-#      env: LABEL=test:performance
+    - stage: build
+      script: npm run build
+    - stage: unit tests
+      script: travis_retry npm run test:node
+      env: LABEL=test:node
+    - stage: unit tests
+      script: travis_retry npm run test:fast
+      env: LABEL=test:fast
+    - stage: unit tests
+      script: travis_retry npm run test:browser
+      env: LABEL=test:browser
+    - stage: unit tests
+      script: travis_retry npm run test:couchdb
+      env: LABEL=test:couchdb
+    - stage: unit tests
+      script: travis_retry npm run test:performance
+      env: LABEL=test:performance
 
-#    - stage: code format
-#      script: travis_retry npm run test:typings
-#      env: LABEL=test:typings
-#    - stage: code format
-#      script: npm run test:deps
-#      env: LABEL=test:deps
-#    - stage: code format
-#      script: npm run lint
-#      env: LABEL=lint
-#
-#    - stage: other
-#      script: npm run build:size
-#      env: LABEL=build:size
-#    - stage: other
-#      script: npm run build:rollup
-#      env: LABEL=build:rollup
-#    - stage: other
-#      script: (cd ./test/tutorials/ && npm install > "/dev/null" 2>&1 && travis_retry npm test)
-#      env: LABEL=docs
+    - stage: code format
+      script: travis_retry npm run test:typings
+      env: LABEL=test:typings
+    - stage: code format
+      script: npm run test:deps
+      env: LABEL=test:deps
+    - stage: code format
+      script: npm run lint
+      env: LABEL=lint
 
-#    - stage: examples
-#      script: npm run build && (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
-#      env: LABEL=angular
-#    - stage: examples
-#      script: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
-#      env: LABEL=vue
-#    - stage: examples
-#      script: npm run build && (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
-#      env: LABEL=electron
-#    - stage: examples
-#      script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
-#      env: LABEL=react-native
-#    - stage: examples
-#      script: npm run build && (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
-#      env: LABEL=node
+    - stage: other
+      script: npm run build:size
+      env: LABEL=build:size
+    - stage: other
+      script: npm run build:rollup
+      env: LABEL=build:rollup
+    - stage: other
+      script: (cd ./test/tutorials/ && npm install > "/dev/null" 2>&1 && travis_retry npm test)
+      env: LABEL=docs
+
+    - stage: examples
+      script: npm run build && (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
+      env: LABEL=angular
+    - stage: examples
+      script: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
+      env: LABEL=vue
+    - stage: examples
+      script: npm run build && (cd ./examples/electron && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      env: LABEL=electron
+    - stage: examples
+      script: npm run build && (cd ./examples/react-native && npx yarn@1.13.0 install > "/dev/null" 2>&1 && travis_retry npm run test && echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p && npm run test:bundle)
+      env: LABEL=react-native
+    - stage: examples
+      script: npm run build && (cd ./examples/node && npm install > "/dev/null" 2>&1 && travis_retry npm run test)
+      env: LABEL=node
     - stage: examples
       script: npm run build && (cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:ci)
       env: LABEL=graphql
