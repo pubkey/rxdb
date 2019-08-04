@@ -395,12 +395,9 @@ export function syncGraphQL({
         if (!push.modifier) push.modifier = DEFAULT_MODIFIER;
     }
 
-
     // ensure the collection is listening to plain-pouchdb writes
-    console.log('syncGraphQL(): 2');
     collection.watchForChanges();
 
-    console.log('syncGraphQL(): 3');
     const replicationState = new RxGraphQLReplicationState(
         collection,
         url,
@@ -412,7 +409,6 @@ export function syncGraphQL({
         liveInterval,
         retryTime
     );
-    console.log('syncGraphQL(): 4');
 
     if (!autoStart) return replicationState;
 
