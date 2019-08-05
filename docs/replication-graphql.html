@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxDocument · RxDB - Documentation</title>
+        <title>Replication GraphQL · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-document.html" />
+    <link rel="next" href="query-change-detection.html" />
     
     
-    <link rel="prev" href="rx-collection.html" />
+    <link rel="prev" href="replication.html" />
     
 
     </head>
@@ -877,7 +877,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.6" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6" data-path="rx-document.html">
             
                 <a href="rx-document.html">
             
@@ -1324,7 +1324,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.15" data-path="replication-graphql.html">
+        <li class="chapter active" data-level="1.15" data-path="replication-graphql.html">
             
                 <a href="replication-graphql.html">
             
@@ -1516,7 +1516,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxDocument</a>
+        <a href="." >Replication GraphQL</a>
     </h1>
 </div>
 
@@ -1531,147 +1531,266 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdocument">RxDocument</h1>
-<p>A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table. You get an <code>RxDocument</code> either as return on inserts, or as result-set of queries.</p>
-<h2 id="insert">insert</h2>
-<p>To insert a document into a collection, you have to call the collection&apos;s .insert()-function.</p>
-<pre><code class="lang-js">myCollection.insert({
-  name: <span class="hljs-string">&apos;foo&apos;</span>,
-  lastname: <span class="hljs-string">&apos;bar&apos;</span>
+                                <h1 id="replication-with-graphql-beta">Replication with GraphQL (beta)</h1>
+<p>With RxDB you can do a two-way replication with a GraphQL endpoint. This allows you to replicate data from the server into the client-side database and then query and modify it in <strong>realtime</strong>.</p>
+<p>When the user is offline, you still can use the data and later sync it with the server when the client is online again like in other <a href="http://offlinefirst.org/" target="_blank">Offline-First</a> systems.</p>
+<h2 id="comparison-to-couchdb-sync">Comparison to Couchdb-Sync</h2>
+<p>Pros:</p>
+<ul>
+<li>The GraphQL-replication is faster and needs less resources</li>
+<li>You do not need a couchdb-compliant endpoint, only a GraphQL-endpoint</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>You can not replicate multiple databases with each other</li>
+<li>It is assumed that the GraphQL-server is the single source of truth</li>
+<li>You have to setup things at the server side while with couchdb-sync you only have to start a server</li>
+</ul>
+<p><strong>NOTICE:</strong> To play around, check out the full example of the RxDB <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL replication with server and client</a></p>
+<h2 id="usage">Usage</h2>
+<h3 id="data-design">Data Design</h3>
+<p>To use the GraphQL-replication you first have to ensure that you data is sortable by update time and your documents never get deleted, only have a deleted-flag set.</p>
+<p>For example if your documents look like this,</p>
+<pre><code class="lang-json">{
+    <span class="hljs-string">&quot;id&quot;</span>: <span class="hljs-string">&quot;foobar&quot;</span>,
+    <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;Alice&quot;</span>,
+    <span class="hljs-string">&quot;lastName&quot;</span>: <span class="hljs-string">&quot;Wilson&quot;</span>,
+    <span class="hljs-string">&quot;updatedAt&quot;</span>: <span class="hljs-number">1564783474</span>,
+    <span class="hljs-string">&quot;deleted&quot;</span>: <span class="hljs-literal">false</span>
+}
+</code></pre>
+<p>then your data is always sortable by <code>updatedAt</code>. This ensures that when RxDB fetches &apos;new&apos; changes, it can send the latest <code>updatedAt</code> to the GraphQL-endpoint and then recieve all newer rows.</p>
+<p>Deleted rows still exist but have <code>deleted: true</code> set. This ensures that when RxDB fetches new rows, even the deleted rows are send back and can be known at the client-side.</p>
+<h3 id="graphql-server">GraphQL Server</h3>
+<p>At the server-side, there must exist an endpoint which returns newer rows when the last replicated document is used as input. For example lets say you create a Query <code>feedForRxDBReplication</code> which returns a list of newer documents, related to the given one, sorted by <code>updatedAt</code>.</p>
+<p>For the push-replication, you also need a modifier which lets RxDB update data with a changed document as input.</p>
+<pre><code>input HumanInput {
+    id: ID!,
+    name: String!,
+    lastName: String!,
+    updatedAt: Int!,
+    deleted: Boolean!
+}
+type Human {
+    id: ID!,
+    name: String!,
+    lastName: String!,
+    updatedAt: Int!,
+    deleted: Boolean!
+}
+type Query {
+    feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
+}
+type Mutation {
+    setHuman(human: HumanInput): Human
+}
+</code></pre><p>The resolver would then look like:</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> rootValue = {
+    feedForRxDBReplication: args =&gt; {
+        <span class="hljs-comment">// sorted by updatedAt first and the id as second</span>
+        <span class="hljs-keyword">const</span> sortedDocuments = documents.sort((a, b) =&gt; {
+            <span class="hljs-keyword">if</span> (a.updatedAt &gt; b.updatedAt) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+            <span class="hljs-keyword">if</span> (a.updatedAt &lt; b.updatedAt) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+            <span class="hljs-keyword">if</span> (a.updatedAt === b.updatedAt) {
+                <span class="hljs-keyword">if</span> (a.id &gt; b.id) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
+                <span class="hljs-keyword">if</span> (a.id &lt; b.id) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+            }
+        });
+
+        <span class="hljs-comment">// only return documents newer then the input document</span>
+        <span class="hljs-keyword">const</span> filterForMinUpdatedAtAndId = sortedDocuments.filter(doc =&gt; {
+            <span class="hljs-keyword">if</span> (doc.updatedAt &lt; args.minUpdatedAt) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            <span class="hljs-keyword">if</span> (doc.updatedAt &gt; args.minUpdatedAt) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+            <span class="hljs-keyword">if</span> (doc.updatedAt === args.minUpdatedAt) {
+                <span class="hljs-comment">// if updatedAt is equal, compare by id</span>
+                <span class="hljs-keyword">if</span> (doc.id &gt; args.lastId) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+                <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            }
+        });
+
+        <span class="hljs-comment">// only return some documents in one batch</span>
+        <span class="hljs-keyword">const</span> limited = filterForMinUpdatedAtAndId.slice(<span class="hljs-number">0</span>, args.limit);
+
+        <span class="hljs-keyword">return</span> limited;
+    },
+    <span class="hljs-comment">// a modifier that updates the state on the server</span>
+    setHuman: args =&gt; {
+        <span class="hljs-keyword">const</span> doc = args.human;
+        documents = documents.filter(d =&gt; d.id !== doc.id);
+        doc.updatedAt = <span class="hljs-built_in">Math</span>.round(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime() / <span class="hljs-number">1000</span>);
+        documents.push(doc);
+        <span class="hljs-keyword">return</span> doc;
+    },
+}
+</code></pre>
+<h3 id="rxdb-client">RxDB Client</h3>
+<h4 id="import-the-plugin">Import the plugin</h4>
+<p>The graphql-replication is not part of the default-build of RxDB. You have to import the plugin before you can use it.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// es6-import</span>
+<span class="hljs-keyword">import</span> RxDBReplicationGraphQL <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/replication-graphql&apos;</span>;
+RxDB.plugin(RxDBReplicationGraphQL);
+
+<span class="hljs-comment">// es5-require</span>
+RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;rxdb/plugins/replication-graphql&apos;</span>));
+</code></pre>
+<h4 id="pull-replication">Pull replication</h4>
+<p>For the pull-replication, you first need a <code>pullQueryBuilder</code>. This is a function that gets the last replicated document as input and returns an object with a GraphQL-query and its variables. RxDB will use the query builder to construct what is later send to the GraphQL endpoint.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> pullQueryBuilder = doc =&gt; {
+    <span class="hljs-keyword">if</span> (!doc) {
+        <span class="hljs-comment">// the first pull does not have a start-document</span>
+        doc = {
+            id: <span class="hljs-string">&apos;&apos;</span>,
+            updatedAt: <span class="hljs-number">0</span>
+        };
+    }
+    <span class="hljs-keyword">const</span> query = <span class="hljs-string">`{
+        feedForRxDBReplication(lastId: &quot;<span class="hljs-subst">${doc.name}</span>&quot;, minUpdatedAt: <span class="hljs-subst">${doc.updatedAt}</span>, limit: 5) {
+            id,
+            name,
+            lastName,
+            updatedAt
+            deleted
+        }
+    }`</span>;
+    <span class="hljs-keyword">return</span> {
+        query,
+        variables: {}
+    };
+};
+</code></pre>
+<p>With the queryBuilder, you can then setup the pull-replication.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = myCollection.syncGraphQL({
+    url: <span class="hljs-string">&apos;http://example.com/graphql&apos;</span>, <span class="hljs-comment">// url to the GraphQL endpoint</span>
+    pull: {
+        pullQueryBuilder, <span class="hljs-comment">// the queryBuilder from above</span>
+        modifier: doc =&gt; doc <span class="hljs-comment">// (optional) modifies all pulled documents before they are handeled by RxDB</span>
+    },
+    deletedFlag: <span class="hljs-string">&apos;deleted&apos;</span>, <span class="hljs-comment">// the flag which indicates if a pulled document is deleted</span>
+    live: <span class="hljs-literal">true</span> <span class="hljs-comment">// if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done</span>
 });
 </code></pre>
-<h2 id="find">find</h2>
-<p>To find documents in a collection, you have to call the collection&apos;s .find()-function. <a href="rx-query.html">See RxQuery</a>.</p>
-<pre><code class="lang-js">myCollection.find().exec() <span class="hljs-comment">// &lt;- find all documents</span>
-  .then(documents =&gt; <span class="hljs-built_in">console</span>.dir(documents));
+<h4 id="push-replication">Push replication</h4>
+<p>For the push-replication, you also need a <code>queryBuilder</code>. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> pushQueryBuilder = doc =&gt; {
+    <span class="hljs-keyword">const</span> query = <span class="hljs-string">`
+        mutation CreateHuman($human: HumanInput) {
+            setHuman(human: $human) {
+                id,
+                updatedAt
+            }
+        }
+    `</span>;
+    <span class="hljs-keyword">const</span> variables = {
+        human: doc
+    };
+    <span class="hljs-keyword">return</span> {
+        query,
+        variables
+    };
+};
 </code></pre>
-<h2 id="functions">Functions</h2>
-<h3 id="get">get()</h3>
-<p>This will get a single field of the document. If the field is encrypted, it will be automatically decrypted before returning.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">var</span> name = myDocument.get(<span class="hljs-string">&apos;name&apos;</span>); <span class="hljs-comment">// returns the name</span>
-</code></pre>
-<h3 id="get">get$()</h3>
-<p>This function returns an observable of the given paths-value.
-The current value of this path will be emitted each time the document changes.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get the life-updating value of &apos;name&apos;</span>
-<span class="hljs-keyword">var</span> isName;
-myDocument.get$(<span class="hljs-string">&apos;name&apos;</span>)
-  .subscribe(newName =&gt; {
-    isName = newName;
-  });
-
-<span class="hljs-keyword">await</span> myDocument.atomicSet(<span class="hljs-string">&apos;name&apos;</span>, <span class="hljs-string">&apos;foobar2&apos;</span>);
-<span class="hljs-built_in">console</span>.dir(isName); <span class="hljs-comment">// isName is now &apos;foobar2&apos;</span>
-</code></pre>
-<h3 id="proxy-get">proxy-get</h3>
-<p>All properties of a <code>RxDocument</code> are assigned as getters so you can also directly access values instead of using the get()-function.</p>
-<pre><code class="lang-js">  <span class="hljs-comment">// Identical to myDocument.get(&apos;name&apos;);</span>
-  <span class="hljs-keyword">var</span> name = myDocument.name;
-  <span class="hljs-comment">// Can also get nested values.</span>
-  <span class="hljs-keyword">var</span> nestedValue = myDocument.whatever.nestedfield;
-
-  <span class="hljs-comment">// Also useable with observables:</span>
-  myDocument.firstName$.subscribe(newName =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;name is: &apos;</span> + newName));
-  <span class="hljs-comment">// &gt; &apos;name is: Stefe&apos;</span>
-  <span class="hljs-keyword">await</span> myDocument.atomicSet(<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;Steve&apos;</span>);
-  <span class="hljs-comment">// &gt; &apos;name is: Steve&apos;</span>
-</code></pre>
-<h3 id="update">update()</h3>
-<p>Updates the document based on the <a href="https://docs.mongodb.com/manual/reference/operator/update-field/" target="_blank">mongo-update-syntax</a>, based on <a href="https://github.com/lgandecki/modifyjs#implemented" target="_blank">modifyjs</a>.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">await</span> myDocument.update({
-    $inc: {
-        age: <span class="hljs-number">1</span> <span class="hljs-comment">// increases age by 1</span>
+<p>With the queryBuilder, you can then setup the push-replication.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = myCollection.syncGraphQL({
+    url: <span class="hljs-string">&apos;http://example.com/graphql&apos;</span>, <span class="hljs-comment">// url to the GraphQL endpoint</span>
+    push: {
+        pullQueryBuilder, <span class="hljs-comment">// the queryBuilder from above</span>
+        batchSize: <span class="hljs-number">5</span>, <span class="hljs-comment">// (optional) amount of documents that will be send in one batch</span>
+        modifier: d =&gt; d <span class="hljs-comment">// (optional) modifies all pushed documents before they are send to the GraphQL endpoint</span>
     },
-    $set: {
-        fistName: <span class="hljs-string">&apos;foobar&apos;</span> <span class="hljs-comment">// sets firstName to foobar</span>
+    deletedFlag: <span class="hljs-string">&apos;deleted&apos;</span>, <span class="hljs-comment">// the flag which indicates if a pulled document is deleted</span>
+    live: <span class="hljs-literal">true</span> <span class="hljs-comment">// if this is true, rxdb will watch for ongoing changes and sync them</span>
+});
+</code></pre>
+<p>Of course you can start the push- and the pull-replication in a single call to <code>myCollection.syncGraphQL()</code>.</p>
+<h4 id="using-subscriptions">Using subscriptions</h4>
+<p>For the pull-replication, RxDB will run the pull-function every 10 seconds to fetch new documents from the server.
+This means that when a change happens on the server, RxDB will, in the worst case, take 10 seconds until the changes is replicated to the client.</p>
+<p>To improve this, it is recommended to setup <a href="https://blog.apollographql.com/tutorial-graphql-subscriptions-server-side-e51c32dc2951" target="_blank">GraphQL Subscriptions</a> which will trigger the replication cycle when a change happens on the server.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> {
+    SubscriptionClient
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;subscriptions-transport-ws&apos;</span>;
+
+<span class="hljs-comment">// start the replication</span>
+<span class="hljs-keyword">const</span> replicationState = myCollection.syncGraphQL({
+    url: <span class="hljs-string">&apos;http://example.com/graphql&apos;</span>,
+    pull: {
+        pullQueryBuilder,
+    },
+    deletedFlag: <span class="hljs-string">&apos;deleted&apos;</span>, <span class="hljs-comment">// the flag which indicates if a pulled document is deleted</span>
+    live: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">/**
+     * Because we use the subscriptions as notifiers,
+     * we can set the liveInterval to a very height value.
+     */</span>
+    liveInterval: <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
+});
+
+
+<span class="hljs-comment">// setup the subscription client</span>
+<span class="hljs-keyword">const</span> wsClient = <span class="hljs-keyword">new</span> SubscriptionClient(
+    <span class="hljs-string">&apos;ws://example.com/subscriptions&apos;</span>, {
+        reconnect: <span class="hljs-literal">true</span>,
+    }
+);
+
+<span class="hljs-keyword">const</span> query = <span class="hljs-string">`subscription onHumanChanged {
+    humanChanged {
+        id
+    }
+}`</span>;
+<span class="hljs-keyword">const</span> changeObservable = wsClient.request({ query });
+<span class="hljs-comment">// subscribe to all events</span>
+changeObservable.subscribe({
+    next(data) {
+        <span class="hljs-comment">/**
+         * When a change happens, call .run() on the replicationState.
+         * This will trigger the pull-handler and download changes from the server.
+         */</span>
+        replicationState.run();
     }
 });
 </code></pre>
-<h3 id="atomicupdate">atomicUpdate()</h3>
-<p>Updates a documents data based on a function that transforms the current data and returns the new value.</p>
-<pre><code class="lang-js">
-<span class="hljs-keyword">const</span> changeFunction = (oldData) =&gt; {
-    oldData.age = oldData.age + <span class="hljs-number">1</span>;
-    oldData.name = <span class="hljs-string">&apos;foooobarNew&apos;</span>;
-    <span class="hljs-keyword">return</span> oldData;
-}
-<span class="hljs-keyword">await</span> myDocument.atomicUpdate(changeFunction);
-<span class="hljs-built_in">console</span>.log(myDocument.name); <span class="hljs-comment">// &apos;foooobarNew&apos;</span>
+<h3 id="conflict-resolution">Conflict Resolution</h3>
+<p>RxDB assumes that the Conflict Resolution will happen on the server side.
+When the clients sends a document to the server which causes a conflict, this has to be resolved there and then the resulting document can be synced down to RxDB. While CouchDB uses revision-flags for conflicts, you can use any logic like relying on the <code>updatedAt</code> date or other flags.</p>
+<h3 id="rxgraphqlreplicationstate">RxGraphQLReplicationState</h3>
+<p>When you call <code>myCollection.syncGraphQL()</code> it returns a <code>RxGraphQLReplicationState</code> which can be used to subscribe to events, for debugging or other functions.</p>
+<h4 id="isstopped">.isStopped()</h4>
+<p>Returns true if the replication is stopped. This can be if a non-live replication is finished or a replication got canceled.</p>
+<pre><code class="lang-js">replicationState.isStopped(); <span class="hljs-comment">// true/false</span>
 </code></pre>
-<h3 id="atomicset">atomicSet()</h3>
-<p>Works like <code>atomicUpdate</code> but only sets the value for a single attribute.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">await</span> myDocument.atomicSet(<span class="hljs-string">&apos;nested.attribute&apos;</span>, <span class="hljs-string">&apos;foobar&apos;</span>);
-<span class="hljs-built_in">console</span>.log(myDocument.nested.attribute); <span class="hljs-comment">// &apos;foobar&apos;</span>
+<h4 id="awaitinitialreplication">.awaitInitialReplication()</h4>
+<p>Returns a <code>Promise</code> that is resolved as soon as the initial replication is done.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.awaitInitialReplication();
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;initial sync done, client data is equal to server data&apos;</span>);
 </code></pre>
-<h3 id="observe-">Observe $</h3>
-<p>Calling this will return an <a href="http://reactivex.io/rxjs/manual/overview.html#observable" target="_blank">rxjs-Observable</a> which emits all change-Events belonging to this document.</p>
-<pre><code class="lang-js"><span class="hljs-comment">// get all changeEvents</span>
-myDocument.$
-  .subscribe(changeEvent =&gt; <span class="hljs-built_in">console</span>.dir(changeEvent));
+<h4 id="run">.run()</h4>
+<p>Triggers a replication cycle with the server. This is done automatically if the data changes on the client side or the pull-interval is called. This returns a <code>Promise</code> which is resolved when the run-cycle is done. Calling <code>run()</code> many times is no problem because it is queued internally.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.run();
 </code></pre>
-<h3 id="remove">remove()</h3>
-<p>This removes the document from the collection. Notice that this will not purge the document from the store but set <code>_deleted:true</code> like described in the <a href="https://pouchdb.com/guides/updating-deleting.html#deleting-documents" target="_blank">pouchdb-docs</a> in option 3.</p>
-<pre><code class="lang-js">myDocument.remove();
+<h4 id="cancel">.cancel()</h4>
+<p>Cancels the replication. This is done autmatically if the <code>RxCollection</code> or it&apos;s <code>RxDatabase</code> is destroyed.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.cancel();
 </code></pre>
-<h3 id="deleted">deleted$</h3>
-<p>Emits a boolean value, depending on whether the RxDocument is deleted or not.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">let</span> lastState = <span class="hljs-literal">null</span>;
-myDocument.deleted$.subscribe(state =&gt; lastState = state);
-
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// false</span>
-
-<span class="hljs-keyword">await</span> myDocument.remove();
-
-<span class="hljs-built_in">console</span>.log(lastState);
-<span class="hljs-comment">// true</span>
+<h4 id="revieved">.revieved$</h4>
+<p>An <code>Observable</code> that emits each document that is recieved from the endpoint.</p>
+<h4 id="send">.send$</h4>
+<p>An <code>Observable</code> that emits each document that is send to the endpoint.</p>
+<h4 id="error">.error$</h4>
+<p>An <code>Observable</code> that emits each error that happens during the replication. Use this if something does not work for debugging. RxDB will handle network errors automatically, other errors must be solved by the developer.</p>
+<pre><code class="lang-js">replicationState.error$.subscribe(error =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;something was wrong&apos;</span>);
+    <span class="hljs-built_in">console</span>.dir(error);
+});
 </code></pre>
-<h3 id="get-deleted">get deleted</h3>
-<p>A getter to get the current value of <code>deleted$</code>.</p>
-<pre><code class="lang-js"><span class="hljs-built_in">console</span>.log(myDocument.deleted);
-<span class="hljs-comment">// false</span>
-
-<span class="hljs-keyword">await</span> myDocument.remove();
-
-<span class="hljs-built_in">console</span>.log(myDocument.deleted);
-<span class="hljs-comment">// true</span>
-</code></pre>
-<h3 id="tojson">toJSON()</h3>
-<p>Returns the document&apos;s data as plain json object.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> json = myDocument.toJSON();
-<span class="hljs-built_in">console</span>.dir(json);
-<span class="hljs-comment">/* { passportId: &apos;h1rg9ugdd30o&apos;,
-  firstName: &apos;Carolina&apos;,
-  lastName: &apos;Gibson&apos;,
-  age: 33 ...
-*/</span>
-</code></pre>
-<h3 id="set">set()</h3>
-<p><strong>Only temporary documents</strong></p>
-<p>To change data in your document, use this function. It takes the field-path and the new value as parameter. Note that calling the set-function will not change anything in your storage directly. You have to call .save() after to submit changes.</p>
-<pre><code class="lang-js">myDocument.set(<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;foobar&apos;</span>);
-<span class="hljs-built_in">console</span>.log(myDocument.get(<span class="hljs-string">&apos;firstName&apos;</span>)); <span class="hljs-comment">// &lt;- is &apos;foobar&apos;</span>
-</code></pre>
-<h3 id="proxy-set">proxy-set</h3>
-<p><strong>Only temporary documents</strong></p>
-<p>All properties of an <code>RxDocument</code> are assigned as setters to it so you can also directly set values instead of using the set()-function.</p>
-<pre><code class="lang-js">myDocument.firstName = <span class="hljs-string">&apos;foobar&apos;</span>;
-myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;</span>;
-</code></pre>
-<h3 id="save">save()</h3>
-<p><strong>Only temporary documents</strong></p>
-<p>This will update the document in the storage if it has been changed. Call this after modifying the document (via set() or proxy-set).</p>
-<pre><code class="lang-js">myDocument.name = <span class="hljs-string">&apos;foobar&apos;</span>;
-<span class="hljs-keyword">await</span> myDocument.save(); <span class="hljs-comment">// submit the changes to the storage</span>
-</code></pre>
-<h2 id="notice-all-methods-of-rxdocument-are-bound-to-the-instance">NOTICE: All methods of RxDocument are bound to the instance</h2>
-<p>When you get a method from a <code>RxDocument</code>, the method is automatically bound to the documents instance. This means you do not have to use things like <code>myMethod.bind(myDocument)</code> like you would do in jsx.</p>
-<h3 id="isrxdocument">isRxDocument</h3>
-<p>Returns true if the given object is an instance of RxDocument. Returns false if not.</p>
-<pre><code class="lang-js"><span class="hljs-keyword">const</span> is = RxDB.isRxDocument(myObj);
-</code></pre>
+<h4 id="canceled">.canceled$</h4>
+<p>An <code>Observable</code> that emits <code>true</code> when the replication is canceled, <code>false</code> if not.</p>
+<h4 id="active">.active$</h4>
+<p>An <code>Observable</code> that emits <code>true</code> when the replication is doing something, <code>false</code> when not.</p>
+<p><strong>NOTICE:</strong> To play around, check out the full example of the RxDB <a href="https://github.com/pubkey/rxdb/tree/master/examples/graphql" target="_blank">GraphQL replication with server and client</a></p>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="rx-query.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="query-change-detection.html">here</a></p>
 
                                 
                                 </section>
@@ -1699,12 +1818,12 @@ myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;<
 
             
                 
-                <a href="rx-collection.html#isrxcollection" class="navigation navigation-prev " aria-label="Previous page: isRxCollection()">
+                <a href="replication.html" class="navigation navigation-prev " aria-label="Previous page: Replication CouchDB">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-document.html#insert" class="navigation navigation-next " aria-label="Next page: Insert">
+                <a href="query-change-detection.html" class="navigation navigation-next " aria-label="Next page: QueryChangeDetection">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1715,7 +1834,7 @@ myDocument.whatever.nestedfield = <span class="hljs-string">&apos;foobar2&apos;<
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxDocument","level":"1.6","depth":1,"next":{"title":"Insert","level":"1.6.1","depth":2,"anchor":"#insert","path":"rx-document.md","ref":"./rx-document.md#insert","articles":[]},"previous":{"title":"isRxCollection()","level":"1.5.2.13","depth":3,"anchor":"#isrxcollection","path":"rx-collection.md","ref":"./rx-collection.md#isrxcollection","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"rx-document.md","mtime":"2019-04-05T15:35:13.875Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-08-05T20:23:49.970Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication GraphQL","level":"1.15","depth":1,"next":{"title":"QueryChangeDetection","level":"1.16","depth":1,"path":"query-change-detection.md","ref":"./query-change-detection.md","articles":[]},"previous":{"title":"Replication CouchDB","level":"1.14","depth":1,"path":"replication.md","ref":"./replication.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"replication-graphql.md","mtime":"2019-08-05T20:02:54.198Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-08-05T20:23:49.970Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

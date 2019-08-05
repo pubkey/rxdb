@@ -3,7 +3,7 @@
 ### X.X.X (comming soon)
 
 Features:
-  - Added a plugin [graphql-replication](https://github.com/pubkey/rxdb/blob/master/docs-src/replication-graphql.md)
+  - Added a plugin for [GraphQL-replication](https://rxdb.info/replication-graphql.html)
 
 Bugfixes:
   - .populate() returns findOne() on empty string. This results in a random find [#1325](https://github.com/pubkey/rxdb/issues/1325) Thanks [@PVermeer](https://github.com/PVermeer)
