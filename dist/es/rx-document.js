@@ -151,6 +151,10 @@ export var basePrototype = {
     var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
     var value = this.get(path);
 
+    if (!value) {
+      return Promise.resolve(null);
+    }
+
     if (!schemaObj) {
       throw newRxError('DOC5', {
         path: path

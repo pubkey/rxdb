@@ -508,6 +508,14 @@ function () {
     throw pluginMissing('replication');
   }
   /**
+   * sync with a GraphQL endpoint
+   */
+  ;
+
+  _proto.syncGraphQL = function syncGraphQL() {
+    throw pluginMissing('replication-graphql');
+  }
+  /**
    * Create a replicated in-memory-collection
    */
   ;

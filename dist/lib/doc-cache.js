@@ -33,3 +33,5 @@ function () {
 function createDocCache() {
   return new DocCache();
 }
+
+//# sourceMappingURL=doc-cache.js.map

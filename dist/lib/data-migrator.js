@@ -447,3 +447,5 @@ function mustMigrate(dataMigrator) {
 function createDataMigrator(newestCollection, migrationStrategies) {
   return new DataMigrator(newestCollection, migrationStrategies);
 }
+
+//# sourceMappingURL=data-migrator.js.map

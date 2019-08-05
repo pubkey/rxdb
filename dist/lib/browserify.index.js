@@ -16,3 +16,5 @@ _index["default"].plugin(require('pouchdb-adapter-idb'));
 _index["default"].plugin(require('pouchdb-adapter-http'));
 
 window['RxDB'] = _index["default"];
+
+//# sourceMappingURL=browserify.index.js.map

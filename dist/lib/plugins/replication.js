@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createRxReplicationState = createRxReplicationState;
 exports.sync = sync;
-exports["default"] = exports.hooks = exports.overwritable = exports.prototypes = exports.rxdb = exports.RxReplicationState = void 0;
+exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = exports.RxReplicationState = void 0;
 
 var _pouchdbReplication = _interopRequireDefault(require("pouchdb-replication"));
 
@@ -238,8 +238,6 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var overwritable = {};
-exports.overwritable = overwritable;
 var hooks = {
   createRxCollection: function createRxCollection(collection) {
     INTERNAL_POUCHDBS.add(collection.pouch);
@@ -249,8 +247,9 @@ exports.hooks = hooks;
 var _default = {
   rxdb: rxdb,
   prototypes: prototypes,
-  overwritable: overwritable,
   hooks: hooks,
   sync: sync
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=replication.js.map

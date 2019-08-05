@@ -141,7 +141,9 @@ var CODES = {
   IM1: 'InMemory: Memory-Adapter must be added. Use RxDB.plugin(require(\'pouchdb-adapter-memory\'));',
   IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
   // plugins/server.js
-  S1: 'You cannot create collections after calling RxDatabase.server()'
+  S1: 'You cannot create collections after calling RxDatabase.server()',
+  // plugins/replication-graphql.js
+  QL1: 'TODO'
 };
 var rxdb = true;
 exports.rxdb = rxdb;
@@ -164,3 +166,5 @@ var _default = {
   overwritable: overwritable
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=error-messages.js.map

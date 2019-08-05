@@ -328,3 +328,5 @@ var _default = {
   blobBufferUtil: blobBufferUtil
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=attachments.js.map

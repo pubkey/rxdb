@@ -63,3 +63,5 @@ var _default = {
   RxDatabase: _rxDatabase["default"]
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=core.js.map

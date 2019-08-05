@@ -589,3 +589,5 @@ function __ensureEqual(rxQuery) {
 function isInstanceOf(obj) {
   return obj instanceof RxQuery;
 }
+
+//# sourceMappingURL=rx-query.js.map

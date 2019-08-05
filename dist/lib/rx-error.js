@@ -151,3 +151,5 @@ var newRxTypeError = function newRxTypeError(code, parameters) {
 };
 
 exports.newRxTypeError = newRxTypeError;
+
+//# sourceMappingURL=rx-error.js.map

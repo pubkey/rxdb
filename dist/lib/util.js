@@ -27,7 +27,7 @@ exports.shuffleArray = shuffleArray;
 exports.adapterObject = adapterObject;
 exports.flattenObject = flattenObject;
 exports.getHeightOfRevision = getHeightOfRevision;
-exports.isElectronRenderer = exports.clone = void 0;
+exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -438,3 +438,13 @@ function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
   return parseInt(first);
 }
+/**
+ * prefix of local documents
+ * TODO check if this variable exists somewhere else
+ */
+
+
+var LOCAL_PREFIX = '_local/';
+exports.LOCAL_PREFIX = LOCAL_PREFIX;
+
+//# sourceMappingURL=util.js.map

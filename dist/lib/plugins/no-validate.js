@@ -40,3 +40,5 @@ var _default = {
   hooks: hooks
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=no-validate.js.map

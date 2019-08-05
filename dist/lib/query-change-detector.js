@@ -393,3 +393,5 @@ var _default = {
   enableDebugging: enableDebugging
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=query-change-detector.js.map

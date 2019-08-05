@@ -78,3 +78,5 @@ _pouchdbCore["default"].isInstanceOf = function (obj) {
 
 var _default = _pouchdbCore["default"];
 exports["default"] = _default;
+
+//# sourceMappingURL=pouch-db.js.map
