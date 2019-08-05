@@ -1,6 +1,8 @@
-# Replication with GraphQL (in beta)
+# Replication with GraphQL (beta)
 
-With RxDB you can do a two-way replication with a GraphQL endpoint. This allows you to replicate data into the client-side database and the use it even when the client is offline.
+With RxDB you can do a two-way replication with a GraphQL endpoint. This allows you to replicate data from the server into the client-side database and then query and modify it in **realtime**.
+
+When the user is offline, you still can use the data and later sync it with the server when the client is online again like in other [Offline-First](http://offlinefirst.org/) systems.
 
 ## Comparison to Couchdb-Sync
 
@@ -13,15 +15,15 @@ Cons:
  * It is assumed that the GraphQL-server is the single source of truth
  * You have to setup things at the server side while with couchdb-sync you only have to start a server
 
-NOTICE: There is a full example of the RxDB GraphQL replication with server and client [here](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
+**NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
 ## Usage
 
 ### Data Design
 
-To use the GraphQL-replication you first have to ensure that you data is sortable and you objects never get deleted, only have a deleted-flag set.
+To use the GraphQL-replication you first have to ensure that you data is sortable by update time and your documents never get deleted, only have a deleted-flag set.
 
-For example if you documents look like this:
+For example if your documents look like this,
 
 
 ```json
@@ -34,16 +36,16 @@ For example if you documents look like this:
 }
 ```
 
-Then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the GraphQL-endpoint and then recieve all newer rows.
+then your data is always sortable by `updatedAt`. This ensures that when RxDB fetches 'new' changes, it can send the latest `updatedAt` to the GraphQL-endpoint and then recieve all newer rows.
 
 Deleted rows still exist but have `deleted: true` set. This ensures that when RxDB fetches new rows, even the deleted rows are send back and can be known at the client-side.
 
 
 ### GraphQL Server
 
-At the server-side, there must exist an endpoint which returns newer rows. For example lets say you create a Query `feedForRxDBReplication` which returns a list of newer objects.
+At the server-side, there must exist an endpoint which returns newer rows when the last replicated document is used as input. For example lets say you create a Query `feedForRxDBReplication` which returns a list of newer documents, related to the given one, sorted by `updatedAt`.
 
-Also you have to create a modifier which lets RxDB update data when the push-sync is run.
+For the push-replication, you also need a modifier which lets RxDB update data with a changed document as input.
 
 ```
 input HumanInput {
@@ -73,7 +75,7 @@ The resolver would then look like:
 ```js
 const rootValue = {
     feedForRxDBReplication: args => {
-        // sorted by updatedAt and primary
+        // sorted by updatedAt first and the id as second
         const sortedDocuments = documents.sort((a, b) => {
             if (a.updatedAt > b.updatedAt) return 1;
             if (a.updatedAt < b.updatedAt) return -1;
@@ -84,7 +86,7 @@ const rootValue = {
             }
         });
 
-        // only return where updatedAt >= minUpdatedAt
+        // only return documents newer then the input document
         const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
             if (doc.updatedAt < args.minUpdatedAt) return false;
             if (doc.updatedAt > args.minUpdatedAt) return true;
@@ -95,9 +97,12 @@ const rootValue = {
             }
         });
 
+        // only return some documents in one batch
         const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
+
         return limited;
     },
+    // a modifier that updates the state on the server
     setHuman: args => {
         const doc = args.human;
         documents = documents.filter(d => d.id !== doc.id);
@@ -111,7 +116,7 @@ const rootValue = {
 ### RxDB Client
 
 #### Import the plugin
-The graphql-replication is not part of the default-build. You have to add the plugin before you can use it.
+The graphql-replication is not part of the default-build of RxDB. You have to import the plugin before you can use it.
 
 ```js
 // es6-import
@@ -158,16 +163,16 @@ const replicationState = myCollection.syncGraphQL({
     url: 'http://example.com/graphql', // url to the GraphQL endpoint
     pull: {
         pullQueryBuilder, // the queryBuilder from above
-        modifier: d => d // (optional) modifies all pulled documents before they are saved to the database
+        modifier: doc => doc // (optional) modifies all pulled documents before they are handeled by RxDB
     },
     deletedFlag: 'deleted', // the flag which indicates if a pulled document is deleted
-    live: true // if this is true, rxdb will watch for ongoing changes and sync them
+    live: true // if this is true, rxdb will watch for ongoing changes and sync them, when false, a one-time-replication will be done
 });
 ```
 
 #### Push replication
 
-For the push-replication, you also need a `queryBuilder`. This time, the builder recieves a changed document as input which has to be send to the server.
+For the push-replication, you also need a `queryBuilder`. Here, the builder recieves a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
 
 ```js
 const pushQueryBuilder = doc => {
@@ -204,14 +209,14 @@ const replicationState = myCollection.syncGraphQL({
 });
 ```
 
-
+Of course you can start the push- and the pull-replication in a single call to `myCollection.syncGraphQL()`.
 
 #### Using subscriptions
 
 For the pull-replication, RxDB will run the pull-function every 10 seconds to fetch new documents from the server.
 This means that when a change happens on the server, RxDB will, in the worst case, take 10 seconds until the changes is replicated to the client.
 
-To improve this, it is recommended to setup GraphQL Subscriptions which will trigger the replication run when a change happens.
+To improve this, it is recommended to setup [GraphQL Subscriptions](https://blog.apollographql.com/tutorial-graphql-subscriptions-server-side-e51c32dc2951) which will trigger the replication cycle when a change happens on the server.
 
 
 ```js
@@ -248,6 +253,7 @@ const query = `subscription onHumanChanged {
     }
 }`;
 const changeObservable = wsClient.request({ query });
+// subscribe to all events
 changeObservable.subscribe({
     next(data) {
         /**
@@ -260,20 +266,26 @@ changeObservable.subscribe({
 
 ```
 
+### Conflict Resolution
+RxDB assumes that the Conflict Resolution will happen on the server side.
+When the clients sends a document to the server which causes a conflict, this has to be resolved there and then the resulting document can be synced down to RxDB. While CouchDB uses revision-flags for conflicts, you can use any logic like relying on the `updatedAt` date or other flags.
+
+
 ### RxGraphQLReplicationState
 
-When you call `myCollection.syncGraphQL()` it returns a RxGraphQLReplicationState which can be used to subscribe to events or for debugging.
+When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions.
 
 
 
-#### isStopped
+#### .isStopped()
 
 Returns true if the replication is stopped. This can be if a non-live replication is finished or a replication got canceled.
+
 ```js
 replicationState.isStopped(); // true/false
 ```
 
-#### awaitInitialReplication
+#### .awaitInitialReplication()
 
 Returns a `Promise` that is resolved as soon as the initial replication is done.
 
@@ -282,7 +294,7 @@ await replicationState.awaitInitialReplication();
 console.log('initial sync done, client data is equal to server data');
 ```
 
-#### run
+#### .run()
 
 Triggers a replication cycle with the server. This is done automatically if the data changes on the client side or the pull-interval is called. This returns a `Promise` which is resolved when the run-cycle is done. Calling `run()` many times is no problem because it is queued internally.
 
@@ -291,23 +303,23 @@ await replicationState.run();
 ```
 
 
-#### cancel
+#### .cancel()
 
-Cancels the replication. This is done autmatically if the collection or it's database is destroyed.
+Cancels the replication. This is done autmatically if the `RxCollection` or it's `RxDatabase` is destroyed.
 
 ```js
 await replicationState.cancel();
 ```
 
-#### revieved$
+#### .revieved$
 
 An `Observable` that emits each document that is recieved from the endpoint.
 
-#### send$
+#### .send$
 
 An `Observable` that emits each document that is send to the endpoint.
 
-#### error$
+#### .error$
 
 An `Observable` that emits each error that happens during the replication. Use this if something does not work for debugging. RxDB will handle network errors automatically, other errors must be solved by the developer.
 
@@ -318,17 +330,18 @@ replicationState.error$.subscribe(error => {
 });
 ```
 
-#### canceled$
+#### .canceled$
 
 An `Observable` that emits `true` when the replication is canceled, `false` if not.
 
-#### active$
+#### .active$
 
 An `Observable` that emits `true` when the replication is doing something, `false` when not.
 
 
 
-NOTICE: There is a full example of the RxDB GraphQL replication with server and client [here](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
+
+**NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
 
 --------------------------------------------------------------------------------
