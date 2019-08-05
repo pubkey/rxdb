@@ -142,8 +142,7 @@ async function run() {
          * does not work sometimes. See below at the SubscriptionClient
          */
         liveInterval: 1000 * 2,
-        deletedFlag: 'deleted',
-        autoStart: false
+        deletedFlag: 'deleted'
     });
     // show replication-errors in logs
     heroesList.innerHTML = 'Subscribe to errors..';
