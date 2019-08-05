@@ -259,4 +259,7 @@ async function run() {
         document.querySelector('input[name="color"]').value = '';
     };
 }
-run();
+run().catch(err => {
+  console.log('run() threw an error:');
+  console.dir(err);
+});
