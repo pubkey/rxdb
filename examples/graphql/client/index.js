@@ -261,5 +261,5 @@ async function run() {
 }
 run().catch(err => {
   console.log('run() threw an error:');
-  console.dir(err);
+  console.error(err);
 });
