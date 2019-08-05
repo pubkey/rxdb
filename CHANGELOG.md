@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 8.3.0 (5 August 2019)
 
 Features:
   - Added a plugin for [GraphQL-replication](https://rxdb.info/replication-graphql.html)
