@@ -384,19 +384,23 @@ export function syncGraphQL({
     retryTime = 1000 * 5, // in ms
     autoStart = true // if this is false, the replication does nothing at start
 }) {
+    console.log('syncGraphQL() 1');
     const collection = this;
 
     // fill in defaults for pull & push
+    console.log('syncGraphQL() 2');
     if (pull) {
         if (!pull.modifier) pull.modifier = DEFAULT_MODIFIER;
     }
     if (push) {
         if (!push.modifier) push.modifier = DEFAULT_MODIFIER;
     }
+    console.log('syncGraphQL() 3');
 
     // ensure the collection is listening to plain-pouchdb writes
     collection.watchForChanges();
 
+    console.log('syncGraphQL() 4');
     const replicationState = new RxGraphQLReplicationState(
         collection,
         url,
@@ -408,10 +412,12 @@ export function syncGraphQL({
         liveInterval,
         retryTime
     );
+    console.log('syncGraphQL() 5');
 
     if (!autoStart) return replicationState;
 
     // run internal so .sync() does not have to be async
+    console.log('syncGraphQL() 6');
     const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
     waitTillRun.then(() => {
 
