@@ -126,7 +126,7 @@ async function run() {
 
     // set up replication
     heroesList.innerHTML = 'Start replication..';
-    const replicationState = collection.syncGraphQl({
+    const replicationState = collection.syncGraphQL({
         url: syncURL,
         push: {
             batchSize,
