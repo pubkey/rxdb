@@ -114,7 +114,7 @@
     "assert": "2.0.0",
     "async-test-util": "1.7.3",
     "brfs": "2.0.2",
-    "browserify": "16.3.0",
+    "browserify": "16.4.0",
     "child-process-promise": "2.2.1",
     "concurrently": "4.1.1",
     "convert-hrtime": "3.0.0",
