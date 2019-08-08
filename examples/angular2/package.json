@@ -54,7 +54,7 @@
     "zone.js": "0.10.1"
   },
   "devDependencies": {
-    "@types/chai": "4.1.7",
+    "@types/chai": "4.2.0",
     "@types/core-js": "2.5.2",
     "@types/hammerjs": "2.0.36",
     "@types/node": "10.14.15",
