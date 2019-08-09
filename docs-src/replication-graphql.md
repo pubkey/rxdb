@@ -311,7 +311,7 @@ Cancels the replication. This is done autmatically if the `RxCollection` or it's
 await replicationState.cancel();
 ```
 
-#### .revieved$
+#### .recieved$
 
 An `Observable` that emits each document that is recieved from the endpoint.
 
