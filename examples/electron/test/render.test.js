@@ -44,12 +44,18 @@ module.exports = (function() {
             });
             assert.ok(doc);
 
+            const data = 'foo bar asldfkjalkdsfj';
+
             const attachment = await doc.putAttachment({
                 id: 'cat.jpg',
-                data: 'foo bar asldfkjalkdsfj',
+                data,
                 type: 'text/plain'
             });
             assert.ok(attachment);
+
+            // issue #1371 Attachments not working in electron renderer with idb
+            const readData = await attachment.getStringData();
+            assert.equal(readData, data);
 
             await db.destroy();
         }());
