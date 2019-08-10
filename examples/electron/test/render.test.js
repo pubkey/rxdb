@@ -52,7 +52,7 @@ module.exports = (function() {
             assert.ok(attachment);
 
             await db.destroy();
-        })();
+        }());
     };
     return runTests;
-})();
+}());
