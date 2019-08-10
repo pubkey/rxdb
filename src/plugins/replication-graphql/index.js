@@ -39,9 +39,13 @@ import {
 } from './crawling-checkpoint';
 
 import RxDBWatchForChangesPlugin from '../watch-for-changes';
+import RxDBLeaderElectionPlugin from '../leader-election';
 import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
+
+
+Core.plugin(RxDBLeaderElectionPlugin);
 
 /**
  * add the watch-for-changes-plugin

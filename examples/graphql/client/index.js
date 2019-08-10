@@ -2,11 +2,22 @@ import './style.css';
 import {
     SubscriptionClient
 } from 'subscriptions-transport-ws';
-import RxDB from 'rxdb';
+
+
+import RxDB from 'rxdb/plugins/core';
 
 RxDB.plugin(require('pouchdb-adapter-idb'));
-RxDB.plugin(require('rxdb/plugins/replication-graphql'));
+import RxDBReplicationGraphQL from 'rxdb/plugins/replication-graphql';
+RxDB.plugin(RxDBReplicationGraphQL);
 
+
+// TODO import these only in non-production build
+import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
+RxDB.plugin(RxDBSchemaCheckModule);
+import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
+RxDB.plugin(RxDBErrorMessagesModule);
+import RxDBValidateModule from 'rxdb/plugins/validate';
+RxDB.plugin(RxDBValidateModule);
 
 import {
     GRAPHQL_PORT,
@@ -106,8 +117,7 @@ async function run() {
     heroesList.innerHTML = 'Create database..';
     const db = await RxDB.create({
         name: getDatabaseName(),
-        adapter: 'idb',
-        password: 'myLongAndStupidPassword'
+        adapter: 'idb'
     });
     window.db = db;
 
