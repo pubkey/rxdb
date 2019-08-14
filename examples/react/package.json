@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "react-scripts": "3.1.1",
-    "rimraf": "2.7.0"
+    "rimraf": "2.7.1"
   },
   "scripts": {
     "preinstall": "echo \"PREINSTALL\" && npm install --production --prefix ../../",
