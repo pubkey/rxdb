@@ -39,7 +39,7 @@
     "ncp": "2.0.0",
     "rimraf": "2.7.1",
     "style-loader": "1.0.0",
-    "testcafe": "1.4.0",
+    "testcafe": "1.4.1",
     "testcafe-hammerhead": "14.7.4",
     "webpack": "4.39.1",
     "webpack-cli": "3.3.6",
