@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "dependencies": {
     "babel-polyfill": "6.26.0",
-    "concurrently": "4.1.1",
+    "concurrently": "4.1.2",
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
     "pouchdb-replication": "7.0.0",
