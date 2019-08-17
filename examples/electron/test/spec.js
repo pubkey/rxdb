@@ -39,23 +39,22 @@ describe('Application launch', function() {
     });
 
     it('shows an initial window', async () => {
-        console.log('111');
         await app.client.waitUntilWindowLoaded();
         const count = await app.client.getWindowCount();
         assert.equal(count, 2);
         // Please note that getWindowCount() will return 2 if `dev tools` are opened.
         // assert.equal(count, 2)
-        console.log('222');
-        await AsyncTestUtil.wait(100);
+        await AsyncTestUtil.wait(500);
     });
 
     it('insert one hero', async () => {
-        console.log('333');
+        console.log('test: insert one hero');
+        console.dir(await app.client.getRenderProcessLogs());
+        await app.client.waitUntilWindowLoaded();
         await app.client.element('#input-name').setValue('Bob Kelso');
         await app.client.element('#input-color').setValue('blue');
         await app.client.element('#input-submit').click();
 
-        console.log('444');
         await AsyncTestUtil.waitUntil(async () => {
             const foundElement = await app.client.element('.name[name="Bob Kelso"]');
             return foundElement.value;

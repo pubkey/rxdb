@@ -40,7 +40,7 @@ async function run() {
         .sort({
             name: 1
         })
-        .$.subscribe(function(heroes) {
+        .$.subscribe(function (heroes) {
             if (!heroes) {
                 heroesList.innerHTML = 'Loading..';
                 return;
@@ -58,7 +58,7 @@ async function run() {
                 .reduce((pre, cur) => pre += cur, '');
         });
 
-    window.addHero = async function() {
+    window.addHero = async function () {
         const name = document.querySelector('input[name="name"]').value;
         const color = document.querySelector('input[name="color"]').value;
         const obj = {
