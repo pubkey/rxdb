@@ -12,7 +12,7 @@ import assert from 'assert';
 
 import * as humansCollection from './../helper/humans-collection';
 
-describe.only('bug-report.test.js', () => {
+describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
         const sourceCol = await humansCollection.createAttachments(1);
         const doc = await sourceCol.findOne().exec();
