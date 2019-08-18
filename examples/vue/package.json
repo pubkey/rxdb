@@ -34,7 +34,7 @@
     "@vue/cli-plugin-typescript": "3.10.0",
     "@vue/cli-service": "3.10.0",
     "concurrently": "4.1.2",
-    "less": "3.10.0",
+    "less": "3.10.1",
     "less-loader": "5.0.0",
     "local-web-server": "3.0.7",
     "testcafe": "1.4.1",
