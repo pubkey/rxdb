@@ -13,7 +13,7 @@ import assert from 'assert';
 import * as humansCollection from './../helper/humans-collection';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('should import dump of db with attachments', async () => {
         const sourceCol = await humansCollection.createAttachments(1);
         const doc = await sourceCol.findOne().exec();
         await doc.putAttachment({
