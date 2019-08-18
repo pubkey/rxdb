@@ -9,100 +9,41 @@
  * - 'npm run test:browsers' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../../dist/lib/index';
-import * as util from '../../dist/lib/util';
+import * as humansCollection from './../helper/humans-collection';
 
-describe('bug-report.test.js', () => {
+describe.only('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
-        // create a schema
-        const mySchema = {
-            version: 0,
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    primary: true
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
-        };
-
-        // generate a random database-name
-        const name = util.randomCouchString(10);
-
-        // create a database
-        const db = await RxDB.create({
-            name,
-            adapter: 'memory',
-            queryChangeDetection: true,
-            ignoreDuplicate: true
+        const sourceCol = await humansCollection.createAttachments(1);
+        const doc = await sourceCol.findOne().exec();
+        await doc.putAttachment({
+            id: 'cat.txt',
+            data: 'meow',
+            type: 'text/plain'
         });
-        // create a collection
-        const collection = await db.collection({
-            name: 'mycollection',
-            schema: mySchema
-        });
+        const json = await sourceCol.dump();
 
-        // insert a document
-        await collection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        const destCol = await humansCollection.createAttachments(0);
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await RxDB.create({
-            name,
-            adapter: 'memory',
-            queryChangeDetection: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.collection({
-            name: 'mycollection',
-            schema: mySchema
-        });
+        const noDocs = await destCol.find().exec();
+        assert.equal(noDocs.length, 0);
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // this line triggers an error
+        await destCol.importDump(json);
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.equal(myDocument.age, 56);
+        const docs = await destCol.find().exec();
+        assert.equal(docs.length, 1);
 
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        const importedDoc = destCol.findOne().exec();
+        const attachment = importedDoc.getAttachment('cat.txt');
+        assert.ok(attachment);
+        assert.equal(attachment.id, 'cat.txt');
+        assert.equal(attachment.type, 'text/plain');
 
+        const data = await attachment.getStringData();
+        assert.equal(data, 'meow');
 
-        // clean up afterwards
-        sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        sourceCol.database.destroy();
+        destCol.database.destroy();
     });
 });
