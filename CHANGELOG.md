@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Attachments not working in electron renderer with IndexedDb adapter [#1371](https://github.com/pubkey/rxdb/issues/1371) Thanks [@rixo](https://github.com/rixo)
+  - json export/import not working when a document has attachments [#1396](https://github.com/pubkey/rxdb/pull/1396) Thanks [@rixo](https://github.com/rixo)
 
 ### 8.3.0 (5 August 2019)
 
