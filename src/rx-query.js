@@ -11,8 +11,8 @@ import {
     tap
 } from 'rxjs/operators';
 import {
-    filterInMemoryFields,
-    massageSelector
+    massageSelector,
+    rowFilter
 } from 'pouchdb-selector-core';
 
 
@@ -323,17 +323,13 @@ export class RxQuery {
 
         docData = this.collection.schema.swapPrimaryToId(docData);
         const inMemoryFields = Object.keys(selector);
-        const retDocs = filterInMemoryFields(
-            [{
-                doc: docData
-            }], {
-                selector: this.massageSelector
-            },
+
+        const matches = rowFilter(
+            docData,
+            this.massageSelector,
             inMemoryFields
         );
-
-        const ret = retDocs.length === 1;
-        return ret;
+        return matches;
     }
 
     /**
