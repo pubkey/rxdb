@@ -2,9 +2,15 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added `RxQuery.doesDocumentDataMatch()` [read the docs](https://rxdb.info/rx-query.html#doesdocumentdatamatch)
+
 Bugfixes:
   - Attachments not working in electron renderer with IndexedDb adapter [#1371](https://github.com/pubkey/rxdb/issues/1371) Thanks [@rixo](https://github.com/rixo)
   - json export/import not working when a document has attachments [#1396](https://github.com/pubkey/rxdb/pull/1396) Thanks [@rixo](https://github.com/rixo)
+
+Other:
+  - Improved performance of query-change-detection by reusing the result of `massageSelector`
 
 ### 8.3.0 (5 August 2019)
 
@@ -183,7 +189,7 @@ Typings:
 ### 7.5.0 (April 24, 2018)
 
 Features:
-  - Added `RxCollection.insert$`, `RxCollection.update$`, `RxCollection.remove$` [read the docs](https://pubkey.github.io/rxdb/rx-collection.html#observe-)
+  - Added `RxCollection.insert$`, `RxCollection.update$`, `RxCollection.remove$` [read the docs](https://rxdb.info/rx-collection.html#observe-)
 
 Other:
   - Added `dangerousRemoveCollectionInfo()` for migrations over rxdb-versions.

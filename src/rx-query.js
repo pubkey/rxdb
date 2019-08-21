@@ -1,6 +1,22 @@
 import deepEqual from 'deep-equal';
-import MQuery from './mquery/mquery';
+import {
+    merge,
+    BehaviorSubject
+} from 'rxjs';
+import {
+    mergeMap,
+    filter,
+    map,
+    first,
+    tap
+} from 'rxjs/operators';
+import {
+    filterInMemoryFields,
+    massageSelector
+} from 'pouchdb-selector-core';
 
+
+import MQuery from './mquery/mquery';
 import {
     sortObject,
     stringifyFilter,
@@ -16,20 +32,8 @@ import {
     runPluginHooks
 } from './hooks';
 
-import {
-    merge,
-    BehaviorSubject
-} from 'rxjs';
-import {
-    mergeMap,
-    filter,
-    map,
-    first,
-    tap
-} from 'rxjs/operators';
-
 let _queryCount = 0;
-const newQueryID = function() {
+const newQueryID = function () {
     return ++_queryCount;
 };
 
@@ -293,6 +297,45 @@ export class RxQuery {
         }
     }
 
+
+    /**
+     * cached call to get the massageSelector
+     */
+    get massageSelector() {
+        if (!this._massageSelector) {
+            const selector = this.mquery._conditions;
+            this._massageSelector = massageSelector(selector);
+        }
+        return this._massageSelector;
+    }
+
+    /**
+     * returns true if the document matches the query,
+     * does not use the 'skip' and 'limit'
+     * @param {any} docData 
+     * @return {boolean} true if matches
+     */
+    doesDocumentDataMatch(docData) {
+        // if doc is deleted, it cannot match
+        if (docData._deleted) return false;
+
+        const selector = this.mquery._conditions;
+
+        docData = this.collection.schema.swapPrimaryToId(docData);
+        const inMemoryFields = Object.keys(selector);
+        const retDocs = filterInMemoryFields(
+            [{
+                doc: docData
+            }], {
+                selector: this.massageSelector
+            },
+            inMemoryFields
+        );
+
+        const ret = retDocs.length === 1;
+        return ret;
+    }
+
     /**
      * deletes all found documents
      * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
@@ -393,7 +436,7 @@ function protoMerge(rxQueryProto, mQueryProtoKeys) {
         .filter(attrName => !attrName.startsWith('_'))
         .filter(attrName => !rxQueryProto[attrName])
         .forEach(attrName => {
-            rxQueryProto[attrName] = function(p1) {
+            rxQueryProto[attrName] = function (p1) {
                 const clonedThis = this._clone();
                 clonedThis.mquery[attrName](p1);
                 return _tunnelQueryCache(clonedThis);

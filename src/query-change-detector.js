@@ -8,8 +8,7 @@
  */
 
 import {
-    filterInMemoryFields,
-    massageSelector
+    filterInMemoryFields
 } from 'pouchdb-selector-core';
 import objectPath from 'object-path';
 
@@ -64,7 +63,7 @@ class QueryChangeDetector {
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
         const wasDocInResults = _isDocInResultData(this, docData, resultsData);
-        const doesMatchNow = doesDocMatchQuery(this, docData);
+        const doesMatchNow = this.query.doesDocumentDataMatch(docData);
         const isFilled = !options.limit || (options.limit && resultsData.length >= options.limit);
         const limitAndFilled = options.limit && resultsData.length >= options.limit;
 
@@ -216,7 +215,7 @@ export function _resortDocData(queryChangeDetector, resultsData) {
     // TODO use createFieldSorter
     const sortedRows = filterInMemoryFields(
         rows, {
-            selector: massageSelector(queryChangeDetector.query.toJSON().selector),
+            selector: queryChangeDetector.query.massageSelector,
             sort: sortOptions
         },
         inMemoryFields
@@ -250,7 +249,7 @@ export function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) 
     // TODO use createFieldSorter
     const sortedRows = filterInMemoryFields(
         rows, {
-            selector: massageSelector(queryChangeDetector.query.toJSON().selector),
+            selector: queryChangeDetector.query.massageSelector,
             sort: sortOptions
         },
         inMemoryFields
@@ -310,31 +309,6 @@ export function _isDocInResultData(queryChangeDetector, docData, resultData) {
     const first = resultData.find(doc => doc[primaryPath] === docData[primaryPath]);
     return !!first;
 }
-
-/**
- * check if the document matches the query
- * @param {object} docData
- * @return {boolean}
- */
-export function doesDocMatchQuery(queryChangeDetector, docData) {
-    // if doc is deleted, it cannot match
-    if (docData._deleted) return false;
-
-    docData = queryChangeDetector.query.collection.schema.swapPrimaryToId(docData);
-    const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
-    const retDocs = filterInMemoryFields(
-        [{
-            doc: docData
-        }], {
-            selector: massageSelector(queryChangeDetector.query.toJSON().selector)
-        },
-        inMemoryFields
-    );
-
-    const ret = retDocs.length === 1;
-    return ret;
-}
-
 
 export function enableDebugging() {
     console.log('QueryChangeDetector.enableDebugging()');

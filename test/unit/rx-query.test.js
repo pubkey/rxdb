@@ -317,6 +317,54 @@ config.parallel('rx-query.test.js', () => {
             */
         });
     });
+    describe('doesDocMatchQuery()', () => {
+        it('should match', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find().where('firstName').ne('foobar');
+            const docData = schemaObjects.human();
+            assert.ok(q.doesDocumentDataMatch(docData));
+            col.database.destroy();
+        });
+        it('should not match', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find().where('firstName').ne('foobar');
+            const docData = schemaObjects.human();
+            docData.firstName = 'foobar';
+            assert.equal(false, q.doesDocumentDataMatch(docData));
+            col.database.destroy();
+        });
+        it('should match ($gt)', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find().where('age').gt(1);
+            const docData = schemaObjects.human();
+            docData.age = 5;
+            assert.ok(q.doesDocumentDataMatch(docData));
+            col.database.destroy();
+        });
+        it('should not match ($gt)', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find().where('age').gt(100);
+            const docData = schemaObjects.human();
+            docData.age = 5;
+            assert.equal(false, q.doesDocumentDataMatch(docData));
+            col.database.destroy();
+        });
+        it('BUG: this should match', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find();
+
+            const docData = {
+                color: 'green',
+                hp: 100,
+                maxHP: 767,
+                name: 'asdfsadf',
+                _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
+            };
+
+            assert.equal(true, q.doesDocumentDataMatch(docData));
+            col.database.destroy();
+        });
+    });
     describe('.exec()', () => {
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);

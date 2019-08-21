@@ -85,6 +85,7 @@
     * [$](./rx-query.md#observe-)
     * [update()](./rx-query.md#update)
     * [remove()](./rx-query.md#remove)
+    * [doesDocumentDataMatch()](./rx-query.md#doesDocumentDataMatch)
     * [Examples](./rx-query.md#examples)
     * [isRxQuery()](./rx-query.md#isrxquery)
 

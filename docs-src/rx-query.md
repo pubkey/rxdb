@@ -71,6 +71,20 @@ const query = myCollection.find().where('age').lt(18);
 const removedDocs = await query.remove();
 ```
 
+## doesDocumentDataMatch()
+Returns `true` if the given document data matches the query.
+
+```js
+const documentData = {
+  id: 'foobar',
+  age: 19
+};
+
+myCollection.find().where('age').gt(18).doesDocumentDataMatch(documentData); // > true
+
+myCollection.find().where('age').gt(20).doesDocumentDataMatch(documentData); // > false
+```
+
 ## Examples
 Here some examples to fast learn how to write queries without reading the docs.
 - [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries

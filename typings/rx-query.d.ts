@@ -63,4 +63,5 @@ export declare class RxQuery<RxDocumentType, RxQueryResult> {
     remove(): Promise<RxQueryResult>;
     update(updateObj: any): Promise<RxQueryResult>;
     toJSON(): PouchdbQuery;
+    doesDocumentDataMatch(documentData: RxDocumentType | any): boolean;
 }
