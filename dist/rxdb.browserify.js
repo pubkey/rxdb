@@ -1716,7 +1716,7 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw (0, _rxError.pluginMissing)('leaderelection');
+    throw (0, _rxError.pluginMissing)('leader-election');
   },
 
   /**
@@ -2021,6 +2021,17 @@ var blobBufferUtil = {
         var text = e.target.result;
         res(text);
       });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
       reader.readAsText(blobBuffer);
     });
   }
@@ -3051,6 +3062,7 @@ var dumpRxCollection = function dumpRxCollection() {
   return this._pouchFind(query, null, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
+      delete docData._attachments;
       return docData;
     });
     return json;
@@ -4817,7 +4829,6 @@ exports._isSortedBefore = _isSortedBefore;
 exports._sortFieldChanged = _sortFieldChanged;
 exports._getSortOptions = _getSortOptions;
 exports._isDocInResultData = _isDocInResultData;
-exports.doesDocMatchQuery = doesDocMatchQuery;
 exports.enableDebugging = enableDebugging;
 exports.create = create;
 exports["default"] = void 0;
@@ -4895,7 +4906,7 @@ function () {
 
     var wasDocInResults = _isDocInResultData(this, docData, resultsData);
 
-    var doesMatchNow = doesDocMatchQuery(this, docData);
+    var doesMatchNow = this.query.doesDocumentDataMatch(docData);
     var isFilled = !options.limit || options.limit && resultsData.length >= options.limit;
     var limitAndFilled = options.limit && resultsData.length >= options.limit;
 
@@ -5058,7 +5069,7 @@ function _resortDocData(queryChangeDetector, resultsData) {
   var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector); // TODO use createFieldSorter
 
   var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector),
+    selector: queryChangeDetector.query.massageSelector,
     sort: sortOptions
   }, inMemoryFields);
   var sortedDocs = sortedRows.map(function (row) {
@@ -5091,7 +5102,7 @@ function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
   }); // TODO use createFieldSorter
 
   var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector),
+    selector: queryChangeDetector.query.massageSelector,
     sort: sortOptions
   }, inMemoryFields);
   return sortedRows[0].id === swappedLeft._id;
@@ -5158,26 +5169,6 @@ function _isDocInResultData(queryChangeDetector, docData, resultData) {
     return doc[primaryPath] === docData[primaryPath];
   });
   return !!first;
-}
-/**
- * check if the document matches the query
- * @param {object} docData
- * @return {boolean}
- */
-
-
-function doesDocMatchQuery(queryChangeDetector, docData) {
-  // if doc is deleted, it cannot match
-  if (docData._deleted) return false;
-  docData = queryChangeDetector.query.collection.schema.swapPrimaryToId(docData);
-  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
-  var retDocs = (0, _pouchdbSelectorCore.filterInMemoryFields)([{
-    doc: docData
-  }], {
-    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector)
-  }, inMemoryFields);
-  var ret = retDocs.length === 1;
-  return ret;
 }
 
 function enableDebugging() {
@@ -7835,6 +7826,12 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/creat
 
 var _deepEqual = _interopRequireDefault(require("deep-equal"));
 
+var _rxjs = require("rxjs");
+
+var _operators = require("rxjs/operators");
+
+var _pouchdbSelectorCore = require("pouchdb-selector-core");
+
 var _mquery = _interopRequireDefault(require("./mquery/mquery"));
 
 var _util = require("./util");
@@ -7844,10 +7841,6 @@ var _queryChangeDetector = _interopRequireDefault(require("./query-change-detect
 var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
-
-var _rxjs = require("rxjs");
-
-var _operators = require("rxjs/operators");
 
 var _queryCount = 0;
 
@@ -8072,6 +8065,26 @@ function () {
     }
   }
   /**
+   * cached call to get the massageSelector
+   */
+  ;
+
+  /**
+   * returns true if the document matches the query,
+   * does not use the 'skip' and 'limit'
+   * @param {any} docData 
+   * @return {boolean} true if matches
+   */
+  _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
+    // if doc is deleted, it cannot match
+    if (docData._deleted) return false;
+    var selector = this.mquery._conditions;
+    docData = this.collection.schema.swapPrimaryToId(docData);
+    var inMemoryFields = Object.keys(selector);
+    var matches = (0, _pouchdbSelectorCore.rowFilter)(docData, this.massageSelector, inMemoryFields);
+    return matches;
+  }
+  /**
    * deletes all found documents
    * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
    */
@@ -8195,6 +8208,16 @@ function () {
       }
 
       return this._$;
+    }
+  }, {
+    key: "massageSelector",
+    get: function get() {
+      if (!this._massageSelector) {
+        var selector = this.mquery._conditions;
+        this._massageSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
+      }
+
+      return this._massageSelector;
     }
   }]);
   return RxQuery;
@@ -8411,7 +8434,7 @@ function isInstanceOf(obj) {
 }
 
 
-},{"./hooks":7,"./mquery/mquery":9,"./query-change-detector":29,"./rx-error":34,"./util":37,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49,"deep-equal":386,"rxjs":526,"rxjs/operators":724}],36:[function(require,module,exports){
+},{"./hooks":7,"./mquery/mquery":9,"./query-change-detector":29,"./rx-error":34,"./util":37,"@babel/runtime/helpers/createClass":42,"@babel/runtime/helpers/interopRequireDefault":45,"@babel/runtime/helpers/typeof":49,"deep-equal":386,"pouchdb-selector-core":510,"rxjs":526,"rxjs/operators":724}],36:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -9595,7 +9618,8 @@ function toByteArray (b64) {
     ? validLen - 4
     : validLen
 
-  for (var i = 0; i < len; i += 4) {
+  var i
+  for (i = 0; i < len; i += 4) {
     tmp =
       (revLookup[b64.charCodeAt(i)] << 18) |
       (revLookup[b64.charCodeAt(i + 1)] << 12) |
@@ -11648,6 +11672,7 @@ function hasOwnProperty(obj, prop) {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
+var customInspectSymbol = typeof Symbol === 'function' ? Symbol.for('nodejs.util.inspect.custom') : null
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -11684,7 +11709,9 @@ function typedArraySupport () {
   // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
-    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function () { return 42 } }
+    var proto = { foo: function () { return 42 } }
+    Object.setPrototypeOf(proto, Uint8Array.prototype)
+    Object.setPrototypeOf(arr, proto)
     return arr.foo() === 42
   } catch (e) {
     return false
@@ -11713,7 +11740,7 @@ function createBuffer (length) {
   }
   // Return an augmented `Uint8Array` instance
   var buf = new Uint8Array(length)
-  buf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(buf, Buffer.prototype)
   return buf
 }
 
@@ -11763,7 +11790,7 @@ function from (value, encodingOrOffset, length) {
   }
 
   if (value == null) {
-    throw TypeError(
+    throw new TypeError(
       'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
       'or Array-like Object. Received type ' + (typeof value)
     )
@@ -11815,8 +11842,8 @@ Buffer.from = function (value, encodingOrOffset, length) {
 
 // Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
 // https://github.com/feross/buffer/pull/148
-Buffer.prototype.__proto__ = Uint8Array.prototype
-Buffer.__proto__ = Uint8Array
+Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
+Object.setPrototypeOf(Buffer, Uint8Array)
 
 function assertSize (size) {
   if (typeof size !== 'number') {
@@ -11920,7 +11947,8 @@ function fromArrayBuffer (array, byteOffset, length) {
   }
 
   // Return an augmented `Uint8Array` instance
-  buf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(buf, Buffer.prototype)
+
   return buf
 }
 
@@ -12242,6 +12270,9 @@ Buffer.prototype.inspect = function inspect () {
   if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
 }
+if (customInspectSymbol) {
+  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
+}
 
 Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
   if (isInstance(target, Uint8Array)) {
@@ -12367,7 +12398,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
         return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
+    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
   }
 
   throw new TypeError('val must be string, number or Buffer')
@@ -12733,7 +12764,8 @@ Buffer.prototype.slice = function slice (start, end) {
 
   var newBuf = this.subarray(start, end)
   // Return an augmented `Uint8Array` instance
-  newBuf.__proto__ = Buffer.prototype
+  Object.setPrototypeOf(newBuf, Buffer.prototype)
+
   return newBuf
 }
 

@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 8.3.1 (23 August 2019)
 
 Features:
   - Added `RxQuery.doesDocumentDataMatch()` [read the docs](https://rxdb.info/rx-query.html#doesdocumentdatamatch)

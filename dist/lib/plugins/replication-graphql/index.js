@@ -28,17 +28,21 @@ var _crawlingCheckpoint = require("./crawling-checkpoint");
 
 var _watchForChanges = _interopRequireDefault(require("../watch-for-changes"));
 
+var _leaderElection = _interopRequireDefault(require("../leader-election"));
+
 var _rxChangeEvent = require("../../rx-change-event");
 
 /**
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with remote graphql endpoint
  */
-
+_core["default"].plugin(_leaderElection["default"]);
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
  */
+
+
 _core["default"].plugin(_watchForChanges["default"]);
 
 var RxGraphQLReplicationState =

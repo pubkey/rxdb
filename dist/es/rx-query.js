@@ -1,12 +1,13 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'deep-equal';
+import { merge, BehaviorSubject } from 'rxjs';
+import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
+import { massageSelector, rowFilter } from 'pouchdb-selector-core';
 import MQuery from './mquery/mquery';
 import { sortObject, stringifyFilter, clone } from './util';
 import QueryChangeDetector from './query-change-detector';
 import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
 import { runPluginHooks } from './hooks';
-import { merge, BehaviorSubject } from 'rxjs';
-import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
 var _queryCount = 0;
 
 var newQueryID = function newQueryID() {
@@ -230,6 +231,26 @@ function () {
     }
   }
   /**
+   * cached call to get the massageSelector
+   */
+  ;
+
+  /**
+   * returns true if the document matches the query,
+   * does not use the 'skip' and 'limit'
+   * @param {any} docData 
+   * @return {boolean} true if matches
+   */
+  _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
+    // if doc is deleted, it cannot match
+    if (docData._deleted) return false;
+    var selector = this.mquery._conditions;
+    docData = this.collection.schema.swapPrimaryToId(docData);
+    var inMemoryFields = Object.keys(selector);
+    var matches = rowFilter(docData, this.massageSelector, inMemoryFields);
+    return matches;
+  }
+  /**
    * deletes all found documents
    * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
    */
@@ -353,6 +374,16 @@ function () {
       }
 
       return this._$;
+    }
+  }, {
+    key: "massageSelector",
+    get: function get() {
+      if (!this._massageSelector) {
+        var selector = this.mquery._conditions;
+        this._massageSelector = massageSelector(selector);
+      }
+
+      return this._massageSelector;
     }
   }]);
 

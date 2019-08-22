@@ -85,6 +85,17 @@ var blobBufferUtil = {
         var text = e.target.result;
         res(text);
       });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
       reader.readAsText(blobBuffer);
     });
   }

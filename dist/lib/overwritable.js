@@ -37,7 +37,7 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw (0, _rxError.pluginMissing)('leaderelection');
+    throw (0, _rxError.pluginMissing)('leader-election');
   },
 
   /**

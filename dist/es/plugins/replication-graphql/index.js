@@ -14,7 +14,9 @@ import { hash, clone } from '../../util';
 import { DEFAULT_MODIFIER, wasRevisionfromPullReplication, createRevisionForPulledDocument, getDocsWithRevisionsFromPouch } from './helper';
 import { setLastPushSequence, getLastPullDocument, setLastPullDocument, getChangesSinceLastPushSequence } from './crawling-checkpoint';
 import RxDBWatchForChangesPlugin from '../watch-for-changes';
+import RxDBLeaderElectionPlugin from '../leader-election';
 import { changeEventfromPouchChange } from '../../rx-change-event';
+Core.plugin(RxDBLeaderElectionPlugin);
 /**
  * add the watch-for-changes-plugin
  * so pouchdb will emit events when something gets written to it
