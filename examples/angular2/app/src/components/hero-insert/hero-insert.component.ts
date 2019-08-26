@@ -10,7 +10,7 @@ import { DatabaseService } from '../../services/database.service';
 })
 export class HeroInsertComponent {
 
-    @ViewChild('input') inputfield: any;
+    @ViewChild('input', {static: false}) inputfield: any;
 
     tempDoc: any;
 
