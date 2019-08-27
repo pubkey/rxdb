@@ -93,6 +93,6 @@
     "webpack": "4.29.0",
     "webpack-dev-middleware": "3.7.0",
     "webpack-dev-server": "3.8.0",
-    "webpack-merge": "4.2.1"
+    "webpack-merge": "4.2.2"
   }
 }
