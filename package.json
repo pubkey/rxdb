@@ -172,7 +172,7 @@
     "source-map-support": "0.5.13",
     "subscriptions-transport-ws": "0.9.16",
     "ts-node": "8.3.0",
-    "typescript": "3.5.3",
+    "typescript": "3.6.2",
     "uglify-js": "3.6.0",
     "uglifyjs-webpack-plugin": "2.2.0",
     "walk-sync": "2.0.2",
