@@ -9,7 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest --debug --no-cache",
-    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url http://example.com/",
+    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/",
     "fix-jest-expo": "curl https://raw.githubusercontent.com/expo/expo/master/packages/jest-expo/src/preset/setup.js > node_modules/jest-expo/src/preset/setup.js",
     "postinstall": "npm run fix-jest-expo"
   },
