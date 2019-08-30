@@ -18,7 +18,10 @@ function createWindow(dbSuffix) {
     const height = 600;
     const w = new BrowserWindow({
         width,
-        height
+        height,
+        webPreferences: {
+            nodeIntegration: true
+        }
     });
 
     w.loadURL(url.format({
