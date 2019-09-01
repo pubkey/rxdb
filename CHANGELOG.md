@@ -4,6 +4,7 @@
 
 Bugfixes:
   - Fix imports of encryption-plugin to work with rollup [#1413](https://github.com/pubkey/rxdb/issues/1413) Thanks [@kenshyx](https://github.com/kenshyx)
+  - Removed `express-pouchdb` from the dependencies [#884](https://github.com/pubkey/rxdb/issues/884)
 
 ### 8.3.1 (23 August 2019)
 

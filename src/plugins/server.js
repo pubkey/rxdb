@@ -1,5 +1,4 @@
 import express from 'express';
-import ExpressPouchDB from 'express-pouchdb';
 import corsFn from 'cors';
 
 import PouchDB from '../pouch-db';
@@ -14,6 +13,16 @@ Core.plugin(ReplicationPlugin);
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 Core.plugin(RxDBWatchForChangesPlugin);
 
+let ExpressPouchDB;
+try {
+    ExpressPouchDB = require('express-pouchdb');
+} catch (error) {
+    console.error(
+        'Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' +
+        'You can install it with \'npm install express-pouchdb\''
+    );
+}
+
 // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
 const PouchdbAllDbs = require('pouchdb-all-dbs');
@@ -24,17 +33,17 @@ const SERVERS_OF_DB = new WeakMap();
 const DBS_WITH_SERVER = new WeakSet();
 
 
-const normalizeDbName = function(db) {
+const normalizeDbName = function (db) {
     const splitted = db.name.split('/').filter(str => str !== '');
     return splitted.pop();
 };
 
-const getPrefix = function(db) {
+const getPrefix = function (db) {
     const splitted = db.name.split('/').filter(str => str !== '');
     splitted.pop(); // last was the name
     if (splitted.length === 0) return '';
     let ret = splitted.join('/') + '/';
-    if(db.name.startsWith('/')) ret = '/' + ret;
+    if (db.name.startsWith('/')) ret = '/' + ret;
     return ret;
 };
 
@@ -43,7 +52,7 @@ const getPrefix = function(db) {
  */
 function tunnelCollectionPath(db, path, app, colName) {
     db[colName].watchForChanges();
-    app.use(path + '/' + colName, function(req, res, next) {
+    app.use(path + '/' + colName, function (req, res, next) {
         if (req.baseUrl === path + '/' + colName) {
             const to = normalizeDbName(db) + '-rxdb-0-' + colName;
             const toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
@@ -78,7 +87,7 @@ export function spawnServer({
 
     if (cors) {
         ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-        .map(method => method.toLowerCase())
+            .map(method => method.toLowerCase())
             .forEach(method => app[method]('*', corsFn()));
     }
 

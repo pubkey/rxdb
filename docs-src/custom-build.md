@@ -279,6 +279,7 @@ See: [Tutorial: Using the RxDB Server-Plugin](./tutorials/server.md)
 **Do never** expose this server to the internet, use a couchdb-instance at production.
 
 ```js
+// run 'npm install express-pouchdb' before you use this plugin
 
 // This plugin is not included into the default RxDB-build. You have to manually add it.
 import RxDBServerModule from 'rxdb/plugins/server';
