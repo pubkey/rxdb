@@ -1,5 +1,4 @@
 import express from 'express';
-import ExpressPouchDB from 'express-pouchdb';
 import corsFn from 'cors';
 import PouchDB from '../pouch-db';
 import { newRxError } from '../rx-error';
@@ -7,8 +6,16 @@ import Core from '../core';
 import ReplicationPlugin from './replication';
 Core.plugin(ReplicationPlugin);
 import RxDBWatchForChangesPlugin from './watch-for-changes';
-Core.plugin(RxDBWatchForChangesPlugin); // we have to clean up after tests so there is no stupid logging
+Core.plugin(RxDBWatchForChangesPlugin);
+var ExpressPouchDB;
+
+try {
+  ExpressPouchDB = require('express-pouchdb');
+} catch (error) {
+  console.error('Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' + 'You can install it with \'npm install express-pouchdb\'');
+} // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
+
 
 var PouchdbAllDbs = require('pouchdb-all-dbs');
 

@@ -11,8 +11,6 @@ exports["default"] = exports.overwritable = exports.hooks = exports.prototypes =
 
 var _express = _interopRequireDefault(require("express"));
 
-var _expressPouchdb = _interopRequireDefault(require("express-pouchdb"));
-
 var _cors = _interopRequireDefault(require("cors"));
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
@@ -27,7 +25,15 @@ var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
 
 _core["default"].plugin(_replication["default"]);
 
-_core["default"].plugin(_watchForChanges["default"]); // we have to clean up after tests so there is no stupid logging
+_core["default"].plugin(_watchForChanges["default"]);
+
+var ExpressPouchDB;
+
+try {
+  ExpressPouchDB = require('express-pouchdb');
+} catch (error) {
+  console.error('Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' + 'You can install it with \'npm install express-pouchdb\'');
+} // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
 
 
@@ -106,7 +112,7 @@ function spawnServer(_ref) {
     });
   }
 
-  app.use(path, (0, _expressPouchdb["default"])(pseudo));
+  app.use(path, ExpressPouchDB(pseudo));
   var server = app.listen(port);
   SERVERS_OF_DB.get(db).push(server);
   return {

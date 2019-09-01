@@ -25,7 +25,7 @@ function log(it) {
 }
 
 if (!ADBLOCK && !CI && !DISABLE_OPENCOLLECTIVE && !SILENT) {
-    log('\u001b[96m\u001b[1mThank you for using RxDB ( https://github.com/pubkey/rxdb ) \u001b[96m\u001b[1m \n');
-    log('\u001B[96mHelp me to improve RxDB by answering a few questions ( < 1 minute): \u001B[0m');
-    log('\u001B[96m>\u001B[94m Open the survey under https://forms.gle/y9d73Npyu8h84Ep29 \u001B[0m');
+//    log('\u001b[96m\u001b[1mThank you for using RxDB ( https://github.com/pubkey/rxdb ) \u001b[96m\u001b[1m \n');
+//    log('\u001B[96mHelp me to improve RxDB by answering a few questions ( < 1 minute): \u001B[0m');
+//    log('\u001B[96m>\u001B[94m Open the survey under https://forms.gle/y9d73Npyu8h84Ep29 \u001B[0m');
 }
