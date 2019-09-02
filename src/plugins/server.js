@@ -52,10 +52,12 @@ const getPrefix = function (db) {
  */
 function tunnelCollectionPath(db, path, app, colName) {
     db[colName].watchForChanges();
-    app.use(path + '/' + colName, function (req, res, next) {
-        if (req.baseUrl === path + '/' + colName) {
+    const pathWithSlash = path.endsWith('/') ? path : path + '/';
+    const collectionPath = pathWithSlash + colName;
+    app.use(collectionPath, function (req, res, next) {
+        if (req.baseUrl === collectionPath) {
             const to = normalizeDbName(db) + '-rxdb-0-' + colName;
-            const toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
+            const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
             req.originalUrl = toFull;
         }
         next();

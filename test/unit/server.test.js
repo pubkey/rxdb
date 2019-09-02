@@ -230,4 +230,59 @@ config.parallel('server.test.js', () => {
 
         db1.destroy();
     });
+    describe('issues', () => {
+        describe('#1447 server path not working', () => {
+            it('use the path when given', async function () {
+                this.timeout(12 * 1000);
+                const port = nexPort();
+                const path = '/db2';
+                const serverCollection = await humansCollection.create(0);
+                await serverCollection.database.server({
+                    path,
+                    port
+                });
+
+                const colUrl = 'http://localhost:' + port + path + '/human';
+                const gotJson = await request(colUrl);
+                const got = JSON.parse(gotJson);
+                assert.equal(got.doc_count, 1);
+
+                serverCollection.database.destroy();
+            });
+            it('use the path with ending slash', async function () {
+                this.timeout(12 * 1000);
+                const port = nexPort();
+                const path = '/db3/';
+                const serverCollection = await humansCollection.create(0);
+                await serverCollection.database.server({
+                    path,
+                    port
+                });
+
+                const colUrl = 'http://localhost:' + port + path + 'human';
+                const gotJson = await request(colUrl);
+                const got = JSON.parse(gotJson);
+                assert.equal(got.doc_count, 1);
+
+                serverCollection.database.destroy();
+            });
+            it('should be able to use the root /', async function () {
+                this.timeout(12 * 1000);
+                const port = nexPort();
+                const path = '/';
+                const serverCollection = await humansCollection.create(0);
+                await serverCollection.database.server({
+                    path,
+                    port
+                });
+
+                const colUrl = 'http://localhost:' + port + path + 'human';
+                const gotJson = await request(colUrl);
+                const got = JSON.parse(gotJson);
+                assert.equal(got.doc_count, 1);
+
+                serverCollection.database.destroy();
+            });
+        });
+    });
 });

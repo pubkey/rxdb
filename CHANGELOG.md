@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - custom server path not working on `server`-plugin [#1447](https://github.com/pubkey/rxdb/issues/1447) Thanks [@kenshyx](https://github.com/dstudzinski)
+
 ### 8.4.0 (1 September 2019)
 
 Bugfixes:
