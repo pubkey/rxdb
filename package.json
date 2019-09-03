@@ -31,7 +31,7 @@
   "module": "./dist/es/index.js",
   "types": "./typings/index.d.ts",
   "scripts": {
-    "postinstall": "node scripts/postinstall || echo \"ignore\"",
+    "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "pretest": "npm run transpile",
     "test": "npm run test:node && npm run test:browser",
     "test:fast": "npm run pretest && rimraf -rf pouch__all_dbs__ && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
