@@ -51,7 +51,7 @@
     "regenerator": "0.14.2",
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "../../",
-    "rxjs": "6.5.2",
+    "rxjs": "6.5.3",
     "zone.js": "0.10.2"
   },
   "devDependencies": {
