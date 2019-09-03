@@ -88,9 +88,14 @@ export function spawnServer({
     DBS_WITH_SERVER.add(db);
 
     if (cors) {
-        ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-            .map(method => method.toLowerCase())
-            .forEach(method => app[method]('*', corsFn()));
+        app.use(corsFn({
+            'origin': function (origin, callback) {
+                const originToSend = origin || '*';
+                callback(null, originToSend);
+            },
+            'credentials': true,
+            'methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT',
+        }));
     }
 
     app.use(path, ExpressPouchDB(pseudo));
