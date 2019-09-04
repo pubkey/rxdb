@@ -55,7 +55,7 @@ function tunnelCollectionPath(db, path, app, colName) {
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
     app.use(collectionPath, function (req, res, next) {
-        if (req.baseUrl === collectionPath) {
+        if (req.baseUrl.endsWith(collectionPath)) {
             const to = normalizeDbName(db) + '-rxdb-0-' + colName;
             const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
             req.originalUrl = toFull;
@@ -67,7 +67,8 @@ function tunnelCollectionPath(db, path, app, colName) {
 export function spawnServer({
     path = '/db',
     port = 3000,
-    cors = false
+    cors = false,
+    startServer = true,
 }) {
     const db = this;
     if (!SERVERS_OF_DB.has(db))
@@ -100,8 +101,11 @@ export function spawnServer({
 
     app.use(path, ExpressPouchDB(pseudo));
 
-    const server = app.listen(port);
-    SERVERS_OF_DB.get(db).push(server);
+    let server = null;
+    if (startServer) {
+        server = app.listen(port);
+        SERVERS_OF_DB.get(db).push(server);
+    }
 
     return {
         app,

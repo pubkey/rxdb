@@ -3,6 +3,7 @@ import config from './config';
 import AsyncTestUtil from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
+import express from 'express';
 
 import RxDB from '../../dist/lib/index';
 import * as humansCollection from '../helper/humans-collection';
@@ -57,6 +58,60 @@ config.parallel('server.test.js', () => {
 
         clientCollection.database.destroy();
         serverCollection.database.destroy();
+    });
+    it('should run and sync as sub app for express', async function () {
+        this.timeout(12 * 1000);
+        const port = nexPort();
+        const serverCollection = await humansCollection.create(0);
+        const { app, server } = await serverCollection.database.server({
+            path: '/',
+            port,
+            cors: false,
+            startServer: false,
+        });
+
+        // check if server was returned
+        if (server !== null) {
+            return Promise.reject(
+                new Error('Server was created')
+            );
+        }
+
+        // create new express app and mount sub app
+        const customApp = express();
+        customApp.use('/rxdb', app);
+        const customServer = customApp.listen(port);
+
+        // check access to path
+        const colUrl = 'http://localhost:' + port + '/rxdb/human';
+        const gotJson = await request(colUrl);
+
+        const got = JSON.parse(gotJson);
+        assert.equal(got.doc_count, 1);
+
+        const clientCollection = await humansCollection.create(0);
+
+        // sync
+        clientCollection.sync({
+            remote: colUrl
+        });
+
+        // insert one doc on each side
+        await clientCollection.insert(schemaObjects.human());
+        await serverCollection.insert(schemaObjects.human());
+
+        // both collections should have 2 documents
+        await AsyncTestUtil.waitUntil(async () => {
+            const serverDocs = await serverCollection.find().exec();
+            const clientDocs = await clientCollection.find().exec();
+            return (clientDocs.length === 2 && serverDocs.length === 2);
+        });
+
+        clientCollection.database.destroy();
+        serverCollection.database.destroy();
+
+        // custom server has to closed independently
+        customServer.close();
     });
     it('should send cors when defined for missing origin', async function () {
         this.timeout(12 * 1000);
