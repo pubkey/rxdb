@@ -85,7 +85,7 @@
     "rimraf": "3.0.0",
     "style-loader": "1.0.0",
     "terser": "4.3.1",
-    "terser-webpack-plugin": "1.4.1",
+    "terser-webpack-plugin": "2.0.1",
     "testcafe": "1.4.3",
     "testcafe-hammerhead": "14.9.1",
     "tslint": "5.19.0",
