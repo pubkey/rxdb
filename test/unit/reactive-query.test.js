@@ -15,6 +15,7 @@ import RxDB from '../../dist/lib/';
 import {
     filter,
     map,
+    first,
     tap
 } from 'rxjs/operators';
 
@@ -120,6 +121,26 @@ config.parallel('reactive-query.test.js', () => {
             querySub.unsubscribe();
             c.database.destroy();
         });
+        it('subscribing many times should not result in many database-requests', async () => {
+            const c = await humansCollection.create(1);
+            const query = c.find({
+                passportId: {
+                    $ne: 'foobar'
+                }
+            });
+            await query.exec();
+            const countBefore = query._execOverDatabaseCount;
+            await Promise.all(
+                new Array(10).fill(0).map(() => {
+                    return query.$.pipe(first()).toPromise();
+                })
+            );
+            const countAfter = query._execOverDatabaseCount;
+
+            assert.equal(countBefore, countAfter);
+
+            c.database.destroy();
+        });
     });
     describe('negative', () => {
         it('get no change when nothing happens', async () => {
@@ -199,12 +220,12 @@ config.parallel('reactive-query.test.js', () => {
             const streamed = [];
             subs.push(
                 col.findOne(_id).$
-                .pipe(
-                    filter(doc => doc !== null)
-                )
-                .subscribe(doc => {
-                    streamed.push(doc);
-                })
+                    .pipe(
+                        filter(doc => doc !== null)
+                    )
+                    .subscribe(doc => {
+                        streamed.push(doc);
+                    })
             );
             await AsyncTestUtil.waitUntil(() => streamed.length === 1);
             assert.ok(RxDocument.isInstanceOf(streamed[0]));
@@ -213,12 +234,12 @@ config.parallel('reactive-query.test.js', () => {
             const streamed2 = [];
             subs.push(
                 col.findOne().where('_id').eq(_id).$
-                .pipe(
-                    filter(doc => doc !== null)
-                )
-                .subscribe(doc => {
-                    streamed2.push(doc);
-                })
+                    .pipe(
+                        filter(doc => doc !== null)
+                    )
+                    .subscribe(doc => {
+                        streamed2.push(doc);
+                    })
             );
             await AsyncTestUtil.waitUntil(() => streamed2.length === 1);
             assert.equal(streamed2.length, 1);
@@ -311,14 +332,14 @@ config.parallel('reactive-query.test.js', () => {
 
             await Promise.all(
                 new Array(5)
-                .fill(0)
-                .map(() => ({
-                    key: 'registry',
-                    state: getData()
-                }))
-                .map(data => {
-                    return db2.crawlstate.atomicUpsert(data);
-                })
+                    .fill(0)
+                    .map(() => ({
+                        key: 'registry',
+                        state: getData()
+                    }))
+                    .map(data => {
+                        return db2.crawlstate.atomicUpsert(data);
+                    })
             );
 
             await AsyncTestUtil.waitUntil(() => emitted.length > 0);
@@ -329,12 +350,12 @@ config.parallel('reactive-query.test.js', () => {
 
             await Promise.all(
                 new Array(5)
-                .fill(0)
-                .map(() => ({
-                    key: 'registry',
-                    state: getData()
-                }))
-                .map(data => db2.crawlstate.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => ({
+                        key: 'registry',
+                        state: getData()
+                    }))
+                    .map(data => db2.crawlstate.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;

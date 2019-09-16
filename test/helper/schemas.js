@@ -583,7 +583,8 @@ export const primaryHuman = {
         age: {
             type: 'integer',
             minimum: 0,
-            maximum: 150
+            maximum: 150,
+            index: true
         }
     },
     required: ['firstName', 'lastName']
