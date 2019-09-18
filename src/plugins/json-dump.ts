@@ -83,11 +83,11 @@ const dumpRxCollection = function (decrypted = false) {
     }
 
     const query = createRxQuery('find', {}, this);
-
     return this._pouchFind(query, null, encrypted)
         .then(docs => {
             json.docs = docs.map(docData => {
                 delete docData._rev;
+                delete docData._attachments;
                 return docData;
             });
             return json;

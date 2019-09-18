@@ -10,7 +10,6 @@ exports._isSortedBefore = _isSortedBefore;
 exports._sortFieldChanged = _sortFieldChanged;
 exports._getSortOptions = _getSortOptions;
 exports._isDocInResultData = _isDocInResultData;
-exports.doesDocMatchQuery = doesDocMatchQuery;
 exports.enableDebugging = enableDebugging;
 exports.create = create;
 exports["default"] = void 0;
@@ -88,7 +87,7 @@ function () {
 
     var wasDocInResults = _isDocInResultData(this, docData, resultsData);
 
-    var doesMatchNow = doesDocMatchQuery(this, docData);
+    var doesMatchNow = this.query.doesDocumentDataMatch(docData);
     var isFilled = !options.limit || options.limit && resultsData.length >= options.limit;
     var limitAndFilled = options.limit && resultsData.length >= options.limit;
 
@@ -177,7 +176,7 @@ function () {
       }
     } else {
       // U1 doc not matched and also not matches now
-      if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
+      if (!options.skip && !wasDocInResults && !doesMatchNow) {
         DEBUG && _debugMessage(this, 'U1', docData);
         return false;
       } // U2 still matching -> only resort
@@ -216,6 +215,7 @@ function () {
     } // if no optimisation-algo matches, return mustReExec:true
 
 
+    DEBUG && console.log(this, 'NO_MATCH', docData);
     return true;
   };
 
@@ -251,7 +251,7 @@ function _resortDocData(queryChangeDetector, resultsData) {
   var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector); // TODO use createFieldSorter
 
   var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector),
+    selector: queryChangeDetector.query.massageSelector,
     sort: sortOptions
   }, inMemoryFields);
   var sortedDocs = sortedRows.map(function (row) {
@@ -284,7 +284,7 @@ function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
   }); // TODO use createFieldSorter
 
   var sortedRows = (0, _pouchdbSelectorCore.filterInMemoryFields)(rows, {
-    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector),
+    selector: queryChangeDetector.query.massageSelector,
     sort: sortOptions
   }, inMemoryFields);
   return sortedRows[0].id === swappedLeft._id;
@@ -352,26 +352,6 @@ function _isDocInResultData(queryChangeDetector, docData, resultData) {
   });
   return !!first;
 }
-/**
- * check if the document matches the query
- * @param {object} docData
- * @return {boolean}
- */
-
-
-function doesDocMatchQuery(queryChangeDetector, docData) {
-  // if doc is deleted, it cannot match
-  if (docData._deleted) return false;
-  docData = queryChangeDetector.query.collection.schema.swapPrimaryToId(docData);
-  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
-  var retDocs = (0, _pouchdbSelectorCore.filterInMemoryFields)([{
-    doc: docData
-  }], {
-    selector: (0, _pouchdbSelectorCore.massageSelector)(queryChangeDetector.query.toJSON().selector)
-  }, inMemoryFields);
-  var ret = retDocs.length === 1;
-  return ret;
-}
 
 function enableDebugging() {
   console.log('QueryChangeDetector.enableDebugging()');
@@ -393,3 +373,5 @@ var _default = {
   enableDebugging: enableDebugging
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=query-change-detector.js.map

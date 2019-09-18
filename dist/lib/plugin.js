@@ -85,3 +85,5 @@ function addPlugin(plugin) {
     });
   }
 }
+
+//# sourceMappingURL=plugin.js.map

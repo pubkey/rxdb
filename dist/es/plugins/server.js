@@ -1,5 +1,4 @@
 import express from 'express';
-import ExpressPouchDB from 'express-pouchdb';
 import corsFn from 'cors';
 import PouchDB from '../pouch-db';
 import { newRxError } from '../rx-error';
@@ -7,8 +6,16 @@ import Core from '../core';
 import ReplicationPlugin from './replication';
 Core.plugin(ReplicationPlugin);
 import RxDBWatchForChangesPlugin from './watch-for-changes';
-Core.plugin(RxDBWatchForChangesPlugin); // we have to clean up after tests so there is no stupid logging
+Core.plugin(RxDBWatchForChangesPlugin);
+var ExpressPouchDB;
+
+try {
+  ExpressPouchDB = require('express-pouchdb');
+} catch (error) {
+  console.error('Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' + 'You can install it with \'npm install express-pouchdb\'');
+} // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
+
 
 var PouchdbAllDbs = require('pouchdb-all-dbs');
 
@@ -42,10 +49,12 @@ var getPrefix = function getPrefix(db) {
 
 function tunnelCollectionPath(db, path, app, colName) {
   db[colName].watchForChanges();
-  app.use(path + '/' + colName, function (req, res, next) {
-    if (req.baseUrl === path + '/' + colName) {
+  var pathWithSlash = path.endsWith('/') ? path : path + '/';
+  var collectionPath = pathWithSlash + colName;
+  app.use(collectionPath, function (req, res, next) {
+    if (req.baseUrl === collectionPath) {
       var to = normalizeDbName(db) + '-rxdb-0-' + colName;
-      var toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
+      var toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
       req.originalUrl = toFull;
     }
 
@@ -76,11 +85,14 @@ export function spawnServer(_ref) {
   DBS_WITH_SERVER.add(db);
 
   if (cors) {
-    ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'].map(function (method) {
-      return method.toLowerCase();
-    }).forEach(function (method) {
-      return app[method]('*', corsFn());
-    });
+    app.use(corsFn({
+      'origin': function origin(_origin, callback) {
+        var originToSend = _origin || '*';
+        callback(null, originToSend);
+      },
+      'credentials': true,
+      'methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'
+    }));
   }
 
   app.use(path, ExpressPouchDB(pseudo));

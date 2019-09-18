@@ -46,3 +46,5 @@ function () {
 function createQueryCache() {
   return new QueryCache();
 }
+
+//# sourceMappingURL=query-cache.js.map

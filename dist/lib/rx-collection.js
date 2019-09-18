@@ -539,6 +539,14 @@ function () {
     throw (0, _rxError.pluginMissing)('replication');
   }
   /**
+   * sync with a GraphQL endpoint
+   */
+  ;
+
+  _proto.syncGraphQL = function syncGraphQL() {
+    throw (0, _rxError.pluginMissing)('replication-graphql');
+  }
+  /**
    * Create a replicated in-memory-collection
    */
   ;
@@ -1017,3 +1025,5 @@ var _default = {
   RxCollection: RxCollection
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=rx-collection.js.map

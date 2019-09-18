@@ -29,7 +29,7 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw pluginMissing('leaderelection');
+    throw pluginMissing('leader-election');
   },
 
   /**

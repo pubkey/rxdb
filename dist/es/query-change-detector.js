@@ -6,7 +6,7 @@
  * This works equal to meteors oplog-observe-driver
  * @link https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md
  */
-import { filterInMemoryFields, massageSelector } from 'pouchdb-selector-core';
+import { filterInMemoryFields } from 'pouchdb-selector-core';
 import objectPath from 'object-path';
 var DEBUG = false;
 
@@ -69,7 +69,7 @@ function () {
 
     var wasDocInResults = _isDocInResultData(this, docData, resultsData);
 
-    var doesMatchNow = doesDocMatchQuery(this, docData);
+    var doesMatchNow = this.query.doesDocumentDataMatch(docData);
     var isFilled = !options.limit || options.limit && resultsData.length >= options.limit;
     var limitAndFilled = options.limit && resultsData.length >= options.limit;
 
@@ -158,7 +158,7 @@ function () {
       }
     } else {
       // U1 doc not matched and also not matches now
-      if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
+      if (!options.skip && !wasDocInResults && !doesMatchNow) {
         DEBUG && _debugMessage(this, 'U1', docData);
         return false;
       } // U2 still matching -> only resort
@@ -197,6 +197,7 @@ function () {
     } // if no optimisation-algo matches, return mustReExec:true
 
 
+    DEBUG && console.log(this, 'NO_MATCH', docData);
     return true;
   };
 
@@ -232,7 +233,7 @@ export function _resortDocData(queryChangeDetector, resultsData) {
   var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector); // TODO use createFieldSorter
 
   var sortedRows = filterInMemoryFields(rows, {
-    selector: massageSelector(queryChangeDetector.query.toJSON().selector),
+    selector: queryChangeDetector.query.massageSelector,
     sort: sortOptions
   }, inMemoryFields);
   var sortedDocs = sortedRows.map(function (row) {
@@ -264,7 +265,7 @@ export function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) 
   }); // TODO use createFieldSorter
 
   var sortedRows = filterInMemoryFields(rows, {
-    selector: massageSelector(queryChangeDetector.query.toJSON().selector),
+    selector: queryChangeDetector.query.massageSelector,
     sort: sortOptions
   }, inMemoryFields);
   return sortedRows[0].id === swappedLeft._id;
@@ -327,25 +328,6 @@ export function _isDocInResultData(queryChangeDetector, docData, resultData) {
     return doc[primaryPath] === docData[primaryPath];
   });
   return !!first;
-}
-/**
- * check if the document matches the query
- * @param {object} docData
- * @return {boolean}
- */
-
-export function doesDocMatchQuery(queryChangeDetector, docData) {
-  // if doc is deleted, it cannot match
-  if (docData._deleted) return false;
-  docData = queryChangeDetector.query.collection.schema.swapPrimaryToId(docData);
-  var inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
-  var retDocs = filterInMemoryFields([{
-    doc: docData
-  }], {
-    selector: massageSelector(queryChangeDetector.query.toJSON().selector)
-  }, inMemoryFields);
-  var ret = retDocs.length === 1;
-  return ret;
 }
 export function enableDebugging() {
   console.log('QueryChangeDetector.enableDebugging()');

@@ -15,6 +15,12 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/creat
 
 var _deepEqual = _interopRequireDefault(require("deep-equal"));
 
+var _rxjs = require("rxjs");
+
+var _operators = require("rxjs/operators");
+
+var _pouchdbSelectorCore = require("pouchdb-selector-core");
+
 var _mquery = _interopRequireDefault(require("./mquery/mquery"));
 
 var _util = require("./util");
@@ -24,10 +30,6 @@ var _queryChangeDetector = _interopRequireDefault(require("./query-change-detect
 var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
-
-var _rxjs = require("rxjs");
-
-var _operators = require("rxjs/operators");
 
 var _queryCount = 0;
 
@@ -252,6 +254,26 @@ function () {
     }
   }
   /**
+   * cached call to get the massageSelector
+   */
+  ;
+
+  /**
+   * returns true if the document matches the query,
+   * does not use the 'skip' and 'limit'
+   * @param {any} docData 
+   * @return {boolean} true if matches
+   */
+  _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
+    // if doc is deleted, it cannot match
+    if (docData._deleted) return false;
+    var selector = this.mquery._conditions;
+    docData = this.collection.schema.swapPrimaryToId(docData);
+    var inMemoryFields = Object.keys(selector);
+    var matches = (0, _pouchdbSelectorCore.rowFilter)(docData, this.massageSelector, inMemoryFields);
+    return matches;
+  }
+  /**
    * deletes all found documents
    * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
    */
@@ -375,6 +397,16 @@ function () {
       }
 
       return this._$;
+    }
+  }, {
+    key: "massageSelector",
+    get: function get() {
+      if (!this._massageSelector) {
+        var selector = this.mquery._conditions;
+        this._massageSelector = (0, _pouchdbSelectorCore.massageSelector)(selector);
+      }
+
+      return this._massageSelector;
     }
   }]);
   return RxQuery;
@@ -589,3 +621,5 @@ function __ensureEqual(rxQuery) {
 function isInstanceOf(obj) {
   return obj instanceof RxQuery;
 }
+
+//# sourceMappingURL=rx-query.js.map

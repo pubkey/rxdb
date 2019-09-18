@@ -3,6 +3,7 @@ require('./unit/util.test.js');
 require('./unit/pouch-db-integration.test.js');
 require('./unit/adapter-check.test.js');
 require('./unit/instance-of-check.test.js');
+require('./unit/replication-graphql.test.js'); // TODO move down uner replication
 require('./unit/rx-schema.test.js');
 require('./unit/key-compression.test.js');
 require('./unit/bug-report.test.js');

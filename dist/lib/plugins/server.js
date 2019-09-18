@@ -11,8 +11,6 @@ exports["default"] = exports.overwritable = exports.hooks = exports.prototypes =
 
 var _express = _interopRequireDefault(require("express"));
 
-var _expressPouchdb = _interopRequireDefault(require("express-pouchdb"));
-
 var _cors = _interopRequireDefault(require("cors"));
 
 var _pouchDb = _interopRequireDefault(require("../pouch-db"));
@@ -27,7 +25,15 @@ var _watchForChanges = _interopRequireDefault(require("./watch-for-changes"));
 
 _core["default"].plugin(_replication["default"]);
 
-_core["default"].plugin(_watchForChanges["default"]); // we have to clean up after tests so there is no stupid logging
+_core["default"].plugin(_watchForChanges["default"]);
+
+var ExpressPouchDB;
+
+try {
+  ExpressPouchDB = require('express-pouchdb');
+} catch (error) {
+  console.error('Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' + 'You can install it with \'npm install express-pouchdb\'');
+} // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
 
 
@@ -63,10 +69,12 @@ var getPrefix = function getPrefix(db) {
 
 function tunnelCollectionPath(db, path, app, colName) {
   db[colName].watchForChanges();
-  app.use(path + '/' + colName, function (req, res, next) {
-    if (req.baseUrl === path + '/' + colName) {
+  var pathWithSlash = path.endsWith('/') ? path : path + '/';
+  var collectionPath = pathWithSlash + colName;
+  app.use(collectionPath, function (req, res, next) {
+    if (req.baseUrl === collectionPath) {
       var to = normalizeDbName(db) + '-rxdb-0-' + colName;
-      var toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
+      var toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
       req.originalUrl = toFull;
     }
 
@@ -99,14 +107,17 @@ function spawnServer(_ref) {
   DBS_WITH_SERVER.add(db);
 
   if (cors) {
-    ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'].map(function (method) {
-      return method.toLowerCase();
-    }).forEach(function (method) {
-      return app[method]('*', (0, _cors["default"])());
-    });
+    app.use((0, _cors["default"])({
+      'origin': function origin(_origin, callback) {
+        var originToSend = _origin || '*';
+        callback(null, originToSend);
+      },
+      'credentials': true,
+      'methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'
+    }));
   }
 
-  app.use(path, (0, _expressPouchdb["default"])(pseudo));
+  app.use(path, ExpressPouchDB(pseudo));
   var server = app.listen(port);
   SERVERS_OF_DB.get(db).push(server);
   return {
@@ -162,3 +173,5 @@ var _default = {
   spawnServer: spawnServer
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=server.js.map

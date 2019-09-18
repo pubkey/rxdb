@@ -151,6 +151,10 @@ export var basePrototype = {
     var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
     var value = this.get(path);
 
+    if (!value) {
+      return Promise.resolve(null);
+    }
+
     if (!schemaObj) {
       throw newRxError('DOC5', {
         path: path
@@ -314,7 +318,7 @@ export var basePrototype = {
     } // ensure modifications are ok
 
 
-    this.collection.schema.validateChange(newData, oldData);
+    this.collection.schema.validateChange(oldData, newData);
     return this.collection._runHooks('pre', 'save', newData, this).then(function () {
       _this3.collection.schema.validate(newData);
 

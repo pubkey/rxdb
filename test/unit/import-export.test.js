@@ -318,7 +318,7 @@ config.parallel('import-export.test.js', () => {
                 });
                 await Promise.all(
                     new Array(10).fill(0)
-                    .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
+                        .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
                 );
                 const json = await db.dump(true);
 
@@ -443,7 +443,7 @@ config.parallel('import-export.test.js', () => {
                     db2.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
     describe('issues', () => {
@@ -497,6 +497,33 @@ config.parallel('import-export.test.js', () => {
 
             db.destroy();
             db2.destroy();
+        });
+        it('#1396 import/export should work with attachments', async () => {
+            const sourceCol = await humansCollection.createAttachments(1);
+            const doc = await sourceCol.findOne().exec();
+            await doc.putAttachment({
+                id: 'cat.txt',
+                data: 'meow',
+                type: 'text/plain'
+            });
+            const json = await sourceCol.dump();
+
+            const destCol = await humansCollection.createAttachments(0);
+
+            const noDocs = await destCol.find().exec();
+            assert.equal(noDocs.length, 0);
+
+            // this line triggers an error
+            await destCol.importDump(json);
+
+            const docs = await destCol.find().exec();
+            assert.equal(docs.length, 1);
+
+            const importedDoc = await destCol.findOne().exec();
+            assert.ok(importedDoc);
+
+            sourceCol.database.destroy();
+            destCol.database.destroy();
         });
     });
 });

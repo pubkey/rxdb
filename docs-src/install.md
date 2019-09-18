@@ -48,16 +48,6 @@ import RxDB from 'rxdb';
 var RxDB = require('rxdb');
 ```
 
-If you have not included es8-polyfills, you also have to import `babel-polyfill`.
-
-```javascript
-// es6
-import 'babel-polyfill';
-
-// CommonJS
-require('babel-polyfill');
-```
-
 --------------------------------------------------------------------------------
 
 If you are new to RxDB, you should continue [here](./rx-database.md)

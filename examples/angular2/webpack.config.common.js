@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -14,7 +13,7 @@ module.exports = {
             loaders: ['awesome-typescript-loader?useWebpackText=true', 'angular2-template-loader'],
         }, {
             test: /\.html?$/,
-            loaders: ['raw-loader'],
+            loaders: ['html-loader'],
         }, {
             test: /\.css$/,
             loader: ['style-loader', 'css-loader?-url']

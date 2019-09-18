@@ -1,5 +1,4 @@
 import express from 'express';
-import ExpressPouchDB from 'express-pouchdb';
 import corsFn from 'cors';
 
 import PouchDB from '../pouch-db';
@@ -14,6 +13,16 @@ Core.plugin(ReplicationPlugin);
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 Core.plugin(RxDBWatchForChangesPlugin);
 
+let ExpressPouchDB;
+try {
+    ExpressPouchDB = require('express-pouchdb');
+} catch (error) {
+    console.error(
+        'Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' +
+        'You can install it with \'npm install express-pouchdb\''
+    );
+}
+
 // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
 const PouchdbAllDbs = require('pouchdb-all-dbs');
@@ -24,17 +33,17 @@ const SERVERS_OF_DB = new WeakMap();
 const DBS_WITH_SERVER = new WeakSet();
 
 
-const normalizeDbName = function(db) {
+const normalizeDbName = function (db) {
     const splitted = db.name.split('/').filter(str => str !== '');
     return splitted.pop();
 };
 
-const getPrefix = function(db) {
+const getPrefix = function (db) {
     const splitted = db.name.split('/').filter(str => str !== '');
     splitted.pop(); // last was the name
     if (splitted.length === 0) return '';
     let ret = splitted.join('/') + '/';
-    if(db.name.startsWith('/')) ret = '/' + ret;
+    if (db.name.startsWith('/')) ret = '/' + ret;
     return ret;
 };
 
@@ -43,10 +52,12 @@ const getPrefix = function(db) {
  */
 function tunnelCollectionPath(db, path, app, colName) {
     db[colName].watchForChanges();
-    app.use(path + '/' + colName, function(req, res, next) {
-        if (req.baseUrl === path + '/' + colName) {
+    const pathWithSlash = path.endsWith('/') ? path : path + '/';
+    const collectionPath = pathWithSlash + colName;
+    app.use(collectionPath, function (req, res, next) {
+        if (req.baseUrl === collectionPath) {
             const to = normalizeDbName(db) + '-rxdb-0-' + colName;
-            const toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
+            const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
             req.originalUrl = toFull;
         }
         next();
@@ -77,9 +88,14 @@ export function spawnServer({
     DBS_WITH_SERVER.add(db);
 
     if (cors) {
-        ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-        .map(method => method.toLowerCase())
-            .forEach(method => app[method]('*', corsFn()));
+        app.use(corsFn({
+            'origin': function (origin, callback) {
+                const originToSend = origin || '*';
+                callback(null, originToSend);
+            },
+            'credentials': true,
+            'methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT',
+        }));
     }
 
     app.use(path, ExpressPouchDB(pseudo));

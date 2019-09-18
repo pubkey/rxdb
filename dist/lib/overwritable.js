@@ -37,7 +37,7 @@ var funs = {
    * @return {LeaderElector}
    */
   createLeaderElector: function createLeaderElector() {
-    throw (0, _rxError.pluginMissing)('leaderelection');
+    throw (0, _rxError.pluginMissing)('leader-election');
   },
 
   /**
@@ -60,3 +60,5 @@ var funs = {
 };
 var _default = funs;
 exports["default"] = _default;
+
+//# sourceMappingURL=overwritable.js.map

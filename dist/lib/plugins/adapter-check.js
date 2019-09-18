@@ -96,3 +96,5 @@ var _default = {
   overwritable: overwritable
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=adapter-check.js.map

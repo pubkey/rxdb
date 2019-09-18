@@ -9,29 +9,29 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest --debug --no-cache",
-    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url http://example.com/",
+    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/",
     "fix-jest-expo": "curl https://raw.githubusercontent.com/expo/expo/master/packages/jest-expo/src/preset/setup.js > node_modules/jest-expo/src/preset/setup.js",
     "postinstall": "npm run fix-jest-expo"
   },
   "devDependencies": {
     "babel-preset-expo": "5.2.0",
-    "expo-cli": "2.21.1",
-    "jest-expo": "33.0.2",
-    "react-native-gesture-handler": "1.3.0",
-    "react-test-renderer": "16.8.6",
-    "rimraf": "2.6.3",
-    "schedule": "0.4.0"
+    "expo-cli": "3.0.10",
+    "jest-expo": "34.0.1",
+    "react-native-gesture-handler": "1.4.1",
+    "react-test-renderer": "16.9.0",
+    "rimraf": "3.0.0",
+    "schedule": "0.5.0"
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "33.0.7",
+    "expo": "34.0.4",
     "global": "4.4.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
     "random-token": "0.0.8",
-    "react": "16.8.6",
+    "react": "16.9.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-33.0.0.tar.gz",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "6.5.2"
+    "rxjs": "6.5.3"
   }
 }

@@ -209,7 +209,6 @@ export var prototypes = {
     proto.sync = sync;
   }
 };
-export var overwritable = {};
 export var hooks = {
   createRxCollection: function createRxCollection(collection) {
     INTERNAL_POUCHDBS.add(collection.pouch);
@@ -218,7 +217,6 @@ export var hooks = {
 export default {
   rxdb: rxdb,
   prototypes: prototypes,
-  overwritable: overwritable,
   hooks: hooks,
   sync: sync
 };

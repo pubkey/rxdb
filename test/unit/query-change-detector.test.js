@@ -27,54 +27,6 @@ if (config.platform.isNode()) {
 
 
 config.parallel('query-change-detector.test.js', () => {
-    describe('doesDocMatchQuery()', () => {
-        it('should match', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find().where('firstName').ne('foobar');
-            const docData = schemaObjects.human();
-            assert.ok(QueryChangeDetector.doesDocMatchQuery(q._queryChangeDetector, docData));
-            col.database.destroy();
-        });
-        it('should not match', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find().where('firstName').ne('foobar');
-            const docData = schemaObjects.human();
-            docData.firstName = 'foobar';
-            assert.equal(false, QueryChangeDetector.doesDocMatchQuery(q._queryChangeDetector, docData));
-            col.database.destroy();
-        });
-        it('should match ($gt)', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find().where('age').gt(1);
-            const docData = schemaObjects.human();
-            docData.age = 5;
-            assert.ok(QueryChangeDetector.doesDocMatchQuery(q._queryChangeDetector, docData));
-            col.database.destroy();
-        });
-        it('should not match ($gt)', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find().where('age').gt(100);
-            const docData = schemaObjects.human();
-            docData.age = 5;
-            assert.equal(false, QueryChangeDetector.doesDocMatchQuery(q._queryChangeDetector, docData));
-            col.database.destroy();
-        });
-        it('BUG: this should match', async () => {
-            const col = await humansCollection.create(0);
-            const q = col.find();
-
-            const docData = {
-                color: 'green',
-                hp: 100,
-                maxHP: 767,
-                name: 'asdfsadf',
-                _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
-            };
-
-            assert.equal(true, QueryChangeDetector.doesDocMatchQuery(q._queryChangeDetector, docData));
-            col.database.destroy();
-        });
-    });
     describe('._isDocInResultData()', async () => {
         it('should return true', async () => {
             const col = await humansCollection.create(5);
@@ -463,9 +415,9 @@ config.parallel('query-change-detector.test.js', () => {
                 // it should find the same order with pouchdb
                 const pouchResult = await col.pouch.find(
                     col
-                    .find()
-                    .where('passportId')
-                    .ne('foobar3').toJSON()
+                        .find()
+                        .where('passportId')
+                        .ne('foobar3').toJSON()
                 );
                 assert.deepEqual(
                     docs.map(d => d.id),
@@ -510,9 +462,9 @@ config.parallel('query-change-detector.test.js', () => {
                 // it should find the same order with pouchdb
                 const pouchResult2 = await col.pouch.find(
                     col
-                    .find()
-                    .where('passportId')
-                    .ne('foobar3').toJSON()
+                        .find()
+                        .where('passportId')
+                        .ne('foobar3').toJSON()
                 );
                 assert.deepEqual(
                     lastResult,
@@ -570,7 +522,90 @@ config.parallel('query-change-detector.test.js', () => {
             col.database.destroy();
         });
     });
-    describe('e', () => {
-        //    it('e', () => process.exit());
+    it('BUG: no optimisation for irrelevant insert', async () => {
+        const schema = {
+            title: 'messages schema',
+            description: 'describes a message',
+            version: 0,
+            keyCompression: false,
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    primary: true
+                },
+                text: {
+                    type: 'string'
+                },
+                time: {
+                    type: 'number',
+                    index: true
+                },
+                read: {
+                    description: 'true if was read by the reciever',
+                    type: 'boolean'
+                },
+                sender: {
+                    type: 'string',
+                    ref: 'users'
+                },
+                reciever: {
+                    type: 'string',
+                    ref: 'users'
+                }
+            },
+            compoundIndexes: [
+                ['sender', 'time'],
+                ['reciever', 'time']
+            ],
+            required: [
+                'text',
+                'time',
+                'read',
+                'sender',
+                'reciever'
+            ]
+        };
+        const col = await humansCollection.createBySchema(schema);
+        const user1 = '1';
+        const user2 = '2';
+        const getQuery = () => col.findOne({
+            $or: [
+                {
+                    sender: {
+                        $eq: user1
+                    },
+                    reciever: {
+                        $eq: user2
+                    }
+                },
+                {
+                    sender: {
+                        $eq: user2
+                    },
+                    reciever: {
+                        $eq: user1
+                    }
+                }
+            ]
+        }).sort('-time');
+
+        await getQuery().exec();
+        const countBefore = getQuery()._execOverDatabaseCount;
+
+        // insert something that does not match
+        await col.insert({
+            id: AsyncTestUtil.randomString(10),
+            text: AsyncTestUtil.randomString(10),
+            time: AsyncTestUtil.randomNumber(1, 1000),
+            read: false,
+            sender: '3',
+            reciever: '4'
+        });
+
+        await getQuery().exec();
+        const countAfter = getQuery()._execOverDatabaseCount;
+        assert.equal(countBefore, countAfter);
+        col.database.destroy();
     });
 });

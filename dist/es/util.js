@@ -377,3 +377,9 @@ export function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
   return parseInt(first);
 }
+/**
+ * prefix of local documents
+ * TODO check if this variable exists somewhere else
+ */
+
+export var LOCAL_PREFIX = '_local/';

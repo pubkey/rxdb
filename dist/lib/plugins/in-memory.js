@@ -426,3 +426,5 @@ var _default = {
   spawnInMemory: spawnInMemory
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=in-memory.js.map

@@ -550,6 +550,13 @@ export class RxCollection {
     }
 
     /**
+     * sync with a GraphQL endpoint
+     */
+    syncGraphQL() {
+        throw pluginMissing('replication-graphql');
+    }
+
+    /**
      * Create a replicated in-memory-collection
      */
     inMemory() {

@@ -26,6 +26,12 @@ import * as MemoryAdapter from 'pouchdb-adapter-memory';
 RxDB.plugin(MemoryAdapter);
 ```
 
+You also have to install the module `express-pouchdb` which does not come with RxDB.
+
+```bash
+  npm install express-pouchdb --save
+```
+
 
 Now we can create a database and a collection.
 

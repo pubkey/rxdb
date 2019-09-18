@@ -90,3 +90,5 @@ var _default = {
   prototypes: prototypes
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=watch-for-changes.js.map

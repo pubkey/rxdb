@@ -2,8 +2,6 @@
 
 This list contains things that have to be done but will create breaking changes.
 
-### Move `pouchdb-server` to devDependencies so the build will not run on each install [issue](https://github.com/pubkey/rxdb/issues/884)
-
 ### KeyCompression does not work on objects inside of arrays.
 In documents like the following, the properties inside of the array-object will not be compressed `color`
 
@@ -25,11 +23,6 @@ The best approach will be to use [jsonschema-key-compression](https://github.com
 
 Currently `withRev` has default `true`.
 It should be `false` by default because the user does not expect the revision here.
-
-### Replace crypto-js
-
-The dependency `crypto-js` is not tree-shakeable or works with rollup out of the box.
-We should use a lighter module that does the aes-encryption. See `config/rollup.config.js`
 
 ### Rewrite prototype-merge
 

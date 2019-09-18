@@ -403,3 +403,5 @@ function createRxSchema(jsonID) {
 function isInstanceOf(obj) {
   return obj instanceof RxSchema;
 }
+
+//# sourceMappingURL=rx-schema.js.map

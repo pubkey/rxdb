@@ -103,3 +103,5 @@ function createChangeEvent(op, database, collection, doc, value) {
 function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;
 }
+
+//# sourceMappingURL=rx-change-event.js.map

@@ -97,6 +97,7 @@ var dumpRxCollection = function dumpRxCollection() {
   return this._pouchFind(query, null, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
+      delete docData._attachments;
       return docData;
     });
     return json;
@@ -167,3 +168,5 @@ var _default = {
   overwritable: overwritable
 };
 exports["default"] = _default;
+
+//# sourceMappingURL=json-dump.js.map

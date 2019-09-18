@@ -535,3 +535,5 @@ MQuery.canMerge = function (conds) {
 });
 var _default = MQuery;
 exports["default"] = _default;
+
+//# sourceMappingURL=mquery.js.map

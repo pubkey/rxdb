@@ -31,7 +31,7 @@ const funs = {
      * @return {LeaderElector}
      */
     createLeaderElector() {
-        throw pluginMissing('leaderelection');
+        throw pluginMissing('leader-election');
     },
 
     /**
