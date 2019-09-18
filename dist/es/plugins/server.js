@@ -49,10 +49,12 @@ var getPrefix = function getPrefix(db) {
 
 function tunnelCollectionPath(db, path, app, colName) {
   db[colName].watchForChanges();
-  app.use(path + '/' + colName, function (req, res, next) {
-    if (req.baseUrl === path + '/' + colName) {
+  var pathWithSlash = path.endsWith('/') ? path : path + '/';
+  var collectionPath = pathWithSlash + colName;
+  app.use(collectionPath, function (req, res, next) {
+    if (req.baseUrl === collectionPath) {
       var to = normalizeDbName(db) + '-rxdb-0-' + colName;
-      var toFull = req.originalUrl.replace('/db/' + colName, '/db/' + to);
+      var toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
       req.originalUrl = toFull;
     }
 
@@ -83,11 +85,14 @@ export function spawnServer(_ref) {
   DBS_WITH_SERVER.add(db);
 
   if (cors) {
-    ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'].map(function (method) {
-      return method.toLowerCase();
-    }).forEach(function (method) {
-      return app[method]('*', corsFn());
-    });
+    app.use(corsFn({
+      'origin': function origin(_origin, callback) {
+        var originToSend = _origin || '*';
+        callback(null, originToSend);
+      },
+      'credentials': true,
+      'methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'
+    }));
   }
 
   app.use(path, ExpressPouchDB(pseudo));
