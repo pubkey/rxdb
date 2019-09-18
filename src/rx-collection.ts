@@ -59,7 +59,6 @@ import {
 import {
     RxJsonSchema,
     PouchSettings,
-    RxCollectionBase,
     RxDatabase,
     KeyFunctionMap,
     RxReplicationState,
@@ -73,7 +72,13 @@ import {
     RxSchema
 } from './rx-schema';
 
-export class RxCollection implements RxCollectionBase {
+export type RxCollection<
+    RxDocumentType = any,
+    OrmMethods = {},
+    StaticMethods = { [key: string]: any }
+    > = RxCollectionBase<RxDocumentType, OrmMethods> & StaticMethods;
+
+export class RxCollectionBase<RxDocumentType, OrmMethods> {
 
     public _isInMemory = false;
     public destroyed = false;
@@ -804,7 +809,7 @@ function _applyHookFunctions(collection) {
 let _properties = null;
 export function properties() {
     if (!_properties) {
-        const pseudoInstance = new RxCollection();
+        const pseudoInstance = new (RxCollectionBase as any)();
         const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
         const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
         _properties = [...ownProperties, ...prototypeProperties];
@@ -969,7 +974,7 @@ export function create({
             });
         });
 
-    const collection = new RxCollection(
+    const collection = new RxCollectionBase(
         database,
         name,
         schema,
@@ -1001,13 +1006,13 @@ export function create({
         });
 }
 
-export function isInstanceOf(obj) {
-    return obj instanceof RxCollection;
+export function isInstanceOf(obj: any): boolean {
+    return obj instanceof RxCollectionBase;
 }
 
 export default {
     create,
     properties,
     isInstanceOf,
-    RxCollection
+    RxCollectionBase
 };

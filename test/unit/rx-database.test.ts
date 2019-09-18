@@ -10,6 +10,10 @@ const path = require('path');
 
 import * as RxDatabase from '../../dist/lib/index';
 import {
+    isRxCollection,
+    isRxDatabase
+} from '../../dist/lib/index';
+import {
     createRxSchema
 } from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
@@ -32,7 +36,7 @@ config.parallel('rx-database.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: memdown
                 });
-                assert.equal(db.constructor.name, 'RxDatabase');
+                assert.ok(isRxDatabase(db));
                 db.destroy();
             });
             it('leveldown', async () => {
@@ -42,7 +46,7 @@ config.parallel('rx-database.test.js', () => {
                         name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
                         adapter: leveldown
                     });
-                    assert.equal(db.constructor.name, 'RxDatabase');
+                    assert.ok(isRxDatabase(db));
                     db.destroy();
                 }
             });
@@ -52,7 +56,7 @@ config.parallel('rx-database.test.js', () => {
                     adapter: 'memory',
                     password: util.randomCouchString(12)
                 });
-                assert.equal(db.constructor.name, 'RxDatabase');
+                assert.ok(isRxDatabase(db));
                 db.destroy();
             });
             it('2 instances on same adapter (if ignoreDuplicate is true)', async () => {
@@ -245,7 +249,7 @@ config.parallel('rx-database.test.js', () => {
                     name: 'human0',
                     schema: schemas.human
                 });
-                assert.equal(collection.constructor.name, 'RxCollection');
+                assert.ok(isRxCollection(collection));
 
                 // make sure defineGetter works
                 assert.equal(db.human0, collection);
@@ -276,7 +280,7 @@ config.parallel('rx-database.test.js', () => {
                     name: 'humanenc',
                     schema: schemas.encryptedHuman
                 });
-                assert.equal(collection.constructor.name, 'RxCollection');
+                assert.ok(isRxCollection(collection));
                 db.destroy();
             });
             it('collectionsCollection should contain schema.version', async () => {

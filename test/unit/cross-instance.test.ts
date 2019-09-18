@@ -9,6 +9,9 @@ import assert from 'assert';
 import config from './config';
 
 import * as RxDatabase from '../../dist/lib/index';
+import {
+    isRxDatabase
+} from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
@@ -23,7 +26,7 @@ config.parallel('cross-instance.test.js', () => {
                 adapter: 'memory',
                 multiInstance: true
             });
-            assert.equal(db.constructor.name, 'RxDatabase');
+            assert.ok(isRxDatabase(db));
             db.destroy();
         });
         it('create a 2 multiInstance databases', async () => {
@@ -40,8 +43,8 @@ config.parallel('cross-instance.test.js', () => {
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            assert.equal(db.constructor.name, 'RxDatabase');
-            assert.equal(db2.constructor.name, 'RxDatabase');
+            assert.ok(isRxDatabase(db));
+            assert.ok(isRxDatabase(db2));
             db.destroy();
             db2.destroy();
         });
@@ -119,7 +122,7 @@ config.parallel('cross-instance.test.js', () => {
                 since: 'now',
                 live: true,
                 include_docs: true
-            }).on('change', function(change) {
+            }).on('change', function (change) {
                 if (!change.id.startsWith('_'))
                     got = change;
             });

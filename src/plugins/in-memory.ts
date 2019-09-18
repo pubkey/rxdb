@@ -17,7 +17,10 @@ import {
     first
 } from 'rxjs/operators';
 
-import RxCollection from '../rx-collection';
+import {
+    RxCollectionBase,
+    RxCollection
+} from '../rx-collection';
 import {
     clone,
     randomCouchString,
@@ -25,7 +28,9 @@ import {
 } from '../util';
 import Core from '../core';
 import Crypter from '../crypter';
-import createChangeEventBuffer from '../change-event-buffer';
+import {
+    createChangeEventBuffer
+} from '../change-event-buffer';
 import {
     createRxSchema
 } from '../rx-schema';
@@ -47,7 +52,7 @@ const BULK_DOC_OPTIONS_FALSE = {
     new_edits: false
 };
 
-export class InMemoryRxCollection extends RxCollection.RxCollection {
+export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollectionBase<RxDocumentType, OrmMethods> {
     constructor(parentCollection, pouchSettings = {}) {
         super(
             parentCollection.database,

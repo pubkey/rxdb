@@ -14,7 +14,6 @@ import {
     newRxError,
     pluginMissing
 } from './rx-error';
-import RxCollection from './rx-collection';
 import {
     createRxSchema
 } from './rx-schema';
@@ -28,11 +27,24 @@ import {
     runPluginHooks
 } from './hooks';
 import {
-    Subject
+    Subject,
+    Subscription,
+    Observable
 } from 'rxjs';
 import {
     filter
 } from 'rxjs/operators';
+import {
+    PouchSettings
+} from '../typings';
+import {
+    RxCollectionBase,
+    RxCollection,
+    create as createRxCollection
+} from './rx-collection';
+import {
+    RxChangeEvent
+} from './rx-change-event';
 
 /**
  * stores the combinations
@@ -44,33 +56,37 @@ const USED_COMBINATIONS = {};
 
 let DB_COUNT = 0;
 
-export class RxDatabase {
-    constructor(name, adapter, password, multiInstance, queryChangeDetection, options, pouchSettings) {
-        if (typeof name !== 'undefined') DB_COUNT++;
-        this.name = name;
-        this.adapter = adapter;
-        this.password = password;
-        this.multiInstance = multiInstance;
-        this.queryChangeDetection = queryChangeDetection;
-        this.options = options;
-        this.pouchSettings = pouchSettings;
-        this.idleQueue = new IdleQueue();
-        this.token = randomToken(10);
 
-        this._subs = [];
-        this.destroyed = false;
+export type CollectionsOfDatabase = { [key: string]: RxCollection } | {};
+export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> & Collections;
 
+export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
-        // cache for collection-objects
-        this.collections = {};
-
-        // rx
-        this.subject = new Subject();
-        this.observable$ = this.subject.asObservable().pipe(
+    public idleQueue: IdleQueue = new IdleQueue();
+    public readonly token: string = randomToken(10);
+    public _subs: Subscription[] = [];
+    public destroyed: boolean = false;
+    public collections: CollectionsOfDatabase = {};
+    private subject: Subject<RxChangeEvent> = new Subject();
+    private observable$: Observable<RxChangeEvent> = this.subject.asObservable()
+        .pipe(
             filter(cEvent => isInstanceOfRxChangeEvent(cEvent))
         );
+    public broadcastChannel: BroadcastChannel;
+
+    constructor(
+        public name: string,
+        public adapter: any,
+        public password: any,
+        public multiInstance: boolean,
+        public queryChangeDetection: boolean = false,
+        public options: any = {},
+        public pouchSettings: PouchSettings
+    ) {
+        if (typeof name !== 'undefined') DB_COUNT++;
     }
 
+    private _collectionsPouch;
     dangerousRemoveCollectionInfo() {
         const colPouch = this._collectionsPouch;
         return colPouch.allDocs()
@@ -86,6 +102,7 @@ export class RxDatabase {
             });
     }
 
+    private _leaderElector;
     get leaderElector() {
         if (!this._leaderElector)
             this._leaderElector = overwritable.createLeaderElector(this);
@@ -232,7 +249,7 @@ export class RxDatabase {
                     });
                 } else return collectionDoc;
             })
-            .then(() => RxCollection.create(args))
+            .then(() => createRxCollection(args))
             .then(collection => {
                 col = collection;
                 if (
@@ -258,7 +275,8 @@ export class RxDatabase {
             .then(() => {
                 const cEvent = createChangeEvent(
                     'RxDatabase.collection',
-                    this
+                    this,
+                    col
                 );
                 cEvent.data.v = col.name;
                 cEvent.data.col = '_collections';
@@ -335,7 +353,7 @@ export class RxDatabase {
      * destroys the database-instance and all collections
      * @return {Promise}
      */
-    destroy() {
+    public destroy() {
         if (this.destroyed) return Promise.resolve();
         runPluginHooks('preDestroyRxDatabase', this);
         DB_COUNT--;
@@ -383,7 +401,7 @@ export class RxDatabase {
 let _properties = null;
 export function properties() {
     if (!_properties) {
-        const pseudoInstance = new RxDatabase();
+        const pseudoInstance: RxDatabaseBase = new (RxDatabaseBase as any)();
         const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
         const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
         _properties = [...ownProperties, ...prototypeProperties];
@@ -600,7 +618,7 @@ export function create({
     ignoreDuplicate = false,
     options = {},
     pouchSettings = {}
-}) {
+}): Promise<RxDatabaseBase> {
     validateCouchDBString(name);
 
     // check if pouchdb-adapter
@@ -634,7 +652,7 @@ export function create({
     USED_COMBINATIONS[name].push(adapter);
 
 
-    const db = new RxDatabase(
+    const db = new RxDatabaseBase(
         name,
         adapter,
         password,
@@ -669,8 +687,12 @@ export function getPouchLocation(dbName, collectionName, schemaVersion) {
 }
 
 function _spawnPouchDB(
-    dbName, adapter, collectionName, schemaVersion,
-    pouchSettings = {}, pouchSettingsFromRxDatabaseCreator = {}
+    dbName: string,
+    adapter: any,
+    collectionName: string,
+    schemaVersion: number,
+    pouchSettings: PouchSettings = {},
+    pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
 ) {
     const pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
     const pouchDbParameters = {
@@ -690,25 +712,50 @@ function _spawnPouchDB(
     );
 }
 
-function _internalAdminPouch(name, adapter, pouchSettingsFromRxDatabaseCreator = {}) {
-    return _spawnPouchDB(name, adapter, '_admin', 0, {
-        auto_compaction: false, // no compaction because this only stores local documents
-        revs_limit: 1
-    }, pouchSettingsFromRxDatabaseCreator);
+function _internalAdminPouch(
+    name: string,
+    adapter: any,
+    pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
+) {
+    return _spawnPouchDB(
+        name,
+        adapter,
+        '_admin',
+        0, {
+            // no compaction because this only stores local documents
+            auto_compaction: false,
+            revs_limit: 1
+        },
+        pouchSettingsFromRxDatabaseCreator
+    );
 }
 
-function _internalCollectionsPouch(name, adapter, pouchSettingsFromRxDatabaseCreator = {}) {
-    return _spawnPouchDB(name, adapter, '_collections', 0, {
-        auto_compaction: false, // no compaction because this only stores local documents
-        revs_limit: 1
-    }, pouchSettingsFromRxDatabaseCreator);
+function _internalCollectionsPouch(
+    name: string,
+    adapter: any,
+    pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
+) {
+    return _spawnPouchDB(
+        name,
+        adapter,
+        '_collections', 0,
+        {
+            // no compaction because this only stores local documents
+            auto_compaction: false,
+            revs_limit: 1
+        },
+        pouchSettingsFromRxDatabaseCreator
+    );
 }
 
 /**
  *
  * @return {Promise}
  */
-export function removeDatabase(databaseName, adapter) {
+export function removeDatabase(
+    databaseName: string,
+    adapter: any
+): Promise<any> {
     const adminPouch = _internalAdminPouch(databaseName, adapter);
     const collectionsPouch = _internalCollectionsPouch(databaseName, adapter);
 
@@ -738,12 +785,12 @@ export function removeDatabase(databaseName, adapter) {
  * check is the given adapter can be used
  * @return {Promise}
  */
-export function checkAdapter(adapter) {
+export function checkAdapter(adapter: any): Promise<boolean> {
     return overwritable.checkAdapter(adapter);
 }
 
-export function isInstanceOf(obj) {
-    return obj instanceof RxDatabase;
+export function isInstanceOf(obj: any) {
+    return obj instanceof RxDatabaseBase;
 }
 
 export function dbCount() {
@@ -755,6 +802,6 @@ export default {
     removeDatabase,
     checkAdapter,
     isInstanceOf,
-    RxDatabase,
+    RxDatabaseBase,
     dbCount
 };

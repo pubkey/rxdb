@@ -10,6 +10,12 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDB from '../../dist/lib/index';
+import {
+    isRxCollection,
+    isRxQuery,
+    isRxDatabase,
+    isRxDocument
+} from '../../dist/lib/index';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxDocument from '../../dist/lib/rx-document';
 import {
@@ -34,7 +40,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'humanx',
                         schema
                     });
-                    assert.equal(collection.constructor.name, 'RxCollection');
+                    assert.ok(isRxCollection(collection));
                     db.destroy();
                 });
                 it('use Schema-Object', async () => {
@@ -48,7 +54,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema
                     });
-                    assert.equal(collection.constructor.name, 'RxCollection');
+                    assert.ok(isRxCollection(collection));
                     db.destroy();
                 });
                 it('index', async () => {
@@ -215,13 +221,13 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'fooba4r',
                         schema
                     });
-                    assert.equal(collection1.constructor.name, 'RxCollection');
+                    assert.ok(isRxCollection(collection1));
                     const collection2 = await RxCollection.create({
                         database: db,
                         name: 'foobar4',
                         schema
                     });
-                    assert.equal(collection2.constructor.name, 'RxCollection');
+                    assert.ok(isRxCollection(collection2));
                     db.destroy();
                 });
             });
@@ -584,7 +590,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.database.destroy();
                     });
                 });
-                describe('negative', () => {});
+                describe('negative', () => { });
             });
             describe('.or()', () => {
                 it('should find the 2 documents with the or-method', async () => {
@@ -626,7 +632,7 @@ config.parallel('rx-collection.test.js', () => {
                         }).sort({
                             age: -1
                         });
-                        assert.equal(query.constructor.name, 'RxQuery');
+                        assert.ok(isRxQuery(query));
                         const docs = await query.exec();
                         assert.equal(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
@@ -769,10 +775,10 @@ config.parallel('rx-collection.test.js', () => {
                                     $gt: 0
                                 }
                             })
-                            .sort({
-                                age: -1
-                            })
-                            .exec(),
+                                .sort({
+                                    age: -1
+                                })
+                                .exec(),
                             Error
                         );
                         c.database.destroy();
@@ -805,7 +811,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().limit(1).exec();
                         assert.equal(docs.length, 1);
-                        assert.ok(RxDocument.isInstanceOf(docs[0]));
+                        assert.ok(isRxDocument(docs[0]));
                         c.database.destroy();
                     });
                     it('get last in order', async () => {
@@ -829,7 +835,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().limit(1).limit(null).exec();
                         assert.ok(docs.length > 1);
-                        assert.ok(RxDocument.isInstanceOf(docs[0]));
+                        assert.ok(isRxDocument(docs[0]));
                         c.database.destroy();
                     });
                 });
@@ -1082,7 +1088,7 @@ config.parallel('rx-collection.test.js', () => {
 
                     c.database.destroy();
                 });
-                it('BUG: insert and find very often', async function() {
+                it('BUG: insert and find very often', async function () {
                     this.timeout(5000);
                     const amount = 10;
                     for (let i = 0; i < amount; i++) {
@@ -1201,7 +1207,7 @@ config.parallel('rx-collection.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await collection.insert(obj);
                     const cloned = clone(obj);
-                    
+
                     cloned.firstName = 'foobar';
                     delete cloned.passportId;
                     await AsyncTestUtil.assertThrows(
@@ -1398,7 +1404,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     await Promise.all(
                         new Array(5).fill(0)
-                        .map(() => collection.insert(schemaObjects.human()))
+                            .map(() => collection.insert(schemaObjects.human()))
                     );
                     const allDocs = await collection.find().exec();
                     assert.equal(5, allDocs.length);
@@ -1423,7 +1429,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     await Promise.all(
                         new Array(5).fill(0)
-                        .map(() => collection.insert(schemaObjects.human()))
+                            .map(() => collection.insert(schemaObjects.human()))
                     );
                     await collection.remove();
 
@@ -1433,7 +1439,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: otherSchema,
                         migrationStrategies: {
-                            1: function(doc) {
+                            1: function (doc) {
                                 return doc;
                             }
                         }
@@ -1442,7 +1448,7 @@ config.parallel('rx-collection.test.js', () => {
                     assert.equal(noDocs.length, 0);
                     await Promise.all(
                         new Array(5).fill(0)
-                        .map(() => collection2.insert(schemaObjects.human()))
+                            .map(() => collection2.insert(schemaObjects.human()))
                     );
                     const fiveDocs = await collection2.find().exec();
                     assert.equal(fiveDocs.length, 5);

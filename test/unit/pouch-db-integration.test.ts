@@ -10,6 +10,9 @@ import * as RxDB from '../../dist/lib/index';
 import * as util from '../../dist/lib/util';
 import * as schemaObjects from './../helper/schema-objects';
 import AsyncTestUtil from 'async-test-util';
+import {
+    isRxDatabase
+} from '../../dist/lib/index';
 
 config.parallel('pouch-db-integration.test.js', () => {
     describe('init', () => {
@@ -35,7 +38,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 name: util.randomCouchString(10),
                 adapter: memdown
             });
-            assert.equal(db.constructor.name, 'RxDatabase');
+            assert.ok(isRxDatabase(db));
             db.destroy();
         });
     });
@@ -56,7 +59,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
-            assert.equal(db.constructor.name, 'RxDatabase');
+            assert.ok(isRxDatabase(db));
             db.destroy();
         });
     });

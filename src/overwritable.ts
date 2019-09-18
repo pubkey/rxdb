@@ -9,6 +9,12 @@ import {
 import {
     RxSchema
 } from './rx-schema';
+import {
+    RxDatabase
+} from '../typings';
+import {
+    RxDatabaseBase
+} from './rx-database';
 
 const funs = {
     /**
@@ -18,7 +24,7 @@ const funs = {
      * @throws if password not valid
      * @return {void}
      */
-    validatePassword() {
+    validatePassword(_password: string | any) {
         throw pluginMissing('encryption');
     },
     /**
@@ -26,7 +32,7 @@ const funs = {
      * @param  {RxSchema} schema
      * @return {KeyCompressor}
      */
-    createKeyCompressor(schema: RxSchema) {
+    createKeyCompressor(_schema: RxSchema) {
         throw pluginMissing('key-compression');
     },
     /**
@@ -34,7 +40,7 @@ const funs = {
      * @param  {RxDatabase} database
      * @return {LeaderElector}
      */
-    createLeaderElector() {
+    createLeaderElector(_database: RxDatabaseBase | RxDatabase) {
         throw pluginMissing('leader-election');
     },
 
@@ -42,7 +48,7 @@ const funs = {
      * checks if the given adapter can be used
      * @return {any} adapter
      */
-    checkAdapter() {
+    checkAdapter(_adapter: any) {
         throw pluginMissing('adapter-check');
     },
     /**

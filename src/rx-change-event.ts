@@ -7,6 +7,13 @@ import {
     hash
 } from './util';
 
+import {
+    RxDatabase
+} from './rx-database';
+import {
+    RxCollection
+} from './rx-collection';
+
 export class RxChangeEvent {
     constructor(
         public data
@@ -69,8 +76,12 @@ export function changeEventfromPouchChange(changeDoc, collection) {
 }
 
 export function createChangeEvent(
-    op, database, collection,
-    doc, value, isLocal = false
+    op: string,
+    database: RxDatabase,
+    collection?: RxCollection,
+    doc?,
+    value?,
+    isLocal = false
 ) {
     const data = {
         op: op,

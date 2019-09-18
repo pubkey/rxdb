@@ -31,8 +31,8 @@ const PROTOTYPES = {
     Crypter: Crypter.Crypter.prototype,
     RxDocument: RxDocumentPrototype,
     RxQuery: RxQuery.prototype,
-    RxCollection: RxCollection.RxCollection.prototype,
-    RxDatabase: RxDatabase.RxDatabase.prototype
+    RxCollection: RxCollection.RxCollectionBase.prototype,
+    RxDatabase: RxDatabase.RxDatabaseBase.prototype
 };
 
 const ADDED_PLUGINS = new Set();
