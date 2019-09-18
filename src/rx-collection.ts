@@ -28,58 +28,92 @@ import {
 } from './rx-error';
 import {
     mustMigrate,
-    createDataMigrator
+    createDataMigrator,
+    DataMigrator
 } from './data-migrator';
-import Crypter from './crypter';
-import createDocCache from './doc-cache';
-import createQueryCache from './query-cache';
-import createChangeEventBuffer from './change-event-buffer';
+import Crypter, {
+    Crypter as CrypterClass
+} from './crypter';
+import {
+    DocCache,
+    createDocCache
+} from './doc-cache';
+import {
+    QueryCache,
+    createQueryCache
+} from './query-cache';
+import {
+    ChangeEventBuffer,
+    createChangeEventBuffer
+} from './change-event-buffer';
 import overwritable from './overwritable';
 import {
     runPluginHooks
 } from './hooks';
 
+import {
+    Subscription,
+    Observable
+} from 'rxjs';
 
-export class RxCollection {
+import {
+    RxJsonSchema,
+    PouchSettings,
+    RxCollectionBase,
+    RxDatabase,
+    KeyFunctionMap,
+    RxReplicationState,
+    PouchDB,
+    RxQuery,
+    MigrationState,
+    SyncOptions
+} from '../typings';
+
+import {
+    RxSchema
+} from './rx-schema';
+
+export class RxCollection implements RxCollectionBase {
+
+    public _isInMemory = false;
+    public destroyed = false;
+    public _atomicUpsertQueues = new Map(); // TODO type
+    // defaults
+    public synced: boolean = false;
+    public hooks = {};
+    public _subs: Subscription[] = [];
+    public _repStates: RxReplicationState[] = [];
+    public pouch: PouchDB = null; // this is needed to preserve this name
+
+    public _docCache: DocCache = createDocCache();
+    public _queryCache: QueryCache = createQueryCache();
+    public _dataMigrator: DataMigrator;
+    public _crypter: CrypterClass;
+    public _observable$: Observable<any>; // TODO type
+    public _changeEventBuffer: ChangeEventBuffer;
+
+    // other
+    private _keyCompressor;
+
     constructor(
-        database,
-        name,
-        schema,
-        pouchSettings = {},
-        migrationStrategies = {},
-        methods = {},
-        attachments = {},
-        options = {},
-        statics = {}
+        public database: RxDatabase<{}>,
+        public name: string,
+        public schema: RxSchema,
+        public pouchSettings: PouchSettings = {},
+        public migrationStrategies: KeyFunctionMap = {},
+        public methods: KeyFunctionMap = {},
+        public attachments: KeyFunctionMap = {},
+        public options: any = {},
+        public statics: KeyFunctionMap = {}
     ) {
-        this._isInMemory = false;
-        this.destroyed = false;
-        this.database = database;
-        this.name = name;
-        this.schema = schema;
-        this._migrationStrategies = migrationStrategies;
-        this._pouchSettings = pouchSettings;
-        this._methods = methods; // orm of documents
-        this._attachments = attachments; // orm of attachments
-        this.options = options;
-
-        this._atomicUpsertQueues = new Map();
-        this._statics = statics;
-
-        this._docCache = createDocCache();
-        this._queryCache = createQueryCache();
-
-        // defaults
-        this.synced = false;
-        this.hooks = {};
-        this._subs = [];
-        this._repStates = [];
-        this.pouch = null; // this is needed to preserve this name
-
         _applyHookFunctions(this);
     }
     prepare() {
-        this.pouch = this.database._spawnPouchDB(this.name, this.schema.version, this._pouchSettings);
+        this.pouch = this.database._spawnPouchDB(
+            this.name,
+            this.schema.version,
+            this.pouchSettings
+        );
 
         if (this.schema.doKeyCompression()) {
             this._keyCompressor = overwritable.createKeyCompressor(this.schema);
@@ -90,7 +124,7 @@ export class RxCollection {
         const createIndexesPromise = _prepareCreateIndexes(this, spawnedPouchPromise);
 
 
-        this._dataMigrator = createDataMigrator(this, this._migrationStrategies);
+        this._dataMigrator = createDataMigrator(this, this.migrationStrategies);
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
@@ -100,14 +134,14 @@ export class RxCollection {
 
         this._subs.push(
             this._observable$
-            .pipe(
-                filter(cE => !cE.data.isLocal)
-            )
-            .subscribe(cE => {
-                // when data changes, send it to RxDocument in docCache
-                const doc = this._docCache.get(cE.data.doc);
-                if (doc) doc._handleChangeEvent(cE);
-            })
+                .pipe(
+                    filter(cE => !cE.data.isLocal)
+                )
+                .subscribe(cE => {
+                    // when data changes, send it to RxDocument in docCache
+                    const doc = this._docCache.get(cE.data.doc);
+                    if (doc) doc._handleChangeEvent(cE);
+                })
         );
 
         return Promise.all([
@@ -120,6 +154,7 @@ export class RxCollection {
      * merge the prototypes of schema, orm-methods and document-base
      * so we do not have to assing getters/setters and orm methods to each document-instance
      */
+    private _getDocumentPrototype;
     getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const schemaProto = this.schema.getDocumentPrototype();
@@ -173,6 +208,7 @@ export class RxCollection {
         return this._getDocumentPrototype;
     }
 
+    private _getDocumentConstructor;
     getDocumentConstructor() {
         if (!this._getDocumentConstructor) {
             this._getDocumentConstructor = RxDocument.createRxDocumentConstructor(
@@ -194,7 +230,7 @@ export class RxCollection {
      * @param {number} [batchSize=10] amount of documents handled in parallel
      * @return {Observable} emits the migration-status
      */
-    migrate(batchSize = 10) {
+    migrate(batchSize = 10): Observable<MigrationState> {
         return this._dataMigrator.migrate(batchSize);
     }
 
@@ -343,6 +379,7 @@ export class RxCollection {
     /**
      * only emits the change-events that change something with the documents
      */
+    private __docChanges$;
     get docChanges$() {
         if (!this.__docChanges$) {
             this.__docChanges$ = this.$.pipe(
@@ -482,10 +519,8 @@ export class RxCollection {
 
     /**
      * takes a mongoDB-query-object and returns the documents
-     * @param  {object} queryObj
-     * @return {RxDocument[]} found documents
      */
-    find(queryObj) {
+    find(queryObj?: any): RxQuery<any, any> { // TODO replace any
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
@@ -493,7 +528,7 @@ export class RxCollection {
         }
 
         const query = createRxQuery('find', queryObj, this);
-        return query;
+        return query as any;
     }
 
     findOne(queryObj) {
@@ -521,7 +556,7 @@ export class RxCollection {
      * export to json
      * @param {boolean} decrypted if true, all encrypted values will be decrypted
      */
-    dump() {
+    dump(_decrytped: boolean): Promise<any> {
         throw pluginMissing('json-dump');
     }
 
@@ -529,7 +564,7 @@ export class RxCollection {
      * imports the json-data into the collection
      * @param {Array} exportedJSON should be an array of raw-data
      */
-    importDump() {
+    importDump(_exportedJSON: any): Promise<boolean> {
         throw pluginMissing('json-dump');
     }
 
@@ -545,7 +580,7 @@ export class RxCollection {
     /**
      * sync with another database
      */
-    sync() {
+    sync(_syncOptions: SyncOptions): RxReplicationState {
         throw pluginMissing('replication');
     }
 
@@ -559,7 +594,7 @@ export class RxCollection {
     /**
      * Create a replicated in-memory-collection
      */
-    inMemory() {
+    inMemory(): any { // TODO deep typings
         throw pluginMissing('in-memory');
     }
 
@@ -632,7 +667,7 @@ export class RxCollection {
             // run parallel: true
             .then(() => Promise.all(
                 hooks.parallel
-                .map(hook => hook(data, instance))
+                    .map(hook => hook(data, instance))
             ));
     }
 
@@ -667,13 +702,15 @@ export class RxCollection {
      * returns a promise that is resolved when the collection gets destroyed
      * @return {Promise}
      */
+    private _onDestroy: Promise<void>;
     get onDestroy() {
         if (!this._onDestroy)
             this._onDestroy = new Promise(res => this._onDestroyCall = res);
         return this._onDestroy;
     }
 
-    destroy() {
+    private _onDestroyCall: () => void;
+    destroy(): Promise<boolean> {
         if (this.destroyed) return;
 
         this._onDestroyCall && this._onDestroyCall();
@@ -701,7 +738,7 @@ export class RxCollection {
  * @throws {Error|TypeError} if not ok
  * @return {boolean}
  */
-const checkMigrationStrategies = function(schema, migrationStrategies) {
+const checkMigrationStrategies = function (schema, migrationStrategies) {
     // migrationStrategies must be object not array
     if (
         typeof migrationStrategies !== 'object' ||
@@ -752,7 +789,7 @@ function _applyHookFunctions(collection) {
     HOOKS_KEYS.forEach(key => {
         HOOKS_WHEN.map(when => {
             const fnName = when + ucfirst(key);
-            colProto[fnName] = function(fun, parallel) {
+            colProto[fnName] = function (fun, parallel) {
                 return this.addHook(when, key, fun, parallel);
             };
         });
@@ -780,7 +817,7 @@ export function properties() {
  * @param  {{}} statics [description]
  * @throws if not allowed
  */
-const checkOrmMethods = function(statics) {
+const checkOrmMethods = function (statics) {
     Object
         .entries(statics)
         .forEach(([k, v]) => {
@@ -851,10 +888,10 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
  * used in the proto-merge
  * @return {{}}
  */
-export function getDocumentOrmPrototype(rxCollection) {
+export function getDocumentOrmPrototype(rxCollection: RxCollection) {
     const proto = {};
     Object
-        .entries(rxCollection._methods)
+        .entries(rxCollection.methods)
         .forEach(([k, v]) => {
             proto[k] = v;
         });
@@ -864,26 +901,29 @@ export function getDocumentOrmPrototype(rxCollection) {
 /**
  * creates the indexes in the pouchdb
  */
-function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
+function _prepareCreateIndexes(
+    rxCollection: RxCollection,
+    spawnedPouchPromise
+) {
     return Promise.all(
         rxCollection.schema.indexes
-        .map(indexAr => {
-            const compressedIdx = indexAr
-                .map(key => {
-                    if (!rxCollection.schema.doKeyCompression())
-                        return key;
-                    else
-                        return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
-                });
+            .map(indexAr => {
+                const compressedIdx = indexAr
+                    .map(key => {
+                        if (!rxCollection.schema.doKeyCompression())
+                            return key;
+                        else
+                            return rxCollection._keyCompressor.transformKey('', '', key.split('.'));
+                    });
 
-            return spawnedPouchPromise.then(
-                () => rxCollection.pouch.createIndex({
-                    index: {
-                        fields: compressedIdx
-                    }
-                })
-            );
-        })
+                return spawnedPouchPromise.then(
+                    () => rxCollection.pouch.createIndex({
+                        index: {
+                            fields: compressedIdx
+                        }
+                    })
+                );
+            })
     );
 }
 
@@ -947,7 +987,9 @@ export function create({
             // ORM add statics
             Object
                 .entries(statics)
-                .forEach(([funName, fun]) => collection.__defineGetter__(funName, () => fun.bind(collection)));
+                .forEach(([funName, fun]) => collection.__defineGetter__(
+                    funName, () => fun.bind(collection)
+                ));
 
             let ret = Promise.resolve();
             if (autoMigrate) ret = collection.migratePromise();

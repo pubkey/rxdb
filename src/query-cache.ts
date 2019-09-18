@@ -2,7 +2,7 @@
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will only search the database once.
  */
-class QueryCache {
+export class QueryCache {
     constructor() {
         this.subs = [];
         this._map = new Map();
@@ -28,6 +28,6 @@ class QueryCache {
     }
 }
 
-export default function createQueryCache() {
+export function createQueryCache() {
     return new QueryCache();
 }

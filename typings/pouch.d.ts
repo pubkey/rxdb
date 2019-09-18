@@ -101,6 +101,10 @@ export declare class PouchDB {
     bulkGet(options?: any): Promise<any>;
     revsDiff(diff: any): Promise<any>;
 
+    createIndex(opts: {
+        idex: any;
+    }): Promise<void>;
+
     static plugin(p: any): void;
     static debug: Debug;
 }

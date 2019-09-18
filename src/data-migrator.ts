@@ -23,10 +23,15 @@ import {
 } from './hooks';
 
 import {
-    Subject
+    Subject,
+    Observable
 } from 'rxjs';
 
-class DataMigrator {
+import {
+    MigrationState
+} from '../typings';
+
+export class DataMigrator {
     constructor(newestCollection, migrationStrategies) {
         this.newestCollection = newestCollection;
         this.migrationStrategies = migrationStrategies;
@@ -39,7 +44,7 @@ class DataMigrator {
      * @param {number} [batchSize=10] amount of documents handled in parallel
      * @return {Observable} emits the migration-state
      */
-    migrate(batchSize = 10) {
+    migrate(batchSize = 10): Observable<MigrationState> {
         if (this._migrated)
             throw newRxError('DM1');
         this._migrated = true;

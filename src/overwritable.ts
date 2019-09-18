@@ -6,6 +6,10 @@ import {
     pluginMissing
 } from './rx-error';
 
+import {
+    RxSchema
+} from './rx-schema';
+
 const funs = {
     /**
      * validates if a password can be used
@@ -22,7 +26,7 @@ const funs = {
      * @param  {RxSchema} schema
      * @return {KeyCompressor}
      */
-    createKeyCompressor() {
+    createKeyCompressor(schema: RxSchema) {
         throw pluginMissing('key-compression');
     },
     /**

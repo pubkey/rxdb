@@ -8,9 +8,9 @@ import {
 } from './util';
 
 export class RxChangeEvent {
-    constructor(data) {
-        this.data = data;
-    }
+    constructor(
+        public data
+    ) { }
     toJSON() {
         const ret = {
             op: this.data.op,
@@ -68,7 +68,10 @@ export function changeEventfromPouchChange(changeDoc, collection) {
     return new RxChangeEvent(data);
 }
 
-export function createChangeEvent(op, database, collection, doc, value, isLocal = false) {
+export function createChangeEvent(
+    op, database, collection,
+    doc, value, isLocal = false
+) {
     const data = {
         op: op,
         t: new Date().getTime(),

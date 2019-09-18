@@ -74,7 +74,7 @@ export class InMemoryRxCollection extends RxCollection.RxCollection {
         // add orm functions and options from parent
         this.options = parentCollection.options;
         Object
-            .entries(parentCollection._statics)
+            .entries(parentCollection.statics)
             .forEach(([funName, fun]) => this.__defineGetter__(funName, () => fun.bind(this)));
 
         this.pouch = new PouchDB(

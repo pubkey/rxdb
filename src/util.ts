@@ -115,7 +115,7 @@ export function requestIdlePromise(timeout = null) {
  * @param {Function[]} tasks array with functions that return a promise
  * @return {Promise<Array>}
  */
-export function promiseSeries(tasks, initial) {
+export function promiseSeries(tasks, initial?) {
     return tasks
         .reduce(
             (current, next) => current.then(next),

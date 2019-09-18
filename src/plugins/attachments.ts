@@ -99,8 +99,10 @@ export const blobBufferUtil = {
 
 const _assignMethodsToAttachment = function (attachment) {
     Object
-        .entries(attachment.doc.collection._attachments)
-        .forEach(([funName, fun]) => attachment.__defineGetter__(funName, () => fun.bind(attachment)));
+        .entries(attachment.doc.collection.attachments)
+        .forEach(([funName, fun]) => attachment.__defineGetter__(
+            funName, () => fun.bind(attachment)
+        ));
 };
 
 /**

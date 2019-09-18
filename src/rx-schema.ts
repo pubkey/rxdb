@@ -19,9 +19,21 @@ import {
     defineGetterSetter
 } from './rx-document';
 
-export class RxSchema {
-    constructor(jsonID) {
-        this.jsonID = jsonID;
+import {
+    RxJsonSchema,
+    JsonSchema
+} from '../typings';
+
+export class RxSchema<T = any> {
+
+    public compoundIndexes: string[] | string[][];
+    public indexes: string[][];
+    public primaryPath: keyof T;
+    public finalFields: (keyof T)[];
+
+    constructor(
+        private readonly jsonID: RxJsonSchema<T>
+    ) {
         this.compoundIndexes = this.jsonID.compoundIndexes;
         this.indexes = getIndexes(this.jsonID);
 
@@ -53,9 +65,9 @@ export class RxSchema {
     }
 
     /**
-     * @return {number[]} array with previous version-numbers
+     * array with previous version-numbers
      */
-    get previousVersions() {
+    public get previousVersions(): number[] {
         let c = 0;
         return new Array(this.version)
             .fill(0)
@@ -66,38 +78,42 @@ export class RxSchema {
      * true if schema contains at least one encrypted path
      * @type {boolean}
      */
+    private _crypt;
     get crypt() {
         if (!this._crypt)
             this._crypt = hasCrypt(this.jsonID);
         return this._crypt;
     }
 
+    private _normalized;
     get normalized() {
         if (!this._normalized)
             this._normalized = normalize(this.jsonID);
         return this._normalized;
     }
 
-    getSchemaByObjectPath(path) {
-        path = path.replace(/\./g, '.properties.');
-        path = 'properties.' + path;
-        path = trimDots(path);
+    getSchemaByObjectPath(path: keyof T): JsonSchema {
+        let usePath: string = path as string;
+        usePath = usePath.replace(/\./g, '.properties.');
+        usePath = 'properties.' + usePath;
+        usePath = trimDots(usePath);
 
-        const ret = objectPath.get(this.jsonID, path);
+        const ret = objectPath.get(this.jsonID, usePath);
         return ret;
     }
 
-    get topLevelFields() {
-        return Object.keys(this.normalized.properties);
+    public get topLevelFields(): (keyof T)[] {
+        return Object.keys(this.normalized.properties) as (keyof T)[];
     }
 
-    get defaultValues() {
+    private _defaultValues: { [P in keyof T]: T[P] };
+    public get defaultValues(): { [P in keyof T]: T[P] } {
         if (!this._defaultValues) {
-            this._defaultValues = {};
+            this._defaultValues = {} as { [P in keyof T]: T[P] };
             Object
                 .entries(this.normalized.properties)
                 .filter(([, v]) => v.hasOwnProperty('default'))
-                .forEach(([k, v]) => this._defaultValues[k] = v.default);
+                .forEach(([k, v]) => this._defaultValues[k] = (v as any).default);
         }
         return this._defaultValues;
     }
@@ -105,6 +121,7 @@ export class RxSchema {
     /**
      * get all encrypted paths
      */
+    private _encryptedPaths;
     get encryptedPaths() {
         if (!this._encryptedPaths)
             this._encryptedPaths = getEncryptedPaths(this.jsonID);
@@ -138,12 +155,13 @@ export class RxSchema {
      * @throws {Error} if not valid
      * @param {Object} obj equal to input-obj
      */
-    validate() {
+    public validate(obj: any, schemaPath?: string) {
         throw pluginMissing('validate');
     }
 
 
-    get hash() {
+    private _hash: string;
+    public get hash(): string {
         if (!this._hash)
             this._hash = hash(this.normalized);
         return this._hash;
@@ -184,22 +202,15 @@ export class RxSchema {
     /**
      * returns true if key-compression should be done
      */
-    doKeyCompression() {
-        /**
-         * in rxdb 8.0.0 we renambed the keycompression-option
-         * But when a data-migration is done with and old schema,
-         * it might have the old option which then should be used
-         * TODO: Remove this check in Sep 2019
-         */
-        if (this.jsonID.hasOwnProperty('disableKeyCompression')) {
-            return !this.jsonID.disableKeyCompression;
-        } else return this.jsonID.keyCompression;
+    doKeyCompression(): boolean {
+        return this.jsonID.keyCompression;
     }
 
     /**
      * creates the schema-based document-prototype,
      * see RxCollection.getDocumentPrototype()
      */
+    private _getDocumentPrototype;
     getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const proto = {};
@@ -239,14 +250,16 @@ export function getEncryptedPaths(jsonSchema) {
  * @param  {object} jsonSchema with schema
  * @return {boolean} isEncrypted
  */
-export function hasCrypt(jsonSchema) {
+export function hasCrypt(jsonSchema: RxJsonSchema): boolean {
     const paths = getEncryptedPaths(jsonSchema);
     if (Object.keys(paths).length > 0) return true;
     else return false;
 }
 
 
-export function getIndexes(jsonID) {
+export function getIndexes<T = any>(
+    jsonID: RxJsonSchema<T>
+): string[][] {
     const flattened = flattenObject(jsonID);
     const keys = Object.keys(flattened);
     let indexes = keys
@@ -273,7 +286,7 @@ export function getIndexes(jsonID) {
     const addCompound = jsonID.compoundIndexes || [];
     indexes = indexes.concat(addCompound);
 
-    return indexes;
+    return indexes as any;
 }
 
 /**
@@ -281,12 +294,12 @@ export function getIndexes(jsonID) {
  * @param {Object} jsonID
  * @return {string} primaryPath which is _id if none defined
  */
-export function getPrimary(jsonID) {
+export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
     const ret = Object.keys(jsonID.properties)
         .filter(key => jsonID.properties[key].primary)
         .shift();
-    if (!ret) return '_id';
-    else return ret;
+    if (!ret) return '_id' as keyof T;
+    else return ret as keyof T;
 }
 
 /**
@@ -294,12 +307,14 @@ export function getPrimary(jsonID) {
  * @param  {Object} jsonID
  * @return {string[]} field-names of the final-fields
  */
-export function getFinalFields(jsonID) {
+export function getFinalFields<T = any>(
+    jsonID: RxJsonSchema<T>
+): (keyof T)[] {
     const ret = Object.keys(jsonID.properties)
-        .filter(key => jsonID.properties[key].final);
+        .filter(key => jsonID.properties[key].final) as (keyof T)[];
 
     // primary is also final
-    ret.push(getPrimary(jsonID));
+    ret.push(getPrimary<T>(jsonID));
     return ret;
 }
 
@@ -320,7 +335,7 @@ export function normalize(jsonSchema) {
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-const fillWithDefaultSettings = function(schemaObj) {
+const fillWithDefaultSettings = function (schemaObj) {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false

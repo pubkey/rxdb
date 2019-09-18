@@ -37,25 +37,29 @@ import {
     RxGraphQLReplicationState
 } from './plugins/replication-graphql';
 
+export interface KeyFunctionMap {
+    [key: number]: Function
+}
 
 export interface RxCollectionCreator {
     name: string;
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
-    migrationStrategies?: {
-        [key: number]: Function
-    };
+    migrationStrategies?: KeyFunctionMap;
     autoMigrate?: boolean;
-    statics?: {
-        [key: string]: Function
-    };
-    methods?: {
-        [key: string]: Function
-    };
-    attachments?: {
-        [key: string]: Function
-    };
+    statics?: KeyFunctionMap;
+    methods?: KeyFunctionMap;
+    attachments?: KeyFunctionMap;
     options?: any;
+}
+
+export interface MigrationState {
+    done: boolean, // true if finished
+    total: number, // will be the doc-count
+    handled: number, // amount of handled docs
+    success: number, // handled docs which successed
+    deleted: number, // handled docs which got deleted
+    percent: number // percentage
 }
 
 export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
@@ -65,7 +69,7 @@ export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (da
 
 export type RxCollection<RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }> = RxCollectionBase<RxDocumentType, OrmMethods> & StaticMethods;
 
-export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
+export interface RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     readonly database: RxDatabase;
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
@@ -98,14 +102,7 @@ export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     // migration
     migrationNeeded(): Promise<boolean>;
-    migrate(batchSize: number): Observable<{
-        done: boolean, // true if finished
-        total: number, // will be the doc-count
-        handled: number, // amount of handled docs
-        success: number, // handled docs which successed
-        deleted: number, // handled docs which got deleted
-        percent: number // percentage
-    }>;
+    migrate(batchSize: number): Observable<MigrationState>;
     migratePromise(batchSize: number): Promise<any>;
 
     sync(syncOptions: SyncOptions): RxReplicationState;

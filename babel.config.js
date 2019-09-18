@@ -1,41 +1,19 @@
-let presets = [
-    [
-        '@babel/typescript',
-        {
-            loose: true,
-            modules: false
-        }
-    ]
-];
-if (process.env['NODE_ENV'] === 'es5') {
-    presets = [
-        [
-            '@babel/typescript',
-            {
-                targets: {
-                    edge: '17',
-                    firefox: '60',
-                    chrome: '67',
-                    safari: '11.1',
-                    ie: '11'
-                },
-                useBuiltIns: false
-            }]
-    ];
-}
-
 const plugins = [
+    '@babel/plugin-transform-typescript',
+    'transform-class-properties',
     ['@babel/transform-template-literals', {
         'loose': true
     }],
     '@babel/transform-literals',
     '@babel/transform-function-name',
     '@babel/transform-arrow-functions',
-    '@babel/transform-block-scoped-functions', ['@babel/transform-classes', {
+    '@babel/transform-block-scoped-functions',
+    ['@babel/plugin-transform-classes', {
         'loose': true
     }],
     '@babel/transform-object-super',
-    '@babel/transform-shorthand-properties', ['@babel/transform-computed-properties', {
+    '@babel/transform-shorthand-properties',
+    ['@babel/transform-computed-properties', {
         'loose': true
     }],
     ['@babel/transform-for-of', {
@@ -59,6 +37,36 @@ const plugins = [
     '@babel/proposal-class-properties',
     '@babel/proposal-object-rest-spread'
 ];
+
+let presets = [
+    [
+        '@babel/typescript',
+        {
+            loose: true,
+            modules: false
+        }
+    ]
+];
+
+// console.log('babel: NODE_ENV: ' + process.env['NODE_ENV']);
+
+if (process.env['NODE_ENV'] === 'es5') {
+    presets = [
+        [
+            '@babel/typescript',
+            {
+                targets: {
+                    edge: '17',
+                    firefox: '60',
+                    chrome: '67',
+                    safari: '11.1',
+                    ie: '11'
+                },
+                useBuiltIns: false
+            }]
+    ];
+    plugins.unshift('@babel/plugin-transform-modules-commonjs');
+}
 
 module.exports = {
     presets,

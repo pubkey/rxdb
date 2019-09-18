@@ -2,9 +2,15 @@
  * a buffer-cache which holds the last X changeEvents of the collection
  * TODO this could be optimized to only store the last event of one document
  */
-class ChangeEventBuffer {
-    constructor(collection) {
-        this.collection = collection;
+
+import {
+    RxCollection
+} from './rx-collection';
+
+export class ChangeEventBuffer {
+    constructor(
+        public collection: RxCollection
+    ) {
         this.subs = [];
         this.limit = 100;
 
@@ -107,6 +113,6 @@ class ChangeEventBuffer {
     }
 }
 
-export default function createChangeEventBuffer(collection) {
+export function createChangeEventBuffer(collection: RxCollection) {
     return new ChangeEventBuffer(collection);
 }

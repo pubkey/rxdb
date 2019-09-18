@@ -12,7 +12,9 @@ import RxCollection from '../rx-collection';
 import {
     createChangeEvent
 } from '../rx-change-event';
-import createDocCache from '../doc-cache';
+import {
+    createDocCache
+} from '../doc-cache';
 import {
     newRxError,
     newRxTypeError
@@ -21,12 +23,10 @@ import {
     clone
 } from '../util';
 
-
 import {
     filter,
     map,
     distinctUntilChanged
-
 } from 'rxjs/operators';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();

@@ -1,5 +1,5 @@
 // TODO add a function to run a cache-clear
-class DocCache {
+export class DocCache {
     constructor() {
         this._map = new Map();
     }
@@ -15,6 +15,6 @@ class DocCache {
     }
 }
 
-export default function createDocCache() {
+export function createDocCache() {
     return new DocCache();
 }
