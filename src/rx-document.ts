@@ -26,6 +26,15 @@ import {
     map
 } from 'rxjs/operators';
 
+import {
+    RxDocumentBase
+} from '../typings';
+
+export type RxDocument<
+    RxDocumentType = any,
+    OrmMethods = any
+    > = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
+
 
 export function createRxDocumentConstructor(proto = basePrototype) {
     const constructor = function RxDocument(collection, jsonData) {

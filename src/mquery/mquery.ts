@@ -16,6 +16,9 @@ import {
 } from '../util';
 
 class MQuery {
+
+    public options: any = {};
+
     /**
      * MQuery constructor used for building queries.
      *
@@ -25,9 +28,8 @@ class MQuery {
      *
      * @param {Object} [criteria]
      */
-    constructor(criteria) {
+    constructor(criteria?) {
         const proto = this.constructor.prototype;
-        this.options = {};
         this._conditions = proto._conditions ? clone(proto._conditions) : {};
         this._fields = proto._fields ? clone(proto._fields) : undefined;
         this._path = proto._path || undefined;

@@ -12,7 +12,7 @@ import overwritable from './overwritable';
  * @param  {any} parameters
  * @return {string}
  */
-function parametersToString(parameters) {
+function parametersToString(parameters: any): string {
     let ret = '';
     if (Object.keys(parameters).length === 0)
         return ret;
@@ -26,7 +26,7 @@ function parametersToString(parameters) {
                     (k, v) => v === undefined ? null : v,
                     2
                 );
-            } catch (e) {}
+            } catch (e) { }
             return k + ':' + paramStr;
         })
         .join('\n');
@@ -34,14 +34,25 @@ function parametersToString(parameters) {
     return ret;
 }
 
-function messageForError(message, parameters) {
+function messageForError(
+    message: string,
+    parameters: any
+): string {
     return 'RxError:' + '\n' +
         message + '\n' +
         parametersToString(parameters);
 }
 
 export class RxError extends Error {
-    constructor(code, message, parameters = {}) {
+    public code: string;
+    public message: string;
+    public parameters: any;
+    public rxdb: true;
+    constructor(
+        code: string,
+        message: string,
+        parameters: any = {}
+    ) {
         const mes = messageForError(message, parameters);
         super(mes);
         this.code = code;
@@ -49,19 +60,27 @@ export class RxError extends Error {
         this.parameters = parameters;
         this.rxdb = true; // tag them as internal
     }
-    get name() {
+    get name(): string {
         return 'RxError';
     }
-    toString() {
+    toString(): string {
         return this.message;
     }
-    get typeError() {
+    get typeError(): boolean {
         return false;
     }
 }
 
 export class RxTypeError extends TypeError {
-    constructor(code, message, parameters = {}) {
+    public code: string;
+    public message: string;
+    public parameters: any;
+    public rxdb: true;
+    constructor(
+        code: string,
+        message: string,
+        parameters: any = {}
+    ) {
         const mes = messageForError(message, parameters);
         super(mes);
         this.code = code;
@@ -69,19 +88,21 @@ export class RxTypeError extends TypeError {
         this.parameters = parameters;
         this.rxdb = true; // tag them as internal
     }
-    get name() {
+    get name(): string {
         return 'RxError';
     }
-    toString() {
+    toString(): string {
         return this.message;
     }
-    get typeError() {
+    get typeError(): boolean {
         return true;
     }
 }
 
 
-export function pluginMissing(pluginKey) {
+export function pluginMissing(
+    pluginKey: string
+): RxError {
     return new RxError(
         'PU',
         `You are using a function which must be overwritten by a plugin.
@@ -100,5 +121,23 @@ export function pluginMissing(pluginKey) {
 // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
-export const newRxError = (code, parameters) => new RxError(code, overwritable.tunnelErrorMessage(code), parameters);
-export const newRxTypeError = (code, parameters) => new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
+export function newRxError(
+    code: string,
+    parameters?
+): RxError {
+    return new RxError(
+        code,
+        overwritable.tunnelErrorMessage(code),
+        parameters
+    );
+}
+export function newRxTypeError(
+    code: string,
+    parameters?
+): RxTypeError {
+    return new RxTypeError(
+        code,
+        overwritable.tunnelErrorMessage(code),
+        parameters
+    );
+}

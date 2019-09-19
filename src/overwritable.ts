@@ -56,7 +56,7 @@ const funs = {
      * @param  {string} message
      * @return {string}
      */
-    tunnelErrorMessage(message) {
+    tunnelErrorMessage(message: string) {
         // TODO better text with link
         return `RxDB Error-Code ${message}.
         - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages

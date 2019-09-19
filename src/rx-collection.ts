@@ -314,7 +314,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
      * @param {?boolean} noDecrypt if true, decryption will not be made
      * @return {Object[]} array with documents-data
      */
-    _pouchFind(rxQuery, limit, noDecrypt = false) {
+    _pouchFind(rxQuery, limit?, noDecrypt = false) {
         const compressedQueryJSON = rxQuery.keyCompress();
         if (limit) compressedQueryJSON.limit = limit;
 

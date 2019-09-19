@@ -40,6 +40,7 @@ export interface PouchSettings {
 export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
 export type PouchSyncHandler = {
     on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
+    off(ev: PouchSyncHandlerEvents, fn: any);
     cancel(): void;
 };
 
@@ -107,4 +108,5 @@ export declare class PouchDB {
 
     static plugin(p: any): void;
     static debug: Debug;
+    static isInstanceOf(instance: any): boolean;
 }

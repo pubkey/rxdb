@@ -1,7 +1,8 @@
 import deepEqual from 'deep-equal';
 import {
     merge,
-    BehaviorSubject
+    BehaviorSubject,
+    Subscription
 } from 'rxjs';
 import {
     mergeMap,
@@ -22,7 +23,10 @@ import {
     stringifyFilter,
     clone
 } from './util';
-import QueryChangeDetector from './query-change-detector';
+import {
+    create as createQueryChangeDetector,
+    QueryChangeDetector
+} from './query-change-detector';
 import {
     newRxError,
     newRxTypeError,
@@ -31,44 +35,61 @@ import {
 import {
     runPluginHooks
 } from './hooks';
+import {
+    RxCollection
+} from './rx-collection';
+import {
+    RxDocument
+} from './rx-document';
 
 let _queryCount = 0;
-const newQueryID = function () {
+const newQueryID = function (): number {
     return ++_queryCount;
 };
 
+export type RxQueryOP = 'find' | 'findOne';
+
 export class RxQuery {
-    constructor(op, queryObj, collection) {
-        this.op = op;
-        this.collection = collection;
-        this.id = newQueryID();
+    public id: number = newQueryID();
+    public mquery: MQuery;
+    private _subs: Subscription[] = [];
+
+    // stores the changeEvent-Number of the last handled change-event
+    public _latestChangeEvent: -1 | any = -1;
+
+    // contains the results as plain json-data
+    public _resultsData: any = null;
+
+    // contains the results as RxDocument[]
+    public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
+
+    public _queryChangeDetector: QueryChangeDetector;
+
+    /**
+     * counts how often the execution on the whole db was done
+     * (used for tests and debugging)
+     * @type {Number}
+     */
+    public _execOverDatabaseCount: number = 0;
+
+    /**
+     * ensures that the exec-runs
+     * are not run in parallel
+     */
+    public _ensureEqualQueue: Promise<void> = Promise.resolve();
+
+    constructor(
+        public op: RxQueryOP,
+        public queryObj: any,
+        public collection: RxCollection
+    ) {
+        this._queryChangeDetector = createQueryChangeDetector(this);
         if (!queryObj) queryObj = _getDefaultQuery(this.collection);
         this.mquery = new MQuery(queryObj);
-
-        this._subs = [];
-
-        // contains the results as plain json-data
-        this._resultsData = null;
-
-        // contains the results as RxDocument[]
-        this._resultsDocs$ = new BehaviorSubject(null);
-
-        this._queryChangeDetector = QueryChangeDetector.create(this);
-
-        // stores the changeEvent-Number of the last handled change-event
-        this._latestChangeEvent = -1;
-
-        /**
-         * counts how often the execution on the whole db was done
-         * (used for tests and debugging)
-         * @type {Number}
-         */
-        this._execOverDatabaseCount = 0;
-
-        this._ensureEqualQueue = Promise.resolve();
     }
 
-    toString() {
+    private stringRep: string;
+    toString(): string {
         if (!this.stringRep) {
             const stringObj = sortObject({
                 op: this.op,
@@ -134,7 +155,8 @@ export class RxQuery {
      * - Do not emit anything before the first result-set was created (no null)
      * @return {BehaviorSubject<RxDocument[]>}
      */
-    get $() {
+    private _$: BehaviorSubject<RxDocument[]>;
+    get $(): BehaviorSubject<RxDocument[]> {
         if (!this._$) {
             /**
              * We use _resultsDocs$ to emit new results
@@ -187,9 +209,8 @@ export class RxQuery {
      * Execute the query
      * To have an easier implementations,
      * just subscribe and use the first result
-     * @return {Promise<RxDocument|RxDocument[]>} found documents
      */
-    exec() {
+    exec(): Promise<RxDocument | RxDocument[]> {
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of pouchdb,
@@ -202,6 +223,7 @@ export class RxQuery {
                 ).toPromise());
     }
 
+    private _toJSON: any;
     toJSON() {
         if (this._toJSON) return this._toJSON;
 
@@ -441,7 +463,13 @@ function protoMerge(rxQueryProto, mQueryProtoKeys) {
 }
 
 let protoMerged = false;
-export function createRxQuery(op, queryObj, collection) {
+export function createRxQuery(
+    op: RxQueryOP,
+    queryObj: any,
+    collection: RxCollection
+) {
+    console.log('createRxQuery');
+    console.dir(collection);
     // checks
     if (queryObj && typeof queryObj !== 'object') {
         throw newRxTypeError('QU7', {
@@ -455,7 +483,9 @@ export function createRxQuery(op, queryObj, collection) {
     }
 
 
+    console.log('aa11');
     let ret = new RxQuery(op, queryObj, collection);
+    console.log('aa2');
     // ensure when created with same params, only one is created
     ret = _tunnelQueryCache(ret);
 
@@ -465,6 +495,8 @@ export function createRxQuery(op, queryObj, collection) {
     }
 
     runPluginHooks('createRxQuery', ret);
+
+
     return ret;
 }
 

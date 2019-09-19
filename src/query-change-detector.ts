@@ -11,16 +11,18 @@ import {
     filterInMemoryFields
 } from 'pouchdb-selector-core';
 import objectPath from 'object-path';
+import {
+    RxQuery
+} from './rx-query';
 
 let DEBUG = false;
 
-class QueryChangeDetector {
-    constructor(query) {
-        /**
-         * @type {RxQuery}
-         */
-        this.query = query;
-        this.primaryKey = this.query.collection.schema.primaryPath;
+export class QueryChangeDetector {
+    public primaryKey: string;
+    constructor(
+        public query: RxQuery
+    ) {
+        this.primaryKey = query.collection.schema.primaryPath as string;
     }
 
     /**
@@ -190,7 +192,12 @@ class QueryChangeDetector {
     }
 }
 
-function _debugMessage(queryChangeDetector, key, changeEventData = {}, title = 'optimized') {
+function _debugMessage(
+    queryChangeDetector: QueryChangeDetector,
+    key: string,
+    changeEventData: any = {},
+    title = 'optimized'
+) {
     console.dir({
         name: 'QueryChangeDetector',
         title,
@@ -202,10 +209,11 @@ function _debugMessage(queryChangeDetector, key, changeEventData = {}, title = '
 
 /**
  * reruns the sort on the given resultsData
- * @param  {object[]} resultsData
- * @return {object[]}
  */
-export function _resortDocData(queryChangeDetector, resultsData) {
+export function _resortDocData(
+    queryChangeDetector: QueryChangeDetector,
+    resultsData
+) {
     const sortOptions = _getSortOptions(queryChangeDetector);
     const rows = resultsData.map(doc => {
         return {
@@ -235,7 +243,11 @@ export function _resortDocData(queryChangeDetector, resultsData) {
  * @param  {Object} docDataIs
  * @return {boolean} true if before, false if after
  */
-export function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
+export function _isSortedBefore(
+    queryChangeDetector: QueryChangeDetector,
+    docDataLeft,
+    docDataRight
+) {
     const sortOptions = _getSortOptions(queryChangeDetector);
     const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
     const swappedLeft = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataLeft);
@@ -264,9 +276,12 @@ export function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) 
  * checks if the sort-relevant fields have changed
  * @param  {object} docDataBefore
  * @param  {object} docDataAfter
- * @return {boolean}
  */
-export function _sortFieldChanged(queryChangeDetector, docDataBefore, docDataAfter) {
+export function _sortFieldChanged(
+    queryChangeDetector: QueryChangeDetector,
+    docDataBefore,
+    docDataAfter
+): boolean {
     const sortOptions = _getSortOptions(queryChangeDetector);
     const sortFields = sortOptions.map(sortObj => Object.keys(sortObj).pop());
 
@@ -286,7 +301,9 @@ export function _sortFieldChanged(queryChangeDetector, docDataBefore, docDataAft
  * if no sort-order is specified,
  * pouchdb will use the primary
  */
-export function _getSortOptions(queryChangeDetector) {
+export function _getSortOptions(
+    queryChangeDetector: QueryChangeDetector
+) {
     if (!queryChangeDetector._sortOptions) {
         const options = queryChangeDetector.query.toJSON();
         let sortOptions = options.sort;
@@ -306,7 +323,11 @@ export function _getSortOptions(queryChangeDetector) {
  * @param {object} docData
  * @param {object[]} resultData
  */
-export function _isDocInResultData(queryChangeDetector, docData, resultData) {
+export function _isDocInResultData(
+    queryChangeDetector: QueryChangeDetector,
+    docData,
+    resultData
+): boolean {
     const primaryPath = queryChangeDetector.query.collection.schema.primaryPath;
     const first = resultData.find(doc => doc[primaryPath] === docData[primaryPath]);
     return !!first;
@@ -321,7 +342,7 @@ export function enableDebugging() {
  * @param  {RxQuery} query
  * @return {QueryChangeDetector}
  */
-export function create(query) {
+export function create(query: RxQuery): QueryChangeDetector {
     const ret = new QueryChangeDetector(query);
     return ret;
 }
