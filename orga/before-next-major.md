@@ -46,6 +46,9 @@ Planned steps:
 * Add typing incrementally
 * Set `strict: true` and fix all errors
 
+### remove the default export
+Using the default export is never a good idea because it automatically bundles every unused function into the build.
+
 ### Rewrite jsonschema-validation
 In the past, before `8.0.0` we had to be able to validate subpaths of an object directly when a setter was called [see here](https://github.com/pubkey/rxdb/blob/master/orga/releases/8.0.0.md#setters-are-only-callable-on-temporary-documents).
 This is no longer the case so we can refactor the validation-logic and remove a big part of it's code which is [causing confusion](https://github.com/pubkey/rxdb/pull/1157).
