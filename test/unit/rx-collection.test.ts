@@ -9,13 +9,13 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDB from '../../dist/lib/index';
+import * as RxDB from '../../';
 import {
     isRxCollection,
     isRxQuery,
-    isRxDatabase,
-    isRxDocument
-} from '../../dist/lib/index';
+    isRxDocument,
+    create as createRxDatabase
+} from '../../';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxDocument from '../../dist/lib/rx-document';
 import {
@@ -30,7 +30,7 @@ config.parallel('rx-collection.test.js', () => {
         describe('.create()', () => {
             describe('positive', () => {
                 it('human', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -44,7 +44,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('use Schema-Object', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -68,7 +68,7 @@ config.parallel('rx-collection.test.js', () => {
                     col.database.destroy();
                 });
                 it('should create compound-indexes (keyCompression: false)', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -93,7 +93,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should create compound-indexes', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -116,7 +116,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should have the version-number in the pouchdb-prefix', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -131,7 +131,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not forget the options', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -149,7 +149,7 @@ config.parallel('rx-collection.test.js', () => {
             });
             describe('negative', () => {
                 it('crash if no Schema-instance', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -172,7 +172,7 @@ config.parallel('rx-collection.test.js', () => {
                     );
                 });
                 it('crash if no name-object', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -193,7 +193,7 @@ config.parallel('rx-collection.test.js', () => {
         describe('.checkCollectionName()', () => {
             describe('positive', () => {
                 it('allow not allow lodash', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -211,7 +211,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('allow numbers', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -233,7 +233,7 @@ config.parallel('rx-collection.test.js', () => {
             });
             describe('negative', () => {
                 it('not allow starting numbers', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -249,7 +249,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('not allow uppercase-letters', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -279,7 +279,7 @@ config.parallel('rx-collection.test.js', () => {
         describe('.insert()', () => {
             describe('positive', () => {
                 it('should insert a human', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -291,7 +291,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should insert an object with _id set', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -303,7 +303,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should insert human (_id given)', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -317,7 +317,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should insert nested human', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -329,7 +329,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should insert more than once', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -342,7 +342,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should set default values', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -363,7 +363,7 @@ config.parallel('rx-collection.test.js', () => {
             });
             describe('negative', () => {
                 it('should not insert broken human (required missing)', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -381,7 +381,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert when _id given but _id is not primary', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -399,7 +399,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert a non-json object', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -414,7 +414,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert human with additional prop', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -432,7 +432,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not insert when primary is missing', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -494,7 +494,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.database.destroy();
                     });
                     it('find nothing with empty collection', async () => {
-                        const db = await RxDatabase.create({
+                        const db = await createRxDatabase({
                             name: util.randomCouchString(10),
                             adapter: 'memory'
                         });
@@ -511,7 +511,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('BUG: insert and find very often', async () => {
                         const amount = 10;
                         for (let i = 0; i < amount; i++) {
-                            const db = await RxDatabase.create({
+                            const db = await createRxDatabase({
                                 name: util.randomCouchString(10),
                                 adapter: 'memory'
                             });
@@ -657,7 +657,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.database.destroy();
                     });
                     it('sort by non-top-level-key as index (no keycompression)', async () => {
-                        const db = await RxDatabase.create({
+                        const db = await createRxDatabase({
                             name: util.randomCouchString(10),
                             adapter: 'memory'
                         });
@@ -707,7 +707,7 @@ config.parallel('rx-collection.test.js', () => {
                         db.destroy();
                     });
                     it('sort by non-top-level-key as index', async () => {
-                        const db = await RxDatabase.create({
+                        const db = await createRxDatabase({
                             name: util.randomCouchString(10),
                             adapter: 'memory'
                         });
@@ -1092,7 +1092,7 @@ config.parallel('rx-collection.test.js', () => {
                     this.timeout(5000);
                     const amount = 10;
                     for (let i = 0; i < amount; i++) {
-                        const db = await RxDatabase.create({
+                        const db = await createRxDatabase({
                             name: util.randomCouchString(10),
                             adapter: 'memory'
                         });
@@ -1140,7 +1140,7 @@ config.parallel('rx-collection.test.js', () => {
         describe('.upsert()', () => {
             describe('positive', () => {
                 it('insert when not exists', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1156,7 +1156,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('overwrite exisiting document', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1173,7 +1173,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('overwrite twice', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1196,7 +1196,7 @@ config.parallel('rx-collection.test.js', () => {
             });
             describe('negative', () => {
                 it('throw when primary missing', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1218,7 +1218,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('throw when schema not matching', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1228,7 +1228,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const obj = schemaObjects.simpleHuman();
                     obj.firstName = 'foobar';
-                    obj.foo = 'bar';
+                    obj['foo'] = 'bar';
                     await AsyncTestUtil.assertThrows(
                         () => collection.upsert(obj),
                         'RxError',
@@ -1356,7 +1356,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.atomicUpsert(docData)
                     ]);
                     const docData2 = clone(docData);
-                    docData2.firstName = 1337;
+                    docData2['firstName'] = 1337 as any;
                     await AsyncTestUtil.assertThrows(
                         () => c.atomicUpsert(docData2),
                         'RxError',
@@ -1374,7 +1374,7 @@ config.parallel('rx-collection.test.js', () => {
                     c.database.destroy();
                 });
                 it('should be possible to re-create the collection with different schema', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1394,7 +1394,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should not contain document when re-creating', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1419,7 +1419,7 @@ config.parallel('rx-collection.test.js', () => {
                     db.destroy();
                 });
                 it('should delete when older versions exist', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory'
                     });
@@ -1502,7 +1502,7 @@ config.parallel('rx-collection.test.js', () => {
                     }
                 }
             };
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -1542,7 +1542,7 @@ config.parallel('rx-collection.test.js', () => {
                     }
                 }
             };
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -1567,7 +1567,7 @@ config.parallel('rx-collection.test.js', () => {
             db.destroy();
         });
         it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -1598,7 +1598,7 @@ config.parallel('rx-collection.test.js', () => {
                     }
                 }
             };
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -1627,7 +1627,7 @@ config.parallel('rx-collection.test.js', () => {
             await db.destroy();
 
             // recreating with the same params-object should work
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });

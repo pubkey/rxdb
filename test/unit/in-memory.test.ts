@@ -9,7 +9,9 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
 import config from './config';
-import * as RxDatabase from '../../dist/lib/rx-database';
+import {
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 import {
     InMemoryRxCollection,
@@ -353,13 +355,13 @@ config.parallel('in-memory.test.js', () => {
     describe('multi-instance', () => {
         it('should emit on other instance when in-mem changes', async () => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
@@ -514,7 +516,7 @@ config.parallel('in-memory.test.js', () => {
                 required: ['color', 'maxHp']
             };
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
@@ -536,7 +538,7 @@ config.parallel('in-memory.test.js', () => {
             });
             await db.destroy();
 
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
@@ -577,7 +579,7 @@ config.parallel('in-memory.test.js', () => {
             db2.destroy();
         });
         it('#744 inMemory collections don\'t implement static methods and options', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true,

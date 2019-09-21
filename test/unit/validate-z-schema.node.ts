@@ -6,7 +6,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
 import * as util from '../../dist/lib/util';
-import Core from '../../dist/lib/core';
+import Core from '../../plugins/core';
 Core.plugin(require('../../plugins/validate-z-schema'));
 Core.plugin(require('../../plugins/key-compression'));
 Core.plugin(require('../../plugins/error-messages'));

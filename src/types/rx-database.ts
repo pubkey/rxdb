@@ -40,15 +40,13 @@ export interface ServerOptions {
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection } | {};
-export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> & Collections;
-
-
+export type RxDatabase<Collections = any> = RxDatabaseBase<Collections> & Collections;
 
 type collectionCreateType =
     <RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }>
         (args: RxCollectionCreator) => Promise<RxCollection<RxDocumentType, OrmMethods, StaticMethods>>;
 
-export declare class RxDatabaseBaseOld<Collections = { [key: string]: RxCollection }> {
+export declare class RxDatabaseBaseOld<Collections = CollectionsOfDatabase> {
     readonly name: string;
     readonly token: string;
     readonly multiInstance: boolean;

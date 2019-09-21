@@ -7,7 +7,7 @@ import assert from 'assert';
 import PouchReplicationPlugin from 'pouchdb-replication';
 
 import config from './config';
-import RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 import * as util from '../../dist/lib/util';
 import * as humansCollection from '../helper/humans-collection';
 

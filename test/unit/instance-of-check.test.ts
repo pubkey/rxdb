@@ -2,7 +2,7 @@ import assert from 'assert';
 import config from './config';
 
 import * as humansCollection from '../helper/humans-collection';
-import * as RxDB from '../../dist/lib/index';
+import * as RxDB from '../../';
 
 config.parallel('instance-of-check.test.js', () => {
     it('positive', async () => {

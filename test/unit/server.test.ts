@@ -4,7 +4,7 @@ import AsyncTestUtil from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
 
-import RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 import * as humansCollection from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';

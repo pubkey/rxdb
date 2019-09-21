@@ -36,6 +36,9 @@ export {
     isInstanceOf as isRxDatabase,
     dbCount
 } from './rx-database';
+export {
+    create as createRxDatabase
+} from './rx-database';
 
 import {
     isInstanceOf as isRxCollection

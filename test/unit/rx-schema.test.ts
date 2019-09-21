@@ -2,7 +2,6 @@ import assert from 'assert';
 import clone from 'clone';
 
 import config from './config';
-import * as RxSchema from '../../dist/lib/rx-schema';
 import {
     createRxSchema
 } from '../../dist/lib/rx-schema';
@@ -13,32 +12,39 @@ import * as schemaObjects from '../helper/schema-objects';
 
 import * as SchemaCheck from '../../dist/lib/plugins/schema-check.js';
 
-import RxDB from '../../dist/lib/';
+import RxDB from '../../';
+import {
+    RxSchema,
+    getIndexes,
+    normalize,
+    hasCrypt,
+    getFinalFields
+} from '../../dist/lib/rx-schema';
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {
-                const indexes = RxSchema.getIndexes(schemas.human);
+                const indexes = getIndexes(schemas.human);
                 assert.equal(indexes.length, 1);
                 assert.deepEqual(indexes[0], ['passportId']);
             });
             it('get multiple indexes', () => {
-                const indexes = RxSchema.getIndexes(schemas.bigHuman);
+                const indexes = getIndexes(schemas.bigHuman);
                 assert.ok(indexes.length > 1);
                 assert.deepEqual(indexes[0], ['passportId']);
             });
             it('get sub-index', () => {
-                const indexes = RxSchema.getIndexes(schemas.humanSubIndex);
+                const indexes = getIndexes(schemas.humanSubIndex);
                 assert.equal(indexes.length, 1);
                 assert.deepEqual(indexes[0], ['other.age']);
             });
             it('get no index', () => {
-                const indexes = RxSchema.getIndexes(schemas.noindexHuman);
+                const indexes = getIndexes(schemas.noindexHuman);
                 assert.equal(indexes.length, 0);
             });
             it('get compoundIndex', () => {
-                const indexes = RxSchema.getIndexes(schemas.compoundIndex);
+                const indexes = getIndexes(schemas.compoundIndex);
                 assert.ok(Array.isArray(indexes));
                 assert.ok(Array.isArray(indexes[0]));
                 assert.deepEqual(indexes[0], ['passportId', 'passportCountry']);
@@ -312,16 +318,16 @@ config.parallel('rx-schema.test.js', () => {
                 const val = ['firstName', 'lastName', {
                     name: 2
                 }];
-                const normalized = RxSchema.normalize(val);
+                const normalized = util.sortObject(val);
                 assert.deepEqual(val, normalized);
             });
             it('should be the same object', () => {
-                const schema = RxSchema.normalize(schemas.humanNormalizeSchema1);
+                const schema = normalize(schemas.humanNormalizeSchema1);
                 assert.deepEqual(schema, schemas.humanNormalizeSchema1);
             });
             it('should deep sort one schema with different orders to be the same', () => {
-                const schema1 = RxSchema.normalize(schemas.humanNormalizeSchema1);
-                const schema2 = RxSchema.normalize(schemas.humanNormalizeSchema2);
+                const schema1 = normalize(schemas.humanNormalizeSchema1);
+                const schema2 = normalize(schemas.humanNormalizeSchema2);
                 assert.deepEqual(schema1, schema2);
             });
         });
@@ -368,8 +374,9 @@ config.parallel('rx-schema.test.js', () => {
         describe('.hasCrypt()', () => {
             describe('positive', () => {
                 it('true when one field is encrypted', () => {
-                    const ret = RxSchema.hasCrypt({
+                    const ret = hasCrypt({
                         version: 0,
+                        type: 'object',
                         properties: {
                             secret: {
                                 type: 'string',
@@ -380,8 +387,9 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(ret, true);
                 });
                 it('false when no field is encrypted', () => {
-                    const ret = RxSchema.hasCrypt({
+                    const ret = hasCrypt({
                         version: 0,
+                        type: 'object',
                         properties: {
                             secret: {
                                 type: 'string'
@@ -391,8 +399,9 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(ret, false);
                 });
                 it('true when nested field is encrypted', () => {
-                    const ret = RxSchema.hasCrypt({
+                    const ret = hasCrypt({
                         version: 0,
+                        type: 'object',
                         properties: {
                             any: {
                                 type: 'object',
@@ -411,8 +420,9 @@ config.parallel('rx-schema.test.js', () => {
         });
         describe('.getFinalFields()', () => {
             it('should contain the field', () => {
-                const ret = RxSchema.getFinalFields({
+                const ret = getFinalFields({
                     version: 0,
+                    type: 'object',
                     properties: {
                         myField: {
                             type: 'string',
@@ -423,8 +433,9 @@ config.parallel('rx-schema.test.js', () => {
                 assert.ok(ret.includes('myField'));
             });
             it('should contain the primary', async () => {
-                const ret = RxSchema.getFinalFields({
+                const ret = getFinalFields({
                     version: 0,
+                    type: 'object',
                     properties: {
                         myField: {
                             type: 'string',
@@ -439,7 +450,7 @@ config.parallel('rx-schema.test.js', () => {
     describe('instance', () => {
         describe('.normalized', () => {
             it('should normalize if schema has not been normalized yet', () => {
-                const schema = createRxSchema(schemas.humanNormalizeSchema1);
+                const schema: RxSchema = createRxSchema(schemas.humanNormalizeSchema1);
                 const normalized = schema.normalized;
                 assert.notEqual(schema._normalized, null);
                 assert.notEqual(normalized, null);
@@ -676,7 +687,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.equal(schemaObj.type, 'string');
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('.fillObjectWithDefaults()', () => {
             describe('positive', () => {

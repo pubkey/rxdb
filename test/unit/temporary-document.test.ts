@@ -2,7 +2,7 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
-import * as RxDB from '../../dist/lib/index';
+import * as RxDB from '../../';
 import * as util from '../../dist/lib/util';
 
 import * as schemas from '../helper/schemas';
@@ -88,7 +88,7 @@ config.parallel('temporary-document.test.js', () => {
             it('throw if schema missmatch', async () => {
                 const c = await humansCollection.create(0);
                 const docData = schemaObjects.human();
-                docData.foo = 'bar';
+                docData['foo'] = 'bar';
                 const newDoc = c.newDocument(docData);
                 await AsyncTestUtil.assertThrows(
                     () => newDoc.save(),

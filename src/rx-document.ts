@@ -27,17 +27,9 @@ import {
 } from 'rxjs/operators';
 
 import {
-    RxDocumentBase
-} from '../typings';
-import {
+    RxDocument,
     RxCollection
-} from './rx-collection';
-
-export type RxDocument<
-    RxDocumentType = any,
-    OrmMethods = any
-    > = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
-
+} from './types';
 
 export function createRxDocumentConstructor(proto = basePrototype) {
     const constructor = function RxDocument(collection, jsonData) {

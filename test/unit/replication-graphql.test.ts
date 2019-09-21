@@ -11,7 +11,7 @@ import {
 import AsyncTestUtil, {
     clone
 } from 'async-test-util';
-import RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 import GraphQLPlugin from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
 

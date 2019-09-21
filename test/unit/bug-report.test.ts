@@ -11,7 +11,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 import * as util from '../../dist/lib/util';
 
 describe('bug-report.test.js', () => {

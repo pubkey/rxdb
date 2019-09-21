@@ -5,7 +5,7 @@
  */
 
 
-const CODES = {
+const CODES: { [k: string]: string } = {
     // util.js
     UT1: 'given name is no string or empty',
     UT2: `collection- and database-names must match the regex

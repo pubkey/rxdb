@@ -1,5 +1,5 @@
 /**
- * this file contains typings that are pouchdb-specific
+ * this file contains types that are pouchdb-specific
  * most of it is copied from @types/pouchdb
  * because it is outdated and strange
  */
@@ -73,7 +73,9 @@ export declare class PouchDBInstance {
     get(
         docId: string,
         options?: any
-    ): Promise<any>;
+    ): Promise<null | ({
+        _id: string
+    } & any)>;
     put(
         doc: any,
         options?: any,
@@ -113,5 +115,5 @@ export declare class PouchDBInstance {
     static plugin(p: any): void;
     static debug: Debug;
     static isInstanceOf(instance: any): boolean;
-    static countAllUndeleted(pouchdb: PouchDB): Promise<number>;
+    static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
 }

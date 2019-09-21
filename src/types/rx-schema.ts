@@ -80,14 +80,3 @@ export declare class RxJsonSchema<T = any> {
         encrypted?: boolean;
     };
 }
-
-export declare class RxSchema<T = any> {
-    readonly jsonID: RxJsonSchema<T>;
-    getSchemaByObjectPath(path: keyof T): JsonSchema;
-    readonly encryptedPaths: any;
-    validate(obj: any, schemaPath?: string): void;
-    readonly hash: string;
-    readonly topLevelFields: keyof T[];
-    readonly previousVersions: any[];
-    readonly defaultValues: { [P in keyof T]: T[P] };
-}

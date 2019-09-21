@@ -14,7 +14,8 @@ try {
 
 const config = {
     platform: detect(),
-    parallel: useParallel
+    parallel: useParallel,
+    rootPath: null
 };
 
 if (config.platform.name === 'node') {

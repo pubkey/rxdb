@@ -5,7 +5,9 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
+import {
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import {
@@ -16,7 +18,7 @@ config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -37,7 +39,7 @@ config.parallel('reactive-collection.test.js', () => {
         });
         describe('negative', () => {
             it('should get no event on non-succes-insert', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });

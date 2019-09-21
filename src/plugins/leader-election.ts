@@ -2,15 +2,25 @@
  * this plugin adds the leader-election-capabilities to rxdb
  */
 
-import LeaderElection from 'broadcast-channel/leader-election';
+import {
+    create as createLeaderElection,
+    LeaderElector as BroadcastChannelLeaderElector
+} from 'broadcast-channel/leader-election';
 
-class LeaderElector {
-    constructor(database) {
-        this.destroyed = false;
-        this.database = database;
-        this.isLeader = false;
-        this.isDead = false;
-        this.elector = LeaderElection.create(database.broadcastChannel);
+import {
+    RxDatabase,
+    RxPlugin
+} from '../types';
+
+export class LeaderElector {
+    public destroyed: boolean = false;
+    public isLeader: boolean = false;
+    public isDead: boolean = false;
+    public elector: BroadcastChannelLeaderElector;
+    constructor(
+        public database: RxDatabase
+    ) {
+        this.elector = createLeaderElection(database.broadcastChannel);
     }
 
     die() {
@@ -46,8 +56,10 @@ export const overwritable = {
     createLeaderElector: create
 };
 
-export default {
+const plugin: RxPlugin = {
     rxdb,
     prototypes,
     overwritable
 };
+
+export default plugin;

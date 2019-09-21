@@ -17,7 +17,7 @@ import * as schemaObjects from './../helper/schema-objects';
 import AsyncTestUtil from 'async-test-util';
 import {
     isRxDatabase
-} from '../../dist/lib/index';
+} from '../../';
 
 config.parallel('pouch-db-integration.test.js', () => {
     describe('init', () => {

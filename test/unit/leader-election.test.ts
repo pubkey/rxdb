@@ -4,7 +4,9 @@ import config from './config';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
+import {
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 
@@ -154,7 +156,7 @@ config.parallel('leader-election.test.js', () => {
     });
     describe('integration', () => {
         it('non-multiInstance should always be leader', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false

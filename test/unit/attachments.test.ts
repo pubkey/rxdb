@@ -6,7 +6,9 @@ import * as humansCollection from '../helper/humans-collection';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
-import RxDatabase from '../../dist/lib/rx-database';
+import {
+    createRxDatabase
+} from '../../';
 import * as AttachmentPlugin from '../../dist/lib/plugins/attachments';
 
 config.parallel('attachments.test.js', () => {
@@ -102,7 +104,7 @@ config.parallel('attachments.test.js', () => {
         });
         it('should find the attachment after database is re-created', async () => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: false,
@@ -123,7 +125,7 @@ config.parallel('attachments.test.js', () => {
                 type: 'text/plain'
             });
             await db.destroy();
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: false,
@@ -289,7 +291,7 @@ config.parallel('attachments.test.js', () => {
     describe('multiInstance', () => {
         it('should emit on other instance', async () => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
@@ -302,7 +304,7 @@ config.parallel('attachments.test.js', () => {
                 schema: schemaJson
             });
 
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
@@ -352,7 +354,7 @@ config.parallel('attachments.test.js', () => {
     describe('data-migration', () => {
         it('should also migrate the attachments', async () => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: false,
@@ -381,7 +383,7 @@ config.parallel('attachments.test.js', () => {
 
             const schemaJsonV2 = AsyncTestUtil.clone(schemaJson);
             schemaJsonV2.version = 1;
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: false,
@@ -413,7 +415,7 @@ config.parallel('attachments.test.js', () => {
     });
     describe('orm', () => {
         it('should be able to call the defined function', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false,
@@ -457,7 +459,7 @@ config.parallel('attachments.test.js', () => {
                     encrypted: false,
                 },
             };
-            const myDB = await RxDatabase.create({
+            const myDB = await createRxDatabase({
                 name: 'mylocaldb' + util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true
@@ -485,7 +487,7 @@ config.parallel('attachments.test.js', () => {
         });
         it('calling allAttachments() fails when document has none', async () => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: false,

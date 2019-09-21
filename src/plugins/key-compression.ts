@@ -8,17 +8,18 @@ import {
     trimDots,
     clone
 } from '../util';
+import {
+    RxSchema
+} from '../rx-schema';
 
 export class KeyCompressor {
-    /**
-     * @param {RxSchema} schema
-     */
-    constructor(schema) {
-        this.schema = schema;
-        this._table;
-        this._reverseTable;
-        this._fullTable;
-    }
+
+    public _table: {};
+    public _reverseTable: {};
+    public _fullTable: {};
+    constructor(
+        public schema: RxSchema
+    ) { }
 
     get table() {
         if (!this._table) {

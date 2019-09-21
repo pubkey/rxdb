@@ -12,7 +12,7 @@ import {
 } from '../../dist/lib/rx-schema';
 import * as Crypter from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
-import RxDB from '../../dist/lib';
+import RxDB from '../../';
 
 config.parallel('encryption.test.js', () => {
     describe('Schema.encryptedPaths', () => {

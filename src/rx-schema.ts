@@ -22,7 +22,7 @@ import {
 import {
     RxJsonSchema,
     JsonSchema
-} from '../typings';
+} from './types';
 
 export class RxSchema<T = any> {
 
@@ -57,7 +57,7 @@ export class RxSchema<T = any> {
         }
     }
 
-    get version(): number {
+    public get version(): number {
         return this.jsonID.version;
     }
 
@@ -89,7 +89,7 @@ export class RxSchema<T = any> {
         return this._normalized;
     }
 
-    getSchemaByObjectPath(path: keyof T): JsonSchema {
+    public getSchemaByObjectPath(path: keyof T): JsonSchema {
         let usePath: string = path as string;
         usePath = usePath.replace(/\./g, '.properties.');
         usePath = 'properties.' + usePath;
@@ -152,7 +152,7 @@ export class RxSchema<T = any> {
      * @throws {Error} if not valid
      * @param {Object} obj equal to input-obj
      */
-    public validate(obj: any, schemaPath?: string) {
+    public validate(obj: any, schemaPath?: string): void {
         throw pluginMissing('validate');
     }
 
@@ -208,7 +208,7 @@ export class RxSchema<T = any> {
      * see RxCollection.getDocumentPrototype()
      */
     private _getDocumentPrototype;
-    getDocumentPrototype() {
+    public getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const proto = {};
             defineGetterSetter(this, proto, '');
@@ -368,10 +368,10 @@ const fillWithDefaultSettings = function (
     return schemaObj;
 };
 
-export function createRxSchema(
+export function createRxSchema<T = any>(
     jsonID: RxJsonSchema,
     runPreCreateHooks = true
-) {
+): RxSchema<T> {
     if (runPreCreateHooks)
         runPluginHooks('preCreateRxSchema', jsonID);
     const schema = new RxSchema(fillWithDefaultSettings(jsonID));

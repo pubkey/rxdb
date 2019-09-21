@@ -37,6 +37,10 @@ import {
     RxGraphQLReplicationState
 } from '../plugins/replication-graphql';
 
+import {
+    RxCollectionBase
+} from '../rx-collection';
+
 export interface KeyFunctionMap {
     [key: number]: Function
 }
@@ -69,7 +73,7 @@ export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (da
 
 export type RxCollection<RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }> = RxCollectionBase<RxDocumentType, OrmMethods> & StaticMethods;
 
-export interface RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
+export interface RxCollectionBaseOld<RxDocumentType = any, OrmMethods = {}> {
     readonly database: RxDatabase;
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;

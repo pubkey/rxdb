@@ -43,7 +43,9 @@ import RxDBLeaderElectionPlugin from '../leader-election';
 import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
-
+import {
+    RxCollection
+} from '../../types';
 
 Core.plugin(RxDBLeaderElectionPlugin);
 
@@ -56,9 +58,9 @@ Core.plugin(RxDBWatchForChangesPlugin);
 
 export class RxGraphQLReplicationState {
     constructor(
-        collection,
-        url,
-        headers,
+        public collection: RxCollection,
+        url: string,
+        headers: { [k: string]: string },
         pull,
         push,
         deletedFlag,
@@ -66,7 +68,6 @@ export class RxGraphQLReplicationState {
         liveInterval,
         retryTime
     ) {
-        this.collection = collection;
         this.client = GraphQLClient({
             url,
             headers

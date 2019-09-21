@@ -33,17 +33,12 @@ import {
 import {
     filter
 } from 'rxjs/operators';
-import {
-    PouchSettings,
-
-} from './types';
 
 import {
     PouchDB
 } from './pouch-db';
 
 import {
-    RxCollection,
     create as createRxCollection
 } from './rx-collection';
 import {
@@ -57,7 +52,10 @@ import {
     PouchDBInstance,
     RxChangeEventCollection,
     RxDatabase,
-    RxCollectionCreator
+    RxCollectionCreator,
+    RxJsonSchema,
+    RxCollection,
+    PouchSettings
 } from './types';
 
 /**
@@ -83,6 +81,9 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             filter(cEvent => isInstanceOfRxChangeEvent(cEvent))
         );
     public broadcastChannel: BroadcastChannel;
+    public storageToken: string;
+    public broadcastChannel$: Subject<RxChangeEvent>;
+    public _adminPouch: PouchDBInstance;
 
     constructor(
         public name: string,
@@ -464,7 +465,9 @@ function _removeUsedCombination(name, adapter) {
  * to ensure there is/was no other instance with a different password
  * @return {Promise}
  */
-export function _preparePasswordHash(rxDatabase) {
+export function _preparePasswordHash(
+    rxDatabase: RxDatabase
+): Promise<boolean> {
     if (!rxDatabase.password) return Promise.resolve(false);
 
     const pwHash = hash(rxDatabase.password);
@@ -472,6 +475,7 @@ export function _preparePasswordHash(rxDatabase) {
     return rxDatabase._adminPouch.get('_local/pwHash')
         .catch(() => null)
         .then(pwHashDoc => {
+
             /**
              * if pwHash was not saved, we save it,
              * this operation might throw because another instance runs save at the same time,
@@ -504,7 +508,7 @@ export function _preparePasswordHash(rxDatabase) {
  * we set a storage-token and use it in the broadcast-channel
  * @return {Promise<string>}
  */
-export function _ensureStorageTokenExists(rxDatabase) {
+export function _ensureStorageTokenExists(rxDatabase: RxDatabase): Promise<string> {
     return rxDatabase._adminPouch.get('_local/storageToken')
         .catch(() => {
             // no doc exists -> insert
@@ -521,10 +525,11 @@ export function _ensureStorageTokenExists(rxDatabase) {
 
 /**
  * writes the changeEvent to the broadcastChannel
- * @param  {RxChangeEvent} changeEvent
- * @return {Promise<boolean>}
  */
-export function writeToSocket(rxDatabase, changeEvent) {
+export function writeToSocket(
+    rxDatabase: RxDatabase,
+    changeEvent: RxChangeEvent
+): Promise<boolean> {
     if (
         rxDatabase.multiInstance &&
         !changeEvent.isIntern() &&
@@ -538,7 +543,9 @@ export function writeToSocket(rxDatabase, changeEvent) {
             st: rxDatabase.storageToken, // storage-token
             d: socketDoc
         };
-        return rxDatabase.broadcastChannel.postMessage(sendOverChannel);
+        return rxDatabase.broadcastChannel
+            .postMessage(sendOverChannel)
+            .then(() => true);
     } else
         return Promise.resolve(false);
 }
@@ -549,7 +556,7 @@ export function writeToSocket(rxDatabase, changeEvent) {
  * @param {string} name
  * @param {RxSchema} schema
  */
-export function _collectionNamePrimary(name, schema) {
+export function _collectionNamePrimary(name: string, schema: RxJsonSchema) {
     return name + '-' + schema.version;
 }
 
@@ -558,7 +565,7 @@ export function _collectionNamePrimary(name, schema) {
  * @param  {string}  collectionName
  * @return {Promise<string[]>} resolves all known collection-versions
  */
-export function _removeAllOfCollection(rxDatabase, collectionName) {
+export function _removeAllOfCollection(rxDatabase: RxDatabase, collectionName: string) {
 
     return rxDatabase.lockedRun(
         () => rxDatabase._collectionsPouch.allDocs({
@@ -580,7 +587,7 @@ export function _removeAllOfCollection(rxDatabase, collectionName) {
     });
 }
 
-function _prepareBroadcastChannel(rxDatabase) {
+function _prepareBroadcastChannel(rxDatabase: RxDatabase) {
     // broadcastChannel
     rxDatabase.broadcastChannel = new BroadcastChannel(
         'RxDB:' +
@@ -608,7 +615,7 @@ function _prepareBroadcastChannel(rxDatabase) {
  * do the async things for this database
  * @return {Promise}
  */
-function prepare(rxDatabase) {
+function prepare(rxDatabase: RxDatabase) {
     rxDatabase._adminPouch = _internalAdminPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
     rxDatabase._collectionsPouch = _internalCollectionsPouch(rxDatabase.name, rxDatabase.adapter, rxDatabase.pouchSettings);
 
@@ -689,7 +696,11 @@ export function create({
 
 
 
-export function getPouchLocation(dbName, collectionName, schemaVersion) {
+export function getPouchLocation(
+    dbName: string,
+    collectionName: string,
+    schemaVersion: number
+) {
     const prefix = dbName + '-rxdb-' + schemaVersion + '-';
     if (!collectionName.includes('/')) {
         return prefix + collectionName;
@@ -813,7 +824,7 @@ export function isInstanceOf(obj: any) {
     return obj instanceof RxDatabaseBase;
 }
 
-export function dbCount() {
+export function dbCount(): number {
     return DB_COUNT;
 }
 

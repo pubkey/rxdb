@@ -2,7 +2,7 @@ import assert from 'assert';
 import * as util from '../../dist/lib/util';
 import config from './config';
 
-import Core from '../../dist/lib/core';
+import Core from '../../plugins/core';
 Core.plugin(require('../../plugins/no-validate'));
 Core.plugin(require('pouchdb-adapter-memory'));
 

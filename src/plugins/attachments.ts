@@ -43,7 +43,7 @@ export const blobBufferUtil = {
      * @param  {string} type
      * @return {Blob|Buffer}
      */
-    createBlobBuffer(data, type) {
+    createBlobBuffer(data, type: string) {
         let blobBuffer;
 
         if (isElectronRenderer) {

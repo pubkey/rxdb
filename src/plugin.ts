@@ -11,7 +11,7 @@ import {
     basePrototype as RxDocumentPrototype
 } from './rx-document';
 import {
-    RxQueryBase
+    RxQuery
 } from './rx-query';
 import {
     RxCollectionBase
@@ -39,7 +39,7 @@ const PROTOTYPES = {
     RxSchema: RxSchema.prototype,
     Crypter: Crypter.Crypter.prototype,
     RxDocument: RxDocumentPrototype,
-    RxQuery: RxQueryBase.prototype,
+    RxQuery: RxQuery.prototype,
     RxCollection: RxCollectionBase.prototype,
     RxDatabase: RxDatabaseBase.prototype
 };

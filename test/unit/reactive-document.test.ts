@@ -10,7 +10,7 @@ import * as humansCollection from '../helper/humans-collection';
 import * as util from '../../dist/lib/util';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
-import RxDB from '../../dist/lib';
+import RxDB from '../../';
 import {
     first
 } from 'rxjs/operators';

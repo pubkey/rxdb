@@ -13,6 +13,9 @@ import * as RxCollection from '../../dist/lib/rx-collection';
 import {
     createRxSchema
 } from '../../dist/lib/rx-schema';
+import {
+    create as createRxDatabase
+} from '../../';
 
 config.parallel('rx-document.test.js', () => {
     describe('statics', () => {});
@@ -53,7 +56,7 @@ config.parallel('rx-document.test.js', () => {
         });
         describe('RxCollection.getDocumentOrmPrototype()', () => {
             it('should get a prototype with all orm-methods', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -77,7 +80,7 @@ config.parallel('rx-document.test.js', () => {
         });
         describe('RxCollection.getDocumentPrototype()', () => {
             it('should get a valid prototype', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -284,7 +287,7 @@ config.parallel('rx-document.test.js', () => {
                         }
                     }
                 };
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -309,7 +312,7 @@ config.parallel('rx-document.test.js', () => {
                 db.destroy();
             });
             it('should throw when final field is modified', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -408,7 +411,7 @@ config.parallel('rx-document.test.js', () => {
                 if (!config.platform.isNode()) return;
                 // use a 'slow' adapter because memory might be to fast
                 const leveldown = require('leveldown');
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: config.rootPath + 'test_tmp/' + util.randomCouchString(10),
                     adapter: leveldown
                 });
@@ -441,7 +444,7 @@ config.parallel('rx-document.test.js', () => {
                 const leveldown = require('leveldown');
 
                 const dbName = config.rootPath + 'test_tmp/' + util.randomCouchString(10);
-                const db = await RxDB.create({
+                const db = await createRxDatabase({
                     name: dbName,
                     adapter: leveldown
                 });
@@ -461,7 +464,7 @@ config.parallel('rx-document.test.js', () => {
                 await db.destroy();
 
                 // same again
-                const db2 = await RxDB.create({
+                const db2 = await createRxDatabase({
                     name: dbName,
                     adapter: leveldown
                 });
@@ -497,7 +500,7 @@ config.parallel('rx-document.test.js', () => {
                 c.database.destroy();
             });
             it('should throw when final field is modified', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -559,7 +562,7 @@ config.parallel('rx-document.test.js', () => {
             c.database.destroy();
         });
         it('should not return _attachments if not wanted', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false,
@@ -734,7 +737,7 @@ config.parallel('rx-document.test.js', () => {
             c.database.destroy();
         });
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -764,7 +767,7 @@ config.parallel('rx-document.test.js', () => {
             db.destroy();
         });
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });
@@ -829,7 +832,7 @@ config.parallel('rx-document.test.js', () => {
             const name = util.randomCouchString(10);
 
             // create a database
-            const db = await RxDB.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 ignoreDuplicate: true

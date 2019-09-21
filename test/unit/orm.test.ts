@@ -3,7 +3,7 @@ import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
 import * as util from '../../dist/lib/util';
-import * as RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 

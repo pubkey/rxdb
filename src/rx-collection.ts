@@ -11,8 +11,7 @@ import {
     promiseSeries
 } from './util';
 import {
-    createRxQuery,
-    RxQuery
+    createRxQuery
 } from './rx-query';
 import {
     isInstanceOf as isInstanceOfRxSchema,
@@ -65,14 +64,15 @@ import {
     MigrationState,
     SyncOptions,
     RxCollection,
-    RxDatabase
+    RxDatabase,
+    RxQuery,
+    RxDocument
 } from './types';
 
 import {
     RxSchema
 } from './rx-schema';
 import {
-    RxDocument,
     basePrototype as RxDocumentBasePrototype,
     createRxDocumentConstructor,
     createWithConstructor as createRxDocumentWithConstructor,
@@ -603,7 +603,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     /**
      * Create a replicated in-memory-collection
      */
-    inMemory(): any { // TODO deep typings
+    inMemory(): any { // TODO deep types
         throw pluginMissing('in-memory');
     }
 

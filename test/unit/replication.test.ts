@@ -12,7 +12,7 @@ import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 
 import {
     fromEvent

@@ -8,7 +8,10 @@ import * as RxDatabase from '../../dist/lib/rx-database';
 import {
     createRxSchema
 } from '../../dist/lib/rx-schema';
-import * as RxDocument from '../../dist/lib/rx-document';
+import {
+    createRxDatabase,
+    isRxDocument
+} from '../../';
 import * as util from '../../dist/lib/util';
 
 config.parallel('population.test.js', () => {
@@ -112,7 +115,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('bestFriend');
-                assert.ok(RxDocument.isInstanceOf(friend));
+                assert.ok(isRxDocument(friend));
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
@@ -120,12 +123,12 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('foo.bestFriend');
-                assert.ok(RxDocument.isInstanceOf(friend));
+                assert.ok(isRxDocument(friend));
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
             it('populate string-array', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -166,7 +169,7 @@ config.parallel('population.test.js', () => {
                 const doc = await col.findOne(oneGuy.name).exec();
                 const friendDocs = await doc.friends_;
                 friendDocs.forEach(friend => {
-                    assert.ok(RxDocument.isInstanceOf(friend));
+                    assert.ok(isRxDocument(friend));
                 });
                 db.destroy();
             });
@@ -178,7 +181,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelated();
                 const doc = await col.findOne().exec();
                 const friend = await doc.bestFriend_;
-                assert.ok(RxDocument.isInstanceOf(friend));
+                assert.ok(isRxDocument(friend));
                 assert.equal(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
@@ -186,7 +189,7 @@ config.parallel('population.test.js', () => {
                 const col = await humansCollection.createRelatedNested();
                 const doc = await col.findOne().exec();
                 const friend = await doc.foo.bestFriend_;
-                assert.ok(RxDocument.isInstanceOf(friend));
+                assert.ok(isRxDocument(friend));
                 assert.equal(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
@@ -194,7 +197,7 @@ config.parallel('population.test.js', () => {
     });
     describe('issues', () => {
         it('#222 population not working when multiInstance: false', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: false // this must be false here
@@ -244,7 +247,7 @@ config.parallel('population.test.js', () => {
             const docA = await colA.findOne().where('name').eq('docA-01').exec();
             const docB = await docA.populate('refB');
 
-            assert.ok(RxDocument.isInstanceOf(docB));
+            assert.ok(isRxDocument(docB));
             assert.equal(docB.somevalue, 'foobar');
 
             db.destroy();

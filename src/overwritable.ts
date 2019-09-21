@@ -7,24 +7,22 @@ import {
 } from './rx-error';
 
 import {
+    RxDatabase
+} from './types';
+import {
     RxSchema
 } from './rx-schema';
 import {
-    RxDatabase
-} from '../typings';
-import {
-    RxDatabaseBase
-} from './rx-database';
+    LeaderElector
+} from './plugins/leader-election';
 
 const funs = {
     /**
      * validates if a password can be used
      * @overwritten by plugin (optional)
-     * @param  {any} password
      * @throws if password not valid
-     * @return {void}
      */
-    validatePassword(_password: string | any) {
+    validatePassword(_password: string | any): void {
         throw pluginMissing('encryption');
     },
     /**
@@ -40,7 +38,7 @@ const funs = {
      * @param  {RxDatabase} database
      * @return {LeaderElector}
      */
-    createLeaderElector(_database: RxDatabaseBase | RxDatabase) {
+    createLeaderElector(_database: RxDatabase | RxDatabase): LeaderElector {
         throw pluginMissing('leader-election');
     },
 
@@ -48,7 +46,7 @@ const funs = {
      * checks if the given adapter can be used
      * @return {any} adapter
      */
-    checkAdapter(_adapter: any) {
+    checkAdapter(_adapter: any): Promise<boolean> {
         throw pluginMissing('adapter-check');
     },
     /**
@@ -56,7 +54,7 @@ const funs = {
      * @param  {string} message
      * @return {string}
      */
-    tunnelErrorMessage(message: string) {
+    tunnelErrorMessage(message: string): string {
         // TODO better text with link
         return `RxDB Error-Code ${message}.
         - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages

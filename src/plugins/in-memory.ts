@@ -18,8 +18,10 @@ import {
 } from 'rxjs/operators';
 
 import {
-    RxCollectionBase,
     RxCollection
+} from '../types';
+import {
+    RxCollectionBase
 } from '../rx-collection';
 import {
     clone,

@@ -7,7 +7,9 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
+import {
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
@@ -27,7 +29,7 @@ config.parallel('import-export.test.js', () => {
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -53,7 +55,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export encrypted as decrypted', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -80,7 +82,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('decrypt a single value from an encrypted export', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -129,7 +131,7 @@ config.parallel('import-export.test.js', () => {
                 });
                 it('import encrypted', async () => {
                     const password = util.randomCouchString(10);
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
@@ -146,7 +148,7 @@ config.parallel('import-export.test.js', () => {
 
                     const json = await col.dump();
 
-                    const db2 = await RxDatabase.create({
+                    const db2 = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
@@ -188,7 +190,7 @@ config.parallel('import-export.test.js', () => {
                     differentSchemaCol.database.destroy();
                 });
                 it('should not import encrypted if password is different', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
@@ -198,7 +200,7 @@ config.parallel('import-export.test.js', () => {
                         schema: schemas.encryptedObjectHuman
                     });
 
-                    const db2 = await RxDatabase.create({
+                    const db2 = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
@@ -222,7 +224,7 @@ config.parallel('import-export.test.js', () => {
                     db2.destroy();
                 });
                 it('should not import if schema not matching', async () => {
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password: util.randomCouchString(10)
@@ -284,7 +286,7 @@ config.parallel('import-export.test.js', () => {
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -307,7 +309,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export encrypted as decrypted', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -335,7 +337,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export with multiple collections', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -363,7 +365,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export 1 of 2 collections', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -409,7 +411,7 @@ config.parallel('import-export.test.js', () => {
                 });
                 it('import encrypted', async () => {
                     const password = util.randomCouchString(10);
-                    const db = await RxDatabase.create({
+                    const db = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
@@ -418,7 +420,7 @@ config.parallel('import-export.test.js', () => {
                         name: 'enchuman',
                         schema: schemas.encryptedObjectHuman
                     });
-                    const db2 = await RxDatabase.create({
+                    const db2 = await createRxDatabase({
                         name: util.randomCouchString(10),
                         adapter: 'memory',
                         password
@@ -462,11 +464,11 @@ config.parallel('import-export.test.js', () => {
                 }
             };
 
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: 'aaa',
                 adapter: 'memory',
             });
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name: 'aaa1',
                 adapter: 'memory',
             });

@@ -7,9 +7,10 @@ import {
     first
 } from 'rxjs/operators';
 
-import RxDB from '../../dist/lib/index';
+import RxDB from '../../';
 import {
-    isRxQuery
+    isRxQuery,
+    create as createRxDatabase
 } from '../../';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as humansCollection from './../helper/humans-collection';
@@ -474,7 +475,7 @@ config.parallel('rx-query.test.js', () => {
 
 
             const emitted = [];
-            const query = col.findOne(docData.pass);
+            const query = col.findOne(docData.passportId);
             query.$.subscribe(doc => emitted.push(doc.toJSON()));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
@@ -524,7 +525,7 @@ config.parallel('rx-query.test.js', () => {
             };
 
             const emitted = [];
-            const query = col.findOne(docData.pass);
+            const query = col.findOne(docData.passportId);
             query.$.subscribe(doc => {
                 if (!doc) emitted.push(null);
                 else emitted.push(doc.toJSON());
@@ -681,7 +682,7 @@ config.parallel('rx-query.test.js', () => {
                     },
                     'required': ['user_pwd', 'last_login', 'status']
                 };
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(20)
@@ -720,7 +721,7 @@ config.parallel('rx-query.test.js', () => {
                         }
                     }
                 };
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(20)
@@ -805,7 +806,7 @@ config.parallel('rx-query.test.js', () => {
             // make and exec query
             const query = c.find();
             const docs = await query.exec();
-            assert.ok(docs.length, 100);
+            assert.equal(docs.length, 100);
 
             // produces changeEvents
             await Promise.all(
@@ -817,7 +818,7 @@ config.parallel('rx-query.test.js', () => {
 
             // re-exec query
             const docs2 = await query.exec();
-            assert.ok(docs2.length, 400);
+            assert.equal(docs2.length, 400);
 
             // try same with upserts
             const docData = new Array(200)
@@ -827,7 +828,7 @@ config.parallel('rx-query.test.js', () => {
                 await c.insert(doc);
 
             const docs3 = await query.exec();
-            assert.ok(docs3.length, 600);
+            assert.equal(docs3.length, 600);
 
             const docData2 = clone(docData);
             docData2.forEach(doc => doc.lastName = doc.lastName + '1');
@@ -836,7 +837,7 @@ config.parallel('rx-query.test.js', () => {
                 await c.upsert(doc);
 
             const docs4 = await query.exec();
-            assert.ok(docs4.length, 600);
+            assert.equal(docs4.length, 600);
 
             c.database.destroy();
         });
@@ -1021,7 +1022,7 @@ config.parallel('rx-query.test.js', () => {
                     }
                 }
             };
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });

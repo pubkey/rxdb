@@ -2,7 +2,9 @@ import assert from 'assert';
 
 import * as schemas from '../helper/schemas';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
+import {
+    create as createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 
 import {
@@ -14,7 +16,7 @@ describe('reactive-database.test.js', () => {
     describe('.collection()', () => {
         describe('positive', () => {
             it('emit when collection is created', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });

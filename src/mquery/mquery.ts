@@ -18,7 +18,7 @@ import {
     RxQueryObject
 } from '../types';
 
-class MQuery {
+export class MQueryBase {
 
     public options: any = {};
     public _conditions: RxQueryObject = {} as RxQueryObject;
@@ -46,11 +46,11 @@ class MQuery {
      * @return {MQuery}
      */
     clone(): MQuery {
-        const same = new MQuery();
+        const same = new MQueryBase();
         Object
             .entries(this)
             .forEach(([k, v]) => same[k] = clone(v));
-        return same;
+        return same as MQuery;
     }
 
 
@@ -60,7 +60,7 @@ class MQuery {
      * @param {Object} [val]
      * @return {MQuery} this
      */
-    where() {
+    where(): MQueryBase {
         if (!arguments.length) return this;
         const type = typeof arguments[0];
         if ('string' === type) {
@@ -85,7 +85,7 @@ class MQuery {
      * @param {Object} val
      * @return {MQuery} this
      */
-    equals(val) {
+    equals(val): MQueryBase {
         this._ensurePath('equals');
         const path = this._path;
         this._conditions[path] = val;
@@ -98,7 +98,7 @@ class MQuery {
      * @param {Object} val
      * @return {MQuery} this
      */
-    eq(val) {
+    eq(val): MQueryBase {
         this._ensurePath('eq');
         const path = this._path;
         this._conditions[path] = val;
@@ -112,7 +112,7 @@ class MQuery {
      * @param {Array} array array of conditions
      * @return {MQuery} this
      */
-    or(array) {
+    or(array): MQueryBase {
         const or = this._conditions.$or || (this._conditions.$or = []);
         if (!Array.isArray(array)) array = [array];
         or.push.apply(or, array);
@@ -126,7 +126,7 @@ class MQuery {
      * @param {Array} array array of conditions
      * @return {MQuery} this
      */
-    nor(array) {
+    nor(array): MQueryBase {
         const nor = this._conditions.$nor || (this._conditions.$nor = []);
         if (!Array.isArray(array)) array = [array];
         nor.push.apply(nor, array);
@@ -141,7 +141,7 @@ class MQuery {
      * @param {Array} array array of conditions
      * @return {MQuery} this
      */
-    and(array) {
+    and(array): MQueryBase {
         const and = this._conditions.$and || (this._conditions.$and = []);
         if (!Array.isArray(array)) array = [array];
         and.push.apply(and, array);
@@ -156,7 +156,7 @@ class MQuery {
      * @return {MQuery} this
      * @api public
      */
-    mod() {
+    mod(): MQueryBase {
         let val;
         let path;
 
@@ -193,7 +193,7 @@ class MQuery {
      * @return {MQuery} this
      * @api public
      */
-    exists() {
+    exists(): MQueryBase {
         let path;
         let val;
         if (0 === arguments.length) {
@@ -236,7 +236,7 @@ class MQuery {
      * @param {Object|Function} criteria
      * @return {MQuery} this
      */
-    elemMatch() {
+    elemMatch(): MQueryBase {
         if (null === arguments[0])
             throw newRxTypeError('MQ2');
 
@@ -262,7 +262,7 @@ class MQuery {
             throw newRxTypeError('MQ2');
 
         if (fn) {
-            criteria = new MQuery;
+            criteria = new MQueryBase;
             fn(criteria);
             criteria = criteria._conditions;
         }
@@ -283,7 +283,7 @@ class MQuery {
      * @param {Object|String|Array} arg
      * @return {MQuery} this
      */
-    sort(arg) {
+    sort(arg): MQueryBase {
         if (!arg) return this;
         let len;
         const type = typeof arg;
@@ -331,7 +331,7 @@ class MQuery {
      * @param {MQuery|Object} source
      * @return {MQuery} this
      */
-    merge(source) {
+    merge(source): MQueryBase {
         if (!source)
             return this;
 
@@ -341,7 +341,7 @@ class MQuery {
             });
         }
 
-        if (source instanceof MQuery) {
+        if (source instanceof MQueryBase) {
             // if source has a feature, apply it to ourselves
 
             if (source._conditions)
@@ -382,7 +382,7 @@ class MQuery {
      * @param {Object} [criteria] mongodb selector
      * @return {MQuery} this
      */
-    find(criteria) {
+    find(criteria): MQueryBase {
         if (canMerge(criteria))
             this.merge(criteria);
 
@@ -401,31 +401,47 @@ class MQuery {
             });
         }
     }
-
-    limit(v: any) {
-        return _directMapFunction(this, 'limit', v);
-    }
-    skip(v: any) {
-        return _directMapFunction(this, 'skip', v);
-    }
-    maxScan(v: any) {
-        return _directMapFunction(this, 'maxScan', v);
-    }
-    batchSize(v: any) {
-        return _directMapFunction(this, 'batchSize', v);
-    }
-    comment(v: any) {
-        return _directMapFunction(this, 'comment', v);
-    }
 }
+
+export function createMQuery(criteria: any): MQuery {
+    return new MQueryBase(criteria) as MQuery;
+}
+
+export interface MQuery extends MQueryBase {
+    limit: ReturnSelfFunction;
+    skip: ReturnSelfFunction;
+    maxScan: ReturnSelfFunction;
+    batchSize: ReturnSelfFunction;
+    comment: ReturnSelfFunction;
+
+    gt: ReturnSelfFunction;
+    gte: ReturnSelfFunction;
+    lt: ReturnSelfFunction;
+    lte: ReturnSelfFunction;
+    ne: ReturnSelfFunction;
+    in: ReturnSelfFunction;
+    nin: ReturnSelfFunction;
+    all: ReturnSelfFunction;
+    regex: ReturnSelfFunction;
+    size: ReturnSelfFunction;
+}
+
+declare type ReturnSelfFunction = (any) => MQueryBase;
 
 /**
- * adds the value directly to the options
+ * limit, skip, maxScan, batchSize, comment
+ *
+ * Sets these associated options.
+ *
+ *     query.comment('feed query');
  */
-function _directMapFunction(q: MQuery, method: string, v: any) {
-    q.options[method] = v;
-    return q;
-}
+['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
+    MQueryBase.prototype[method] = function (v) {
+        this.options[method] = v;
+        return this;
+    };
+});
+
 
 /**
  * gt, gte, lt, lte, ne, in, nin, all, regex, size, maxDistance
@@ -434,7 +450,7 @@ function _directMapFunction(q: MQuery, method: string, v: any) {
  */
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size']
     .forEach(function ($conditional) {
-        MQuery.prototype[$conditional] = function () {
+        MQueryBase.prototype[$conditional] = function () {
             let path;
             let val;
             if (1 === arguments.length) {
@@ -517,10 +533,8 @@ function _pushArr(opts, field, value) {
  * @param {Object} conds
  * @return {Boolean}
  */
-export function canMerge(conds) {
-    return conds instanceof MQuery || isObject(conds);
+export function canMerge(conds): boolean {
+    return conds instanceof MQueryBase || isObject(conds);
 };
-
-export default MQuery;
 
 

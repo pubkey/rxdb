@@ -8,10 +8,10 @@
 import assert from 'assert';
 import config from './config';
 
-import * as RxDatabase from '../../dist/lib/index';
 import {
-    isRxDatabase
-} from '../../dist/lib/index';
+    isRxDatabase,
+    createRxDatabase
+} from '../../';
 import * as util from '../../dist/lib/util';
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
@@ -21,7 +21,7 @@ import AsyncTestUtil from 'async-test-util';
 config.parallel('cross-instance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async () => {
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory',
                 multiInstance: true
@@ -31,13 +31,13 @@ config.parallel('cross-instance.test.js', () => {
         });
         it('create a 2 multiInstance databases', async () => {
             const name = util.randomCouchString(10);
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 multiInstance: true,
@@ -167,14 +167,14 @@ config.parallel('cross-instance.test.js', () => {
         it('should work with encrypted fields', async () => {
             const name = util.randomCouchString(10);
             const password = util.randomCouchString(10);
-            const db1 = await RxDatabase.create({
+            const db1 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 password,
@@ -220,14 +220,14 @@ config.parallel('cross-instance.test.js', () => {
         it('should work with nested encrypted fields', async () => {
             const name = util.randomCouchString(10);
             const password = util.randomCouchString(10);
-            const db1 = await RxDatabase.create({
+            const db1 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 password,
                 multiInstance: true,
                 ignoreDuplicate: true
             });
-            const db2 = await RxDatabase.create({
+            const db2 = await createRxDatabase({
                 name,
                 adapter: 'memory',
                 password,

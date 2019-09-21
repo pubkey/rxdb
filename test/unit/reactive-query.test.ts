@@ -10,7 +10,7 @@ import * as RxDocument from '../../dist/lib/rx-document';
 
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../dist/lib/';
+import RxDB from '../../';
 
 import {
     filter,

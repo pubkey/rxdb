@@ -6,7 +6,10 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as RxDatabase from '../../dist/lib/rx-database';
-import RxDocument from '../../dist/lib/rx-document';
+import {
+    createRxDatabase,
+    isRxDocument
+} from '../../';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import {
@@ -17,12 +20,12 @@ config.parallel('hooks.test.js', () => {
     describe('get/set', () => {
         it('should set a hook', async () => {
             const c = await humansCollection.create(0);
-            c.preSave(function() {}, false);
+            c.preSave(function () { }, false);
             c.database.destroy();
         });
         it('should get a hook', async () => {
             const c = await humansCollection.create(0);
-            c.preSave(function() {}, false);
+            c.preSave(function () { }, false);
             const hooks = c.getHooks('pre', 'save');
             assert.ok(Array.isArray(hooks.series));
             assert.equal(hooks.series.length, 1);
@@ -30,7 +33,7 @@ config.parallel('hooks.test.js', () => {
         });
         it('should get a parallel hook', async () => {
             const c = await humansCollection.create(0);
-            c.preSave(function() {}, true);
+            c.preSave(function () { }, true);
             const hooks = c.getHooks('pre', 'save');
             assert.ok(Array.isArray(hooks.parallel));
             assert.equal(hooks.parallel.length, 1);
@@ -44,7 +47,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
-                    c.preInsert(function(data, instance) {
+                    c.preInsert(function (data, instance) {
                         assert.equal(typeof instance, 'undefined');
                         count++;
                     }, false);
@@ -56,12 +59,12 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
-                    c.preInsert(function(doc, instance) {
+                    c.preInsert(function (doc, instance) {
                         assert.equal(typeof instance, 'undefined');
                         count++;
                     }, false);
                     let countp = 0;
-                    c.preInsert(function(doc, instance) {
+                    c.preInsert(function (doc, instance) {
                         assert.equal(typeof instance, 'undefined');
                         countp++;
                     }, true);
@@ -74,7 +77,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
 
-                    c.preInsert(function(doc, instance) {
+                    c.preInsert(function (doc, instance) {
                         assert.equal(typeof instance, 'undefined');
                         doc.lastName = 'foobar';
                     }, false);
@@ -88,7 +91,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
 
-                    c.preInsert(async function(doc, instance) {
+                    c.preInsert(async function (doc, instance) {
                         assert.equal(typeof instance, 'undefined');
                         await util.promiseWait(10);
                         doc.lastName = 'foobar';
@@ -121,7 +124,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     c.foo = 'bar';
                     let hasRun = false;
-                    c.preInsert(function() {
+                    c.preInsert(function () {
                         hasRun = true;
                         assert.equal(this.foo, 'bar');
                     }, false);
@@ -137,7 +140,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
 
-                    c.preInsert(function(doc) {
+                    c.preInsert(function (doc) {
                         doc.lastName = 1337;
                     }, false);
 
@@ -156,8 +159,8 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
-                    c.postInsert(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.postInsert(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
                     await c.insert(human);
@@ -168,8 +171,8 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
-                    c.postInsert(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.postInsert(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         assert.ok(data.age);
                         count++;
                     }, true);
@@ -189,8 +192,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.preSave(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.preSave(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
                     await doc.atomicSet('firstName', 'foobar');
@@ -203,8 +206,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.preSave(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.preSave(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
                     await doc.atomicSet('firstName', 'foobar');
@@ -218,7 +221,7 @@ config.parallel('hooks.test.js', () => {
                     const doc = await c.findOne(human.passportId).exec();
 
                     let hasRun = false;
-                    c.preSave(function() {
+                    c.preSave(function () {
                         hasRun = true;
                     }, false);
 
@@ -233,7 +236,7 @@ config.parallel('hooks.test.js', () => {
                     const doc = await c.findOne(human.passportId).exec();
 
                     let hasRun = false;
-                    c.preSave(async function() {
+                    c.preSave(async function () {
                         await util.promiseWait(10);
                         hasRun = true;
                     }, false);
@@ -248,7 +251,7 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
 
-                    c.preSave(function() {
+                    c.preSave(function () {
                         throw new Error('fail');
                     }, false);
 
@@ -273,8 +276,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.postSave(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.postSave(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
                     await doc.atomicSet('firstName', 'foobar');
@@ -287,8 +290,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.postSave(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.postSave(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
                     await doc.atomicSet('firstName', 'foobar');
@@ -296,7 +299,7 @@ config.parallel('hooks.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
     describe('remove', () => {
@@ -308,8 +311,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.preRemove(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.preRemove(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
                     await doc.remove();
@@ -322,8 +325,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.preRemove(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.preRemove(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
                     await doc.remove();
@@ -336,7 +339,7 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
 
-                    c.preRemove(function() {
+                    c.preRemove(function () {
                         throw new Error('fail');
                     }, false);
 
@@ -353,7 +356,7 @@ config.parallel('hooks.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
         describe('post', () => {
             describe('positive', () => {
@@ -363,8 +366,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.postRemove(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.postRemove(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, false);
                     await doc.remove();
@@ -377,8 +380,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
                     let count = 0;
-                    c.postRemove(function(data, instance) {
-                        assert.ok(RxDocument.isInstanceOf(instance));
+                    c.postRemove(function (data, instance) {
+                        assert.ok(isRxDocument(instance));
                         count++;
                     }, true);
                     await doc.remove();
@@ -390,7 +393,7 @@ config.parallel('hooks.test.js', () => {
                     c.foo2 = 'bar2';
                     let hasRun = false;
 
-                    c.postRemove(function() {
+                    c.postRemove(function () {
                         hasRun = true;
                         assert.equal(this.foo2, 'bar2');
                     }, true);
@@ -402,13 +405,13 @@ config.parallel('hooks.test.js', () => {
                     c.database.destroy();
                 });
             });
-            describe('negative', () => {});
+            describe('negative', () => { });
         });
     });
     describe('postCreate', () => {
         describe('positive', () => {
             it('should define a getter', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true
@@ -417,8 +420,8 @@ config.parallel('hooks.test.js', () => {
                     name: 'myhumans',
                     schema: schemas.primaryHuman
                 });
-                collection.postCreate(function(data, instance) {
-                    assert.ok(RxDocument.isInstanceOf(instance));
+                collection.postCreate(function (data, instance) {
+                    assert.ok(isRxDocument(instance));
                     Object.defineProperty(instance, 'myField', {
                         get: () => 'foobar',
                     });
@@ -434,7 +437,7 @@ config.parallel('hooks.test.js', () => {
         });
         describe('negative', () => {
             it('should throw when adding an async-hook', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     multiInstance: true
@@ -444,7 +447,7 @@ config.parallel('hooks.test.js', () => {
                     schema: schemas.primaryHuman
                 });
 
-                const hookFun = function(doc) {
+                const hookFun = function (doc) {
                     Object.defineProperty(doc, 'myField', {
                         get: () => 'foobar',
                     });
@@ -458,7 +461,7 @@ config.parallel('hooks.test.js', () => {
     describe('issues', () => {
         it('ISSUE #158 : Throwing error in async preInsert does not prevent insert', async () => {
             const c = await humansCollection.create(0);
-            c.preInsert(async function() {
+            c.preInsert(async function () {
                 await util.promiseWait(1);
                 throw new Error('This throw should prevent the insert');
             }, false);
