@@ -55,6 +55,7 @@ const BULK_DOC_OPTIONS_FALSE = {
 };
 
 export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollectionBase<RxDocumentType, OrmMethods> {
+    private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
     constructor(parentCollection, pouchSettings = {}) {
         super(
             parentCollection.database,

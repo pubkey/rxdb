@@ -31,19 +31,16 @@ import {
 } from 'rxjs';
 
 import {
+    RxCollection,
+    RxDatabase,
+    KeyFunctionMap,
     MigrationState,
-    KeyFunctionMap
-} from '../typings';
+    PouchDBInstance
+} from './types';
 
-import {
-    RxCollection
-} from './rx-collection';
 import {
     RxSchema
 } from './rx-schema';
-import {
-    RxDatabase
-} from './';
 import {
     KeyCompressor
 } from './plugins/key-compression';
@@ -86,7 +83,7 @@ export class DataMigrator {
             percent: 0 // percentage
         };
 
-        const observer = new Subject();
+        const observer: Subject<MigrationState> = new Subject();
 
         /**
          * TODO this is a side-effect which might throw
@@ -98,15 +95,16 @@ export class DataMigrator {
             return _getOldCollections(this)
                 .then(ret => {
                     oldCols = ret;
-                    return Promise.all(
-                        oldCols.map(oldCol => oldCol.countAllUndeleted())
+                    const countAll: Promise<number[]> = Promise.all(
+                        oldCols.map(oldCol => countAllUndeleted(oldCol.pouchdb))
                     );
+                    return countAll;
                 })
                 .then(countAll => {
-                    const totalCount = countAll.reduce((cur, prev) => prev = cur + prev, 0);
+                    const totalCount: number = countAll
+                        .reduce((cur, prev) => prev = cur + prev, 0);
                     state.total = totalCount;
                     observer.next(clone(state));
-                }).then(() => {
                     let currentCol = oldCols.shift();
 
                     let currentPromise = Promise.resolve();
@@ -198,7 +196,7 @@ class OldCollection {
     }
 
     private _pouchdb;
-    get pouchdb() {
+    get pouchdb(): PouchDBInstance {
         if (!this._pouchdb) {
             this._pouchdb = this.database._spawnPouchDB(
                 this.newestCollection.name,
@@ -207,13 +205,6 @@ class OldCollection {
             );
         }
         return this._pouchdb;
-    }
-
-    /**
-     * @return {Promise}
-     */
-    countAllUndeleted() {
-        return countAllUndeleted(this.pouchdb);
     }
 
     getBatch(batchSize: number) {
@@ -413,11 +404,10 @@ class OldCollection {
 
 /**
  * get an array with OldCollection-instances from all existing old pouchdb-instance
- * @return {Promise<OldCollection[]>}
  */
 export function _getOldCollections(
     dataMigrator: DataMigrator
-) {
+): Promise<OldCollection[]> {
     return Promise
         .all(
             dataMigrator.currentSchema.previousVersions

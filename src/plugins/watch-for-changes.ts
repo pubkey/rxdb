@@ -12,6 +12,9 @@ import {
 import {
     changeEventfromPouchChange
 } from '../rx-change-event';
+import {
+    RxPlugin
+} from '../types';
 
 /**
  * listens to changes of the internal pouchdb
@@ -83,7 +86,9 @@ export const prototypes = {
     }
 };
 
-export default {
+const plugin: RxPlugin = {
     rxdb,
     prototypes
 };
+
+export default plugin;

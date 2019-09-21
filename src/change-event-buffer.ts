@@ -4,25 +4,32 @@
  */
 
 import {
+    Subscription
+} from 'rxjs';
+import {
     RxCollection
-} from './rx-collection';
+} from './types';
+import {
+    RxChangeEvent
+} from './rx-change-event';
 
 export class ChangeEventBuffer {
+    private subs: Subscription[] = [];
+    private limit: number = 100;
+    private counter: number = 0;
+    private eventCounterMap: WeakMap<
+        RxChangeEvent, number
+    > = new WeakMap();
+
+    /**
+     * array with changeEvents
+     * starts with oldest known event, ends with newest
+     */
+    public buffer: RxChangeEvent[] = [];
+
     constructor(
         public collection: RxCollection
     ) {
-        this.subs = [];
-        this.limit = 100;
-
-        /**
-         * array with changeEvents
-         * starts with oldest known event, ends with newest
-         * @type {RxChangeEvent[]}
-         */
-        this.buffer = [];
-        this.counter = 0;
-        this.eventCounterMap = new WeakMap();
-
         this.subs.push(
             this.collection.$.subscribe(cE => this._handleChangeEvent(cE))
         );
@@ -42,9 +49,11 @@ export class ChangeEventBuffer {
      * @param  {number} pointer
      * @return {number|null} arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
      */
-    getArrayIndexByPointer(pointer) {
+    getArrayIndexByPointer(pointer: number): number | null {
         const oldestEvent = this.buffer[0];
-        const oldestCounter = this.eventCounterMap.get(oldestEvent);
+        const oldestCounter = this.eventCounterMap.get(
+            oldestEvent
+        );
 
         if (pointer < oldestCounter)
             return null; // out of bounds
@@ -58,7 +67,7 @@ export class ChangeEventBuffer {
      * @param  {number} pointer
      * @return {RxChangeEvent[]|null} array with change-events. Iif null, pointer out of bounds
      */
-    getFrom(pointer) {
+    getFrom(pointer: number): RxChangeEvent[] | null {
         const ret = [];
         let currentIndex = this.getArrayIndexByPointer(pointer);
         if (currentIndex === null) // out of bounds

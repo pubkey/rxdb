@@ -61,14 +61,12 @@ import {
     PouchSettings,
     KeyFunctionMap,
     RxReplicationState,
-    PouchDB,
+    PouchDBInstance,
     MigrationState,
-    SyncOptions
-} from '../typings';
-
-import {
+    SyncOptions,
+    RxCollection,
     RxDatabase
-} from './rx-database';
+} from './types';
 
 import {
     RxSchema
@@ -82,13 +80,7 @@ import {
     properties as rxDocumentProperties
 } from './rx-document';
 
-export type RxCollection<
-    RxDocumentType = any,
-    OrmMethods = {},
-    StaticMethods = { [key: string]: any }
-    > = RxCollectionBase<RxDocumentType, OrmMethods> & StaticMethods;
-
-export class RxCollectionBase<RxDocumentType, OrmMethods> {
+export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     public _isInMemory = false;
     public destroyed = false;
@@ -98,9 +90,11 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
     public hooks = {};
     public _subs: Subscription[] = [];
     public _repStates: RxReplicationState[] = [];
-    public pouch: PouchDB = null; // this is needed to preserve this name
+    public pouch: PouchDBInstance = null; // this is needed to preserve this name
 
-    public _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>> = createDocCache();
+    public _docCache: DocCache<
+        RxDocument<RxDocumentType, OrmMethods>
+    > = createDocCache();
     public _queryCache: QueryCache = createQueryCache();
     public _dataMigrator: DataMigrator;
     public _crypter: CrypterClass;
@@ -917,7 +911,7 @@ export function getDocumentOrmPrototype(rxCollection: RxCollection) {
  * creates the indexes in the pouchdb
  */
 function _prepareCreateIndexes(
-    rxCollection: RxCollection,
+    rxCollection: RxCollectionBase,
     spawnedPouchPromise
 ) {
     return Promise.all(

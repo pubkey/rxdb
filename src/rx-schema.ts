@@ -57,10 +57,7 @@ export class RxSchema<T = any> {
         }
     }
 
-    /**
-     * @return {number}
-     */
-    get version() {
+    get version(): number {
         return this.jsonID.version;
     }
 
@@ -79,14 +76,14 @@ export class RxSchema<T = any> {
      * @type {boolean}
      */
     private _crypt;
-    get crypt() {
+    get crypt(): boolean {
         if (!this._crypt)
             this._crypt = hasCrypt(this.jsonID);
         return this._crypt;
     }
 
     private _normalized;
-    get normalized() {
+    get normalized(): RxJsonSchema {
         if (!this._normalized)
             this._normalized = normalize(this.jsonID);
         return this._normalized;
@@ -226,7 +223,7 @@ export class RxSchema<T = any> {
  * @param  {Object} jsonSchema [description]
  * @return {Object} with paths as attr and schema as value
  */
-export function getEncryptedPaths(jsonSchema) {
+export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: JsonSchema } {
     const ret = {};
 
     function traverse(currentObj, currentPath) {
@@ -324,7 +321,7 @@ export function getFinalFields<T = any>(
  * @param {Object} jsonSchema
  * @return {Object} jsonSchema - ordered
  */
-export function normalize(jsonSchema) {
+export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
     return sortObject(
         clone(jsonSchema)
     );
@@ -335,7 +332,9 @@ export function normalize(jsonSchema) {
  * @param  {Object} schemaObj
  * @return {Object} cloned schemaObj
  */
-const fillWithDefaultSettings = function (schemaObj) {
+const fillWithDefaultSettings = function (
+    schemaObj: RxJsonSchema
+) {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false
@@ -369,7 +368,10 @@ const fillWithDefaultSettings = function (schemaObj) {
     return schemaObj;
 };
 
-export function createRxSchema(jsonID, runPreCreateHooks = true) {
+export function createRxSchema(
+    jsonID: RxJsonSchema,
+    runPreCreateHooks = true
+) {
     if (runPreCreateHooks)
         runPluginHooks('preCreateRxSchema', jsonID);
     const schema = new RxSchema(fillWithDefaultSettings(jsonID));

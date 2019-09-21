@@ -8,11 +8,9 @@ import {
 } from './util';
 
 import {
-    RxDatabase
-} from './rx-database';
-import {
+    RxDatabase,
     RxCollection
-} from './rx-collection';
+} from './types';
 
 export class RxChangeEvent {
     constructor(

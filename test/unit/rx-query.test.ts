@@ -8,6 +8,9 @@ import {
 } from 'rxjs/operators';
 
 import RxDB from '../../dist/lib/index';
+import {
+    isRxQuery
+} from '../../';
 import * as RxDatabase from '../../dist/lib/rx-database';
 import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -86,8 +89,8 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const cloned = q._clone();
-            assert.equal(q.constructor.name, 'RxQuery');
-            assert.equal(cloned.constructor.name, 'RxQuery');
+            assert.ok(isRxQuery(q));
+            assert.ok(isRxQuery(cloned));
             assert.deepEqual(q.mquery._conditions, cloned.mquery._conditions);
             assert.deepEqual(q.mquery._fields, cloned.mquery._fields);
             assert.deepEqual(q.mquery._path, cloned.mquery._path);
@@ -180,7 +183,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const q2 = q.sort('name');
-            assert.equal(q2.constructor.name, 'RxQuery');
+            assert.ok(isRxQuery(q2));
             assert.notEqual(q, q2);
             col.database.destroy();
         });
@@ -192,7 +195,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const q2 = q.where('name').eq('foobar');
-            assert.equal(q2.constructor.name, 'RxQuery');
+            assert.ok(isRxQuery(q2));
             assert.notEqual(q, q2);
             assert.ok(q.id < q2.id);
             col.database.destroy();

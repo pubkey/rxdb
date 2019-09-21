@@ -10,6 +10,9 @@ import {
 import {
     default as deepClone
 } from 'clone';
+import {
+    PouchDBInstance
+} from './types';
 
 /**
  * check if the given module is a leveldown-adapter
@@ -85,10 +88,10 @@ export function promiseWait(ms = 0) {
  * @param {any | Promise} maybePromise
  * @return {Promise}
  */
-export function toPromise(maybePromise) {
-    if (maybePromise && typeof maybePromise.then === 'function') {
+export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
+    if (maybePromise && typeof (maybePromise as any).then === 'function') {
         // is promise
-        return maybePromise;
+        return maybePromise as any;
     } else {
         return Promise.resolve(maybePromise);
     }
@@ -97,10 +100,10 @@ export function toPromise(maybePromise) {
 export function requestIdlePromise(timeout = null) {
     if (
         typeof window === 'object' &&
-        window.requestIdleCallback
+        window['requestIdleCallback']
     ) {
         return new Promise(
-            res => window.requestIdleCallback(res, {
+            res => window['requestIdleCallback'](res, {
                 timeout
             })
         );
@@ -130,11 +133,11 @@ export function promiseSeries(tasks, initial?) {
  * @param  {function} fun
  * @return {void}
  */
-export function requestIdleCallbackIfAvailable(fun) {
+export function requestIdleCallbackIfAvailable(fun: Function): void {
     if (
         typeof window === 'object' &&
-        window.requestIdleCallback
-    ) window.requestIdleCallback(fun);
+        window['requestIdleCallback']
+    ) window['requestIdleCallback'](fun);
 }
 
 /**
@@ -142,7 +145,7 @@ export function requestIdleCallbackIfAvailable(fun) {
  * @param  {string} str
  * @return {string} Str
  */
-export function ucfirst(str) {
+export function ucfirst(str: string): string {
     str += '';
     const f = str.charAt(0)
         .toUpperCase();
@@ -154,8 +157,8 @@ export function ucfirst(str) {
  * @link https://de.wikipedia.org/wiki/Base58
  * this does not start with the numbers to generate valid variable-names
  */
-const base58Chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
-const base58Length = base58Chars.length;
+const base58Chars: string = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+const base58Length: number = base58Chars.length;
 
 /**
  * transform a number to a string by using only base58 chars
@@ -163,7 +166,7 @@ const base58Length = base58Chars.length;
  * @param {number} nr                                       | 10000000
  * @return {string} the string-representation of the number | '2oMX'
  */
-export function numberToLetter(nr) {
+export function numberToLetter(nr: number): string {
     const digits = [];
     do {
         const v = nr % base58Length;
@@ -182,7 +185,7 @@ export function numberToLetter(nr) {
  * @param  {string} str
  * @return {string} str without wrapping dots
  */
-export function trimDots(str) {
+export function trimDots(str: string): string {
     // start
     while (str.charAt(0) === '.')
         str = str.substr(1);
@@ -201,7 +204,7 @@ export function trimDots(str) {
  * @throws  {Error}
  * @return {boolean} true
  */
-export function validateCouchDBString(name) {
+export function validateCouchDBString(name: string): true {
     if (
         typeof name !== 'string' ||
         name.length === 0
@@ -238,7 +241,7 @@ export function validateCouchDBString(name) {
  * @param  {?boolean} noArraysort
  * @return {Object} sorted
  */
-export function sortObject(obj, noArraySort = false) {
+export function sortObject(obj: any, noArraySort = false): any {
     if (!obj) return obj; // do not sort null, false or undefined
 
     // array
@@ -277,7 +280,7 @@ export function sortObject(obj, noArraySort = false) {
  * used to JSON.stringify() objects that contain a regex
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
-export function stringifyFilter(key, value) {
+export function stringifyFilter(key: string, value) {
     if (value instanceof RegExp)
         return value.toString();
     return value;
@@ -289,10 +292,13 @@ export function stringifyFilter(key, value) {
  * @param {object} pouch - instance of pouchdb
  * @return {function}
  */
-export function pouchReplicationFunction(pouch, {
-    pull = true,
-    push = true
-}) {
+export function pouchReplicationFunction(
+    pouch: PouchDBInstance,
+    {
+        pull = true,
+        push = true
+    }
+): Function {
     if (pull && push) return pouch.sync.bind(pouch);
     if (!pull && push) return pouch.replicate.to.bind(pouch);
     if (pull && !push) return pouch.replicate.from.bind(pouch);
@@ -310,7 +316,7 @@ export function pouchReplicationFunction(pouch, {
  * @param {number} [length=10] length
  * @return {string}
  */
-export function randomCouchString(length = 10) {
+export function randomCouchString(length: number = 10): string {
     let text = '';
     const possible = 'abcdefghijklmnopqrstuvwxyz';
 
@@ -325,7 +331,7 @@ export function randomCouchString(length = 10) {
  * @param  {Array<any>} arr
  * @return {Array<any>}
  */
-export function shuffleArray(arr) {
+export function shuffleArray<T>(arr: T[]): T[] {
     return arr.sort(() => (Math.random() - 0.5));
 }
 
@@ -334,7 +340,7 @@ export function shuffleArray(arr) {
  * transforms the given adapter into a pouch-compatible object
  * @return {Object} adapterObject
  */
-export function adapterObject(adapter: any) {
+export function adapterObject(adapter: any): any {
     let adapterObj: any = {
         db: adapter
     };
@@ -347,7 +353,7 @@ export function adapterObject(adapter: any) {
 }
 
 
-function recursiveDeepCopy(o) {
+function recursiveDeepCopy<T>(o: T): T {
     if (!o) return o;
     return deepClone(o, false);
 }
@@ -363,7 +369,7 @@ export const isElectronRenderer = isElectron();
  * returns a flattened object
  * @link https://gist.github.com/penguinboy/762197
  */
-export function flattenObject(ob) {
+export function flattenObject(ob: any) {
     const toReturn = {};
 
     for (const i in ob) {
@@ -383,12 +389,7 @@ export function flattenObject(ob) {
     return toReturn;
 }
 
-/**
- *
- * @param {string} revString
- * @return {number}
- */
-export function getHeightOfRevision(revString) {
+export function getHeightOfRevision(revString: string): number {
     const first = revString.split('-')[0];
     return parseInt(first);
 }
@@ -398,4 +399,4 @@ export function getHeightOfRevision(revString) {
  * prefix of local documents
  * TODO check if this variable exists somewhere else
  */
-export const LOCAL_PREFIX = '_local/';
+export const LOCAL_PREFIX: string = '_local/';

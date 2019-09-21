@@ -14,10 +14,18 @@ import {
 import {
     clone
 } from '../util';
+import {
+    RxQueryObject
+} from '../types';
 
 class MQuery {
 
     public options: any = {};
+    public _conditions: RxQueryObject = {} as RxQueryObject;
+    public _fields = undefined;
+    public _path: string;
+    public _update: any;
+    private _distinct: any;
 
     /**
      * MQuery constructor used for building queries.
@@ -29,11 +37,6 @@ class MQuery {
      * @param {Object} [criteria]
      */
     constructor(criteria?) {
-        const proto = this.constructor.prototype;
-        this._conditions = proto._conditions ? clone(proto._conditions) : {};
-        this._fields = proto._fields ? clone(proto._fields) : undefined;
-        this._path = proto._path || undefined;
-
         if (criteria)
             this.find(criteria);
     }
@@ -42,7 +45,7 @@ class MQuery {
      * returns a cloned version of the query
      * @return {MQuery}
      */
-    clone() {
+    clone(): MQuery {
         const same = new MQuery();
         Object
             .entries(this)
@@ -163,10 +166,10 @@ class MQuery {
             path = this._path;
         } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
             this._ensurePath('mod');
-            val = arguments.slice();
+            val = (arguments as any).slice();
             path = this._path;
         } else if (3 === arguments.length) {
-            val = arguments.slice(1);
+            val = (arguments as any).slice(1);
             path = arguments[0];
         } else {
             val = arguments[1];
@@ -332,7 +335,7 @@ class MQuery {
         if (!source)
             return this;
 
-        if (!MQuery.canMerge(source)) {
+        if (!canMerge(source)) {
             throw newRxTypeError('MQ4', {
                 source
             });
@@ -380,7 +383,7 @@ class MQuery {
      * @return {MQuery} this
      */
     find(criteria) {
-        if (MQuery.canMerge(criteria))
+        if (canMerge(criteria))
             this.merge(criteria);
 
         return this;
@@ -398,6 +401,30 @@ class MQuery {
             });
         }
     }
+
+    limit(v: any) {
+        return _directMapFunction(this, 'limit', v);
+    }
+    skip(v: any) {
+        return _directMapFunction(this, 'skip', v);
+    }
+    maxScan(v: any) {
+        return _directMapFunction(this, 'maxScan', v);
+    }
+    batchSize(v: any) {
+        return _directMapFunction(this, 'batchSize', v);
+    }
+    comment(v: any) {
+        return _directMapFunction(this, 'comment', v);
+    }
+}
+
+/**
+ * adds the value directly to the options
+ */
+function _directMapFunction(q: MQuery, method: string, v: any) {
+    q.options[method] = v;
+    return q;
 }
 
 /**
@@ -406,26 +433,26 @@ class MQuery {
  *     Thing.where('type').nin(array)
  */
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size']
-.forEach(function($conditional) {
-    MQuery.prototype[$conditional] = function() {
-        let path;
-        let val;
-        if (1 === arguments.length) {
-            this._ensurePath($conditional);
-            val = arguments[0];
-            path = this._path;
-        } else {
-            val = arguments[1];
-            path = arguments[0];
-        }
+    .forEach(function ($conditional) {
+        MQuery.prototype[$conditional] = function () {
+            let path;
+            let val;
+            if (1 === arguments.length) {
+                this._ensurePath($conditional);
+                val = arguments[0];
+                path = this._path;
+            } else {
+                val = arguments[1];
+                path = arguments[0];
+            }
 
-        const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ?
-            this._conditions[path] :
-            (this._conditions[path] = {});
-        conds['$' + $conditional] = val;
-        return this;
-    };
-});
+            const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ?
+                this._conditions[path] :
+                (this._conditions[path] = {});
+            conds['$' + $conditional] = val;
+            return this;
+        };
+    });
 
 /*!
  * @ignore
@@ -483,28 +510,17 @@ function _pushArr(opts, field, value) {
     opts.sort.push([field, value]);
 }
 
+
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
  *
  * @param {Object} conds
  * @return {Boolean}
  */
-MQuery.canMerge = function(conds) {
+export function canMerge(conds) {
     return conds instanceof MQuery || isObject(conds);
 };
 
-/**
- * limit, skip, maxScan, batchSize, comment
- *
- * Sets these associated options.
- *
- *     query.comment('feed query');
- */
-['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function(method) {
-    MQuery.prototype[method] = function(v) {
-        this.options[method] = v;
-        return this;
-    };
-});
-
 export default MQuery;
+
+

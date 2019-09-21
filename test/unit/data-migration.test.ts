@@ -7,10 +7,15 @@ import {
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxCollection from '../../dist/lib/rx-collection';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
+
+import {
+    create as createRxDatabase,
+} from '../../';
+import {
+    _collectionNamePrimary
+} from '../../dist/lib/rx-database';
 
 import * as DataMigrator from '../../dist/lib/data-migrator';
 
@@ -18,12 +23,11 @@ config.parallel('data-migration.test.js', () => {
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
-                await RxCollection.create({
-                    database: db,
+                await db.collection({
                     name: 'foobar',
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
@@ -38,7 +42,7 @@ config.parallel('data-migration.test.js', () => {
             it('create same collection with different schema-versions', async () => {
                 const colName = 'human';
                 const name = util.randomCouchString(10);
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name,
                     adapter: 'memory',
                     ignoreDuplicate: true
@@ -49,7 +53,7 @@ config.parallel('data-migration.test.js', () => {
                     autoMigrate: false
                 });
 
-                const db2 = await RxDatabase.create({
+                const db2 = await createRxDatabase({
                     name,
                     adapter: 'memory',
                     ignoreDuplicate: true
@@ -70,13 +74,12 @@ config.parallel('data-migration.test.js', () => {
         });
         describe('negative', () => {
             it('should throw when array', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => RxCollection.create({
-                        database: db,
+                    () => db.collection({
                         name: 'foobar',
                         schema: schemas.human,
                         autoMigrate: false,
@@ -87,32 +90,30 @@ config.parallel('data-migration.test.js', () => {
                 db.destroy();
             });
             it('should throw when property no number', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => RxCollection.create({
-                        database: db,
+                    () => db.collection({
                         name: 'foobar',
                         schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
                             foo: function () { }
                         }
-                    }),
+                    } as any),
                     'RxError'
                 );
                 db.destroy();
             });
             it('should throw when property no non-float-number', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => RxCollection.create({
-                        database: db,
+                    () => db.collection({
                         name: 'foobar',
                         schema: schemas.human,
                         autoMigrate: false,
@@ -125,32 +126,30 @@ config.parallel('data-migration.test.js', () => {
                 db.destroy();
             });
             it('should throw when property-value no function', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => RxCollection.create({
-                        database: db,
+                    () => db.collection({
                         name: 'foobar',
                         schema: schemas.human,
                         autoMigrate: false,
                         migrationStrategies: {
                             1: 'foobar'
                         }
-                    }),
+                    } as any),
                     'RxError'
                 );
                 db.destroy();
             });
             it('throw when strategy missing', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => RxCollection.create({
-                        database: db,
+                    () => db.collection({
                         name: 'foobar',
                         schema: schemas.simpleHumanV3,
                         autoMigrate: false,
@@ -169,7 +168,7 @@ config.parallel('data-migration.test.js', () => {
         describe('_getOldCollections()', () => {
             it('should NOT get an older version', async () => {
                 const colName = 'human';
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory'
                 });
@@ -190,7 +189,7 @@ config.parallel('data-migration.test.js', () => {
             it('should get an older version', async () => {
                 const name = util.randomCouchString(10);
                 const colName = 'human';
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name,
                     adapter: 'memory',
                     ignoreDuplicate: true
@@ -201,7 +200,7 @@ config.parallel('data-migration.test.js', () => {
                     autoMigrate: false
                 });
 
-                const db2 = await RxDatabase.create({
+                const db2 = await createRxDatabase({
                     name,
                     adapter: 'memory',
                     ignoreDuplicate: true
@@ -282,7 +281,7 @@ config.parallel('data-migration.test.js', () => {
                     const olds = await DataMigrator._getOldCollections(col._dataMigrator);
                     const old = olds.pop();
 
-                    const amount = await old.countAllUndeleted();
+                    const amount = await countAllUndeleted(old.pouchdb);
                     assert.equal(amount, 10);
 
                     const pouchLocation = old.pouchdb.name;
@@ -293,7 +292,7 @@ config.parallel('data-migration.test.js', () => {
                     assert.equal(amountPlain, 10);
 
                     // check that internal doc exists
-                    let docId = RxDatabase._collectionNamePrimary(col.name, old.schema);
+                    let docId = _collectionNamePrimary(col.name, old.schema);
                     let iDoc = await old.database._collectionsPouch.get(docId);
                     assert.equal(typeof iDoc.schemaHash, 'string');
 
@@ -309,7 +308,7 @@ config.parallel('data-migration.test.js', () => {
 
                     // check that internal doc deleted
                     let has = true;
-                    docId = RxDatabase._collectionNamePrimary(col.name, old.schema);
+                    docId = _collectionNamePrimary(col.name, old.schema);
                     try {
                         iDoc = await old.database._collectionsPouch.get(docId);
                     } catch (e) {
@@ -664,7 +663,7 @@ config.parallel('data-migration.test.js', () => {
                     },
                     required: ['color']
                 };
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: dbName,
                     adapter: 'memory'
                 });
@@ -678,7 +677,7 @@ config.parallel('data-migration.test.js', () => {
                 });
                 await db.destroy();
 
-                const db2 = await RxDatabase.create({
+                const db2 = await createRxDatabase({
                     name: dbName,
                     adapter: 'memory'
                 });

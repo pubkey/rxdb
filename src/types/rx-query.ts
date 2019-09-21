@@ -5,6 +5,9 @@ import {
 import {
     PouchdbQuery
 } from './pouch';
+import {
+    RxQueryBase
+} from '../rx-query';
 
 export interface RxQueryOptions<T> {
     $eq?: T;
@@ -25,15 +28,15 @@ export interface RxQueryOptions<T> {
     $elemMatch?: RxQueryOptions<T>;
 }
 
-export type RxQueryObject<T> = keyof T & { [P in keyof T]?: T[P] | RxQueryOptions<T[P]>; } & {
+export type RxQueryObject<T = any> = keyof T & { [P in keyof T]?: T[P] | RxQueryOptions<T[P]>; } & {
     $or: RxQueryObject<T>[];
     $nor: RxQueryObject<T>[];
     $and: RxQueryObject<T>[];
 };
 
-export declare class RxQuery<RxDocumentType, RxQueryResult> {
-    readonly collection: RxCollection<RxDocumentType>;
+export type RxQueryOP = 'find' | 'findOne';
 
+export declare class RxQuery<RxDocumentType, RxQueryResult> extends RxQueryBase<RxDocumentType, RxQueryResult> {
     where(queryObj: RxQueryObject<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
@@ -57,11 +60,4 @@ export declare class RxQuery<RxDocumentType, RxQueryResult> {
 
     // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult>;
-
-    exec(): Promise<RxQueryResult>;
-    readonly $: Observable<RxQueryResult>;
-    remove(): Promise<RxQueryResult>;
-    update(updateObj: any): Promise<RxQueryResult>;
-    toJSON(): PouchdbQuery;
-    doesDocumentDataMatch(documentData: RxDocumentType | any): boolean;
 }

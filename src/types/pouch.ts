@@ -84,6 +84,7 @@ export declare class PouchDBInstance {
     ): Promise<any>;
     changes(options?: PouchReplicationOptions): any;
     sync(options?: PouchReplicationOptions): PouchSyncHandler;
+    replicate(options?: PouchReplicationOptions): PouchSyncHandler;
     close(): Promise<void>;
     putAttachment(
         docId: string,

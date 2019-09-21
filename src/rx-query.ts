@@ -36,20 +36,18 @@ import {
     runPluginHooks
 } from './hooks';
 import {
-    RxCollection
-} from './rx-collection';
-import {
-    RxDocument
-} from './rx-document';
+    RxCollection,
+    RxDocument,
+    PouchdbQuery,
+    RxQueryOP
+} from './types';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
     return ++_queryCount;
 };
 
-export type RxQueryOP = 'find' | 'findOne';
-
-export class RxQuery {
+export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
     public id: number = newQueryID();
     public mquery: MQuery;
     private _subs: Subscription[] = [];
@@ -76,12 +74,12 @@ export class RxQuery {
      * ensures that the exec-runs
      * are not run in parallel
      */
-    public _ensureEqualQueue: Promise<void> = Promise.resolve();
+    public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
 
     constructor(
         public op: RxQueryOP,
         public queryObj: any,
-        public collection: RxCollection
+        public collection: RxCollection<RxDocumentType>
     ) {
         this._queryChangeDetector = createQueryChangeDetector(this);
         if (!queryObj) queryObj = _getDefaultQuery(this.collection);
@@ -106,7 +104,7 @@ export class RxQuery {
 
     // returns a clone of this RxQuery
     _clone() {
-        const cloned = new RxQuery(this.op, _getDefaultQuery(this.collection), this.collection);
+        const cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
         cloned.mquery = this.mquery.clone();
         return cloned;
     }
@@ -155,8 +153,8 @@ export class RxQuery {
      * - Do not emit anything before the first result-set was created (no null)
      * @return {BehaviorSubject<RxDocument[]>}
      */
-    private _$: BehaviorSubject<RxDocument[]>;
-    get $(): BehaviorSubject<RxDocument[]> {
+    private _$: BehaviorSubject<RxQueryResult>;
+    get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
             /**
              * We use _resultsDocs$ to emit new results
@@ -210,7 +208,7 @@ export class RxQuery {
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    exec(): Promise<RxDocument | RxDocument[]> {
+    exec(): Promise<RxQueryResult> {
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of pouchdb,
@@ -224,7 +222,7 @@ export class RxQuery {
     }
 
     private _toJSON: any;
-    toJSON() {
+    toJSON(): PouchdbQuery {
         if (this._toJSON) return this._toJSON;
 
         const primPath = this.collection.schema.primaryPath;
@@ -337,7 +335,7 @@ export class RxQuery {
      * @param {any} docData 
      * @return {boolean} true if matches
      */
-    doesDocumentDataMatch(docData) {
+    doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
         if (docData._deleted) return false;
 
@@ -356,9 +354,9 @@ export class RxQuery {
 
     /**
      * deletes all found documents
-     * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
+     * @return promise with deleted documents
      */
-    remove() {
+    remove(): Promise<RxQueryResult> {
         let ret;
         return this
             .exec()
@@ -376,7 +374,7 @@ export class RxQuery {
      * @param  {object} updateObj
      * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
-    update() {
+    update(_updateObj: any): Promise<RxQueryResult> {
         throw pluginMissing('update');
     }
 
@@ -439,7 +437,9 @@ function _getDefaultQuery(collection) {
  * run this query through the QueryCache
  * @return {RxQuery} can be this or another query with the equal state
  */
-function _tunnelQueryCache(rxQuery) {
+function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
+    rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
+): RxQueryBase<RxDocumentType, RxQueryResult> {
     return rxQuery.collection._queryCache.getByQuery(rxQuery);
 }
 
@@ -480,14 +480,17 @@ export function createRxQuery(
         });
     }
 
-    let ret = new RxQuery(op, queryObj, collection);
+    let ret = new RxQueryBase(op, queryObj, collection);
 
     // ensure when created with same params, only one is created
     ret = _tunnelQueryCache(ret);
 
     if (!protoMerged) {
         protoMerged = true;
-        protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
+        protoMerge(
+            Object.getPrototypeOf(ret),
+            Object.getOwnPropertyNames(Object.getPrototypeOf(ret.mquery))
+        );
     }
 
     runPluginHooks('createRxQuery', ret);
@@ -498,7 +501,7 @@ export function createRxQuery(
 /**
  * throws an error that says that the key is not in the schema
  */
-function _throwNotInSchema(key) {
+function _throwNotInSchema(key: string) {
     throw newRxError('QU5', {
         key
     });
@@ -546,8 +549,9 @@ function _isResultsInSync(rxQuery) {
 /**
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
+ * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery) {
+function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
         .then(() => new Promise(res => setTimeout(res, 0)))
         .then(() => __ensureEqual(rxQuery))
@@ -560,10 +564,10 @@ function _ensureEqual(rxQuery) {
 
 /**
  * ensures that the results of this query is equal to the results which a query over the database would give
- * @return {Promise<boolean>|boolean} true if results have changed
+ * @return true if results have changed
  */
-function __ensureEqual(rxQuery) {
-    if (rxQuery.collection.database.destroyed) return false; // db is closed
+function __ensureEqual(rxQuery: RxQueryBase): boolean {
+    if (rxQuery.collection.database.destroyed) false; // db is closed
     if (_isResultsInSync(rxQuery)) return false; // nothing happend
 
     let ret = false;
@@ -616,5 +620,5 @@ function __ensureEqual(rxQuery) {
 
 
 export function isInstanceOf(obj) {
-    return obj instanceof RxQuery;
+    return obj instanceof RxQueryBase;
 }

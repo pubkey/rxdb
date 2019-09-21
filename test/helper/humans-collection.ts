@@ -7,7 +7,7 @@ import {
     create as createRxDatabase
 } from '../../';
 
-import * as RxDB from '../../dist/lib/index';
+import * as RxDB from '../../';
 
 export async function create(
     size: number = 20,

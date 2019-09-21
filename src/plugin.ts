@@ -11,13 +11,20 @@ import {
     basePrototype as RxDocumentPrototype
 } from './rx-document';
 import {
-    RxQuery
+    RxQueryBase
 } from './rx-query';
-import RxCollection from './rx-collection';
-import RxDatabase from './rx-database';
+import {
+    RxCollectionBase
+} from './rx-collection';
+import {
+    RxDatabaseBase
+} from './rx-database';
 import {
     PouchDB
 } from './pouch-db';
+import {
+    RxPlugin
+} from './types';
 
 import overwritable from './overwritable';
 import {
@@ -32,14 +39,14 @@ const PROTOTYPES = {
     RxSchema: RxSchema.prototype,
     Crypter: Crypter.Crypter.prototype,
     RxDocument: RxDocumentPrototype,
-    RxQuery: RxQuery.prototype,
-    RxCollection: RxCollection.RxCollectionBase.prototype,
-    RxDatabase: RxDatabase.RxDatabaseBase.prototype
+    RxQuery: RxQueryBase.prototype,
+    RxCollection: RxCollectionBase.prototype,
+    RxDatabase: RxDatabaseBase.prototype
 };
 
 const ADDED_PLUGINS = new Set();
 
-export default function addPlugin(plugin) {
+export default function addPlugin(plugin: RxPlugin | any) {
     // do nothing if added before
     if (ADDED_PLUGINS.has(plugin)) return;
     else ADDED_PLUGINS.add(plugin);
@@ -48,22 +55,27 @@ export default function addPlugin(plugin) {
         // pouchdb-plugin
         if (typeof plugin === 'object' && plugin.default) plugin = plugin.default;
         PouchDB.plugin(plugin);
+        return;
     }
 
+    const rxPlugin: RxPlugin = plugin;
+
     // prototype-overwrites
-    if (plugin.prototypes) {
+    if (rxPlugin.prototypes) {
         Object
             .entries(plugin.prototypes)
-            .forEach(([name, fun]) => fun(PROTOTYPES[name]));
+            .forEach(([name, fun]) => {
+                return (fun as any)(PROTOTYPES[name]);
+            });
     }
     // overwritable-overwrites
-    if (plugin.overwritable) {
+    if (rxPlugin.overwritable) {
         Object
             .entries(plugin.overwritable)
             .forEach(([name, fun]) => overwritable[name] = fun);
     }
     // extend-hooks
-    if (plugin.hooks) {
+    if (rxPlugin.hooks) {
         Object
             .entries(plugin.hooks)
             .forEach(([name, fun]) => HOOKS[name].push(fun));

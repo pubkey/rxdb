@@ -56,7 +56,8 @@ import {
     RxChangeEventRemove,
     PouchDBInstance,
     RxChangeEventCollection,
-    RxDatabase
+    RxDatabase,
+    RxCollectionCreator
 } from './types';
 
 /**
@@ -194,16 +195,14 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
     /**
      * create or fetch a collection
-     * @param {{name: string, schema: Object, pouchSettings = {}, migrationStrategies = {}}} args
-     * @return {Promise<RxCollection>}
      */
-    collection(args) {
+    collection(args: RxCollectionCreator): Promise<RxCollection> {
         if (typeof args === 'string')
             return Promise.resolve(this.collections[args]);
 
         args = Object.assign({}, args);
 
-        args.database = this;
+        (args as any).database = this;
 
         runPluginHooks('preCreateRxCollection', args);
 
@@ -268,7 +267,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                     });
                 } else return collectionDoc;
             })
-            .then(() => createRxCollection(args))
+            .then(() => createRxCollection(args as any))
             .then(collection => {
                 col = collection;
                 if (
