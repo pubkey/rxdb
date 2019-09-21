@@ -1,6 +1,9 @@
 import assert from 'assert';
 import config from './config';
-import PouchDB from '../../dist/lib/pouch-db';
+import {
+    PouchDB,
+    countAllUndeleted
+} from '../../dist/lib/pouch-db';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
 
@@ -286,7 +289,7 @@ config.parallel('data-migration.test.js', () => {
                     const checkPouch = new PouchDB(pouchLocation, {
                         adapter: 'memory'
                     });
-                    const amountPlain = await PouchDB.countAllUndeleted(checkPouch);
+                    const amountPlain = await countAllUndeleted(checkPouch);
                     assert.equal(amountPlain, 10);
 
                     // check that internal doc exists
@@ -301,7 +304,7 @@ config.parallel('data-migration.test.js', () => {
                     const checkPouch2 = new PouchDB(pouchLocation, {
                         adapter: 'memory'
                     });
-                    const amountPlain2 = await PouchDB.countAllUndeleted(checkPouch2);
+                    const amountPlain2 = await countAllUndeleted(checkPouch2);
                     assert.equal(amountPlain2, 0);
 
                     // check that internal doc deleted

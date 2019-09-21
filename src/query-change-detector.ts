@@ -19,6 +19,7 @@ let DEBUG = false;
 
 export class QueryChangeDetector {
     public primaryKey: string;
+    public _sortOptions;
     constructor(
         public query: RxQuery
     ) {

@@ -29,6 +29,9 @@ import {
 import {
     RxDocumentBase
 } from '../typings';
+import {
+    RxCollection
+} from './rx-collection';
 
 export type RxDocument<
     RxDocumentType = any,
@@ -446,7 +449,7 @@ export const basePrototype = {
 };
 
 const pseudoConstructor = createRxDocumentConstructor(basePrototype);
-const pseudoRxDocument = new pseudoConstructor();
+const pseudoRxDocument = new (pseudoConstructor as any)();
 
 export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
     if (valueObj === null) return;
@@ -503,7 +506,11 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
         });
 }
 
-export function createWithConstructor(constructor, collection, jsonData) {
+export function createWithConstructor(
+    constructor,
+    collection: RxCollection,
+    jsonData: any
+): RxDocument {
     if (
         jsonData[collection.schema.primaryPath] &&
         jsonData[collection.schema.primaryPath].startsWith('_design')

@@ -1,7 +1,9 @@
 import assert from 'assert';
 import config from './config';
-import RxDB from '../../dist/lib/index';
-import PouchDB from '../../dist/lib/pouch-db';
+import * as RxDB from '../../';
+import {
+    PouchDB
+} from '../../dist/lib/pouch-db';
 import {
     POUCHDB_LOCATION
 } from '../../dist/lib/plugins/adapter-check.js';
@@ -16,9 +18,6 @@ if (!config.platform.isNode())
 config.parallel('adapter-check.test.js', () => {
     describe('outcome', () => {
         it('should be true on memory', async () => {
-            const ok = await RxDB.checkAdapter('memory');
-            assert.ok(ok);
-
             const ok2 = await RxDB.checkAdapter('memory');
             assert.ok(ok2);
         });

@@ -5,7 +5,9 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
-import PouchDB from '../../dist/lib/pouch-db';
+import {
+    PouchDB
+} from '../../dist/lib/pouch-db';
 import AsyncTestUtil, {
     clone
 } from 'async-test-util';
@@ -38,7 +40,7 @@ import {
 describe('replication-graphql.test.js', () => {
     if (!config.platform.isNode()) return;
     const REQUIRE_FUN = require;
-    RxDB.PouchDB.plugin(REQUIRE_FUN('pouchdb-adapter-http'));
+    RxDB.plugin(REQUIRE_FUN('pouchdb-adapter-http'));
     const SpawnServer = REQUIRE_FUN('../helper/graphql-server');
     const ws = REQUIRE_FUN('ws');
     const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');

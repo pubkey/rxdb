@@ -1,7 +1,9 @@
 import express from 'express';
 import corsFn from 'cors';
 
-import PouchDB from '../pouch-db';
+import {
+    PouchDB
+} from '../pouch-db';
 import {
     newRxError
 } from '../rx-error';

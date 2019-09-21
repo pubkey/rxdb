@@ -10,12 +10,15 @@ import {
 import {
     pluginMissing
 } from './rx-error';
+import {
+    RxSchema
+} from './rx-schema';
 
 export class Crypter {
-    constructor(password, schema) {
-        this._password = password;
-        this._schema = schema;
-    }
+    constructor(
+        public password: any,
+        public schema: RxSchema
+    ) { }
 
     /**
      * encrypt and stringify data
@@ -23,7 +26,7 @@ export class Crypter {
      * @param  {any} value
      * @return {string}
      */
-    _encryptValue() {
+    _encryptValue(_value: any): string {
         throw pluginMissing('encryption');
     }
 
@@ -33,14 +36,14 @@ export class Crypter {
      * @param  {string} encValue
      * @return {any}
      */
-    _decryptValue() {
+    _decryptValue(_value: any): string {
         throw pluginMissing('encryption');
     }
 
     encrypt(obj) {
         obj = clone(obj);
-        if (!this._password) return obj;
-        Object.keys(this._schema.encryptedPaths)
+        if (!this.password) return obj;
+        Object.keys(this.schema.encryptedPaths)
             .forEach(path => {
                 const value = objectPath.get(obj, path);
                 if (typeof value === 'undefined') return;
@@ -52,8 +55,8 @@ export class Crypter {
 
     decrypt(obj) {
         obj = clone(obj);
-        if (!this._password) return obj;
-        Object.keys(this._schema.encryptedPaths)
+        if (!this.password) return obj;
+        Object.keys(this.schema.encryptedPaths)
             .forEach(path => {
                 const value = objectPath.get(obj, path);
                 if (typeof value === 'undefined') return;

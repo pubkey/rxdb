@@ -12,8 +12,18 @@ import {
     randomNumber
 } from 'async-test-util';
 
-export function human(passportId) {
-    if (!passportId) passportId = randomToken(12);
+
+export interface SimpleHumanDocumentType {
+    passportId: string;
+    firstName: string;
+    lastName: string;
+}
+export interface HumanDocumentType extends SimpleHumanDocumentType {
+    age: number;
+}
+export function human(
+    passportId: string = randomToken(12)
+): HumanDocumentType {
     return {
         passportId: passportId,
         firstName: faker.name.firstName(),
@@ -22,7 +32,7 @@ export function human(passportId) {
     };
 }
 
-export function simpleHuman() {
+export function simpleHuman(): SimpleHumanDocumentType {
     return {
         passportId: randomToken(12),
         firstName: faker.name.firstName(),
@@ -30,14 +40,26 @@ export function simpleHuman() {
     };
 }
 
-export function simpleHumanAge() {
+export interface SimpleHumanAgeDocumentType {
+    passportId: string;
+    age: string;
+}
+export function simpleHumanAge(): SimpleHumanAgeDocumentType {
     return {
         passportId: randomToken(12),
         age: randomInt(10, 50) + ''
     };
 }
 
-export function nestedHuman() {
+export interface NestedHumanDocumentType {
+    passportId: string;
+    firstName: string;
+    mainSkill: {
+        name: string;
+        level: number;
+    }
+}
+export function nestedHuman(): NestedHumanDocumentType {
     return {
         passportId: randomToken(12),
         firstName: faker.name.firstName(),
@@ -48,7 +70,17 @@ export function nestedHuman() {
     };
 }
 
-export function deepNestedHuman() {
+export interface DeepNestedHumanDocumentType {
+    passportId: string;
+    mainSkill: {
+        name: string;
+        attack: {
+            good: boolean;
+            count: number;
+        };
+    }
+}
+export function deepNestedHuman(): DeepNestedHumanDocumentType {
     return {
         passportId: randomToken(12),
         mainSkill: {
@@ -61,7 +93,14 @@ export function deepNestedHuman() {
     };
 }
 
-export function heroArray() {
+export interface HeroArrayDocumentType {
+    name: string;
+    skills: {
+        name: string;
+        damage: number;
+    }[];
+}
+export function heroArray(): HeroArrayDocumentType {
     return {
         name: randomToken(6),
         skills: new Array(3).fill(0).map(() => {
@@ -73,7 +112,12 @@ export function heroArray() {
     };
 }
 
-export function encryptedHuman() {
+export interface EncryptedHumanDocumentType {
+    passportId: string;
+    firstName: string;
+    secret: string;
+}
+export function encryptedHuman(): EncryptedHumanDocumentType {
     return {
         passportId: randomToken(12),
         firstName: faker.name.firstName(),
@@ -81,7 +125,15 @@ export function encryptedHuman() {
     };
 }
 
-export function encryptedObjectHuman() {
+export interface EncryptedObjectHumanDocumentType {
+    passportId: string;
+    firstName: string;
+    secret: {
+        name: string;
+        subname: string;
+    };
+}
+export function encryptedObjectHuman(): EncryptedObjectHumanDocumentType {
     return {
         passportId: randomToken(12),
         firstName: faker.name.firstName(),
@@ -92,14 +144,25 @@ export function encryptedObjectHuman() {
     };
 }
 
-export function refHuman(bestFriend) {
+
+export interface RefHumanDocumentType {
+    name: string;
+    bestFriend: string;
+}
+export function refHuman(bestFriend?: string): RefHumanDocumentType {
     return {
         name: randomToken(12),
         bestFriend
     };
 }
 
-export function refHumanNested(bestFriend) {
+export interface RefHumanNestedDocumentType {
+    name: string;
+    foo: {
+        bestFriend: string;
+    };
+}
+export function refHumanNested(bestFriend?: string): RefHumanNestedDocumentType {
     return {
         name: randomToken(12),
         foo: {
@@ -108,7 +171,13 @@ export function refHumanNested(bestFriend) {
     };
 }
 
-export function humanWithTimestamp() {
+export interface HumanWithTimestampDocumentType {
+    id: string;
+    name: string;
+    age: number;
+    updatedAt: number;
+}
+export function humanWithTimestamp(): HumanWithTimestampDocumentType {
     const now = new Date().getTime() / 1000;
     return {
         id: randomToken(12),
@@ -118,7 +187,20 @@ export function humanWithTimestamp() {
     };
 }
 
-export function averageSchema() {
+export interface AverageSchemaDocumentType {
+    id: string;
+    var1: string;
+    var2: number;
+    deep: {
+        deep1: string;
+        deep2: string;
+    }
+    list: {
+        deep1: string;
+        deep2: string;
+    }[];
+}
+export function averageSchema(): AverageSchemaDocumentType {
     return {
         id: randomToken(12),
         var1: randomToken(12),
@@ -134,14 +216,22 @@ export function averageSchema() {
     };
 }
 
-export function point() {
+export interface PointDocumentType {
+    x: number;
+    y: number;
+}
+export function point(): PointDocumentType {
     return {
         x: faker.random.number(),
         y: faker.random.number()
     };
 }
 
-export function _idPrimary() {
+export interface IdPrimaryDocumentType {
+    _id: string;
+    firstName: string;
+}
+export function _idPrimary(): IdPrimaryDocumentType {
     return {
         _id: randomToken(12),
         firstName: faker.name.firstName()

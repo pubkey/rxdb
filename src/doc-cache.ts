@@ -1,20 +1,21 @@
 // TODO add a function to run a cache-clear
-export class DocCache {
+export class DocCache<T> {
+    private _map: Map<string, T> = new Map();
     constructor() {
         this._map = new Map();
     }
 
-    get(id) {
+    get(id: string): T {
         return this._map.get(id);
     }
-    set(id, obj) {
+    set(id: string, obj: T) {
         return this._map.set(id, obj);
     }
-    delete(id) {
-        delete this._map.delete(id);
+    delete(id: string) {
+        return this._map.delete(id);
     }
 }
 
-export function createDocCache() {
+export function createDocCache<T = any>(): DocCache<T> {
     return new DocCache();
 }

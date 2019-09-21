@@ -56,7 +56,7 @@ export type PouchdbQuery = {
     skip?: number;
 }
 
-export declare class PouchDB {
+export declare class PouchDBInstance {
     constructor(name: string, options: { adapter: string });
     info(): Promise<any>;
 
@@ -112,4 +112,5 @@ export declare class PouchDB {
     static plugin(p: any): void;
     static debug: Debug;
     static isInstanceOf(instance: any): boolean;
+    static countAllUndeleted(pouchdb: PouchDB): Promise<number>;
 }

@@ -468,8 +468,6 @@ export function createRxQuery(
     queryObj: any,
     collection: RxCollection
 ) {
-    console.log('createRxQuery');
-    console.dir(collection);
     // checks
     if (queryObj && typeof queryObj !== 'object') {
         throw newRxTypeError('QU7', {
@@ -482,10 +480,8 @@ export function createRxQuery(
         });
     }
 
-
-    console.log('aa11');
     let ret = new RxQuery(op, queryObj, collection);
-    console.log('aa2');
+
     // ensure when created with same params, only one is created
     ret = _tunnelQueryCache(ret);
 
@@ -495,7 +491,6 @@ export function createRxQuery(
     }
 
     runPluginHooks('createRxQuery', ret);
-
 
     return ret;
 }

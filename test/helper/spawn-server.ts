@@ -17,14 +17,17 @@ const expressPouch = require('express-pouchdb')(InMemPouchDB);
 
 let lastPort = 12121;
 
-export async function spawn() {
+export async function spawn(): Promise<{
+    url: string,
+    close: () => void
+}> {
     lastPort++;
     const path = '/db';
     app.use(path, expressPouch);
     const ret = 'http://localhost:' + lastPort + path;
 
     return new Promise(res => {
-        const server = app.listen(lastPort, function() {
+        const server = app.listen(lastPort, function () {
             res({
                 url: ret + '/' + randomToken(5) + '/',
                 close(now = false) {

@@ -3,14 +3,20 @@ import * as schemas from './schemas';
 import * as schemaObjects from './schema-objects';
 
 import * as util from '../../dist/lib/util';
-import * as RxDatabase from '../../dist/lib/rx-database';
+import {
+    create as createRxDatabase
+} from '../../';
 
 import * as RxDB from '../../dist/lib/index';
 
-export async function create(size = 20, name = 'human', multiInstance = true) {
+export async function create(
+    size: number = 20,
+    name: string = 'human',
+    multiInstance: boolean = true
+) {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
@@ -35,7 +41,7 @@ export async function create(size = 20, name = 'human', multiInstance = true) {
 
 export async function createBySchema(schema, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance: true,
@@ -54,7 +60,7 @@ export async function createBySchema(schema, name = 'human') {
 export async function createAttachments(size = 20, name = 'human', multiInstance = true) {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         multiInstance,
@@ -82,7 +88,7 @@ export async function createAttachments(size = 20, name = 'human', multiInstance
 export async function createEncryptedAttachments(size = 20, name = 'human', multiInstance = true) {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         password: 'foooooobaaaar',
         adapter: 'memory',
@@ -113,7 +119,7 @@ export async function createEncryptedAttachments(size = 20, name = 'human', mult
 
 export async function createNoCompression(size = 20, name = 'human') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         queryChangeDetection: true,
@@ -139,7 +145,7 @@ export async function createNoCompression(size = 20, name = 'human') {
 
 export async function createAgeIndex(amount = 20) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         queryChangeDetection: true,
@@ -163,7 +169,7 @@ export async function createAgeIndex(amount = 20) {
 
 export async function multipleOnSameDB(size = 10) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         queryChangeDetection: true,
@@ -194,7 +200,7 @@ export async function multipleOnSameDB(size = 10) {
 
 export async function createNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter,
         queryChangeDetection: true,
@@ -218,7 +224,7 @@ export async function createNested(amount = 5, adapter = 'memory') {
 
 export async function createDeepNested(amount = 5, adapter = 'memory') {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter,
         queryChangeDetection: true,
@@ -240,8 +246,10 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
 }
 
 
-export async function createEncrypted(amount = 10) {
-    const db = await RxDatabase.create({
+export async function createEncrypted(
+    amount: number = 10
+) {
+    const db = await createRxDatabase({
         name: util.randomCouchString(10),
         adapter: 'memory',
         queryChangeDetection: true,
@@ -262,9 +270,12 @@ export async function createEncrypted(amount = 10) {
     return collection;
 }
 
-
-export async function createMultiInstance(name, amount = 0, password = null) {
-    const db = await RxDatabase.create({
+export async function createMultiInstance(
+    name,
+    amount = 0,
+    password = null
+) {
+    const db = await createRxDatabase({
         name,
         adapter: 'memory',
         password,
@@ -286,9 +297,8 @@ export async function createMultiInstance(name, amount = 0, password = null) {
     return collection;
 }
 
-
 export async function createPrimary(amount = 10, name = util.randomCouchString(10)) {
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name,
         adapter: 'memory',
         multiInstance: true,
@@ -311,7 +321,7 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
 }
 
 export async function createHumanWithTimestamp(amount = 0, name = util.randomCouchString(10)) {
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name,
         adapter: 'memory',
         multiInstance: true,
@@ -333,7 +343,6 @@ export async function createHumanWithTimestamp(amount = 0, name = util.randomCou
     return collection;
 }
 
-
 export async function createMigrationCollection(
     amount = 0,
     addMigrationStrategies = {},
@@ -347,14 +356,12 @@ export async function createMigrationCollection(
     };
 
     Object.entries(addMigrationStrategies)
-        .forEach(enAr => {
-            const fun = enAr.pop();
-            const prop = enAr.pop();
+        .forEach(([prop, fun]) => {
             migrationStrategies[prop] = fun;
         });
 
     const colName = 'human';
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name,
         adapter: 'memory',
         queryChangeDetection: true,
@@ -375,7 +382,7 @@ export async function createMigrationCollection(
     col.destroy();
     db.destroy();
 
-    const db2 = await RxDatabase.create({
+    const db2 = await createRxDatabase({
         name,
         adapter: 'memory',
         queryChangeDetection: true,
@@ -391,11 +398,9 @@ export async function createMigrationCollection(
     return col2;
 }
 
-
-
 export async function createRelated(name = util.randomCouchString(10)) {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name,
         adapter: 'memory',
         multiInstance: true,
@@ -418,9 +423,8 @@ export async function createRelated(name = util.randomCouchString(10)) {
     return collection;
 }
 
-
 export async function createRelatedNested(name = util.randomCouchString(10)) {
-    const db = await RxDatabase.create({
+    const db = await createRxDatabase({
         name,
         adapter: 'memory',
         multiInstance: true,

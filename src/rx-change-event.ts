@@ -20,6 +20,9 @@ export class RxChangeEvent {
     ) { }
     toJSON() {
         const ret = {
+            col: null,
+            doc: null,
+            v: null,
             op: this.data.op,
             t: this.data.t,
             db: this.data.db,
@@ -44,6 +47,7 @@ export class RxChangeEvent {
         return false;
     }
 
+    private _hash: string;
     get hash() {
         if (!this._hash)
             this._hash = hash(this.data);
@@ -84,6 +88,9 @@ export function createChangeEvent(
     isLocal = false
 ) {
     const data = {
+        col: null,
+        doc: null,
+        v: null,
         op: op,
         t: new Date().getTime(),
         db: database.name,

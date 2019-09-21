@@ -45,12 +45,17 @@ export interface JsonSchema {
     ref?: string;
     index?: boolean;
     encrypted?: boolean;
+    final?: boolean;
+}
+
+export interface TopLevelProperty extends JsonSchema {
     default?: any;
 }
 
-export interface RxJsonSchemaTopLevel<T = any> extends RxJsonSchema<T> {
-    primary?: boolean;
-    final?: boolean;
+export interface PrimaryProperty extends TopLevelProperty {
+    type: 'string';
+    primary: true;
+    index: undefined;
 }
 
 export declare class RxJsonSchema<T = any> {
@@ -63,7 +68,7 @@ export declare class RxJsonSchema<T = any> {
      * retry this in later typescript-versions
      */
     type: 'object' | string;
-    properties: { [key in keyof T]: JsonSchema };
+    properties: { [key in keyof T]: TopLevelProperty | PrimaryProperty };
     required?: (keyof T)[];
     compoundIndexes?: string[] | string[][];
     keyCompression?: boolean;

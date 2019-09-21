@@ -28,7 +28,7 @@ let SpawnServer;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
+    RxDB.plugin(require('pouchdb-adapter-http'));
 }
 
 describe('replication.test.js', () => {

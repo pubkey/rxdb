@@ -3,7 +3,11 @@
  * and transforms/saves them into the newest collection
  */
 
-import PouchDB from './pouch-db';
+import {
+    PouchDB,
+    countAllUndeleted,
+    getBatch
+} from './pouch-db';
 import {
     clone,
     toPromise
@@ -12,7 +16,6 @@ import {
 import {
     createRxSchema
 } from './rx-schema';
-import Crypter from './crypter';
 import {
     newRxError
 } from './rx-error';
@@ -28,13 +31,37 @@ import {
 } from 'rxjs';
 
 import {
-    MigrationState
+    MigrationState,
+    KeyFunctionMap
 } from '../typings';
 
+import {
+    RxCollection
+} from './rx-collection';
+import {
+    RxSchema
+} from './rx-schema';
+import {
+    RxDatabase
+} from './';
+import {
+    KeyCompressor
+} from './plugins/key-compression';
+import {
+    Crypter,
+    create as createCrypter
+} from './crypter';
+
 export class DataMigrator {
-    constructor(newestCollection, migrationStrategies) {
-        this.newestCollection = newestCollection;
-        this.migrationStrategies = migrationStrategies;
+
+    public currentSchema: RxSchema;
+    public database: RxDatabase;
+    public name: string;
+
+    constructor(
+        public newestCollection: RxCollection,
+        public migrationStrategies: KeyFunctionMap
+    ) {
         this.currentSchema = newestCollection.schema;
         this.database = newestCollection.database;
         this.name = newestCollection.name;
@@ -44,7 +71,8 @@ export class DataMigrator {
      * @param {number} [batchSize=10] amount of documents handled in parallel
      * @return {Observable} emits the migration-state
      */
-    migrate(batchSize = 10): Observable<MigrationState> {
+    private _migrated: boolean;
+    migrate(batchSize: number = 10): Observable<MigrationState> {
         if (this._migrated)
             throw newRxError('DM1');
         this._migrated = true;
@@ -118,10 +146,8 @@ export class DataMigrator {
         return observer.asObservable();
     }
 
-    /**
-     * @return {Promise}
-     */
-    migratePromise(batchSize) {
+    private _migratePromise: Promise<any>;
+    migratePromise(batchSize): Promise<any> {
         if (!this._migratePromise) {
             this._migratePromise = mustMigrate(this)
                 .then(must => {
@@ -137,13 +163,18 @@ export class DataMigrator {
 }
 
 class OldCollection {
-    constructor(version, schemaObj, dataMigrator) {
-        this.version = version;
-        this.dataMigrator = dataMigrator;
-        this.schemaObj = schemaObj;
+    public newestCollection: RxCollection;
+    public database: RxDatabase;
+    constructor(
+        public version: number,
+        public schemaObj,
+        public dataMigrator: DataMigrator
+    ) {
         this.newestCollection = dataMigrator.newestCollection;
         this.database = dataMigrator.newestCollection.database;
     }
+
+    private _schema: RxSchema;
     get schema() {
         if (!this._schema) {
             //            delete this.schemaObj._id;
@@ -151,16 +182,22 @@ class OldCollection {
         }
         return this._schema;
     }
+
+    private _keyCompressor: KeyCompressor;
     get keyCompressor() {
         if (!this._keyCompressor)
             this._keyCompressor = overwritable.createKeyCompressor(this.schema);
         return this._keyCompressor;
     }
+
+    private _crypter: Crypter;
     get crypter() {
         if (!this._crypter)
-            this._crypter = Crypter.create(this.database.password, this.schema);
+            this._crypter = createCrypter(this.database.password, this.schema);
         return this._crypter;
     }
+
+    private _pouchdb;
     get pouchdb() {
         if (!this._pouchdb) {
             this._pouchdb = this.database._spawnPouchDB(
@@ -176,12 +213,11 @@ class OldCollection {
      * @return {Promise}
      */
     countAllUndeleted() {
-        return PouchDB.countAllUndeleted(this.pouchdb);
+        return countAllUndeleted(this.pouchdb);
     }
 
-    getBatch(batchSize) {
-        return PouchDB
-            .getBatch(this.pouchdb, batchSize)
+    getBatch(batchSize: number) {
+        return getBatch(this.pouchdb, batchSize)
             .then(docs => docs
                 .map(doc => this._handleFromPouch(doc))
             );
@@ -264,6 +300,9 @@ class OldCollection {
      */
     _migrateDocument(doc) {
         const action = {
+            res: null,
+            type: null,
+            migrated: null,
             doc,
             oldCollection: this,
             newestCollection: this.newestCollection
@@ -312,7 +351,8 @@ class OldCollection {
     /**
      * runs the migration on all documents and deletes the pouchdb afterwards
      */
-    migrate(batchSize = 10) {
+    private _migrate: boolean;
+    migrate(batchSize = 10): Observable<any> {
         if (this._migrate)
             throw newRxError('DM3');
         this._migrate = true;
@@ -336,7 +376,7 @@ class OldCollection {
                                 batch.map(doc => this._migrateDocument(doc)
                                     .then(action => observer.next(action))
                                 )
-                            ).catch(e => error = e).then(true);
+                            ).catch(e => error = e).then(() => true);
                         }
                     })
                     .then(next => {
@@ -357,7 +397,9 @@ class OldCollection {
 
         return observer.asObservable();
     }
-    migratePromise(batchSize) {
+
+    private _migratePromise: Promise<any>
+    migratePromise(batchSize: number): Promise<any> {
         if (!this._migratePromise) {
             this._migratePromise = new Promise((res, rej) => {
                 const state$ = this.migrate(batchSize);
@@ -373,7 +415,9 @@ class OldCollection {
  * get an array with OldCollection-instances from all existing old pouchdb-instance
  * @return {Promise<OldCollection[]>}
  */
-export function _getOldCollections(dataMigrator) {
+export function _getOldCollections(
+    dataMigrator: DataMigrator
+) {
     return Promise
         .all(
             dataMigrator.currentSchema.previousVersions

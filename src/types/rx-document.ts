@@ -1,12 +1,8 @@
 import { Observable } from 'rxjs';
-import IdleQueue from 'custom-idle-queue';
 
 import {
     RxCollection
 } from './rx-collection';
-import {
-    RxDatabase
-} from './rx-database';
 import {
     RxAttachment,
     RxAttachmentCreator

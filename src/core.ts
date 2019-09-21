@@ -3,31 +3,68 @@
  * it can be used as standalone but is also used in the batteries-included main-export
  */
 
-import RxDatabase from './rx-database';
 import {
-    isInstanceOf as isInstanceOfRxSchema
-} from './rx-schema';
-import RxDocument from './rx-document';
-import {
-    isInstanceOf as isInstanceOfRxQuery
-} from './rx-query';
-import RxCollection from './rx-collection';
-import QueryChangeDetector from './query-change-detector';
-import addPlugin from './plugin';
-import PouchDB from './pouch-db';
+    QueryChangeDetector
+} from './query-change-detector';
+export {
+    QueryChangeDetector
+} from './query-change-detector';
 
-export const create = RxDatabase.create;
-export const removeDatabase = RxDatabase.removeDatabase;
-export const checkAdapter = RxDatabase.checkAdapter;
+import addPlugin from './plugin';
+import {
+    PouchDB
+} from './pouch-db';
+export {
+    PouchDB
+} from './pouch-db';
+
+export * from './types';
 
 export const plugin = addPlugin;
 
-export const isRxDatabase = RxDatabase.isInstanceOf;
-export const dbCount = RxDatabase.dbCount;
-export const isRxCollection = RxCollection.isInstanceOf;
-export const isRxDocument = RxDocument.isInstanceOf;
-export const isRxQuery = isInstanceOfRxQuery;
-export const isRxSchema = isInstanceOfRxSchema;
+import {
+    create,
+    removeDatabase,
+    checkAdapter,
+    isInstanceOf as isRxDatabase,
+    dbCount
+} from './rx-database';
+export {
+    create,
+    removeDatabase,
+    checkAdapter,
+    isInstanceOf as isRxDatabase,
+    dbCount
+} from './rx-database';
+
+import {
+    isInstanceOf as isRxCollection
+} from './rx-collection';
+export {
+    isInstanceOf as isRxCollection
+} from './rx-collection';
+
+import {
+    isInstanceOf as isRxDocument
+} from './rx-document';
+export {
+    isInstanceOf as isRxDocument
+} from './rx-document';
+
+import {
+    isInstanceOf as isRxQuery
+} from './rx-query';
+export {
+    isInstanceOf as isRxQuery
+} from './rx-query';
+
+import {
+    isInstanceOf as isRxSchema
+} from './rx-schema';
+export {
+    isInstanceOf as isRxSchema
+} from './rx-schema';
+
 
 export default {
     create,
@@ -41,6 +78,5 @@ export default {
     isRxQuery,
     isRxSchema,
     PouchDB,
-    QueryChangeDetector,
-    RxDatabase
+    QueryChangeDetector
 };

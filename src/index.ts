@@ -7,7 +7,6 @@
 import Core from './core';
 
 // default plugins
-
 import SchemaCheckPlugin from './plugins/schema-check';
 Core.plugin(SchemaCheckPlugin);
 
@@ -50,40 +49,25 @@ Core.plugin(AttachmentsPlugin);
 import LocalDocumentsPlugin from './plugins/local-documents';
 Core.plugin(LocalDocumentsPlugin);
 
-/**
- * create a database
- * @param  {string} prefix as databaseName for the storage (this can be the foldername)
- * @param  {Object} storageEngine any leveldown instance
- * @param  {String} password if the database contains encrypted fields
- * @param  {boolean} multiInstance if true, multiInstance-handling will be done
- * @return {Promise<Database>}
- */
-export const create = Core.create;
 
-/**
- * removes the database and all its known data
- * @param  {string} databaseName
- * @param  {Object} adapter
- * @return {Promise}
- */
-export const removeDatabase = Core.removeDatabase;
+// rexport things from core
+export * from './core';
+import {
+    create,
+    removeDatabase,
+    plugin,
+    dbCount,
+    isRxCollection,
+    isRxDatabase,
+    isRxDocument,
+    isRxQuery,
+    isRxSchema,
+    PouchDB,
+    QueryChangeDetector,
+    checkAdapter
+} from './core';
 
-/**
- * add a plugin for rxdb or pouchdb
- */
-export const plugin = Core.plugin;
-export const dbCount = Core.dbCount;
-export const isRxDatabase = Core.isRxDatabase;
-export const isRxCollection = Core.isRxCollection;
-export const isRxDocument = Core.isRxDocument;
-export const isRxQuery = Core.isRxQuery;
-export const isRxSchema = Core.isRxSchema;
-export const RxSchema = Core.RxSchema;
-export const PouchDB = Core.PouchDB;
-export const QueryChangeDetector = Core.QueryChangeDetector;
-export const RxDatabase = Core.RxDatabase;
-export const checkAdapter = Core.checkAdapter;
-
+// TODO no more default exports
 export default {
     create,
     checkAdapter,
@@ -96,6 +80,5 @@ export default {
     isRxQuery,
     isRxSchema,
     PouchDB,
-    QueryChangeDetector,
-    RxDatabase
+    QueryChangeDetector
 };

@@ -29,7 +29,7 @@
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
-  "types": "./typings/index.d.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "pretest": "npm run transpile",

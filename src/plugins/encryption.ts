@@ -12,6 +12,10 @@ import {
     newRxError
 } from '../rx-error';
 
+import {
+    Crypter
+} from '../crypter';
+
 const minPassLength = 8;
 
 export function encrypt(value, password) {
@@ -24,12 +28,12 @@ export function decrypt(cipherText, password) {
     return decrypted.toString(cryptoEnc);
 }
 
-const _encryptValue = function(value) {
-    return encrypt(JSON.stringify(value), this._password);
+const _encryptValue = function(this: Crypter, value) {
+    return encrypt(JSON.stringify(value), this.password);
 };
 
-const _decryptValue = function(encryptedValue) {
-    const decrypted = decrypt(encryptedValue, this._password);
+const _decryptValue = function(this: Crypter, encryptedValue) {
+    const decrypted = decrypt(encryptedValue, this.password);
     return JSON.parse(decrypted);
 };
 

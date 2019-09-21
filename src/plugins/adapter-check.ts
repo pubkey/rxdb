@@ -2,7 +2,9 @@
  * this plugin adds the checkAdapter-function to rxdb
  * you can use it to check if the given adapter is working in the current environmet
  */
-import PouchDB from '../pouch-db';
+import {
+    PouchDB
+} from '../pouch-db';
 import {
     generateId,
     adapterObject

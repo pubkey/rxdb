@@ -10,9 +10,9 @@ import {
     generateId,
     promiseSeries
 } from './util';
-import RxDocument from './rx-document';
 import {
-    createRxQuery
+    createRxQuery,
+    RxQuery
 } from './rx-query';
 import {
     isInstanceOf as isInstanceOfRxSchema,
@@ -59,18 +59,28 @@ import {
 import {
     RxJsonSchema,
     PouchSettings,
-    RxDatabase,
     KeyFunctionMap,
     RxReplicationState,
     PouchDB,
-    RxQuery,
     MigrationState,
     SyncOptions
 } from '../typings';
 
 import {
+    RxDatabase
+} from './rx-database';
+
+import {
     RxSchema
 } from './rx-schema';
+import {
+    RxDocument,
+    basePrototype as RxDocumentBasePrototype,
+    createRxDocumentConstructor,
+    createWithConstructor as createRxDocumentWithConstructor,
+    isInstanceOf as isRxDocument,
+    properties as rxDocumentProperties
+} from './rx-document';
 
 export type RxCollection<
     RxDocumentType = any,
@@ -90,7 +100,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
     public _repStates: RxReplicationState[] = [];
     public pouch: PouchDB = null; // this is needed to preserve this name
 
-    public _docCache: DocCache = createDocCache();
+    public _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>> = createDocCache();
     public _queryCache: QueryCache = createQueryCache();
     public _dataMigrator: DataMigrator;
     public _crypter: CrypterClass;
@@ -98,10 +108,10 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
     public _changeEventBuffer: ChangeEventBuffer;
 
     // other
-    private _keyCompressor;
+    public _keyCompressor;
 
     constructor(
-        public database: RxDatabase<{}>,
+        public database: RxDatabase,
         public name: string,
         public schema: RxSchema,
         public pouchSettings: PouchSettings = {},
@@ -164,7 +174,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
         if (!this._getDocumentPrototype) {
             const schemaProto = this.schema.getDocumentPrototype();
             const ormProto = getDocumentOrmPrototype(this);
-            const baseProto = RxDocument.basePrototype;
+            const baseProto = RxDocumentBasePrototype;
             const proto = {};
             [
                 schemaProto,
@@ -216,7 +226,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
     private _getDocumentConstructor;
     getDocumentConstructor() {
         if (!this._getDocumentConstructor) {
-            this._getDocumentConstructor = RxDocument.createRxDocumentConstructor(
+            this._getDocumentConstructor = createRxDocumentConstructor(
                 this.getDocumentPrototype()
             );
         }
@@ -340,7 +350,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
         if (cacheDoc) return cacheDoc;
 
 
-        const doc = RxDocument.createWithConstructor(
+        const doc = createRxDocumentWithConstructor(
             this.getDocumentConstructor(),
             this,
             json
@@ -406,7 +416,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
     insert(json) {
         // inserting a temporary-document
         let tempDoc = null;
-        if (RxDocument.isInstanceOf(json)) {
+        if (isRxDocument(json)) {
             tempDoc = json;
             if (!json._isTemporary) {
                 throw newRxError('COL1', {
@@ -692,7 +702,7 @@ export class RxCollectionBase<RxDocumentType, OrmMethods> {
      */
     newDocument(docData = {}) {
         docData = this.schema.fillObjectWithDefaults(docData);
-        const doc = RxDocument.createWithConstructor(
+        const doc = createRxDocumentWithConstructor(
             this.getDocumentConstructor(),
             this,
             docData
@@ -845,7 +855,7 @@ const checkOrmMethods = function (statics) {
                 });
             }
 
-            if (properties().includes(k) || RxDocument.properties().includes(k)) {
+            if (properties().includes(k) || rxDocumentProperties().includes(k)) {
                 throw newRxError('COL17', {
                     name: k
                 });

@@ -4,7 +4,10 @@
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-import PouchDB from 'pouchdb-core';
+import PouchDBCore from 'pouchdb-core';
+// pouchdb-find
+import PouchDBFind from 'pouchdb-find';
+PouchDBCore.plugin(PouchDBFind);
 
 /*
 // comment in to debug
@@ -13,20 +16,22 @@ PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
 
-// pouchdb-find
-import PouchDBFind from 'pouchdb-find';
-PouchDB.plugin(PouchDBFind);
 
 import {
     newRxError
 } from './rx-error';
+import {
+    PouchDBInstance
+} from './types';
 
 /**
  * get the number of all undeleted documents
  * @param  {PouchDB}  pouchdb instance
  * @return {Promise<number>} number of documents
  */
-PouchDB.countAllUndeleted = function(pouchdb) {
+export function countAllUndeleted(
+    pouchdb: PouchDBInstance
+): Promise<number> {
     return pouchdb
         .allDocs({
             include_docs: false,
@@ -45,7 +50,10 @@ PouchDB.countAllUndeleted = function(pouchdb) {
  * @param  {number}  limit
  * @return {Promise<{}[]>} array with documents
  */
-PouchDB.getBatch = function(pouchdb, limit) {
+export function getBatch(
+    pouchdb: PouchDBInstance, 
+    limit: number
+    ) {
     if (limit <= 1) {
         throw newRxError('P1', {
             limit
@@ -65,8 +73,8 @@ PouchDB.getBatch = function(pouchdb, limit) {
         );
 };
 
-PouchDB.isInstanceOf = function(obj) {
-    return obj instanceof PouchDB;
+export function isInstanceOf(obj: any) {
+    return obj instanceof PouchDBCore;
 };
 
-export default PouchDB;
+export const PouchDB = PouchDBCore;

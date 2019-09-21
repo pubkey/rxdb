@@ -15,7 +15,9 @@ import {
 } from './rx-query';
 import RxCollection from './rx-collection';
 import RxDatabase from './rx-database';
-import PouchDB from './pouch-db';
+import {
+    PouchDB
+} from './pouch-db';
 
 import overwritable from './overwritable';
 import {

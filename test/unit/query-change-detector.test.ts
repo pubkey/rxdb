@@ -6,8 +6,16 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
-import RxDB from '../../dist/lib/index';
-import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
+import RxDB from '../../';
+import {
+    QueryChangeDetector,
+    create as createQueryChangeDetector,
+    _isDocInResultData,
+    _isSortedBefore,
+    _resortDocData,
+    enableDebugging,
+    _sortFieldChanged
+} from '../../dist/lib/query-change-detector';
 
 import {
     first,
@@ -18,12 +26,12 @@ import {
 let SpawnServer;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
-    RxDB.PouchDB.plugin(require('pouchdb-adapter-http'));
+    RxDB.plugin(require('pouchdb-adapter-http'));
 }
 
 // uncomment to debug
 // import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
-// QueryChangeDetector.enableDebugging();
+// enableDebugging();
 
 
 config.parallel('query-change-detector.test.js', () => {
@@ -34,7 +42,7 @@ config.parallel('query-change-detector.test.js', () => {
             await q.exec();
             const resData = q._resultsData;
             assert.equal(q._resultsData.length, 5);
-            const is = QueryChangeDetector._isDocInResultData(q._queryChangeDetector, resData[0], resData);
+            const is = _isDocInResultData(q._queryChangeDetector, resData[0], resData);
             assert.equal(is, true);
             col.database.destroy();
         });
@@ -46,7 +54,7 @@ config.parallel('query-change-detector.test.js', () => {
             const anyDoc = clone(resData[0]);
             anyDoc._id = 'foobar';
             assert.equal(q._resultsData.length, 5);
-            const is = QueryChangeDetector._isDocInResultData(q._queryChangeDetector, anyDoc, resData);
+            const is = _isDocInResultData(q._queryChangeDetector, anyDoc, resData);
             assert.equal(is, false);
             col.database.destroy();
         });
@@ -59,7 +67,7 @@ config.parallel('query-change-detector.test.js', () => {
             docData1.age = 5;
             const docData2 = schemaObjects.human();
             docData2.age = 10;
-            const res = QueryChangeDetector._isSortedBefore(q._queryChangeDetector, docData1, docData2);
+            const res = _isSortedBefore(q._queryChangeDetector, docData1, docData2);
             assert.equal(res, true);
             col.database.destroy();
         });
@@ -72,7 +80,7 @@ config.parallel('query-change-detector.test.js', () => {
             const docData2 = schemaObjects.human();
             docData2.passportId = '111';
             docData2.age = 5;
-            const res = QueryChangeDetector._isSortedBefore(q._queryChangeDetector, docData1, docData2);
+            const res = _isSortedBefore(q._queryChangeDetector, docData1, docData2);
             assert.equal(res, false);
             col.database.destroy();
         });
@@ -85,7 +93,10 @@ config.parallel('query-change-detector.test.js', () => {
             const docData2 = schemaObjects.human();
             docData2.passportId = '111';
             docData2.age = 5;
-            const res = QueryChangeDetector._isSortedBefore(q._queryChangeDetector, docData1, docData2);
+            const res = _isSortedBefore(
+                q._queryChangeDetector,
+                docData1, docData2
+            );
             assert.equal(res, true);
             col.database.destroy();
         });
@@ -94,18 +105,24 @@ config.parallel('query-change-detector.test.js', () => {
         it('should return resorted doc-data', async () => {
             const col = await humansCollection.createAgeIndex(3);
             const q = col.find().sort('age');
-            const docData1 = schemaObjects.human();
+            const docData1 = schemaObjects.human() as any;
             docData1.age = 5;
             docData1._id = 'aaaaaaaa';
-            const docData2 = schemaObjects.human();
+            const docData2 = schemaObjects.human() as any;
             docData2.age = 10;
             docData2._id = 'bbbbbbb';
 
-            const res = QueryChangeDetector._resortDocData(q._queryChangeDetector, [docData2, docData1]);
+            const res = _resortDocData(
+                q._queryChangeDetector,
+                [docData2, docData1]
+            );
             assert.equal(res[0].age, 5);
             assert.equal(res[1].age, 10);
 
-            const res2 = QueryChangeDetector._resortDocData(q._queryChangeDetector, [docData1, docData2]);
+            const res2 = _resortDocData(
+                q._queryChangeDetector,
+                [docData1, docData2]
+            );
             assert.equal(res2[0].age, 5);
             assert.equal(res2[1].age, 10);
 
@@ -122,7 +139,11 @@ config.parallel('query-change-detector.test.js', () => {
             const docDataAfter = clone(docDataBefore);
             docDataAfter.age = 10;
 
-            const changed = QueryChangeDetector._sortFieldChanged(q._queryChangeDetector, docDataBefore, docDataAfter);
+            const changed = _sortFieldChanged(
+                q._queryChangeDetector,
+                docDataBefore,
+                docDataAfter
+            );
             assert.equal(changed, true);
             col.database.destroy();
         });
@@ -133,7 +154,11 @@ config.parallel('query-change-detector.test.js', () => {
             const docDataBefore = schemaObjects.human();
             const docDataAfter = clone(docDataBefore);
 
-            const changed = QueryChangeDetector._sortFieldChanged(q._queryChangeDetector, docDataBefore, docDataAfter);
+            const changed = _sortFieldChanged(
+                q._queryChangeDetector,
+                docDataBefore,
+                docDataAfter
+            );
             assert.equal(changed, false);
             col.database.destroy();
         });

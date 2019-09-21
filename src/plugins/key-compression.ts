@@ -9,7 +9,7 @@ import {
     clone
 } from '../util';
 
-class KeyCompressor {
+export class KeyCompressor {
     /**
      * @param {RxSchema} schema
      */

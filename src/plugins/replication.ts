@@ -22,12 +22,14 @@ import Core from '../core';
 import {
     newRxError
 } from '../rx-error';
-import PouchDB from '../pouch-db';
+import {
+    PouchDB,
+    isInstanceOf as isInstanceOfPouchDB
+} from '../pouch-db';
 
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 import {
     RxCollection,
-    RxCollectionBase,
     isInstanceOf as isRxCollection
 } from '../rx-collection';
 import {
@@ -35,9 +37,8 @@ import {
 } from '../rx-query';
 import {
     PouchSyncHandler,
-    PouchDB as PouchDBType,
     PouchReplicationOptions
-} from '../../typings';
+} from '../types';
 
 // add pouchdb-replication-plugin
 Core.plugin(PouchReplicationPlugin);
@@ -230,7 +231,7 @@ export function sync({
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (
-        (PouchDB as any).isInstanceOf(remote) &&
+        isInstanceOfPouchDB(remote) &&
         INTERNAL_POUCHDBS.has(remote)
     ) {
         throw newRxError('RC3', {

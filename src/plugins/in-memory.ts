@@ -34,7 +34,9 @@ import {
 import {
     createRxSchema
 } from '../rx-schema';
-import PouchDB from '../pouch-db';
+import {
+    PouchDB
+} from '../pouch-db';
 import {
     newRxError
 } from '../rx-error';

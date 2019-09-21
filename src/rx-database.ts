@@ -2,7 +2,6 @@ import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
 import BroadcastChannel from 'broadcast-channel';
 
-import PouchDB from './pouch-db';
 import {
     adapterObject,
     hash,
@@ -35,16 +34,30 @@ import {
     filter
 } from 'rxjs/operators';
 import {
-    PouchSettings
-} from '../typings';
+    PouchSettings,
+
+} from './types';
+
 import {
-    RxCollectionBase,
+    PouchDB
+} from './pouch-db';
+
+import {
     RxCollection,
     create as createRxCollection
 } from './rx-collection';
 import {
     RxChangeEvent
 } from './rx-change-event';
+import {
+    CollectionsOfDatabase,
+    RxChangeEventInsert,
+    RxChangeEventUpdate,
+    RxChangeEventRemove,
+    PouchDBInstance,
+    RxChangeEventCollection,
+    RxDatabase
+} from './types';
 
 /**
  * stores the combinations
@@ -56,17 +69,13 @@ const USED_COMBINATIONS = {};
 
 let DB_COUNT = 0;
 
-
-export type CollectionsOfDatabase = { [key: string]: RxCollection } | {};
-export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> & Collections;
-
 export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
     public idleQueue: IdleQueue = new IdleQueue();
     public readonly token: string = randomToken(10);
     public _subs: Subscription[] = [];
     public destroyed: boolean = false;
-    public collections: CollectionsOfDatabase = {};
+    public collections: Collections;
     private subject: Subject<RxChangeEvent> = new Subject();
     private observable$: Observable<RxChangeEvent> = this.subject.asObservable()
         .pipe(
@@ -83,10 +92,11 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         public options: any = {},
         public pouchSettings: PouchSettings
     ) {
+        this.collections = {} as any;
         if (typeof name !== 'undefined') DB_COUNT++;
     }
 
-    private _collectionsPouch;
+    public _collectionsPouch;
     dangerousRemoveCollectionInfo() {
         const colPouch = this._collectionsPouch;
         return colPouch.allDocs()
@@ -116,8 +126,12 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
      * @param {Object} [pouchSettings={}] pouchSettings
      * @type {Object}
      */
-    _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}) {
-        return _spawnPouchDB(this.name, this.adapter, collectionName, schemaVersion, pouchSettings, this.pouchSettings);
+    _spawnPouchDB(collectionName, schemaVersion, pouchSettings = {}): PouchDBInstance {
+        return _spawnPouchDB(
+            this.name, this.adapter,
+            collectionName, schemaVersion,
+            pouchSettings, this.pouchSettings
+        );
     }
 
     get isLeader() {
@@ -155,7 +169,12 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * @return {Observable} observable
      */
-    get $() {
+    get $(): Observable<
+        RxChangeEventInsert<any> |
+        RxChangeEventUpdate<any> |
+        RxChangeEventRemove<any> |
+        RxChangeEventCollection
+    > {
         return this.observable$;
     }
 
@@ -618,7 +637,7 @@ export function create({
     ignoreDuplicate = false,
     options = {},
     pouchSettings = {}
-}): Promise<RxDatabaseBase> {
+}: any): Promise<RxDatabase> {
     validateCouchDBString(name);
 
     // check if pouchdb-adapter
@@ -693,7 +712,7 @@ function _spawnPouchDB(
     schemaVersion: number,
     pouchSettings: PouchSettings = {},
     pouchSettingsFromRxDatabaseCreator: PouchSettings = {}
-) {
+): PouchDBInstance {
     const pouchLocation = getPouchLocation(dbName, collectionName, schemaVersion);
     const pouchDbParameters = {
         location: pouchLocation,
@@ -709,7 +728,7 @@ function _spawnPouchDB(
     return new PouchDB(
         pouchDbParameters.location,
         pouchDBOptions
-    );
+    ) as any;
 }
 
 function _internalAdminPouch(
@@ -749,7 +768,9 @@ function _internalCollectionsPouch(
 }
 
 /**
- *
+ * removes the database and all its known data
+ * @param  {string} databaseName
+ * @param  {Object} adapter
  * @return {Promise}
  */
 export function removeDatabase(
