@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "strict": true,
-    "skipLibCheck": true,
-    "outDir": "../../../test_tmp/issue-448"
-  }
-}

@@ -57,7 +57,9 @@ import {
     RxJsonSchema,
     RxCollection,
     PouchSettings,
-    ServerOptions
+    ServerOptions,
+    RxDatabaseCreator,
+    RxDatabaseGenerated
 } from './types';
 
 /**
@@ -85,7 +87,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     }
     get leaderElector() {
         if (!this._leaderElector)
-            this._leaderElector = overwritable.createLeaderElector(this);
+            this._leaderElector = overwritable.createLeaderElector(this as any);
         return this._leaderElector;
     }
 
@@ -179,7 +181,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
         // write to socket if event was created by this instance
         if (changeEvent.data.it === this.token) {
-            writeToSocket(this, changeEvent);
+            writeToSocket(this as any, changeEvent);
         }
     }
 
@@ -199,7 +201,17 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * create or fetch a collection
      */
-    collection(args: RxCollectionCreator): Promise<RxCollection> {
+    collection<
+        RxDocumentType = any,
+        OrmMethods = {},
+        StaticMethods = { [key: string]: any }
+    >(args: RxCollectionCreator): Promise<
+        RxCollection<
+            RxDocumentType,
+            OrmMethods,
+            StaticMethods
+        >
+    > {
         if (typeof args === 'string')
             return Promise.resolve(this.collections[args]);
 
@@ -297,7 +309,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             .then(() => {
                 const cEvent = createChangeEvent(
                     'RxDatabase.collection',
-                    this,
+                    this as any,
                     col
                 );
                 cEvent.data.v = col.name;
@@ -325,7 +337,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             this.collections[collectionName].destroy();
 
         // remove schemas from internal db
-        return _removeAllOfCollection(this, collectionName)
+        return _removeAllOfCollection(this as any, collectionName)
             // get all relevant pouchdb-instances
             .then(knownVersions => knownVersions
                 .map(v => this._spawnPouchDB(collectionName, v)))
@@ -637,7 +649,7 @@ function prepare(rxDatabase: RxDatabase): Promise<void> {
     });
 }
 
-export function create({
+export function create<Collections = { [key: string]: RxCollection }>({
     name,
     adapter,
     password,
@@ -646,7 +658,7 @@ export function create({
     ignoreDuplicate = false,
     options = {},
     pouchSettings = {}
-}: any): Promise<RxDatabase> {
+}: RxDatabaseCreator): Promise<RxDatabase<Collections>> {
     validateCouchDBString(name);
 
     // check if pouchdb-adapter
@@ -679,7 +691,6 @@ export function create({
         USED_COMBINATIONS[name] = [];
     USED_COMBINATIONS[name].push(adapter);
 
-
     const db = new RxDatabaseBase(
         name,
         adapter,
@@ -690,14 +701,12 @@ export function create({
         pouchSettings
     );
 
-    return prepare(db)
+    return prepare(db as any)
         .then(() => {
             runPluginHooks('createRxDatabase', db);
             return db;
-        });
+        }) as any;
 }
-
-
 
 export function getPouchLocation(
     dbName: string,

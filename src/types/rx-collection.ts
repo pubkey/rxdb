@@ -1,40 +1,9 @@
-import { Observable } from 'rxjs';
-
-
 import {
-    RxSchema,
-    RxJsonSchema
-} from '../';
-import {
-    RxDatabase
-} from '../';
-import {
-    RxQuery,
-    PouchDBInstance
-} from './';
-import {
-    PouchSettings
-} from './';
-import {
-    RxChangeEventInsert,
-    RxChangeEventUpdate,
-    RxChangeEventRemove
-} from './';
-import {
+    RxJsonSchema,
+    PouchSettings,
     RxDocument,
     RxLocalDocument
 } from './';
-
-import {
-    SyncOptions,
-    RxReplicationState
-} from '../plugins/replication';
-
-import {
-    SyncOptionsGraphQL,
-    RxGraphQLReplicationState
-} from '../';
-
 import {
     RxCollectionBase
 } from '../rx-collection';

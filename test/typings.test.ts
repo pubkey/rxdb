@@ -6,7 +6,7 @@ import * as schemas from './helper/schemas';
 import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 
-describe('typings.test.js', function() {
+describe('typings.test.js', function () {
     this.timeout(50 * 1000);
     const codeBase = `
         import {
@@ -39,8 +39,13 @@ describe('typings.test.js', function() {
         const spawn = require('child-process-promise').spawn;
         const stdout = [];
         const stderr = [];
+        const tsConfig = {
+            target: 'es6',
+            strict: true,
+            isolatedModules: false
+        };
         const promise = spawn('ts-node', [
-            '--compiler-options', '{"target":"es6", "strict": true}',
+            '--compiler-options', JSON.stringify(tsConfig),
             '--type-check',
             '-e', code
         ]);
@@ -142,7 +147,6 @@ describe('typings.test.js', function() {
                         type RxHeroesDatabase = RxDatabase<{
                             hero: RxCollection;
                         }>;
-
                         const db: RxHeroesDatabase = await RxDB.create<{
                             hero: RxCollection;
                         }>({
@@ -211,11 +215,19 @@ describe('typings.test.js', function() {
                         };
                         const myDb: RxDatabase = await create(databaseCreator);
 
+
                         const minimalHuman: RxJsonSchema<DefaultDocType> = ${JSON.stringify(schemas.humanMinimal)};
+
+
                         const myCollection: RxCollection<any> = await myDb.collection<DefaultDocType>({
                             name: 'humans',
                             schema: minimalHuman,
                         });
+
+
+
+
+
 
                         await myDb.destroy();
                     })();
@@ -749,26 +761,6 @@ describe('typings.test.js', function() {
         });
     });
     config.parallel('issues', () => {
-        it('#448 strict:true not working', async () => {
-            /*
-             * TODO we currently have to set "skipLibCheck": true
-             * because of a rxjs-typings problem
-             * @link https://github.com/ReactiveX/rxjs/issues/3031
-             */
-            const exec = require('child_process').exec;
-            await new Promise((res, rej) => {
-                exec('tsc --p "' + config.rootPath + 'test/helper/issue-448/tsconfig.json"', (err, stdout, stderr) => {
-                    if (err || stderr !== '') {
-                        // console.log('sterr:'); console.dir(stderr);
-                        // console.log('err:'); console.dir(err);
-                        rej(err);
-                    } else {
-                        // console.log('out:'); console.log(stdout);
-                        res(stdout);
-                    }
-                });
-            });
-        });
         it('via gitter at 2018 Mai 22 19:20', async () => {
             const code = codeBase + `
                 (async() => {

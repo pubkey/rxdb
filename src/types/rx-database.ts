@@ -40,9 +40,10 @@ export interface ServerOptions {
     cors?: boolean;
 }
 
-export type CollectionsOfDatabase = { [key: string]: RxCollection } | {};
-export type RxDatabase<Collections = any> = RxDatabaseBase<Collections> &
+export type CollectionsOfDatabase = { [key: string]: RxCollection };
+export type RxDatabase<Collections = CollectionsOfDatabase> = RxDatabaseBase<Collections> &
     Collections & RxDatabaseGenerated<Collections>;
+
 
 export interface RxDatabaseGenerated<Collections> {
     insertLocal(id: string, data: any): Promise<
