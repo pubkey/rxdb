@@ -626,6 +626,7 @@ config.parallel('rx-query.test.js', () => {
                 const schema = {
                     $id: '#child-def',
                     version: 0,
+                    type: 'object',
                     properties: {
                         childProperty: {
                             type: 'string',
@@ -752,6 +753,7 @@ config.parallel('rx-query.test.js', () => {
                 name: 'test3',
                 schema: {
                     title: 'test3',
+                    type: 'object',
                     version: 0,
                     properties: {
                         name: {

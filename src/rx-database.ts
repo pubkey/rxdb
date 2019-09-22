@@ -364,7 +364,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * export to json
      */
-    dump(_decrypted: boolean): string[] | null {
+    dump(_decrypted: boolean = false, _collections?: string[]): string[] | null {
         throw pluginMissing('json-dump');
     }
 

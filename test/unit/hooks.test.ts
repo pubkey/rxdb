@@ -47,7 +47,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
                     let count = 0;
-                    c.preInsert(function (data, instance) {
+                    c.preInsert((data, instance) => {
                         assert.strictEqual(typeof instance, 'undefined');
                         count++;
                     }, false);
@@ -425,7 +425,7 @@ config.parallel('hooks.test.js', () => {
                     Object.defineProperty(instance, 'myField', {
                         get: () => 'foobar',
                     });
-                }, false);
+                });
 
                 const human = schemaObjects.simpleHuman();
                 await collection.insert(human);
@@ -453,7 +453,7 @@ config.parallel('hooks.test.js', () => {
                     });
                 };
 
-                assert.throws(() => collection.postCreate(hookFun, true));
+                assert.throws(() => (collection as any).postCreate(hookFun, true));
                 db.destroy();
             });
         });

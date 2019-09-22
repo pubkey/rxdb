@@ -133,7 +133,6 @@ config.parallel('rx-collection.test.js', () => {
                         adapter: 'memory'
                     });
                     const collection = await db.collection({
-                        database: db,
                         name: 'human',
                         schema: schemas.human,
                         options: {
@@ -298,7 +297,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.human
                     });
                     const human = schemaObjects.human();
-                    human.passportId  = util.randomCouchString(20);
+                    human.passportId = util.randomCouchString(20);
                     await collection.insert(human);
                     db.destroy();
                 });
@@ -548,7 +547,7 @@ config.parallel('rx-collection.test.js', () => {
                         }).exec();
                         assert.strictEqual(doc.length, 1);
                         doc = doc[0];
-                        assert.deepStrictEqual(doc.data, last.data);
+                        assert.deepStrictEqual(doc['data'], last.data);
                         c.database.destroy();
                     });
                     it('find none with random passportId', async () => {
@@ -572,7 +571,7 @@ config.parallel('rx-collection.test.js', () => {
                         }).exec();
                         assert.strictEqual(doc.length, 1);
                         doc = doc[0];
-                        assert.deepStrictEqual(doc.data, last.data);
+                        assert.deepStrictEqual(doc['data'], last.data);
                         c.database.destroy();
                     });
                 });
@@ -813,8 +812,8 @@ config.parallel('rx-collection.test.js', () => {
                             passportId: -1
                         }).limit(1).exec();
                         last = last[0];
-                        assert.strictEqual(last._data.passportId, docs[(docs.length - 1)]._data.passportId);
-                        assert.notStrictEqual(first._data.passportId, last._data.passportId);
+                        assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
+                        assert.notStrictEqual(first['_data'].passportId, last['_data'].passportId);
                         c.database.destroy();
                     });
                     it('reset limit with .limit(null)', async () => {
@@ -829,7 +828,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('crash if no integer', async () => {
                         const c = await humansCollection.create(20);
                         await AsyncTestUtil.assertThrows(
-                            () => c.find().limit('foobar').exec(),
+                            () => c.find().limit('foobar' as any).exec(),
                             'RxTypeError'
                         );
                         c.database.destroy();
@@ -875,7 +874,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('crash if no integer', async () => {
                         const c = await humansCollection.create(20);
                         await AsyncTestUtil.assertThrows(
-                            () => c.find().skip('foobar').exec(),
+                            () => c.find().skip('foobar' as any).exec(),
                             'RxTypeError'
                         );
                         c.database.destroy();
@@ -1566,7 +1565,7 @@ config.parallel('rx-collection.test.js', () => {
                     auto_compaction: true
                 }
             });
-            assert.ok(collection.pouch.auto_compaction);
+            assert.ok(collection.pouch['auto_compaction']);
             db.destroy();
         });
         it('#939 creating a collection mutates the given parameters-object', async () => {

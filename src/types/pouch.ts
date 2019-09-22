@@ -96,7 +96,7 @@ export declare class PouchDBInstance {
         options?: any,
     ): Promise<any>;
     changes(options?: PouchReplicationOptions): any;
-    sync(options?: PouchReplicationOptions): PouchSyncHandler;
+    sync(remoteDb: string | any, options?: PouchReplicationOptions): PouchSyncHandler;
     replicate(options?: PouchReplicationOptions): PouchSyncHandler;
 
     close(): Promise<void>;
@@ -120,6 +120,10 @@ export declare class PouchDBInstance {
     bulkGet(options?: any): Promise<any>;
     revsDiff(diff: any): Promise<any>;
     explain(query: any): Promise<any>;
+
+    getIndexes(): Promise<{
+        indexes: any[];
+    }>;
 
     createIndex(opts: {
         index: any;

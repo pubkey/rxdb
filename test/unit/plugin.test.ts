@@ -245,7 +245,7 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
-            assert.strictEqual(col.schema.foo, 'bar_createRxSchema');
+            assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
             col.database.destroy();
             clearHook('createRxSchema', createRxSchema);
         });
@@ -262,7 +262,7 @@ config.parallel('plugin.test.js', () => {
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
             const query = col.find();
-            assert.strictEqual(query.foo, 'bar_createRxQuery');
+            assert.strictEqual(query['foo'], 'bar_createRxQuery');
             col.database.destroy();
             clearHook('createRxQuery', createRxQuery);
         });

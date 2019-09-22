@@ -9,6 +9,9 @@ import {
 } from '../rx-collection';
 
 export interface KeyFunctionMap {
+    [key: string]: Function;
+}
+export interface NumberFunctionMap {
     [key: number]: Function;
 }
 
@@ -16,7 +19,7 @@ export interface RxCollectionCreator {
     name: string;
     schema: RxJsonSchema;
     pouchSettings?: PouchSettings;
-    migrationStrategies?: KeyFunctionMap;
+    migrationStrategies?: NumberFunctionMap;
     autoMigrate?: boolean;
     statics?: KeyFunctionMap;
     methods?: KeyFunctionMap;
@@ -39,7 +42,10 @@ export type RxCollectionHookCallback<
     > = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
 export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void>;
 export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
-export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType) => Promise<void>;
+export type RxCollectionHookNoInstanceCallback<
+    RxDocumentType,
+    OrmMethods
+    > = (data: RxDocumentType, instance: RxCollection) => Promise<void> | void;
 
 export type RxCollection<
     RxDocumentType = any,

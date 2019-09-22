@@ -6,7 +6,8 @@
 import {
     BehaviorSubject,
     Subject,
-    Subscription
+    Subscription,
+    Observable
 } from 'rxjs';
 import {
     first,
@@ -91,9 +92,16 @@ export class RxGraphQLReplicationState {
     public _runningPromise: Promise<void> = Promise.resolve();
     public _subs: Subscription[] = [];
     public _runQueueCount: number = 0;
-    public initialReplicationComplete$;
+    public initialReplicationComplete$: Observable<any>;
 
     public changesSub;
+
+    public recieved$: Observable<any>;
+    public send$: Observable<any>;
+    public error$: Observable<any>;
+    public canceled$: Observable<any>;
+    public active$: Observable<boolean>;
+
 
     /**
      * things that are more complex to not belong into the constructor
@@ -114,13 +122,13 @@ export class RxGraphQLReplicationState {
         });
     }
 
-    isStopped() {
+    isStopped(): boolean {
         if (!this.live && this._subjects.initialReplicationComplete['_value']) return true;
         if (this._subjects.canceled['_value']) return true;
         else return false;
     }
 
-    awaitInitialReplication() {
+    awaitInitialReplication(): Promise<true> {
         return this.initialReplicationComplete$.pipe(
             filter(v => v === true),
             first()
@@ -128,7 +136,7 @@ export class RxGraphQLReplicationState {
     }
 
     // ensures this._run() does not run in parallel
-    async run() {
+    async run(): Promise<void> {
         if (this.isStopped()) {
             return;
         }
@@ -364,7 +372,7 @@ export class RxGraphQLReplicationState {
         );
         this.collection.$emit(cE);
     }
-    cancel() {
+    cancel(): Promise<any> {
         if (this.isStopped()) return;
 
         if (this.changesSub) this.changesSub.cancel();

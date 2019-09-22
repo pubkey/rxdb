@@ -282,6 +282,7 @@ config.parallel('rx-document.test.js', () => {
                 const schema = {
                     $id: '#child-def',
                     version: 0,
+                    type: 'object',
                     properties: {
                         childProperty: {
                             type: 'string',

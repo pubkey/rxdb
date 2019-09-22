@@ -487,7 +487,7 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
 
             await AsyncTestUtil.assertThrows(
-                () => memCol.sync(),
+                () => memCol.sync({} as any),
                 'RxError',
                 'not replicate'
             );

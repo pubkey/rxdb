@@ -354,7 +354,7 @@ config.parallel('rx-database.test.js', () => {
                     name: 'human',
                     schema: schemas.human
                 });
-                const col2 = await db.collection('human');
+                const col2 = await db.collection('human' as any);
                 assert.ok(collection === col2);
                 db.destroy();
             });

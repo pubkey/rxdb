@@ -40,7 +40,7 @@ export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentTyp
     where(queryObj: RxQueryObject<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
-    or(queryObj: keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
+    or(queryObj: keyof RxDocumentType | string | any[]): RxQuery<RxDocumentType, RxQueryResult>;
     nor(queryObj: keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     and(queryObj: keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     gt(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;

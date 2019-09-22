@@ -24,7 +24,7 @@ import {
 export interface RxDatabaseCreator {
     name: string;
     adapter: any;
-    password?: string;
+    password?: string | any;
     multiInstance?: boolean;
     queryChangeDetection?: boolean;
     ignoreDuplicate?: boolean;

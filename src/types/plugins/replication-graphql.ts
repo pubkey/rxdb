@@ -1,21 +1,3 @@
-import { Observable } from 'rxjs';
-
-export declare class RxGraphQLReplicationState {
-    recieved$: Observable<any>;
-    send$: Observable<any>;
-    error$: Observable<any>;
-    canceled$: Observable<any>;
-    active$: Observable<boolean>;
-    initialReplicationComplete$: Observable<any>;
-
-    isStopped(): boolean;
-    awaitInitialReplication(): Promise<true>;
-
-    run(): Promise<void>;
-    cancel(): Promise<any>;
-
-}
-
 export type RxGraphQLReplicationQueryBuilder = (doc: any) => {
     query: string;
     variables: any;

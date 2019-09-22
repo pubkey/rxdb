@@ -203,7 +203,7 @@ config.parallel('population.test.js', () => {
             const colA = await db.collection({
                 name: 'doca',
                 schema: {
-                    name: 'doca',
+                    type: 'object',
                     version: 0,
                     properties: {
                         name: {
@@ -220,8 +220,8 @@ config.parallel('population.test.js', () => {
             const colB = await db.collection({
                 name: 'docb',
                 schema: {
-                    name: 'docb',
                     version: 0,
+                    type: 'object',
                     properties: {
                         name: {
                             primary: true,

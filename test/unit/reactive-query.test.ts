@@ -400,12 +400,12 @@ config.parallel('reactive-query.test.js', () => {
 
             const subs1 = collection.find().$.subscribe(x => {
                 results.push(x);
-                subs1.complete();
+                subs1.unsubscribe();
             });
 
             const subs2 = collection.find().$.subscribe(x => {
                 results.push(x);
-                subs2.complete();
+                subs2.unsubscribe();
             });
 
             // Let's try with a different query
@@ -422,7 +422,7 @@ config.parallel('reactive-query.test.js', () => {
                 .sort('_id')
                 .$.subscribe(x => {
                     results.push(x);
-                    subs3.complete();
+                    subs3.unsubscribe();
                 });
 
             await AsyncTestUtil.waitUntil(() => results.length === 4);

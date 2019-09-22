@@ -101,8 +101,8 @@ config.parallel('import-export.test.js', () => {
                 const firstDoc = json.docs.pop();
                 const decrypted = col._crypter._decryptValue(firstDoc.secret);
                 assert.strictEqual(typeof decrypted, 'object');
-                assert.strictEqual(typeof decrypted.name, 'string');
-                assert.strictEqual(typeof decrypted.subname, 'string');
+                assert.strictEqual(typeof decrypted['name'], 'string');
+                assert.strictEqual(typeof decrypted['subname'], 'string');
                 db.destroy();
             });
         });
@@ -162,8 +162,8 @@ config.parallel('import-export.test.js', () => {
                     const firstDoc = json.docs[0];
                     const decrypted = emptyCol._crypter._decryptValue(firstDoc.secret);
                     assert.strictEqual(typeof decrypted, 'object');
-                    assert.strictEqual(typeof decrypted.name, 'string');
-                    assert.strictEqual(typeof decrypted.subname, 'string');
+                    assert.strictEqual(typeof decrypted['name'], 'string');
+                    assert.strictEqual(typeof decrypted['subname'], 'string');
 
                     await emptyCol.importDump(json);
                     const docs = await emptyCol.find().exec();
@@ -267,7 +267,7 @@ config.parallel('import-export.test.js', () => {
         describe('.dump()', () => {
             it('should export a valid dump', async () => {
                 const col = await humansCollection.createMultiInstance(util.randomCouchString(10), 5);
-                const json = await col.database.dump();
+                const json: any = await col.database.dump();
 
                 assert.strictEqual(typeof json.name, 'string');
                 assert.strictEqual(typeof json.instanceToken, 'string');
@@ -299,7 +299,7 @@ config.parallel('import-export.test.js', () => {
                 for (let i = 0; i < 10; i++)
                     fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
                 await Promise.all(fns);
-                const json = await db.dump();
+                const json: any = await db.dump();
                 assert.strictEqual(json.encrypted, true);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.collections[0].encrypted, true);
@@ -322,7 +322,7 @@ config.parallel('import-export.test.js', () => {
                     new Array(10).fill(0)
                         .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
                 );
-                const json = await db.dump(true);
+                const json: any = await db.dump(true);
 
                 assert.strictEqual(json.encrypted, false);
                 assert.strictEqual(typeof json.passwordHash, 'string');
@@ -358,7 +358,7 @@ config.parallel('import-export.test.js', () => {
                 }
                 await Promise.all(fns);
 
-                const json = await col.database.dump();
+                const json: any = await col.database.dump();
                 assert.strictEqual(json.collections.length, 2);
                 json.collections
                     .forEach(c => assert.strictEqual(c.docs.length, 10));
@@ -386,7 +386,7 @@ config.parallel('import-export.test.js', () => {
                 }
                 await Promise.all(fns);
 
-                const json = await col.database.dump(false, ['enchuman']);
+                const json: any = await col.database.dump(false, ['enchuman']);
                 assert.strictEqual(json.collections.length, 1);
                 json.collections
                     .forEach(c => assert.strictEqual(c.docs.length, 10));
@@ -453,6 +453,7 @@ config.parallel('import-export.test.js', () => {
             const docSchema = {
                 name: 'demo',
                 version: 0,
+                type: 'object',
                 properties: {
                     firstName: {
                         primary: true,

@@ -57,7 +57,6 @@ import {
 } from 'rxjs';
 
 import {
-    RxJsonSchema,
     PouchSettings,
     KeyFunctionMap,
     RxReplicationState,
@@ -69,11 +68,13 @@ import {
     RxQuery,
     RxDocument,
     SyncOptionsGraphQL,
-    RxGraphQLReplicationState,
     RxChangeEventUpdate,
     RxChangeEventInsert,
     RxChangeEventRemove
 } from './types';
+import {
+    RxGraphQLReplicationState
+} from './plugins/replication-graphql';
 
 import {
     RxSchema
@@ -579,7 +580,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
      * export to json
      * if true, all encrypted values will be decrypted
      */
-    dump(_decrytped: boolean): Promise<any> {
+    dump(_decrytped: boolean = false): Promise<any> {
         throw pluginMissing('json-dump');
     }
 

@@ -463,9 +463,9 @@ config.parallel('data-migration.test.js', () => {
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const states = [];
                     const state$ = col.migrate();
-                    state$.subscribe(s => {
+                    state$['subscribe'](s => {
                         states.push(s);
-                    }, null, pw8.resolve);
+                    }, null, pw8.resolve as any);
 
                     await pw8.promise;
                     assert.strictEqual(states[0].done, false);
@@ -488,9 +488,9 @@ config.parallel('data-migration.test.js', () => {
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const states = [];
                     const state$ = col.migrate();
-                    state$.subscribe(s => {
+                    state$['subscribe'](s => {
                         states.push(s);
-                    }, null, pw8.resolve);
+                    }, null, pw8.resolve as any);
 
                     await pw8.promise;
 
@@ -523,7 +523,7 @@ config.parallel('data-migration.test.js', () => {
                     });
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const state$ = col.migrate();
-                    state$.subscribe(null, pw8.resolve, null);
+                    state$['subscribe'](null, pw8.resolve as any, null);
 
                     await pw8.promise;
                     col.database.destroy();

@@ -12,7 +12,7 @@ import {
 export class QueryCache {
 
     public subs: Subscription[] = [];
-    private _map: Map<string, RxQuery> = new Map();
+    public _map: Map<string, RxQuery> = new Map();
     constructor() { }
 
     /**
