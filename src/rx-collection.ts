@@ -18,7 +18,8 @@ import {
     createRxSchema
 } from './rx-schema';
 import {
-    createChangeEvent
+    createChangeEvent,
+    RxChangeEvent
 } from './rx-change-event';
 import {
     newRxError,
@@ -137,7 +138,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         this._crypter = Crypter.create(this.database.password, this.schema);
 
         this._observable$ = this.database.$.pipe(
-            filter(event => event.data.col === this.name)
+            filter(event => (event as RxChangeEvent).data.col === this.name)
         );
         this._changeEventBuffer = createChangeEventBuffer(this);
 
@@ -350,7 +351,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
             json
         );
 
-        this._docCache.set(id, doc);
+        this._docCache.set(id, doc as any);
         this._runHooksSync('post', 'create', json, doc);
         runPluginHooks('postCreateRxDocument', doc);
         return doc;
@@ -666,7 +667,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     /**
      * @return {Promise<void>}
      */
-    _runHooks(when, key, data, instance) {
+    _runHooks(when, key, data, instance?) {
         const hooks = this.getHooks(when, key);
         if (!hooks) return Promise.resolve();
 
@@ -996,9 +997,11 @@ export function create({
             // ORM add statics
             Object
                 .entries(statics)
-                .forEach(([funName, fun]) => collection.__defineGetter__(
-                    funName, () => fun.bind(collection)
-                ));
+                .forEach(([funName, fun]) => {
+                    Object.defineProperty(collection, funName, {
+                        get: () => (fun as any).bind(collection)
+                    });
+                });
 
             let ret = Promise.resolve();
             if (autoMigrate) ret = collection.migratePromise();

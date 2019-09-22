@@ -158,7 +158,7 @@ export async function spawn(documents = []) {
                             pubsub,
                         },
                         rootValue: root
-                    }, {
+                    } as any, {
                         server: ws,
                         path: '/subscriptions',
                     }

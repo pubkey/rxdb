@@ -7,7 +7,7 @@ import {
 } from 'rxjs';
 import {
     RxQuery
-} from './rx-query';
+} from './types';
 
 export class QueryCache {
 

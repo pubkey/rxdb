@@ -21,6 +21,8 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly $: Observable<any>;
     readonly deleted$: Observable<boolean>;
 
+    public _isTemporary: boolean;
+
     readonly primary: string;
     get$(path: string): Observable<any>;
     get(objPath: string): any;

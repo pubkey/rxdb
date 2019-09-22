@@ -14,7 +14,8 @@ import {
 import {
     RxChangeEventInsert,
     RxChangeEventUpdate,
-    RxChangeEventRemove
+    RxChangeEventRemove,
+    RxChangeEventCollection
 } from './rx-change-event';
 import {
     RxDatabaseBase
@@ -57,7 +58,12 @@ export declare class RxDatabaseBaseOld<Collections = CollectionsOfDatabase> {
     options?: any;
     pouchSettings?: PouchSettings;
 
-    readonly $: Observable<RxChangeEventInsert<any> | RxChangeEventUpdate<any> | RxChangeEventRemove<any> | RxChangeEventCollection>;
+    readonly $: Observable<
+        RxChangeEventInsert<any> |
+        RxChangeEventUpdate<any> |
+        RxChangeEventRemove<any> |
+        RxChangeEventCollection
+    >;
 
     collection: collectionCreateType;
     destroy(): Promise<boolean>;
@@ -67,9 +73,15 @@ export declare class RxDatabaseBaseOld<Collections = CollectionsOfDatabase> {
 
     readonly isLeader: boolean;
 
-    insertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
-    upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxDatabase<Collections>>>;
-    getLocal(id: string): Promise<RxLocalDocument<RxDatabase<Collections>>>;
+    insertLocal(id: string, data: any): Promise<
+        RxLocalDocument<RxDatabase<Collections>>
+    >;
+    upsertLocal(id: string, data: any): Promise<
+        RxLocalDocument<RxDatabase<Collections>>
+    >;
+    getLocal(id: string): Promise<
+        RxLocalDocument<RxDatabase<Collections>>
+    >;
 
     // from rxdb/plugins/server
     server(options?: ServerOptions): {

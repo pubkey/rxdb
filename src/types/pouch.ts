@@ -65,10 +65,15 @@ export declare class PouchDBInstance {
     info(): Promise<any>;
 
     allDocs(options?: any): Promise<any>;
+
     bulkDocs(
         docs: { docs: any[] },
         options?: any
     ): Promise<any>;
+    bulkDocs(docs: any[],
+        options?: any
+    ): Promise<any>;
+
     find(mangoQuery: any): Promise<{
         docs: any[]
     }>
@@ -91,6 +96,7 @@ export declare class PouchDBInstance {
     changes(options?: PouchReplicationOptions): any;
     sync(options?: PouchReplicationOptions): PouchSyncHandler;
     replicate(options?: PouchReplicationOptions): PouchSyncHandler;
+
     close(): Promise<void>;
     putAttachment(
         docId: string,

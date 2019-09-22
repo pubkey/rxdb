@@ -7,8 +7,6 @@
 import objectPath from 'object-path';
 
 import RxDocument from '../rx-document';
-import RxDatabase from '../rx-database';
-import RxCollection from '../rx-collection';
 import {
     createChangeEvent
 } from '../rx-change-event';
@@ -22,6 +20,21 @@ import {
 import {
     clone
 } from '../util';
+
+import {
+    RxCollection,
+    RxDatabase
+} from '../types';
+import {
+    RxChangeEvent
+} from '../rx-change-event';
+
+import {
+    isInstanceOf as isRxDatabase
+} from '../rx-database';
+import {
+    isInstanceOf as isRxCollection
+} from '../rx-collection';
 
 import {
     filter,
@@ -44,7 +57,7 @@ const _getChangeSub = parent => {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
         const sub = parent.$
             .pipe(
-                filter(cE => cE.data.isLocal)
+                filter(cE => (cE as RxChangeEvent).data.isLocal)
             )
             .subscribe(cE => {
                 const docCache = _getDocCache(parent);
@@ -62,8 +75,10 @@ const _getChangeSub = parent => {
 
 const LOCAL_PREFIX = '_local/';
 
-const RxDocumentParent = RxDocument.createRxDocumentConstructor();
+const RxDocumentParent = RxDocument.createRxDocumentConstructor() as any;
 export class RxLocalDocument extends RxDocumentParent {
+    public id: string;
+    public parent: RxCollection | RxDatabase;
     /**
      * @constructor
      * @param  {string} id
@@ -184,8 +199,8 @@ const RxLocalDocumentPrototype = {
 
                 const changeEvent = createChangeEvent(
                     'UPDATE',
-                    RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
-                    RxCollection.isInstanceOf(this.parent) ? this.parent : null,
+                    isRxDatabase(this.parent) ? this.parent : this.parent.database,
+                    isRxCollection(this.parent) ? this.parent : null,
                     this,
                     clone(this._data),
                     true
@@ -203,8 +218,8 @@ const RxLocalDocumentPrototype = {
                 _getDocCache(this.parent).delete(this.id);
                 const changeEvent = createChangeEvent(
                     'REMOVE',
-                    RxDatabase.isInstanceOf(this.parent) ? this.parent : this.parent.database,
-                    RxCollection.isInstanceOf(this.parent) ? this.parent : null,
+                    isRxDatabase(this.parent) ? this.parent : this.parent.database,
+                    isRxCollection(this.parent) ? this.parent : null,
                     this,
                     clone(this._data),
                     true
@@ -260,7 +275,7 @@ RxLocalDocument.create = (id, data, parent) => {
 };
 
 const _getPouchByParent = parent => {
-    if (RxDatabase.isInstanceOf(parent))
+    if (isRxDatabase(parent))
         return parent._adminPouch; // database
     else return parent.pouch; // collection
 };
@@ -271,7 +286,7 @@ const _getPouchByParent = parent => {
  * @return {Promise<RxLocalDocument>}
  */
 const insertLocal = function (id, data) {
-    if (RxCollection.isInstanceOf(this) && this._isInMemory)
+    if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.insertLocal(id, data);
 
     data = clone(data);
@@ -304,7 +319,7 @@ const insertLocal = function (id, data) {
  * @return {Promise<RxLocalDocument>}
  */
 function upsertLocal(id, data) {
-    if (RxCollection.isInstanceOf(this) && this._isInMemory)
+    if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.upsertLocal(id, data);
 
     return this.getLocal(id)
@@ -327,7 +342,7 @@ function upsertLocal(id, data) {
  * @return {Promise<RxLocalDocument>}
  */
 function getLocal(id) {
-    if (RxCollection.isInstanceOf(this) && this._isInMemory)
+    if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.getLocal(id);
 
     const pouch = _getPouchByParent(this);

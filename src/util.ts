@@ -300,8 +300,8 @@ export function pouchReplicationFunction(
     }
 ): Function {
     if (pull && push) return pouch.sync.bind(pouch);
-    if (!pull && push) return pouch.replicate.to.bind(pouch);
-    if (pull && !push) return pouch.replicate.from.bind(pouch);
+    if (!pull && push) return (pouch.replicate as any).to.bind(pouch);
+    if (pull && !push) return (pouch.replicate as any).from.bind(pouch);
     if (!pull && !push) {
         throw newRxError('UT3', {
             pull,

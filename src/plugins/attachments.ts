@@ -40,29 +40,28 @@ export const blobBufferUtil = {
      * depending if we are on node or browser,
      * we have to use Buffer(node) or Blob(browser)
      * @param  {string} data
-     * @param  {string} type
      * @return {Blob|Buffer}
      */
-    createBlobBuffer(data, type: string) {
+    createBlobBuffer(data, type: string): Buffer {
         let blobBuffer;
 
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
             return Buffer.from(data, {
                 type
-            });
+            } as any);
         }
 
         try {
             // for browsers
             blobBuffer = new Blob([data], {
                 type
-            });
+            } as any);
         } catch (e) {
             // for node
             blobBuffer = Buffer.from(data, {
                 type
-            });
+            } as any);
         }
         return blobBuffer;
     },
@@ -76,7 +75,7 @@ export const blobBufferUtil = {
             // browsers
             const reader = new FileReader();
             reader.addEventListener('loadend', e => {
-                const text = e.target.result;
+                const text = (e.target as any).result;
                 res(text);
             });
 
@@ -100,9 +99,11 @@ export const blobBufferUtil = {
 const _assignMethodsToAttachment = function (attachment) {
     Object
         .entries(attachment.doc.collection.attachments)
-        .forEach(([funName, fun]) => attachment.__defineGetter__(
-            funName, () => fun.bind(attachment)
-        ));
+        .forEach(([funName, fun]) => {
+            Object.defineProperty(attachment, funName, {
+                get: () => (fun as any).bind(attachment)
+            });
+        });
 };
 
 /**
@@ -110,6 +111,12 @@ const _assignMethodsToAttachment = function (attachment) {
  * wrapped so that you can access the attachment-data
  */
 export class RxAttachment {
+    public doc;
+    public id: string;
+    public type: string;
+    public length: number;
+    public digest: string;
+    public rev: string;
     constructor({
         doc,
         id,
@@ -150,7 +157,7 @@ export class RxAttachment {
                     return blobBufferUtil.toString(data)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
                             this.doc.collection._crypter._decryptValue(dataString),
-                            this.type
+                            this.type as any
                         ));
                 } else return data;
             });
@@ -302,13 +309,13 @@ export const prototypes = {
                 return this._dataSync$
                     .pipe(
                         map(data => {
-                            if (!data._attachments)
+                            if (!data['_attachments'])
                                 return {};
-                            return data._attachments;
+                            return data['_attachments'];
                         }),
                         map(attachmentsData => Object.entries(attachmentsData)),
                         map(entries => {
-                            return entries
+                            return (entries as any)
                                 .map(([id, attachmentData]) => {
                                     return fromPouchDocument(
                                         id,

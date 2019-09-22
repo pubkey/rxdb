@@ -38,7 +38,7 @@ function _getValidator(rxSchema, schemaPath = '') {
             });
         }
   
-        const validator = new ZSchema();
+        const validator = new (ZSchema as any)();
         validatorsOfHash[schemaPath] = (obj) => {
             validator.validate(obj, schemaPart);
             return validator;

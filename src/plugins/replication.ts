@@ -29,13 +29,11 @@ import {
 
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 import {
-    RxCollection,
     isInstanceOf as isRxCollection
 } from '../rx-collection';
 import {
-    RxQuery
-} from '../rx-query';
-import {
+    RxQuery,
+    RxCollection,
     PouchSyncHandler,
     PouchReplicationOptions
 } from '../types';
@@ -227,7 +225,7 @@ export function sync({
     },
     query
 }: SyncOptions) {
-    const useOptions: PouchReplicationOptions & { selector: any} = clone(options);
+    const useOptions: PouchReplicationOptions & { selector: any} = clone(options) as any;
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (

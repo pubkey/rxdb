@@ -28,7 +28,7 @@ export function checkAdapter(adapter) {
 
     let pouch;
     try {
-        pouch = new PouchDB(
+        pouch = new (PouchDB as any)(
             POUCHDB_LOCATION,
             adapterObject(adapter), {
                 auto_compaction: true,

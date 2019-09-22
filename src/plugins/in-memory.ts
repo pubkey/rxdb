@@ -18,7 +18,8 @@ import {
 } from 'rxjs/operators';
 
 import {
-    RxCollection
+    RxCollection,
+    RxReplicationState
 } from '../types';
 import {
     RxCollectionBase
@@ -58,6 +59,10 @@ const BULK_DOC_OPTIONS_FALSE = {
 
 export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollectionBase<RxDocumentType, OrmMethods> {
     private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
+    public _changeStreams;
+    public _oldPouchPut;
+    public _nonPersistentRevisions;
+    public _nonPersistentRevisionsSubject;
     constructor(parentCollection, pouchSettings = {}) {
         super(
             parentCollection.database,
@@ -85,15 +90,19 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         this.options = parentCollection.options;
         Object
             .entries(parentCollection.statics)
-            .forEach(([funName, fun]) => this.__defineGetter__(funName, () => fun.bind(this)));
+            .forEach(([funName, fun]) => {
+                Object.defineProperty(this, funName, {
+                    get: () => (fun as any).bind(this)
+                });
+            });
 
         this.pouch = new PouchDB(
             'rxdb-in-memory-' + randomCouchString(10),
-            adapterObject('memory'), {}
-        );
+            adapterObject('memory')
+        ) as any;
 
         this._observable$ = new Subject();
-        this._changeEventBuffer = createChangeEventBuffer(this);
+        this._changeEventBuffer = createChangeEventBuffer(this as any);
 
         const parentProto = Object.getPrototypeOf(parentCollection);
         this._oldPouchPut = parentProto._pouchPut.bind(this);
@@ -102,7 +111,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
 
-    prepare() {
+    prepareChild() {
         return setIndexes(this.schema, this.pouch)
             .then(() => {
                 this._subs.push(
@@ -175,13 +184,13 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
     /**
      * @overwrite
      */
+    public _eventCounter: number = 0;
     $emit(changeEvent) {
         if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev)) return;
 
-        this._observable$.next(changeEvent);
+        (this._observable$ as any).next(changeEvent);
 
         // run compaction each 10 events
-        if (!this._eventCounter) this._eventCounter = 0;
         this._eventCounter++;
         if (this._eventCounter === 10) {
             this._eventCounter = 0;
@@ -194,7 +203,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
      * Replication on the inMemory is dangerous,
      * replicate with it's parent instead
      */
-    sync() {
+    sync(): RxReplicationState {
         throw newRxError('IM2');
     }
 }
@@ -281,7 +290,7 @@ export function setIndexes(schema, pouch) {
  * @param {Function?} prevFilter can be used to filter changes before doing anything
  * @return {Observable<any>} observable that emits document-data
  */
-export function streamChangedDocuments(rxCollection, prevFilter = () => true) {
+export function streamChangedDocuments(rxCollection, prevFilter = (i: any) => true) {
     if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
 
     const observable = ObservableFromEvent(rxCollection.pouch
@@ -359,7 +368,7 @@ export function spawnInMemory() {
     }
 
     const col = new InMemoryRxCollection(this);
-    const preparePromise = col.prepare();
+    const preparePromise = col.prepareChild();
     collectionCacheMap.set(this, col);
     collectionPromiseCacheMap.set(this, preparePromise);
 

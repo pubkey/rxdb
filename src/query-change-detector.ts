@@ -13,7 +13,7 @@ import {
 import objectPath from 'object-path';
 import {
     RxQuery
-} from './rx-query';
+} from './types';
 
 let DEBUG = false;
 
@@ -21,7 +21,7 @@ export class QueryChangeDetector {
     public primaryKey: string;
     public _sortOptions;
     constructor(
-        public query: RxQuery
+        public query: RxQuery<any, any>
     ) {
         this.primaryKey = query.collection.schema.primaryPath as string;
     }
@@ -343,7 +343,7 @@ export function enableDebugging() {
  * @param  {RxQuery} query
  * @return {QueryChangeDetector}
  */
-export function create(query: RxQuery): QueryChangeDetector {
+export function create(query: RxQuery<any, any>): QueryChangeDetector {
     const ret = new QueryChangeDetector(query);
     return ret;
 }

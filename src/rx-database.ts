@@ -14,7 +14,8 @@ import {
     pluginMissing
 } from './rx-error';
 import {
-    createRxSchema
+    createRxSchema,
+    RxSchema
 } from './rx-schema';
 import {
     isInstanceOf as isInstanceOfRxChangeEvent,
@@ -233,10 +234,11 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
             });
         }
 
-        args.schema = createRxSchema(args.schema);
+        const schema = createRxSchema(args.schema);
+        args.schema = schema as any;
 
         // check schemaHash
-        const schemaHash = args.schema.hash;
+        const schemaHash = schema.hash;
 
         let colDoc;
         let col;
@@ -301,7 +303,12 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 cEvent.data.col = '_collections';
 
                 this.collections[args.name] = col;
-                this.__defineGetter__(args.name, () => this.collections[args.name]);
+
+                if (!this[args.name]) {
+                    Object.defineProperty(this, args.name, {
+                        get: () => this.collections[args.name]
+                    });
+                }
 
                 this.$emit(cEvent);
 

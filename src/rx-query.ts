@@ -85,7 +85,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         public queryObj: any,
         public collection: RxCollection<RxDocumentType>
     ) {
-        this._queryChangeDetector = createQueryChangeDetector(this);
+        this._queryChangeDetector = createQueryChangeDetector(this as any);
         if (!queryObj) queryObj = _getDefaultQuery(this.collection);
         this.mquery = createMQuery(queryObj);
     }
@@ -186,7 +186,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                         const ret = Array.isArray(docs) ? docs.slice() : docs;
                         return ret;
                     })
-                ).asObservable();
+                )['asObservable']();
 
 
             /**
@@ -202,7 +202,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                 merge(
                     results$,
                     changeEvents$
-                );
+                ) as any;
         }
         return this._$;
     }
@@ -388,7 +388,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * regex cannot run on primary _id
      * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
      */
-    regex(params) {
+    regex(params: any): RxQuery<RxDocumentType, RxQueryResult> {
         const clonedThis = this._clone();
 
         if (this.mquery._path === this.collection.schema.primaryPath) {
@@ -398,14 +398,14 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         }
         clonedThis.mquery.regex(params);
 
-        return _tunnelQueryCache(clonedThis);
+        return _tunnelQueryCache(clonedThis as any);
     }
 
     /**
      * make sure it searches index because of pouchdb-find bug
      * @link https://github.com/nolanlawson/pouchdb-find/issues/204
      */
-    sort(params) {
+    sort(params: any): RxQuery<RxDocumentType, RxQueryResult> {
         const clonedThis = this._clone();
 
         // workarround because sort wont work on unused keys
@@ -419,16 +419,16 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                 .forEach(k => _sortAddToIndex(k, clonedThis));
         }
         clonedThis.mquery.sort(params);
-        return _tunnelQueryCache(clonedThis);
+        return _tunnelQueryCache(clonedThis as any);
     }
 
-    limit(amount) {
+    limit(amount: number): RxQuery<RxDocumentType, RxQueryResult> {
         if (this.op === 'findOne')
             throw newRxError('QU6');
         else {
             const clonedThis = this._clone();
             clonedThis.mquery.limit(amount);
-            return _tunnelQueryCache(clonedThis);
+            return _tunnelQueryCache(clonedThis as any);
         }
     }
 }
@@ -446,7 +446,7 @@ function _getDefaultQuery(collection) {
 function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
     rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
 ): RxQuery<RxDocumentType, RxQueryResult> {
-    return rxQuery.collection._queryCache.getByQuery(rxQuery);
+    return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
 }
 
 /**

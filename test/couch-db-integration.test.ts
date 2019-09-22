@@ -7,7 +7,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import RxDB from '../dist/lib/index';
+import RxDB from '../';
 RxDB.plugin(require('pouchdb-adapter-memory'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 

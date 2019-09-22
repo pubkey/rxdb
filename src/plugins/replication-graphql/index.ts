@@ -5,7 +5,8 @@
 
 import {
     BehaviorSubject,
-    Subject
+    Subject,
+    Subscription
 } from 'rxjs';
 import {
     first,
@@ -44,7 +45,9 @@ import {
     changeEventfromPouchChange
 } from '../../rx-change-event';
 import {
-    RxCollection
+    RxCollection,
+    GraphQLSyncPullOptions,
+    GraphQLSyncPushOptions
 } from '../../types';
 
 Core.plugin(RxDBLeaderElectionPlugin);
@@ -57,43 +60,35 @@ Core.plugin(RxDBWatchForChangesPlugin);
 
 
 export class RxGraphQLReplicationState {
+    public client: GraphQLClient;
+    public endpointHash: string;
+    public _subjects = {
+        recieved: new Subject(), // all documents that are recieved from the endpoint
+        send: new Subject(), // all documents that are send to the endpoint
+        error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
+        canceled: new BehaviorSubject(false), // true when the replication was canceled
+        active: new BehaviorSubject(false), // true when something is running, false when not
+        initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
+    }
+    public _runningPromise: Promise<void> = Promise.resolve();
+    public _subs: Subscription[] = [];
+    public _runQueueCount: number = 0;
     constructor(
         public collection: RxCollection,
         url: string,
         headers: { [k: string]: string },
-        pull,
-        push,
-        deletedFlag,
-        live,
-        liveInterval,
-        retryTime
+        public pull: GraphQLSyncPullOptions,
+        public push: GraphQLSyncPushOptions,
+        public deletedFlag: string,
+        public live: boolean,
+        public liveInterval: number,
+        public retryTime: number
     ) {
         this.client = GraphQLClient({
             url,
             headers
         });
         this.endpointHash = hash(url);
-
-        this.pull = pull;
-        this.push = push;
-
-        this.deletedFlag = deletedFlag;
-        this.live = live;
-        this.liveInterval = liveInterval;
-        this.retryTime = retryTime;
-
-        this._runQueueCount = 0;
-        this._subs = [];
-        this._runningPromise = Promise.resolve();
-        this._subjects = {
-            recieved: new Subject(), // all documents that are recieved from the endpoint
-            send: new Subject(), // all documents that are send to the endpoint
-            error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
-            canceled: new BehaviorSubject(false), // true when the replication was canceled
-            active: new BehaviorSubject(false), // true when something is running, false when not
-            initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
-        };
-
         this._prepare();
     }
 
@@ -115,10 +110,11 @@ export class RxGraphQLReplicationState {
             });
         });
     }
+    public initialReplicationComplete$;
 
     isStopped() {
-        if (!this.live && this._subjects.initialReplicationComplete._value) return true;
-        if (this._subjects.canceled._value) return true;
+        if (!this.live && this._subjects.initialReplicationComplete['_value']) return true;
+        if (this._subjects.canceled['_value']) return true;
         else return false;
     }
 
@@ -145,7 +141,7 @@ export class RxGraphQLReplicationState {
             const willRetry = await this._run();
             this._subjects.active.next(false);
 
-            if (!willRetry && this._subjects.initialReplicationComplete._value === false)
+            if (!willRetry && this._subjects.initialReplicationComplete['_value'] === false)
                 this._subjects.initialReplicationComplete.next(true);
 
             this._runQueueCount--;
@@ -367,6 +363,7 @@ export class RxGraphQLReplicationState {
         this.collection.$emit(cE);
     }
 
+    public changesSub;
     cancel() {
         if (this.isStopped()) return;
 

@@ -27,7 +27,8 @@
     "exclude": [
         "node_modules",
         "**/node_modules/*",
-        "dist"
+        "dist",
+        "test/tutorials/src/*"
     ],
     "compileOnSave": false
 }

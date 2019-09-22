@@ -36,7 +36,7 @@ export type RxQueryObject<T = any> = keyof T & { [P in keyof T]?: T[P] | RxQuery
 
 export type RxQueryOP = 'find' | 'findOne';
 
-export declare class RxQuery<RxDocumentType, RxQueryResult> extends RxQueryBase<RxDocumentType, RxQueryResult> {
+export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType | RxDocumentType[]> extends RxQueryBase<RxDocumentType, RxQueryResult> {
     where(queryObj: RxQueryObject<RxDocumentType> | keyof RxDocumentType | string): RxQuery<RxDocumentType, RxQueryResult>;
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;

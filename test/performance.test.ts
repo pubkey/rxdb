@@ -7,7 +7,7 @@ import convertHrtime from 'convert-hrtime';
 import * as schemas from './helper/schemas';
 import * as schemaObjects from './helper/schema-objects';
 
-import RxDB from '../dist/lib/index';
+import RxDB from '../';
 import * as util from '../dist/lib/util';
 RxDB.plugin(require('pouchdb-adapter-memory'));
 
