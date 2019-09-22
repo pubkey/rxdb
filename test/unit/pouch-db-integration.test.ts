@@ -106,7 +106,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     name: util.randomCouchString(10),
                     adapter: 'websql'
                 });
-                assert.equal(db.constructor.name, 'RxDatabase');
+                assert.ok(isRxDatabase(db));
                 await util.promiseWait(10);
                 db.destroy();
             });
