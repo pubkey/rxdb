@@ -717,7 +717,7 @@ export function averageSchema(): RxJsonSchema {
         }
     };
     return ret;
-};
+}
 
 export const point: RxJsonSchema = {
     title: 'point schema',

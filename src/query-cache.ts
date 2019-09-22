@@ -19,8 +19,6 @@ export class QueryCache {
      * check if an equal query is in the cache,
      * if true, return the cached one,
      * if false, save the given one and return it
-     * @param  {RxQuery} query
-     * @return {RxQuery}
      */
     getByQuery(query: RxQuery): RxQuery {
         const stringRep = query.toString();

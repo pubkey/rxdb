@@ -40,7 +40,7 @@ describe('couchdb-db-integration.test.js', () => {
             .map(() => col.insert(schemaObjects.human()))
         );
         const docs1 = await col.find().exec();
-        assert.equal(docs1.length, 3);
+        assert.strictEqual(docs1.length, 3);
 
 
         // create a new collection

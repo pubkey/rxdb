@@ -41,7 +41,6 @@ export const rxdb = true;
 export const prototypes = {
     /**
      * set crypto-functions for the Crypter.prototype
-     * @param {[type]} prototype of Crypter
      */
     Crypter: proto => {
         proto._encryptValue = _encryptValue;

@@ -26,9 +26,9 @@ export class RxChangeEventDataBase {
 }
 
 export declare class RxChangeEventBase {
+    readonly hash: string;
     isIntern(): boolean;
     isSocket(): boolean;
-    readonly hash: string;
 }
 
 // INSERT

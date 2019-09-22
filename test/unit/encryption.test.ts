@@ -32,9 +32,9 @@ config.parallel('encryption.test.js', () => {
             it('get an encrypted path', async () => {
                 const schema = createRxSchema(schemas.encryptedHuman);
                 const encPaths = schema.encryptedPaths;
-                assert.equal(Object.keys(encPaths).length, 1);
-                assert.equal(Object.keys(encPaths)[0], 'secret');
-                assert.deepEqual(encPaths.secret, {
+                assert.strictEqual(Object.keys(encPaths).length, 1);
+                assert.strictEqual(Object.keys(encPaths)[0], 'secret');
+                assert.deepStrictEqual(encPaths.secret, {
                     type: 'string',
                     encrypted: true
                 });
@@ -42,16 +42,16 @@ config.parallel('encryption.test.js', () => {
             it('get all encrypted paths', async () => {
                 const schema = createRxSchema(schemas.encryptedDeepHuman);
                 const encPaths = schema.encryptedPaths;
-                assert.equal(Object.keys(encPaths).length, 4);
-                assert.equal(Object.keys(encPaths)[0], 'firstLevelPassword');
-                assert.equal(Object.keys(encPaths)[1], 'secretData');
-                assert.equal(Object.keys(encPaths)[2], 'deepSecret.darkhole.pw');
-                assert.equal(Object.keys(encPaths)[3], 'nestedSecret.darkhole');
+                assert.strictEqual(Object.keys(encPaths).length, 4);
+                assert.strictEqual(Object.keys(encPaths)[0], 'firstLevelPassword');
+                assert.strictEqual(Object.keys(encPaths)[1], 'secretData');
+                assert.strictEqual(Object.keys(encPaths)[2], 'deepSecret.darkhole.pw');
+                assert.strictEqual(Object.keys(encPaths)[3], 'nestedSecret.darkhole');
             });
             it('get no encrypted path', async () => {
                 const schema = createRxSchema(schemas.human);
                 const encPaths = schema.encryptedPaths;
-                assert.equal(Object.keys(encPaths).length, 0);
+                assert.strictEqual(Object.keys(encPaths).length, 0);
             });
         });
         describe('negative', () => { });
@@ -60,7 +60,7 @@ config.parallel('encryption.test.js', () => {
         it('create', () => {
             const schema = createRxSchema(schemas.human);
             const c = createCrypter('foobar', schema);
-            assert.equal(c.constructor.name, 'Crypter');
+            assert.strictEqual(c.constructor.name, 'Crypter');
         });
         describe('._encryptValue()', () => {
             it('string', () => {
@@ -68,7 +68,7 @@ config.parallel('encryption.test.js', () => {
                 const c = createCrypter('mypw', schema);
                 const value = 'foobar';
                 const encrypted = c._encryptValue(value);
-                assert.equal(typeof encrypted, 'string');
+                assert.strictEqual(typeof encrypted, 'string');
                 assert.ok(!encrypted.includes(value));
                 assert.ok(encrypted.length > value.length);
             });
@@ -79,7 +79,7 @@ config.parallel('encryption.test.js', () => {
                     foo: 'bar'
                 };
                 const encrypted = c._encryptValue(value);
-                assert.equal(typeof encrypted, 'string');
+                assert.strictEqual(typeof encrypted, 'string');
 
                 assert.ok(!encrypted.includes(value.foo));
                 assert.ok(encrypted.length > 5);
@@ -92,7 +92,7 @@ config.parallel('encryption.test.js', () => {
                 const value = 'foobar';
                 const encrypted = c._encryptValue(value);
                 const decrypted = c._decryptValue(encrypted);
-                assert.deepEqual(decrypted, value);
+                assert.deepStrictEqual(decrypted, value);
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.human);
@@ -102,7 +102,7 @@ config.parallel('encryption.test.js', () => {
                 };
                 const encrypted = c._encryptValue(value);
                 const decrypted = c._decryptValue(encrypted);
-                assert.deepEqual(decrypted, value);
+                assert.deepStrictEqual(decrypted, value);
             });
         });
 
@@ -112,18 +112,18 @@ config.parallel('encryption.test.js', () => {
                 const c = createCrypter('mypw', schema);
                 const value = schemaObjects.encryptedHuman();
                 const encrypted = c.encrypt(value);
-                assert.notEqual(encrypted.secret, value.secret);
-                assert.equal(typeof encrypted.secret, 'string');
-                assert.equal(value.passportId, encrypted.passportId);
+                assert.notStrictEqual(encrypted.secret, value.secret);
+                assert.strictEqual(typeof encrypted.secret, 'string');
+                assert.strictEqual(value.passportId, encrypted.passportId);
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.encryptedObjectHuman);
                 const c = createCrypter('mypw', schema);
                 const value = schemaObjects.encryptedObjectHuman();
                 const encrypted = c.encrypt(value);
-                assert.notDeepEqual(encrypted.secret, value.secret);
-                assert.equal(typeof encrypted.secret, 'string');
-                assert.equal(value.passportId, encrypted.passportId);
+                assert.notDeepStrictEqual(encrypted.secret, value.secret);
+                assert.strictEqual(typeof encrypted.secret, 'string');
+                assert.strictEqual(value.passportId, encrypted.passportId);
             });
         });
         describe('.decrypt()', () => {
@@ -133,7 +133,7 @@ config.parallel('encryption.test.js', () => {
                 const value = schemaObjects.encryptedHuman();
                 const encrypted = c.encrypt(value);
                 const decrypted = c.decrypt(encrypted);
-                assert.deepEqual(decrypted, value);
+                assert.deepStrictEqual(decrypted, value);
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.encryptedObjectHuman);
@@ -141,7 +141,7 @@ config.parallel('encryption.test.js', () => {
                 const value = schemaObjects.encryptedObjectHuman();
                 const encrypted = c.encrypt(value);
                 const decrypted = c.decrypt(encrypted);
-                assert.deepEqual(decrypted, value);
+                assert.deepStrictEqual(decrypted, value);
             });
         });
     });
@@ -153,7 +153,7 @@ config.parallel('encryption.test.js', () => {
                 await c.insert(agent);
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
-                assert.equal(agent.secret, secret);
+                assert.strictEqual(agent.secret, secret);
                 c.database.destroy();
             });
             it('should insert one encrypted value (object)', async () => {
@@ -170,8 +170,8 @@ config.parallel('encryption.test.js', () => {
                 await c.insert(agent);
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
-                assert.equal(agent.secret.name, secret.name);
-                assert.equal(agent.secret.subname, secret.subname);
+                assert.strictEqual(agent.secret.name, secret.name);
+                assert.strictEqual(agent.secret.subname, secret.subname);
                 db.destroy();
             });
         });
@@ -185,11 +185,11 @@ config.parallel('encryption.test.js', () => {
                 await c.insert(agent);
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
-                assert.equal(agent.secret, secret);
+                assert.strictEqual(agent.secret, secret);
                 const newSecret = util.randomCouchString(10);
                 await doc.atomicSet('secret', newSecret);
                 const docNew = await c.findOne().exec();
-                assert.equal(newSecret, docNew.get('secret'));
+                assert.strictEqual(newSecret, docNew.get('secret'));
                 c.database.destroy();
             });
             it('should save one encrypted value (object)', async () => {
@@ -211,14 +211,14 @@ config.parallel('encryption.test.js', () => {
                 const doc = await c.findOne().exec();
                 const secret = doc.get('secret');
 
-                assert.equal(agent.secret.name, secret.name);
-                assert.equal(agent.secret.subname, secret.subname);
+                assert.strictEqual(agent.secret.name, secret.name);
+                assert.strictEqual(agent.secret.subname, secret.subname);
 
                 await doc.atomicSet('secret', newSecret);
                 const docNew = await c.findOne().exec();
 
-                assert.equal(newSecret.name, docNew.get('secret.name'));
-                assert.equal(newSecret.subname, docNew.get('secret.subname'));
+                assert.strictEqual(newSecret.name, docNew.get('secret.name'));
+                assert.strictEqual(newSecret.subname, docNew.get('secret.subname'));
                 db.destroy();
             });
         });

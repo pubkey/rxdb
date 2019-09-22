@@ -3,8 +3,6 @@ import config from './config';
 import * as faker from 'faker';
 
 import * as humansCollection from '../helper/humans-collection';
-
-import * as RxDatabase from '../../dist/lib/rx-database';
 import {
     createRxSchema
 } from '../../dist/lib/rx-schema';
@@ -27,7 +25,7 @@ config.parallel('population.test.js', () => {
                         }
                     }
                 });
-                assert.equal(schema.constructor.name, 'RxSchema');
+                assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create a schema with a relation in nested', async () => {
                 const schema = createRxSchema({
@@ -44,7 +42,7 @@ config.parallel('population.test.js', () => {
                         }
                     }
                 });
-                assert.equal(schema.constructor.name, 'RxSchema');
+                assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create relation of array', async () => {
                 const schema = createRxSchema({
@@ -59,7 +57,7 @@ config.parallel('population.test.js', () => {
                         }
                     }
                 });
-                assert.equal(schema.constructor.name, 'RxSchema');
+                assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
         });
         describe('negative', () => {
@@ -116,7 +114,7 @@ config.parallel('population.test.js', () => {
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('bestFriend');
                 assert.ok(isRxDocument(friend));
-                assert.equal(friend.name, doc.bestFriend);
+                assert.strictEqual(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
             it('populate nested field', async () => {
@@ -124,7 +122,7 @@ config.parallel('population.test.js', () => {
                 const doc = await col.findOne().exec();
                 const friend = await doc.populate('foo.bestFriend');
                 assert.ok(isRxDocument(friend));
-                assert.equal(friend.name, doc.foo.bestFriend);
+                assert.strictEqual(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
             it('populate string-array', async () => {
@@ -182,7 +180,7 @@ config.parallel('population.test.js', () => {
                 const doc = await col.findOne().exec();
                 const friend = await doc.bestFriend_;
                 assert.ok(isRxDocument(friend));
-                assert.equal(friend.name, doc.bestFriend);
+                assert.strictEqual(friend.name, doc.bestFriend);
                 col.database.destroy();
             });
             it('populate nested field', async () => {
@@ -190,7 +188,7 @@ config.parallel('population.test.js', () => {
                 const doc = await col.findOne().exec();
                 const friend = await doc.foo.bestFriend_;
                 assert.ok(isRxDocument(friend));
-                assert.equal(friend.name, doc.foo.bestFriend);
+                assert.strictEqual(friend.name, doc.foo.bestFriend);
                 col.database.destroy();
             });
         });
@@ -248,7 +246,7 @@ config.parallel('population.test.js', () => {
             const docB = await docA.populate('refB');
 
             assert.ok(isRxDocument(docB));
-            assert.equal(docB.somevalue, 'foobar');
+            assert.strictEqual(docB.somevalue, 'foobar');
 
             db.destroy();
         });

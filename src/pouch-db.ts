@@ -26,8 +26,6 @@ import {
 
 /**
  * get the number of all undeleted documents
- * @param  {PouchDB}  pouchdb instance
- * @return {Promise<number>} number of documents
  */
 export function countAllUndeleted(
     pouchdb: PouchDBInstance
@@ -42,7 +40,7 @@ export function countAllUndeleted(
             .filter(row => !row.id.startsWith('_design/'))
             .length
         );
-};
+}
 
 /**
  * get a batch of documents from the pouch-instance
@@ -68,10 +66,10 @@ export function getBatch(
             .map(row => row.doc)
             .filter(doc => !doc._id.startsWith('_design'))
         );
-};
+}
 
 export function isInstanceOf(obj: any) {
     return obj instanceof PouchDBCore;
-};
+}
 
 export const PouchDB = PouchDBCore;

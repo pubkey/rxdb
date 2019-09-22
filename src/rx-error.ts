@@ -9,8 +9,6 @@ import overwritable from './overwritable';
 
 /**
  * transform an object of parameters to a presentable string
- * @param  {any} parameters
- * @return {string}
  */
 function parametersToString(parameters: any): string {
     let ret = '';
@@ -23,7 +21,7 @@ function parametersToString(parameters: any): string {
             try {
                 paramStr = JSON.stringify(
                     parameters[k],
-                    (k, v) => v === undefined ? null : v,
+                    (_k, v) => v === undefined ? null : v,
                     2
                 );
             } catch (e) { }

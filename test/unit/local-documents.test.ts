@@ -31,7 +31,7 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'bar'
                 });
                 const doc2 = await c.findOne().exec();
-                assert.equal(doc2, null);
+                assert.strictEqual(doc2, null);
                 c.database.destroy();
             });
         });
@@ -62,7 +62,7 @@ config.parallel('local-documents.test.js', () => {
                 });
                 const doc = await c.getLocal('foobar');
                 assert.ok(doc);
-                assert.equal(doc.get('foo'), 'bar');
+                assert.strictEqual(doc.get('foo'), 'bar');
                 c.database.destroy();
             });
             it('should find the document twice (doc-cache)', async () => {
@@ -81,7 +81,7 @@ config.parallel('local-documents.test.js', () => {
             it('should not find non-existing', async () => {
                 const c = await humansCollection.create();
                 const doc = await c.getLocal('foobar');
-                assert.equal(doc, null);
+                assert.strictEqual(doc, null);
                 c.database.destroy();
             });
         });
@@ -94,7 +94,7 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'bar'
                 });
                 assert.ok(doc);
-                assert.equal(doc.get('foo'), 'bar');
+                assert.strictEqual(doc.get('foo'), 'bar');
                 c.database.destroy();
             });
             it('should update when exists', async () => {
@@ -106,7 +106,7 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'bar2'
                 });
                 assert.ok(doc);
-                assert.equal(doc.get('foo'), 'bar2');
+                assert.strictEqual(doc.get('foo'), 'bar2');
                 c.database.destroy();
             });
         });
@@ -120,7 +120,7 @@ config.parallel('local-documents.test.js', () => {
             });
             await doc.remove();
             const doc2 = await c.getLocal('foobar');
-            assert.equal(doc2, null);
+            assert.strictEqual(doc2, null);
             c.database.destroy();
         });
     });
@@ -132,10 +132,10 @@ config.parallel('local-documents.test.js', () => {
             });
 
             await doc.atomicSet('foo', 'bar2');
-            assert.equal(doc.get('foo'), 'bar2');
+            assert.strictEqual(doc.get('foo'), 'bar2');
 
             await doc.atomicSet('foo', 'bar3');
-            assert.equal(doc.get('foo'), 'bar3');
+            assert.strictEqual(doc.get('foo'), 'bar3');
 
             c.database.destroy();
         });
@@ -159,7 +159,7 @@ config.parallel('local-documents.test.js', () => {
             });
             const doc2 = await db2.getLocal('foobar');
             assert.ok(doc2);
-            assert.equal(doc2.get('foo'), 'bar2');
+            assert.strictEqual(doc2.get('foo'), 'bar2');
             db2.destroy();
         });
     });
@@ -172,7 +172,7 @@ config.parallel('local-documents.test.js', () => {
                 foo: 'bar'
             });
             const doc2 = await db.getLocal('foobar');
-            assert.equal(doc1, doc2);
+            assert.strictEqual(doc1, doc2);
             db.destroy();
         });
     });
@@ -265,12 +265,12 @@ config.parallel('local-documents.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => doc2.age === 50);
             await AsyncTestUtil.wait(20);
-            assert.equal(localDoc2.get('age'), 10);
+            assert.strictEqual(localDoc2.get('age'), 10);
             await localDoc.atomicSet('age', 66);
 
             await AsyncTestUtil.waitUntil(() => localDoc2.get('age') === 66);
             await AsyncTestUtil.wait(20);
-            assert.equal(doc2.get('age'), 50);
+            assert.strictEqual(doc2.get('age'), 50);
 
             db.destroy();
             db2.destroy();
@@ -295,14 +295,14 @@ config.parallel('local-documents.test.js', () => {
             });
             const doc = await c1.getLocal('foobar');
             assert.ok(doc);
-            assert.equal(doc.get('age'), 10);
+            assert.strictEqual(doc.get('age'), 10);
 
             await c1.insertLocal('foobar2', {
                 foo: 'bar',
                 age: 11
             });
             const doc2 = await inMem.getLocal('foobar2');
-            assert.equal(doc2.get('age'), 11);
+            assert.strictEqual(doc2.get('age'), 11);
 
             db.destroy();
         });
@@ -320,7 +320,7 @@ config.parallel('local-documents.test.js', () => {
 
             // find
             const doc = await pouch.get('_local/foobar');
-            assert.equal(doc.foo, 'bar');
+            assert.strictEqual(doc.foo, 'bar');
 
             // update
             await pouch.put({
@@ -329,7 +329,7 @@ config.parallel('local-documents.test.js', () => {
                 _rev: doc._rev
             });
             const doc2 = await pouch.get('_local/foobar');
-            assert.equal(doc2.foo, 'bar2');
+            assert.strictEqual(doc2.foo, 'bar2');
 
             // remove
             await pouch.remove('_local/foobar', doc2._rev);
@@ -354,7 +354,7 @@ config.parallel('local-documents.test.js', () => {
             localDoc.get$('foo').subscribe(val => emitted.push(val));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-            assert.equal(emitted[0], 'bar');
+            assert.strictEqual(emitted[0], 'bar');
 
             myCollection.database.destroy();
         });
@@ -416,7 +416,7 @@ config.parallel('local-documents.test.js', () => {
             const data = await boundaryMgmtCol.findOne().exec();
             const json = data.toJSON();
 
-            assert.equal(json.boudariesGrp[0], 'mygroup');
+            assert.strictEqual(json.boudariesGrp[0], 'mygroup');
 
             db.destroy();
         });

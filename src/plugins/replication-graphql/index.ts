@@ -60,19 +60,6 @@ Core.plugin(RxDBWatchForChangesPlugin);
 
 
 export class RxGraphQLReplicationState {
-    public client: GraphQLClient;
-    public endpointHash: string;
-    public _subjects = {
-        recieved: new Subject(), // all documents that are recieved from the endpoint
-        send: new Subject(), // all documents that are send to the endpoint
-        error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
-        canceled: new BehaviorSubject(false), // true when the replication was canceled
-        active: new BehaviorSubject(false), // true when something is running, false when not
-        initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
-    }
-    public _runningPromise: Promise<void> = Promise.resolve();
-    public _subs: Subscription[] = [];
-    public _runQueueCount: number = 0;
     constructor(
         public collection: RxCollection,
         url: string,
@@ -91,6 +78,22 @@ export class RxGraphQLReplicationState {
         this.endpointHash = hash(url);
         this._prepare();
     }
+    public client: GraphQLClient;
+    public endpointHash: string;
+    public _subjects = {
+        recieved: new Subject(), // all documents that are recieved from the endpoint
+        send: new Subject(), // all documents that are send to the endpoint
+        error: new Subject(), // all errors that are revieced from the endpoint, emits new Error() objects
+        canceled: new BehaviorSubject(false), // true when the replication was canceled
+        active: new BehaviorSubject(false), // true when something is running, false when not
+        initialReplicationComplete: new BehaviorSubject(false) // true the initial replication-cycle is over
+    };
+    public _runningPromise: Promise<void> = Promise.resolve();
+    public _subs: Subscription[] = [];
+    public _runQueueCount: number = 0;
+    public initialReplicationComplete$;
+
+    public changesSub;
 
     /**
      * things that are more complex to not belong into the constructor
@@ -110,7 +113,6 @@ export class RxGraphQLReplicationState {
             });
         });
     }
-    public initialReplicationComplete$;
 
     isStopped() {
         if (!this.live && this._subjects.initialReplicationComplete['_value']) return true;
@@ -173,9 +175,9 @@ export class RxGraphQLReplicationState {
     }
 
     /**
-     * @return {boolean} true if no errors occured
+     * @return true if no errors occured
      */
-    async runPull() {
+    async runPull(): Promise<boolean> {
         // console.log('RxGraphQLReplicationState.runPull(): start');
         if (this.isStopped()) return;
 
@@ -240,9 +242,9 @@ export class RxGraphQLReplicationState {
         );
 
         const changesWithDocs = changes.results.map(change => {
-            let doc = change.doc;
+            let doc = change['doc'];
 
-            doc[this.deletedFlag] = !!change.deleted;
+            doc[this.deletedFlag] = !!change['deleted'];
             delete doc._rev;
             delete doc._deleted;
             delete doc._attachments;
@@ -362,8 +364,6 @@ export class RxGraphQLReplicationState {
         );
         this.collection.$emit(cE);
     }
-
-    public changesSub;
     cancel() {
         if (this.isStopped()) return;
 

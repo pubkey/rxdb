@@ -57,7 +57,7 @@ export interface NestedHumanDocumentType {
     mainSkill: {
         name: string;
         level: number;
-    }
+    };
 }
 export function nestedHuman(): NestedHumanDocumentType {
     return {
@@ -78,7 +78,7 @@ export interface DeepNestedHumanDocumentType {
             good: boolean;
             count: number;
         };
-    }
+    };
 }
 export function deepNestedHuman(): DeepNestedHumanDocumentType {
     return {
@@ -194,7 +194,7 @@ export interface AverageSchemaDocumentType {
     deep: {
         deep1: string;
         deep2: string;
-    }
+    };
     list: {
         deep1: string;
         deep2: string;

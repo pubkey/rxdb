@@ -30,9 +30,9 @@ config.parallel('reactive-collection.test.js', () => {
 
                 c.insert(schemaObjects.human());
                 const changeEvent = await c.$.pipe(first()).toPromise();
-                assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
-                assert.equal(changeEvent.data.col, colName);
-                assert.equal(typeof changeEvent.data.doc, 'string');
+                assert.strictEqual(changeEvent.constructor.name, 'RxChangeEvent');
+                assert.strictEqual(changeEvent.data.col, colName);
+                assert.strictEqual(typeof changeEvent.data.doc, 'string');
                 assert.ok(changeEvent.data.v);
                 db.destroy();
             });
@@ -58,7 +58,7 @@ config.parallel('reactive-collection.test.js', () => {
                     'RxError',
                     'schema'
                 );
-                assert.equal(calls, 0);
+                assert.strictEqual(calls, 0);
                 sub.unsubscribe();
                 db.destroy();
             });
@@ -76,12 +76,12 @@ config.parallel('reactive-collection.test.js', () => {
                     });
 
                 // nothing is fired until no results
-                assert.equal(ar.length, 0);
+                assert.strictEqual(ar.length, 0);
 
                 // empty array since no documents
                 await AsyncTestUtil.waitUntil(() => ar.length === 1);
 
-                assert.deepEqual(ar[0], []);
+                assert.deepStrictEqual(ar[0], []);
 
                 await c.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(() => ar.length === 2);
@@ -110,7 +110,7 @@ config.parallel('reactive-collection.test.js', () => {
             await c.insert(schemaObjects.human());
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 4);
-            emitted.forEach(cE => assert.equal(cE.data.op, 'INSERT'));
+            emitted.forEach(cE => assert.strictEqual(cE.data.op, 'INSERT'));
             c.database.destroy();
         });
     });
@@ -131,7 +131,7 @@ config.parallel('reactive-collection.test.js', () => {
             await doc2.atomicSet('firstName', 'foobar2');
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            emitted.forEach(cE => assert.equal(cE.data.op, 'UPDATE'));
+            emitted.forEach(cE => assert.strictEqual(cE.data.op, 'UPDATE'));
             c.database.destroy();
         });
     });
@@ -150,7 +150,7 @@ config.parallel('reactive-collection.test.js', () => {
 
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            emitted.forEach(cE => assert.equal(cE.data.op, 'REMOVE'));
+            emitted.forEach(cE => assert.strictEqual(cE.data.op, 'REMOVE'));
             c.database.destroy();
         });
     });

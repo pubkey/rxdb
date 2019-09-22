@@ -26,28 +26,28 @@ config.parallel('rx-schema.test.js', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {
                 const indexes = getIndexes(schemas.human);
-                assert.equal(indexes.length, 1);
-                assert.deepEqual(indexes[0], ['passportId']);
+                assert.strictEqual(indexes.length, 1);
+                assert.deepStrictEqual(indexes[0], ['passportId']);
             });
             it('get multiple indexes', () => {
                 const indexes = getIndexes(schemas.bigHuman);
                 assert.ok(indexes.length > 1);
-                assert.deepEqual(indexes[0], ['passportId']);
+                assert.deepStrictEqual(indexes[0], ['passportId']);
             });
             it('get sub-index', () => {
                 const indexes = getIndexes(schemas.humanSubIndex);
-                assert.equal(indexes.length, 1);
-                assert.deepEqual(indexes[0], ['other.age']);
+                assert.strictEqual(indexes.length, 1);
+                assert.deepStrictEqual(indexes[0], ['other.age']);
             });
             it('get no index', () => {
                 const indexes = getIndexes(schemas.noindexHuman);
-                assert.equal(indexes.length, 0);
+                assert.strictEqual(indexes.length, 0);
             });
             it('get compoundIndex', () => {
                 const indexes = getIndexes(schemas.compoundIndex);
                 assert.ok(Array.isArray(indexes));
                 assert.ok(Array.isArray(indexes[0]));
-                assert.deepEqual(indexes[0], ['passportId', 'passportCountry']);
+                assert.deepStrictEqual(indexes[0], ['passportId', 'passportCountry']);
             });
         });
         describe('.checkSchema()', () => {
@@ -319,35 +319,35 @@ config.parallel('rx-schema.test.js', () => {
                     name: 2
                 }];
                 const normalized = util.sortObject(val);
-                assert.deepEqual(val, normalized);
+                assert.deepStrictEqual(val, normalized);
             });
             it('should be the same object', () => {
                 const schema = normalize(schemas.humanNormalizeSchema1);
-                assert.deepEqual(schema, schemas.humanNormalizeSchema1);
+                assert.deepStrictEqual(schema, schemas.humanNormalizeSchema1);
             });
             it('should deep sort one schema with different orders to be the same', () => {
                 const schema1 = normalize(schemas.humanNormalizeSchema1);
                 const schema2 = normalize(schemas.humanNormalizeSchema2);
-                assert.deepEqual(schema1, schema2);
+                assert.deepStrictEqual(schema1, schema2);
             });
         });
         describe('.create()', () => {
             describe('positive', () => {
                 it('create human', () => {
                     const schema = createRxSchema(schemas.human);
-                    assert.equal(schema.constructor.name, 'RxSchema');
+                    assert.strictEqual(schema.constructor.name, 'RxSchema');
                 });
                 it('create nested', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
-                    assert.equal(schema.constructor.name, 'RxSchema');
+                    assert.strictEqual(schema.constructor.name, 'RxSchema');
                 });
                 it('create point', () => {
                     const schema = createRxSchema(schemas.point);
-                    assert.equal(schema.constructor.name, 'RxSchema');
+                    assert.strictEqual(schema.constructor.name, 'RxSchema');
                 });
                 it('should have indexes human', () => {
                     const schema = createRxSchema(schemas.human);
-                    assert.equal(schema.indexes[0], 'passportId');
+                    assert.strictEqual(schema.indexes[0][0], 'passportId');
                 });
             });
             describe('negative', () => {
@@ -385,7 +385,7 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         }
                     });
-                    assert.equal(ret, true);
+                    assert.strictEqual(ret, true);
                 });
                 it('false when no field is encrypted', () => {
                     const ret = hasCrypt({
@@ -397,7 +397,7 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         }
                     });
-                    assert.equal(ret, false);
+                    assert.strictEqual(ret, false);
                 });
                 it('true when nested field is encrypted', () => {
                     const ret = hasCrypt({
@@ -415,7 +415,7 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         }
                     });
-                    assert.equal(ret, true);
+                    assert.strictEqual(ret, true);
                 });
             });
         });
@@ -444,7 +444,7 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }
                 });
-                assert.deepEqual(ret, ['myField']);
+                assert.deepStrictEqual(ret, ['myField']);
             });
         });
     });
@@ -453,8 +453,8 @@ config.parallel('rx-schema.test.js', () => {
             it('should normalize if schema has not been normalized yet', () => {
                 const schema = createRxSchema(schemas.humanNormalizeSchema1);
                 const normalized = schema.normalized;
-                assert.notEqual(schema._normalized, null);
-                assert.notEqual(normalized, null);
+                assert.notStrictEqual(schema._normalized, null);
+                assert.notStrictEqual(normalized, null);
             });
         });
         describe('.previousVersions', () => {
@@ -469,7 +469,7 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }
                 });
-                assert.deepEqual(schema.previousVersions, []);
+                assert.deepStrictEqual(schema.previousVersions, []);
             });
             it('get valid array when current==5', () => {
                 const schema = createRxSchema({
@@ -482,7 +482,7 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }
                 });
-                assert.deepEqual(schema.previousVersions, [0, 1, 2, 3, 4]);
+                assert.deepStrictEqual(schema.previousVersions, [0, 1, 2, 3, 4]);
             });
         });
         describe('.hash', () => {
@@ -490,7 +490,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('should hash', () => {
                     const schema = createRxSchema(schemas.human);
                     const hash = schema.hash;
-                    assert.equal(typeof hash, 'string');
+                    assert.strictEqual(typeof hash, 'string');
                     assert.ok(hash.length > 10);
                 });
                 it('should normalize one schema with two different orders and generate for each the same hash', () => {
@@ -498,7 +498,7 @@ config.parallel('rx-schema.test.js', () => {
                     const schema2 = createRxSchema(schemas.humanNormalizeSchema2);
                     const hash1 = schema1.hash;
                     const hash2 = schema2.hash;
-                    assert.equal(hash1, hash2);
+                    assert.strictEqual(hash1, hash2);
                 });
             });
         });
@@ -566,7 +566,7 @@ config.parallel('rx-schema.test.js', () => {
                         schema.validate(obj);
                     } catch (err) {
                         const deepParam = err.parameters.errors[0].field;
-                        assert.equal(deepParam, 'data._id');
+                        assert.strictEqual(deepParam, 'data._id');
                         hasThrown = true;
                     }
                     assert.ok(hasThrown);
@@ -591,7 +591,7 @@ config.parallel('rx-schema.test.js', () => {
                         schema.validate(obj);
                     } catch (err) {
                         const message = err.parameters.errors[0].message;
-                        assert.equal(message, 'has additional properties');
+                        assert.strictEqual(message, 'has additional properties');
                         hasThrown = true;
                     }
                     assert.ok(hasThrown);
@@ -608,7 +608,7 @@ config.parallel('rx-schema.test.js', () => {
                         schema.validate(obj);
                     } catch (err) {
                         const deepParam = err.parameters.errors[0].field;
-                        assert.equal(deepParam, 'data.age');
+                        assert.strictEqual(deepParam, 'data.age');
                         hasThrown = true;
                     }
                     assert.ok(hasThrown);
@@ -626,7 +626,7 @@ config.parallel('rx-schema.test.js', () => {
                         error = err;
                     }
                     assert.ok(error);
-                    assert.deepEqual(error.parameters.obj.noval, undefined);
+                    assert.deepStrictEqual(error.parameters.obj.noval, undefined);
                     const text = error.toString();
                     assert.ok(text.includes('noval'));
                 });
@@ -676,8 +676,8 @@ config.parallel('rx-schema.test.js', () => {
                 it('get firstLevel', async () => {
                     const schema = createRxSchema(schemas.human);
                     const schemaObj = schema.getSchemaByObjectPath('passportId');
-                    assert.equal(schemaObj.index, true);
-                    assert.equal(schemaObj.type, 'string');
+                    assert.strictEqual(schemaObj.index, true);
+                    assert.strictEqual(schemaObj.type, 'string');
                 });
                 it('get deeper', async () => {
                     const schema = createRxSchema(schemas.nestedHuman);
@@ -687,7 +687,7 @@ config.parallel('rx-schema.test.js', () => {
                 it('get nested', async () => {
                     const schema = createRxSchema(schemas.nestedHuman);
                     const schemaObj = schema.getSchemaByObjectPath('mainSkill.name');
-                    assert.equal(schemaObj.type, 'string');
+                    assert.strictEqual(schemaObj.type, 'string');
                 });
             });
             describe('negative', () => { });
@@ -701,8 +701,8 @@ config.parallel('rx-schema.test.js', () => {
                     };
                     const filled = schema.fillObjectWithDefaults(data);
                     assert.ok(data !== filled);
-                    assert.equal(filled.foo, 'bar');
-                    assert.equal(filled.age, 20);
+                    assert.strictEqual(filled.foo, 'bar');
+                    assert.strictEqual(filled.age, 20);
                 });
                 it('should not overwrite given values', () => {
                     const schema = createRxSchema(schemas.humanDefault);
@@ -714,10 +714,10 @@ config.parallel('rx-schema.test.js', () => {
                     const filled = schema.fillObjectWithDefaults(data);
                     const filled2 = schema.fillObjectWithDefaults(data2);
                     assert.ok(data !== filled);
-                    assert.equal(filled.foo, 'bar');
-                    assert.equal(filled.age, 40);
-                    assert.equal(filled2.foo, 'bar');
-                    assert.equal(filled2.age, 40);
+                    assert.strictEqual(filled.foo, 'bar');
+                    assert.strictEqual(filled.age, 40);
+                    assert.strictEqual(filled2.foo, 'bar');
+                    assert.strictEqual(filled2.age, 40);
                 });
             });
         });
@@ -767,8 +767,8 @@ config.parallel('rx-schema.test.js', () => {
             });
 
             const found = await col.find().where('fileInfo.watch.time').gt(-9999999999999999999999999999).sort('fileInfo.watch.time').exec();
-            assert.equal(found.length, 1);
-            assert.equal(found[0].fileInfo.watch.time, 1);
+            assert.strictEqual(found.length, 1);
+            assert.strictEqual(found[0].fileInfo.watch.time, 1);
 
             db.destroy();
         });
@@ -891,7 +891,7 @@ config.parallel('rx-schema.test.js', () => {
                 }
             });
 
-            assert.deepEqual(
+            assert.deepStrictEqual(
                 [
                     ['properties.name'],
                     ['properties.properties']

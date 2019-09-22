@@ -61,7 +61,7 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 db2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.equal(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(async () => {
@@ -82,7 +82,7 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 db2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.equal(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
                 });
                 await c1.insert(schemaObjects.human());
 
@@ -103,7 +103,7 @@ config.parallel('cross-instance.test.js', () => {
             let recieved = 0;
             c2.$.subscribe(cEvent => {
                 recieved++;
-                assert.equal(cEvent.constructor.name, 'RxChangeEvent');
+                assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
             });
             await c1.insert(schemaObjects.human());
 
@@ -129,7 +129,7 @@ config.parallel('cross-instance.test.js', () => {
             await c1.insert(schemaObjects.human());
 
             await util.promiseWait(50);
-            assert.equal(got, null);
+            assert.strictEqual(got, undefined);
             c1.database.destroy();
             c2.database.destroy();
         });
@@ -160,7 +160,7 @@ config.parallel('cross-instance.test.js', () => {
             await util.promiseWait(10);
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
 
-            assert.equal(firstNameAfter, 'foobar');
+            assert.strictEqual(firstNameAfter, 'foobar');
             c1.database.destroy();
             c2.database.destroy();
         });
@@ -212,7 +212,7 @@ config.parallel('cross-instance.test.js', () => {
             await doc1.atomicSet('secret', 'foobar');
 
             await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
-            assert.equal(secretAfter, 'foobar');
+            assert.strictEqual(secretAfter, 'foobar');
 
             db1.destroy();
             db2.destroy();
@@ -268,7 +268,7 @@ config.parallel('cross-instance.test.js', () => {
             });
 
             await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
-            assert.deepEqual(secretAfter, {
+            assert.deepStrictEqual(secretAfter, {
                 name: 'foo',
                 subname: 'bar'
             });
@@ -288,13 +288,13 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.equal(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
                     waitPromise.resolve();
                 });
                 await c1.insert(schemaObjects.human());
 
                 await waitPromise.promise;
-                assert.equal(recieved, 1);
+                assert.strictEqual(recieved, 1);
                 c1.database.destroy();
                 c2.database.destroy();
             });
@@ -305,14 +305,14 @@ config.parallel('cross-instance.test.js', () => {
                 let recieved = 0;
                 c2.$.subscribe(cEvent => {
                     recieved++;
-                    assert.equal(cEvent.constructor.name, 'RxChangeEvent');
+                    assert.strictEqual(cEvent.constructor.name, 'RxChangeEvent');
                 });
 
                 await c1.insert(schemaObjects.human());
                 await c1.insert(schemaObjects.human());
 
                 await AsyncTestUtil.waitUntil(() => recieved === 2);
-                assert.equal(recieved, 2);
+                assert.strictEqual(recieved, 2);
                 c1.database.destroy();
                 c2.database.destroy();
             });

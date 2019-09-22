@@ -16,6 +16,10 @@ import {
     LeaderElector
 } from './plugins/leader-election';
 
+import {
+    KeyCompressor
+} from './plugins/key-compression';
+
 const funs = {
     /**
      * validates if a password can be used
@@ -27,16 +31,12 @@ const funs = {
     },
     /**
      * creates a key-compressor for the given schema
-     * @param  {RxSchema} schema
-     * @return {KeyCompressor}
      */
-    createKeyCompressor(_schema: RxSchema) {
+    createKeyCompressor(_schema: RxSchema): KeyCompressor {
         throw pluginMissing('key-compression');
     },
     /**
      * creates a leader-elector for the given database
-     * @param  {RxDatabase} database
-     * @return {LeaderElector}
      */
     createLeaderElector(_database: RxDatabase | RxDatabase): LeaderElector {
         throw pluginMissing('leader-election');
@@ -44,15 +44,12 @@ const funs = {
 
     /**
      * checks if the given adapter can be used
-     * @return {any} adapter
      */
     checkAdapter(_adapter: any): Promise<boolean> {
         throw pluginMissing('adapter-check');
     },
     /**
      * overwritte to map error-codes to text-messages
-     * @param  {string} message
-     * @return {string}
      */
     tunnelErrorMessage(message: string): string {
         // TODO better text with link

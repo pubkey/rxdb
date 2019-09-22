@@ -115,7 +115,7 @@ config.parallel('rx-database.test.js', () => {
                         foo: 'bar'
                     }
                 });
-                assert.equal(db.options.foo, 'bar');
+                assert.strictEqual(db.options.foo, 'bar');
                 db.destroy();
             });
             it('should not forget the pouchSettings', async () => {
@@ -130,7 +130,7 @@ config.parallel('rx-database.test.js', () => {
                         ajax: 'bar'
                     }
                 });
-                assert.equal(db.pouchSettings.ajax, 'bar');
+                assert.strictEqual(db.pouchSettings.ajax, 'bar');
                 db.destroy();
             });
         });
@@ -187,7 +187,7 @@ config.parallel('rx-database.test.js', () => {
                     ignoreDuplicate: true
                 });
                 const doc = await db._adminPouch.get('_local/pwHash');
-                assert.equal(typeof doc.value, 'string');
+                assert.strictEqual(typeof doc.value, 'string');
                 const db2 = await createRxDatabase({
                     name,
                     adapter: 'memory',
@@ -196,7 +196,7 @@ config.parallel('rx-database.test.js', () => {
                 });
                 const doc2 = await db._adminPouch.get('_local/pwHash');
                 assert.ok(doc2);
-                assert.equal(typeof doc.value, 'string');
+                assert.strictEqual(typeof doc.value, 'string');
 
                 db.destroy();
                 db2.destroy();
@@ -250,7 +250,7 @@ config.parallel('rx-database.test.js', () => {
                 assert.ok(isRxCollection(collection));
 
                 // make sure defineGetter works
-                assert.equal(db.human0, collection);
+                assert.strictEqual(db.human0, collection);
 
                 db.destroy();
             });
@@ -265,7 +265,7 @@ config.parallel('rx-database.test.js', () => {
                 });
                 const colDoc = await db._collectionsPouch.get('human0-' + schemas.human.version);
                 const compareSchema = createRxSchema(schemas.human);
-                assert.deepEqual(compareSchema.normalized, colDoc.schema);
+                assert.deepStrictEqual(compareSchema.normalized, colDoc.schema);
                 db.destroy();
             });
             it('use encrypted db', async () => {
@@ -291,9 +291,9 @@ config.parallel('rx-database.test.js', () => {
                     schema: schemas.human
                 });
                 const version = collection.schema.version;
-                assert.deepEqual(version, 0);
+                assert.deepStrictEqual(version, 0);
                 const internalDoc = await db._collectionsPouch.get('human-' + version);
-                assert.deepEqual(internalDoc.version, version);
+                assert.deepStrictEqual(internalDoc.version, version);
                 db.destroy();
             });
             it('create 2 times on same adapter', async () => {
@@ -512,7 +512,7 @@ config.parallel('rx-database.test.js', () => {
                     schema: schemas.human
                 });
                 db.destroy();
-                assert.equal(db.destroyed, true);
+                assert.strictEqual(db.destroyed, true);
                 db.destroy();
             });
             it('should not crash if destroy is called twice', async () => {
@@ -526,7 +526,7 @@ config.parallel('rx-database.test.js', () => {
                 });
                 db.destroy();
                 db.destroy();
-                assert.equal(db.destroyed, true);
+                assert.strictEqual(db.destroyed, true);
             });
         });
     });
@@ -594,14 +594,14 @@ config.parallel('rx-database.test.js', () => {
                 'humans',
                 5
             );
-            assert.equal(pouchPathNormal, 'mydb-rxdb-5-humans');
+            assert.strictEqual(pouchPathNormal, 'mydb-rxdb-5-humans');
 
             const pouchPath = getPouchLocation(
                 'mydb',
                 'subfolder/humans',
                 5
             );
-            assert.equal(pouchPath, 'subfolder/mydb-rxdb-5-humans');
+            assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
     });
 

@@ -79,18 +79,18 @@ const RxDocumentParent = RxDocument.createRxDocumentConstructor() as any;
 export class RxLocalDocument extends RxDocumentParent {
     public id: string;
     public parent: RxCollection | RxDatabase;
-    /**
-     * @constructor
-     * @param  {string} id
-     * @param  {Object} jsonData
-     * @param  {RxCollection|RxDatabase} parent
-     */
-    constructor(id, jsonData, parent) {
+    constructor(id: string, jsonData: any, parent: RxCollection | RxDatabase) {
         super(null, jsonData);
         this.id = id;
         this.parent = parent;
     }
 }
+
+const _getPouchByParent = parent => {
+    if (isRxDatabase(parent))
+        return parent._adminPouch; // database
+    else return parent.pouch; // collection
+};
 
 const RxLocalDocumentPrototype = {
 
@@ -208,10 +208,8 @@ const RxLocalDocumentPrototype = {
                 this.$emit(changeEvent);
             });
     },
-    /**
-     * @return {Promise}
-     */
-    remove() {
+
+    remove(): Promise<void> {
         const removeId = LOCAL_PREFIX + this.id;
         return this.parentPouch.remove(removeId, this._data._rev)
             .then(() => {
@@ -274,18 +272,11 @@ RxLocalDocument.create = (id, data, parent) => {
     return newDoc;
 };
 
-const _getPouchByParent = parent => {
-    if (isRxDatabase(parent))
-        return parent._adminPouch; // database
-    else return parent.pouch; // collection
-};
-
 /**
  * save the local-document-data
  * throws if already exists
- * @return {Promise<RxLocalDocument>}
  */
-const insertLocal = function (id, data) {
+function insertLocal(id, data): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.insertLocal(id, data);
 
@@ -311,14 +302,13 @@ const insertLocal = function (id, data) {
             const newDoc = RxLocalDocument.create(id, data, this);
             return newDoc;
         });
-};
+}
 
 /**
  * save the local-document-data
  * overwrites existing if exists
- * @return {Promise<RxLocalDocument>}
  */
-function upsertLocal(id, data) {
+function upsertLocal(id: string, data: any): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.upsertLocal(id, data);
 
@@ -336,12 +326,7 @@ function upsertLocal(id, data) {
         });
 }
 
-/**
- * 
- * @param {*} id 
- * @return {Promise<RxLocalDocument>}
- */
-function getLocal(id) {
+function getLocal(id): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.getLocal(id);
 

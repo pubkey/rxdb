@@ -22,7 +22,7 @@ config.parallel('idle-queue.test.js', () => {
             c.database.requestIdlePromise().then(() => order.push(1));
 
             await AsyncTestUtil.waitUntil(() => order.length === 2);
-            assert.deepEqual(order, [0, 1]);
+            assert.deepStrictEqual(order, [0, 1]);
 
             c.database.destroy();
         });

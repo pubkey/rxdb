@@ -46,10 +46,10 @@ config.parallel('rx-query.test.js', () => {
                 const mquery = q.mquery;
                 const cloned = mquery.clone();
 
-                assert.deepEqual(mquery.options, cloned.options);
-                assert.deepEqual(mquery._conditions, cloned._conditions);
-                assert.deepEqual(mquery._fields, cloned._fields);
-                assert.deepEqual(mquery._path, cloned._path);
+                assert.deepStrictEqual(mquery.options, cloned.options);
+                assert.deepStrictEqual(mquery._conditions, cloned._conditions);
+                assert.deepStrictEqual(mquery._fields, cloned._fields);
+                assert.deepStrictEqual(mquery._path, cloned._path);
                 col.database.destroy();
             });
         });
@@ -63,7 +63,7 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
             const queryObj = q.toJSON();
-            assert.deepEqual(queryObj, {
+            assert.deepStrictEqual(queryObj, {
                 selector: {
                     name: {
                         '$ne': 'Alice'
@@ -92,10 +92,10 @@ config.parallel('rx-query.test.js', () => {
             const cloned = q._clone();
             assert.ok(isRxQuery(q));
             assert.ok(isRxQuery(cloned));
-            assert.deepEqual(q.mquery._conditions, cloned.mquery._conditions);
-            assert.deepEqual(q.mquery._fields, cloned.mquery._fields);
-            assert.deepEqual(q.mquery._path, cloned.mquery._path);
-            assert.deepEqual(q.mquery.options, cloned.mquery.options);
+            assert.deepStrictEqual(q.mquery._conditions, cloned.mquery._conditions);
+            assert.deepStrictEqual(q.mquery._fields, cloned.mquery._fields);
+            assert.deepStrictEqual(q.mquery._path, cloned.mquery._path);
+            assert.deepStrictEqual(q.mquery.options, cloned.mquery.options);
             col.database.destroy();
         });
     });
@@ -109,9 +109,9 @@ config.parallel('rx-query.test.js', () => {
                 .sort('-age');
             const str = q.toString();
             const mustString = '{"_conditions":{"_id":{},"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"_path":"age","op":"find","options":{"limit":10,"sort":{"age":-1}}}';
-            assert.equal(str, mustString);
+            assert.strictEqual(str, mustString);
             const str2 = q.toString();
-            assert.equal(str2, mustString);
+            assert.strictEqual(str2, mustString);
 
             col.database.destroy();
         });
@@ -138,7 +138,7 @@ config.parallel('rx-query.test.js', () => {
                 .where('name').ne('foobar')
                 .sort('passportId').toString();
 
-            assert.equal(query1, query2);
+            assert.strictEqual(query1, query2);
             col1.database.destroy();
             col2.database.destroy();
         });
@@ -155,7 +155,7 @@ config.parallel('rx-query.test.js', () => {
                 .where('name').ne('foobar')
                 .sort('passportId').toString();
 
-            assert.equal(query1, query2);
+            assert.strictEqual(query1, query2);
             col.database.destroy();
         });
         it('same queries should have same string even when in different-selector-order', async () => {
@@ -171,7 +171,7 @@ config.parallel('rx-query.test.js', () => {
                 .where('age').gt(10)
                 .sort('passportId').toString();
 
-            assert.equal(query1, query2);
+            assert.strictEqual(query1, query2);
             col.database.destroy();
         });
     });
@@ -185,7 +185,7 @@ config.parallel('rx-query.test.js', () => {
                 .sort('-age');
             const q2 = q.sort('name');
             assert.ok(isRxQuery(q2));
-            assert.notEqual(q, q2);
+            assert.notStrictEqual(q, q2);
             col.database.destroy();
         });
         it('should not be the same object (where)', async () => {
@@ -197,7 +197,7 @@ config.parallel('rx-query.test.js', () => {
                 .sort('-age');
             const q2 = q.where('name').eq('foobar');
             assert.ok(isRxQuery(q2));
-            assert.notEqual(q, q2);
+            assert.notStrictEqual(q, q2);
             assert.ok(q.id < q2.id);
             col.database.destroy();
         });
@@ -216,8 +216,8 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
 
-            assert.deepEqual(q, q2);
-            assert.equal(q.id, q2.id);
+            assert.deepStrictEqual(q, q2);
+            assert.strictEqual(q.id, q2.id);
             col.database.destroy();
         });
         it('should return the same object after exec', async () => {
@@ -228,7 +228,7 @@ config.parallel('rx-query.test.js', () => {
             await query.exec();
             const query2 = col.findOne(docData.passportId);
             await query2.exec();
-            assert.equal(query.id, query2.id);
+            assert.strictEqual(query.id, query2.id);
             col.database.destroy();
         });
         it('should have the correct amount of cached queries', async () => {
@@ -242,7 +242,7 @@ config.parallel('rx-query.test.js', () => {
             const q2 = col.find()
                 .where('name').ne('Bob');
             assert.ok(q2);
-            assert.equal(col._queryCache._map.size, 4);
+            assert.strictEqual(col._queryCache._map.size, 4);
             col.database.destroy();
         });
         it('return another object', async () => {
@@ -258,8 +258,8 @@ config.parallel('rx-query.test.js', () => {
                 .limit(10)
                 .sort('-age');
 
-            assert.notEqual(q, q2);
-            assert.notEqual(q.id, q2.id);
+            assert.notStrictEqual(q, q2);
+            assert.notStrictEqual(q.id, q2.id);
             col.database.destroy();
         });
         it('ISSUE: ensure its the same query', async () => {
@@ -315,8 +315,8 @@ config.parallel('rx-query.test.js', () => {
                 .sort('-age');
 
 
-            assert.notEqual(q, q2);
-            assert.notEqual(q.id, q2.id);
+            assert.notStrictEqual(q, q2);
+            assert.notStrictEqual(q.id, q2.id);
             col.database.destroy();
             */
         });
@@ -334,7 +334,7 @@ config.parallel('rx-query.test.js', () => {
             const q = col.find().where('firstName').ne('foobar');
             const docData = schemaObjects.human();
             docData.firstName = 'foobar';
-            assert.equal(false, q.doesDocumentDataMatch(docData));
+            assert.strictEqual(false, q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
         it('should match ($gt)', async () => {
@@ -350,7 +350,7 @@ config.parallel('rx-query.test.js', () => {
             const q = col.find().where('age').gt(100);
             const docData = schemaObjects.human();
             docData.age = 5;
-            assert.equal(false, q.doesDocumentDataMatch(docData));
+            assert.strictEqual(false, q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
         it('BUG: this should match', async () => {
@@ -365,7 +365,7 @@ config.parallel('rx-query.test.js', () => {
                 _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
             };
 
-            assert.equal(true, q.doesDocumentDataMatch(docData));
+            assert.strictEqual(true, q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
     });
@@ -376,13 +376,13 @@ config.parallel('rx-query.test.js', () => {
 
 
             let results = await q.exec();
-            assert.equal(results.length, 2);
-            assert.equal(q._execOverDatabaseCount, 1);
+            assert.strictEqual(results.length, 2);
+            assert.strictEqual(q._execOverDatabaseCount, 1);
 
             await util.promiseWait(5);
             results = await q.exec();
-            assert.equal(results.length, 2);
-            assert.equal(q._execOverDatabaseCount, 1);
+            assert.strictEqual(results.length, 2);
+            assert.strictEqual(q._execOverDatabaseCount, 1);
 
             col.database.destroy();
         });
@@ -398,19 +398,19 @@ config.parallel('rx-query.test.js', () => {
             });
 
             await AsyncTestUtil.waitUntil(() => fired.length === 1);
-            assert.equal(query._execOverDatabaseCount, 1);
-            assert.equal(query._latestChangeEvent, 2);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._latestChangeEvent, 2);
 
             const addObj = schemaObjects.human();
             addObj.passportId = 'zzzzzzzz';
             await col.insert(addObj);
-            assert.equal(query.collection._changeEventBuffer.counter, 3);
+            assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
 
             await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3);
-            assert.equal(query._latestChangeEvent, 3);
+            assert.strictEqual(query._latestChangeEvent, 3);
 
             await AsyncTestUtil.waitUntil(() => fired.length === 2);
-            assert.equal(fired[1].pop().passportId, addObj.passportId);
+            assert.strictEqual(fired[1].pop().passportId, addObj.passportId);
             sub1.unsubscribe();
             col.database.destroy();
         });
@@ -421,21 +421,21 @@ config.parallel('rx-query.test.js', () => {
             const q = col.find().where('firstName').ne('Alice').limit(1).skip(1);
 
             let results = await q.exec();
-            assert.equal(results.length, 1);
-            assert.equal(q._execOverDatabaseCount, 1);
-            assert.equal(q._latestChangeEvent, 2);
+            assert.strictEqual(results.length, 1);
+            assert.strictEqual(q._execOverDatabaseCount, 1);
+            assert.strictEqual(q._latestChangeEvent, 2);
 
             const addDoc = schemaObjects.human();
             addDoc.firstName = 'Alice';
 
             await col.insert(addDoc);
-            assert.equal(q.collection._changeEventBuffer.counter, 3);
-            assert.equal(q._latestChangeEvent, 2);
+            assert.strictEqual(q.collection._changeEventBuffer.counter, 3);
+            assert.strictEqual(q._latestChangeEvent, 2);
 
             await util.promiseWait(1);
             results = await q.exec();
-            assert.equal(results.length, 1);
-            assert.equal(q._execOverDatabaseCount, 2);
+            assert.strictEqual(results.length, 1);
+            assert.strictEqual(q._execOverDatabaseCount, 2);
 
             col.database.destroy();
         });
@@ -476,22 +476,22 @@ config.parallel('rx-query.test.js', () => {
 
             const emitted = [];
             const query = col.findOne(docData.passportId);
-            query.$.subscribe(doc => emitted.push(doc.toJSON()));
+            query.$.subscribe(data => emitted.push(data.toJSON()));
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
 
             const doc = await query.exec();
             assert.ok(doc);
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
 
             await col.upsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
 
             await col.atomicUpsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
 
             await Promise.all(
                 new Array(2)
@@ -500,7 +500,7 @@ config.parallel('rx-query.test.js', () => {
                 .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
 
             await Promise.all(
                 new Array(10)
@@ -509,7 +509,7 @@ config.parallel('rx-query.test.js', () => {
                 .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
 
             col.database.destroy();
         });
@@ -538,7 +538,7 @@ config.parallel('rx-query.test.js', () => {
                 .map(data => col.atomicUpsert(data))
             );
 
-            assert.equal(query._execOverDatabaseCount, 1);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
             col.database.destroy();
         });
         it('exec from other database-instance', async () => {
@@ -575,7 +575,7 @@ config.parallel('rx-query.test.js', () => {
             });
 
             const allDocs = await col2.find().exec();
-            assert.equal(allDocs.length, 10);
+            assert.strictEqual(allDocs.length, 10);
 
             db2.destroy();
         });
@@ -592,7 +592,7 @@ config.parallel('rx-query.test.js', () => {
                 });
                 const docs = await query.exec();
                 for (const doc of docs)
-                    assert.equal(doc._data.firstName, 'new first name');
+                    assert.strictEqual(doc._data.firstName, 'new first name');
                 c.database.destroy();
             });
             it('$unset a value on a query', async () => {
@@ -605,7 +605,7 @@ config.parallel('rx-query.test.js', () => {
                 });
                 const docs = await query.exec();
                 for (const doc of docs)
-                    assert.equal(doc._data.age, undefined);
+                    assert.strictEqual(doc._data.age, undefined);
                 c.database.destroy();
             });
             it('dont crash when findOne with no result', async () => {
@@ -617,7 +617,7 @@ config.parallel('rx-query.test.js', () => {
                     }
                 });
                 const doc = await query.exec();
-                assert.equal(doc, null);
+                assert.strictEqual(doc, null);
                 c.database.destroy();
             });
         });
@@ -698,7 +698,7 @@ config.parallel('rx-query.test.js', () => {
                     .eq('foobar');
 
                 const resultDoc = await query.exec();
-                assert.equal(resultDoc, null);
+                assert.strictEqual(resultDoc, null);
 
                 const queryAll = collection
                     .find()
@@ -706,7 +706,7 @@ config.parallel('rx-query.test.js', () => {
                     .eq('foobar');
 
                 const resultsAll = await queryAll.exec();
-                assert.equal(resultsAll.length, 0);
+                assert.strictEqual(resultsAll.length, 0);
                 db.destroy();
             });
             it('schema example 2', async () => {
@@ -738,7 +738,7 @@ config.parallel('rx-query.test.js', () => {
                     });
 
                 const resultsAll = await queryAll.exec();
-                assert.equal(resultsAll.length, 0);
+                assert.strictEqual(resultsAll.length, 0);
                 db.destroy();
             });
         });
@@ -778,7 +778,7 @@ config.parallel('rx-query.test.js', () => {
                 'lte'
             );
             const results2 = await collection.find().sort('name').exec();
-            assert.deepEqual(sortedNames, results2.map(doc => doc.name));
+            assert.deepStrictEqual(sortedNames, results2.map(doc => doc.name));
 
             db.destroy();
         });
@@ -800,25 +800,25 @@ config.parallel('rx-query.test.js', () => {
                 new Array(100)
                 .fill(0)
                 .map(() => schemaObjects.human())
-                .map(docData => c.insert(docData))
+                .map(data => c.insert(data))
             );
 
             // make and exec query
             const query = c.find();
             const docs = await query.exec();
-            assert.equal(docs.length, 100);
+            assert.strictEqual(docs.length, 100);
 
             // produces changeEvents
             await Promise.all(
                 new Array(300) // higher than ChangeEventBuffer.limit
                 .fill(0)
                 .map(() => schemaObjects.human())
-                .map(docData => c.insert(docData))
+                .map(data => c.insert(data))
             );
 
             // re-exec query
             const docs2 = await query.exec();
-            assert.equal(docs2.length, 400);
+            assert.strictEqual(docs2.length, 400);
 
             // try same with upserts
             const docData = new Array(200)
@@ -828,7 +828,7 @@ config.parallel('rx-query.test.js', () => {
                 await c.insert(doc);
 
             const docs3 = await query.exec();
-            assert.equal(docs3.length, 600);
+            assert.strictEqual(docs3.length, 600);
 
             const docData2 = clone(docData);
             docData2.forEach(doc => doc.lastName = doc.lastName + '1');
@@ -837,7 +837,7 @@ config.parallel('rx-query.test.js', () => {
                 await c.upsert(doc);
 
             const docs4 = await query.exec();
-            assert.equal(docs4.length, 600);
+            assert.strictEqual(docs4.length, 600);
 
             c.database.destroy();
         });
@@ -1065,15 +1065,15 @@ config.parallel('rx-query.test.js', () => {
                 .find()
                 .sort('info.title')
                 .exec();
-            assert.equal(foundDocs.length, 3);
-            assert.equal(foundDocs[0].info.title, 'aatest');
+            assert.strictEqual(foundDocs.length, 3);
+            assert.strictEqual(foundDocs[0].info.title, 'aatest');
 
             const foundDocsDesc = await col
                 .find()
                 .sort('-info.title')
                 .exec();
-            assert.equal(foundDocsDesc.length, 3);
-            assert.equal(foundDocsDesc[0].info.title, 'cctest');
+            assert.strictEqual(foundDocsDesc.length, 3);
+            assert.strictEqual(foundDocsDesc[0].info.title, 'cctest');
 
             db.destroy();
         });
@@ -1188,9 +1188,9 @@ config.parallel('rx-query.test.js', () => {
             const resultData2 = resultDocs2.map(doc => doc.toJSON());
 
 
-            assert.equal(resultData1.length, 1);
-            assert.equal(resultData1[0].event_id, 2);
-            assert.deepEqual(resultData1, resultData2);
+            assert.strictEqual(resultData1.length, 1);
+            assert.strictEqual(resultData1[0]['event_id'], 2);
+            assert.deepStrictEqual(resultData1, resultData2);
 
             collection.database.destroy();
         });
@@ -1200,12 +1200,12 @@ config.parallel('rx-query.test.js', () => {
 
             // exec-calls
             const result1 = await query.exec();
-            assert.equal(result1.length, 2);
+            assert.strictEqual(result1.length, 2);
             result1.push({
                 foo: 'bar'
             });
             const result2 = await query.exec();
-            assert.equal(result2.length, 2);
+            assert.strictEqual(result2.length, 2);
 
             c.database.destroy();
 
@@ -1223,7 +1223,7 @@ config.parallel('rx-query.test.js', () => {
                 .pipe(
                     first()
                 ).toPromise();
-            assert.equal(res2.length, 2);
+            assert.strictEqual(res2.length, 2);
 
             c2.database.destroy();
         });
@@ -1328,7 +1328,7 @@ config.parallel('rx-query.test.js', () => {
 
             const queryOK = collection.find({});
             const docsOK = await queryOK.exec();
-            assert.equal(docsOK.length, 2);
+            assert.strictEqual(docsOK.length, 2);
 
             const selector = {
                 lastName: null
@@ -1341,8 +1341,8 @@ config.parallel('rx-query.test.js', () => {
             const query = collection.find(selector);
             const docs = await query.exec();
 
-            assert.equal(pouchDocs.length, docs.length);
-            assert.equal(pouchDocs[0].firstName, docs[0].firstName);
+            assert.strictEqual(pouchDocs.length, docs.length);
+            assert.strictEqual(pouchDocs[0].firstName, docs[0].firstName);
 
             db.destroy();
         });

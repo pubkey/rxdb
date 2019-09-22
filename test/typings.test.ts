@@ -216,7 +216,7 @@ describe('typings.test.js', function() {
                             name: 'humans',
                             schema: minimalHuman,
                         });
-                        
+
                         await myDb.destroy();
                     })();
                 `;
@@ -252,7 +252,7 @@ describe('typings.test.js', function() {
                 }
                 assert.ok(thrown);
             });
-            
+
         });
     });
 
@@ -388,7 +388,7 @@ describe('typings.test.js', function() {
                         const syncHandler = replicationState._pouchEventEmitterObject;
                         if(!syncHandler) return;
                         syncHandler.on('paused', (anything: any) => {
-                            
+
                         });
                     })();
                 `;

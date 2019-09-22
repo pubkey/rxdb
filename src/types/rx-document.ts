@@ -22,8 +22,10 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     readonly deleted$: Observable<boolean>;
 
     public _isTemporary: boolean;
+    public _dataSync$;
 
     readonly primary: string;
+    readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
     get$(path: string): Observable<any>;
     get(objPath: string): any;
     populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
@@ -43,7 +45,6 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     putAttachment(creator: RxAttachmentCreator): Promise<RxAttachment<RxDocumentType, OrmMethods>>;
     getAttachment(id: string): RxAttachment<RxDocumentType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocumentType, OrmMethods>[];
-    readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
 
     toJSON(): RxDocumentTypeWithRev<RxDocumentType>;
     toJSON(withRevAndAttachments: false): RxDocumentType;

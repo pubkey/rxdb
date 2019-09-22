@@ -32,7 +32,6 @@ const schema = {
 
 const run = async function () {
     // create database
-    const RxDB = require('../../');
     const db = await RxDB.create({
         name: util.randomCouchString(10),
         adapter: 'memory',

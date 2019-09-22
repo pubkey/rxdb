@@ -177,7 +177,7 @@ describe('performance.test.js', function() {
         const allDocs = await col2.find().exec();
         const elapsed = elapsedTime(startTime);
 
-        assert.equal(allDocs.length, benchmark.findDocuments.amount);
+        assert.strictEqual(allDocs.length, benchmark.findDocuments.amount);
         benchmark.findDocuments.total = elapsed;
         benchmark.findDocuments.perDocument = elapsed / benchmark.findDocuments.amount;
 

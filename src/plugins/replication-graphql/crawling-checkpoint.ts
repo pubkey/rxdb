@@ -15,7 +15,7 @@ import {
  * For push-replication, we use the pouchdb-sequence:
  * We get the documents newer then the last sequence-id
  * and push them to the server.
- * 
+ *
  * For pull-replication, we use the last document we got from the server:
  * We send the last document to the queryBuilder()
  * and recieve newer documents sorted in a batch
@@ -31,12 +31,12 @@ import {
 const pushSequenceId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
- * @return {number} last sequence checkpoint
+ * @return last sequence checkpoint
  */
 export async function getLastPushSequence(
     collection,
     endpointHash
-) {
+): Promise<number> {
     const doc = await getDocFromPouchOrNull(
         collection,
         pushSequenceId(endpointHash)
@@ -69,18 +69,11 @@ export async function setLastPushSequence(
 }
 
 
-/**
- * 
- * @param {*} collection 
- * @param {*} endpointHash 
- * @param {*} batchSize 
- * @return {Promise<{results: {id: string, seq: number, changes: {rev: string}[]}[], last_seq: number}>}
- */
 export async function getChangesSinceLastPushSequence(
     collection,
     endpointHash,
     batchSize = 10,
-) {
+): Promise<{ results: { id: string, seq: number, changes: { rev: string }[] }[], last_seq: number }> {
     const lastPushSequence = await getLastPushSequence(
         collection,
         endpointHash

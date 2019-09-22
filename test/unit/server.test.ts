@@ -35,7 +35,7 @@ config.parallel('server.test.js', () => {
         const colUrl = 'http://localhost:' + port + '/db/human';
         const gotJson = await request(colUrl);
         const got = JSON.parse(gotJson);
-        assert.equal(got.doc_count, 1);
+        assert.strictEqual(got.doc_count, 1);
 
         const clientCollection = await humansCollection.create(0);
 
@@ -294,7 +294,7 @@ config.parallel('server.test.js', () => {
                 const colUrl = 'http://localhost:' + port + path + '/human';
                 const gotJson = await request(colUrl);
                 const got = JSON.parse(gotJson);
-                assert.equal(got.doc_count, 1);
+                assert.strictEqual(got.doc_count, 1);
 
                 serverCollection.database.destroy();
             });
@@ -311,7 +311,7 @@ config.parallel('server.test.js', () => {
                 const colUrl = 'http://localhost:' + port + path + 'human';
                 const gotJson = await request(colUrl);
                 const got = JSON.parse(gotJson);
-                assert.equal(got.doc_count, 1);
+                assert.strictEqual(got.doc_count, 1);
 
                 serverCollection.database.destroy();
             });
@@ -328,7 +328,7 @@ config.parallel('server.test.js', () => {
                 const colUrl = 'http://localhost:' + port + path + 'human';
                 const gotJson = await request(colUrl);
                 const got = JSON.parse(gotJson);
-                assert.equal(got.doc_count, 1);
+                assert.strictEqual(got.doc_count, 1);
 
                 serverCollection.database.destroy();
             });

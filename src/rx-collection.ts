@@ -67,7 +67,12 @@ import {
     RxCollection,
     RxDatabase,
     RxQuery,
-    RxDocument
+    RxDocument,
+    SyncOptionsGraphQL,
+    RxGraphQLReplicationState,
+    RxChangeEventUpdate,
+    RxChangeEventInsert,
+    RxChangeEventRemove
 } from './types';
 
 import {
@@ -81,7 +86,69 @@ import {
     properties as rxDocumentProperties
 } from './rx-document';
 
+
+
+
+const HOOKS_WHEN = ['pre', 'post'];
+const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
+let hooksApplied = false;
+
+
+
 export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
+
+    constructor(
+        public database: RxDatabase,
+        public name: string,
+        public schema: RxSchema<RxDocumentType>,
+        public pouchSettings: PouchSettings = {},
+        public migrationStrategies: KeyFunctionMap = {},
+        public methods: KeyFunctionMap = {},
+        public attachments: KeyFunctionMap = {},
+        public options: any = {},
+        public statics: KeyFunctionMap = {}
+    ) {
+        _applyHookFunctions(this);
+    }
+
+    /**
+     * returns observable
+     */
+    get $(): Observable<
+        RxChangeEventInsert<RxDocumentType> |
+        RxChangeEventUpdate<RxDocumentType> |
+        RxChangeEventRemove<RxDocumentType>
+    > {
+        return this._observable$;
+    }
+    get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
+        return this.$.pipe(
+            filter(cE => cE.data.op === 'INSERT')
+        ) as any;
+    }
+    get update$(): Observable<RxChangeEventUpdate<RxDocumentType>> {
+        return this.$.pipe(
+            filter(cE => cE.data.op === 'UPDATE')
+        ) as any;
+    }
+    get remove$(): Observable<RxChangeEventRemove<RxDocumentType>> {
+        return this.$.pipe(
+            filter(cE => cE.data.op === 'REMOVE')
+        ) as any;
+    }
+    get docChanges$() {
+        if (!this.__docChanges$) {
+            this.__docChanges$ = this.$.pipe(
+                filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
+            );
+        }
+        return this.__docChanges$;
+    }
+    get onDestroy() {
+        if (!this._onDestroy)
+            this._onDestroy = new Promise(res => this._onDestroyCall = res);
+        return this._onDestroy;
+    }
 
     public _isInMemory = false;
     public destroyed = false;
@@ -105,19 +172,25 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     // other
     public _keyCompressor;
 
-    constructor(
-        public database: RxDatabase,
-        public name: string,
-        public schema: RxSchema,
-        public pouchSettings: PouchSettings = {},
-        public migrationStrategies: KeyFunctionMap = {},
-        public methods: KeyFunctionMap = {},
-        public attachments: KeyFunctionMap = {},
-        public options: any = {},
-        public statics: KeyFunctionMap = {}
-    ) {
-        _applyHookFunctions(this);
-    }
+    /**
+     * merge the prototypes of schema, orm-methods and document-base
+     * so we do not have to assing getters/setters and orm methods to each document-instance
+     */
+    private _getDocumentPrototype;
+
+    private _getDocumentConstructor;
+
+    /**
+     * only emits the change-events that change something with the documents
+     */
+    private __docChanges$;
+
+    /**
+     * returns a promise that is resolved when the collection gets destroyed
+     */
+    private _onDestroy: Promise<void>;
+
+    private _onDestroyCall: () => void;
     prepare() {
         this.pouch = this.database._spawnPouchDB(
             this.name,
@@ -140,7 +213,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         this._observable$ = this.database.$.pipe(
             filter(event => (event as RxChangeEvent).data.col === this.name)
         );
-        this._changeEventBuffer = createChangeEventBuffer(this);
+        this._changeEventBuffer = createChangeEventBuffer(this as any);
 
         this._subs.push(
             this._observable$
@@ -159,16 +232,10 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
             createIndexesPromise
         ]);
     }
-
-    /**
-     * merge the prototypes of schema, orm-methods and document-base
-     * so we do not have to assing getters/setters and orm methods to each document-instance
-     */
-    private _getDocumentPrototype;
     getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const schemaProto = this.schema.getDocumentPrototype();
-            const ormProto = getDocumentOrmPrototype(this);
+            const ormProto = getDocumentOrmPrototype(this as any);
             const baseProto = RxDocumentBasePrototype;
             const proto = {};
             [
@@ -217,8 +284,6 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         }
         return this._getDocumentPrototype;
     }
-
-    private _getDocumentConstructor;
     getDocumentConstructor() {
         if (!this._getDocumentConstructor) {
             this._getDocumentConstructor = createRxDocumentConstructor(
@@ -230,26 +295,23 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * checks if a migration is needed
-     * @return {Promise<boolean>}
      */
-    migrationNeeded() {
+    migrationNeeded(): Promise<boolean> {
         return mustMigrate(this._dataMigrator);
     }
 
     /**
-     * @param {number} [batchSize=10] amount of documents handled in parallel
-     * @return {Observable} emits the migration-status
+     * trigger migration manually
      */
-    migrate(batchSize = 10): Observable<MigrationState> {
+    migrate(batchSize: number = 10): Observable<MigrationState> {
         return this._dataMigrator.migrate(batchSize);
     }
 
     /**
      * does the same thing as .migrate() but returns promise
-     * @param {number} [batchSize=10] amount of documents handled in parallel
-     * @return {Promise} resolves when finished
+     * @return resolves when finished
      */
-    migratePromise(batchSize = 10) {
+    migratePromise(batchSize: number = 10): Promise<any> {
         return this._dataMigrator.migratePromise(batchSize);
     }
 
@@ -277,11 +339,8 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     /**
      * every write on the pouchdb
      * is tunneld throught this function
-     * @param {object} obj
-     * @param {boolean} [overwrite=false] if true, it will overwrite existing document
-     * @return {Promise}
      */
-    _pouchPut(obj, overwrite = false) {
+    _pouchPut(obj: any, overwrite: boolean = false): Promise<any> {
         obj = this._handleToPouch(obj);
         return this.database.lockedRun(
             () => this.pouch.put(obj)
@@ -302,10 +361,8 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * get document from pouchdb by its _id
-     * @param  {string} key _id of the document
-     * @return {Promise<object>} the document
      */
-    _pouchGet(key) {
+    _pouchGet(key: string): Promise<any> {
         return this
             .pouch
             .get(key)
@@ -314,14 +371,14 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * wrapps pouch-find
-     * @param {RxQuery} rxQuery
-     * @param {?number} limit overwrites the limit
-     * @param {?boolean} noDecrypt if true, decryption will not be made
-     * @return {Object[]} array with documents-data
      */
-    _pouchFind(rxQuery, limit?, noDecrypt = false) {
+    _pouchFind(
+        rxQuery: RxQuery,
+        limit?: number,
+        noDecrypt: boolean = false
+    ): Promise<any[]> {
         const compressedQueryJSON = rxQuery.keyCompress();
-        if (limit) compressedQueryJSON.limit = limit;
+        if (limit) compressedQueryJSON['limit'] = limit;
 
         return this.database.lockedRun(
             () => this.pouch.find(compressedQueryJSON)
@@ -335,19 +392,17 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * create a RxDocument-instance from the jsonData
-     * @param {Object} json documentData
-     * @return {RxDocument}
      */
-    _createDocument(json) {
+    _createDocument(json: any): RxDocument {
         // return from cache if exsists
         const id = json[this.schema.primaryPath];
         const cacheDoc = this._docCache.get(id);
-        if (cacheDoc) return cacheDoc;
+        if (cacheDoc) return cacheDoc as any;
 
 
         const doc = createRxDocumentWithConstructor(
             this.getDocumentConstructor(),
-            this,
+            this as any,
             json
         );
 
@@ -358,73 +413,34 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     }
     /**
      * create RxDocument from the docs-array
-     * @return {Promise<RxDocument[]>} documents
      */
-    _createDocuments(docsJSON) {
+    _createDocuments(docsJSON): Promise<RxDocument[]> {
         return docsJSON.map(json => this._createDocument(json));
-    }
-
-    /**
-     * returns observable
-     */
-    get $() {
-        return this._observable$;
-    }
-    get insert$() {
-        return this.$.pipe(
-            filter(cE => cE.data.op === 'INSERT')
-        );
-    }
-    get update$() {
-        return this.$.pipe(
-            filter(cE => cE.data.op === 'UPDATE')
-        );
-    }
-    get remove$() {
-        return this.$.pipe(
-            filter(cE => cE.data.op === 'REMOVE')
-        );
-    }
-
-    /**
-     * only emits the change-events that change something with the documents
-     */
-    private __docChanges$;
-    get docChanges$() {
-        if (!this.__docChanges$) {
-            this.__docChanges$ = this.$.pipe(
-                filter(cEvent => ['INSERT', 'UPDATE', 'REMOVE'].includes(cEvent.data.op))
-            );
-        }
-        return this.__docChanges$;
     }
 
     $emit(changeEvent) {
         return this.database.$emit(changeEvent);
     }
 
-    /**
-     * @param {Object|RxDocument} json data or RxDocument if temporary
-     * @param {RxDocument} doc which was created
-     * @return {Promise<RxDocument>}
-     */
-    insert(json) {
+    insert(
+        json: RxDocumentType | RxDocument
+    ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         // inserting a temporary-document
-        let tempDoc = null;
+        let tempDoc: RxDocument = null;
         if (isRxDocument(json)) {
-            tempDoc = json;
-            if (!json._isTemporary) {
+            tempDoc = json as RxDocument;
+            if (!tempDoc._isTemporary) {
                 throw newRxError('COL1', {
                     data: json
                 });
             }
-            json = json.toJSON();
+            json = tempDoc.toJSON() as any;
         }
 
         json = clone(json);
         json = this.schema.fillObjectWithDefaults(json);
 
-        if (json._id && this.schema.primaryPath !== '_id') {
+        if (json['_id'] && this.schema.primaryPath !== '_id') {
             throw newRxError('COL2', {
                 data: json
             });
@@ -433,8 +449,8 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         // fill _id
         if (
             this.schema.primaryPath === '_id' &&
-            !json._id
-        ) json._id = generateId();
+            !json['_id']
+        ) json['_id'] = generateId();
 
         let newDoc = tempDoc;
         return this._runHooks('pre', 'insert', json)
@@ -442,8 +458,8 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
                 this.schema.validate(json);
                 return this._pouchPut(json);
             }).then(insertResult => {
-                json[this.schema.primaryPath] = insertResult.id;
-                json._rev = insertResult.rev;
+                json[this.schema.primaryPath as string] = insertResult.id;
+                json['_rev'] = insertResult.rev;
 
                 if (tempDoc) {
                     tempDoc._dataSync$.next(json);
@@ -455,21 +471,20 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
                 const emitEvent = createChangeEvent(
                     'INSERT',
                     this.database,
-                    this,
+                    this as any,
                     newDoc,
                     json
                 );
                 this.$emit(emitEvent);
 
-                return newDoc;
+                return newDoc as any;
             });
     }
 
     /**
      * same as insert but overwrites existing document with same primary
-     * @return {Promise<RxDocument>}
      */
-    upsert(json) {
+    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
@@ -482,22 +497,20 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         return this.findOne(primary).exec()
             .then(existing => {
                 if (existing) {
-                    json._rev = existing._rev;
+                    json['_rev'] = existing['_rev'];
 
-                    return existing.atomicUpdate(() => json)
+                    return existing.atomicUpdate(() => json as any)
                         .then(() => existing);
                 } else {
-                    return this.insert(json);
+                    return this.insert(json as any);
                 }
             });
     }
 
     /**
      * upserts to a RxDocument, uses atomicUpdate if document already exists
-     * @param  {object}  json
-     * @return {Promise}
      */
-    atomicUpsert(json) {
+    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         json = clone(json);
         const primary = json[this.schema.primaryPath];
         if (!primary) {
@@ -514,7 +527,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
             queue = this._atomicUpsertQueues.get(primary);
         }
         queue = queue
-            .then(() => _atomicUpsertEnsureRxDocumentExists(this, primary, json))
+            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, json))
             .then(wasInserted => {
                 if (!wasInserted.inserted) {
                     return _atomicUpsertUpdate(wasInserted.doc, json)
@@ -530,25 +543,25 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     /**
      * takes a mongoDB-query-object and returns the documents
      */
-    find(queryObj?: any): RxQuery<any, any> { // TODO replace any
+    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]> {
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
             });
         }
 
-        const query = createRxQuery('find', queryObj, this);
+        const query = createRxQuery('find', queryObj, this as any);
         return query as any;
     }
 
-    findOne(queryObj) {
+    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null> {
         let query;
 
         if (typeof queryObj === 'string') {
             query = createRxQuery('findOne', {
                 _id: queryObj
-            }, this);
-        } else query = createRxQuery('findOne', queryObj, this);
+            }, this as any);
+        } else query = createRxQuery('findOne', queryObj, this as any);
 
         if (
             typeof queryObj === 'number' ||
@@ -564,7 +577,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * export to json
-     * @param {boolean} decrypted if true, all encrypted values will be decrypted
+     * if true, all encrypted values will be decrypted
      */
     dump(_decrytped: boolean): Promise<any> {
         throw pluginMissing('json-dump');
@@ -572,7 +585,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * imports the json-data into the collection
-     * @param {Array} exportedJSON should be an array of raw-data
+     * @param should be an array of raw-data
      */
     importDump(_exportedJSON: any): Promise<boolean> {
         throw pluginMissing('json-dump');
@@ -597,14 +610,14 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     /**
      * sync with a GraphQL endpoint
      */
-    syncGraphQL() {
+    syncGraphQL(options: SyncOptionsGraphQL): RxGraphQLReplicationState {
         throw pluginMissing('replication-graphql');
     }
 
     /**
      * Create a replicated in-memory-collection
      */
-    inMemory(): any { // TODO deep types
+    inMemory(): Promise<RxCollection<RxDocumentType, OrmMethods>> {
         throw pluginMissing('in-memory');
     }
 
@@ -664,10 +677,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         }
     }
 
-    /**
-     * @return {Promise<void>}
-     */
-    _runHooks(when, key, data, instance?) {
+    _runHooks(when, key, data, instance?): Promise<any> {
         const hooks = this.getHooks(when, key);
         if (!hooks) return Promise.resolve();
 
@@ -692,40 +702,25 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * creates a temporaryDocument which can be saved later
-     * @param {Object} docData
-     * @return {RxDocument}
      */
-    newDocument(docData = {}) {
+    newDocument(docData: Partial<RxDocumentType> = {}): RxDocument<RxDocumentType, OrmMethods> {
         docData = this.schema.fillObjectWithDefaults(docData);
         const doc = createRxDocumentWithConstructor(
             this.getDocumentConstructor(),
-            this,
+            this as any,
             docData
         );
         doc._isTemporary = true;
 
         this._runHooksSync('post', 'create', docData, doc);
-        return doc;
+        return doc as any;
     }
-
-    /**
-     * returns a promise that is resolved when the collection gets destroyed
-     * @return {Promise}
-     */
-    private _onDestroy: Promise<void>;
-    get onDestroy() {
-        if (!this._onDestroy)
-            this._onDestroy = new Promise(res => this._onDestroyCall = res);
-        return this._onDestroy;
-    }
-
-    private _onDestroyCall: () => void;
     destroy(): Promise<boolean> {
         if (this.destroyed) return;
 
-        this._onDestroyCall && this._onDestroyCall();
+        if (this._onDestroyCall) { this._onDestroyCall(); }
         this._subs.forEach(sub => sub.unsubscribe());
-        this._changeEventBuffer && this._changeEventBuffer.destroy();
+        if (this._changeEventBuffer) { this._changeEventBuffer.destroy(); }
         this._queryCache.destroy();
         this._repStates.forEach(sync => sync.cancel());
         delete this.database.collections[this.name];
@@ -734,21 +729,20 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
     /**
      * remove all data
-     * @return {Promise}
      */
-    remove() {
+    remove(): Promise<any> {
         return this.database.removeCollection(this.name);
     }
 }
 
 /**
  * checks if the migrationStrategies are ok, throws if not
- * @param  {RxSchema} schema
- * @param  {Object} migrationStrategies
  * @throws {Error|TypeError} if not ok
- * @return {boolean}
  */
-const checkMigrationStrategies = function (schema, migrationStrategies) {
+function checkMigrationStrategies(
+    schema: RxSchema,
+    migrationStrategies: KeyFunctionMap
+): boolean {
     // migrationStrategies must be object not array
     if (
         typeof migrationStrategies !== 'object' ||
@@ -783,16 +777,15 @@ const checkMigrationStrategies = function (schema, migrationStrategies) {
         });
 
     return true;
-};
+}
 
-const HOOKS_WHEN = ['pre', 'post'];
-const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
-let hooksApplied = false;
 /**
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
-function _applyHookFunctions(collection) {
+function _applyHookFunctions(
+    collection: RxCollectionBase
+) {
     if (hooksApplied) return; // already run
     hooksApplied = true;
     const colProto = Object.getPrototypeOf(collection);
@@ -809,14 +802,15 @@ function _applyHookFunctions(collection) {
 
 /**
  * returns all possible properties of a RxCollection-instance
- * @return {string[]} property-names
  */
 let _properties = null;
-export function properties() {
+export function properties(): string[] {
     if (!_properties) {
         const pseudoInstance = new (RxCollectionBase as any)();
         const ownProperties = Object.getOwnPropertyNames(pseudoInstance);
-        const prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
+        const prototypeProperties = Object.getOwnPropertyNames(
+            Object.getPrototypeOf(pseudoInstance)
+        );
         _properties = [...ownProperties, ...prototypeProperties];
     }
     return _properties;
@@ -824,10 +818,9 @@ export function properties() {
 
 /**
  * checks if the given static methods are allowed
- * @param  {{}} statics [description]
  * @throws if not allowed
  */
-const checkOrmMethods = function (statics) {
+const checkOrmMethods = function (statics: KeyFunctionMap) {
     Object
         .entries(statics)
         .forEach(([k, v]) => {
@@ -858,10 +851,7 @@ const checkOrmMethods = function (statics) {
         });
 };
 
-/**
- * @return {Promise}
- */
-function _atomicUpsertUpdate(doc, json) {
+function _atomicUpsertUpdate(doc, json): Promise<any> {
     return doc.atomicUpdate(innerDoc => {
         json._rev = innerDoc._rev;
         innerDoc._data = json;
@@ -871,11 +861,13 @@ function _atomicUpsertUpdate(doc, json) {
 
 /**
  * ensures that the given document exists
- * @param  {string}  primary
- * @param  {any}  json
- * @return {Promise<{ doc: RxDocument, inserted: boolean}>} promise that resolves with new doc and flag if inserted
+ * @return promise that resolves with new doc and flag if inserted
  */
-function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
+function _atomicUpsertEnsureRxDocumentExists(
+    rxCollection: RxCollection,
+    primary: string,
+    json: any
+): Promise<{ doc: RxDocument, inserted: boolean }> {
     return rxCollection.findOne(primary).exec()
         .then(doc => {
             if (!doc) {
@@ -896,9 +888,8 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
  * returns the prototype-object
  * that contains the orm-methods,
  * used in the proto-merge
- * @return {{}}
  */
-export function getDocumentOrmPrototype(rxCollection: RxCollection) {
+export function getDocumentOrmPrototype(rxCollection: RxCollection): any {
     const proto = {};
     Object
         .entries(rxCollection.methods)
@@ -940,12 +931,6 @@ function _prepareCreateIndexes(
 
 /**
  * creates and prepares a new collection
- * @param  {RxDatabase}  database
- * @param  {string}  name
- * @param  {RxSchema}  schema
- * @param  {?Object}  [pouchSettings={}]
- * @param  {?Object}  [migrationStrategies={}]
- * @return {Promise<RxCollection>} promise with collection
  */
 export function create({
     database,
@@ -958,7 +943,7 @@ export function create({
     methods = {},
     attachments = {},
     options = {}
-}) {
+}): Promise<RxCollection> {
     validateCouchDBString(name);
 
     // ensure it is a schema-object
@@ -1009,7 +994,7 @@ export function create({
         })
         .then(() => {
             runPluginHooks('createRxCollection', collection);
-            return collection;
+            return collection as any;
         });
 }
 

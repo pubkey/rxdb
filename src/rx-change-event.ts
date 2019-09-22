@@ -16,6 +16,13 @@ export class RxChangeEvent {
     constructor(
         public data
     ) { }
+    get hash() {
+        if (!this._hash)
+            this._hash = hash(this.data);
+        return this._hash;
+    }
+
+    private _hash: string;
     toJSON() {
         const ret = {
             col: null,
@@ -43,13 +50,6 @@ export class RxChangeEvent {
         if (this.data.col && this.data.col === '_socket')
             return true;
         return false;
-    }
-
-    private _hash: string;
-    get hash() {
-        if (!this._hash)
-            this._hash = hash(this.data);
-        return this._hash;
     }
 }
 

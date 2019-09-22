@@ -17,7 +17,6 @@ export declare class RxTypeError extends TypeError {
 
 /**
  * this lists all possible parameters
- * @type {RxErrorItem[]}
  */
 export interface RxErrorParameters {
     readonly errors: RxErrorItem[];

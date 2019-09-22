@@ -179,7 +179,7 @@ export async function spawn(documents = []) {
                     updatedAt
                 }
               }
-            
+
                         `, {
                                 human: doc
                             }

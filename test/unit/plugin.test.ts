@@ -212,14 +212,14 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
-            assert.equal(col.database.foo, 'bar_createRxDatabase');
+            assert.strictEqual(col.database.foo, 'bar_createRxDatabase');
             col.database.destroy();
 
             clearHook('createRxDatabase', createRxDatabase);
         });
         it('createRxCollection', async () => {
-            const createRxCollection = (col) => {
-                col.foo = 'bar_createRxCollection';
+            const createRxCollection = (c) => {
+                c.foo = 'bar_createRxCollection';
             };
             const plugin = {
                 rxdb: true,
@@ -229,13 +229,13 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
-            assert.equal(col.foo, 'bar_createRxCollection');
+            assert.strictEqual(col.foo, 'bar_createRxCollection');
             col.database.destroy();
             clearHook('createRxCollection', createRxCollection);
         });
         it('createRxSchema', async () => {
-            const createRxSchema = (col) => {
-                col.foo = 'bar_createRxSchema';
+            const createRxSchema = (c) => {
+                c.foo = 'bar_createRxSchema';
             };
             const plugin = {
                 rxdb: true,
@@ -245,13 +245,13 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
-            assert.equal(col.schema.foo, 'bar_createRxSchema');
+            assert.strictEqual(col.schema.foo, 'bar_createRxSchema');
             col.database.destroy();
             clearHook('createRxSchema', createRxSchema);
         });
         it('createRxQuery', async () => {
-            const createRxQuery = (col) => {
-                col.foo = 'bar_createRxQuery';
+            const createRxQuery = (c) => {
+                c.foo = 'bar_createRxQuery';
             };
             const plugin = {
                 rxdb: true,
@@ -262,13 +262,13 @@ config.parallel('plugin.test.js', () => {
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
             const query = col.find();
-            assert.equal(query.foo, 'bar_createRxQuery');
+            assert.strictEqual(query.foo, 'bar_createRxQuery');
             col.database.destroy();
             clearHook('createRxQuery', createRxQuery);
         });
         it('createRxDocument', async () => {
-            const createRxDocument = (col) => {
-                col.foo = 'bar_createRxDocument';
+            const createRxDocument = (c) => {
+                c.foo = 'bar_createRxDocument';
             };
             const plugin = {
                 rxdb: true,
@@ -279,13 +279,13 @@ config.parallel('plugin.test.js', () => {
             RxDB.plugin(plugin);
             const col = await humansCollection.create(5);
             const doc = await col.findOne().exec();
-            assert.equal(doc.foo, 'bar_createRxDocument');
+            assert.strictEqual(doc.foo, 'bar_createRxDocument');
             col.database.destroy();
             clearHook('createRxDocument', createRxDocument);
         });
         it('postCreateRxDocument', async () => {
-            const postCreateRxDocument = (col) => {
-                col.fooPostCreate = 'bar_postCreateRxDocument';
+            const postCreateRxDocument = (c) => {
+                c.fooPostCreate = 'bar_postCreateRxDocument';
             };
             const plugin = {
                 rxdb: true,
@@ -296,18 +296,18 @@ config.parallel('plugin.test.js', () => {
             RxDB.plugin(plugin);
             const col = await humansCollection.create(5);
             const doc = await col.findOne().exec();
-            assert.equal(doc.fooPostCreate, 'bar_postCreateRxDocument');
+            assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
             col.database.destroy();
             clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('preCreatePouchDb', async () => {
+            const collectionName = util.randomCouchString(10);
             const preCreatePouchDb = pouchDbParameters => {
                 if (pouchDbParameters.location.includes(collectionName)) {
                     // only do sth at this specific collection-pouch
                     pouchDbParameters.location = pouchDbParameters.location + 'foobar';
                 }
             };
-            const collectionName = util.randomCouchString(10);
             const plugin = {
                 rxdb: true,
                 hooks: {

@@ -14,17 +14,15 @@ import {
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
- * @type {Object<string, any>}
  */
 const validatorsCache = {};
 
 
 /**
  * returns the parsed validator from ajv
- * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-export function _getValidator(rxSchema, schemaPath = '') {
+export function _getValidator(rxSchema, schemaPath: string = '') {
     const hash = rxSchema.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
@@ -46,12 +44,8 @@ export function _getValidator(rxSchema, schemaPath = '') {
 
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- * @return {any} obj if validation successful
  */
-function validate(obj, schemaPath = '') {
+function validate(obj, schemaPath: string = '') {
     const useValidator = _getValidator(this, schemaPath);
     const isValid = useValidator(obj);
     if (isValid) return obj;
@@ -74,7 +68,6 @@ export const rxdb = true;
 export const prototypes = {
     /**
      * set validate-function for the RxSchema.prototype
-     * @param {[type]} prototype of RxSchema
      */
     RxSchema: (proto) => {
         proto.validate = validate;

@@ -5,7 +5,7 @@
 /**
  * hook-functions that can be extended by the plugin
  */
-export const HOOKS = {
+export const HOOKS: { [k: string]: any[] } = {
     createRxDatabase: [],
     preCreateRxCollection: [],
     createRxCollection: [],
@@ -24,7 +24,6 @@ export const HOOKS = {
     /**
      * runs after a RxDocument is created,
      * cannot be async
-     * @type {Array}
      */
     postCreateRxDocument: [],
     /**
@@ -35,7 +34,6 @@ export const HOOKS = {
      *   adapter: any,
      *   settings: object
      * }
-     * @type {Array}
      */
     preCreatePouchDb: [],
     /**
@@ -44,17 +42,14 @@ export const HOOKS = {
      *   doc: Object, // originam doc-data
      *   migrated: // migrated doc-data after run throught migration-strategies
      * }
-     * @type {Array}
      */
     preMigrateDocument: [],
     /**
      * runs after the migration of a document has been done
-     * @type {Array}
      */
     postMigrateDocument: [],
     /**
      * runs at the beginning of the destroy-process of a database
-     * @type {Array}
      */
     preDestroyRxDatabase: []
 };
@@ -63,10 +58,7 @@ export function runPluginHooks(hookKey, obj) {
     HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
-/**
- * @return {Promise}
- */
-export function runAsyncPluginHooks(hookKey, obj) {
+export function runAsyncPluginHooks(hookKey, obj): Promise<any> {
     return Promise.all(
         HOOKS[hookKey].map(fun => fun(obj))
     );

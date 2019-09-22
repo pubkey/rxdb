@@ -25,9 +25,6 @@ export function merge(to: any, from: any): any {
 
 /**
  * Same as merge but clones the assigned values.
- *
- * @param {object} to
- * @param {object} from
  */
 export function mergeClone(to: any, from: any): any {
     Object.keys(from)
@@ -50,10 +47,7 @@ export function mergeClone(to: any, from: any): any {
 
 /**
  * Determines if `arg` is an object.
- *
- * @param {Object|Array|String|Function|RegExp|any} arg
- * @return {Boolean}
  */
-export function isObject(arg) {
+export function isObject(arg: Object | any[] | String | Function | RegExp | any): boolean {
     return '[object Object]' === arg.toString();
 }

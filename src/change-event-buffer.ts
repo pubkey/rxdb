@@ -46,8 +46,7 @@ export class ChangeEventBuffer {
 
     /**
      * gets the array-index for the given pointer
-     * @param  {number} pointer
-     * @return {number|null} arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
+     * @return arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
      */
     getArrayIndexByPointer(pointer: number): number | null {
         const oldestEvent = this.buffer[0];
@@ -64,8 +63,7 @@ export class ChangeEventBuffer {
 
     /**
      * get all changeEvents which came in later than the pointer-event
-     * @param  {number} pointer
-     * @return {RxChangeEvent[]|null} array with change-events. Iif null, pointer out of bounds
+     * @return array with change-events. Iif null, pointer out of bounds
      */
     getFrom(pointer: number): RxChangeEvent[] | null {
         const ret = [];
@@ -89,10 +87,8 @@ export class ChangeEventBuffer {
      * no matter how many operations are done on one document,
      * only the last operation has to be checked to calculate the new state
      * this function reduces the events to the last ChangeEvent of each doc
-     * @param {ChangeEvent[]} changeEvents
-     * @return {ChangeEvents[]}
      */
-    reduceByLastOfDoc(changeEvents) {
+    reduceByLastOfDoc(changeEvents: RxChangeEvent[]): RxChangeEvent[] {
         const docEventMap = {};
         changeEvents.forEach(changeEvent => {
             docEventMap[changeEvent.data.doc] = changeEvent;
@@ -102,11 +98,10 @@ export class ChangeEventBuffer {
 
     /**
      * use this to check if a change has already been handled
-     * @param {string} revision 
-     * @returns {boolean} true if change with revision exists
-     * 
+     * @returns true if change with revision exists
+     *
      */
-    hasChangeWithRevision(revision) {
+    hasChangeWithRevision(revision: string): boolean {
         // we loop from behind because its more likely that the searched event is at the end
         let t = this.buffer.length;
         while (t > 0) {

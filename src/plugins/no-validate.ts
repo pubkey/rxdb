@@ -7,10 +7,8 @@
 
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @return {any} obj
  */
-const validate = function(obj) {
+const validate = function(obj: any): any {
     return obj;
 };
 
@@ -18,7 +16,6 @@ export const rxdb = true;
 export const prototypes = {
     /**
      * set validate-function for the RxSchema.prototype
-     * @param {[type]} prototype of RxSchema
      */
     RxSchema: (proto) => {
         proto.validate = validate;

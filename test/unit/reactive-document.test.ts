@@ -25,7 +25,7 @@ config.parallel('reactive-document.test.js', () => {
                 await doc.atomicSet('firstName', util.randomCouchString(8));
 
                 const changeEvent = await doc.$.pipe(first()).toPromise();
-                assert.equal(changeEvent._id, doc.primary);
+                assert.strictEqual(changeEvent._id, doc.primary);
                 c.database.destroy();
             });
             it('should observe a single field', async () => {
@@ -40,7 +40,7 @@ config.parallel('reactive-document.test.js', () => {
                 const setName = util.randomCouchString(10);
                 await doc.atomicSet('firstName', setName);
                 await util.promiseWait(5);
-                assert.equal(valueObj.v, setName);
+                assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
             });
             it('should observe a nested field', async () => {
@@ -55,7 +55,7 @@ config.parallel('reactive-document.test.js', () => {
                 const setName = util.randomCouchString(10);
                 await doc.atomicSet('mainSkill.name', setName);
                 util.promiseWait(5);
-                assert.equal(valueObj.v, setName);
+                assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
             });
             it('get equal values when subscribing again later', async () => {
@@ -70,8 +70,8 @@ config.parallel('reactive-document.test.js', () => {
                 let v2;
                 doc.get$('firstName').subscribe(newVal => v2 = newVal);
 
-                assert.equal(v1, v2);
-                assert.equal(v1, 'foobar');
+                assert.strictEqual(v1, v2);
+                assert.strictEqual(v1, 'foobar');
                 sub.unsubscribe();
                 c.database.destroy();
             });
@@ -97,10 +97,10 @@ config.parallel('reactive-document.test.js', () => {
                 let deleted = null;
                 doc.deleted$.subscribe(v => deleted = v);
                 util.promiseWait(5);
-                assert.deepEqual(deleted, false);
+                assert.deepStrictEqual(deleted, false);
                 await doc.remove();
                 util.promiseWait(5);
-                assert.deepEqual(deleted, true);
+                assert.deepStrictEqual(deleted, true);
                 c.database.destroy();
             });
         });

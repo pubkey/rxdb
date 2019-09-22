@@ -41,38 +41,10 @@ export interface ServerOptions {
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection } | {};
-export type RxDatabase<Collections = any> = RxDatabaseBase<Collections> & Collections;
+export type RxDatabase<Collections = any> = RxDatabaseBase<Collections> &
+    Collections & RxDatabaseGenerated<Collections>;
 
-type collectionCreateType =
-    <RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }>
-        (args: RxCollectionCreator) => Promise<RxCollection<RxDocumentType, OrmMethods, StaticMethods>>;
-
-export declare class RxDatabaseBaseOld<Collections = CollectionsOfDatabase> {
-    readonly name: string;
-    readonly token: string;
-    readonly multiInstance: boolean;
-    readonly queryChangeDetection: boolean;
-    readonly broadcastChannel: BroadcastChannel;
-    readonly password: string;
-    readonly collections: any;
-    options?: any;
-    pouchSettings?: PouchSettings;
-
-    readonly $: Observable<
-        RxChangeEventInsert<any> |
-        RxChangeEventUpdate<any> |
-        RxChangeEventRemove<any> |
-        RxChangeEventCollection
-    >;
-
-    collection: collectionCreateType;
-    destroy(): Promise<boolean>;
-    dump(): Promise<any>;
-    importDump(json: any): Promise<any>;
-    remove(): Promise<any>;
-
-    readonly isLeader: boolean;
-
+export interface RxDatabaseGenerated<Collections> {
     insertLocal(id: string, data: any): Promise<
         RxLocalDocument<RxDatabase<Collections>>
     >;
@@ -82,23 +54,4 @@ export declare class RxDatabaseBaseOld<Collections = CollectionsOfDatabase> {
     getLocal(id: string): Promise<
         RxLocalDocument<RxDatabase<Collections>>
     >;
-
-    // from rxdb/plugins/server
-    server(options?: ServerOptions): {
-        app: any;
-        server: any;
-    };
-
-    /**
-     * returns a promise which resolves when the instance becomes leader
-     * @return {Promise<boolean>}
-     */
-    waitForLeadership(): Promise<boolean>;
-
-    /**
-     * removes all internal collection-info
-     * only use this if you have to upgrade from a major rxdb-version
-     * do NEVER use this to change the schema of a collection
-     */
-    dangerousRemoveCollectionInfo(): Promise<void>;
 }

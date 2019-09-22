@@ -52,33 +52,6 @@ const newQueryID = function (): number {
 };
 
 export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
-    public id: number = newQueryID();
-    public mquery: MQuery;
-    private _subs: Subscription[] = [];
-
-    // stores the changeEvent-Number of the last handled change-event
-    public _latestChangeEvent: -1 | any = -1;
-
-    // contains the results as plain json-data
-    public _resultsData: any = null;
-
-    // contains the results as RxDocument[]
-    public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
-
-    public _queryChangeDetector: QueryChangeDetector;
-
-    /**
-     * counts how often the execution on the whole db was done
-     * (used for tests and debugging)
-     * @type {Number}
-     */
-    public _execOverDatabaseCount: number = 0;
-
-    /**
-     * ensures that the exec-runs
-     * are not run in parallel
-     */
-    public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
 
     constructor(
         public op: RxQueryOP,
@@ -89,75 +62,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         if (!queryObj) queryObj = _getDefaultQuery(this.collection);
         this.mquery = createMQuery(queryObj);
     }
-
-    private stringRep: string;
-    toString(): string {
-        if (!this.stringRep) {
-            const stringObj = sortObject({
-                op: this.op,
-                options: this.mquery.options,
-                _conditions: this.mquery._conditions,
-                _path: this.mquery._path,
-                _fields: this.mquery._fields
-            }, true);
-
-            this.stringRep = JSON.stringify(stringObj, stringifyFilter);
-        }
-        return this.stringRep;
-    }
-
-    // returns a clone of this RxQuery
-    _clone() {
-        const cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
-        cloned.mquery = this.mquery.clone();
-        return cloned;
-    }
-
-    /**
-     * set the new result-data as result-docs of the query
-     * @param {{}[]} newResultData json-docs that were recieved from pouchdb
-     * @return {RxDocument[]}
-     */
-    _setResultData(newResultData) {
-        this._resultsData = newResultData;
-        const docs = this.collection._createDocuments(this._resultsData);
-        this._resultsDocs$.next(docs);
-        return docs;
-    }
-
-    /**
-     * executes the query on the database
-     * @return {Promise<{}[]>} results-array with document-data
-     */
-    _execOverDatabase() {
-        this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-
-        let docsPromise;
-        switch (this.op) {
-            case 'find':
-                docsPromise = this.collection._pouchFind(this);
-                break;
-            case 'findOne':
-                docsPromise = this.collection._pouchFind(this, 1);
-                break;
-            default:
-                throw newRxError('QU1', {
-                    op: this.op
-                });
-        }
-
-        return docsPromise;
-    }
-
-    /**
-     * Returns an observable that emits the results
-     * This should behave like an rxjs-BehaviorSubject which means:
-     * - Emit the current result-set on subscribe
-     * - Emit the new result-set when an RxChangeEvent comes in
-     * - Do not emit anything before the first result-set was created (no null)
-     * @return {BehaviorSubject<RxDocument[]>}
-     */
-    private _$: BehaviorSubject<RxQueryResult>;
     get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
             /**
@@ -199,12 +103,126 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                 );
 
             this._$ =
+                // tslint:disable-next-line
                 merge(
                     results$,
                     changeEvents$
                 ) as any;
         }
         return this._$;
+    }
+    get massageSelector() {
+        if (!this._massageSelector) {
+            const selector = this.mquery._conditions;
+            this._massageSelector = massageSelector(selector);
+        }
+        return this._massageSelector;
+    }
+    public id: number = newQueryID();
+    public mquery: MQuery;
+    private _subs: Subscription[] = [];
+
+    // stores the changeEvent-Number of the last handled change-event
+    public _latestChangeEvent: -1 | any = -1;
+
+    // contains the results as plain json-data
+    public _resultsData: any = null;
+
+    // contains the results as RxDocument[]
+    public _resultsDocs$: BehaviorSubject<any> = new BehaviorSubject(null);
+
+    public _queryChangeDetector: QueryChangeDetector;
+
+    /**
+     * counts how often the execution on the whole db was done
+     * (used for tests and debugging)
+     */
+    public _execOverDatabaseCount: number = 0;
+
+    /**
+     * ensures that the exec-runs
+     * are not run in parallel
+     */
+    public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
+
+    private stringRep: string;
+
+    /**
+     * Returns an observable that emits the results
+     * This should behave like an rxjs-BehaviorSubject which means:
+     * - Emit the current result-set on subscribe
+     * - Emit the new result-set when an RxChangeEvent comes in
+     * - Do not emit anything before the first result-set was created (no null)
+     */
+    private _$: BehaviorSubject<RxQueryResult>;
+
+    private _toJSON: any;
+
+    /**
+     * get the key-compression version of this query
+     */
+    private _keyCompress: { selector: {}, sort: [] };
+
+
+    /**
+     * cached call to get the massageSelector
+     */
+    private _massageSelector;
+    toString(): string {
+        if (!this.stringRep) {
+            const stringObj = sortObject({
+                op: this.op,
+                options: this.mquery.options,
+                _conditions: this.mquery._conditions,
+                _path: this.mquery._path,
+                _fields: this.mquery._fields
+            }, true);
+
+            this.stringRep = JSON.stringify(stringObj, stringifyFilter);
+        }
+        return this.stringRep;
+    }
+
+    // returns a clone of this RxQuery
+    _clone() {
+        const cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
+        cloned.mquery = this.mquery.clone();
+        return cloned;
+    }
+
+    /**
+     * set the new result-data as result-docs of the query
+     * @param newResultData json-docs that were recieved from pouchdb
+     */
+    _setResultData(newResultData: any[]): RxDocument[] {
+        this._resultsData = newResultData;
+        const docs = this.collection._createDocuments(this._resultsData);
+        this._resultsDocs$.next(docs);
+        return docs as any;
+    }
+
+    /**
+     * executes the query on the database
+     * @return results-array with document-data
+     */
+    _execOverDatabase(): Promise<any[]> {
+        this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+
+        let docsPromise;
+        switch (this.op) {
+            case 'find':
+                docsPromise = this.collection._pouchFind(this as any);
+                break;
+            case 'findOne':
+                docsPromise = this.collection._pouchFind(this as any, 1);
+                break;
+            default:
+                throw newRxError('QU1', {
+                    op: this.op
+                });
+        }
+
+        return docsPromise;
     }
 
     /**
@@ -224,8 +242,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     first()
                 ).toPromise());
     }
-
-    private _toJSON: any;
     toJSON(): PouchdbQuery {
         if (this._toJSON) return this._toJSON;
 
@@ -302,12 +318,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         this._toJSON = json;
         return this._toJSON;
     }
-
-    /**
-     * get the key-compression version of this query
-     * @return {{selector: {}, sort: []}} compressedQuery
-     */
-    private _keyCompress;
     keyCompress() {
         if (!this.collection.schema.doKeyCompression()) {
             return this.toJSON();
@@ -322,24 +332,9 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
         }
     }
 
-
-    /**
-     * cached call to get the massageSelector
-     */
-    private _massageSelector;
-    get massageSelector() {
-        if (!this._massageSelector) {
-            const selector = this.mquery._conditions;
-            this._massageSelector = massageSelector(selector);
-        }
-        return this._massageSelector;
-    }
-
     /**
      * returns true if the document matches the query,
      * does not use the 'skip' and 'limit'
-     * @param {any} docData 
-     * @return {boolean} true if matches
      */
     doesDocumentDataMatch(docData: RxDocumentType | any): boolean {
         // if doc is deleted, it cannot match
@@ -377,8 +372,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     /**
      * updates all found documents
      * @overwritten by plugin (optinal)
-     * @param  {object} updateObj
-     * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
      */
     update(_updateObj: any): Promise<RxQueryResult> {
         throw pluginMissing('update');
@@ -441,7 +434,6 @@ function _getDefaultQuery(collection) {
 
 /**
  * run this query through the QueryCache
- * @return {RxQuery} can be this or another query with the equal state
  */
 function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
     rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
@@ -451,11 +443,11 @@ function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
 
 /**
  * tunnel the proto-functions of mquery to RxQuery
- * @param  {any} rxQueryProto    [description]
- * @param  {string[]} mQueryProtoKeys [description]
- * @return {void}                 [description]
  */
-function protoMerge(rxQueryProto, mQueryProtoKeys) {
+function protoMerge(
+    rxQueryProto: any,
+    mQueryProtoKeys: string[]
+) {
     mQueryProtoKeys
         .filter(attrName => !attrName.startsWith('_'))
         .filter(attrName => !rxQueryProto[attrName])
@@ -543,9 +535,9 @@ function _sortAddToIndex(checkParam, clonedThis) {
 
 /**
  * check if the current results-state is in sync with the database
- * @return {Boolean} false if not which means it should re-execute
+ * @return false if not which means it should re-execute
  */
-function _isResultsInSync(rxQuery) {
+function _isResultsInSync(rxQuery: RxQueryBase): boolean {
     if (rxQuery._latestChangeEvent >= rxQuery.collection._changeEventBuffer.counter)
         return true;
     else return false;
@@ -572,8 +564,8 @@ function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
  * ensures that the results of this query is equal to the results which a query over the database would give
  * @return true if results have changed
  */
-function __ensureEqual(rxQuery: RxQueryBase): boolean {
-    if (rxQuery.collection.database.destroyed) false; // db is closed
+function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
+    if (rxQuery.collection.database.destroyed) return false; // db is closed
     if (_isResultsInSync(rxQuery)) return false; // nothing happend
 
     let ret = false;

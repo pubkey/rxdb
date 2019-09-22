@@ -55,7 +55,7 @@ config.parallel('no-validate.node.js', () => {
             foo: 'bar'
         });
         const doc = await col.findOne().exec();
-        assert.equal(doc.get('foo'), 'bar');
+        assert.strictEqual(doc.get('foo'), 'bar');
 
         await doc.atomicSet('bar', 'foo');
         db.destroy();

@@ -14,6 +14,9 @@ import objectPath from 'object-path';
 import {
     RxQuery
 } from './types';
+import {
+    RxChangeEvent
+} from './rx-change-event';
 
 let DEBUG = false;
 
@@ -27,10 +30,9 @@ export class QueryChangeDetector {
     }
 
     /**
-     * @param {ChangeEvent[]} changeEvents
-     * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
+     * @return true if mustReExec, false if no change, array if calculated new results
      */
-    runChangeDetection(changeEvents) {
+    runChangeDetection(changeEvents: RxChangeEvent[]): boolean | Object[] {
         if (changeEvents.length === 0) return false;
 
         // check if enabled
@@ -57,11 +59,9 @@ export class QueryChangeDetector {
 
     /**
      * handle a single ChangeEvent and try to calculate the new results
-     * @param {Object[]} resultsData of previous results
-     * @param {ChangeEvent} changeEvent
-     * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
+     * @return true if mustReExec, false if no change, array if calculated new results
      */
-    handleSingleChange(resultsData, changeEvent) {
+    handleSingleChange(resultsData: any[], changeEvent: RxChangeEvent): boolean | any[] {
         let results = resultsData.slice(0); // copy to stay immutable
         const options = this.query.toJSON();
         const docData = changeEvent.data.v;
@@ -108,33 +108,33 @@ export class QueryChangeDetector {
         if (changeEvent.data.op === 'REMOVE') {
             // R1 (never matched)
             if (!wasDocInResults && !doesMatchNow) {
-                DEBUG && _debugMessage(this, 'R1', docData);
+                _debugMessage(this, 'R1', docData);
                 return false;
             }
 
             // R2 sorted before got removed but results not filled
             if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
-                DEBUG && _debugMessage(this, 'R2', docData);
+                _debugMessage(this, 'R2', docData);
                 results.shift();
                 return results;
             }
 
             // R3 (was in results and got removed)
             if (doesMatchNow && wasDocInResults && !isFilled) {
-                DEBUG && _debugMessage(this, 'R3', docData);
+                _debugMessage(this, 'R3', docData);
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
 
             // R3.05 was in findOne-result and got removed
             if (options.limit === 1 && !doesMatchNow && wasDocInResults) {
-                DEBUG && _debugMessage(this, 'R3.05', docData);
+                _debugMessage(this, 'R3.05', docData);
                 return true;
             }
 
             // R3.1 was in results and got removed, no limit, no skip
             if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
-                DEBUG && _debugMessage(this, 'R3.1', docData);
+                _debugMessage(this, 'R3.1', docData);
                 results = results.filter(doc => doc[this.primaryKey] !== docData[this.primaryKey]);
                 return results;
             }
@@ -142,13 +142,13 @@ export class QueryChangeDetector {
 
             // R4 matching but after results got removed
             if (doesMatchNow && options.limit && sortAfter()) {
-                DEBUG && _debugMessage(this, 'R4', docData);
+                _debugMessage(this, 'R4', docData);
                 return false;
             }
         } else {
             // U1 doc not matched and also not matches now
             if (!options.skip && !wasDocInResults && !doesMatchNow) {
-                DEBUG && _debugMessage(this, 'U1', docData);
+                _debugMessage(this, 'U1', docData);
                 return false;
             }
 
@@ -162,10 +162,10 @@ export class QueryChangeDetector {
                 results[i] = docData;
 
                 if (sortFieldChanged()) {
-                    DEBUG && _debugMessage(this, 'U2 - resort', docData);
+                    _debugMessage(this, 'U2 - resort', docData);
                     return _resortDocData(this, results);
                 } else {
-                    DEBUG && _debugMessage(this, 'U2 - no-resort', docData);
+                    _debugMessage(this, 'U2 - no-resort', docData);
                     return results;
                 }
             }
@@ -173,7 +173,7 @@ export class QueryChangeDetector {
 
             // U3 not matched, but matches now, no.skip, limit < length
             if (!options.skip && !limitAndFilled && !wasDocInResults && doesMatchNow) {
-                DEBUG && _debugMessage(this, 'U3', docData);
+                _debugMessage(this, 'U3', docData);
                 results.push(docData);
 
                 //    console.log('U3: preSort:');
@@ -187,7 +187,7 @@ export class QueryChangeDetector {
         }
 
         // if no optimisation-algo matches, return mustReExec:true
-        DEBUG && console.log(this, 'NO_MATCH', docData);
+        _debugMessage(this, 'NO_MATCH', docData);
 
         return true;
     }
@@ -199,6 +199,9 @@ function _debugMessage(
     changeEventData: any = {},
     title = 'optimized'
 ) {
+    if (!DEBUG) {
+        return;
+    }
     console.dir({
         name: 'QueryChangeDetector',
         title,
@@ -240,15 +243,13 @@ export function _resortDocData(
 /**
  * checks if the newDocLeft would be placed before docDataRight
  * when the query would be reExecuted
- * @param  {Object} docDataNew
- * @param  {Object} docDataIs
- * @return {boolean} true if before, false if after
+ * @return true if before, false if after
  */
 export function _isSortedBefore(
     queryChangeDetector: QueryChangeDetector,
-    docDataLeft,
-    docDataRight
-) {
+    docDataLeft: any,
+    docDataRight: any
+): boolean {
     const sortOptions = _getSortOptions(queryChangeDetector);
     const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
     const swappedLeft = queryChangeDetector.query.collection.schema.swapPrimaryToId(docDataLeft);
@@ -275,13 +276,11 @@ export function _isSortedBefore(
 
 /**
  * checks if the sort-relevant fields have changed
- * @param  {object} docDataBefore
- * @param  {object} docDataAfter
  */
 export function _sortFieldChanged(
     queryChangeDetector: QueryChangeDetector,
-    docDataBefore,
-    docDataAfter
+    docDataBefore: any,
+    docDataAfter: any
 ): boolean {
     const sortOptions = _getSortOptions(queryChangeDetector);
     const sortFields = sortOptions.map(sortObj => Object.keys(sortObj).pop());
@@ -321,13 +320,11 @@ export function _getSortOptions(
 
 /**
  * check if the document exists in the results data
- * @param {object} docData
- * @param {object[]} resultData
  */
 export function _isDocInResultData(
     queryChangeDetector: QueryChangeDetector,
-    docData,
-    resultData
+    docData: any,
+    resultData: any[]
 ): boolean {
     const primaryPath = queryChangeDetector.query.collection.schema.primaryPath;
     const first = resultData.find(doc => doc[primaryPath] === docData[primaryPath]);
@@ -339,10 +336,6 @@ export function enableDebugging() {
     DEBUG = true;
 }
 
-/**
- * @param  {RxQuery} query
- * @return {QueryChangeDetector}
- */
 export function create(query: RxQuery<any, any>): QueryChangeDetector {
     const ret = new QueryChangeDetector(query);
     return ret;

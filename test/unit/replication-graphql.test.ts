@@ -103,14 +103,14 @@ describe('replication-graphql.test.js', () => {
             const res = await server.client.query(`{
                  info
             }`);
-            assert.equal(res.data.info, 1);
+            assert.strictEqual(res.data.info, 1);
             server.close();
         });
         it('server.setDocument()', async () => {
             const server = await SpawnServer.spawn();
             const doc = getTestData(1).pop();
             const res = await server.setDocument(doc);
-            assert.equal(res.data.setHuman.id, doc.id);
+            assert.strictEqual(res.data.setHuman.id, doc.id);
             server.close();
         });
         it('should be able to use the ws-subscriptions', async () => {
@@ -147,7 +147,7 @@ describe('replication-graphql.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.ok(emitted[0].data.humanChanged.id);
-            assert.equal(emittedError.length, 0);
+            assert.strictEqual(emittedError.length, 0);
 
             server.close();
         });
@@ -168,7 +168,7 @@ describe('replication-graphql.test.js', () => {
                 include_docs: true,
                 deleted: 'ok'
             });
-            assert.equal(deletedDocs.rows.length, 2);
+            assert.strictEqual(deletedDocs.rows.length, 2);
             const deletedDoc = deletedDocs.rows.find(d => d.value.deleted);
             const notDeletedDoc = deletedDocs.rows.find(d => !d.value.deleted);
             assert.ok(deletedDoc);
@@ -201,9 +201,9 @@ describe('replication-graphql.test.js', () => {
                     _id: {}
                 }
             });
-            assert.equal(pouchDocs.docs.length, 1);
-            assert.equal(pouchDocs.docs[0]._rev, customRev);
-            assert.equal(pouchDocs.docs[0].name, 'Alice');
+            assert.strictEqual(pouchDocs.docs.length, 1);
+            assert.strictEqual(pouchDocs.docs[0]._rev, customRev);
+            assert.strictEqual(pouchDocs.docs[0].name, 'Alice');
 
             c.database.destroy();
         });
@@ -260,14 +260,14 @@ describe('replication-graphql.test.js', () => {
             const docsAfter = await pouch.allDocs({
                 include_docs: true
             });
-            assert.equal(docsAfter.rows.length, 0);
+            assert.strictEqual(docsAfter.rows.length, 0);
 
 
             const docsAfterWithDeleted = await pouch.allDocs({
                 include_docs: true,
                 deleted: 'ok'
             });
-            assert.equal(docsAfterWithDeleted.rows.length, 1);
+            assert.strictEqual(docsAfterWithDeleted.rows.length, 1);
 
             pouch.destroy();
         });
@@ -308,8 +308,8 @@ describe('replication-graphql.test.js', () => {
                 revs: true,
                 deleted: 'ok'
             });
-            assert.equal(allDocs.rows.length, 1);
-            assert.equal(allDocs.rows[0].id, 'Alice');
+            assert.strictEqual(allDocs.rows.length, 1);
+            assert.strictEqual(allDocs.rows[0].id, 'Alice');
 
 
             const firstFromAll = allDocs.rows[0];
@@ -323,8 +323,8 @@ describe('replication-graphql.test.js', () => {
                 revs: true,
                 latest: true
             });
-            assert.equal(bulkGetDocs.results.length, 1);
-            assert.equal(bulkGetDocs.results[0].docs[0].ok._revisions.ids.length, 3);
+            assert.strictEqual(bulkGetDocs.results.length, 1);
+            assert.strictEqual(bulkGetDocs.results[0].docs[0].ok._revisions.ids.length, 3);
 
             pouch.destroy();
         });
@@ -363,7 +363,7 @@ describe('replication-graphql.test.js', () => {
                     rev
                 );
 
-                assert.equal(ok, false);
+                assert.strictEqual(ok, false);
             });
         });
         describe('.getDocsWithRevisionsFromPouch()', () => {
@@ -392,21 +392,21 @@ describe('replication-graphql.test.js', () => {
                     docIds
                 );
 
-                assert.equal(Object.keys(result).length, 3);
+                assert.strictEqual(Object.keys(result).length, 3);
 
                 const notEdited = result[doc3.primary];
-                assert.equal(notEdited.revisions.start, 1);
-                assert.equal(notEdited.revisions.ids.length, 1);
+                assert.strictEqual(notEdited.revisions.start, 1);
+                assert.strictEqual(notEdited.revisions.ids.length, 1);
 
                 const editedAndRemoved = result[doc1.primary];
-                assert.equal(editedAndRemoved.revisions.start, 3);
-                assert.equal(editedAndRemoved.revisions.ids.length, 3);
-                assert.equal(editedAndRemoved.deleted, true);
+                assert.strictEqual(editedAndRemoved.revisions.start, 3);
+                assert.strictEqual(editedAndRemoved.revisions.ids.length, 3);
+                assert.strictEqual(editedAndRemoved.deleted, true);
 
                 const editedTwice = result[doc2.primary];
-                assert.equal(editedTwice.revisions.start, 3);
-                assert.equal(editedTwice.revisions.ids.length, 3);
-                assert.equal(editedTwice.deleted, false);
+                assert.strictEqual(editedTwice.revisions.start, 3);
+                assert.strictEqual(editedTwice.revisions.ids.length, 3);
+                assert.strictEqual(editedTwice.deleted, false);
 
                 c.database.destroy();
             });
@@ -457,16 +457,16 @@ describe('replication-graphql.test.js', () => {
                 c.database.destroy();
             });
             it('should be able to run multiple times', async () => {
-                const endpointHash = getEndpointHash();
+                const useEndpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 await setLastPushSequence(
                     c,
-                    endpointHash,
+                    useEndpointHash,
                     1
                 );
                 await setLastPushSequence(
                     c,
-                    endpointHash,
+                    useEndpointHash,
                     2
                 );
                 c.database.destroy();
@@ -474,54 +474,54 @@ describe('replication-graphql.test.js', () => {
         });
         describe('.getLastPushSequence()', () => {
             it('should get null if not set before', async () => {
-                const endpointHash = getEndpointHash();
+                const useEndpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const ret = await getLastPushSequence(
                     c,
-                    endpointHash
+                    useEndpointHash
                 );
-                assert.equal(ret, 0);
+                assert.strictEqual(ret, 0);
                 c.database.destroy();
             });
             it('should get the value if set before', async () => {
-                const endpointHash = getEndpointHash();
+                const useEndpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 await setLastPushSequence(
                     c,
-                    endpointHash,
+                    useEndpointHash,
                     5
                 );
                 const ret = await getLastPushSequence(
                     c,
-                    endpointHash
+                    useEndpointHash
                 );
-                assert.equal(ret, 5);
+                assert.strictEqual(ret, 5);
                 c.database.destroy();
             });
             it('should get the value if set multiple times', async () => {
-                const endpointHash = getEndpointHash();
+                const useEndpointHash = getEndpointHash();
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 await setLastPushSequence(
                     c,
-                    endpointHash,
+                    useEndpointHash,
                     5
                 );
                 const ret = await getLastPushSequence(
                     c,
-                    endpointHash
+                    useEndpointHash
                 );
-                assert.equal(ret, 5);
+                assert.strictEqual(ret, 5);
 
                 await setLastPushSequence(
                     c,
-                    endpointHash,
+                    useEndpointHash,
                     10
                 );
                 const ret2 = await getLastPushSequence(
                     c,
-                    endpointHash
+                    useEndpointHash
                 );
-                assert.equal(ret2, 10);
+                assert.strictEqual(ret2, 10);
                 c.database.destroy();
             });
         });
@@ -534,7 +534,7 @@ describe('replication-graphql.test.js', () => {
                     endpointHash,
                     10
                 );
-                assert.equal(changes.results.length, amount);
+                assert.strictEqual(changes.results.length, amount);
                 assert.ok(changes.results[0].doc.name);
                 c.database.destroy();
             });
@@ -548,7 +548,7 @@ describe('replication-graphql.test.js', () => {
                     endpointHash,
                     10
                 );
-                assert.equal(changes.results.length, amount);
+                assert.strictEqual(changes.results.length, amount);
                 c.database.destroy();
             });
             it('should not get more changes then the limit', async () => {
@@ -559,7 +559,7 @@ describe('replication-graphql.test.js', () => {
                     endpointHash,
                     10
                 );
-                assert.equal(changes.results.length, 10);
+                assert.strictEqual(changes.results.length, 10);
                 c.database.destroy();
             });
             it('should get deletions', async () => {
@@ -572,7 +572,7 @@ describe('replication-graphql.test.js', () => {
                     endpointHash,
                     10
                 );
-                assert.equal(changes.results.length, amount);
+                assert.strictEqual(changes.results.length, amount);
                 const deleted = changes.results.find(change => change.doc._deleted === true);
                 assert.ok(deleted);
                 c.database.destroy();
@@ -585,8 +585,8 @@ describe('replication-graphql.test.js', () => {
                     endpointHash,
                     10
                 );
-                const first = changes.results[0];
-                assert.ok(first.doc.id);
+                const firstDoc = changes.results[0];
+                assert.ok(firstDoc.doc.id);
                 c.database.destroy();
             });
             it('should have filtered out replicated docs from the endpoint', async () => {
@@ -603,7 +603,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const allDocs = await c.find().exec();
-                assert.equal(allDocs.length, amount + 1);
+                assert.strictEqual(allDocs.length, amount + 1);
 
                 const changes = await getChangesSinceLastPushSequence(
                     c,
@@ -611,10 +611,10 @@ describe('replication-graphql.test.js', () => {
                     10
                 );
 
-                assert.equal(changes.results.length, amount);
+                assert.strictEqual(changes.results.length, amount);
                 const shouldNotBeFound = changes.results.find(change => change.id === toPouch.id);
                 assert.ok(!shouldNotBeFound);
-                assert.equal(changes.last_seq, amount + 1);
+                assert.strictEqual(changes.last_seq, amount + 1);
                 c.database.destroy();
             });
         });
@@ -656,7 +656,7 @@ describe('replication-graphql.test.js', () => {
                     c,
                     endpointHash
                 );
-                assert.equal(ret, null);
+                assert.strictEqual(ret, null);
                 c.database.destroy();
             });
             it('should return the doc if it was set', async () => {
@@ -673,7 +673,7 @@ describe('replication-graphql.test.js', () => {
                     c,
                     endpointHash
                 );
-                assert.equal(ret.name, 'foobar');
+                assert.strictEqual(ret.name, 'foobar');
                 c.database.destroy();
             });
         });
@@ -691,7 +691,7 @@ describe('replication-graphql.test.js', () => {
                 },
                 deletedFlag: 'deleted'
             });
-            assert.equal(replicationState.isStopped(), false);
+            assert.strictEqual(replicationState.isStopped(), false);
 
             await AsyncTestUtil.waitUntil(async () => {
                 const docs = await c.find().exec();
@@ -729,8 +729,8 @@ describe('replication-graphql.test.js', () => {
 
 
             await AsyncTestUtil.waitUntil(async () => {
-                const docs = await c.find().exec();
-                return docs.length === batchSize;
+                const ds = await c.find().exec();
+                return ds.length === batchSize;
             });
 
             server.close();
@@ -755,8 +755,8 @@ describe('replication-graphql.test.js', () => {
 
 
             await AsyncTestUtil.waitUntil(async () => {
-                const docs = await c.find().exec();
-                return docs.length === amount;
+                const ds = await c.find().exec();
+                return ds.length === amount;
             });
 
             // all of test-data should be in the database
@@ -790,7 +790,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsInDb = await c.find().exec();
-            assert.equal(docsInDb.length, amount);
+            assert.strictEqual(docsInDb.length, amount);
 
             server.close();
             c.database.destroy();
@@ -812,7 +812,7 @@ describe('replication-graphql.test.js', () => {
             });
             await replicationState.awaitInitialReplication();
             const docs = await c.find().exec();
-            assert.equal(docs.length, 0);
+            assert.strictEqual(docs.length, 0);
 
             server.close();
             c.database.destroy();
@@ -848,7 +848,7 @@ describe('replication-graphql.test.js', () => {
 
             await replicationState.awaitInitialReplication();
             const docs = await c.find().exec();
-            assert.equal(docs.length, amount);
+            assert.strictEqual(docs.length, amount);
 
             server.close();
             c.database.destroy();
@@ -879,7 +879,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.run();
 
             const docs = await c.find().exec();
-            assert.equal(docs.length, 2);
+            assert.strictEqual(docs.length, 2);
 
             server.close();
             await c.database.destroy();
@@ -934,7 +934,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docs = await c.find().exec();
-            assert.equal(docs.length, batchSize);
+            assert.strictEqual(docs.length, batchSize);
 
             const firstDoc = AsyncTestUtil.clone(testData[0]);
             firstDoc.deleted = true;
@@ -943,7 +943,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.run();
 
             const docs2 = await c.find().exec();
-            assert.equal(docs2.length, batchSize - 1);
+            assert.strictEqual(docs2.length, batchSize - 1);
 
             server.close();
             c.database.destroy();
@@ -955,7 +955,7 @@ describe('replication-graphql.test.js', () => {
             await rxDoc.remove();
 
             const docs = await c.find().exec();
-            assert.equal(docs.length, 0);
+            assert.strictEqual(docs.length, 0);
 
             const server = await SpawnServer.spawn();
             const replicationState = c.syncGraphQL({
@@ -971,7 +971,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.run();
 
             const docsAfter = await c.find().exec();
-            assert.equal(docsAfter.length, 1);
+            assert.strictEqual(docsAfter.length, 1);
 
             server.close();
             c.database.destroy();
@@ -997,7 +997,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, batchSize);
+            assert.strictEqual(docsOnServer.length, batchSize);
 
             server.close();
             c.database.destroy();
@@ -1021,7 +1021,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, amount);
+            assert.strictEqual(docsOnServer.length, amount);
 
             server.close();
             c.database.destroy();
@@ -1050,7 +1050,7 @@ describe('replication-graphql.test.js', () => {
             const docsOnServer = server.getDocuments();
 
             const shouldBeDeleted = docsOnServer.find(d => d.id === doc.primary);
-            assert.equal(shouldBeDeleted.deleted, true);
+            assert.strictEqual(shouldBeDeleted.deleted, true);
 
             server.close();
             c.database.destroy();
@@ -1077,20 +1077,20 @@ describe('replication-graphql.test.js', () => {
 
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, amount);
+            assert.strictEqual(docsOnServer.length, amount);
 
             // check for inserts
             await c.insert(schemaObjects.humanWithTimestamp());
             await AsyncTestUtil.waitUntil(async () => {
-                const docsOnServer = server.getDocuments();
-                return docsOnServer.length === amount + 1;
+                const docsOnServer2 = server.getDocuments();
+                return docsOnServer2.length === amount + 1;
             });
 
             // check for deletes
             await c.findOne().remove();
             await AsyncTestUtil.waitUntil(async () => {
-                const docsOnServer = server.getDocuments();
-                const oneShouldBeDeleted = docsOnServer.find(d => d.deleted === true);
+                const docsOnServer2 = server.getDocuments();
+                const oneShouldBeDeleted = docsOnServer2.find(d => d.deleted === true);
                 return !!oneShouldBeDeleted;
             });
 
@@ -1130,8 +1130,8 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, 0);
-            assert.equal(emitted.length, 0);
+            assert.strictEqual(docsOnServer.length, 0);
+            assert.strictEqual(emitted.length, 0);
 
             server.close();
             db.destroy();
@@ -1162,10 +1162,10 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, amount * 2);
+            assert.strictEqual(docsOnServer.length, amount * 2);
 
             const docsOnDb = await c.find().exec();
-            assert.equal(docsOnDb.length, amount * 2);
+            assert.strictEqual(docsOnDb.length, amount * 2);
 
             server.close();
             c.database.destroy();
@@ -1195,10 +1195,10 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, amount * 2);
+            assert.strictEqual(docsOnServer.length, amount * 2);
 
             const docsOnDb = await c.find().exec();
-            assert.equal(docsOnDb.length, amount * 2);
+            assert.strictEqual(docsOnDb.length, amount * 2);
 
 
             // insert one on local and one on server
@@ -1215,9 +1215,9 @@ describe('replication-graphql.test.js', () => {
                  * because pouchdb takes a while until the update_seq is increased
                  */
                 await replicationState.run();
-                const docsOnServer = server.getDocuments();
+                const docsOnServer2 = server.getDocuments();
                 const shouldBe = (amount * 2) + 2;
-                return docsOnServer.length === shouldBe;
+                return docsOnServer2.length === shouldBe;
             });
             await AsyncTestUtil.waitUntil(async () => {
                 const docsOnDb2 = server.getDocuments();
@@ -1251,10 +1251,10 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docsOnServer = server.getDocuments();
-            assert.equal(docsOnServer.length, amount * 2);
+            assert.strictEqual(docsOnServer.length, amount * 2);
 
             const docsOnDb = await c.find().exec();
-            assert.equal(docsOnDb.length, amount * 2);
+            assert.strictEqual(docsOnDb.length, amount * 2);
 
 
             // insert one on local and one on server
@@ -1269,9 +1269,9 @@ describe('replication-graphql.test.js', () => {
                  * because pouchdb takes a while until the update_seq is increased
                  */
                 await replicationState.run();
-                const docsOnServer = server.getDocuments();
+                const docsOnServer2 = server.getDocuments();
                 const shouldBe = (amount * 2) + 2;
-                return docsOnServer.length === shouldBe;
+                return docsOnServer2.length === shouldBe;
             });
             await AsyncTestUtil.waitUntil(async () => {
                 const docsOnDb2 = server.getDocuments();
@@ -1318,7 +1318,7 @@ describe('replication-graphql.test.js', () => {
             );
 
             assert.ok(count < 10);
-            assert.equal(replicationState._runQueueCount, 0);
+            assert.strictEqual(replicationState._runQueueCount, 0);
 
             server.close();
             c.database.destroy();
@@ -1412,8 +1412,8 @@ describe('replication-graphql.test.js', () => {
             const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
 
             await replicationState.awaitInitialReplication();
-            assert.equal(emitted.length, batchSize);
-            assert.deepEqual(testData, emitted);
+            assert.strictEqual(emitted.length, batchSize);
+            assert.deepStrictEqual(testData, emitted);
 
             sub.unsubscribe();
             server.close();
@@ -1439,10 +1439,10 @@ describe('replication-graphql.test.js', () => {
             const sub = replicationState.send$.subscribe(doc => emitted.push(doc));
             await replicationState.awaitInitialReplication();
 
-            assert.equal(emitted.length, batchSize);
+            assert.strictEqual(emitted.length, batchSize);
 
             const docs = await c.find().exec();
-            assert.deepEqual(
+            assert.deepStrictEqual(
                 emitted.map(d => d.id).sort(),
                 docs.map(d => d.primary).sort()
             );
@@ -1465,7 +1465,7 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted'
             });
             await replicationState.awaitInitialReplication();
-            assert.equal(replicationState.isStopped(), true);
+            assert.strictEqual(replicationState.isStopped(), true);
 
             server.close();
             c.database.destroy();
@@ -1492,9 +1492,9 @@ describe('replication-graphql.test.js', () => {
 
             await replicationState.awaitInitialReplication();
 
-            assert.equal(emitted.length, 3);
+            assert.strictEqual(emitted.length, 3);
             const last = emitted.pop();
-            assert.equal(last, false);
+            assert.strictEqual(last, false);
 
             sub.unsubscribe();
             server.close();
@@ -1534,8 +1534,8 @@ describe('replication-graphql.test.js', () => {
             await replicationState.run();
 
             await AsyncTestUtil.waitUntil(async () => {
-                const docsAfter = await c.find().exec();
-                return docsAfter.length === 1;
+                const docsAfter2 = await c.find().exec();
+                return docsAfter2.length === 1;
             });
 
             const doc = schemaObjects.humanWithTimestamp();
@@ -1545,7 +1545,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.run();
             // directly after .run(), the doc must be available
             const docsAfter = await c.find().exec();
-            assert.equal(docsAfter.length, 2);
+            assert.strictEqual(docsAfter.length, 2);
 
             server.close();
             c.database.destroy();
@@ -1583,8 +1583,8 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docs = await collection.find().exec();
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0].name, 'Alice');
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0].name, 'Alice');
 
             const pouchDocs = await collection.pouch.find({
                 selector: {
@@ -1625,8 +1625,8 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
 
             const docs = await collection.find().exec();
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0].name, 'Alice');
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0].name, 'Alice');
 
             const pouchDocs = await collection.pouch.find({
                 selector: {

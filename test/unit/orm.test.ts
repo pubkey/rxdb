@@ -97,7 +97,7 @@ config.parallel('orm.test.js', () => {
                     }
                 });
                 const res = collection.foobar();
-                assert.equal(res, 'test');
+                assert.strictEqual(res, 'test');
                 db.destroy();
             });
             it('should have the right this-context', async () => {
@@ -115,7 +115,7 @@ config.parallel('orm.test.js', () => {
                     }
                 });
                 const res = collection.foobar();
-                assert.equal(res, 'humans');
+                assert.strictEqual(res, 'humans');
                 db.destroy();
             });
             it('should be able to use this.insert()', async () => {
@@ -133,7 +133,7 @@ config.parallel('orm.test.js', () => {
                     }
                 });
                 const res = collection.foobar(schemaObjects.human());
-                assert.equal(res.constructor.name, 'Promise');
+                assert.strictEqual(res.constructor.name, 'Promise');
                 await res;
                 db.destroy();
             });
@@ -184,7 +184,7 @@ config.parallel('orm.test.js', () => {
                     await col.insert(schemaObjects.human());
 
                     const val = doc.myMethod();
-                    assert.equal(val, 'test:foobar');
+                    assert.strictEqual(val, 'test:foobar');
 
                     db.destroy();
                 });
@@ -285,7 +285,7 @@ config.parallel('orm.test.js', () => {
                 await collection.insert(schemaObjects.human());
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
-                assert.equal(res, 'test');
+                assert.strictEqual(res, 'test');
                 db.destroy();
             });
             it('should have the right this-context', async () => {
@@ -306,7 +306,7 @@ config.parallel('orm.test.js', () => {
                 await collection.insert(obj);
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
-                assert.equal(res, obj.passportId);
+                assert.strictEqual(res, obj.passportId);
                 db.destroy();
             });
             it('should not be confused with many collections', async () => {
@@ -333,8 +333,8 @@ config.parallel('orm.test.js', () => {
                 const doc1 = await collection.insert(docData);
                 const doc2 = await collection2.insert(docData);
 
-                assert.equal('1', doc1.foobar());
-                assert.equal('2', doc2.foobar());
+                assert.strictEqual('1', doc1.foobar());
+                assert.strictEqual('2', doc2.foobar());
 
                 db.destroy();
             });
@@ -386,22 +386,22 @@ config.parallel('orm.test.js', () => {
 
             // orm-method
             const hello = doc.hello;
-            assert.equal(hello(), 'hi');
+            assert.strictEqual(hello(), 'hi');
 
             // prototype-method
             const get = doc.get;
-            assert.equal(get('name'), 'hi');
+            assert.strictEqual(get('name'), 'hi');
 
             // nested
             const nestedObj = doc.nested;
-            assert.equal(nestedObj.foo, 'bar');
+            assert.strictEqual(nestedObj.foo, 'bar');
 
             // nested getter-method
             const obs = nestedObj.foo$;
             const emitted = [];
             const sub = obs.subscribe(v => emitted.push(v));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-            assert.equal(emitted[0], 'bar');
+            assert.strictEqual(emitted[0], 'bar');
             sub.unsubscribe();
 
             db.destroy();

@@ -27,10 +27,7 @@ export class LeaderElector {
         return this.elector.die();
     }
 
-    /**
-     * @return {Promise} promise which resolve when the instance becomes leader
-     */
-    waitForLeadership() {
+    waitForLeadership(): Promise<boolean> {
         return this.elector.awaitLeadership().then(() => {
             this.isLeader = true;
             return true;

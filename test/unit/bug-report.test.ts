@@ -90,7 +90,7 @@ describe('bug-report.test.js', () => {
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.equal(myDocument.age, 56);
+        assert.strictEqual(myDocument.age, 56);
 
         // you can also wait for events
         const emitted = [];

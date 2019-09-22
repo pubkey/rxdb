@@ -41,9 +41,9 @@ config.parallel('query-change-detector.test.js', () => {
             const q = col.find();
             await q.exec();
             const resData = q._resultsData;
-            assert.equal(q._resultsData.length, 5);
+            assert.strictEqual(q._resultsData.length, 5);
             const is = _isDocInResultData(q._queryChangeDetector, resData[0], resData);
-            assert.equal(is, true);
+            assert.strictEqual(is, true);
             col.database.destroy();
         });
         it('should return false', async () => {
@@ -53,9 +53,9 @@ config.parallel('query-change-detector.test.js', () => {
             const resData = q._resultsData;
             const anyDoc = clone(resData[0]);
             anyDoc._id = 'foobar';
-            assert.equal(q._resultsData.length, 5);
+            assert.strictEqual(q._resultsData.length, 5);
             const is = _isDocInResultData(q._queryChangeDetector, anyDoc, resData);
-            assert.equal(is, false);
+            assert.strictEqual(is, false);
             col.database.destroy();
         });
     });
@@ -68,7 +68,7 @@ config.parallel('query-change-detector.test.js', () => {
             const docData2 = schemaObjects.human();
             docData2.age = 10;
             const res = _isSortedBefore(q._queryChangeDetector, docData1, docData2);
-            assert.equal(res, true);
+            assert.strictEqual(res, true);
             col.database.destroy();
         });
         it('should return false', async () => {
@@ -81,7 +81,7 @@ config.parallel('query-change-detector.test.js', () => {
             docData2.passportId = '111';
             docData2.age = 5;
             const res = _isSortedBefore(q._queryChangeDetector, docData1, docData2);
-            assert.equal(res, false);
+            assert.strictEqual(res, false);
             col.database.destroy();
         });
         it('should return true (sort by _id when equal)', async () => {
@@ -97,7 +97,7 @@ config.parallel('query-change-detector.test.js', () => {
                 q._queryChangeDetector,
                 docData1, docData2
             );
-            assert.equal(res, true);
+            assert.strictEqual(res, true);
             col.database.destroy();
         });
     });
@@ -116,15 +116,15 @@ config.parallel('query-change-detector.test.js', () => {
                 q._queryChangeDetector,
                 [docData2, docData1]
             );
-            assert.equal(res[0].age, 5);
-            assert.equal(res[1].age, 10);
+            assert.strictEqual(res[0].age, 5);
+            assert.strictEqual(res[1].age, 10);
 
             const res2 = _resortDocData(
                 q._queryChangeDetector,
                 [docData1, docData2]
             );
-            assert.equal(res2[0].age, 5);
-            assert.equal(res2[1].age, 10);
+            assert.strictEqual(res2[0].age, 5);
+            assert.strictEqual(res2[1].age, 10);
 
             col.database.destroy();
         });
@@ -144,7 +144,7 @@ config.parallel('query-change-detector.test.js', () => {
                 docDataBefore,
                 docDataAfter
             );
-            assert.equal(changed, true);
+            assert.strictEqual(changed, true);
             col.database.destroy();
         });
         it('should return false', async () => {
@@ -159,7 +159,7 @@ config.parallel('query-change-detector.test.js', () => {
                 docDataBefore,
                 docDataAfter
             );
-            assert.equal(changed, false);
+            assert.strictEqual(changed, false);
             col.database.destroy();
         });
     });
@@ -184,7 +184,7 @@ config.parallel('query-change-detector.test.js', () => {
                 await col.findOne('foobar').remove();
                 await AsyncTestUtil.waitUntil(() => changeEvents.length === 1);
                 const res = q._queryChangeDetector.handleSingleChange([], changeEvents[0]);
-                assert.equal(res, false);
+                assert.strictEqual(res, false);
                 col.database.destroy();
             });
         });
@@ -195,13 +195,13 @@ config.parallel('query-change-detector.test.js', () => {
                 const col = await humansCollection.create(5);
                 const q = col.find().where('name').eq('foobar');
                 const res = await q.exec();
-                assert.equal(q._execOverDatabaseCount, 1);
-                assert.equal(res.length, 0);
+                assert.strictEqual(q._execOverDatabaseCount, 1);
+                assert.strictEqual(res.length, 0);
 
                 await col.insert(schemaObjects.human());
 
                 await q.exec();
-                assert.equal(q._execOverDatabaseCount, 1);
+                assert.strictEqual(q._execOverDatabaseCount, 1);
 
                 col.database.destroy();
             });
@@ -216,14 +216,14 @@ config.parallel('query-change-detector.test.js', () => {
                     const col = await humansCollection.create(1);
                     const q = col.find().where('name').eq('foobar');
                     let results = await q.exec();
-                    assert.equal(results.length, 0);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 0);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     await col.findOne().remove();
 
                     results = await q.exec();
-                    assert.equal(results.length, 0);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 0);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     col.database.destroy();
                 });
@@ -233,15 +233,15 @@ config.parallel('query-change-detector.test.js', () => {
                     const col = await humansCollection.create(5);
                     const q = col.find().skip(1).limit(10);
                     let results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     // removed skipped one
                     await col.find().sort('passportId').limit(1).remove();
 
                     results = await q.exec();
-                    assert.equal(results.length, 3);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 3);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     col.database.destroy();
                 });
@@ -251,14 +251,14 @@ config.parallel('query-change-detector.test.js', () => {
                     const col = await humansCollection.create(5);
                     const q = col.find().limit(10);
                     let results = await q.exec();
-                    assert.equal(results.length, 5);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 5);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     await col.findOne().skip(1).remove();
 
                     results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     col.database.destroy();
                 });
@@ -266,14 +266,14 @@ config.parallel('query-change-detector.test.js', () => {
                     const col = await humansCollection.create(5);
                     const q = col.find();
                     let results = await q.exec();
-                    assert.equal(results.length, 5);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 5);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     await col.findOne().skip(1).remove();
 
                     results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
                     col.database.destroy();
                 });
             });
@@ -283,8 +283,8 @@ config.parallel('query-change-detector.test.js', () => {
 
                     const q = col.find().limit(4);
                     let results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     const last = await col.findOne().skip(4).exec();
                     assert.ok(!results.map(doc => doc.passportId).includes(last.passportId));
@@ -292,8 +292,8 @@ config.parallel('query-change-detector.test.js', () => {
                     await last.remove();
 
                     results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     col.database.destroy();
                 });
@@ -308,14 +308,14 @@ config.parallel('query-change-detector.test.js', () => {
 
                     const q = col.find().where('passportId').ne('foobar');
                     let results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     await otherDoc.atomicSet('firstName', 'piotr');
 
                     results = await q.exec();
-                    assert.equal(results.length, 4);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 4);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     col.database.destroy();
                 });
@@ -325,16 +325,16 @@ config.parallel('query-change-detector.test.js', () => {
                     const col = await humansCollection.createAgeIndex(5);
                     const q = col.find().sort('age');
                     let results = await q.exec();
-                    assert.equal(results.length, 5);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 5);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     const oneDoc = await col.findOne().skip(2).exec();
                     await oneDoc.atomicSet('age', 1);
 
                     results = await q.exec();
-                    assert.equal(results.length, 5);
-                    assert.equal(q._execOverDatabaseCount, 1);
-                    assert.equal(results[0].age, 1);
+                    assert.strictEqual(results.length, 5);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results[0].age, 1);
                     col.database.destroy();
                 });
             });
@@ -343,42 +343,42 @@ config.parallel('query-change-detector.test.js', () => {
                     const col = await humansCollection.createAgeIndex(5);
                     const q = col.find().sort('passportId');
                     let results = await q.exec();
-                    assert.equal(results.length, 5);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 5);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
                     const other = schemaObjects.human();
                     other.passportId = '000aaaaa'; // to make sure it sorts at start
                     await col.insert(other);
 
                     results = await q.exec();
-                    assert.equal(results.length, 6);
-                    assert.equal(q._execOverDatabaseCount, 1);
-                    assert.equal(results[0].passportId, '000aaaaa');
+                    assert.strictEqual(results.length, 6);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results[0].passportId, '000aaaaa');
                     col.database.destroy();
                 });
                 it('U3: BUG: does not resort when sorted by primary', async () => {
                     const col = await humansCollection.createPrimary(5);
                     const q = col.find().sort('passportId');
                     let results = await q.exec();
-                    assert.equal(results.length, 5);
-                    assert.equal(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results.length, 5);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
 
-                    const first = schemaObjects.simpleHuman();
-                    first.passportId = '000aaa'; // to make sure it sorts at start
-                    await col.insert(first);
+                    const firstDoc = schemaObjects.simpleHuman();
+                    firstDoc.passportId = '000aaa'; // to make sure it sorts at start
+                    await col.insert(firstDoc);
 
                     const last = schemaObjects.simpleHuman();
                     last.passportId = 'zzzzzz'; // to make sure it sorts at last
                     await col.insert(last);
 
                     const referenceResults = await col.find().where('passportId').ne('foobar').exec();
-                    assert.equal(referenceResults.length, 7);
+                    assert.strictEqual(referenceResults.length, 7);
 
                     results = await q.exec();
-                    assert.equal(results.length, 7);
-                    assert.equal(q._execOverDatabaseCount, 1);
-                    assert.equal(results[0].passportId, '000aaa');
-                    assert.equal(results[6].passportId, 'zzzzzz');
+                    assert.strictEqual(results.length, 7);
+                    assert.strictEqual(q._execOverDatabaseCount, 1);
+                    assert.strictEqual(results[0].passportId, '000aaa');
+                    assert.strictEqual(results[6].passportId, 'zzzzzz');
                     col.database.destroy();
                 });
             });
@@ -429,8 +429,8 @@ config.parallel('query-change-detector.test.js', () => {
                     .ne('foobar3')
                     .exec();
 
-                assert.deepEqual(
-                    docs.map(d => d.id), [
+                assert.deepStrictEqual(
+                    docs.map(d => d['id']), [
                         'aaa',
                         'bbb',
                         'ccc'
@@ -444,8 +444,8 @@ config.parallel('query-change-detector.test.js', () => {
                         .where('passportId')
                         .ne('foobar3').toJSON()
                 );
-                assert.deepEqual(
-                    docs.map(d => d.id),
+                assert.deepStrictEqual(
+                    docs.map(d => d['id']),
                     pouchResult.docs.map(doc => doc._id)
                 );
 
@@ -460,8 +460,8 @@ config.parallel('query-change-detector.test.js', () => {
                 const results = [];
                 const sub = docs$
                     .pipe(
-                        filter(docs => docs !== null),
-                        map(docs => docs.map(doc => doc.id))
+                        filter(ds => ds !== null),
+                        map(ds => ds.map(doc => doc['id']))
                     ).subscribe(docsIds => results.push(docsIds));
 
                 await AsyncTestUtil.waitUntil(() => results.length === 1);
@@ -475,7 +475,7 @@ config.parallel('query-change-detector.test.js', () => {
 
                 const lastResult = results[1];
 
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     lastResult, [
                         'aaa',
                         'aab',
@@ -491,7 +491,7 @@ config.parallel('query-change-detector.test.js', () => {
                         .where('passportId')
                         .ne('foobar3').toJSON()
                 );
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     lastResult,
                     pouchResult2.docs.map(doc => doc._id)
                 );
@@ -517,19 +517,19 @@ config.parallel('query-change-detector.test.js', () => {
             const q = col.find().sort('passportId');
             const sub = q.$.subscribe(res => results.push(res));
             await AsyncTestUtil.waitUntil(() => results.length === 1);
-            assert.equal(results[0].length, 5);
-            assert.equal(q._execOverDatabaseCount, 1);
+            assert.strictEqual(results[0].length, 5);
+            assert.strictEqual(q._execOverDatabaseCount, 1);
 
 
-            const first = schemaObjects.simpleHuman();
-            first.passportId = '000aaa'; // to make sure it sorts at start
-            await col.insert(first);
+            const firstDoc = schemaObjects.simpleHuman();
+            firstDoc.passportId = '000aaa'; // to make sure it sorts at start
+            await col.insert(firstDoc);
 
             await AsyncTestUtil.waitUntil(() => results.length === 2);
             await util.promiseWait(100);
 
             // here is the error -> this must be 6
-            assert.equal(col._changeEventBuffer.counter, 6);
+            assert.strictEqual(col._changeEventBuffer.counter, 6);
 
             const last = schemaObjects.simpleHuman();
             last.passportId = 'zzzzzz'; // to make sure it sorts at last
@@ -537,10 +537,10 @@ config.parallel('query-change-detector.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => results.length === 3);
 
-            assert.equal(results[2].length, 7);
-            assert.equal(q._execOverDatabaseCount, 1);
-            assert.equal(results[2][0].passportId, '000aaa');
-            assert.equal(results[2][6].passportId, 'zzzzzz');
+            assert.strictEqual(results[2].length, 7);
+            assert.strictEqual(q._execOverDatabaseCount, 1);
+            assert.strictEqual(results[2][0].passportId, '000aaa');
+            assert.strictEqual(results[2][6].passportId, 'zzzzzz');
 
             sub.unsubscribe();
             server.close();
@@ -630,7 +630,7 @@ config.parallel('query-change-detector.test.js', () => {
 
         await getQuery().exec();
         const countAfter = getQuery()._execOverDatabaseCount;
-        assert.equal(countBefore, countAfter);
+        assert.strictEqual(countBefore, countAfter);
         col.database.destroy();
     });
 });

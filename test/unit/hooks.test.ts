@@ -28,7 +28,7 @@ config.parallel('hooks.test.js', () => {
             c.preSave(function () { }, false);
             const hooks = c.getHooks('pre', 'save');
             assert.ok(Array.isArray(hooks.series));
-            assert.equal(hooks.series.length, 1);
+            assert.strictEqual(hooks.series.length, 1);
             c.database.destroy();
         });
         it('should get a parallel hook', async () => {
@@ -36,7 +36,7 @@ config.parallel('hooks.test.js', () => {
             c.preSave(function () { }, true);
             const hooks = c.getHooks('pre', 'save');
             assert.ok(Array.isArray(hooks.parallel));
-            assert.equal(hooks.parallel.length, 1);
+            assert.strictEqual(hooks.parallel.length, 1);
             c.database.destroy();
         });
     });
@@ -48,11 +48,11 @@ config.parallel('hooks.test.js', () => {
                     const human = schemaObjects.human();
                     let count = 0;
                     c.preInsert(function (data, instance) {
-                        assert.equal(typeof instance, 'undefined');
+                        assert.strictEqual(typeof instance, 'undefined');
                         count++;
                     }, false);
                     await c.insert(human);
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -60,46 +60,46 @@ config.parallel('hooks.test.js', () => {
                     const human = schemaObjects.human();
                     let count = 0;
                     c.preInsert(function (doc, instance) {
-                        assert.equal(typeof instance, 'undefined');
+                        assert.strictEqual(typeof instance, 'undefined');
                         count++;
                     }, false);
                     let countp = 0;
                     c.preInsert(function (doc, instance) {
-                        assert.equal(typeof instance, 'undefined');
+                        assert.strictEqual(typeof instance, 'undefined');
                         countp++;
                     }, true);
                     await c.insert(human);
-                    assert.equal(count, 1);
-                    assert.equal(countp, 1);
+                    assert.strictEqual(count, 1);
+                    assert.strictEqual(countp, 1);
                     c.database.destroy();
                 });
                 it('should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
 
-                    c.preInsert(function (doc, instance) {
-                        assert.equal(typeof instance, 'undefined');
-                        doc.lastName = 'foobar';
+                    c.preInsert(function (d, instance) {
+                        assert.strictEqual(typeof instance, 'undefined');
+                        d.lastName = 'foobar';
                     }, false);
 
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
-                    assert.equal(doc.get('lastName'), 'foobar');
+                    assert.strictEqual(doc.get('lastName'), 'foobar');
                     c.database.destroy();
                 });
                 it('async: should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const human = schemaObjects.simpleHuman();
 
-                    c.preInsert(async function (doc, instance) {
-                        assert.equal(typeof instance, 'undefined');
+                    c.preInsert(async function (d, instance) {
+                        assert.strictEqual(typeof instance, 'undefined');
                         await util.promiseWait(10);
-                        doc.lastName = 'foobar';
+                        d.lastName = 'foobar';
                     }, false);
 
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec();
-                    assert.equal(doc.get('lastName'), 'foobar');
+                    assert.strictEqual(doc.get('lastName'), 'foobar');
                     c.database.destroy();
                 });
                 it('should not insert if hook throws', async () => {
@@ -115,9 +115,9 @@ config.parallel('hooks.test.js', () => {
                     } catch (e) {
                         failC++;
                     }
-                    assert.equal(failC, 1);
+                    assert.strictEqual(failC, 1);
                     const doc = await c.findOne(human.passportId).exec();
-                    assert.equal(doc, null);
+                    assert.strictEqual(doc, null);
                     c.database.destroy();
                 });
                 it('should have the collection bound to the this-scope', async () => {
@@ -126,7 +126,7 @@ config.parallel('hooks.test.js', () => {
                     let hasRun = false;
                     c.preInsert(function () {
                         hasRun = true;
-                        assert.equal(this.foo, 'bar');
+                        assert.strictEqual(this.foo, 'bar');
                     }, false);
 
                     await c.insert(schemaObjects.simpleHuman());
@@ -164,7 +164,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, false);
                     await c.insert(human);
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -177,7 +177,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, true);
                     await c.insert(human);
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
             });
@@ -197,7 +197,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, false);
                     await doc.atomicSet('firstName', 'foobar');
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -211,7 +211,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, true);
                     await doc.atomicSet('firstName', 'foobar');
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('should save a modified document', async () => {
@@ -261,9 +261,9 @@ config.parallel('hooks.test.js', () => {
                     } catch (e) {
                         failC++;
                     }
-                    assert.equal(failC, 1);
+                    assert.strictEqual(failC, 1);
                     const syncValue = await doc.firstName$.pipe(first()).toPromise();
-                    assert.equal(syncValue, 'test');
+                    assert.strictEqual(syncValue, 'test');
                     c.database.destroy();
                 });
             });
@@ -281,7 +281,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, false);
                     await doc.atomicSet('firstName', 'foobar');
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -295,7 +295,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, true);
                     await doc.atomicSet('firstName', 'foobar');
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
             });
@@ -316,7 +316,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, false);
                     await doc.remove();
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -330,7 +330,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, true);
                     await doc.remove();
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('should not remove if hook throws', async () => {
@@ -349,10 +349,10 @@ config.parallel('hooks.test.js', () => {
                     } catch (e) {
                         failC++;
                     }
-                    assert.equal(failC, 1);
+                    assert.strictEqual(failC, 1);
                     const doc2 = await c.findOne(human.passportId).exec();
-                    assert.notEqual(doc2, null);
-                    assert.equal(doc2.get('passportId'), human.passportId);
+                    assert.notStrictEqual(doc2, null);
+                    assert.strictEqual(doc2.get('passportId'), human.passportId);
                     c.database.destroy();
                 });
             });
@@ -371,7 +371,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, false);
                     await doc.remove();
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -385,7 +385,7 @@ config.parallel('hooks.test.js', () => {
                         count++;
                     }, true);
                     await doc.remove();
-                    assert.equal(count, 1);
+                    assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
                 it('should have the collection bound to the this-scope', async () => {
@@ -395,7 +395,7 @@ config.parallel('hooks.test.js', () => {
 
                     c.postRemove(function () {
                         hasRun = true;
-                        assert.equal(this.foo2, 'bar2');
+                        assert.strictEqual(this.foo2, 'bar2');
                     }, true);
 
                     const doc = await c.findOne().exec();
@@ -430,7 +430,7 @@ config.parallel('hooks.test.js', () => {
                 const human = schemaObjects.simpleHuman();
                 await collection.insert(human);
                 const doc = await collection.findOne().exec();
-                assert.equal('foobar', doc.myField);
+                assert.strictEqual('foobar', doc.myField);
 
                 db.destroy();
             });
@@ -474,7 +474,7 @@ config.parallel('hooks.test.js', () => {
             assert.ok(hasThrown);
             await util.promiseWait(10);
             const allDocs = await c.find().exec();
-            assert.equal(allDocs.length, 0);
+            assert.strictEqual(allDocs.length, 0);
             c.database.destroy();
         });
     });

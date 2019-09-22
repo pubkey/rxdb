@@ -1,6 +1,9 @@
 import {
     hash
 } from '../../util';
+import {
+    RxCollection
+} from '../../types';
 
 export const PLUGIN_IDENT = 'rxdbreplicationgraphql';
 
@@ -24,19 +27,19 @@ export function getDocFromPouchOrNull(collection, id) {
 
 
 /**
- * 
- * @param {} collection 
- * @param {string[]} docIds
- * @return {Promise<{[k: string]: {
- *  deleted: boolean,
- *  revisions: {start: number, ids: string[]},
- *  doc: any
- * }}>} revisions and docs, indexed by id
+ *
+ * @return  revisions and docs, indexed by id
  */
 export async function getDocsWithRevisionsFromPouch(
-    collection,
-    docIds
-) {
+    collection: RxCollection,
+    docIds: string[]
+): Promise<{
+    [k: string]: {
+        deleted: boolean,
+        revisions: { start: number, ids: string[] },
+        doc: any
+    }
+}> {
     if (docIds.length === 0) return {}; // optimisation shortcut
     const pouch = collection.pouch;
     const allDocs = await pouch.allDocs({

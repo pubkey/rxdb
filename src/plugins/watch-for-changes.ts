@@ -13,7 +13,8 @@ import {
     changeEventfromPouchChange
 } from '../rx-change-event';
 import {
-    RxPlugin
+    RxPlugin,
+    RxCollection
 } from '../types';
 
 /**
@@ -56,11 +57,11 @@ export function watchForChanges() {
 /**
  * handles a single change-event
  * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
  */
-function _handleSingleChange(collection, change) {
+function _handleSingleChange(
+    collection: RxCollection,
+    change: any
+): Promise<boolean> {
     if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
 
     // wait 2 ticks and 20 ms to give the internal event-handling time to run
@@ -70,7 +71,9 @@ function _handleSingleChange(collection, change) {
         .then(() => {
             const docData = change.doc;
             // already handled by internal event-stream
-            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
+            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) {
+                return false;
+            }
 
             const cE = changeEventfromPouchChange(docData, collection);
 

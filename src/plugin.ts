@@ -33,7 +33,6 @@ import {
 
 /**
  * prototypes that can be manipulated with a plugin
- * @type {Object}
  */
 const PROTOTYPES = {
     RxSchema: RxSchema.prototype,

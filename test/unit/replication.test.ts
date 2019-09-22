@@ -45,7 +45,7 @@ describe('replication.test.js', () => {
             path = path.join('/');
             const res = await request(path);
             const json = JSON.parse(res);
-            assert.equal(typeof json.uuid, 'string');
+            assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
         it('spawn again', async () => {
@@ -56,7 +56,7 @@ describe('replication.test.js', () => {
             path = path.join('/');
             const res = await request(path);
             const json = JSON.parse(res);
-            assert.equal(typeof json.uuid, 'string');
+            assert.strictEqual(typeof json.uuid, 'string');
             server.close();
         });
     });
@@ -93,13 +93,13 @@ describe('replication.test.js', () => {
                 await pw8.promise;
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    const docs = await c2.find().exec();
-                    return docs.length === 1;
+                    const ds = await c2.find().exec();
+                    return ds.length === 1;
                 });
                 const docs = await c2.find().exec();
-                assert.equal(docs.length, 1);
+                assert.strictEqual(docs.length, 1);
 
-                assert.equal(docs[0].get('firstName'), obj.firstName);
+                assert.strictEqual(docs[0].get('firstName'), obj.firstName);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -144,7 +144,7 @@ describe('replication.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(() => e1.length === 1);
                 await AsyncTestUtil.waitUntil(() => e2.length === 1);
-                assert.equal(e1.length, e2.length);
+                assert.strictEqual(e1.length, e2.length);
 
                 pouch$.unsubscribe();
                 pouch2$.unsubscribe();
@@ -173,7 +173,7 @@ describe('replication.test.js', () => {
                 });
                 await AsyncTestUtil.wait(10);
                 const nonSyncedDocs = await c.find().exec();
-                assert.equal(nonSyncedDocs.length, 10);
+                assert.strictEqual(nonSyncedDocs.length, 10);
 
                 await c.database.destroy();
                 await c2.database.destroy();
@@ -195,7 +195,7 @@ describe('replication.test.js', () => {
                 });
                 await util.promiseWait(10);
                 const nonSyncedDocs = await c2.find().exec();
-                assert.equal(nonSyncedDocs.length, 10);
+                assert.strictEqual(nonSyncedDocs.length, 10);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -239,13 +239,13 @@ describe('replication.test.js', () => {
                 });
 
                 await AsyncTestUtil.waitUntil(async () => {
-                    const docs = await c.find().exec();
-                    return docs.length === 1;
+                    const ds = await c.find().exec();
+                    return ds.length === 1;
                 });
                 await util.promiseWait(10);
                 const docs = await c.find().exec();
-                assert.equal(docs.length, 1);
-                assert.equal(docs[0].firstName, 'foobar');
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0].firstName, 'foobar');
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -288,7 +288,7 @@ describe('replication.test.js', () => {
                 );
                 const pouchEventEmitter = repState._pouchEventEmitterObject;
                 assert.ok(pouchEventEmitter);
-                assert.equal(typeof pouchEventEmitter.on, 'function');
+                assert.strictEqual(typeof pouchEventEmitter.on, 'function');
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -341,7 +341,7 @@ describe('replication.test.js', () => {
                 const emited = [];
                 repState.alive$.subscribe(cE => emited.push(cE));
 
-                assert.equal(emited[emited.length - 1], false);
+                assert.strictEqual(emited[emited.length - 1], false);
 
                 c.database.destroy();
             });
@@ -357,14 +357,14 @@ describe('replication.test.js', () => {
                 repState.alive$.subscribe(cE => emited.push(cE));
                 await AsyncTestUtil.waitUntil(() => !!emited[emited.length - 1]);
 
-                assert.equal(emited[emited.length - 1], true);
+                assert.strictEqual(emited[emited.length - 1], true);
 
                 server.close(true);
                 const obj = schemaObjects.human();
                 await c.insert(obj);
 
                 await AsyncTestUtil.waitUntil(() => !emited[emited.length - 1]);
-                assert.equal(emited[emited.length - 1], false);
+                assert.strictEqual(emited[emited.length - 1], false);
 
                 c.database.destroy();
             });
@@ -378,7 +378,7 @@ describe('replication.test.js', () => {
                     waitForLeadership: false
                 });
                 const beFalse = await repState.complete$.pipe(first()).toPromise();
-                assert.equal(beFalse, false);
+                assert.strictEqual(beFalse, false);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -447,7 +447,7 @@ describe('replication.test.js', () => {
                 repState.denied$.subscribe(doc => emitted.push(doc));
 
                 await AsyncTestUtil.wait(100);
-                assert.equal(emitted.length, 0);
+                assert.strictEqual(emitted.length, 0);
 
                 c.database.destroy();
                 c2.database.destroy();
@@ -480,7 +480,7 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
                 await AsyncTestUtil.waitUntil(() => events.length === 1);
-                assert.equal(events[0].constructor.name, 'RxChangeEvent');
+                assert.strictEqual(events[0].constructor.name, 'RxChangeEvent');
 
                 syncC.database.destroy();
                 c.database.destroy();
@@ -506,7 +506,7 @@ describe('replication.test.js', () => {
                     results.push(res);
                     if (results.length === 2) pw8.resolve();
                 });
-                assert.equal(results.length, 0);
+                assert.strictEqual(results.length, 0);
                 await util.promiseWait(5);
 
 
@@ -514,7 +514,7 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                assert.equal(results.length, 2);
+                assert.strictEqual(results.length, 2);
 
                 syncC.database.destroy();
                 c.database.destroy();
@@ -559,7 +559,7 @@ describe('replication.test.js', () => {
                 await doc.atomicSet('firstName', 'foobar');
 
                 await newPromiseWait.promise;
-                assert.equal(lastValue, 'foobar');
+                assert.strictEqual(lastValue, 'foobar');
 
                 syncC.database.destroy();
                 c.database.destroy();
@@ -649,7 +649,7 @@ describe('replication.test.js', () => {
             // collection2._queryCache.destroy();
             documents = await collection2.find({}).exec();
 
-            assert.equal(documents.length, 1);
+            assert.strictEqual(documents.length, 1);
 
             // clean up afterwards
             db1.destroy();

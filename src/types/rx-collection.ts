@@ -40,7 +40,7 @@ import {
 } from '../rx-collection';
 
 export interface KeyFunctionMap {
-    [key: number]: Function
+    [key: number]: Function;
 }
 
 export interface RxCollectionCreator {
@@ -56,42 +56,31 @@ export interface RxCollectionCreator {
 }
 
 export interface MigrationState {
-    done: boolean, // true if finished
-    total: number, // will be the doc-count
-    handled: number, // amount of handled docs
-    success: number, // handled docs which successed
-    deleted: number, // handled docs which got deleted
-    percent: number // percentage
+    done: boolean; // true if finished
+    total: number; // will be the doc-count
+    handled: number; // amount of handled docs
+    success: number; // handled docs which successed
+    deleted: number; // handled docs which got deleted
+    percent: number; // percentage
 }
 
-export type RxCollectionHookCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
+export type RxCollectionHookCallback<
+    RxDocumentType,
+    OrmMethods
+    > = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
 export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void>;
 export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
 export type RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods> = (data: RxDocumentType) => Promise<void>;
 
-export type RxCollection<RxDocumentType = any, OrmMethods = {}, StaticMethods = { [key: string]: any }> = RxCollectionBase<RxDocumentType, OrmMethods> & StaticMethods;
+export type RxCollection<
+    RxDocumentType = any,
+    OrmMethods = {},
+    StaticMethods = { [key: string]: any }
+    > = RxCollectionBase<RxDocumentType, OrmMethods> &
+    RxCollectionGenerated<RxDocumentType, OrmMethods> &
+    StaticMethods;
 
-export interface RxCollectionBaseOld<RxDocumentType = any, OrmMethods = {}> {
-    readonly database: RxDatabase;
-    readonly name: string;
-    readonly schema: RxSchema<RxDocumentType>;
-    options?: any;
-    readonly pouch: PouchDBInstance;
-
-    readonly $: Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
-    readonly insert$: Observable<RxChangeEventInsert<RxDocumentType>>;
-    readonly update$: Observable<RxChangeEventUpdate<RxDocumentType>>;
-    readonly remove$: Observable<RxChangeEventRemove<RxDocumentType>>;
-
-    insert(json: RxDocumentType): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-    newDocument(json: Partial<RxDocumentType>): RxDocument<RxDocumentType, OrmMethods>;
-    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-    find(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
-    findOne(queryObj?: any): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
-
-    dump(decrytped: boolean): Promise<any>;
-    importDump(exportedJSON: any): Promise<Boolean>;
+export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}> {
 
     // HOOKS
     preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
@@ -102,29 +91,10 @@ export interface RxCollectionBaseOld<RxDocumentType = any, OrmMethods = {}> {
     postRemove(fun: RxCollectionHookCallback<RxDocumentType, OrmMethods>, parallel: boolean): void;
     postCreate(fun: RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods>): void;
 
-    // migration
-    migrationNeeded(): Promise<boolean>;
-    migrate(batchSize: number): Observable<MigrationState>;
-    migratePromise(batchSize: number): Promise<any>;
-
-    sync(syncOptions: SyncOptions): RxReplicationState;
-    // if you do custom-sync, use this
-    createRxReplicationState(): RxReplicationState;
-
-    syncGraphQl(options: SyncOptionsGraphQL): RxGraphQLReplicationState;
-
-    /**
-     * creates an in-memory replicated version of this collection
-     */
-    inMemory(): Promise<RxCollection<RxDocumentType, OrmMethods>>;
-
     insertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
     upsertLocal(id: string, data: any): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
     getLocal(id: string): Promise<RxLocalDocument<RxCollection<RxDocumentType, OrmMethods>>>;
 
     // only inMemory-collections
     awaitPersistence(): Promise<void>;
-
-    destroy(): Promise<boolean>;
-    remove(): Promise<any>;
 }

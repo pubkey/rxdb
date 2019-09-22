@@ -30,11 +30,11 @@ describe('reactive-database.test.js', () => {
                         filter((cEvent: RxChangeEvent) => cEvent.data.op === 'RxDatabase.collection'),
                         first()
                     ).toPromise().then(event => {
-                        assert.notEqual(db[event.data.v], undefined);
+                        assert.notStrictEqual(db[event.data.v], undefined);
                         return event;
                     });
-                assert.equal(changeEvent.constructor.name, 'RxChangeEvent');
-                assert.equal(changeEvent.data.v, 'myname');
+                assert.strictEqual(changeEvent.constructor.name, 'RxChangeEvent');
+                assert.strictEqual(changeEvent.data.v, 'myname');
                 db.destroy();
             });
         });

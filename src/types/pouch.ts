@@ -55,28 +55,30 @@ export type PouchdbQuery = {
     sort?: any[];
     limit?: number;
     skip?: number;
-}
+};
 
 export declare class PouchDBInstance {
     constructor(
         name: string,
         options: { adapter: string }
     );
+    static debug: Debug;
+
+    static plugin(p: any): void;
+    static isInstanceOf(instance: any): boolean;
+    static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
     info(): Promise<any>;
 
     allDocs(options?: any): Promise<any>;
 
     bulkDocs(
-        docs: { docs: any[] },
-        options?: any
-    ): Promise<any>;
-    bulkDocs(docs: any[],
+        docs: { docs: any[] } | any[],
         options?: any
     ): Promise<any>;
 
     find(mangoQuery: any): Promise<{
         docs: any[]
-    }>
+    }>;
     compact(options?: any): Promise<any>;
     destroy(options?: any): Promise<void>;
     get(
@@ -122,9 +124,4 @@ export declare class PouchDBInstance {
     createIndex(opts: {
         index: any;
     }): Promise<void>;
-
-    static plugin(p: any): void;
-    static debug: Debug;
-    static isInstanceOf(instance: any): boolean;
-    static countAllUndeleted(pouchdb: PouchDBInstance): Promise<number>;
 }

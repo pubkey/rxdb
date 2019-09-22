@@ -48,15 +48,15 @@ const INTERNAL_POUCHDBS = new WeakSet();
 
 
 export interface SyncOptions {
-    remote: string | any,
-    waitForLeadership?: boolean,
+    remote: string | any;
+    waitForLeadership?: boolean;
     direction?: {
         push?: boolean,
         pull?: boolean
-    },
+    };
     // for options see https://pouchdb.com/api.html#replication
-    options?: PouchReplicationOptions,
-    query?: RxQuery
+    options?: PouchReplicationOptions;
+    query?: RxQuery;
 }
 export class RxReplicationStateBase {
     public _subs: Subscription[] = [];
@@ -102,7 +102,7 @@ export type RxReplicationState = RxReplicationStateBase & {
     alive$: Observable<boolean>;
     complete$: Observable<any>;
     error$: Observable<any>;
-}
+};
 
 export function setPouchEventEmitter(
     rxRepState: RxReplicationState,
@@ -170,10 +170,7 @@ export function setPouchEventEmitter(
     );
 
 
-    /**
-     * @return {Promise}
-     */
-    function getIsAlive(emitter) {
+    function getIsAlive(emitter): Promise<boolean> {
         // "state" will live in emitter.state if single direction replication
         // or in emitter.push.state & emitter.pull.state when syncing for both
         let state = emitter.state;

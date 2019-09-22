@@ -17,12 +17,7 @@ import {
  */
 export const POUCHDB_LOCATION = 'rxdb-adapter-check';
 
-/**
- * 
- * @param {*} adapter
- * @return {Promise}
- */
-export function checkAdapter(adapter) {
+export function checkAdapter(adapter: any): Promise<any> {
     // id of the document which is stored and removed to ensure everything works
     const _id = POUCHDB_LOCATION + '-' + generateId();
 

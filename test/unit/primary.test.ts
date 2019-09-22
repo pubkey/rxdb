@@ -29,7 +29,7 @@ config.parallel('primary.test.js', () => {
             describe('positive', () => {
                 it('use in schema', async () => {
                     const schema = createRxSchema(schemas.primaryHuman);
-                    assert.equal(typeof schema.primaryPath, 'string');
+                    assert.strictEqual(typeof schema.primaryPath, 'string');
                 });
             });
             describe('negative', () => {
@@ -112,7 +112,7 @@ config.parallel('primary.test.js', () => {
                         include_docs: true
                     });
                     const first = all.rows[0].doc;
-                    assert.equal(obj.passportId, first._id);
+                    assert.strictEqual(obj.passportId, first._id);
                     c.database.destroy();
                 });
             });
@@ -149,7 +149,7 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const docs = await c.find().exec();
-                    assert.equal(docs.length, 1);
+                    assert.strictEqual(docs.length, 1);
                     c.database.destroy();
                 });
                 it('find by primary', async () => {
@@ -159,7 +159,7 @@ config.parallel('primary.test.js', () => {
                     const docs = await c.find({
                         passportId: obj.passportId
                     }).exec();
-                    assert.equal(docs.length, 1);
+                    assert.strictEqual(docs.length, 1);
                     c.database.destroy();
                 });
                 it('sort by primary', async () => {
@@ -170,9 +170,9 @@ config.parallel('primary.test.js', () => {
                     const docsDESC = await c.find().sort({
                         passportId: -1
                     }).exec();
-                    assert.equal(docsASC.length, 5);
-                    assert.equal(docsDESC.length, 5);
-                    assert.equal(
+                    assert.strictEqual(docsASC.length, 5);
+                    assert.strictEqual(docsDESC.length, 5);
+                    assert.strictEqual(
                         docsASC[0].firstName,
                         docsDESC.pop().firstName
                     );
@@ -188,13 +188,13 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne(obj.passportId).exec();
-                    assert.equal(doc.primary, obj.passportId);
+                    assert.strictEqual(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
                 it('find nothing', async () => {
                     const c = await humansCollection.createPrimary(10);
                     const doc = await c.findOne('foobar').exec();
-                    assert.equal(doc, null);
+                    assert.strictEqual(doc, null);
                     c.database.destroy();
                 });
                 it('find with more selectors', async () => {
@@ -204,7 +204,7 @@ config.parallel('primary.test.js', () => {
                     const doc = await c.findOne({
                         firstName: obj.firstName
                     }).exec();
-                    assert.equal(doc.primary, obj.passportId);
+                    assert.strictEqual(doc.primary, obj.passportId);
                     c.database.destroy();
                 });
                 it('BUG: findOne().where(myPrimary)', async () => {
@@ -214,7 +214,7 @@ config.parallel('primary.test.js', () => {
                     assert.ok(passportId.length > 4);
                     const doc2 = await c.findOne().where('passportId').eq(passportId).exec();
                     assert.ok(RxDocument.isInstanceOf(doc2));
-                    assert.equal(doc.passportId, doc2.passportId);
+                    assert.strictEqual(doc.passportId, doc2.passportId);
                     c.database.destroy();
                 });
             });
@@ -229,7 +229,7 @@ config.parallel('primary.test.js', () => {
                     const obj = schemaObjects.simpleHuman();
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
-                    assert.equal(obj.passportId, doc.get('passportId'));
+                    assert.strictEqual(obj.passportId, doc.get('passportId'));
                     c.database.destroy();
                 });
             });
@@ -245,8 +245,8 @@ config.parallel('primary.test.js', () => {
                     await doc.atomicSet('firstName', 'foobar');
                     const doc2 = await c.findOne().exec();
 
-                    assert.equal(doc2.get('firstName'), 'foobar');
-                    assert.equal(doc.get('passportId'), doc2.get('passportId'));
+                    assert.strictEqual(doc2.get('firstName'), 'foobar');
+                    assert.strictEqual(doc.get('passportId'), doc2.get('passportId'));
                     c.database.destroy();
                 });
             });
@@ -263,7 +263,7 @@ config.parallel('primary.test.js', () => {
                     const sub = doc.get$('firstName').subscribe(newVal => value = newVal);
                     await doc.atomicSet('firstName', 'foobar');
                     await util.promiseWait(10);
-                    assert.equal(value, 'foobar');
+                    assert.strictEqual(value, 'foobar');
                     sub.unsubscribe();
                     c.database.destroy();
                 });
@@ -311,7 +311,7 @@ config.parallel('primary.test.js', () => {
                     await doc2.atomicSet('firstName', 'foobar');
                     await pW8.promise;
                     await AsyncTestUtil.waitUntil(() => value === 'foobar');
-                    assert.equal(count, 2);
+                    assert.strictEqual(count, 2);
                     c1.database.destroy();
                     c2.database.destroy();
                 });

@@ -74,10 +74,8 @@ export class KeyCompressor {
 
     /**
      * compress the keys of an object via the compression-table
-     * @param {Object} obj
-     * @param {Object} compressed obj
      */
-    compress(obj) {
+    compress(obj: any): any {
         if (!this.schema.doKeyCompression()) return clone(obj);
         return _compressObj(this, obj);
     }
@@ -120,12 +118,12 @@ export class KeyCompressor {
 
     /**
      * get the full compressed-key-path of a object-path
-     * @param {string} prePath | 'mainSkill'
-     * @param {string} prePathCompressed | '|a'
-     * @param {string[]} remainPathAr | ['attack', 'count']
-     * @return {string} compressedPath | '|a.|b.|c'
      */
-    transformKey(prePath, prePathCompressed, remainPathAr) {
+    transformKey(
+        prePath: string,
+        prePathCompressed: string,
+        remainPathAr: string[]
+    ): string {
         const table = this.table;
         prePath = trimDots(prePath);
         prePathCompressed = trimDots(prePathCompressed);
@@ -145,10 +143,9 @@ export class KeyCompressor {
 
     /**
      * replace the keys of a query-obj with the compressed keys
-     * @param {{selector: {}}} queryJSON
-     * @return {{selector: {}}} compressed queryJSON
+     * @return compressed queryJSON
      */
-    compressQuery(queryJSON) {
+    compressQuery(queryJSON: any): any {
         queryJSON = clone(queryJSON);
         if (!this.schema.doKeyCompression()) return queryJSON;
 

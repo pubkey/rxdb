@@ -26,13 +26,8 @@ import {
 
 export class RxSchema<T = any> {
 
-    public compoundIndexes: string[] | string[][];
-    public indexes: string[][];
-    public primaryPath: keyof T;
-    public finalFields: (keyof T)[];
-
     constructor(
-        private readonly jsonID: RxJsonSchema<T>
+        public readonly jsonID: RxJsonSchema<T>
     ) {
         this.compoundIndexes = this.jsonID.compoundIndexes;
         this.indexes = getIndexes(this.jsonID);
@@ -70,40 +65,20 @@ export class RxSchema<T = any> {
             .fill(0)
             .map(() => c++);
     }
-
-    /**
-     * true if schema contains at least one encrypted path
-     * @type {boolean}
-     */
-    private _crypt;
     get crypt(): boolean {
         if (!this._crypt)
             this._crypt = hasCrypt(this.jsonID);
         return this._crypt;
     }
-
-    public _normalized;
     get normalized(): RxJsonSchema {
         if (!this._normalized)
             this._normalized = normalize(this.jsonID);
         return this._normalized;
     }
 
-    public getSchemaByObjectPath(path: keyof T): JsonSchema {
-        let usePath: string = path as string;
-        usePath = usePath.replace(/\./g, '.properties.');
-        usePath = 'properties.' + usePath;
-        usePath = trimDots(usePath);
-
-        const ret = objectPath.get(this.jsonID, usePath);
-        return ret;
-    }
-
     public get topLevelFields(): (keyof T)[] {
         return Object.keys(this.normalized.properties) as (keyof T)[];
     }
-
-    private _defaultValues: { [P in keyof T]: T[P] };
     public get defaultValues(): { [P in keyof T]: T[P] } {
         if (!this._defaultValues) {
             this._defaultValues = {} as { [P in keyof T]: T[P] };
@@ -114,15 +89,53 @@ export class RxSchema<T = any> {
         }
         return this._defaultValues;
     }
+    get encryptedPaths() {
+        if (!this._encryptedPaths)
+            this._encryptedPaths = getEncryptedPaths(this.jsonID);
+        return this._encryptedPaths;
+    }
+    public get hash(): string {
+        if (!this._hash)
+            this._hash = hash(this.normalized);
+        return this._hash;
+    }
+
+    public compoundIndexes: string[] | string[][];
+    public indexes: string[][];
+    public primaryPath: keyof T;
+    public finalFields: (keyof T)[];
+
+    /**
+     * true if schema contains at least one encrypted path
+     */
+    private _crypt: boolean;
+
+    public _normalized;
+
+    private _defaultValues: { [P in keyof T]: T[P] };
 
     /**
      * get all encrypted paths
      */
     private _encryptedPaths;
-    get encryptedPaths() {
-        if (!this._encryptedPaths)
-            this._encryptedPaths = getEncryptedPaths(this.jsonID);
-        return this._encryptedPaths;
+
+
+    private _hash: string;
+
+    /**
+     * creates the schema-based document-prototype,
+     * see RxCollection.getDocumentPrototype()
+     */
+    private _getDocumentPrototype;
+
+    public getSchemaByObjectPath(path: keyof T): JsonSchema {
+        let usePath: string = path as string;
+        usePath = usePath.replace(/\./g, '.properties.');
+        usePath = 'properties.' + usePath;
+        usePath = trimDots(usePath);
+
+        const ret = objectPath.get(this.jsonID, usePath);
+        return ret;
     }
 
     /**
@@ -147,29 +160,18 @@ export class RxSchema<T = any> {
     /**
      * validate if the obj matches the schema
      * @overwritten by plugin (required)
-     * @param {Object} obj
-     * @param {string} schemaPath if given, validates agains deep-path of schema
+     * @param schemaPath if given, validates agains deep-path of schema
      * @throws {Error} if not valid
-     * @param {Object} obj equal to input-obj
+     * @param obj equal to input-obj
      */
-    public validate(obj: any, schemaPath?: string): void {
+    public validate(_obj: any, _schemaPath?: string): void {
         throw pluginMissing('validate');
-    }
-
-
-    private _hash: string;
-    public get hash(): string {
-        if (!this._hash)
-            this._hash = hash(this.normalized);
-        return this._hash;
     }
 
     /**
      * fills all unset fields with default-values if set
-     * @param  {object} obj
-     * @return {object}
      */
-    fillObjectWithDefaults(obj) {
+    fillObjectWithDefaults(obj: any): any {
         obj = clone(obj);
         Object
             .entries(this.defaultValues)
@@ -202,12 +204,6 @@ export class RxSchema<T = any> {
     doKeyCompression(): boolean {
         return this.jsonID.keyCompression;
     }
-
-    /**
-     * creates the schema-based document-prototype,
-     * see RxCollection.getDocumentPrototype()
-     */
-    private _getDocumentPrototype;
     public getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
             const proto = {};
@@ -220,8 +216,6 @@ export class RxSchema<T = any> {
 
 /**
  * returns all encrypted paths of the schema
- * @param  {Object} jsonSchema [description]
- * @return {Object} with paths as attr and schema as value
  */
 export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: JsonSchema } {
     const ret = {};
@@ -232,11 +226,11 @@ export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: Json
             ret[currentPath.substring(1)] = currentObj;
             return;
         }
-        for (const attributeName in currentObj) {
+        Object.keys(currentObj).forEach(attributeName => {
             let nextPath = currentPath;
             if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
-        }
+        });
     }
     traverse(jsonSchema.properties, '');
     return ret;
@@ -244,8 +238,6 @@ export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: Json
 
 /**
  * returns true if schema contains an encrypted field
- * @param  {object} jsonSchema with schema
- * @return {boolean} isEncrypted
  */
 export function hasCrypt(jsonSchema: RxJsonSchema): boolean {
     const paths = getEncryptedPaths(jsonSchema);
@@ -288,8 +280,7 @@ export function getIndexes<T = any>(
 
 /**
  * returns the primary path of a jsonschema
- * @param {Object} jsonID
- * @return {string} primaryPath which is _id if none defined
+ * @return primaryPath which is _id if none defined
  */
 export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
     const ret = Object.keys(jsonID.properties)
@@ -301,8 +292,7 @@ export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
 
 /**
  * returns the final-fields of the schema
- * @param  {Object} jsonID
- * @return {string[]} field-names of the final-fields
+ * @return field-names of the final-fields
  */
 export function getFinalFields<T = any>(
     jsonID: RxJsonSchema<T>
@@ -318,8 +308,7 @@ export function getFinalFields<T = any>(
 
 /**
  * orders the schemas attributes by alphabetical order
- * @param {Object} jsonSchema
- * @return {Object} jsonSchema - ordered
+ * @return jsonSchema - ordered
  */
 export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
     return sortObject(
@@ -329,12 +318,11 @@ export function normalize(jsonSchema: RxJsonSchema): RxJsonSchema {
 
 /**
  * fills the schema-json with default-settings
- * @param  {Object} schemaObj
- * @return {Object} cloned schemaObj
+ * @return cloned schemaObj
  */
 const fillWithDefaultSettings = function (
     schemaObj: RxJsonSchema
-) {
+): RxJsonSchema {
     schemaObj = clone(schemaObj);
 
     // additionalProperties is always false

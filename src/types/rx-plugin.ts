@@ -26,5 +26,5 @@ export interface RxPlugin {
         preCreatePouchDb?: Function,
         preMigrateDocument?: Function,
         postMigrateDocument?: Function
-    }
+    };
 }

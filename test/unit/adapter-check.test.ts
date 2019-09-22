@@ -23,7 +23,7 @@ config.parallel('adapter-check.test.js', () => {
         });
         it('should be false on invalid string', async () => {
             const ok = await RxDB.checkAdapter('foobar');
-            assert.equal(ok, false);
+            assert.strictEqual(ok, false);
         });
         it('should be true on memdown (leveldb-adapter)', async () => {
             const ok = await RxDB.checkAdapter(memdown);
@@ -32,7 +32,7 @@ config.parallel('adapter-check.test.js', () => {
         it('localstorage should be true on browser', async () => {
             const should = config.platform.isNode() ? false : true;
             const ok = await RxDB.checkAdapter('idb');
-            assert.equal(should, ok);
+            assert.strictEqual(should, ok);
         });
     });
     describe('ISSUES', () => {
@@ -53,7 +53,7 @@ config.parallel('adapter-check.test.js', () => {
                 selector: {}
             });
 
-            assert.equal(found.docs.length, 0);
+            assert.strictEqual(found.docs.length, 0);
         });
     });
 });

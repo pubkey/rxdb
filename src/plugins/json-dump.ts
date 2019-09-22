@@ -14,10 +14,7 @@ import {
     createChangeEvent
 } from '../rx-change-event';
 
-/**
- * @return {Promise}
- */
-const dumpRxDatabase = function (decrypted = false, collections = null) {
+function dumpRxDatabase(decrypted = false, collections = null): Promise<any> {
     const json = {
         name: this.name,
         instanceToken: this.token,
@@ -44,7 +41,7 @@ const dumpRxDatabase = function (decrypted = false, collections = null) {
         json.collections = cols;
         return json;
     });
-};
+}
 
 const importDumpRxDatabase = function (dump) {
     /**
@@ -94,10 +91,7 @@ const dumpRxCollection = function (decrypted = false) {
         });
 };
 
-/**
- * @return {Promise}
- */
-const importDumpRxCollection = function (exportedJSON) {
+function importDumpRxCollection(exportedJSON): Promise<any> {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw newRxError('JD2', {
@@ -139,7 +133,7 @@ const importDumpRxCollection = function (exportedJSON) {
             });
         });
     return Promise.all(importFns);
-};
+}
 
 export const rxdb = true;
 export const prototypes = {

@@ -107,7 +107,7 @@ config.parallel('core.node.js', () => {
                 error = e;
             }
             assert.ok(error);
-            assert.equal(error.code, 'VD2');
+            assert.strictEqual(error.code, 'VD2');
             db.destroy();
         });
     });

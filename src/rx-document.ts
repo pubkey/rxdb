@@ -1,5 +1,7 @@
 import objectPath from 'object-path';
-
+import {
+    Observable
+} from 'rxjs';
 import {
     clone,
     trimDots,
@@ -7,7 +9,8 @@ import {
     toPromise
 } from './util';
 import {
-    createChangeEvent
+    createChangeEvent,
+    RxChangeEvent
 } from './rx-change-event';
 import {
     newRxError,
@@ -30,29 +33,6 @@ import {
     RxDocument,
     RxCollection
 } from './types';
-
-export function createRxDocumentConstructor(proto = basePrototype) {
-    const constructor = function RxDocument(collection, jsonData) {
-        this.collection = collection;
-
-        // if true, this is a temporary document
-        this._isTemporary = false;
-
-        // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(clone(jsonData));
-        this._deleted$ = new BehaviorSubject(false);
-
-        this._atomicQueue = Promise.resolve();
-
-        /**
-         * because of the prototype-merge,
-         * we can not use the native instanceof operator
-         */
-        this.isInstanceOfRxDocument = true;
-    };
-    constructor.prototype = proto;
-    return constructor;
-}
 
 export const basePrototype = {
     get _data() {
@@ -87,16 +67,12 @@ export const basePrototype = {
 
     /**
      * returns the observable which emits the plain-data of this document
-     * @return {Observable}
      */
-    get $() {
+    get $(): Observable<any> {
         return this._dataSync$.asObservable();
     },
 
-    /**
-     * @param {ChangeEvent}
-     */
-    _handleChangeEvent(changeEvent) {
+    _handleChangeEvent(changeEvent: RxChangeEvent) {
         if (changeEvent.data.doc !== this.primary)
             return;
 
@@ -122,18 +98,15 @@ export const basePrototype = {
 
     /**
      * emits the changeEvent to the upper instance (RxCollection)
-     * @param  {RxChangeEvent} changeEvent
      */
-    $emit(changeEvent) {
+    $emit(changeEvent: RxChangeEvent) {
         return this.collection.$emit(changeEvent);
     },
 
     /**
      * returns observable of the value of the given path
-     * @param {string} path
-     * @return {Observable}
      */
-    get$(path) {
+    get$(path: string): Observable<any> {
         if (path.includes('.item.')) {
             throw newRxError('DOC1', {
                 path
@@ -166,10 +139,8 @@ export const basePrototype = {
 
     /**
      * populate the given path
-     * @param  {string}  path
-     * @return {Promise<RxDocument>}
      */
-    populate(path) {
+    populate(path: string): Promise<RxDocument> {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!value) {
@@ -197,17 +168,15 @@ export const basePrototype = {
         }
 
         if (schemaObj.type === 'array')
-            return Promise.all(value.map(id => refCollection.findOne(id).exec()));
+            return Promise.all(value.map(id => refCollection.findOne(id).exec())) as any;
         else
             return refCollection.findOne(value).exec();
     },
 
     /**
      * get data by objectPath
-     * @param {string} objPath
-     * @return {object} valueObj
      */
-    get(objPath) {
+    get(objPath: string): any | null {
         if (!this._data) return undefined;
         let valueObj = objectPath.get(this._data, objPath);
         valueObj = clone(valueObj);
@@ -239,10 +208,8 @@ export const basePrototype = {
     /**
      * set data by objectPath
      * This can only be called on temporary documents
-     * @param {string} objPath
-     * @param {object} value
      */
-    set(objPath, value) {
+    set(objPath: string, value: any) {
 
         // setters can only be used on temporary documents
         if (!this._isTemporary) {
@@ -280,9 +247,9 @@ export const basePrototype = {
     /**
      * updates document
      * @overwritten by plugin (optinal)
-     * @param  {object} updateObj mongodb-like syntax
+     * @param updateObj mongodb-like syntax
      */
-    update() {
+    update(_updateObj: any) {
         throw pluginMissing('update');
     },
     putAttachment() {
@@ -300,10 +267,9 @@ export const basePrototype = {
 
     /**
      * runs an atomic update over the document
-     * @param  {function(any)} fun that takes the document-data and returns a new data-object
-     * @return {Promise<RxDocument>}
+     * @param fun that takes the document-data and returns a new data-object
      */
-    atomicUpdate(fun) {
+    atomicUpdate(fun: Function): Promise<RxDocument> {
         this._atomicQueue = this._atomicQueue
             .then(() => {
                 const oldData = clone(this._dataSync$.getValue());
@@ -325,11 +291,8 @@ export const basePrototype = {
     /**
      * saves the new document-data
      * and handles the events
-     * @param {any} newData
-     * @param {any} oldData
-     * @return {Promise}
      */
-    _saveData(newData, oldData) {
+    _saveData(newData, oldData): Promise<void> {
         newData = clone(newData);
 
 
@@ -375,9 +338,9 @@ export const basePrototype = {
     /**
      * saves the temporary document and makes a non-temporary out of it
      * Saving a temporary doc is basically the same as RxCollection.insert()
-     * @return {boolean} false if nothing to save
+     * @return false if nothing to save
      */
-    save() {
+    save(): boolean {
         // .save() cannot be called on non-temporary-documents
         if (!this._isTemporary) {
             throw newRxError('DOC17', {
@@ -402,9 +365,8 @@ export const basePrototype = {
      * remove the document,
      * this not not equal to a pouchdb.remove(),
      * instead we keep the values and only set _deleted: true
-     * @return {Promise<RxDocument>}
      */
-    remove() {
+    remove(): Promise<RxDocument> {
         if (this.deleted) {
             return Promise.reject(newRxError('DOC13', {
                 document: this,
@@ -439,6 +401,29 @@ export const basePrototype = {
         throw newRxError('DOC14');
     }
 };
+
+export function createRxDocumentConstructor(proto = basePrototype) {
+    const constructor = function RxDocumentConstructor(collection, jsonData) {
+        this.collection = collection;
+
+        // if true, this is a temporary document
+        this._isTemporary = false;
+
+        // assume that this is always equal to the doc-data in the database
+        this._dataSync$ = new BehaviorSubject(clone(jsonData));
+        this._deleted$ = new BehaviorSubject(false);
+
+        this._atomicQueue = Promise.resolve();
+
+        /**
+         * because of the prototype-merge,
+         * we can not use the native instanceof operator
+         */
+        this.isInstanceOfRxDocument = true;
+    };
+    constructor.prototype = proto;
+    return constructor;
+}
 
 const pseudoConstructor = createRxDocumentConstructor(basePrototype);
 const pseudoRxDocument = new (pseudoConstructor as any)();
@@ -515,10 +500,9 @@ export function createWithConstructor(
 
 /**
  * returns all possible properties of a RxDocument
- * @return {string[]} property-names
  */
 let _properties;
-export function properties() {
+export function properties(): string[] {
     if (!_properties) {
         const reserved = ['deleted', 'synced'];
         const ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);

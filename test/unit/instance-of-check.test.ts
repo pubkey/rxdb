@@ -19,10 +19,10 @@ config.parallel('instance-of-check.test.js', () => {
     });
     it('negative', async () => {
         const anyObj = {};
-        assert.equal(false, RxDB.isRxDatabase(anyObj));
-        assert.equal(false, RxDB.isRxCollection(anyObj));
-        assert.equal(false, RxDB.isRxQuery(anyObj));
-        assert.equal(false, RxDB.isRxDocument(anyObj));
-        assert.equal(false, RxDB.isRxSchema(anyObj));
+        assert.strictEqual(false, RxDB.isRxDatabase(anyObj));
+        assert.strictEqual(false, RxDB.isRxCollection(anyObj));
+        assert.strictEqual(false, RxDB.isRxQuery(anyObj));
+        assert.strictEqual(false, RxDB.isRxDocument(anyObj));
+        assert.strictEqual(false, RxDB.isRxSchema(anyObj));
     });
 });

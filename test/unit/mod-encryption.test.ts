@@ -11,36 +11,36 @@ describe('mod-encrytion.test.js : .encrypt()', () => {
         const value = 'foobar';
         const pwd = 'pwd';
         const encrypted = encryption.encrypt(value, pwd);
-        assert.notEqual(value, encrypted);
+        assert.notStrictEqual(value, encrypted);
         assert.ok(encrypted.length > value.length);
-        assert.equal(typeof encrypted, 'string');
+        assert.strictEqual(typeof encrypted, 'string');
     });
     it('should decrypt properly', () => {
         const value = 'foobar';
         const pwd = 'pwd';
         const encrypted = encryption.encrypt(value, pwd);
         const decrypted = encryption.decrypt(encrypted, pwd);
-        assert.notEqual(decrypted, encrypted);
-        assert.equal(value, decrypted);
+        assert.notStrictEqual(decrypted, encrypted);
+        assert.strictEqual(value, decrypted);
     });
     it('should encrypt and decrypt an extremly long string', () => {
         const value = util.randomCouchString(5000);
         const pwd = 'pwd';
         const encrypted = encryption.encrypt(value, pwd);
         const decrypted = encryption.decrypt(encrypted, pwd);
-        assert.notEqual(value, encrypted);
+        assert.notStrictEqual(value, encrypted);
         assert.ok(encrypted.length > value.length);
-        assert.equal(typeof encrypted, 'string');
-        assert.equal(value, decrypted);
+        assert.strictEqual(typeof encrypted, 'string');
+        assert.strictEqual(value, decrypted);
     });
     it('should encrypt and decrypt an extremly long password', () => {
         const value = 'foobar';
         const pwd = util.randomCouchString(5000);
         const encrypted = encryption.encrypt(value, pwd);
         const decrypted = encryption.decrypt(encrypted, pwd);
-        assert.notEqual(value, encrypted);
+        assert.notStrictEqual(value, encrypted);
         assert.ok(encrypted.length > value.length);
-        assert.equal(typeof encrypted, 'string');
-        assert.equal(value, decrypted);
+        assert.strictEqual(typeof encrypted, 'string');
+        assert.strictEqual(value, decrypted);
     });
 });

@@ -30,7 +30,7 @@ config.parallel('in-memory.test.js', () => {
                 await setIndexes(inMem.schema, inMem.pouch);
 
                 const hasIndexes = await inMem.pouch.getIndexes();
-                assert.equal(hasIndexes.indexes[1].def.fields[0].passportId, 'asc');
+                assert.strictEqual(hasIndexes.indexes[1].def.fields[0].passportId, 'asc');
 
                 inMem.destroy();
                 col.database.destroy();
@@ -45,7 +45,7 @@ config.parallel('in-memory.test.js', () => {
                 const foundAfter = await inMem.pouch.find({
                     selector: {}
                 });
-                assert.equal(foundAfter.docs.length, 5);
+                assert.strictEqual(foundAfter.docs.length, 5);
                 inMem.destroy();
                 col.database.destroy();
             });
@@ -62,7 +62,7 @@ config.parallel('in-memory.test.js', () => {
                 const foundAfter = await inMem.pouch.find({
                     selector: {}
                 });
-                assert.equal(foundAfter.docs[0].secret, 'foobar');
+                assert.strictEqual(foundAfter.docs[0].secret, 'foobar');
                 inMem.destroy();
                 col.database.destroy();
             });
@@ -76,7 +76,7 @@ config.parallel('in-memory.test.js', () => {
 
                 await col.insert(schemaObjects.human('foobar'));
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-                assert.equal(emitted[0].passportId, 'foobar');
+                assert.strictEqual(emitted[0].passportId, 'foobar');
 
                 sub.unsubscribe();
                 col.database.destroy();
@@ -86,13 +86,13 @@ config.parallel('in-memory.test.js', () => {
                 const inMem = new (InMemoryRxCollection as any)(col);
                 const obs = streamChangedDocuments(inMem);
                 const emitted = [];
-                const sub = obs.subscribe(doc => emitted.push(doc));
+                const sub = obs.subscribe(d => emitted.push(d));
 
                 const doc = schemaObjects.human('foobar');
                 doc['_id'] = 'foobar1';
                 await inMem.pouch.put(doc);
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-                assert.equal(emitted[0].passportId, 'foobar');
+                assert.strictEqual(emitted[0].passportId, 'foobar');
 
                 sub.unsubscribe();
                 inMem.destroy();
@@ -106,7 +106,7 @@ config.parallel('in-memory.test.js', () => {
 
                 await col.insert(schemaObjects.human('foobar'));
                 await AsyncTestUtil.wait(100);
-                assert.equal(emitted.length, 0);
+                assert.strictEqual(emitted.length, 0);
 
                 sub.unsubscribe();
                 col.database.destroy();
@@ -124,8 +124,8 @@ config.parallel('in-memory.test.js', () => {
                 const foundAfter = await col.pouch.find({
                     selector: {}
                 });
-                assert.equal(foundAfter.docs.length, 1);
-                assert.equal(foundAfter.docs[0]._id, 'foobar1');
+                assert.strictEqual(foundAfter.docs.length, 1);
+                assert.strictEqual(foundAfter.docs[0]._id, 'foobar1');
 
                 col.database.destroy();
             });
@@ -141,7 +141,7 @@ config.parallel('in-memory.test.js', () => {
                 await applyChangedDocumentToPouch(col, docData);
 
                 await AsyncTestUtil.wait(100);
-                assert.equal(emitted.length, 0);
+                assert.strictEqual(emitted.length, 0);
 
                 sub.unsubscribe();
                 col.database.destroy();
@@ -171,8 +171,8 @@ config.parallel('in-memory.test.js', () => {
                     selector: {}
                 });
 
-                assert.equal(foundAfter.docs.length, 0);
-                assert.equal(emitted.length, 0); // should not have emitted an event
+                assert.strictEqual(foundAfter.docs.length, 0);
+                assert.strictEqual(emitted.length, 0); // should not have emitted an event
 
                 sub.unsubscribe();
                 col.database.destroy();
@@ -191,7 +191,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
             const docs = await memCol.find().exec();
-            assert.equal(docs.length, 5);
+            assert.strictEqual(docs.length, 5);
             const firstDoc = await memCol.findOne().exec();
             assert.ok(firstDoc.firstName);
             col.database.destroy();
@@ -249,15 +249,15 @@ config.parallel('in-memory.test.js', () => {
 
             const doc = await memCol.insert(schemaObjects.human());
             await AsyncTestUtil.wait(100);
-            assert.equal(emitted.length, 1);
+            assert.strictEqual(emitted.length, 1);
 
             await doc.atomicSet('firstName', 'foobar');
             await AsyncTestUtil.wait(100);
-            assert.equal(emitted.length, 2);
+            assert.strictEqual(emitted.length, 2);
 
             await doc.remove();
             await AsyncTestUtil.wait(500);
-            assert.equal(emitted.length, 3);
+            assert.strictEqual(emitted.length, 3);
 
             sub.unsubscribe();
             col.database.destroy();
@@ -281,35 +281,35 @@ config.parallel('in-memory.test.js', () => {
             // insert event
             const doc = await memCol.insert(docData);
             await AsyncTestUtil.wait(100);
-            assert.equal(emitted.length, 1); // one event should be fired
+            assert.strictEqual(emitted.length, 1); // one event should be fired
             let foundCol = await col.find().where('firstName').ne('foobar1').exec();
-            assert.equal(foundCol.length, 1);
+            assert.strictEqual(foundCol.length, 1);
             let foundMem = await memCol.find().where('firstName').ne('foobar1').exec();
-            assert.equal(foundMem.length, 1);
+            assert.strictEqual(foundMem.length, 1);
 
             // update event
             await doc.atomicSet('firstName', 'foobar');
             await AsyncTestUtil.wait(100);
-            assert.equal(emitted.length, 2);
+            assert.strictEqual(emitted.length, 2);
             foundCol = await col.find().where('firstName').ne('foobar2').exec();
-            assert.equal(foundCol[0].firstName, 'foobar');
+            assert.strictEqual(foundCol[0].firstName, 'foobar');
             foundMem = await memCol.find().where('firstName').ne('foobar2').exec();
-            assert.equal(foundMem[0].firstName, 'foobar');
+            assert.strictEqual(foundMem[0].firstName, 'foobar');
 
             // remove event
             await doc.remove();
             await AsyncTestUtil.wait(100);
             foundCol = await col.find().where('firstName').ne('foobar3').exec();
-            assert.equal(foundCol.length, 0);
+            assert.strictEqual(foundCol.length, 0);
             foundMem = await memCol.find().where('firstName').ne('foobar3').exec();
-            assert.equal(foundMem.length, 0);
-            assert.equal(emitted.length, 3);
+            assert.strictEqual(foundMem.length, 0);
+            assert.strictEqual(emitted.length, 3);
 
             // both collection should find no docs
             foundCol = await col.findOne().exec();
-            assert.equal(foundCol, null);
+            assert.strictEqual(foundCol, null);
             foundMem = await memCol.findOne().exec();
-            assert.equal(foundMem, null);
+            assert.strictEqual(foundMem, null);
 
             sub.unsubscribe();
             sub2.unsubscribe();
@@ -324,13 +324,13 @@ config.parallel('in-memory.test.js', () => {
             const emitted = [];
             memCol.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-            assert.equal(emitted[0].length, 5);
+            assert.strictEqual(emitted[0].length, 5);
 
             const addDoc = schemaObjects.human();
             await col.insert(addDoc);
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            assert.equal(emitted[1].length, 6);
+            assert.strictEqual(emitted[1].length, 6);
 
             col.database.destroy();
         });
@@ -341,13 +341,13 @@ config.parallel('in-memory.test.js', () => {
             const emitted = [];
             col.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-            assert.equal(emitted[0].length, 5);
+            assert.strictEqual(emitted[0].length, 5);
 
             const addDoc = schemaObjects.human();
             await memCol.insert(addDoc);
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
-            assert.equal(emitted[1].length, 6);
+            assert.strictEqual(emitted[1].length, 6);
 
             col.database.destroy();
         });
@@ -391,7 +391,7 @@ config.parallel('in-memory.test.js', () => {
 
 
             const lastEmitted = emitted.pop();
-            assert.equal(lastEmitted.length, 3);
+            assert.strictEqual(lastEmitted.length, 3);
 
             db.destroy();
             db2.destroy();
@@ -410,7 +410,7 @@ config.parallel('in-memory.test.js', () => {
                 return docs.length === 1;
             });
             const memPouchDoc = await memCol.pouch.get(doc.primary);
-            assert.equal(memPouchDoc.secret, docData.secret);
+            assert.strictEqual(memPouchDoc.secret, docData.secret);
 
             // insert to memory
             const docData2 = schemaObjects.encryptedHuman();
@@ -420,7 +420,7 @@ config.parallel('in-memory.test.js', () => {
                 return docs.length === 2;
             });
             const pouchDoc = await col.pouch.get(doc2.primary);
-            assert.notEqual(doc2.secret, pouchDoc.secret);
+            assert.notStrictEqual(doc2.secret, pouchDoc.secret);
 
             col.database.destroy();
         });
@@ -438,7 +438,7 @@ config.parallel('in-memory.test.js', () => {
                 return docs.length === 1;
             });
             const memPouchDoc = await memCol.pouch.get(doc.primary);
-            assert.equal(memPouchDoc.firstName, docData.firstName);
+            assert.strictEqual(memPouchDoc.firstName, docData.firstName);
 
             // insert to memory
             const docData2 = schemaObjects.simpleHuman();
@@ -448,7 +448,7 @@ config.parallel('in-memory.test.js', () => {
                 return docs.length === 2;
             });
             const pouchDoc = await col.pouch.get(doc2.primary);
-            assert.notEqual(doc2.firstName, pouchDoc.firstName);
+            assert.notStrictEqual(doc2.firstName, pouchDoc.firstName);
 
             col.database.destroy();
         });
@@ -479,7 +479,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(amount);
             const memCol = await col.inMemory();
             const docs = await memCol.find().exec();
-            assert.equal(docs.length, amount);
+            assert.strictEqual(docs.length, amount);
             col.database.destroy();
         });
         it('should not allow to use .sync() on inMemory', async () => {
@@ -555,15 +555,15 @@ config.parallel('in-memory.test.js', () => {
                 .where('name').eq('bob')
                 .exec();
             assert.ok(doc);
-            assert.equal(doc.name, 'bob');
-            assert.equal(doc.color, 'blue');
-            assert.equal(doc.maxHp, 100);
+            assert.strictEqual(doc.name, 'bob');
+            assert.strictEqual(doc.color, 'blue');
+            assert.strictEqual(doc.maxHp, 100);
 
             const docs = await memCol.find().exec();
-            assert.equal(docs.length, 2);
+            assert.strictEqual(docs.length, 2);
 
-            const alice = docs.find(doc => doc.name === 'alice');
-            assert.equal(alice.maxHp, 101);
+            const alice = docs.find(d => d.name === 'alice');
+            assert.strictEqual(alice.maxHp, 101);
 
             // check if it works from mem to parent
             await alice.atomicSet('maxHp', 103);
@@ -600,10 +600,10 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
 
             // check method
-            assert.equal(memCol.foo(), 'bar');
+            assert.strictEqual(memCol.foo(), 'bar');
 
             // check options
-            assert.equal(memCol.options.foobar, 'foobar');
+            assert.strictEqual(memCol.options.foobar, 'foobar');
             db.destroy();
         });
         it('#754 inMemory collections don\'t sync up removals', async () => {
@@ -634,13 +634,13 @@ config.parallel('in-memory.test.js', () => {
 
 
             const foundWithOtherQuery = await inMemCollection.findOne().where('firstName').ne('whatever').exec();
-            assert.equal(foundWithOtherQuery, null);
+            assert.strictEqual(foundWithOtherQuery, null);
 
             const foundWithSameQuery = await inMemCollection.findOne().exec();
-            assert.equal(foundWithSameQuery, null);
+            assert.strictEqual(foundWithSameQuery, null);
 
             const foundNonMemory = await col.findOne().exec();
-            assert.equal(foundNonMemory, null);
+            assert.strictEqual(foundNonMemory, null);
 
             col.database.destroy();
         });

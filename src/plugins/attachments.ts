@@ -39,10 +39,8 @@ export const blobBufferUtil = {
     /**
      * depending if we are on node or browser,
      * we have to use Buffer(node) or Blob(browser)
-     * @param  {string} data
-     * @return {Blob|Buffer}
      */
-    createBlobBuffer(data, type: string): Buffer {
+    createBlobBuffer(data: string, type: string): Buffer {
         let blobBuffer;
 
         if (isElectronRenderer) {
@@ -135,10 +133,7 @@ export class RxAttachment {
         _assignMethodsToAttachment(this);
     }
 
-    /**
-     * @return {Promise}
-     */
-    remove() {
+    remove(): Promise<any> {
         return this.doc.collection.pouch.removeAttachment(
             this.doc.primary,
             this.id,
@@ -148,9 +143,8 @@ export class RxAttachment {
 
     /**
      * returns the data for the attachment
-     * @return {Promise<Buffer|Blob>}
      */
-    getData() {
+    getData(): Promise<Buffer | Blob> {
         return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
             .then(data => {
                 if (shouldEncrypt(this.doc)) {
@@ -183,14 +177,11 @@ function shouldEncrypt(doc) {
     return !!doc.collection.schema.jsonID.attachments.encrypted;
 }
 
-/**
- * @return {Promise}
- */
 export function putAttachment({
     id,
     data,
     type = 'text/plain'
-}) {
+}): Promise<any> {
     ensureSchemaSupportsAttachments(this);
 
     if (shouldEncrypt(this))
@@ -225,10 +216,8 @@ export function putAttachment({
 
 /**
  * get an attachment of the document by its id
- * @param  {string} id
- * @return {RxAttachment}
  */
-export function getAttachment(id) {
+export function getAttachment(id: string): RxAttachment {
     ensureSchemaSupportsAttachments(this);
     const docData = this._dataSync$.getValue();
     if (!docData._attachments || !docData._attachments[id])
@@ -245,9 +234,8 @@ export function getAttachment(id) {
 
 /**
  * returns all attachments of the document
- * @return {RxAttachment[]}
  */
-export function allAttachments() {
+export function allAttachments(): RxAttachment[] {
     ensureSchemaSupportsAttachments(this);
     const docData = this._dataSync$.getValue();
 
@@ -269,17 +257,14 @@ export function preMigrateDocument(action) {
     return action;
 }
 
-/**
- * @return {Promise}
- */
-export function postMigrateDocument(action) {
+export function postMigrateDocument(action): Promise<any> {
     const primaryPath = action.oldCollection.schema.primaryPath;
 
     const attachments = action.doc._attachments;
     if (!attachments) return Promise.resolve(action);
 
     let currentPromise = Promise.resolve();
-    for (const id in attachments) {
+    Object.keys(attachments).forEach(id => {
         const stubData = attachments[id];
         const primary = action.doc[primaryPath];
         currentPromise = currentPromise
@@ -293,7 +278,7 @@ export function postMigrateDocument(action) {
                 stubData.content_type
             ))
             .then(res => action.res = res);
-    }
+    });
 
     return currentPromise;
 }

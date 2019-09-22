@@ -12,15 +12,17 @@ import {
 import {
     getIndexes
 } from '../rx-schema';
+import {
+    RxJsonSchema
+} from '../types';
 
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
  * and does not conquer the observe$ and populate_ fields
- * @param  {string} fieldName
  * @throws {Error}
  */
-export function checkFieldNameRegex(fieldName) {
+export function checkFieldNameRegex(fieldName: string) {
     if (fieldName === '') return;
     if (fieldName === '_id') return;
 
@@ -42,10 +44,8 @@ export function checkFieldNameRegex(fieldName) {
 
 /**
  * validate that all schema-related things are ok
- * @param  {object} jsonSchema
- * @return {boolean} true always
  */
-export function validateFieldsDeep(jsonSchema) {
+export function validateFieldsDeep(jsonSchema: any): true {
     function checkField(fieldName, schemaObj, path) {
         if (
             typeof fieldName === 'string' &&
@@ -132,7 +132,7 @@ export function validateFieldsDeep(jsonSchema) {
 
     function traverse(currentObj, currentPath) {
         if (typeof currentObj !== 'object') return;
-        for (const attributeName in currentObj) {
+        Object.keys(currentObj).forEach(attributeName => {
             if (!currentObj.properties) {
                 checkField(
                     attributeName,
@@ -143,7 +143,7 @@ export function validateFieldsDeep(jsonSchema) {
             let nextPath = currentPath;
             if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
             traverse(currentObj[attributeName], nextPath);
-        }
+        });
     }
     traverse(jsonSchema, '');
     return true;
@@ -152,10 +152,9 @@ export function validateFieldsDeep(jsonSchema) {
 
 /**
  * does the checking
- * @param  {object} jsonId json-object like in json-schema-standard
  * @throws {Error} if something is not ok
  */
-export function checkSchema(jsonID) {
+export function checkSchema(jsonID: RxJsonSchema) {
     // check _rev
     if (jsonID.properties._rev) {
         throw newRxError('SC10', {
@@ -179,7 +178,7 @@ export function checkSchema(jsonID) {
     Object.keys(jsonID.properties).forEach(key => {
         const value = jsonID.properties[key];
         // check primary
-        if (value.primary) {
+        if (value['primary']) {
             if (primaryPath) {
                 throw newRxError('SC12', {
                     value
@@ -193,7 +192,7 @@ export function checkSchema(jsonID) {
                     value
                 });
             }
-            if (value.unique) {
+            if (value['unique']) {
                 throw newRxError('SC14', {
                     value
                 });

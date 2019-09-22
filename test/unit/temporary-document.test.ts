@@ -22,7 +22,7 @@ config.parallel('temporary-document.test.js', () => {
             const newDoc = c.newDocument({
                 firstName: 'foobar'
             });
-            assert.equal(newDoc.firstName, 'foobar');
+            assert.strictEqual(newDoc.firstName, 'foobar');
             c.database.destroy();
         });
         it('should not check the schema on changing values', async () => {
@@ -31,14 +31,14 @@ config.parallel('temporary-document.test.js', () => {
                 firstName: 'foobar'
             });
             newDoc.lastName = 1337;
-            assert.equal(newDoc.firstName, 'foobar');
+            assert.strictEqual(newDoc.firstName, 'foobar');
             c.database.destroy();
         });
         it('should be possible to set the primary', async () => {
             const c = await humansCollection.createPrimary(0);
             const newDoc = c.newDocument();
             newDoc.passportId = 'foobar';
-            assert.equal(newDoc.passportId, 'foobar');
+            assert.strictEqual(newDoc.passportId, 'foobar');
             c.database.destroy();
         });
         it('should have default-values', async () => {
@@ -51,7 +51,7 @@ config.parallel('temporary-document.test.js', () => {
                 schema: schemas.humanDefault
             });
             const newDoc = c.newDocument();
-            assert.equal(newDoc.age, 20);
+            assert.strictEqual(newDoc.age, 20);
 
             db.destroy();
         });
@@ -78,9 +78,9 @@ config.parallel('temporary-document.test.js', () => {
                 await newDoc.save();
 
                 await newDoc.atomicSet('firstName', 'foobar');
-                assert.equal('foobar', newDoc.firstName);
+                assert.strictEqual('foobar', newDoc.firstName);
                 const allDocs = await c.find().exec();
-                assert.equal(allDocs.length, 1);
+                assert.strictEqual(allDocs.length, 1);
                 c.database.destroy();
             });
         });
@@ -115,7 +115,7 @@ config.parallel('temporary-document.test.js', () => {
                 }
             });
             const newDoc = c.newDocument(schemaObjects.human());
-            assert.equal(newDoc.foobar(), 'test');
+            assert.strictEqual(newDoc.foobar(), 'test');
             db.destroy();
         });
     });
@@ -131,7 +131,7 @@ config.parallel('temporary-document.test.js', () => {
             await newDoc.atomicSet('firstName', 'foobar2');
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
-            assert.equal('foobar2', emitted.pop());
+            assert.strictEqual('foobar2', emitted.pop());
             sub.unsubscribe();
             c.database.destroy();
         });
@@ -143,7 +143,7 @@ config.parallel('temporary-document.test.js', () => {
                 const newDoc = c.newDocument();
                 newDoc.age = null;
                 newDoc.age = 10;
-                assert.equal(newDoc.age, 10);
+                assert.strictEqual(newDoc.age, 10);
                 c.database.destroy();
             });
         });

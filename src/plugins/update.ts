@@ -15,12 +15,7 @@ export function update(updateObj) {
     return this._saveData(newDocData, oldDocData);
 }
 
-/**
- * 
- * @param {*} updateObj 
- * @return {Promise}
- */
-export function RxQueryUpdate(updateObj) {
+export function RxQueryUpdate(updateObj: any): Promise<any> {
     return this.exec()
         .then(docs => {
             if (!docs) return null;

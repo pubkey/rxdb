@@ -61,7 +61,7 @@ config.parallel('rx-collection.test.js', () => {
                     const has = indexes.indexes
                         .map(i => i.def.fields[0])
                         .filter(i => !!i[compressedKey]);
-                    assert.equal(has.length, 1);
+                    assert.strictEqual(has.length, 1);
                     col.database.destroy();
                 });
                 it('should create compound-indexes (keyCompression: false)', async () => {
@@ -78,9 +78,9 @@ config.parallel('rx-collection.test.js', () => {
                         schema
                     });
                     const indexes = await col.pouch.getIndexes();
-                    assert.equal(indexes.indexes.length, 2);
+                    assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         lastIndexDefFields, [{
                             'passportId': 'asc'
                         }, {
@@ -101,9 +101,9 @@ config.parallel('rx-collection.test.js', () => {
                         schema
                     });
                     const indexes = await col.pouch.getIndexes();
-                    assert.equal(indexes.indexes.length, 2);
+                    assert.strictEqual(indexes.indexes.length, 2);
                     const lastIndexDefFields = indexes.indexes[1].def.fields;
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         lastIndexDefFields, [{
                             '|b': 'asc'
                         }, {
@@ -123,7 +123,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema
                     });
-                    assert.deepEqual(schema.version, 0);
+                    assert.deepStrictEqual(schema.version, 0);
                     assert.ok(collection.pouch.name.includes('-' + schema.version + '-'));
                     db.destroy();
                 });
@@ -140,7 +140,7 @@ config.parallel('rx-collection.test.js', () => {
                             foo: 'bar'
                         }
                     });
-                    assert.equal(collection.options.foo, 'bar');
+                    assert.strictEqual(collection.options.foo, 'bar');
                     db.destroy();
                 });
             });
@@ -342,7 +342,7 @@ config.parallel('rx-collection.test.js', () => {
                     };
                     await collection.insert(data);
                     const doc = await collection.findOne().exec();
-                    assert.equal(doc.age, 20);
+                    assert.strictEqual(doc.age, 20);
 
                     db.destroy();
                 });
@@ -464,10 +464,10 @@ config.parallel('rx-collection.test.js', () => {
                         const docData = schemaObjects.simpleHuman();
 
                         const docs = await c.find().exec();
-                        assert.equal(docs.length, 0);
+                        assert.strictEqual(docs.length, 0);
                         await c.insert(docData);
                         const docs2 = await c.find().exec();
-                        assert.equal(docs2.length, 1);
+                        assert.strictEqual(docs2.length, 1);
                         c.database.destroy();
                     });
                     it('find all by empty object', async () => {
@@ -491,7 +491,7 @@ config.parallel('rx-collection.test.js', () => {
                             schema
                         });
                         const docs = await collection.find({}).exec();
-                        assert.deepEqual(docs, []);
+                        assert.deepStrictEqual(docs, []);
                         db.destroy();
                     });
                     it('BUG: insert and find very often', async () => {
@@ -510,7 +510,7 @@ config.parallel('rx-collection.test.js', () => {
                             await collection.insert(human);
                             const docs = await collection.find().exec();
                             const doc = docs[0];
-                            assert.equal(passportId, doc._data.passportId);
+                            assert.strictEqual(passportId, doc._data.passportId);
                             db.destroy();
                         }
                     });
@@ -546,9 +546,9 @@ config.parallel('rx-collection.test.js', () => {
                         let doc = await c.find({
                             passportId
                         }).exec();
-                        assert.equal(doc.length, 1);
+                        assert.strictEqual(doc.length, 1);
                         doc = doc[0];
-                        assert.deepEqual(doc.data, last.data);
+                        assert.deepStrictEqual(doc.data, last.data);
                         c.database.destroy();
                     });
                     it('find none with random passportId', async () => {
@@ -556,7 +556,7 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find({
                             passportId: util.randomCouchString(10)
                         }).exec();
-                        assert.equal(docs.length, 0);
+                        assert.strictEqual(docs.length, 0);
                         c.database.destroy();
                     });
                     it('find via $eq', async () => {
@@ -570,9 +570,9 @@ config.parallel('rx-collection.test.js', () => {
                                 $eq: passportId
                             }
                         }).exec();
-                        assert.equal(doc.length, 1);
+                        assert.strictEqual(doc.length, 1);
                         doc = doc[0];
-                        assert.deepEqual(doc.data, last.data);
+                        assert.deepStrictEqual(doc.data, last.data);
                         c.database.destroy();
                     });
                 });
@@ -600,7 +600,7 @@ config.parallel('rx-collection.test.js', () => {
                         firstName: 'foobarBob'
                     }]);
                     const results = await query.exec();
-                    assert.equal(results.length, 2);
+                    assert.strictEqual(results.length, 2);
                     const foundFirstNames = results.map(doc => doc.firstName);
                     assert.ok(foundFirstNames.includes('foobarAlice'));
                     assert.ok(foundFirstNames.includes('foobarBob'));
@@ -620,7 +620,7 @@ config.parallel('rx-collection.test.js', () => {
                         });
                         assert.ok(isRxQuery(query));
                         const docs = await query.exec();
-                        assert.equal(docs.length, 20);
+                        assert.strictEqual(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
                         c.database.destroy();
                     });
@@ -629,7 +629,7 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().sort({
                             age: -1
                         }).exec();
-                        assert.equal(docs.length, 20);
+                        assert.strictEqual(docs.length, 20);
                         assert.ok(docs[0]._data.age >= docs[1]._data.age);
                         c.database.destroy();
                     });
@@ -638,7 +638,7 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().sort({
                             age: 1
                         }).exec();
-                        assert.equal(docs.length, 20);
+                        assert.strictEqual(docs.length, 20);
                         assert.ok(docs[0]._data.age <= docs[1]._data.age);
                         c.database.destroy();
                     });
@@ -677,7 +677,7 @@ config.parallel('rx-collection.test.js', () => {
                                 'other.age': 'asc'
                             }]
                         });
-                        assert.equal(all.docs.length, 10);
+                        assert.strictEqual(all.docs.length, 10);
 
                         // with RxQuery
                         const query = collection.find({}).sort({
@@ -736,7 +736,7 @@ config.parallel('rx-collection.test.js', () => {
                             age: 1
                         }).exec();
                         const lastDesc = desc[desc.length - 1];
-                        assert.equal(lastDesc._data.passportId, asc[0]._data.passportId);
+                        assert.strictEqual(lastDesc._data.passportId, asc[0]._data.passportId);
                         c.database.destroy();
                     });
                     it('find the same twice', async () => {
@@ -747,7 +747,7 @@ config.parallel('rx-collection.test.js', () => {
                         const doc2 = await c.findOne().sort({
                             passportId: 1
                         }).exec();
-                        assert.equal(doc1._data.passportId, doc2._data.passportId);
+                        assert.strictEqual(doc1._data.passportId, doc2._data.passportId);
                         c.database.destroy();
                     });
                 });
@@ -796,7 +796,7 @@ config.parallel('rx-collection.test.js', () => {
                     it('get first', async () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().limit(1).exec();
-                        assert.equal(docs.length, 1);
+                        assert.strictEqual(docs.length, 1);
                         assert.ok(isRxDocument(docs[0]));
                         c.database.destroy();
                     });
@@ -813,8 +813,8 @@ config.parallel('rx-collection.test.js', () => {
                             passportId: -1
                         }).limit(1).exec();
                         last = last[0];
-                        assert.equal(last._data.passportId, docs[(docs.length - 1)]._data.passportId);
-                        assert.notEqual(first._data.passportId, last._data.passportId);
+                        assert.strictEqual(last._data.passportId, docs[(docs.length - 1)]._data.passportId);
+                        assert.notStrictEqual(first._data.passportId, last._data.passportId);
                         c.database.destroy();
                     });
                     it('reset limit with .limit(null)', async () => {
@@ -842,7 +842,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).exec();
-                        assert.equal(noFirst[0]._data.passportId, docs[1]._data.passportId);
+                        assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
                     it('skip first in order', async () => {
@@ -853,21 +853,21 @@ config.parallel('rx-collection.test.js', () => {
                         const noFirst = await c.find().sort({
                             passportId: 1
                         }).skip(1).exec();
-                        assert.equal(noFirst[0]._data.passportId, docs[1]._data.passportId);
+                        assert.strictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
                     it('skip first and limit', async () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const second = await c.find().skip(1).limit(1).exec();
-                        assert.deepEqual(second[0].data, docs[1].data);
+                        assert.deepStrictEqual(second[0].data, docs[1].data);
                         c.database.destroy();
                     });
                     it('reset skip with .skip(null)', async () => {
                         const c = await humansCollection.create();
                         const docs = await c.find().exec();
                         const noFirst = await c.find().skip(1).skip(null).exec();
-                        assert.notEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
+                        assert.notStrictEqual(noFirst[0]._data.passportId, docs[1]._data.passportId);
                         c.database.destroy();
                     });
                 });
@@ -893,9 +893,9 @@ config.parallel('rx-collection.test.js', () => {
                             .where('firstName').regex(/Match/)
                             .exec();
 
-                        assert.equal(docs.length, 1);
+                        assert.strictEqual(docs.length, 1);
                         const first = docs[0];
-                        assert.equal(first.get('firstName'), matchHuman.firstName);
+                        assert.strictEqual(first.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
                     it('case sensitive regex', async () => {
@@ -907,9 +907,9 @@ config.parallel('rx-collection.test.js', () => {
                             .where('firstName').regex(/match/i)
                             .exec();
 
-                        assert.equal(docs.length, 1);
+                        assert.strictEqual(docs.length, 1);
                         const first = docs[0];
-                        assert.equal(first.get('firstName'), matchHuman.firstName);
+                        assert.strictEqual(first.get('firstName'), matchHuman.firstName);
                         c.database.destroy();
                     });
                     it('regex on index', async () => {
@@ -921,9 +921,9 @@ config.parallel('rx-collection.test.js', () => {
                             .where('passportId').regex(/Match/)
                             .exec();
 
-                        assert.equal(docs.length, 1);
+                        assert.strictEqual(docs.length, 1);
                         const first = docs[0];
-                        assert.equal(first.get('passportId'), matchHuman.passportId);
+                        assert.strictEqual(first.get('passportId'), matchHuman.passportId);
                         c.database.destroy();
                     });
                 });
@@ -947,26 +947,26 @@ config.parallel('rx-collection.test.js', () => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
                     const removed = await query.remove();
-                    assert.equal(removed.length, 10);
+                    assert.strictEqual(removed.length, 10);
                     removed.forEach(doc => {
                         assert.ok(RxDocument.isInstanceOf(doc));
-                        assert.equal(doc.deleted, true);
+                        assert.strictEqual(doc.deleted, true);
                     });
                     const docsAfter = await c.find().exec();
-                    assert.equal(docsAfter.length, 0);
+                    assert.strictEqual(docsAfter.length, 0);
                     c.database.destroy();
                 });
                 it('should remove only found documents', async () => {
                     const c = await humansCollection.create(10);
                     const query = c.find().limit(5);
                     const removed = await query.remove();
-                    assert.equal(removed.length, 5);
+                    assert.strictEqual(removed.length, 5);
                     removed.forEach(doc => {
                         assert.ok(RxDocument.isInstanceOf(doc));
-                        assert.equal(doc.deleted, true);
+                        assert.strictEqual(doc.deleted, true);
                     });
                     const docsAfter = await c.find().exec();
-                    assert.equal(docsAfter.length, 5);
+                    assert.strictEqual(docsAfter.length, 5);
                     c.database.destroy();
                 });
                 it('remove on findOne', async () => {
@@ -974,9 +974,9 @@ config.parallel('rx-collection.test.js', () => {
                     const query = c.findOne();
                     const removed = await query.remove();
                     assert.ok(RxDocument.isInstanceOf(removed));
-                    assert.equal(removed.deleted, true);
+                    assert.strictEqual(removed.deleted, true);
                     const docsAfter = await c.find().exec();
-                    assert.equal(docsAfter.length, 9);
+                    assert.strictEqual(docsAfter.length, 9);
                     c.database.destroy();
                 });
             });
@@ -991,7 +991,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const docsAfterUpdate = await c.find().exec();
                     for (const doc of docsAfterUpdate)
-                        assert.equal(doc._data.firstName, 'new first name');
+                        assert.strictEqual(doc._data.firstName, 'new first name');
                     c.database.destroy();
                 });
                 it('unsets fields in all documents', async () => {
@@ -1004,7 +1004,7 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     const docsAfterUpdate = await c.find().exec();
                     for (const doc of docsAfterUpdate)
-                        assert.equal(doc.age, undefined);
+                        assert.strictEqual(doc.age, undefined);
                     c.database.destroy();
                 });
             });
@@ -1020,9 +1020,9 @@ config.parallel('rx-collection.test.js', () => {
                 it('not crash on empty db', async () => {
                     const c = await humansCollection.create(0);
                     const docs = await c.find().limit(1).exec();
-                    assert.equal(docs.length, 0);
+                    assert.strictEqual(docs.length, 0);
                     const doc = await c.findOne().exec();
-                    assert.equal(doc, null);
+                    assert.strictEqual(doc, null);
                     c.database.destroy();
                 });
                 it('find different on .skip()', async () => {
@@ -1031,16 +1031,16 @@ config.parallel('rx-collection.test.js', () => {
                     const doc2 = await c.findOne().skip(2).exec();
                     assert.ok(RxDocument.isInstanceOf(doc));
                     assert.ok(RxDocument.isInstanceOf(doc2));
-                    assert.notEqual(doc._data.passportId, doc2._data.passportId);
+                    assert.notStrictEqual(doc._data.passportId, doc2._data.passportId);
                     c.database.destroy();
                 });
                 it('find by primary', async () => {
                     const c = await humansCollection.create();
                     const doc = await c.findOne().exec();
                     const _id = doc.primary;
-                    assert.equal(typeof _id, 'string');
+                    assert.strictEqual(typeof _id, 'string');
                     const docById = await c.findOne(_id).exec();
-                    assert.deepEqual(docById.data, doc.data);
+                    assert.deepStrictEqual(docById.data, doc.data);
                     c.database.destroy();
                 });
                 it('find by primary in parallel', async () => {
@@ -1050,7 +1050,7 @@ config.parallel('rx-collection.test.js', () => {
                     const primary = docData.passportId;
 
                     const notExist = await c.findOne(primary).exec();
-                    assert.equal(notExist, null);
+                    assert.strictEqual(notExist, null);
 
                     const insertedDoc = await c.insert(docData);
                     assert.ok(RxDocument.isInstanceOf(insertedDoc));
@@ -1090,7 +1090,7 @@ config.parallel('rx-collection.test.js', () => {
                         const passportId = human.passportId;
                         await collection.insert(human);
                         const doc = await collection.findOne().exec();
-                        assert.equal(passportId, doc._data.passportId);
+                        assert.strictEqual(passportId, doc._data.passportId);
                         db.destroy();
                     }
                 });
@@ -1138,7 +1138,7 @@ config.parallel('rx-collection.test.js', () => {
                     obj.firstName = 'foobar';
                     await collection.upsert(obj);
                     const doc = await collection.findOne().exec();
-                    assert.equal(doc.firstName, 'foobar');
+                    assert.strictEqual(doc.firstName, 'foobar');
                     db.destroy();
                 });
                 it('overwrite exisiting document', async () => {
@@ -1155,7 +1155,7 @@ config.parallel('rx-collection.test.js', () => {
                     obj.firstName = 'foobar';
                     await collection.upsert(obj);
                     const doc = await collection.findOne().exec();
-                    assert.equal(doc.firstName, 'foobar');
+                    assert.strictEqual(doc.firstName, 'foobar');
                     db.destroy();
                 });
                 it('overwrite twice', async () => {
@@ -1176,7 +1176,7 @@ config.parallel('rx-collection.test.js', () => {
                     await collection.upsert(obj);
 
                     const doc = await collection.findOne().exec();
-                    assert.equal(doc.firstName, 'foobar2');
+                    assert.strictEqual(doc.firstName, 'foobar2');
                     db.destroy();
                 });
             });
@@ -1275,7 +1275,7 @@ config.parallel('rx-collection.test.js', () => {
                     docData2.firstName = 'foobar';
                     await c.atomicUpsert(docData2);
                     const doc = await c.findOne().exec();
-                    assert.equal(doc.firstName, 'foobar');
+                    assert.strictEqual(doc.firstName, 'foobar');
 
                     c.database.destroy();
                 });
@@ -1301,7 +1301,7 @@ config.parallel('rx-collection.test.js', () => {
                         c.atomicUpsert(docData).then(() => order.push(1)),
                         c.atomicUpsert(docData).then(() => order.push(2))
                     ]);
-                    assert.deepEqual(order, [0, 1, 2]);
+                    assert.deepStrictEqual(order, [0, 1, 2]);
 
                     c.database.destroy();
                 });
@@ -1325,9 +1325,9 @@ config.parallel('rx-collection.test.js', () => {
                     docData2.firstName = 'foobar1';
                     await c.atomicUpsert(docData2);
                     const docs = await c.find().exec();
-                    assert.equal(docs.length, 1);
+                    assert.strictEqual(docs.length, 1);
                     const doc = await c.findOne().exec();
-                    assert.equal(doc.firstName, 'foobar1');
+                    assert.strictEqual(doc.firstName, 'foobar1');
 
                     db.destroy();
                 });
@@ -1393,7 +1393,7 @@ config.parallel('rx-collection.test.js', () => {
                             .map(() => collection.insert(schemaObjects.human()))
                     );
                     const allDocs = await collection.find().exec();
-                    assert.equal(5, allDocs.length);
+                    assert.strictEqual(5, allDocs.length);
                     await collection.remove();
 
                     const collection2 = await db.collection({
@@ -1401,7 +1401,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.primaryHuman
                     });
                     const noDocs = await collection2.find().exec();
-                    assert.equal(0, noDocs.length);
+                    assert.strictEqual(0, noDocs.length);
                     db.destroy();
                 });
                 it('should delete when older versions exist', async () => {
@@ -1431,13 +1431,13 @@ config.parallel('rx-collection.test.js', () => {
                         }
                     });
                     const noDocs = await collection2.find().exec();
-                    assert.equal(noDocs.length, 0);
+                    assert.strictEqual(noDocs.length, 0);
                     await Promise.all(
                         new Array(5).fill(0)
                             .map(() => collection2.insert(schemaObjects.human()))
                     );
                     const fiveDocs = await collection2.find().exec();
-                    assert.equal(fiveDocs.length, 5);
+                    assert.strictEqual(fiveDocs.length, 5);
                     await collection2.remove();
 
 
@@ -1446,7 +1446,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.primaryHuman
                     });
                     const noDocs2 = await collection0Again.find().exec();
-                    assert.equal(noDocs2.length, 0);
+                    assert.strictEqual(noDocs2.length, 0);
 
                     db.destroy();
                 });
@@ -1466,7 +1466,7 @@ config.parallel('rx-collection.test.js', () => {
                     const db = c.database;
                     const name = c.name;
                     await c.remove();
-                    assert.equal(undefined, db[name]);
+                    assert.strictEqual(undefined, db[name]);
                     c.database.destroy();
                 });
             });
@@ -1499,7 +1499,7 @@ config.parallel('rx-collection.test.js', () => {
             const doc = await collection.insert({
                 passportId: util.randomCouchString(10)
             });
-            assert.equal(doc.weight, 0);
+            assert.strictEqual(doc.weight, 0);
             db.destroy();
         });
         it('#596 Default value not applied when value is undefined', async () => {
@@ -1549,7 +1549,7 @@ config.parallel('rx-collection.test.js', () => {
                 .where('firstName')
                 .eq('Bob')
                 .exec();
-            assert.equal(myDocument.score, 100);
+            assert.strictEqual(myDocument.score, 100);
             db.destroy();
         });
         it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
@@ -1607,8 +1607,8 @@ config.parallel('rx-collection.test.js', () => {
             await db.collection(
                 collectionParams
             );
-            assert.deepEqual(Object.keys(cloned), Object.keys(collectionParams));
-            assert.deepEqual(cloned, collectionParams);
+            assert.deepStrictEqual(Object.keys(cloned), Object.keys(collectionParams));
+            assert.deepStrictEqual(cloned, collectionParams);
 
             await db.destroy();
 
@@ -1620,7 +1620,7 @@ config.parallel('rx-collection.test.js', () => {
             await db2.collection(
                 collectionParams
             );
-            assert.deepEqual(cloned, collectionParams);
+            assert.deepStrictEqual(cloned, collectionParams);
 
             db2.destroy();
         });

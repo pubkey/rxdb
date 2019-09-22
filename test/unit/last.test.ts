@@ -3,6 +3,6 @@ import RxDB from '../../';
 
 describe('last.test.js', () => {
     it('ensure every db is cleaned up', async () => {
-        assert.equal(RxDB.dbCount(), 0);
+        assert.strictEqual(RxDB.dbCount(), 0);
     });
 });

@@ -36,8 +36,8 @@ config.parallel('reactive-query.test.js', () => {
             });
             await AsyncTestUtil.waitUntil(() => count === 1);
             assert.ok(lastValue);
-            assert.equal(lastValue.length, 1);
-            assert.equal(count, 1);
+            assert.strictEqual(lastValue.length, 1);
+            assert.strictEqual(count, 1);
             c.database.destroy();
         });
         it('get the updated docs on Collection.insert()', async () => {
@@ -50,13 +50,13 @@ config.parallel('reactive-query.test.js', () => {
                 if (newResults) pw8.resolve();
             });
             await pw8.promise;
-            assert.equal(lastValue.length, 1);
+            assert.strictEqual(lastValue.length, 1);
 
             const addHuman = schemaObjects.human();
             const newPromiseWait = AsyncTestUtil.waitResolveable(500);
             await c.insert(addHuman);
             await newPromiseWait.promise;
-            assert.equal(lastValue.length, 2);
+            assert.strictEqual(lastValue.length, 2);
 
             let isHere = false;
             lastValue.map(doc => {
@@ -80,7 +80,7 @@ config.parallel('reactive-query.test.js', () => {
             await util.promiseWait(100);
 
             await AsyncTestUtil.waitUntil(() => lastValue2 && lastValue2.length === 1);
-            assert.deepEqual(lastValue, lastValue2);
+            assert.deepStrictEqual(lastValue, lastValue2);
             c.database.destroy();
         });
         it('get the base-value when subscribing again later', async () => {
@@ -97,8 +97,8 @@ config.parallel('reactive-query.test.js', () => {
             });
             await AsyncTestUtil.waitUntil(() => lastValue2.length > 0);
             await util.promiseWait(10);
-            assert.equal(lastValue2.length, 1);
-            assert.deepEqual(lastValue, lastValue2);
+            assert.strictEqual(lastValue2.length, 1);
+            assert.deepStrictEqual(lastValue, lastValue2);
             c.database.destroy();
         });
         it('get new values on RxDocument.save', async () => {
@@ -115,13 +115,13 @@ config.parallel('reactive-query.test.js', () => {
             });
 
             await pw8.promise;
-            assert.equal(values.length, 1);
+            assert.strictEqual(values.length, 1);
 
             // change doc so query does not match
             const newPromiseWait = AsyncTestUtil.waitResolveable(500);
             await doc.atomicSet('firstName', 'foobar');
             await newPromiseWait.promise;
-            assert.equal(values.length, 0);
+            assert.strictEqual(values.length, 0);
             querySub.unsubscribe();
             c.database.destroy();
         });
@@ -141,7 +141,7 @@ config.parallel('reactive-query.test.js', () => {
             );
             const countAfter = query._execOverDatabaseCount;
 
-            assert.equal(countBefore, countAfter);
+            assert.strictEqual(countBefore, countAfter);
 
             c.database.destroy();
         });
@@ -183,7 +183,7 @@ config.parallel('reactive-query.test.js', () => {
                 .exec();
 
             await pw8.promise;
-            assert.equal(valuesAr.length, 1);
+            assert.strictEqual(valuesAr.length, 1);
 
             // edit+save doc
             const newPromiseWait = AsyncTestUtil.waitResolveable(300);
@@ -192,7 +192,7 @@ config.parallel('reactive-query.test.js', () => {
             await newPromiseWait.promise;
 
             await util.promiseWait(20);
-            assert.equal(valuesAr.length, 1);
+            assert.strictEqual(valuesAr.length, 1);
             querySub.unsubscribe();
             c.database.destroy();
         });
@@ -203,13 +203,13 @@ config.parallel('reactive-query.test.js', () => {
             const doc = await c.findOne().exec();
             const docId = doc.primary;
 
-            assert.deepEqual(c2._docCache.get(docId), undefined);
+            assert.deepStrictEqual(c2._docCache.get(docId), undefined);
 
             const results = [];
             const sub = c2.find().$.subscribe(docs => results.push(docs));
             await AsyncTestUtil.waitUntil(() => results.length >= 1);
 
-            assert.equal(c2._docCache.get(docId).primary, docId);
+            assert.strictEqual(c2._docCache.get(docId).primary, docId);
 
             sub.unsubscribe();
             c.database.destroy();
@@ -225,30 +225,30 @@ config.parallel('reactive-query.test.js', () => {
             subs.push(
                 col.findOne(_id).$
                     .pipe(
-                        filter(doc => doc !== null)
+                        filter(d => d !== null)
                     )
-                    .subscribe(doc => {
-                        streamed.push(doc);
+                    .subscribe(d => {
+                        streamed.push(d);
                     })
             );
             await AsyncTestUtil.waitUntil(() => streamed.length === 1);
             assert.ok(isRxDocument(streamed[0]));
-            assert.equal(streamed[0]._id, _id);
+            assert.strictEqual(streamed[0]._id, _id);
 
             const streamed2 = [];
             subs.push(
                 col.findOne().where('_id').eq(_id).$
                     .pipe(
-                        filter(doc => doc !== null)
+                        filter(d => d !== null)
                     )
-                    .subscribe(doc => {
-                        streamed2.push(doc);
+                    .subscribe(d => {
+                        streamed2.push(d);
                     })
             );
             await AsyncTestUtil.waitUntil(() => streamed2.length === 1);
-            assert.equal(streamed2.length, 1);
+            assert.strictEqual(streamed2.length, 1);
             assert.ok(isRxDocument(streamed2[0]));
-            assert.equal(streamed2[0]._id, _id);
+            assert.strictEqual(streamed2[0]._id, _id);
 
             subs.forEach(sub => sub.unsubscribe());
             col.database.destroy();
@@ -264,7 +264,7 @@ config.parallel('reactive-query.test.js', () => {
                     streamed.push(doc);
                 });
             await AsyncTestUtil.waitUntil(() => streamed.length === 1);
-            assert.equal(streamed.length, 1);
+            assert.strictEqual(streamed.length, 1);
             assert.ok(isRxDocument(streamed[0]));
             sub.unsubscribe();
             col.database.destroy();
@@ -348,8 +348,8 @@ config.parallel('reactive-query.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => emitted.length > 0);
             await AsyncTestUtil.waitUntil(() => {
-                const last = emitted[emitted.length - 1];
-                return last.state.providers === 4;
+                const lastEmitted = emitted[emitted.length - 1];
+                return lastEmitted.state.providers === 4;
             }, 0, 300);
 
             await Promise.all(
@@ -363,19 +363,19 @@ config.parallel('reactive-query.test.js', () => {
             );
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;
-                const last = emitted[emitted.length - 1];
-                return last.state.providers === 9;
+                const lastEmitted = emitted[emitted.length - 1];
+                return lastEmitted.state.providers === 9;
             });
 
             // TODO this fails for unknown reasons on slow devices
             // await AsyncTestUtil.waitUntil(() => emittedOwn.length === 10);
 
             const last = emitted[emitted.length - 1];
-            assert.equal(last.state.providers, 9);
+            assert.strictEqual(last.state.providers, 9);
 
             // on own collection, all events should have propagated
             // TODO this fails for unkonwn reason on slow device
-            // assert.equal(emittedOwn.length, 10);
+            // assert.strictEqual(emittedOwn.length, 10);
 
             sub.unsubscribe();
             sub2.unsubscribe();
@@ -427,7 +427,7 @@ config.parallel('reactive-query.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => results.length === 4);
             results.forEach(res => {
-                assert.equal(res.length, 1);
+                assert.strictEqual(res.length, 1);
             });
 
             db.destroy();

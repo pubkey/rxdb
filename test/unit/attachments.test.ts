@@ -22,8 +22,8 @@ config.parallel('attachments.test.js', () => {
                 type: 'text/plain'
             });
             assert.ok(attachment);
-            assert.equal(attachment.id, 'cat.txt');
-            assert.equal(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.id, 'cat.txt');
+            assert.strictEqual(attachment.type, 'text/plain');
             c.database.destroy();
         });
         it('should insert two attachments', async () => {
@@ -53,7 +53,7 @@ config.parallel('attachments.test.js', () => {
                         type: 'text/plain'
                     }))
             );
-            assert.equal(attachments.length, 4);
+            assert.strictEqual(attachments.length, 4);
             assert.ok(attachments[1].id);
             c.database.destroy();
         });
@@ -83,7 +83,7 @@ config.parallel('attachments.test.js', () => {
             });
             const attachment = doc.getAttachment('cat.txt');
             assert.ok(attachment);
-            assert.equal(attachment.rev, 2);
+            assert.strictEqual(attachment.rev, 2);
             c.database.destroy();
         });
         it('should find the attachment after another doc-update', async () => {
@@ -99,7 +99,7 @@ config.parallel('attachments.test.js', () => {
 
             const attachment = doc.getAttachment('cat.txt');
             assert.ok(attachment);
-            assert.equal(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.type, 'text/plain');
             c.database.destroy();
         });
         it('should find the attachment after database is re-created', async () => {
@@ -136,10 +136,10 @@ config.parallel('attachments.test.js', () => {
                 schema: schemaJson
             });
             const doc2 = await c2.findOne().exec();
-            assert.equal(docAge, doc2.age);
+            assert.strictEqual(docAge, doc2.age);
             const attachment = doc2.getAttachment('cat.txt');
             assert.ok(attachment);
-            assert.equal(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.type, 'text/plain');
             c2.database.destroy();
         });
     });
@@ -156,7 +156,7 @@ config.parallel('attachments.test.js', () => {
             const attachment = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
             const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
-            assert.equal(dataString, dat);
+            assert.strictEqual(dataString, dat);
             c.database.destroy();
         });
     });
@@ -172,7 +172,7 @@ config.parallel('attachments.test.js', () => {
             });
             const attachment = doc.getAttachment('cat.txt');
             const data = await attachment.getStringData();
-            assert.equal(data, dat);
+            assert.strictEqual(data, dat);
             c.database.destroy();
         });
     });
@@ -192,7 +192,7 @@ config.parallel('attachments.test.js', () => {
 
             // ensure it does not exist
             const shouldBeNull = doc.getAttachment('cat.txt');
-            assert.equal(null, shouldBeNull);
+            assert.strictEqual(null, shouldBeNull);
 
             c.database.destroy();
         });
@@ -211,7 +211,7 @@ config.parallel('attachments.test.js', () => {
                     }))
             );
             const attachments = doc.allAttachments();
-            assert.equal(attachments.length, 10);
+            assert.strictEqual(attachments.length, 10);
             c.database.destroy();
         });
         it('should lazy-load the data for the attachment', async () => {
@@ -227,7 +227,7 @@ config.parallel('attachments.test.js', () => {
 
             const data = await attachment.getData();
             const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
-            assert.deepEqual(dataString, 'foo bar');
+            assert.deepStrictEqual(dataString, 'foo bar');
             c.database.destroy();
         });
     });
@@ -259,10 +259,10 @@ config.parallel('attachments.test.js', () => {
 
             const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
             const dataString = await AttachmentPlugin.blobBufferUtil.toString(encryptedData);
-            assert.notEqual(dataString, 'foo bar');
+            assert.notStrictEqual(dataString, 'foo bar');
 
             const data = await attachment.getStringData();
-            assert.equal(data, 'foo bar');
+            assert.strictEqual(data, 'foo bar');
 
             c.database.destroy();
         });
@@ -281,7 +281,7 @@ config.parallel('attachments.test.js', () => {
             const sub = doc.allAttachments$.subscribe(attachments => emited.push(attachments));
             await AsyncTestUtil.waitUntil(() => emited.length === 1);
 
-            assert.equal(emited[0].length, 1);
+            assert.strictEqual(emited[0].length, 1);
             assert.ok(emited[0][0].doc);
 
             sub.unsubscribe();
@@ -318,7 +318,7 @@ config.parallel('attachments.test.js', () => {
             await c.insert(schemaObjects.human());
             const doc = await c.findOne().exec();
             const doc2 = await c2.findOne().exec();
-            assert.equal(doc.age, doc2.age);
+            assert.strictEqual(doc.age, doc2.age);
 
             const doc2Streamed = [];
             const sub = doc2.allAttachments$
@@ -335,7 +335,7 @@ config.parallel('attachments.test.js', () => {
             );
             const attachment = doc2Streamed[1][0];
             const data = await attachment.getStringData();
-            assert.equal(data, 'meow I am a kitty');
+            assert.strictEqual(data, 'meow I am a kitty');
 
             // remove again
             await putAttachment.remove();
@@ -343,7 +343,7 @@ config.parallel('attachments.test.js', () => {
             await AsyncTestUtil.waitUntil(
                 () => doc2Streamed.length === 3
             );
-            assert.equal(doc2Streamed[2].length, 0);
+            assert.strictEqual(doc2Streamed[2].length, 0);
 
 
             sub.unsubscribe();
@@ -402,13 +402,13 @@ config.parallel('attachments.test.js', () => {
             assert.ok(doc2);
             const attachment = doc2.getAttachment('cat.txt');
             const data = await attachment.getStringData();
-            assert.equal(data, 'meow I am a kitty');
+            assert.strictEqual(data, 'meow I am a kitty');
             assert.ok(attachment);
 
             const attachment2 = doc2.getAttachment('cat2.txt');
             assert.ok(attachment2);
             const data2 = await attachment2.getStringData();
-            assert.equal(data2, 'meow I am a kitty2');
+            assert.strictEqual(data2, 'meow I am a kitty2');
 
             db2.destroy();
         });
@@ -440,7 +440,7 @@ config.parallel('attachments.test.js', () => {
                 type: 'text/plain'
             });
 
-            assert.equal(attachment.foobar(), 'foobar text/plain');
+            assert.strictEqual(attachment.foobar(), 'foobar text/plain');
             db.destroy();
         });
     });
@@ -482,7 +482,7 @@ config.parallel('attachments.test.js', () => {
             const doc2 = await myCollection.findOne('mydoc').exec();
             const attachment2 = doc2.getAttachment('sampledata');
             const data = await attachment2.getStringData();
-            assert.equal(data, 'foo bar');
+            assert.strictEqual(data, 'foo bar');
             await myDB.destroy();
         });
         it('calling allAttachments() fails when document has none', async () => {
@@ -503,7 +503,7 @@ config.parallel('attachments.test.js', () => {
             const doc = await c.findOne().exec();
 
             const attachments = await doc.allAttachments();
-            assert.equal(attachments.length, 0);
+            assert.strictEqual(attachments.length, 0);
 
             db.destroy();
         });

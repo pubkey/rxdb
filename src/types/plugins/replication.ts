@@ -14,24 +14,24 @@ export declare class RxReplicationState {
     alive$: Observable<boolean>;
     complete$: Observable<any>;
     error$: Observable<any>;
-    cancel(): Promise<any>;
-
-    // if you do a custom sync, put the thing you get back from pouch here
-    setPouchEventEmitter(pouchSyncState: any): void;
 
     // can be used for debuging or custom event-handling
     // will be set some time after sync() is called
     _pouchEventEmitterObject: PouchSyncHandler | null;
+    cancel(): Promise<any>;
+
+    // if you do a custom sync, put the thing you get back from pouch here
+    setPouchEventEmitter(pouchSyncState: any): void;
 }
 
 export interface SyncOptions {
-    remote: string | any,
-    waitForLeadership?: boolean,
+    remote: string | any;
+    waitForLeadership?: boolean;
     direction?: {
         push?: boolean,
         pull?: boolean
-    },
+    };
     // for options see https://pouchdb.com/api.html#replication
-    options?: PouchReplicationOptions,
-    query?: RxQuery<any, any>
+    options?: PouchReplicationOptions;
+    query?: RxQuery<any, any>;
 }

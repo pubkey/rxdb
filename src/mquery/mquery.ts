@@ -34,16 +34,14 @@ export class MQueryBase {
      *     var query = new MQuery({ name: 'mquery' });
      *     query.where('age').gte(21).exec(callback);
      *
-     * @param {Object} [criteria]
      */
-    constructor(criteria?) {
+    constructor(criteria?: any) {
         if (criteria)
             this.find(criteria);
     }
 
     /**
      * returns a cloned version of the query
-     * @return {MQuery}
      */
     clone(): MQuery {
         const same = new MQueryBase();
@@ -56,11 +54,8 @@ export class MQueryBase {
 
     /**
      * Specifies a `path` for use with chaining.
-     * @param {String} [path]
-     * @param {Object} [val]
-     * @return {MQuery} this
      */
-    where(): MQueryBase {
+    where(_path: string, _val: any): MQueryBase {
         if (!arguments.length) return this;
         const type = typeof arguments[0];
         if ('string' === type) {
@@ -82,8 +77,6 @@ export class MQueryBase {
      * Specifies the complementary comparison value for paths specified with `where()`
      * ####Example
      *     User.where('age').equals(49);
-     * @param {Object} val
-     * @return {MQuery} this
      */
     equals(val): MQueryBase {
         this._ensurePath('equals');
@@ -95,8 +88,6 @@ export class MQueryBase {
     /**
      * Specifies the complementary comparison value for paths specified with `where()`
      * This is alias of `equals`
-     * @param {Object} val
-     * @return {MQuery} this
      */
     eq(val): MQueryBase {
         this._ensurePath('eq');
@@ -109,8 +100,6 @@ export class MQueryBase {
      * Specifies arguments for an `$or` condition.
      * ####Example
      *     query.or([{ color: 'red' }, { status: 'emergency' }])
-     * @param {Array} array array of conditions
-     * @return {MQuery} this
      */
     or(array): MQueryBase {
         const or = this._conditions.$or || (this._conditions.$or = []);
@@ -123,8 +112,6 @@ export class MQueryBase {
      * Specifies arguments for a `$nor` condition.
      * ####Example
      *     query.nor([{ color: 'green' }, { status: 'ok' }])
-     * @param {Array} array array of conditions
-     * @return {MQuery} this
      */
     nor(array): MQueryBase {
         const nor = this._conditions.$nor || (this._conditions.$nor = []);
@@ -138,8 +125,6 @@ export class MQueryBase {
      * ####Example
      *     query.and([{ color: 'green' }, { status: 'ok' }])
      * @see $and http://docs.mongodb.org/manual/reference/operator/and/
-     * @param {Array} array array of conditions
-     * @return {MQuery} this
      */
     and(array): MQueryBase {
         const and = this._conditions.$and || (this._conditions.$and = []);
@@ -150,13 +135,8 @@ export class MQueryBase {
 
     /**
      * Specifies a `$mod` condition
-     *
-     * @param {String} [path]
-     * @param {Number} val
-     * @return {MQuery} this
-     * @api public
      */
-    mod(): MQueryBase {
+    mod(_path: string, _val: number): MQueryBase {
         let val;
         let path;
 
@@ -188,12 +168,8 @@ export class MQueryBase {
      *     Thing.where('name').exists()
      *     Thing.where('name').exists(true)
      *     Thing.find().exists('name')
-     * @param {String} [path]
-     * @param {Number} val
-     * @return {MQuery} this
-     * @api public
      */
-    exists(): MQueryBase {
+    exists(_path: string, _val: number): MQueryBase {
         let path;
         let val;
         if (0 === arguments.length) {
@@ -232,11 +208,8 @@ export class MQueryBase {
      *       elem.where({ author: 'autobot' });
      *       elem.where('votes').gte(5);
      *     })
-     * @param {String|Object|Function} path
-     * @param {Object|Function} criteria
-     * @return {MQuery} this
      */
-    elemMatch(): MQueryBase {
+    elemMatch(_path: string, _criteria: any): MQueryBase {
         if (null === arguments[0])
             throw newRxTypeError('MQ2');
 
@@ -275,15 +248,14 @@ export class MQueryBase {
     /**
      * Sets the sort order
      * If an object is passed, values allowed are 'asc', 'desc', 'ascending', 'descending', 1, and -1.
-     * If a string is passed, it must be a space delimited list of path names. The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
+     * If a string is passed, it must be a space delimited list of path names.
+     * The sort order of each path is ascending unless the path name is prefixed with `-` which will be treated as descending.
      * ####Example
      *     query.sort({ field: 'asc', test: -1 });
      *     query.sort('field -test');
      *     query.sort([['field', 1], ['test', -1]]);
-     * @param {Object|String|Array} arg
-     * @return {MQuery} this
      */
-    sort(arg): MQueryBase {
+    sort(arg: any): MQueryBase {
         if (!arg) return this;
         let len;
         const type = typeof arg;
@@ -328,10 +300,8 @@ export class MQueryBase {
      *
      * When a MQuery is passed, conditions, field selection and options are merged.
      *
-     * @param {MQuery|Object} source
-     * @return {MQuery} this
      */
-    merge(source): MQueryBase {
+    merge(source: any): MQueryBase {
         if (!source)
             return this;
 
@@ -348,17 +318,17 @@ export class MQueryBase {
                 merge(this._conditions, source._conditions);
 
             if (source._fields) {
-                this._fields || (this._fields = {});
+                if (!this._fields) this._fields = {};
                 merge(this._fields, source._fields);
             }
 
             if (source.options) {
-                this.options || (this.options = {});
+                if (!this.options) this.options = {};
                 merge(this.options, source.options);
             }
 
             if (source._update) {
-                this._update || (this._update = {});
+                if (!this._update) this._update = {};
                 mergeClone(this._update, source._update);
             }
 
@@ -379,10 +349,8 @@ export class MQueryBase {
      * ####Example
      *     query.find()
      *     query.find({ name: 'Burning Lights' })
-     * @param {Object} [criteria] mongodb selector
-     * @return {MQuery} this
      */
-    find(criteria): MQueryBase {
+    find(criteria: any): MQueryBase {
         if (canMerge(criteria))
             this.merge(criteria);
 
@@ -483,8 +451,8 @@ function push(opts, field, value) {
     }
 
     if (value && value.$meta) {
-        const s = opts.sort || (opts.sort = {});
-        s[field] = {
+        const sort = opts.sort || (opts.sort = {});
+        sort[field] = {
             $meta: value.$meta
         };
         return;
@@ -529,12 +497,9 @@ function _pushArr(opts, field, value) {
 
 /**
  * Determines if `conds` can be merged using `mquery().merge()`
- *
- * @param {Object} conds
- * @return {Boolean}
  */
-export function canMerge(conds): boolean {
+export function canMerge(conds: any): boolean {
     return conds instanceof MQueryBase || isObject(conds);
-};
+}
 
 
