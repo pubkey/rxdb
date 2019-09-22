@@ -6,15 +6,27 @@ import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
-import * as RxDatabase from '../../dist/lib/rx-database';
 import {
-    createRxSchema
-} from '../../dist/lib/rx-schema';
-import * as Crypter from '../../dist/lib/crypter';
+    createRxSchema,
+    RxSchema,
+    createRxDatabase
+} from '../../';
+import {
+    create
+} from '../../dist/lib/crypter';
 import * as util from '../../dist/lib/util';
 import RxDB from '../../';
+import {
+    Crypter
+} from '../../src/crypter';
 
 config.parallel('encryption.test.js', () => {
+    function createCrypter(
+        name: string,
+        schema: RxSchema
+    ): Crypter {
+        return create(name, schema) as Crypter;
+    }
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {
             it('get an encrypted path', async () => {
@@ -42,18 +54,18 @@ config.parallel('encryption.test.js', () => {
                 assert.equal(Object.keys(encPaths).length, 0);
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('Crypter.js', () => {
         it('create', () => {
             const schema = createRxSchema(schemas.human);
-            const c = Crypter.create('foobar', schema);
+            const c = createCrypter('foobar', schema);
             assert.equal(c.constructor.name, 'Crypter');
         });
         describe('._encryptValue()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.human);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = 'foobar';
                 const encrypted = c._encryptValue(value);
                 assert.equal(typeof encrypted, 'string');
@@ -62,20 +74,21 @@ config.parallel('encryption.test.js', () => {
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.human);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = {
                     foo: 'bar'
                 };
                 const encrypted = c._encryptValue(value);
                 assert.equal(typeof encrypted, 'string');
-                assert.ok(!encrypted.includes(value));
+
+                assert.ok(!encrypted.includes(value.foo));
                 assert.ok(encrypted.length > 5);
             });
         });
         describe('._decryptValue()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.human);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = 'foobar';
                 const encrypted = c._encryptValue(value);
                 const decrypted = c._decryptValue(encrypted);
@@ -83,7 +96,7 @@ config.parallel('encryption.test.js', () => {
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.human);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = {
                     foo: 'bar'
                 };
@@ -96,7 +109,7 @@ config.parallel('encryption.test.js', () => {
         describe('.encrypt()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.encryptedHuman);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = schemaObjects.encryptedHuman();
                 const encrypted = c.encrypt(value);
                 assert.notEqual(encrypted.secret, value.secret);
@@ -105,7 +118,7 @@ config.parallel('encryption.test.js', () => {
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.encryptedObjectHuman);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = schemaObjects.encryptedObjectHuman();
                 const encrypted = c.encrypt(value);
                 assert.notDeepEqual(encrypted.secret, value.secret);
@@ -116,7 +129,7 @@ config.parallel('encryption.test.js', () => {
         describe('.decrypt()', () => {
             it('string', () => {
                 const schema = createRxSchema(schemas.encryptedHuman);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = schemaObjects.encryptedHuman();
                 const encrypted = c.encrypt(value);
                 const decrypted = c.decrypt(encrypted);
@@ -124,7 +137,7 @@ config.parallel('encryption.test.js', () => {
             });
             it('object', () => {
                 const schema = createRxSchema(schemas.encryptedObjectHuman);
-                const c = Crypter.create('mypw', schema);
+                const c = createCrypter('mypw', schema);
                 const value = schemaObjects.encryptedObjectHuman();
                 const encrypted = c.encrypt(value);
                 const decrypted = c.decrypt(encrypted);
@@ -144,7 +157,7 @@ config.parallel('encryption.test.js', () => {
                 c.database.destroy();
             });
             it('should insert one encrypted value (object)', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -162,7 +175,7 @@ config.parallel('encryption.test.js', () => {
                 db.destroy();
             });
         });
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('Document.save()', () => {
         describe('positive', () => {
@@ -180,7 +193,7 @@ config.parallel('encryption.test.js', () => {
                 c.database.destroy();
             });
             it('should save one encrypted value (object)', async () => {
-                const db = await RxDatabase.create({
+                const db = await createRxDatabase({
                     name: util.randomCouchString(10),
                     adapter: 'memory',
                     password: util.randomCouchString(10)
@@ -210,7 +223,7 @@ config.parallel('encryption.test.js', () => {
             });
         });
 
-        describe('negative', () => {});
+        describe('negative', () => { });
     });
     describe('ISSUES', () => {
         it('#837 Recover from wrong database password', async () => {

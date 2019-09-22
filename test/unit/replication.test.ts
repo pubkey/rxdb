@@ -22,6 +22,9 @@ import {
     filter,
     first
 } from 'rxjs/operators';
+import {
+    RxReplicationState
+} from '../../';
 
 let request;
 let SpawnServer;
@@ -624,7 +627,7 @@ describe('replication.test.js', () => {
             let documents = await collection2.find({}).exec();
 
             // Replicate from db1-collection1 to db2-collection2
-            const pullstate = collection2.sync({
+            const pullstate: RxReplicationState = collection2.sync({
                 remote: collection1,
                 direction: {
                     pull: true,

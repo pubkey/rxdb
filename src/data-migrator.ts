@@ -434,6 +434,6 @@ export function mustMigrate(dataMigrator) {
         });
 }
 
-export function createDataMigrator(newestCollection, migrationStrategies) {
+export function createDataMigrator(newestCollection, migrationStrategies): DataMigrator {
     return new DataMigrator(newestCollection, migrationStrategies);
 }

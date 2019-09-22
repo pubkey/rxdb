@@ -65,9 +65,14 @@ import {
     isInstanceOf as isRxSchema
 } from './rx-schema';
 export {
-    isInstanceOf as isRxSchema
+    isInstanceOf as isRxSchema,
+    createRxSchema,
+    RxSchema
 } from './rx-schema';
 
+export {
+    RxChangeEvent
+} from './rx-change-event';
 
 export default {
     create,

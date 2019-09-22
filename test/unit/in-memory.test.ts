@@ -26,7 +26,7 @@ config.parallel('in-memory.test.js', () => {
         describe('.setIndexes()', () => {
             it('should have set all indexes', async () => {
                 const col = await humansCollection.create(0);
-                const inMem = new InMemoryRxCollection(col);
+                const inMem = new (InMemoryRxCollection as any)(col);
                 await setIndexes(inMem.schema, inMem.pouch);
 
                 const hasIndexes = await inMem.pouch.getIndexes();
@@ -39,7 +39,7 @@ config.parallel('in-memory.test.js', () => {
         describe('.replicateExistingDocuments()', () => {
             it('should have replicated all documents', async () => {
                 const col = await humansCollection.create(5);
-                const inMem = new InMemoryRxCollection(col);
+                const inMem = new (InMemoryRxCollection as any)(col);
                 await replicateExistingDocuments(col, inMem);
 
                 const foundAfter = await inMem.pouch.find({
@@ -56,7 +56,7 @@ config.parallel('in-memory.test.js', () => {
                     firstName: 'steve',
                     secret: 'foobar'
                 });
-                const inMem = new InMemoryRxCollection(col);
+                const inMem = new (InMemoryRxCollection as any)(col);
                 await replicateExistingDocuments(col, inMem);
 
                 const foundAfter = await inMem.pouch.find({
@@ -83,13 +83,13 @@ config.parallel('in-memory.test.js', () => {
             });
             it('should stream a doc-change of an inMemory collection', async () => {
                 const col = await humansCollection.create(0);
-                const inMem = new InMemoryRxCollection(col);
+                const inMem = new (InMemoryRxCollection as any)(col);
                 const obs = streamChangedDocuments(inMem);
                 const emitted = [];
                 const sub = obs.subscribe(doc => emitted.push(doc));
 
                 const doc = schemaObjects.human('foobar');
-                doc._id = 'foobar1';
+                doc['_id'] = 'foobar1';
                 await inMem.pouch.put(doc);
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
                 assert.equal(emitted[0].passportId, 'foobar');
@@ -117,8 +117,8 @@ config.parallel('in-memory.test.js', () => {
                 const col = await humansCollection.create(0);
 
                 const docData = schemaObjects.human();
-                docData._id = 'foobar1';
-                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
+                docData['_id'] = 'foobar1';
+                docData['_rev'] = '1-51b2fae5721cc4d3cf7392f19e6cc118';
                 await applyChangedDocumentToPouch(col, docData);
 
                 const foundAfter = await col.pouch.find({
@@ -136,8 +136,8 @@ config.parallel('in-memory.test.js', () => {
                 const sub = obs.subscribe(doc => emitted.push(doc));
 
                 const docData = schemaObjects.human();
-                docData._id = 'foobar1';
-                docData._rev = '1-51b2fae5721cc4d3cf7392f19e6cc118';
+                docData['_id'] = 'foobar1';
+                docData['_rev'] = '1-51b2fae5721cc4d3cf7392f19e6cc118';
                 await applyChangedDocumentToPouch(col, docData);
 
                 await AsyncTestUtil.wait(100);
@@ -153,7 +153,7 @@ config.parallel('in-memory.test.js', () => {
 
                 // insert existing doc, then overwrite
                 const docData = schemaObjects.human();
-                docData._id = 'foobar1';
+                docData['_id'] = 'foobar1';
                 const ret = await col.pouch.put(docData);
 
                 await AsyncTestUtil.wait(100);
@@ -191,7 +191,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
             const docs = await memCol.find().exec();
-            assert.ok(docs.length, 5);
+            assert.equal(docs.length, 5);
             const firstDoc = await memCol.findOne().exec();
             assert.ok(firstDoc.firstName);
             col.database.destroy();

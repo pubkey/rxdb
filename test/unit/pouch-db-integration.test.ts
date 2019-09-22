@@ -16,7 +16,8 @@ import * as util from '../../dist/lib/util';
 import * as schemaObjects from './../helper/schema-objects';
 import AsyncTestUtil from 'async-test-util';
 import {
-    isRxDatabase
+    isRxDatabase,
+    PouchDBInstance
 } from '../../';
 
 config.parallel('pouch-db-integration.test.js', () => {
@@ -233,7 +234,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     _id,
                     x: 1
                 });
-                const docs = await getBatch(pouchdb, 10);
+                const docs: any[] = await getBatch(pouchdb, 10);
                 assert.equal(docs.length, 1);
                 assert.equal(docs[0].x, 1);
                 assert.equal(docs[0]._id, _id);
@@ -256,7 +257,7 @@ config.parallel('pouch-db-integration.test.js', () => {
                     t--;
                 }
                 const batchSize = 13;
-                const docs = await getBatch(pouchdb, batchSize);
+                const docs: any[] = await getBatch(pouchdb, batchSize);
                 assert.equal(docs.length, batchSize);
                 docs.forEach(doc => {
                     assert.equal(doc.x, 1);
@@ -268,15 +269,15 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('_local documents should not be cached by pouchdb', async () => {
             const name = util.randomCouchString(10);
             const _id = '_local/foobar';
-            const createPouch = () => {
-                return new RxDB.PouchDB(
+            function createPouch(): PouchDBInstance {
+                const pouch = new RxDB.PouchDB(
                     name, {
-                        adapter: 'memory'
-                    }, {
+                        adapter: 'memory',
                         auto_compaction: true,
                         revs_limit: 1
                     }
-                );
+                ) as any;
+                return pouch;
             };
             const pouch1 = createPouch();
             const pouch2 = createPouch();
@@ -301,8 +302,7 @@ config.parallel('pouch-db-integration.test.js', () => {
         it('pouchdb.find() should not return design-docs', async () => {
             const pouch = new RxDB.PouchDB(
                 util.randomCouchString(10), {
-                    adapter: 'memory'
-                }, {
+                    adapter: 'memory',
                     auto_compaction: true,
                     revs_limit: 1
                 }
@@ -335,14 +335,13 @@ config.parallel('pouch-db-integration.test.js', () => {
             pouch.destroy();
         });
         it('removing via bulkDocs does not work', async () => {
-            const pouch = new RxDB.PouchDB(
+            const pouch: PouchDBInstance = new RxDB.PouchDB(
                 util.randomCouchString(10), {
-                    adapter: 'memory'
-                }, {
+                    adapter: 'memory',
                     auto_compaction: true,
                     revs_limit: 1
                 }
-            );
+            ) as any;
 
             // add one doc
             await pouch.put({
@@ -354,11 +353,13 @@ config.parallel('pouch-db-integration.test.js', () => {
             const bulkOptions = {
                 new_edits: false
             };
-            await pouch.bulkDocs([{
-                _id: 'foobar',
-                foo: 'bar',
-                _rev: '2-6c5d4399ffe848f395069eab42630eee'
-            }], bulkOptions);
+            await pouch.bulkDocs({
+                docs: [{
+                    _id: 'foobar',
+                    foo: 'bar',
+                    _rev: '2-6c5d4399ffe848f395069eab42630eee'
+                }]
+            }, bulkOptions);
 
             // find again
             const foundAfter = await pouch.find({
@@ -393,14 +394,13 @@ config.parallel('pouch-db-integration.test.js', () => {
             pouch.destroy();
         });
         it('putting with _deleted does not work', async () => {
-            const pouch = new RxDB.PouchDB(
+            const pouch: PouchDBInstance = new RxDB.PouchDB(
                 util.randomCouchString(10), {
-                    adapter: 'memory'
-                }, {
+                    adapter: 'memory',
                     auto_compaction: true,
                     revs_limit: 1
                 }
-            );
+            ) as any;
             const bulkOptions = {
                 new_edits: false
             };
@@ -418,15 +418,16 @@ config.parallel('pouch-db-integration.test.js', () => {
             });
 
             // insert doc via bulkDocs
+            const docs = [{
+                '|c': '0waqyh2xjwtu',
+                '|a': 'foo123',
+                '|b': 'King',
+                age: 1,
+                _id: 'myid',
+                _rev: '1-62080c42d471e3d2625e49dcca3b8e3e'
+            }];
             await pouch.bulkDocs({
-                docs: [{
-                    '|c': '0waqyh2xjwtu',
-                    '|a': 'foo123',
-                    '|b': 'King',
-                    age: 1,
-                    _id: 'myid',
-                    _rev: '1-62080c42d471e3d2625e49dcca3b8e3e'
-                }]
+                docs
             }, bulkOptions);
 
             let foundAfter = await pouch.find({
@@ -462,17 +463,17 @@ config.parallel('pouch-db-integration.test.js', () => {
             pouch.destroy();
         });
         it('put->delete-put will find the previous document', async () => {
-            const pouch = new RxDB.PouchDB(
+            const pouch: PouchDBInstance = new RxDB.PouchDB(
                 util.randomCouchString(10), {
                     adapter: 'memory'
                 }
-            );
+            ) as any;
             const BULK_DOC_OPTIONS = {
                 new_edits: false
             };
 
             const docData = schemaObjects.human();
-            docData._id = 'foobar1';
+            docData['_id'] = 'foobar1';
             const ret = await pouch.put(docData);
 
             await AsyncTestUtil.wait(100);

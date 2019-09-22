@@ -16,7 +16,7 @@ import {
 export class ChangeEventBuffer {
     private subs: Subscription[] = [];
     private limit: number = 100;
-    private counter: number = 0;
+    public counter: number = 0;
     private eventCounterMap: WeakMap<
         RxChangeEvent, number
     > = new WeakMap();

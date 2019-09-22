@@ -11,11 +11,9 @@ const path = require('path');
 import {
     isRxCollection,
     isRxDatabase,
-    create as createRxDatabase
-} from '../../';
-import {
+    createRxDatabase,
     createRxSchema
-} from '../../dist/lib/rx-schema';
+} from '../../';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';

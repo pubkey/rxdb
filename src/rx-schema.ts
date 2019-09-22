@@ -82,7 +82,7 @@ export class RxSchema<T = any> {
         return this._crypt;
     }
 
-    private _normalized;
+    public _normalized;
     get normalized(): RxJsonSchema {
         if (!this._normalized)
             this._normalized = normalize(this.jsonID);

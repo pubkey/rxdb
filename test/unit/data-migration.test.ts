@@ -17,9 +17,18 @@ import {
     _collectionNamePrimary
 } from '../../dist/lib/rx-database';
 
-import * as DataMigrator from '../../dist/lib/data-migrator';
+import {
+    DataMigrator
+} from '../../src/data-migrator';
+import {
+    createDataMigrator as create,
+    _getOldCollections
+} from '../../dist/lib/data-migrator';
 
 config.parallel('data-migration.test.js', () => {
+    function createDataMigrator(newestCollection, migrationStrategies): DataMigrator {
+        return create(newestCollection, migrationStrategies) as DataMigrator;
+    }
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {
@@ -182,7 +191,7 @@ config.parallel('data-migration.test.js', () => {
                         3: () => { }
                     }
                 });
-                const old = await DataMigrator._getOldCollections(col._dataMigrator);
+                const old = await _getOldCollections(col._dataMigrator);
                 assert.deepEqual(old, []);
                 db.destroy();
             });
@@ -215,7 +224,7 @@ config.parallel('data-migration.test.js', () => {
                         3: () => { }
                     }
                 });
-                const old = await DataMigrator._getOldCollections(col2._dataMigrator);
+                const old = await _getOldCollections(col2._dataMigrator);
                 assert.ok(Array.isArray(old));
                 assert.equal(old.length, 1);
                 assert.equal(old[0].constructor.name, 'OldCollection');
@@ -228,7 +237,7 @@ config.parallel('data-migration.test.js', () => {
                 it('create', async () => {
                     const col = await humansCollection.createMigrationCollection();
 
-                    const old = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const old: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = old.pop();
 
                     assert.equal(oldCol.schema.constructor.name, 'RxSchema');
@@ -248,7 +257,7 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
 
-                    const old = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const old: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = old.pop();
 
                     const oldDocs = await oldCol.getBatch(10);
@@ -265,7 +274,7 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
 
-                    const old = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const old: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = old.pop();
 
                     const oldDocs = await oldCol.getBatch(10);
@@ -278,7 +287,7 @@ config.parallel('data-migration.test.js', () => {
                 it('should delete the pouchdb with all its content', async () => {
                     const dbName = util.randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const old = olds.pop();
 
                     const amount = await countAllUndeleted(old.pouchdb);
@@ -334,7 +343,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     // simluate prerun of migrate()
@@ -351,7 +360,7 @@ config.parallel('data-migration.test.js', () => {
             describe('.migrate()', () => {
                 it('should resolve finished when no docs', async () => {
                     const col = await humansCollection.createMigrationCollection(0);
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     await oldCol.migratePromise();
@@ -364,7 +373,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     const docsPrev = await col.pouch.allDocs({
@@ -389,7 +398,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     const pw8 = AsyncTestUtil.waitResolveable(1000);
@@ -416,7 +425,7 @@ config.parallel('data-migration.test.js', () => {
                             return null;
                         }
                     });
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
@@ -436,7 +445,7 @@ config.parallel('data-migration.test.js', () => {
                             throw new Error('foobar');
                         }
                     });
-                    const olds = await DataMigrator._getOldCollections(col._dataMigrator);
+                    const olds: any = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
                     await AsyncTestUtil.assertThrows(
                         () => oldCol.migratePromise(),

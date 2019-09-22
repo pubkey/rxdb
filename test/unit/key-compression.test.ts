@@ -9,19 +9,32 @@ import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 
-import {
-    createRxSchema
-} from '../../dist/lib/rx-schema';
-import * as RxDatabase from '../../dist/lib/rx-database';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
-import * as KeyCompressor from '../../dist/lib/plugins/key-compression';
+import {
+    createRxSchema,
+    createRxDatabase,
+    RxJsonSchema,
+    RxSchema
+} from '../../';
+import {
+    create,
+} from '../../dist/lib/plugins/key-compression';
 
+
+import {
+    KeyCompressor
+} from '../../src/plugins/key-compression';
 
 config.parallel('key-compression.test.js', () => {
+
+    function createKeyCompressor(schema: RxSchema): KeyCompressor {
+        return create(schema) as KeyCompressor;
+    }
+
     describe('create table', () => {
         it('get a valid table', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.human));
+            const k: any = createKeyCompressor(createRxSchema(schemas.human));
             const table = k.table;
             assert.equal(
                 Object.keys(table).length,
@@ -34,18 +47,18 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('table assigns _id to primary', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.primaryHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const table = k.table;
             assert.equal(table.passportId, '_id');
         });
         it('table of nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.nestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.nestedHuman));
             const table = k.table;
             assert.equal(table['mainSkill.name'].length, 2);
             assert.equal(table['mainSkill.level'].length, 2);
         });
         it('table of deep nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.deepNestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
             const table = k.table;
             assert.equal(table['mainSkill.name'].length, 2);
             assert.equal(table['mainSkill.attack'].length, 2);
@@ -53,14 +66,14 @@ config.parallel('key-compression.test.js', () => {
             assert.equal(table['mainSkill.attack.count'].length, 2);
         });
         it('table of schema with array', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.heroArray));
+            const k = createKeyCompressor(createRxSchema(schemas.heroArray));
             const table = k.table;
             assert.equal(table['skills.items'].length, 2);
             assert.equal(table['skills.items.name'].length, 2);
             assert.equal(table['skills.items.damage'].length, 2);
         });
         it('do not compress keys with <=3 chars', () => {
-            const k = KeyCompressor.create(createRxSchema({
+            const k = createKeyCompressor(createRxSchema({
                 version: 0,
                 type: 'object',
                 properties: {
@@ -92,7 +105,7 @@ config.parallel('key-compression.test.js', () => {
 
     describe('reverseTable', () => {
         it('reverse normal', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.human));
+            const k = createKeyCompressor(createRxSchema(schemas.human));
             const reverse = k.reverseTable;
             const table = k.table;
 
@@ -102,7 +115,7 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('reverse nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.nestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.nestedHuman));
             const reverse = k.reverseTable;
             const table = k.table;
 
@@ -113,7 +126,7 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('reverse primary', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.primaryHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const reverse = k.reverseTable;
             const table = k.table;
 
@@ -126,7 +139,7 @@ config.parallel('key-compression.test.js', () => {
 
     describe('.compress()', () => {
         it('normal', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.human));
+            const k = createKeyCompressor(createRxSchema(schemas.human));
             const human = schemaObjects.human();
             const compressed = k.compress(human);
 
@@ -139,7 +152,7 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('primary', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.primaryHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const human = schemaObjects.human();
             const compressed = k.compress(human);
 
@@ -152,15 +165,15 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('should not compress _rev', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.primaryHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const human = schemaObjects.human();
-            human._rev = 'foobar';
+            human['_rev'] = 'foobar';
             const compressed = k.compress(human);
-            assert.equal(human._rev, 'foobar');
+            assert.equal(human['_rev'], 'foobar');
             assert.equal(compressed._rev, 'foobar');
         });
         it('nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.nestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.nestedHuman));
             const human = schemaObjects.nestedHuman();
             const compressed = k.compress(human);
 
@@ -188,7 +201,7 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('deep nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.deepNestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
             const human = schemaObjects.deepNestedHuman();
             const compressed = k.compress(human);
 
@@ -200,12 +213,12 @@ config.parallel('key-compression.test.js', () => {
             });
         });
         it('additional value', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.deepNestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
             const human = schemaObjects.deepNestedHuman();
             const additionalValue = {
                 foo: 'bar'
             };
-            human.foobar = additionalValue;
+            human['foobar'] = additionalValue;
             const compressed = k.compress(human);
 
             const json = JSON.stringify(compressed);
@@ -219,7 +232,7 @@ config.parallel('key-compression.test.js', () => {
         });
 
         it('schema with array', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.heroArray));
+            const k = createKeyCompressor(createRxSchema(schemas.heroArray));
             const human = schemaObjects.heroArray();
             const compressed = k.compress(human);
             const json = JSON.stringify(compressed);
@@ -232,21 +245,21 @@ config.parallel('key-compression.test.js', () => {
             // array elements
             human.skills.forEach(skill => {
                 assert.ok(json.includes(skill.name));
-                assert.ok(json.includes(skill.damage));
+                assert.ok(json.includes(skill.damage + ''));
             });
         });
     });
 
     describe('.decompress()', () => {
         it('normal', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.human));
+            const k = createKeyCompressor(createRxSchema(schemas.human));
             const human = schemaObjects.human();
             const compressed = k.compress(human);
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
         it('nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.nestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.nestedHuman));
             const human = schemaObjects.nestedHuman();
             const compressed = k.compress(human);
 
@@ -254,7 +267,7 @@ config.parallel('key-compression.test.js', () => {
             assert.deepEqual(human, decompressed);
         });
         it('deep nested', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.deepNestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
             const human = schemaObjects.deepNestedHuman();
             const compressed = k.compress(human);
 
@@ -262,18 +275,18 @@ config.parallel('key-compression.test.js', () => {
             assert.deepEqual(human, decompressed);
         });
         it('additional value', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.deepNestedHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
             const human = schemaObjects.deepNestedHuman();
             const additionalValue = {
                 foo: 'bar'
             };
-            human.foobar = additionalValue;
+            human['foobar'] = additionalValue;
             const compressed = k.compress(human);
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
         it('primary', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.primaryHuman));
+            const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
             const human = schemaObjects.heroArray();
             const compressed = k.compress(human);
             const decompressed = k.decompress(compressed);
@@ -281,14 +294,14 @@ config.parallel('key-compression.test.js', () => {
             assert.deepEqual(human, decompressed);
         });
         it('schema with array', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.heroArray));
+            const k = createKeyCompressor(createRxSchema(schemas.heroArray));
             const human = schemaObjects.heroArray();
             const compressed = k.compress(human);
             const decompressed = k.decompress(compressed);
             assert.deepEqual(human, decompressed);
         });
         it('ISSUE: _rev gets undefined', () => {
-            const k = KeyCompressor.create(createRxSchema(schemas.heroArray));
+            const k = createKeyCompressor(createRxSchema(schemas.heroArray));
             const human = schemaObjects.heroArray();
             const compressed = k.compress(human);
             compressed._rev = 'foobar';
@@ -333,7 +346,7 @@ config.parallel('key-compression.test.js', () => {
             ].join('.');
             const jsonString = JSON.stringify(query);
             assert.ok(!jsonString.includes('level'));
-            assert.ok(jsonString.includes(5));
+            assert.ok(jsonString.includes(5 + ''));
             assert.equal(query.selector[cString], 5);
             c.database.destroy();
         });
@@ -458,7 +471,7 @@ config.parallel('key-compression.test.js', () => {
                 }
             };
 
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: 'heroesdb',
                 adapter: 'memory'
             });
@@ -492,7 +505,7 @@ config.parallel('key-compression.test.js', () => {
                 }
             };
 
-            const db = await RxDatabase.create({
+            const db = await createRxDatabase({
                 name: util.randomCouchString(10),
                 adapter: 'memory'
             });

@@ -42,7 +42,8 @@ import {
     RxCollection,
     RxDocument,
     PouchdbQuery,
-    RxQueryOP
+    RxQueryOP,
+    RxQuery
 } from './types';
 
 let _queryCount = 0;
@@ -50,7 +51,7 @@ const newQueryID = function (): number {
     return ++_queryCount;
 };
 
-export class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
+export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] | RxDocumentType> {
     public id: number = newQueryID();
     public mquery: MQuery;
     private _subs: Subscription[] = [];
@@ -107,7 +108,7 @@ export class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType[] | Rx
 
     // returns a clone of this RxQuery
     _clone() {
-        const cloned = new RxQuery(this.op, _getDefaultQuery(this.collection), this.collection);
+        const cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
         cloned.mquery = this.mquery.clone();
         return cloned;
     }
@@ -443,7 +444,7 @@ function _getDefaultQuery(collection) {
  * @return {RxQuery} can be this or another query with the equal state
  */
 function _tunnelQueryCache<RxDocumentType, RxQueryResult>(
-    rxQuery: RxQuery<RxDocumentType, RxQueryResult>
+    rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>
 ): RxQuery<RxDocumentType, RxQueryResult> {
     return rxQuery.collection._queryCache.getByQuery(rxQuery);
 }
@@ -485,7 +486,7 @@ export function createRxQuery(
         });
     }
 
-    let ret = new RxQuery(op, queryObj, collection);
+    let ret = new RxQueryBase(op, queryObj, collection);
 
     // ensure when created with same params, only one is created
     ret = _tunnelQueryCache(ret);
@@ -556,7 +557,7 @@ function _isResultsInSync(rxQuery) {
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery: RxQuery): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase): Promise<boolean> {
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
         .then(() => new Promise(res => setTimeout(res, 0)))
         .then(() => __ensureEqual(rxQuery))
@@ -571,7 +572,7 @@ function _ensureEqual(rxQuery: RxQuery): Promise<boolean> {
  * ensures that the results of this query is equal to the results which a query over the database would give
  * @return true if results have changed
  */
-function __ensureEqual(rxQuery: RxQuery): boolean {
+function __ensureEqual(rxQuery: RxQueryBase): boolean {
     if (rxQuery.collection.database.destroyed) false; // db is closed
     if (_isResultsInSync(rxQuery)) return false; // nothing happend
 
@@ -624,6 +625,6 @@ function __ensureEqual(rxQuery: RxQuery): boolean {
 
 
 
-export function isInstanceOf(obj) {
-    return obj instanceof RxQuery;
+export function isInstanceOf(obj: any): boolean {
+    return obj instanceof RxQueryBase;
 }

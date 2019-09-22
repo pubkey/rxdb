@@ -14,13 +14,10 @@ import {
     isRxCollection,
     isRxQuery,
     isRxDocument,
-    create as createRxDatabase
-} from '../../';
-import * as RxDatabase from '../../dist/lib/rx-database';
-import * as RxDocument from '../../dist/lib/rx-document';
-import {
+    createRxDatabase,
     createRxSchema
-} from '../../dist/lib/rx-schema';
+} from '../../';
+import * as RxDocument from '../../dist/lib/rx-document';
 import * as RxCollection from '../../dist/lib/rx-collection';
 import * as util from '../../dist/lib/util';
 
@@ -148,17 +145,6 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('crash if no Schema-instance', async () => {
-                    const db = await createRxDatabase({
-                        name: util.randomCouchString(10),
-                        adapter: 'memory'
-                    });
-                    await AsyncTestUtil.assertThrows(
-                        () => RxCollection.create(db, 'human', schemas.human),
-                        TypeError
-                    );
-                    db.destroy();
-                });
                 it('crash if no database-object', async () => {
                     const db = {};
                     const schema = createRxSchema(schemas.human);
@@ -312,7 +298,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.human
                     });
                     const human = schemaObjects.human();
-                    human._id = util.randomCouchString(20);
+                    human.passportId  = util.randomCouchString(20);
                     await collection.insert(human);
                     db.destroy();
                 });
@@ -390,7 +376,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.humanFinal
                     });
                     const human = schemaObjects.human();
-                    human._id = util.randomCouchString(20);
+                    human['_id'] = util.randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
                         'RxError',
@@ -423,7 +409,7 @@ config.parallel('rx-collection.test.js', () => {
                         schema: schemas.human
                     });
                     const human = schemaObjects.human();
-                    human.any = util.randomCouchString(20);
+                    human['any'] = util.randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
                         'RxError',

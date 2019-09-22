@@ -15,7 +15,7 @@ import clone from 'clone';
 import config from './config';
 import {
     createRxSchema
-} from '../../dist/lib/rx-schema';
+} from '../../';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
@@ -40,7 +40,7 @@ config.parallel('primary.test.js', () => {
                 });
                 it('throw if primary is also unique', async () => {
                     const schemaObj = clone(schemas.primaryHuman);
-                    schemaObj.properties.passportId.unique = true;
+                    schemaObj.properties.passportId['unique'] = true;
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is no string', () => {

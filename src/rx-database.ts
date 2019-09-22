@@ -156,7 +156,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
      * ChangeEvents created by other instances go:
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
-    $emit(changeEvent) {
+    $emit(changeEvent: RxChangeEvent) {
         if (!changeEvent) return;
 
         // emit into own stream

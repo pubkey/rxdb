@@ -2,9 +2,6 @@ import assert from 'assert';
 import clone from 'clone';
 
 import config from './config';
-import {
-    createRxSchema
-} from '../../dist/lib/rx-schema';
 import * as util from '../../dist/lib/util';
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -13,6 +10,9 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as SchemaCheck from '../../dist/lib/plugins/schema-check.js';
 
 import RxDB from '../../';
+import {
+    createRxSchema
+} from '../../';
 import {
     RxSchema,
     getIndexes,
@@ -359,6 +359,7 @@ config.parallel('rx-schema.test.js', () => {
                         title: 'schema',
                         version: 0,
                         description: 'dot in fieldname',
+                        type: 'object',
                         properties: {
                             foo: {
                                 type: 'string'
@@ -450,7 +451,7 @@ config.parallel('rx-schema.test.js', () => {
     describe('instance', () => {
         describe('.normalized', () => {
             it('should normalize if schema has not been normalized yet', () => {
-                const schema: RxSchema = createRxSchema(schemas.humanNormalizeSchema1);
+                const schema = createRxSchema(schemas.humanNormalizeSchema1);
                 const normalized = schema.normalized;
                 assert.notEqual(schema._normalized, null);
                 assert.notEqual(normalized, null);
@@ -461,6 +462,7 @@ config.parallel('rx-schema.test.js', () => {
                 const schema = createRxSchema({
                     title: 'schema',
                     version: 0,
+                    type: 'object',
                     properties: {
                         'foobar': {
                             type: 'string'
@@ -473,6 +475,7 @@ config.parallel('rx-schema.test.js', () => {
                 const schema = createRxSchema({
                     title: 'schema',
                     version: 5,
+                    type: 'object',
                     properties: {
                         'foobar': {
                             type: 'string'
@@ -504,26 +507,26 @@ config.parallel('rx-schema.test.js', () => {
                 it('validate one human', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate one point', () => {
                     const schema = createRxSchema(schemas.point);
                     const obj = schemaObjects.point();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate without non-required', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     delete obj.age;
                     schema.validate(obj);
                 });
                 it('validate nested', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
                     const obj = schemaObjects.nestedHuman();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
             });
@@ -531,28 +534,28 @@ config.parallel('rx-schema.test.js', () => {
                 it('required field not given', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     delete obj.lastName;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overflow maximum int', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     obj.age = 1000;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overadditional property', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generateId();
-                    obj.token = util.randomCouchString(5);
+                    obj['_id'] = util.generateId();
+                    obj['token'] = util.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {
                     const schema = createRxSchema(schemas.human);
                     const obj = schemaObjects.human();
-                    obj._id = util.generateId();
+                    obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
                 it('accessible error-parameters', () => {
@@ -570,7 +573,7 @@ config.parallel('rx-schema.test.js', () => {
                 });
                 it('should respect nested additionalProperties: false', () => {
                     const jsonSchema = clone(schemas.heroArray);
-                    jsonSchema.properties.skills.items.additionalProperties = false;
+                    jsonSchema.properties.skills.items['additionalProperties'] = false;
                     const schema = createRxSchema(jsonSchema);
                     const obj = {
                         name: 'foobar',

@@ -3,7 +3,8 @@ import assert from 'assert';
 import * as schemas from '../helper/schemas';
 
 import {
-    create as createRxDatabase
+    createRxDatabase,
+    RxChangeEvent
 } from '../../';
 import * as util from '../../dist/lib/util';
 
@@ -26,7 +27,7 @@ describe('reactive-database.test.js', () => {
                 });
                 const changeEvent = await db.$
                     .pipe(
-                        filter(cEvent => cEvent.data.op === 'RxDatabase.collection'),
+                        filter((cEvent: RxChangeEvent) => cEvent.data.op === 'RxDatabase.collection'),
                         first()
                     ).toPromise().then(event => {
                         assert.notEqual(db[event.data.v], undefined);

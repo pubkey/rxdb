@@ -5,19 +5,20 @@
  */
 
 export interface PouchReplicationOptions {
-    live?: boolean,
-    retry?: boolean,
-    filter?: Function,
-    doc_ids?: string[],
-    query_params?: any,
-    view?: any,
-    since?: number,
-    heartbeat?: number,
-    timeout?: number,
-    batch_size?: number,
-    batches_limit?: number,
-    back_off_function?: Function,
-    checkpoint?: false | 'source' | 'target'
+    live?: boolean;
+    retry?: boolean;
+    filter?: Function;
+    doc_ids?: string[];
+    query_params?: any;
+    view?: any;
+    since?: number | 'now';
+    heartbeat?: number;
+    timeout?: number;
+    batch_size?: number;
+    batches_limit?: number;
+    back_off_function?: Function;
+    checkpoint?: false | 'source' | 'target';
+    include_docs?: boolean;
 }
 
 /**
@@ -57,12 +58,15 @@ export type PouchdbQuery = {
 }
 
 export declare class PouchDBInstance {
-    constructor(name: string, options: { adapter: string });
+    constructor(
+        name: string,
+        options: { adapter: string }
+    );
     info(): Promise<any>;
 
     allDocs(options?: any): Promise<any>;
     bulkDocs(
-        docs: Array<any>,
+        docs: { docs: any[] },
         options?: any
     ): Promise<any>;
     find(mangoQuery: any): Promise<{
@@ -107,6 +111,7 @@ export declare class PouchDBInstance {
     ): Promise<void>;
     bulkGet(options?: any): Promise<any>;
     revsDiff(diff: any): Promise<any>;
+    explain(query: any): Promise<any>;
 
     createIndex(opts: {
         index: any;

@@ -14,9 +14,9 @@ import {
 
 export class KeyCompressor {
 
-    public _table: {};
-    public _reverseTable: {};
-    public _fullTable: {};
+    public _table: { [k: string]: string };
+    public _reverseTable: { [k: string]: string };
+    public _fullTable: { [k: string]: string };
     constructor(
         public schema: RxSchema
     ) { }

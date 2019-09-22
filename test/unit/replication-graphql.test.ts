@@ -53,7 +53,7 @@ describe('replication-graphql.test.js', () => {
         return new Array(amount).fill(0)
             .map(() => schemaObjects.humanWithTimestamp())
             .map(doc => {
-                doc.deleted = false;
+                doc['deleted'] = false;
                 return doc;
             });
     };
@@ -425,7 +425,7 @@ describe('replication-graphql.test.js', () => {
                     endpointHash,
                     docData
                 );
-                docData._rev = rev;
+                docData['_rev'] = rev;
 
                 await c.pouch.bulkDocs(
                     [
@@ -593,7 +593,7 @@ describe('replication-graphql.test.js', () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
                 const toPouch = schemaObjects.humanWithTimestamp();
-                toPouch._rev = '1-' + createRevisionForPulledDocument(
+                toPouch['_rev'] = '1-' + createRevisionForPulledDocument(
                     endpointHash,
                     toPouch
                 );
@@ -797,7 +797,7 @@ describe('replication-graphql.test.js', () => {
         });
         it('should handle deleted documents', async () => {
             const doc = schemaObjects.humanWithTimestamp();
-            doc.deleted = true;
+            doc['deleted'] = true;
             const [c, server] = await Promise.all([
                 humansCollection.createHumanWithTimestamp(0),
                 SpawnServer.spawn([doc])
@@ -966,7 +966,7 @@ describe('replication-graphql.test.js', () => {
                 live: true,
                 deletedFlag: 'deleted'
             });
-            localDoc.deleted = false;
+            localDoc['deleted'] = false;
             await server.setDocument(localDoc);
             await replicationState.run();
 
@@ -1203,7 +1203,7 @@ describe('replication-graphql.test.js', () => {
 
             // insert one on local and one on server
             const doc = schemaObjects.humanWithTimestamp();
-            doc.deleted = false;
+            doc['deleted'] = false;
             await server.setDocument(doc);
 
             const insertData = schemaObjects.humanWithTimestamp();
@@ -1259,7 +1259,7 @@ describe('replication-graphql.test.js', () => {
 
             // insert one on local and one on server
             const doc = schemaObjects.humanWithTimestamp();
-            doc.deleted = false;
+            doc['deleted'] = false;
             await server.setDocument(doc);
             await c.insert(schemaObjects.humanWithTimestamp());
 
@@ -1312,7 +1312,9 @@ describe('replication-graphql.test.js', () => {
             const amount = 50;
             // call .run() often
             await Promise.all(
-                new Array(amount).fill().map(() => replicationState.run())
+                new Array(amount).fill(0).map(
+                    () => replicationState.run()
+                )
             );
 
             assert.ok(count < 10);
@@ -1537,7 +1539,7 @@ describe('replication-graphql.test.js', () => {
             });
 
             const doc = schemaObjects.humanWithTimestamp();
-            doc.deleted = false;
+            doc['deleted'] = false;
             await server.setDocument(doc);
 
             await replicationState.run();

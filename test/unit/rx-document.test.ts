@@ -7,14 +7,10 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 import * as util from '../../dist/lib/util';
 
-import * as RxDB from '../../dist/lib/index';
-import * as RxDatabase from '../../dist/lib/index';
 import * as RxCollection from '../../dist/lib/rx-collection';
 import {
+    create as createRxDatabase,
     createRxSchema
-} from '../../dist/lib/rx-schema';
-import {
-    create as createRxDatabase
 } from '../../';
 
 config.parallel('rx-document.test.js', () => {
@@ -41,9 +37,12 @@ config.parallel('rx-document.test.js', () => {
                         testObjData[path] = val;
                     }
                 };
-                testObj.__proto__ = proto;
+                Object.setPrototypeOf(
+                    testObj,
+                    proto
+                );
 
-                assert.equal(testObj.passportId, testObjData.passportId);
+                assert.equal(testObj['passportId'], testObjData.passportId);
                 Object.keys(testObjData).forEach(k => {
                     assert.equal(testObj[k], testObjData[k]); // getter attribute
                     assert.equal(testObj[k + '$'], 'Observable:' + k); // getter observable
@@ -72,8 +71,11 @@ config.parallel('rx-document.test.js', () => {
 
                 const proto = RxCollection.getDocumentOrmPrototype(col);
                 const testObj = {};
-                testObj.__proto__ = proto;
-                assert.equal(testObj.foo(), 'bar');
+                Object.setPrototypeOf(
+                    testObj,
+                    proto
+                );
+                assert.equal(testObj['foo'](), 'bar');
 
                 db.destroy();
             });

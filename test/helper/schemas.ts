@@ -2,7 +2,7 @@ import AsyncTestUtil from 'async-test-util';
 
 import {
     RxJsonSchema
-} from '../../typings';
+} from '../../src/types';
 
 export const human: RxJsonSchema = {
     title: 'human schema',

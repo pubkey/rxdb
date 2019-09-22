@@ -46,14 +46,11 @@ export function countAllUndeleted(
 
 /**
  * get a batch of documents from the pouch-instance
- * @param  {PouchDB}  pouchdb instance
- * @param  {number}  limit
- * @return {Promise<{}[]>} array with documents
  */
 export function getBatch(
-    pouchdb: PouchDBInstance, 
+    pouchdb: PouchDBInstance,
     limit: number
-    ) {
+): Promise<any[]> {
     if (limit <= 1) {
         throw newRxError('P1', {
             limit

@@ -8,7 +8,7 @@ import {
     RxAttachmentCreator
 } from './rx-attachment';
 
-export type RxDocument<RxDocumentType, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
+export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
 export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: string };
 

@@ -4,7 +4,9 @@ import * as schemaObjects from './schema-objects';
 
 import * as util from '../../dist/lib/util';
 import {
-    create as createRxDatabase
+    create as createRxDatabase,
+    RxJsonSchema,
+    RxCollection
 } from '../../';
 
 import * as RxDB from '../../';
@@ -39,7 +41,10 @@ export async function create(
     return collection;
 }
 
-export async function createBySchema(schema, name = 'human') {
+export async function createBySchema<RxDocumentType = {}>(
+    schema: RxJsonSchema,
+    name = 'human'
+): Promise<RxCollection<RxDocumentType>> {
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase({
         name: util.randomCouchString(10),

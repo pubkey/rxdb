@@ -1,31 +1,29 @@
 import { Observable } from 'rxjs';
 
-import {
-    PouchDB
-} from './pouch';
 
 import {
     RxSchema,
     RxJsonSchema
-} from '../rx-schema';
+} from '../';
 import {
     RxDatabase
-} from '../rx-database';
+} from '../';
 import {
-    RxQuery
-} from '../rx-query';
+    RxQuery,
+    PouchDBInstance
+} from './';
 import {
     PouchSettings
-} from '../pouch';
+} from './';
 import {
     RxChangeEventInsert,
     RxChangeEventUpdate,
     RxChangeEventRemove
-} from '../rx-change-event';
+} from './';
 import {
     RxDocument,
     RxLocalDocument
-} from '../rx-document';
+} from './';
 
 import {
     SyncOptions,
@@ -35,7 +33,7 @@ import {
 import {
     SyncOptionsGraphQL,
     RxGraphQLReplicationState
-} from '../plugins/replication-graphql';
+} from '../';
 
 import {
     RxCollectionBase
@@ -78,7 +76,7 @@ export interface RxCollectionBaseOld<RxDocumentType = any, OrmMethods = {}> {
     readonly name: string;
     readonly schema: RxSchema<RxDocumentType>;
     options?: any;
-    readonly pouch: PouchDB;
+    readonly pouch: PouchDBInstance;
 
     readonly $: Observable<RxChangeEventInsert<RxDocumentType> | RxChangeEventUpdate<RxDocumentType> | RxChangeEventRemove<RxDocumentType>>;
     readonly insert$: Observable<RxChangeEventInsert<RxDocumentType>>;
