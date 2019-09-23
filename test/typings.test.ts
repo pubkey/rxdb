@@ -7,7 +7,7 @@ import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 
 describe('typings.test.js', function () {
-    this.timeout(50 * 1000);
+    this.timeout(180 * 1000);
     const codeBase = `
         import {
             create,
