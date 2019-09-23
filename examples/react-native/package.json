@@ -14,9 +14,9 @@
     "postinstall": "npm run fix-jest-expo"
   },
   "devDependencies": {
-    "babel-preset-expo": "5.2.0",
+    "babel-preset-expo": "7.0.0",
     "expo-cli": "3.1.1",
-    "jest-expo": "34.1.0",
+    "jest-expo": "35.0.0",
     "react-native-gesture-handler": "1.4.1",
     "react-test-renderer": "16.9.0",
     "rimraf": "3.0.0",
@@ -24,7 +24,7 @@
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "34.0.4",
+    "expo": "35.0.0",
     "global": "4.4.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
