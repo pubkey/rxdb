@@ -28,7 +28,11 @@
         "node_modules",
         "**/node_modules/*",
         "dist",
-        "test/tutorials/src/*"
+        "test/tutorials/src/*",
+        "examples",
+        "docs",
+        "docs-src",
+        "test_tmp"
     ],
     "compileOnSave": false
 }
