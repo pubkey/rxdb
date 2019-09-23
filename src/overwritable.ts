@@ -20,7 +20,7 @@ import {
     KeyCompressor
 } from './plugins/key-compression';
 
-const funs = {
+const funs: { [k: string]: Function } = {
     /**
      * validates if a password can be used
      * @overwritten by plugin (optional)

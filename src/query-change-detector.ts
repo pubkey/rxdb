@@ -22,7 +22,7 @@ let DEBUG = false;
 
 export class QueryChangeDetector {
     public primaryKey: string;
-    public _sortOptions;
+    public _sortOptions: any;
     constructor(
         public query: RxQuery<any, any>
     ) {
@@ -82,21 +82,21 @@ export class QueryChangeDetector {
         }
 
 
-        let _sortAfter = null;
+        let _sortAfter: any = null;
         const sortAfter = () => {
             if (_sortAfter === null)
                 _sortAfter = _isSortedBefore(this, results[results.length - 1], docData);
             return _sortAfter;
         };
 
-        let _sortBefore = null;
+        let _sortBefore: any = null;
         const sortBefore = () => {
             if (_sortBefore === null)
                 _sortBefore = _isSortedBefore(this, docData, results[0]);
             return _sortBefore;
         };
 
-        let __sortFieldChanged = null;
+        let __sortFieldChanged: any = null;
         const sortFieldChanged = () => {
             if (__sortFieldChanged === null) {
                 const docBefore = resultsData.find(doc => doc[this.primaryKey] === docData[this.primaryKey]);
@@ -216,7 +216,7 @@ function _debugMessage(
  */
 export function _resortDocData(
     queryChangeDetector: QueryChangeDetector,
-    resultsData
+    resultsData: any[]
 ) {
     const sortOptions = _getSortOptions(queryChangeDetector);
     const rows = resultsData.map(doc => {
@@ -227,7 +227,7 @@ export function _resortDocData(
     const inMemoryFields = Object.keys(queryChangeDetector.query.toJSON().selector);
 
     // TODO use createFieldSorter
-    const sortedRows = filterInMemoryFields(
+    const sortedRows: any[] = filterInMemoryFields(
         rows, {
             selector: queryChangeDetector.query.massageSelector,
             sort: sortOptions
@@ -287,8 +287,8 @@ export function _sortFieldChanged(
 
     let changed = false;
     sortFields.find(field => {
-        const beforeData = objectPath.get(docDataBefore, field);
-        const afterData = objectPath.get(docDataAfter, field);
+        const beforeData = objectPath.get(docDataBefore, field as string);
+        const afterData = objectPath.get(docDataAfter, field as string);
         if (beforeData !== afterData) {
             changed = true;
             return true;
@@ -303,7 +303,7 @@ export function _sortFieldChanged(
  */
 export function _getSortOptions(
     queryChangeDetector: QueryChangeDetector
-) {
+): any[] {
     if (!queryChangeDetector._sortOptions) {
         const options = queryChangeDetector.query.toJSON();
         let sortOptions = options.sort;

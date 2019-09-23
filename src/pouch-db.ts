@@ -35,8 +35,7 @@ export function countAllUndeleted(
             include_docs: false,
             attachments: false
         })
-        .then(docs => docs
-            .rows
+        .then(docs => (docs.rows as any[])
             .filter(row => !row.id.startsWith('_design/'))
             .length
         );
@@ -61,8 +60,7 @@ export function getBatch(
             attachments: false,
             limit
         })
-        .then(docs => docs
-            .rows
+        .then(docs => (docs.rows as any[])
             .map(row => row.doc)
             .filter(doc => !doc._id.startsWith('_design'))
         );

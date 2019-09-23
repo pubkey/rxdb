@@ -24,7 +24,7 @@ export class QueryCache {
         const stringRep = query.toString();
         if (!this._map.has(stringRep))
             this._map.set(stringRep, query);
-        return this._map.get(stringRep);
+        return this._map.get(stringRep) as RxQuery;
     }
 
     destroy(): void {

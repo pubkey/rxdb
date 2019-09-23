@@ -54,11 +54,11 @@ export const HOOKS: { [k: string]: any[] } = {
     preDestroyRxDatabase: []
 };
 
-export function runPluginHooks(hookKey, obj) {
+export function runPluginHooks(hookKey: string, obj: any) {
     HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
-export function runAsyncPluginHooks(hookKey, obj): Promise<any> {
+export function runAsyncPluginHooks(hookKey: string, obj: any): Promise<any> {
     return Promise.all(
         HOOKS[hookKey].map(fun => fun(obj))
     );
@@ -67,6 +67,6 @@ export function runAsyncPluginHooks(hookKey, obj): Promise<any> {
 /**
  * used in tests to remove hooks
  */
-export function clearHook(type, fun) {
+export function clearHook(type: string, fun: Function) {
     HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }

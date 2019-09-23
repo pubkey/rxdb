@@ -34,7 +34,7 @@ import {
 /**
  * prototypes that can be manipulated with a plugin
  */
-const PROTOTYPES = {
+const PROTOTYPES: { [k: string]: any } = {
     RxSchema: RxSchema.prototype,
     Crypter: Crypter.Crypter.prototype,
     RxDocument: RxDocumentPrototype,
@@ -71,7 +71,7 @@ export default function addPlugin(plugin: RxPlugin | any) {
     if (rxPlugin.overwritable) {
         Object
             .entries(plugin.overwritable)
-            .forEach(([name, fun]) => overwritable[name] = fun);
+            .forEach(([name, fun]) => overwritable[name] = (fun as Function));
     }
     // extend-hooks
     if (rxPlugin.hooks) {

@@ -25,21 +25,26 @@ import {
 } from './types';
 
 export class RxSchema<T = any> {
+    public compoundIndexes: string[] | string[][];
+    public indexes: string[][];
+    public primaryPath: keyof T;
+    public finalFields: (keyof T)[];
 
     constructor(
         public readonly jsonID: RxJsonSchema<T>
     ) {
-        this.compoundIndexes = this.jsonID.compoundIndexes;
+        this.compoundIndexes = this.jsonID.compoundIndexes as any;
         this.indexes = getIndexes(this.jsonID);
 
         // primary is always required
         this.primaryPath = getPrimary(this.jsonID);
-        if (this.primaryPath)
-            this.jsonID.required.push(this.primaryPath);
+        if (this.primaryPath) {
+            (this.jsonID as any).required.push(this.primaryPath);
+        }
 
         // final fields are always required
         this.finalFields = getFinalFields(this.jsonID);
-        this.jsonID.required = this.jsonID.required
+        this.jsonID.required = (this.jsonID as any).required
             .concat(this.finalFields)
             .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
@@ -99,11 +104,6 @@ export class RxSchema<T = any> {
             this._hash = hash(this.normalized);
         return this._hash;
     }
-
-    public compoundIndexes: string[] | string[][];
-    public indexes: string[][];
-    public primaryPath: keyof T;
-    public finalFields: (keyof T)[];
 
     /**
      * true if schema contains at least one encrypted path

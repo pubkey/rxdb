@@ -31,11 +31,11 @@ export class ChangeEventBuffer {
         public collection: RxCollection
     ) {
         this.subs.push(
-            this.collection.$.subscribe(cE => this._handleChangeEvent(cE))
+            this.collection.$.subscribe((cE: any) => this._handleChangeEvent(cE))
         );
     }
 
-    _handleChangeEvent(changeEvent) {
+    _handleChangeEvent(changeEvent: RxChangeEvent) {
         // console.log('changeEventBuffer()._handleChangeEvent()');
         this.counter++;
         this.buffer.push(changeEvent);
@@ -52,7 +52,7 @@ export class ChangeEventBuffer {
         const oldestEvent = this.buffer[0];
         const oldestCounter = this.eventCounterMap.get(
             oldestEvent
-        );
+        ) as number;
 
         if (pointer < oldestCounter)
             return null; // out of bounds
@@ -79,8 +79,13 @@ export class ChangeEventBuffer {
         }
     }
 
-    runFrom(pointer, fn) {
-        this.getFrom(pointer).forEach(cE => fn(cE));
+    runFrom(pointer: number, fn: Function) {
+        const ret = this.getFrom(pointer);
+        if (ret === null) {
+            throw new Error('out of bounds');
+        } else {
+            ret.forEach(cE => fn(cE));
+        }
     }
 
     /**
@@ -89,7 +94,7 @@ export class ChangeEventBuffer {
      * this function reduces the events to the last ChangeEvent of each doc
      */
     reduceByLastOfDoc(changeEvents: RxChangeEvent[]): RxChangeEvent[] {
-        const docEventMap = {};
+        const docEventMap: any = {};
         changeEvents.forEach(changeEvent => {
             docEventMap[changeEvent.data.doc] = changeEvent;
         });

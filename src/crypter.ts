@@ -36,7 +36,7 @@ export class Crypter {
         throw pluginMissing('encryption');
     }
 
-    encrypt(obj) {
+    encrypt(obj: any) {
         obj = clone(obj);
         if (!this.password) return obj;
         Object.keys(this.schema.encryptedPaths)
@@ -49,7 +49,7 @@ export class Crypter {
         return obj;
     }
 
-    decrypt(obj) {
+    decrypt(obj: any) {
         obj = clone(obj);
         if (!this.password) return obj;
         Object.keys(this.schema.encryptedPaths)
@@ -63,7 +63,7 @@ export class Crypter {
     }
 }
 
-export function create(password, schema) {
+export function create(password: any, schema: RxSchema) {
     return new Crypter(password, schema);
 }
 

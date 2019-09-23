@@ -35,7 +35,8 @@ import {
     RxDatabase,
     KeyFunctionMap,
     MigrationState,
-    PouchDBInstance
+    PouchDBInstance,
+    NumberFunctionMap
 } from './types';
 
 import {
@@ -53,7 +54,7 @@ export class DataMigrator {
 
     constructor(
         public newestCollection: RxCollection,
-        public migrationStrategies: KeyFunctionMap
+        public migrationStrategies: NumberFunctionMap
     ) {
         this.currentSchema = newestCollection.schema;
         this.database = newestCollection.database;
@@ -65,8 +66,8 @@ export class DataMigrator {
     public name: string;
 
 
-    private _migrated: boolean;
-    private _migratePromise: Promise<any>;
+    private _migrated: boolean = false;
+    private _migratePromise?: Promise<any>;
     migrate(batchSize: number = 10): Observable<MigrationState> {
         if (this._migrated)
             throw newRxError('DM1');
@@ -74,7 +75,7 @@ export class DataMigrator {
 
         const state = {
             done: false, // true if finished
-            total: null, // will be the doc-count
+            total: 0, // will be the doc-count
             handled: 0, // amount of handled docs
             success: 0, // handled docs which successed
             deleted: 0, // handled docs which got deleted
@@ -89,7 +90,7 @@ export class DataMigrator {
          * @link https://github.com/ReactiveX/rxjs/issues/4074
          */
         (() => {
-            let oldCols;
+            let oldCols: any[];
             return _getOldCollections(this)
                 .then(ret => {
                     oldCols = ret;
@@ -111,13 +112,13 @@ export class DataMigrator {
                         currentPromise = currentPromise.then(() => {
                             return new Promise(res => {
                                 const sub = migrationState$.subscribe(
-                                    subState => {
+                                    (subState: any) => {
                                         state.handled++;
-                                        state[subState.type] = state[subState.type] + 1;
+                                        (state as any)[subState.type] = (state as any)[subState.type] + 1;
                                         state.percent = Math.round(state.handled / state.total * 100);
                                         observer.next(clone(state));
                                     },
-                                    e => {
+                                    (e: any) => {
                                         sub.unsubscribe();
                                         observer.error(e);
                                     }, () => {
@@ -141,7 +142,7 @@ export class DataMigrator {
 
         return observer.asObservable();
     }
-    migratePromise(batchSize): Promise<any> {
+    migratePromise(batchSize: number): Promise<any> {
         if (!this._migratePromise) {
             this._migratePromise = mustMigrate(this)
                 .then(must => {
@@ -159,7 +160,7 @@ export class DataMigrator {
 class OldCollection {
     constructor(
         public version: number,
-        public schemaObj,
+        public schemaObj: any,
         public dataMigrator: DataMigrator
     ) {
         this.newestCollection = dataMigrator.newestCollection;
@@ -172,10 +173,10 @@ class OldCollection {
         }
         return this._schema;
     }
-    get keyCompressor() {
+    get keyCompressor(): KeyCompressor {
         if (!this._keyCompressor)
             this._keyCompressor = overwritable.createKeyCompressor(this.schema);
-        return this._keyCompressor;
+        return this._keyCompressor as KeyCompressor;
     }
     get crypter() {
         if (!this._crypter)
@@ -195,21 +196,21 @@ class OldCollection {
     public newestCollection: RxCollection;
     public database: RxDatabase;
 
-    private _schema: RxSchema;
+    private _schema?: RxSchema;
 
-    private _keyCompressor: KeyCompressor;
+    private _keyCompressor?: KeyCompressor;
 
-    private _crypter: Crypter;
+    private _crypter?: Crypter;
 
-    private _pouchdb;
+    private _pouchdb?: PouchDBInstance;
 
 
     /**
      * runs the migration on all documents and deletes the pouchdb afterwards
      */
-    private _migrate: boolean;
+    private _migrate?: boolean;
 
-    private _migratePromise: Promise<any>;
+    private _migratePromise?: Promise<any>;
 
     getBatch(batchSize: number) {
         return getBatch(this.pouchdb, batchSize)
@@ -221,7 +222,7 @@ class OldCollection {
     /**
      * handles a document from the pouchdb-instance
      */
-    _handleFromPouch(docData) {
+    _handleFromPouch(docData: any) {
         let data = clone(docData);
         data = this.schema.swapIdToPrimary(docData);
         if (this.schema.doKeyCompression())
@@ -233,7 +234,7 @@ class OldCollection {
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
      */
-    _handleToPouch(docData) {
+    _handleToPouch(docData: any) {
         let data = clone(docData);
         data = this.crypter.encrypt(data);
         data = this.schema.swapPrimaryToId(data);
@@ -242,9 +243,9 @@ class OldCollection {
         return data;
     }
 
-    _runStrategyIfNotNull(version, docOrNull): Promise<object|null> {
+    _runStrategyIfNotNull(version: number, docOrNull: any | null): Promise<object | null> {
         if (docOrNull === null) return Promise.resolve(null);
-        const ret = this.dataMigrator.migrationStrategies[version + ''](docOrNull);
+        const ret = (this.dataMigrator.migrationStrategies as any)[version + ''](docOrNull);
         const retPromise = toPromise(ret);
         return retPromise;
     }
@@ -255,7 +256,7 @@ class OldCollection {
      * @throws Error if final doc does not match final schema or migrationStrategy crashes
      * @return final object or null if migrationStrategy deleted it
      */
-    migrateDocumentData(docData): Promise<Object|null> {
+    migrateDocumentData(docData: any): Promise<any | null> {
         docData = clone(docData);
         let nextVersion = this.version + 1;
 
@@ -290,10 +291,10 @@ class OldCollection {
      * transform docdata and save to new collection
      * @return status-action with status and migrated document
      */
-    _migrateDocument(doc): Promise<{type: string, doc: {}}> {
+    _migrateDocument(doc: any): Promise<{ type: string, doc: {} }> {
         const action = {
             res: null,
-            type: null,
+            type: '',
             migrated: null,
             doc,
             oldCollection: this,
@@ -309,7 +310,7 @@ class OldCollection {
                     );
 
                     // save to newest collection
-                    delete migrated['_rev'];
+                    delete migrated._rev;
                     return this.newestCollection._pouchPut(migrated, true)
                         .then(res => {
                             action.res = res;
@@ -325,7 +326,7 @@ class OldCollection {
                 // remove from old collection
                 return this.pouchdb.remove(this._handleToPouch(doc)).catch(() => { });
             })
-            .then(() => action);
+            .then(() => action) as any;
     }
 
 
@@ -349,7 +350,7 @@ class OldCollection {
          * @see DataMigrator.migrate()
          */
         (() => {
-            let error;
+            let error: any;
             const allBatchesDone = () => {
                 // remove this oldCollection
                 return this.delete()
@@ -415,7 +416,7 @@ export function _getOldCollections(
 /**
  * returns true if a migration is needed
  */
-export function mustMigrate(dataMigrator): Promise<boolean> {
+export function mustMigrate(dataMigrator: DataMigrator): Promise<boolean> {
     if (dataMigrator.currentSchema.version === 0) return Promise.resolve(false);
     return _getOldCollections(dataMigrator)
         .then(oldCols => {
@@ -424,6 +425,9 @@ export function mustMigrate(dataMigrator): Promise<boolean> {
         });
 }
 
-export function createDataMigrator(newestCollection, migrationStrategies): DataMigrator {
+export function createDataMigrator(
+    newestCollection: RxCollection,
+    migrationStrategies: NumberFunctionMap
+): DataMigrator {
     return new DataMigrator(newestCollection, migrationStrategies);
 }

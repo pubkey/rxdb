@@ -14,7 +14,7 @@ import {
 
 export class RxChangeEvent {
     constructor(
-        public data
+        public data: any
     ) { }
     get hash() {
         if (!this._hash)
@@ -22,7 +22,7 @@ export class RxChangeEvent {
         return this._hash;
     }
 
-    private _hash: string;
+    private _hash: string | null = null;
     toJSON() {
         const ret = {
             col: null,
@@ -54,11 +54,11 @@ export class RxChangeEvent {
 }
 
 
-export function changeEventfromJSON(data) {
+export function changeEventfromJSON(data: any) {
     return new RxChangeEvent(data);
 }
 
-export function changeEventfromPouchChange(changeDoc, collection) {
+export function changeEventfromPouchChange(changeDoc: any, collection: RxCollection) {
     let op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
     if (changeDoc._deleted) op = 'REMOVE';
 
@@ -81,27 +81,24 @@ export function createChangeEvent(
     op: string,
     database: RxDatabase,
     collection?: RxCollection,
-    doc?,
-    value?,
+    doc?: any,
+    value?: any,
     isLocal = false
 ) {
     const data = {
-        col: null,
-        doc: null,
-        v: null,
+        col: collection ? collection.name : null,
+        doc: doc ? doc.primary : null,
+        v: value ? value : null,
         op: op,
         t: new Date().getTime(),
         db: database.name,
         it: database.token,
         isLocal
     };
-    if (collection) data.col = collection.name;
-    if (doc) data.doc = doc.primary;
-    if (value) data.v = value;
     return new RxChangeEvent(data);
 }
 
 
-export function isInstanceOf(obj) {
+export function isInstanceOf(obj: any) {
     return obj instanceof RxChangeEvent;
 }

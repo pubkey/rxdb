@@ -5,7 +5,7 @@ export class DocCache<T> {
         this._map = new Map();
     }
 
-    get(id: string): T {
+    get(id: string): T | undefined {
         return this._map.get(id);
     }
     set(id: string, obj: T) {
