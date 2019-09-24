@@ -6,9 +6,13 @@
 
 import objectPath from 'object-path';
 
-import RxDocument from '../rx-document';
 import {
-    createChangeEvent
+    createRxDocumentConstructor,
+    basePrototype
+} from '../rx-document';
+import {
+    createChangeEvent,
+    RxChangeEvent
 } from '../rx-change-event';
 import {
     createDocCache
@@ -23,11 +27,9 @@ import {
 
 import {
     RxCollection,
-    RxDatabase
+    RxDatabase,
+    RxDocument
 } from '../types';
-import {
-    RxChangeEvent
-} from '../rx-change-event';
 
 import {
     isInstanceOf as isRxDatabase
@@ -43,7 +45,7 @@ import {
 } from 'rxjs/operators';
 
 const DOC_CACHE_BY_PARENT = new WeakMap();
-const _getDocCache = parent => {
+const _getDocCache = (parent: any) => {
     if (!DOC_CACHE_BY_PARENT.has(parent)) {
         DOC_CACHE_BY_PARENT.set(
             parent,
@@ -53,13 +55,13 @@ const _getDocCache = parent => {
     return DOC_CACHE_BY_PARENT.get(parent);
 };
 const CHANGE_SUB_BY_PARENT = new WeakMap();
-const _getChangeSub = parent => {
+const _getChangeSub = (parent: any) => {
     if (!CHANGE_SUB_BY_PARENT.has(parent)) {
         const sub = parent.$
             .pipe(
                 filter(cE => (cE as RxChangeEvent).data.isLocal)
             )
-            .subscribe(cE => {
+            .subscribe((cE: RxChangeEvent) => {
                 const docCache = _getDocCache(parent);
                 const doc = docCache.get(cE.data.doc);
                 if (doc) doc._handleChangeEvent(cE);
@@ -75,7 +77,7 @@ const _getChangeSub = parent => {
 
 const LOCAL_PREFIX = '_local/';
 
-const RxDocumentParent = RxDocument.createRxDocumentConstructor() as any;
+const RxDocumentParent = createRxDocumentConstructor() as any;
 export class RxLocalDocument extends RxDocumentParent {
     public id: string;
     public parent: RxCollection | RxDatabase;
@@ -86,22 +88,25 @@ export class RxLocalDocument extends RxDocumentParent {
     }
 }
 
-const _getPouchByParent = parent => {
+const _getPouchByParent = (parent: any) => {
     if (isRxDatabase(parent))
         return parent._adminPouch; // database
     else return parent.pouch; // collection
 };
 
-const RxLocalDocumentPrototype = {
-
-    toPouchJson() {
+const RxLocalDocumentPrototype: any = {
+    toPouchJson(
+        this: any
+    ) {
         const data = clone(this._data);
         data._id = LOCAL_PREFIX + this.id;
     },
     get isLocal() {
         return true;
     },
-    get parentPouch() {
+    get parentPouch(
+        this: any
+    ) {
         return _getPouchByParent(this.parent);
     },
 
@@ -109,7 +114,10 @@ const RxLocalDocumentPrototype = {
     // overwrites
     //
 
-    _handleChangeEvent(changeEvent) {
+    _handleChangeEvent(
+        this: any,
+        changeEvent: RxChangeEvent
+    ) {
         if (changeEvent.data.doc !== this.primary) return;
         switch (changeEvent.data.op) {
             case 'UPDATE':
@@ -134,16 +142,16 @@ const RxLocalDocumentPrototype = {
     get primaryPath() {
         return 'id';
     },
-    get primary() {
+    get primary(this: any) {
         return this.id;
     },
-    get $() {
+    get $(this: RxDocument) {
         return this._dataSync$.asObservable();
     },
-    $emit(changeEvent) {
+    $emit(this: any, changeEvent: RxChangeEvent) {
         return this.parent.$emit(changeEvent);
     },
-    get(objPath) {
+    get(this: RxDocument, objPath: string) {
         if (!this._data) return undefined;
         if (typeof objPath !== 'string') {
             throw newRxTypeError('LD2', {
@@ -155,7 +163,7 @@ const RxLocalDocumentPrototype = {
         valueObj = clone(valueObj);
         return valueObj;
     },
-    get$(path) {
+    get$(this: RxDocument, path: string) {
         if (path.includes('.item.')) {
             throw newRxError('LD3', {
                 path
@@ -168,12 +176,12 @@ const RxLocalDocumentPrototype = {
             .pipe(
                 map(data => objectPath.get(data, path)),
                 distinctUntilChanged()
-            ).asObservable();
+            );
     },
-    set(objPath, value) {
+    set(this: RxDocument, objPath: string, value: any) {
         if (!value) {
             // object path not set, overwrite whole data
-            const data = clone(objPath);
+            const data: any = clone(objPath);
             data._rev = this._data._rev;
             this._data = data;
             return this;
@@ -188,12 +196,12 @@ const RxLocalDocumentPrototype = {
         objectPath.set(this._data, objPath, value);
         return this;
     },
-    _saveData(newData) {
+    _saveData(this: any, newData: any) {
         newData = clone(newData);
         newData._id = LOCAL_PREFIX + this.id;
 
         return this.parentPouch.put(newData)
-            .then(res => {
+            .then((res: any) => {
                 newData._rev = res.rev;
                 this._dataSync$.next(newData);
 
@@ -209,7 +217,7 @@ const RxLocalDocumentPrototype = {
             });
     },
 
-    remove(): Promise<void> {
+    remove(this: any): Promise<void> {
         const removeId = LOCAL_PREFIX + this.id;
         return this.parentPouch.remove(removeId, this._data._rev)
             .then(() => {
@@ -234,12 +242,12 @@ const _init = () => {
     else INIT_DONE = true;
 
     // add functions of RxDocument
-    const docBaseProto = RxDocument.basePrototype;
+    const docBaseProto = basePrototype;
     const props = Object.getOwnPropertyNames(docBaseProto);
     props.forEach(key => {
         const exists = Object.getOwnPropertyDescriptor(RxLocalDocumentPrototype, key);
         if (exists) return;
-        const desc = Object.getOwnPropertyDescriptor(docBaseProto, key);
+        const desc: any = Object.getOwnPropertyDescriptor(docBaseProto, key);
         Object.defineProperty(RxLocalDocumentPrototype, key, desc);
     });
 
@@ -248,7 +256,7 @@ const _init = () => {
      * overwrite things that not work on local documents
      * with throwing function
      */
-    const getThrowingFun = k => () => {
+    const getThrowingFun = (k: string) => () => {
         throw newRxError('LD6', {
             functionName: k
         });
@@ -259,10 +267,10 @@ const _init = () => {
         'putAttachment',
         'getAttachment',
         'allAttachments'
-    ].forEach(k => RxLocalDocumentPrototype[k] = getThrowingFun(k));
+    ].forEach((k: string) => RxLocalDocumentPrototype[k] = getThrowingFun(k));
 };
 
-RxLocalDocument.create = (id, data, parent) => {
+RxLocalDocument.create = (id: string, data: any, parent: any) => {
     _init();
     _getChangeSub(parent);
 
@@ -276,14 +284,14 @@ RxLocalDocument.create = (id, data, parent) => {
  * save the local-document-data
  * throws if already exists
  */
-function insertLocal(id, data): Promise<RxLocalDocument> {
+function insertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.insertLocal(id, data);
 
     data = clone(data);
 
     return this.getLocal(id)
-        .then(existing => {
+        .then((existing: any) => {
             if (existing) {
                 throw newRxError('LD7', {
                     id,
@@ -297,7 +305,7 @@ function insertLocal(id, data): Promise<RxLocalDocument> {
             saveData._id = LOCAL_PREFIX + id;
 
             return pouch.put(saveData);
-        }).then(res => {
+        }).then((res: any) => {
             data._rev = res.rev;
             const newDoc = RxLocalDocument.create(id, data, this);
             return newDoc;
@@ -308,12 +316,12 @@ function insertLocal(id, data): Promise<RxLocalDocument> {
  * save the local-document-data
  * overwrites existing if exists
  */
-function upsertLocal(id: string, data: any): Promise<RxLocalDocument> {
+function upsertLocal(this: any, id: string, data: any): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.upsertLocal(id, data);
 
     return this.getLocal(id)
-        .then(existing => {
+        .then((existing: any) => {
             if (!existing) {
                 // create new one
                 const doc = this.insertLocal(id, data);
@@ -326,7 +334,7 @@ function upsertLocal(id: string, data: any): Promise<RxLocalDocument> {
         });
 }
 
-function getLocal(id): Promise<RxLocalDocument> {
+function getLocal(this: any, id: string): Promise<RxLocalDocument> {
     if (isRxCollection(this) && this._isInMemory)
         return this._parentCollection.getLocal(id);
 
@@ -339,7 +347,7 @@ function getLocal(id): Promise<RxLocalDocument> {
 
     // if not found, check in pouch
     return pouch.get(LOCAL_PREFIX + id)
-        .then(docData => {
+        .then((docData: any) => {
             if (!docData) return null;
             const doc = RxLocalDocument.create(id, docData, this);
             return doc;
@@ -349,12 +357,12 @@ function getLocal(id): Promise<RxLocalDocument> {
 
 export const rxdb = true;
 export const prototypes = {
-    RxCollection: proto => {
+    RxCollection: (proto: any) => {
         proto.insertLocal = insertLocal;
         proto.upsertLocal = upsertLocal;
         proto.getLocal = getLocal;
     },
-    RxDatabase: proto => {
+    RxDatabase: (proto: any) => {
         proto.insertLocal = insertLocal;
         proto.upsertLocal = upsertLocal;
         proto.getLocal = getLocal;

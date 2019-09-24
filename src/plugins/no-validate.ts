@@ -17,7 +17,7 @@ export const prototypes = {
     /**
      * set validate-function for the RxSchema.prototype
      */
-    RxSchema: (proto) => {
+    RxSchema: (proto: any) => {
         proto.validate = validate;
     }
 };

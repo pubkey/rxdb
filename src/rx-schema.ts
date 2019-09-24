@@ -28,7 +28,7 @@ export class RxSchema<T = any> {
     public compoundIndexes: string[] | string[][];
     public indexes: string[][];
     public primaryPath: keyof T;
-    public finalFields: (keyof T)[];
+    public finalFields: string[];
 
     constructor(
         public readonly jsonID: RxJsonSchema<T>
@@ -46,7 +46,7 @@ export class RxSchema<T = any> {
         this.finalFields = getFinalFields(this.jsonID);
         this.jsonID.required = (this.jsonID as any).required
             .concat(this.finalFields)
-            .filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
+            .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
 
         // add primary to schema if not there (if _id)
         if (!this.jsonID.properties[this.primaryPath]) {
@@ -90,7 +90,7 @@ export class RxSchema<T = any> {
             Object
                 .entries(this.normalized.properties)
                 .filter(([, v]) => v.hasOwnProperty('default'))
-                .forEach(([k, v]) => this._defaultValues[k] = (v as any).default);
+                .forEach(([k, v]) => (this._defaultValues as any)[k] = (v as any).default);
         }
         return this._defaultValues;
     }
@@ -108,27 +108,27 @@ export class RxSchema<T = any> {
     /**
      * true if schema contains at least one encrypted path
      */
-    private _crypt: boolean;
+    private _crypt?: boolean;
 
-    public _normalized;
+    public _normalized?: RxJsonSchema;
 
-    private _defaultValues: { [P in keyof T]: T[P] };
+    private _defaultValues?: { [P in keyof T]: T[P] };
 
     /**
      * get all encrypted paths
      */
-    private _encryptedPaths;
+    private _encryptedPaths?: { [k: string]: JsonSchema };
 
 
-    private _hash: string;
+    private _hash?: string;
 
     /**
      * creates the schema-based document-prototype,
      * see RxCollection.getDocumentPrototype()
      */
-    private _getDocumentPrototype;
+    private _getDocumentPrototype?: any;
 
-    public getSchemaByObjectPath(path: keyof T): JsonSchema {
+    public getSchemaByObjectPath(path: string): JsonSchema {
         let usePath: string = path as string;
         usePath = usePath.replace(/\./g, '.properties.');
         usePath = 'properties.' + usePath;
@@ -145,7 +145,7 @@ export class RxSchema<T = any> {
      * - final fields are not modified
      * @throws {Error} if not valid
      */
-    validateChange(dataBefore, dataAfter) {
+    validateChange(dataBefore: any, dataAfter: any): void {
         this.finalFields.forEach(fieldName => {
             if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
                 throw newRxError('DOC9', {
@@ -180,15 +180,15 @@ export class RxSchema<T = any> {
         return obj;
     }
 
-    swapIdToPrimary(obj) {
+    swapIdToPrimary(obj: any): any {
         if (this.primaryPath === '_id' || obj[this.primaryPath]) return obj;
         obj[this.primaryPath] = obj._id;
         delete obj._id;
         return obj;
     }
-    swapPrimaryToId(obj) {
+    swapPrimaryToId(obj: any): any {
         if (this.primaryPath === '_id') return obj;
-        const ret = {};
+        const ret: any = {};
         Object
             .entries(obj)
             .forEach(entry => {
@@ -202,7 +202,7 @@ export class RxSchema<T = any> {
      * returns true if key-compression should be done
      */
     doKeyCompression(): boolean {
-        return this.jsonID.keyCompression;
+        return this.jsonID.keyCompression as boolean;
     }
     public getDocumentPrototype() {
         if (!this._getDocumentPrototype) {
@@ -218,9 +218,9 @@ export class RxSchema<T = any> {
  * returns all encrypted paths of the schema
  */
 export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: JsonSchema } {
-    const ret = {};
+    const ret: any = {};
 
-    function traverse(currentObj, currentPath) {
+    function traverse(currentObj: any, currentPath: string) {
         if (typeof currentObj !== 'object') return;
         if (currentObj.encrypted) {
             ret[currentPath.substring(1)] = currentObj;
@@ -284,7 +284,7 @@ export function getIndexes<T = any>(
  */
 export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
     const ret = Object.keys(jsonID.properties)
-        .filter(key => jsonID.properties[key].primary)
+        .filter(key => (jsonID as any).properties[key].primary)
         .shift();
     if (!ret) return '_id' as keyof T;
     else return ret as keyof T;
@@ -296,12 +296,12 @@ export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
  */
 export function getFinalFields<T = any>(
     jsonID: RxJsonSchema<T>
-): (keyof T)[] {
+): string[] {
     const ret = Object.keys(jsonID.properties)
-        .filter(key => jsonID.properties[key].final) as (keyof T)[];
+        .filter(key => (jsonID as any).properties[key].final);
 
     // primary is also final
-    ret.push(getPrimary<T>(jsonID));
+    ret.push(getPrimary<T>(jsonID) as any);
     return ret;
 }
 
@@ -367,6 +367,6 @@ export function createRxSchema<T = any>(
     return schema;
 }
 
-export function isInstanceOf(obj) {
+export function isInstanceOf(obj: any): boolean {
     return obj instanceof RxSchema;
 }

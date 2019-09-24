@@ -10,6 +10,9 @@ import {
 import {
     requestIdleCallbackIfAvailable
 } from '../util';
+import {
+    RxSchema
+} from '../rx-schema';
 
 /**
  * cache the validators by the schema-hash
@@ -23,7 +26,10 @@ const validatorsCache: { [k: string]: any } = {};
  * @param [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
-function _getValidator(schemaPath: string = '') {
+function _getValidator(
+    this: RxSchema,
+    schemaPath: string = ''
+) {
     const hash = this.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
@@ -35,7 +41,7 @@ function _getValidator(schemaPath: string = '') {
                 schemaPath
             });
         }
-        validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart);
+        validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart as any);
     }
     return validatorsOfHash[schemaPath];
 }
@@ -46,10 +52,11 @@ function _getValidator(schemaPath: string = '') {
  * @throws {RxError} if not valid
  */
 const validate = function (
+    this: RxSchema,
     obj: any,
     schemaPath: string = ''
 ): any {
-    const useValidator = this._getValidator(schemaPath);
+    const useValidator = (this as any)._getValidator(schemaPath);
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
@@ -62,10 +69,10 @@ const validate = function (
     }
 };
 
-const runAfterSchemaCreated = rxSchema => {
+const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     // pre-generate the isMyJsonValid-validator from the schema
     requestIdleCallbackIfAvailable(() => {
-        rxSchema._getValidator();
+        (rxSchema as any)._getValidator();
     });
 };
 
@@ -75,7 +82,7 @@ export const prototypes = {
      * set validate-function for the RxSchema.prototype
      * @param prototype of RxSchema
      */
-    RxSchema: (proto) => {
+    RxSchema: (proto: any) => {
         proto._getValidator = _getValidator;
         proto.validate = validate;
     }

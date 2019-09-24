@@ -18,7 +18,7 @@ import {
  * check if the given module is a leveldown-adapter
  * throws if not
  */
-export function isLevelDown(adapter) {
+export function isLevelDown(adapter: any) {
     if (!adapter || typeof adapter.super_ !== 'function') {
         throw newRxError('UT4', {
             adapter
@@ -54,7 +54,7 @@ export function fastUnsecureHash(obj: any): number {
  *  and build-size could be reduced by 9kb
  */
 import Md5 from 'spark-md5';
-export function hash(obj) {
+export function hash(obj: any): string {
     let msg = obj;
     if (typeof obj !== 'string') msg = JSON.stringify(obj);
     return Md5.hash(msg);
@@ -90,10 +90,10 @@ export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
 export function requestIdlePromise(timeout = null) {
     if (
         typeof window === 'object' &&
-        window['requestIdleCallback']
+        (window as any)['requestIdleCallback']
     ) {
         return new Promise(
-            res => window['requestIdleCallback'](res, {
+            res => (window as any)['requestIdleCallback'](res, {
                 timeout
             })
         );
@@ -109,7 +109,7 @@ export function requestIdlePromise(timeout = null) {
  */
 export function promiseSeries(
     tasks: Function[],
-    initial?
+    initial?: any
 ): Promise<any[]> {
     return tasks
         .reduce(
@@ -126,8 +126,8 @@ export function promiseSeries(
 export function requestIdleCallbackIfAvailable(fun: Function): void {
     if (
         typeof window === 'object' &&
-        window['requestIdleCallback']
-    ) window['requestIdleCallback'](fun);
+        (window as any)['requestIdleCallback']
+    ) (window as any)['requestIdleCallback'](fun);
 }
 
 /**
@@ -243,7 +243,7 @@ export function sortObject(obj: any, noArraySort = false): any {
         if (obj instanceof RegExp)
             return obj;
 
-        const out = {};
+        const out: any = {};
         Object.keys(obj)
             .sort((a, b) => a.localeCompare(b))
             .forEach(key => {
@@ -261,7 +261,7 @@ export function sortObject(obj: any, noArraySort = false): any {
  * used to JSON.stringify() objects that contain a regex
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
-export function stringifyFilter(key: string, value) {
+export function stringifyFilter(key: string, value: any) {
     if (value instanceof RegExp)
         return value.toString();
     return value;
@@ -277,7 +277,7 @@ export function pouchReplicationFunction(
         pull = true,
         push = true
     }
-): Function {
+): any {
     if (pull && push) return pouch.sync.bind(pouch);
     if (!pull && push) return (pouch.replicate as any).to.bind(pouch);
     if (pull && !push) return (pouch.replicate as any).from.bind(pouch);
@@ -344,7 +344,7 @@ export const isElectronRenderer = isElectron();
  * @link https://gist.github.com/penguinboy/762197
  */
 export function flattenObject(ob: any) {
-    const toReturn = {};
+    const toReturn: any = {};
 
     for (const i in ob) {
         if (!ob.hasOwnProperty(i)) continue;

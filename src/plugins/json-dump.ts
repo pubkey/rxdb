@@ -13,9 +13,16 @@ import {
 import {
     createChangeEvent
 } from '../rx-change-event';
+import {
+    RxDatabase
+} from '../types';
 
-function dumpRxDatabase(decrypted = false, collections = null): Promise<any> {
-    const json = {
+function dumpRxDatabase(
+    this: RxDatabase,
+    decrypted = false,
+    collections: any = null
+): Promise<any> {
+    const json: any = {
         name: this.name,
         instanceToken: this.token,
         encrypted: false,
@@ -43,14 +50,17 @@ function dumpRxDatabase(decrypted = false, collections = null): Promise<any> {
     });
 }
 
-const importDumpRxDatabase = function (dump) {
+const importDumpRxDatabase = function (
+    this: RxDatabase,
+    dump: any
+) {
     /**
      * collections must be created before the import
      * because we do not know about the other collection-settings here
      */
     const missingCollections = dump.collections
-        .filter(col => !this.collections[col.name])
-        .map(col => col.name);
+        .filter((col: any) => !this.collections[col.name])
+        .map((col: any) => col.name);
     if (missingCollections.length > 0) {
         throw newRxError('JD1', {
             missingCollections
@@ -59,14 +69,17 @@ const importDumpRxDatabase = function (dump) {
 
     return Promise.all(
         dump.collections
-            .map(colDump => this.collections[colDump.name].importDump(colDump))
+            .map((colDump: any) => this.collections[colDump.name].importDump(colDump))
     );
 };
 
-const dumpRxCollection = function (decrypted = false) {
+const dumpRxCollection = function (
+    this: any,
+    decrypted = false
+) {
     const encrypted = !decrypted;
 
-    const json = {
+    const json: any = {
         name: this.name,
         schemaHash: this.schema.hash,
         encrypted: false,
@@ -81,8 +94,8 @@ const dumpRxCollection = function (decrypted = false) {
 
     const query = createRxQuery('find', {}, this);
     return this._pouchFind(query, null, encrypted)
-        .then(docs => {
-            json.docs = docs.map(docData => {
+        .then((docs: any) => {
+            json.docs = docs.map((docData: any) => {
                 delete docData._rev;
                 delete docData._attachments;
                 return docData;
@@ -91,7 +104,7 @@ const dumpRxCollection = function (decrypted = false) {
         });
 };
 
-function importDumpRxCollection(exportedJSON): Promise<any> {
+function importDumpRxCollection(this: any, exportedJSON: any): Promise<any> {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw newRxError('JD2', {
@@ -113,11 +126,11 @@ function importDumpRxCollection(exportedJSON): Promise<any> {
 
     const importFns = exportedJSON.docs
         // decrypt
-        .map(doc => this._crypter.decrypt(doc))
+        .map((doc: any) => this._crypter.decrypt(doc))
         // validate schema
-        .map(doc => this.schema.validate(doc))
+        .map((doc: any) => this.schema.validate(doc))
         // import
-        .map(doc => {
+        .map((doc: any) => {
             return this._pouchPut(doc).then(() => {
                 const primary = doc[this.schema.primaryPath];
                 // emit changeEvents
@@ -137,11 +150,11 @@ function importDumpRxCollection(exportedJSON): Promise<any> {
 
 export const rxdb = true;
 export const prototypes = {
-    RxDatabase: proto => {
+    RxDatabase: (proto: any) => {
         proto.dump = dumpRxDatabase;
         proto.importDump = importDumpRxDatabase;
     },
-    RxCollection: proto => {
+    RxCollection: (proto: any) => {
         proto.dump = dumpRxCollection;
         proto.importDump = importDumpRxCollection;
     }

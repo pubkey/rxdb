@@ -46,7 +46,11 @@ export function checkFieldNameRegex(fieldName: string) {
  * validate that all schema-related things are ok
  */
 export function validateFieldsDeep(jsonSchema: any): true {
-    function checkField(fieldName, schemaObj, path) {
+    function checkField(
+        fieldName: string,
+        schemaObj: any,
+        path: string
+    ) {
         if (
             typeof fieldName === 'string' &&
             typeof schemaObj === 'object' &&
@@ -130,7 +134,7 @@ export function validateFieldsDeep(jsonSchema: any): true {
         }
     }
 
-    function traverse(currentObj, currentPath) {
+    function traverse(currentObj: any, currentPath: any) {
         if (typeof currentObj !== 'object') return;
         Object.keys(currentObj).forEach(attributeName => {
             if (!currentObj.properties) {
@@ -174,11 +178,11 @@ export function checkSchema(jsonID: RxJsonSchema) {
 
     validateFieldsDeep(jsonID);
 
-    let primaryPath;
+    let primaryPath: string;
     Object.keys(jsonID.properties).forEach(key => {
-        const value = jsonID.properties[key];
+        const value: any = jsonID.properties[key];
         // check primary
-        if (value['primary']) {
+        if (value.primary) {
             if (primaryPath) {
                 throw newRxError('SC12', {
                     value
@@ -192,7 +196,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
                     value
                 });
             }
-            if (value['unique']) {
+            if (value.unique) {
                 throw newRxError('SC14', {
                     value
                 });
@@ -224,7 +228,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
                 compoundIndexes: jsonID.compoundIndexes
             });
         }
-        jsonID.compoundIndexes.forEach(ar => {
+        jsonID.compoundIndexes.forEach((ar: any) => {
             if (!Array.isArray(ar)) {
                 throw newRxError('SC19', {
                     compoundIndexes: jsonID.compoundIndexes

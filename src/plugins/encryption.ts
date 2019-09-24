@@ -18,21 +18,21 @@ import {
 
 const minPassLength = 8;
 
-export function encrypt(value, password) {
+export function encrypt(value: any, password: any) {
     const encrypted = AES.encrypt(value, password);
     return encrypted.toString();
 }
 
-export function decrypt(cipherText, password) {
+export function decrypt(cipherText: string, password: any) {
     const decrypted = AES.decrypt(cipherText, password);
     return decrypted.toString(cryptoEnc);
 }
 
-const _encryptValue = function(this: Crypter, value) {
+const _encryptValue = function (this: Crypter, value: any) {
     return encrypt(JSON.stringify(value), this.password);
 };
 
-const _decryptValue = function(this: Crypter, encryptedValue) {
+const _decryptValue = function (this: Crypter, encryptedValue: any) {
     const decrypted = decrypt(encryptedValue, this.password);
     return JSON.parse(decrypted);
 };
@@ -42,13 +42,13 @@ export const prototypes = {
     /**
      * set crypto-functions for the Crypter.prototype
      */
-    Crypter: proto => {
+    Crypter: (proto: any) => {
         proto._encryptValue = _encryptValue;
         proto._decryptValue = _decryptValue;
     }
 };
 export const overwritable = {
-    validatePassword: function(password) {
+    validatePassword: function (password: any) {
         if (password && typeof password !== 'string') {
             throw newRxTypeError('EN1', {
                 password

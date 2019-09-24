@@ -10,19 +10,25 @@ import {
 import {
     requestIdleCallbackIfAvailable
 } from '../util';
+import {
+    RxSchema
+} from '../rx-schema';
 
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
-const validatorsCache = {};
+const validatorsCache: any = {};
 
 
 /**
  * returns the parsed validator from ajv
  * @
  */
-export function _getValidator(rxSchema, schemaPath: string = '') {
+export function _getValidator(
+    rxSchema: RxSchema,
+    schemaPath: string = ''
+) {
     const hash = rxSchema.hash;
     if (!validatorsCache[hash])
         validatorsCache[hash] = {};
@@ -45,7 +51,11 @@ export function _getValidator(rxSchema, schemaPath: string = '') {
 /**
  * validates the given object against the schema
  */
-function validate(obj, schemaPath: string = '') {
+function validate(
+    this: RxSchema,
+    obj: any,
+    schemaPath: string = ''
+) {
     const useValidator = _getValidator(this, schemaPath);
     const isValid = useValidator(obj);
     if (isValid) return obj;
@@ -59,7 +69,7 @@ function validate(obj, schemaPath: string = '') {
     }
 }
 
-const runAfterSchemaCreated = rxSchema => {
+const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     // pre-generate validator-function from the schema
     requestIdleCallbackIfAvailable(() => _getValidator(rxSchema));
 };
@@ -69,7 +79,7 @@ export const prototypes = {
     /**
      * set validate-function for the RxSchema.prototype
      */
-    RxSchema: (proto) => {
+    RxSchema: (proto: any) => {
         proto.validate = validate;
     }
 };

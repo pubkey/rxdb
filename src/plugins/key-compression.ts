@@ -14,9 +14,9 @@ import {
 
 export class KeyCompressor {
 
-    public _table: { [k: string]: string };
-    public _reverseTable: { [k: string]: string };
-    public _fullTable: { [k: string]: string };
+    public _table?: { [k: string]: string };
+    public _reverseTable?: { [k: string]: string };
+    public _fullTable?: { [k: string]: string };
     constructor(
         public schema: RxSchema
     ) { }
@@ -33,22 +33,22 @@ export class KeyCompressor {
             this._table = {};
             const jsonSchema = this.schema.normalized;
 
-            const propertiesToTable = (path, obj) => {
+            const propertiesToTable = (path: string, obj: any) => {
                 Object.keys(obj).map(key => {
                     const propertyObj = obj[key];
                     const fullPath = (key === 'properties') ? path : trimDots(path + '.' + key);
                     if (
                         typeof propertyObj === 'object' && // do not add schema-attributes
                         !Array.isArray(propertyObj) && // do not use arrays
-                        !this._table[fullPath] &&
+                        !(this._table as any)[fullPath] &&
                         fullPath !== '' &&
                         key.length > 3 && // do not compress short keys
                         !fullPath.startsWith('_') // _id/_rev etc should never be compressed
-                    ) this._table[fullPath] = '|' + nextKey();
+                    ) (this._table as any)[fullPath] = '|' + nextKey();
 
                     // primary-key is always compressed to _id
                     if (propertyObj.primary === true)
-                        this._table[fullPath] = '_id';
+                        (this._table as any)[fullPath] = '_id';
 
                     if (typeof propertyObj === 'object' && !Array.isArray(propertyObj))
                         propertiesToTable(fullPath, propertyObj);
@@ -66,7 +66,7 @@ export class KeyCompressor {
             Object.keys(table).forEach(key => {
                 const value = table[key];
                 const fieldName = key.split('.').pop();
-                this._reverseTable[value] = fieldName;
+                (this._reverseTable as any)[value] = fieldName;
             });
         }
         return this._reverseTable;
@@ -81,7 +81,7 @@ export class KeyCompressor {
     }
 
 
-    _decompressObj(obj) {
+    _decompressObj(obj: any): any {
         const reverseTable = this.reverseTable;
 
         // non-object
@@ -93,7 +93,7 @@ export class KeyCompressor {
 
         // object
         else {
-            const ret = {};
+            const ret: any = {};
             Object.keys(obj).forEach(key => {
                 let replacedKey = key;
                 if (
@@ -110,7 +110,7 @@ export class KeyCompressor {
         }
     }
 
-    decompress(obj) {
+    decompress(obj: any): any {
         if (!this.schema.doKeyCompression()) return clone(obj);
         const returnObj = this._decompressObj(obj);
         return returnObj;
@@ -150,13 +150,13 @@ export class KeyCompressor {
         if (!this.schema.doKeyCompression()) return queryJSON;
 
         // selector
-        const selector = {};
+        const selector: any = {};
         Object.keys(queryJSON.selector).forEach(key => {
             const value = queryJSON.selector[key];
             if (key.startsWith('$')) {
                 // $or, $not etc have different structure
-                const setObj = value.map(obj => {
-                    const newObj = {};
+                const setObj = value.map((obj: any) => {
+                    const newObj: any = {};
                     Object.keys(obj).forEach(k => {
                         const transKey = this.transformKey('', '', k.split('.'));
                         newObj[transKey] = obj[k];
@@ -173,10 +173,10 @@ export class KeyCompressor {
 
         // sort
         if (queryJSON.sort) {
-            queryJSON.sort = queryJSON.sort.map(sortObj => {
+            queryJSON.sort = queryJSON.sort.map((sortObj: any) => {
                 const key = Object.keys(sortObj)[0];
                 const value = sortObj[key];
-                const ret = {};
+                const ret: any = {};
                 ret[this.transformKey('', '', key.split('.'))] = value;
                 return ret;
             });
@@ -186,8 +186,12 @@ export class KeyCompressor {
     }
 }
 
-function _compressObj(keyCompressor, obj, path = '') {
-    const ret = {};
+function _compressObj(
+    keyCompressor: KeyCompressor,
+    obj: any,
+    path = ''
+): any {
+    const ret: any = {};
     if (typeof obj !== 'object' || obj === null) return obj;
     if (Array.isArray(obj)) {
         return obj
@@ -204,7 +208,7 @@ function _compressObj(keyCompressor, obj, path = '') {
     return ret;
 }
 
-export function create(schema) {
+export function create(schema: RxSchema) {
     return new KeyCompressor(schema);
 }
 

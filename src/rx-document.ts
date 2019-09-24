@@ -35,7 +35,7 @@ import {
 } from './types';
 
 export const basePrototype = {
-    get _data() {
+    get _data(this: RxDocument) {
         /**
          * Might be undefined when vuejs-devtools are used
          * @link https://github.com/pubkey/rxdb/issues/1126
@@ -44,23 +44,23 @@ export const basePrototype = {
 
         return this._dataSync$.getValue();
     },
-    get primaryPath() {
+    get primaryPath(this: RxDocument) {
         if (!this.isInstanceOfRxDocument) return undefined;
         return this.collection.schema.primaryPath;
     },
-    get primary() {
+    get primary(this: RxDocument) {
         if (!this.isInstanceOfRxDocument) return undefined;
         return this._data[this.primaryPath];
     },
-    get revision() {
+    get revision(this: RxDocument) {
         if (!this.isInstanceOfRxDocument) return undefined;
         return this._data._rev;
     },
-    get deleted$() {
+    get deleted$(this: RxDocument) {
         if (!this.isInstanceOfRxDocument) return undefined;
         return this._deleted$.asObservable();
     },
-    get deleted() {
+    get deleted(this: RxDocument) {
         if (!this.isInstanceOfRxDocument) return undefined;
         return this._deleted$.getValue();
     },
@@ -68,11 +68,11 @@ export const basePrototype = {
     /**
      * returns the observable which emits the plain-data of this document
      */
-    get $(): Observable<any> {
+    get $(this: RxDocument): Observable<any> {
         return this._dataSync$.asObservable();
     },
 
-    _handleChangeEvent(changeEvent: RxChangeEvent) {
+    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent) {
         if (changeEvent.data.doc !== this.primary)
             return;
 
@@ -99,14 +99,14 @@ export const basePrototype = {
     /**
      * emits the changeEvent to the upper instance (RxCollection)
      */
-    $emit(changeEvent: RxChangeEvent) {
+    $emit(this: RxDocument, changeEvent: RxChangeEvent) {
         return this.collection.$emit(changeEvent);
     },
 
     /**
      * returns observable of the value of the given path
      */
-    get$(path: string): Observable<any> {
+    get$(this: RxDocument, path: string): Observable<any> {
         if (path.includes('.item.')) {
             throw newRxError('DOC1', {
                 path
@@ -134,13 +134,13 @@ export const basePrototype = {
             .pipe(
                 map(data => objectPath.get(data, path)),
                 distinctUntilChanged()
-            ).asObservable();
+            );
     },
 
     /**
      * populate the given path
      */
-    populate(path: string): Promise<RxDocument> {
+    populate(this: RxDocument, path: string): Promise<RxDocument | null> {
         const schemaObj = this.collection.schema.getSchemaByObjectPath(path);
         const value = this.get(path);
         if (!value) {
@@ -168,7 +168,10 @@ export const basePrototype = {
         }
 
         if (schemaObj.type === 'array')
-            return Promise.all(value.map(id => refCollection.findOne(id).exec())) as any;
+            return Promise.all(
+                value.map((id: string) => refCollection
+                    .findOne(id).exec())
+            ) as any;
         else
             return refCollection.findOne(value).exec();
     },
@@ -176,7 +179,7 @@ export const basePrototype = {
     /**
      * get data by objectPath
      */
-    get(objPath: string): any | null {
+    get(this: RxDocument, objPath: string): any | null {
         if (!this._data) return undefined;
         let valueObj = objectPath.get(this._data, objPath);
         valueObj = clone(valueObj);
@@ -191,12 +194,12 @@ export const basePrototype = {
             this.collection.schema,
             valueObj,
             objPath,
-            this
+            this as any
         );
         return valueObj;
     },
 
-    toJSON(withRevAndAttachments = true) {
+    toJSON(this: RxDocument, withRevAndAttachments = true) {
         const data = clone(this._data);
         if (!withRevAndAttachments) {
             delete data._rev;
@@ -209,7 +212,7 @@ export const basePrototype = {
      * set data by objectPath
      * This can only be called on temporary documents
      */
-    set(objPath: string, value: any) {
+    set(this: RxDocument, objPath: string, value: any) {
 
         // setters can only be used on temporary documents
         if (!this._isTemporary) {
@@ -269,7 +272,7 @@ export const basePrototype = {
      * runs an atomic update over the document
      * @param fun that takes the document-data and returns a new data-object
      */
-    atomicUpdate(fun: Function): Promise<RxDocument> {
+    atomicUpdate(this: RxDocument, fun: Function): Promise<RxDocument> {
         this._atomicQueue = this._atomicQueue
             .then(() => {
                 const oldData = clone(this._dataSync$.getValue());
@@ -281,7 +284,7 @@ export const basePrototype = {
         return this._atomicQueue.then(() => this);
     },
 
-    atomicSet(key, value) {
+    atomicSet(this: RxDocument, key: string, value: any) {
         return this.atomicUpdate(docData => {
             objectPath.set(docData, key, value);
             return docData;
@@ -292,7 +295,7 @@ export const basePrototype = {
      * saves the new document-data
      * and handles the events
      */
-    _saveData(newData, oldData): Promise<void> {
+    _saveData(this: RxDocument, newData: any, oldData: any): Promise<void> {
         newData = clone(newData);
 
 
@@ -340,7 +343,7 @@ export const basePrototype = {
      * Saving a temporary doc is basically the same as RxCollection.insert()
      * @return false if nothing to save
      */
-    save(): boolean {
+    save(this: RxDocument): Promise<boolean> {
         // .save() cannot be called on non-temporary-documents
         if (!this._isTemporary) {
             throw newRxError('DOC17', {
@@ -366,7 +369,7 @@ export const basePrototype = {
      * this not not equal to a pouchdb.remove(),
      * instead we keep the values and only set _deleted: true
      */
-    remove(): Promise<RxDocument> {
+    remove(this: RxDocument): Promise<RxDocument> {
         if (this.deleted) {
             return Promise.reject(newRxError('DOC13', {
                 document: this,
@@ -403,7 +406,11 @@ export const basePrototype = {
 };
 
 export function createRxDocumentConstructor(proto = basePrototype) {
-    const constructor = function RxDocumentConstructor(collection, jsonData) {
+    const constructor = function RxDocumentConstructor(
+        this: RxDocument,
+        collection: RxCollection,
+        jsonData: any
+    ) {
         this.collection = collection;
 
         // if true, this is a temporary document
@@ -411,7 +418,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._dataSync$ = new BehaviorSubject(clone(jsonData));
-        this._deleted$ = new BehaviorSubject(false);
+        this._deleted$ = new BehaviorSubject(false) as any;
 
         this._atomicQueue = Promise.resolve();
 
@@ -428,7 +435,12 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 const pseudoConstructor = createRxDocumentConstructor(basePrototype);
 const pseudoRxDocument = new (pseudoConstructor as any)();
 
-export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
+export function defineGetterSetter(
+    schema: any,
+    valueObj: any,
+    objPath = '',
+    thisObj = false
+) {
     if (valueObj === null) return;
 
 
@@ -443,8 +455,8 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
             // getter - value
             valueObj.__defineGetter__(
                 key,
-                function () {
-                    const _this = thisObj ? thisObj : this;
+                function (this: RxDocument) {
+                    const _this: RxDocument = thisObj ? thisObj : (this as any);
                     if (!_this.get || typeof _this.get !== 'function') {
                         /**
                          * When an object gets added to the state of a vuejs-component,
@@ -476,18 +488,21 @@ export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = fal
                 configurable: false
             });
             // setter - value
-            valueObj.__defineSetter__(key, function (val) {
-                const _this = thisObj ? thisObj : this;
+            valueObj.__defineSetter__(key, function (
+                this: RxDocument,
+                val: any
+            ) {
+                const _this: any = thisObj ? thisObj : this;
                 return _this.set(fullPath, val);
             });
         });
 }
 
 export function createWithConstructor(
-    constructor,
+    constructor: any,
     collection: RxCollection,
     jsonData: any
-): RxDocument {
+): RxDocument | null {
     if (
         jsonData[collection.schema.primaryPath] &&
         jsonData[collection.schema.primaryPath].startsWith('_design')
@@ -501,7 +516,7 @@ export function createWithConstructor(
 /**
  * returns all possible properties of a RxDocument
  */
-let _properties;
+let _properties: any;
 export function properties(): string[] {
     if (!_properties) {
         const reserved = ['deleted', 'synced'];
@@ -512,7 +527,7 @@ export function properties(): string[] {
     return _properties;
 }
 
-export function isInstanceOf(obj) {
+export function isInstanceOf(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
 }

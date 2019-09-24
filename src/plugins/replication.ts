@@ -63,7 +63,7 @@ export class RxReplicationStateBase {
 
     // can be used for debuging or custom event-handling
     // will be set some time after sync() is called
-    public _pouchEventEmitterObject: PouchSyncHandler | null;
+    public _pouchEventEmitterObject?: PouchSyncHandler | null;
     public _subjects = {
         change: new Subject(),
         docs: new Subject(),
@@ -114,19 +114,19 @@ export function setPouchEventEmitter(
 
     // change
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'change')
+        fromEvent(evEmitter as any, 'change')
             .subscribe(ev => rxRepState._subjects.change.next(ev))
     );
 
     // denied
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'denied')
+        fromEvent(evEmitter as any, 'denied')
             .subscribe(ev => rxRepState._subjects.denied.next(ev))
     );
 
     // docs
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'change')
+        fromEvent(evEmitter as any, 'change')
             .subscribe(ev => {
                 if (
                     rxRepState._subjects.docs.observers.length === 0 ||
@@ -134,31 +134,31 @@ export function setPouchEventEmitter(
                 ) return;
 
                 (ev as any).change.docs
-                    .filter(doc => doc.language !== 'query') // remove internal docs
-                    .map(doc => rxRepState.collection._handleFromPouch(doc)) // do primary-swap and keycompression
-                    .forEach(doc => rxRepState._subjects.docs.next(doc));
+                    .filter((doc: any) => doc.language !== 'query') // remove internal docs
+                    .map((doc: any) => rxRepState.collection._handleFromPouch(doc)) // do primary-swap and keycompression
+                    .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
             }));
 
     // error
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'error')
+        fromEvent(evEmitter as any, 'error')
             .subscribe(ev => rxRepState._subjects.error.next(ev))
     );
 
     // active
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'active')
+        fromEvent(evEmitter as any, 'active')
             .subscribe(() => rxRepState._subjects.active.next(true))
     );
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'paused')
+        fromEvent(evEmitter as any, 'paused')
             .subscribe(() => rxRepState._subjects.active.next(false))
     );
 
     // complete
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'complete')
-            .subscribe((info: boolean) => {
+        fromEvent(evEmitter as any, 'complete')
+            .subscribe((info: any) => {
                 /**
                  * when complete fires, it might be that not all changeEvents
                  * have passed throught, because of the delay of .wachtForChanges()
@@ -170,7 +170,7 @@ export function setPouchEventEmitter(
     );
 
 
-    function getIsAlive(emitter): Promise<boolean> {
+    function getIsAlive(emitter: any): Promise<boolean> {
         // "state" will live in emitter.state if single direction replication
         // or in emitter.push.state & emitter.pull.state when syncing for both
         let state = emitter.state;
@@ -193,9 +193,9 @@ export function setPouchEventEmitter(
     }
 
     rxRepState._subs.push(
-        fromEvent(evEmitter, 'paused')
+        fromEvent(evEmitter as any, 'paused')
             .pipe(
-                skipUntil(fromEvent(evEmitter, 'active'))
+                skipUntil(fromEvent(evEmitter as any, 'active'))
             ).subscribe(() => {
                 getIsAlive(rxRepState._pouchEventEmitterObject)
                     .then(isAlive => rxRepState._subjects.alive.next(isAlive));
@@ -209,20 +209,22 @@ export function createRxReplicationState(
     return new RxReplicationStateBase(collection) as RxReplicationState;
 }
 
-export function sync({
-    remote,
-    waitForLeadership = true,
-    direction = {
-        pull: true,
-        push: true
-    },
-    options = {
-        live: true,
-        retry: true
-    },
-    query
-}: SyncOptions) {
-    const useOptions: PouchReplicationOptions & { selector: any} = clone(options) as any;
+export function sync(
+    this: RxCollection,
+    {
+        remote,
+        waitForLeadership = true,
+        direction = {
+            pull: true,
+            push: true
+        },
+        options = {
+            live: true,
+            retry: true
+        },
+        query
+    }: SyncOptions) {
+    const useOptions: PouchReplicationOptions & { selector: any } = clone(options) as any;
 
     // prevent #641 by not allowing internal pouchdbs as remote
     if (
@@ -248,13 +250,13 @@ export function sync({
     }
 
     const syncFun = pouchReplicationFunction(this.pouch, direction);
-    if (query) useOptions.selector = query.keyCompress().selector;
+    if (query) useOptions.selector = (query as any).keyCompress().selector;
 
-    const repState = createRxReplicationState(this);
+    const repState: any = createRxReplicationState(this);
 
     // run internal so .sync() does not have to be async
     const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
-    waitTillRun.then(() => {
+    (waitTillRun as any).then(() => {
         const pouchSync = syncFun(remote, useOptions);
         this.watchForChanges();
         setPouchEventEmitter(repState, pouchSync);
@@ -266,13 +268,15 @@ export function sync({
 
 export const rxdb = true;
 export const prototypes = {
-    RxCollection: proto => {
+    RxCollection: (proto: any) => {
         proto.sync = sync;
     }
 };
 
 export const hooks = {
-    createRxCollection: function (collection) {
+    createRxCollection: function (
+        collection: RxCollection
+    ) {
         INTERNAL_POUCHDBS.add(collection.pouch);
     }
 };

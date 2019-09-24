@@ -7,6 +7,9 @@ import {
     getDocFromPouchOrNull,
     wasRevisionfromPullReplication
 } from './helper';
+import {
+    RxCollection
+} from '../../types';
 
 /**
  * when the replication starts,
@@ -28,14 +31,14 @@ import {
 //
 
 
-const pushSequenceId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
+const pushSequenceId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 
 /**
  * @return last sequence checkpoint
  */
 export async function getLastPushSequence(
-    collection,
-    endpointHash
+    collection: RxCollection,
+    endpointHash: string
 ): Promise<number> {
     const doc = await getDocFromPouchOrNull(
         collection,
@@ -46,9 +49,9 @@ export async function getLastPushSequence(
 }
 
 export async function setLastPushSequence(
-    collection,
-    endpointHash,
-    seq
+    collection: RxCollection,
+    endpointHash: string,
+    seq: any
 ) {
     const _id = pushSequenceId(endpointHash);
     let doc = await getDocFromPouchOrNull(
@@ -70,8 +73,8 @@ export async function setLastPushSequence(
 
 
 export async function getChangesSinceLastPushSequence(
-    collection,
-    endpointHash,
+    collection: RxCollection,
+    endpointHash: string,
     batchSize = 10,
 ): Promise<{ results: { id: string, seq: number, changes: { rev: string }[] }[], last_seq: number }> {
     const lastPushSequence = await getLastPushSequence(
@@ -83,9 +86,9 @@ export async function getChangesSinceLastPushSequence(
         since: lastPushSequence,
         limit: batchSize,
         include_docs: true
-    });
+    } as any);
 
-    changes.results = changes.results.filter(change => {
+    changes.results = changes.results.filter((change: any) => {
         /**
          * filter out changes with revisions resulting from the pull-stream
          * so that they will not be upstreamed again
@@ -105,7 +108,7 @@ export async function getChangesSinceLastPushSequence(
     });
 
 
-    changes.results.forEach(change => {
+    changes.results.forEach((change: any) => {
         change.doc = collection._handleFromPouch(change.doc);
     });
 
@@ -122,9 +125,12 @@ export async function getChangesSinceLastPushSequence(
 //
 
 
-const pullLastDocumentId = endpointHash => LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
+const pullLastDocumentId = (endpointHash: string) => LOCAL_PREFIX + PLUGIN_IDENT + '-pull-checkpoint-' + endpointHash;
 
-export async function getLastPullDocument(collection, endpointHash) {
+export async function getLastPullDocument(
+    collection: RxCollection,
+    endpointHash: string
+) {
     const localDoc = await getDocFromPouchOrNull(collection, pullLastDocumentId(endpointHash));
     if (!localDoc) return null;
     else {
@@ -132,7 +138,11 @@ export async function getLastPullDocument(collection, endpointHash) {
     }
 }
 
-export async function setLastPullDocument(collection, endpointHash, doc) {
+export async function setLastPullDocument(
+    collection: RxCollection,
+    endpointHash: string,
+    doc: any
+) {
     const _id = pullLastDocumentId(endpointHash);
     let localDoc = await getDocFromPouchOrNull(
         collection,

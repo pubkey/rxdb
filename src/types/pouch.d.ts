@@ -41,7 +41,7 @@ export interface PouchSettings {
 export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
 export type PouchSyncHandler = {
     on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
-    off(ev: PouchSyncHandlerEvents, fn: any);
+    off(ev: PouchSyncHandlerEvents, fn: any): void;
     cancel(): void;
 };
 

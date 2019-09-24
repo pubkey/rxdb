@@ -165,7 +165,7 @@ const CODES: { [k: string]: string } = {
 export const rxdb = true;
 export const prototypes = {};
 export const overwritable = {
-    tunnelErrorMessage(code) {
+    tunnelErrorMessage(code: string) {
         if (!CODES[code]) {
             console.error('RxDB: Error-Code not known: ' + code);
             throw new Error('Error-Cdoe ' + code + ' not known, contact the maintainer');

@@ -9,6 +9,9 @@ import {
     generateId,
     adapterObject
 } from '../util';
+import {
+    PouchDBInstance
+} from '../types';
 
 /**
  * The same pouchdb-location is used on each run
@@ -21,7 +24,7 @@ export function checkAdapter(adapter: any): Promise<any> {
     // id of the document which is stored and removed to ensure everything works
     const _id = POUCHDB_LOCATION + '-' + generateId();
 
-    let pouch;
+    let pouch: PouchDBInstance;
     try {
         pouch = new (PouchDB as any)(
             POUCHDB_LOCATION,
@@ -34,7 +37,7 @@ export function checkAdapter(adapter: any): Promise<any> {
         return Promise.resolve(false);
     }
 
-    let recoveredDoc;
+    let recoveredDoc: any;
     return pouch.info() // ensure that we wait until db is useable
         // ensure write works
         .then(() => pouch.put({

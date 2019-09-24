@@ -7,15 +7,22 @@ import modifyjs from 'modifyjs';
 import {
     clone
 } from '../util.js';
+import {
+    RxDocument,
+    RxQuery
+} from '../types';
 
-export function update(updateObj) {
+export function update(this: RxDocument, updateObj: any) {
     const oldDocData = clone(this._data);
     const newDocData = modifyjs(oldDocData, updateObj);
 
     return this._saveData(newDocData, oldDocData);
 }
 
-export function RxQueryUpdate(updateObj: any): Promise<any> {
+export function RxQueryUpdate(
+    this: RxQuery,
+    updateObj: any
+    ): Promise<any> {
     return this.exec()
         .then(docs => {
             if (!docs) return null;
@@ -33,10 +40,10 @@ export function RxQueryUpdate(updateObj: any): Promise<any> {
 
 export const rxdb = true;
 export const prototypes = {
-    RxDocument: (proto) => {
+    RxDocument: (proto: any) => {
         proto.update = update;
     },
-    RxQuery: (proto) => {
+    RxQuery: (proto: any) => {
         proto.update = RxQueryUpdate;
     }
 };

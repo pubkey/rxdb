@@ -121,7 +121,7 @@ export function pluginMissing(
 
 export function newRxError(
     code: string,
-    parameters?
+    parameters?: any
 ): RxError {
     return new RxError(
         code,
@@ -131,7 +131,7 @@ export function newRxError(
 }
 export function newRxTypeError(
     code: string,
-    parameters?
+    parameters?: any
 ): RxTypeError {
     return new RxTypeError(
         code,

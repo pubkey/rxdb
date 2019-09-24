@@ -68,17 +68,19 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
              * We use _resultsDocs$ to emit new results
              * This also ensure that there is a reemit on subscribe
              */
-            const results$ = this._resultsDocs$
+            const results$ = (this._resultsDocs$ as any)
                 .pipe(
-                    mergeMap(docs => {
-                        return _ensureEqual(this)
-                            .then(hasChanged => {
+                    mergeMap((docs: any[]) => {
+                        return _ensureEqual(this as any)
+                            .then((hasChanged: any) => {
+
+
                                 if (hasChanged) return false; // wait for next emit
                                 else return docs;
                             });
                     }),
-                    filter(docs => !!docs), // not if previous returned false
-                    map(docs => {
+                    filter((docs: any[]) => !!docs), // not if previous returned false
+                    map((docs: any[]) => {
                         // findOne()-queries emit document or null
                         if (this.op === 'findOne') {
                             const doc = docs.length === 0 ? null : docs[0];
@@ -109,7 +111,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
                     changeEvents$
                 ) as any;
         }
-        return this._$;
+        return this._$ as any;
     }
     get massageSelector() {
         if (!this._massageSelector) {
@@ -145,7 +147,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      */
     public _ensureEqualQueue: Promise<boolean> = Promise.resolve(false);
 
-    private stringRep: string;
+    private stringRep?: string;
 
     /**
      * Returns an observable that emits the results
@@ -154,20 +156,20 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * - Emit the new result-set when an RxChangeEvent comes in
      * - Do not emit anything before the first result-set was created (no null)
      */
-    private _$: BehaviorSubject<RxQueryResult>;
+    private _$?: BehaviorSubject<RxQueryResult>;
 
     private _toJSON: any;
 
     /**
      * get the key-compression version of this query
      */
-    private _keyCompress: { selector: {}, sort: [] };
+    private _keyCompress?: { selector: {}, sort: [] };
 
 
     /**
      * cached call to get the massageSelector
      */
-    private _massageSelector;
+    private _massageSelector?: any;
     toString(): string {
         if (!this.stringRep) {
             const stringObj = sortObject({
@@ -255,12 +257,12 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
         // sort
         if (options.sort) {
-            const sortArray = [];
+            const sortArray: any[] = [];
             Object.keys(options.sort).map(fieldName => {
                 const dirInt = options.sort[fieldName];
                 let dir = 'asc';
                 if (dirInt === -1) dir = 'desc';
-                const pushMe = {};
+                const pushMe: any = {};
                 // TODO run primary-swap somewhere else
                 if (fieldName === primPath)
                     fieldName = '_id';
@@ -291,11 +293,11 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
 
         // strip empty selectors
         Object
-            .entries(json.selector)
+            .entries((json.selector as any))
             .filter(([, v]) => typeof v === 'object')
             .filter(([, v]) => v !== null)
             .filter(([, v]) => !Array.isArray(v))
-            .filter(([, v]) => Object.keys(v).length === 0)
+            .filter(([, v]) => Object.keys((v as any)).length === 0)
             .forEach(([k]) => delete json.selector[k]);
 
         // primary swap
@@ -358,7 +360,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      * @return promise with deleted documents
      */
     remove(): Promise<RxQueryResult> {
-        let ret;
+        let ret: any;
         return this
             .exec()
             .then(docs => {
@@ -426,7 +428,7 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     }
 }
 
-function _getDefaultQuery(collection) {
+function _getDefaultQuery(collection: RxCollection): any {
     return {
         [collection.schema.primaryPath]: {}
     };
@@ -452,7 +454,7 @@ function protoMerge(
         .filter(attrName => !attrName.startsWith('_'))
         .filter(attrName => !rxQueryProto[attrName])
         .forEach(attrName => {
-            rxQueryProto[attrName] = function (p1) {
+            rxQueryProto[attrName] = function (p1: any): RxQuery {
                 const clonedThis = this._clone();
                 clonedThis.mquery[attrName](p1);
                 return _tunnelQueryCache(clonedThis);
@@ -509,7 +511,7 @@ function _throwNotInSchema(key: string) {
  * adds the field of 'sort' to the search-index
  * @link https://github.com/nolanlawson/pouchdb-find/issues/204
  */
-function _sortAddToIndex(checkParam, clonedThis) {
+function _sortAddToIndex(checkParam: any, clonedThis: any) {
     const schemaObj = clonedThis.collection.schema.getSchemaByObjectPath(checkParam);
     if (!schemaObj) _throwNotInSchema(checkParam);
 
@@ -538,9 +540,9 @@ function _sortAddToIndex(checkParam, clonedThis) {
  * @return false if not which means it should re-execute
  */
 function _isResultsInSync(rxQuery: RxQueryBase): boolean {
-    if (rxQuery._latestChangeEvent >= rxQuery.collection._changeEventBuffer.counter)
+    if (rxQuery._latestChangeEvent >= (rxQuery as any).collection._changeEventBuffer.counter) {
         return true;
-    else return false;
+    } else return false;
 }
 
 
@@ -576,13 +578,13 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
      * try to use the queryChangeDetector to calculate the new results
      */
     if (!mustReExec) {
-        const missedChangeEvents = rxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+        const missedChangeEvents = (rxQuery as any).collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
-            rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
-            const runChangeEvents = rxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+            rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
+            const runChangeEvents = (rxQuery as any).collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
             const changeResult = rxQuery._queryChangeDetector.runChangeDetection(runChangeEvents);
 
             if (!Array.isArray(changeResult) && changeResult) {
@@ -600,7 +602,7 @@ function __ensureEqual(rxQuery: RxQueryBase): Promise<boolean> | boolean {
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
         // counter can change while _execOverDatabase() is running so we save it here
-        const latestAfter = rxQuery.collection._changeEventBuffer.counter;
+        const latestAfter = (rxQuery as any).collection._changeEventBuffer.counter;
 
         return rxQuery._execOverDatabase()
             .then(newResultData => {

@@ -1,8 +1,15 @@
-import { Observable } from 'rxjs';
+import {
+    Observable,
+    Subject,
+    BehaviorSubject
+} from 'rxjs';
 
 import {
-    RxCollection
+    RxCollection,
 } from './rx-collection';
+import {
+    RxChangeEvent
+} from '../rx-change-event';
 import {
     RxAttachment,
     RxAttachmentCreator
@@ -15,14 +22,24 @@ export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: str
 declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
 
 export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
-    readonly collection: RxCollection<RxDocumentType, OrmMethods>;
+    public isInstanceOfRxDocument: true;
+    public collection: RxCollection<RxDocumentType, OrmMethods>;
     readonly deleted: boolean;
 
     readonly $: Observable<any>;
     readonly deleted$: Observable<boolean>;
 
+    // internal things
     public _isTemporary: boolean;
-    public _dataSync$;
+    public _dataSync$: BehaviorSubject<RxDocumentType>;
+    public _data: any;
+    public _deleted$: BehaviorSubject<boolean>;
+    public primaryPath: string;
+    public revision: string;
+    public $emit(cE: RxChangeEvent): void;
+    public _atomicQueue: Promise<any>;
+    public _saveData(newData: any, oldData: any): Promise<void>;
+    // /internal things
 
     readonly primary: string;
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
@@ -35,7 +52,7 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     atomicSet(objPath: string, value: any): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     update(updateObj: any): Promise<any>;
     remove(): Promise<boolean>;
-    _handleChangeEvent(cE: any);
+    _handleChangeEvent(cE: any): void;
 
     // only for temporary documents
     set(objPath: string, value: any): RxDocument<RxDocumentType, OrmMethods>;

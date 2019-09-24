@@ -79,7 +79,7 @@ export class RxGraphQLReplicationState {
         this.endpointHash = hash(url);
         this._prepare();
     }
-    public client: GraphQLClient;
+    public client: any;
     public endpointHash: string;
     public _subjects = {
         recieved: new Subject(), // all documents that are recieved from the endpoint
@@ -92,15 +92,15 @@ export class RxGraphQLReplicationState {
     public _runningPromise: Promise<void> = Promise.resolve();
     public _subs: Subscription[] = [];
     public _runQueueCount: number = 0;
-    public initialReplicationComplete$: Observable<any>;
+    public initialReplicationComplete$: Observable<any> = undefined as any;
 
-    public changesSub;
+    public changesSub: any;
 
-    public recieved$: Observable<any>;
-    public send$: Observable<any>;
-    public error$: Observable<any>;
-    public canceled$: Observable<any>;
-    public active$: Observable<boolean>;
+    public recieved$: Observable<any> = undefined as any;
+    public send$: Observable<any> = undefined as any;
+    public error$: Observable<any> = undefined as any;
+    public canceled$: Observable<any> = undefined as any;
+    public active$: Observable<boolean> = undefined as any;
 
 
     /**
@@ -187,7 +187,7 @@ export class RxGraphQLReplicationState {
      */
     async runPull(): Promise<boolean> {
         // console.log('RxGraphQLReplicationState.runPull(): start');
-        if (this.isStopped()) return;
+        if (this.isStopped()) return Promise.resolve(false);
 
         const latestDocument = await getLastPullDocument(this.collection, this.endpointHash);
         const latestDocumentData = latestDocument ? latestDocument : null;
@@ -209,15 +209,19 @@ export class RxGraphQLReplicationState {
         // is this correct?
         const data = result.data[Object.keys(result.data)[0]];
 
-        const modified = data.map(doc => this.pull.modifier(doc));
+        const modified = data.map((doc: any) => (this.pull as any).modifier(doc));
 
-        const docIds = modified.map(doc => doc[this.collection.schema.primaryPath]);
+        const docIds = modified.map((doc: any) => doc[this.collection.schema.primaryPath]);
         const docsWithRevisions = await getDocsWithRevisionsFromPouch(
             this.collection,
             docIds
         );
-        await Promise.all(modified.map(doc => this.handleDocumentFromRemote(doc, docsWithRevisions)));
-        modified.map(doc => this._subjects.recieved.next(doc));
+        await Promise.all(
+            modified
+                .map((doc: any) => this.handleDocumentFromRemote(
+                    doc, docsWithRevisions as any))
+        );
+        modified.map((doc: any) => this._subjects.recieved.next(doc));
 
         if (modified.length === 0) {
             if (this.live) {
@@ -249,7 +253,7 @@ export class RxGraphQLReplicationState {
             this.push.batchSize
         );
 
-        const changesWithDocs = changes.results.map(change => {
+        const changesWithDocs = changes.results.map((change: any) => {
             let doc = change['doc'];
 
             doc[this.deletedFlag] = !!change['deleted'];
@@ -257,7 +261,7 @@ export class RxGraphQLReplicationState {
             delete doc._deleted;
             delete doc._attachments;
 
-            doc = this.push.modifier(doc);
+            doc = (this.push as any).modifier(doc);
 
             const seq = change.seq;
             return {
@@ -321,7 +325,7 @@ export class RxGraphQLReplicationState {
         return true;
     }
 
-    async handleDocumentFromRemote(doc, docsWithRevisions) {
+    async handleDocumentFromRemote(doc: any, docsWithRevisions: any[]) {
         const deletedValue = doc[this.deletedFlag];
         const toPouch = this.collection._handleToPouch(doc);
         // console.log('handleDocumentFromRemote(' + toPouch._id + ') start');
@@ -373,27 +377,32 @@ export class RxGraphQLReplicationState {
         this.collection.$emit(cE);
     }
     cancel(): Promise<any> {
-        if (this.isStopped()) return;
+        if (this.isStopped()) return Promise.resolve(false);
 
         if (this.changesSub) this.changesSub.cancel();
 
         this._subjects.canceled.next(true);
         // TODO
+
+        return Promise.resolve(true);
     }
 }
 
-export function syncGraphQL({
-    url,
-    headers = {},
-    waitForLeadership = true,
-    pull,
-    push,
-    deletedFlag,
-    live = false,
-    liveInterval = 1000 * 10, // in ms
-    retryTime = 1000 * 5, // in ms
-    autoStart = true // if this is false, the replication does nothing at start
-}) {
+export function syncGraphQL(
+    this: RxCollection,
+    {
+        url,
+        headers = {},
+        waitForLeadership = true,
+        pull,
+        push,
+        deletedFlag,
+        live = false,
+        liveInterval = 1000 * 10, // in ms
+        retryTime = 1000 * 5, // in ms
+        autoStart = true // if this is false, the replication does nothing at start
+    }: any
+) {
     const collection = this;
 
     // fill in defaults for pull & push
@@ -422,7 +431,7 @@ export function syncGraphQL({
     if (!autoStart) return replicationState;
 
     // run internal so .sync() does not have to be async
-    const waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+    const waitTillRun: any = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
     waitTillRun.then(() => {
 
         // trigger run once
@@ -446,7 +455,7 @@ export function syncGraphQL({
                     since: 'now',
                     live: true,
                     include_docs: true
-                }).on('change', function (change) {
+                }).on('change', function (change: any) {
                     if (replicationState.isStopped()) return;
 
                     const rev = change.doc._rev;
@@ -467,7 +476,7 @@ export function syncGraphQL({
 
 export const rxdb = true;
 export const prototypes = {
-    RxCollection: proto => {
+    RxCollection: (proto: any) => {
         proto.syncGraphQL = syncGraphQL;
     }
 };

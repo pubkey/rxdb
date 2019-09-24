@@ -7,6 +7,9 @@ import {
 import {
     newRxError
 } from '../rx-error';
+import {
+    RxDatabase
+} from '../types';
 
 import Core from '../core';
 import ReplicationPlugin from './replication';
@@ -15,7 +18,7 @@ Core.plugin(ReplicationPlugin);
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 Core.plugin(RxDBWatchForChangesPlugin);
 
-let ExpressPouchDB;
+let ExpressPouchDB: any;
 try {
     ExpressPouchDB = require('express-pouchdb');
 } catch (error) {
@@ -35,13 +38,13 @@ const SERVERS_OF_DB = new WeakMap();
 const DBS_WITH_SERVER = new WeakSet();
 
 
-const normalizeDbName = function (db) {
-    const splitted = db.name.split('/').filter(str => str !== '');
+const normalizeDbName = function (db: any) {
+    const splitted = db.name.split('/').filter((str: string) => str !== '');
     return splitted.pop();
 };
 
-const getPrefix = function (db) {
-    const splitted = db.name.split('/').filter(str => str !== '');
+const getPrefix = function (db: any) {
+    const splitted = db.name.split('/').filter((str: string) => str !== '');
     splitted.pop(); // last was the name
     if (splitted.length === 0) return '';
     let ret = splitted.join('/') + '/';
@@ -52,11 +55,16 @@ const getPrefix = function (db) {
 /**
  * tunnel requests so collection-names can be used as paths
  */
-function tunnelCollectionPath(db, path, app, colName) {
+function tunnelCollectionPath(
+    db: any,
+    path: string,
+    app: any,
+    colName: string
+) {
     db[colName].watchForChanges();
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
-    app.use(collectionPath, function (req, res, next) {
+    app.use(collectionPath, function (req: any, res: any, next: any) {
         if (req.baseUrl === collectionPath) {
             const to = normalizeDbName(db) + '-rxdb-0-' + colName;
             const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
@@ -66,11 +74,13 @@ function tunnelCollectionPath(db, path, app, colName) {
     });
 }
 
-export function spawnServer({
-    path = '/db',
-    port = 3000,
-    cors = false
-}) {
+export function spawnServer(
+    this: RxDatabase,
+    {
+        path = '/db',
+        port = 3000,
+        cors = false
+    }) {
     const db = this;
     if (!SERVERS_OF_DB.has(db))
         SERVERS_OF_DB.set(db, []);
@@ -92,7 +102,7 @@ export function spawnServer({
     if (cors) {
         app.use(corsFn({
             'origin': function (origin, callback) {
-                const originToSend = origin || '*';
+                const originToSend: any = origin || '*';
                 callback(null, originToSend);
             },
             'credentials': true,
@@ -114,7 +124,7 @@ export function spawnServer({
 /**
  * when a server is created, no more collections can be spawned
  */
-function ensureNoMoreCollections(args) {
+function ensureNoMoreCollections(args: any) {
     if (DBS_WITH_SERVER.has(args.database)) {
         const err = newRxError(
             'S1', {
@@ -129,15 +139,15 @@ function ensureNoMoreCollections(args) {
 /**
  * runs when the database gets destroyed
  */
-export function onDestroy(db) {
+export function onDestroy(db: any) {
     if (SERVERS_OF_DB.has(db))
-        SERVERS_OF_DB.get(db).forEach(server => server.close());
+        SERVERS_OF_DB.get(db).forEach((server: any) => server.close());
 }
 
 
 export const rxdb = true;
 export const prototypes = {
-    RxDatabase: (proto) => {
+    RxDatabase: (proto: any) => {
         proto.server = spawnServer;
     }
 };

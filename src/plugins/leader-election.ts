@@ -20,7 +20,7 @@ export class LeaderElector {
     constructor(
         public database: RxDatabase
     ) {
-        this.elector = createLeaderElection(database.broadcastChannel);
+        this.elector = createLeaderElection(database.broadcastChannel as any);
     }
 
     die() {
@@ -42,7 +42,7 @@ export class LeaderElector {
     }
 }
 
-export function create(database) {
+export function create(database: RxDatabase) {
     const elector = new LeaderElector(database);
     return elector;
 }

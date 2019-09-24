@@ -44,6 +44,9 @@ import {
     PouchDB
 } from '../pouch-db';
 import {
+    RxChangeEvent
+} from '../rx-change-event';
+import {
     newRxError
 } from '../rx-error';
 
@@ -61,7 +64,10 @@ const BULK_DOC_OPTIONS_FALSE = {
 };
 
 export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollectionBase<RxDocumentType, OrmMethods> {
-    constructor(parentCollection, pouchSettings = {}) {
+    constructor(
+        parentCollection: RxCollection,
+        pouchSettings = {}
+    ) {
         super(
             parentCollection.database,
             parentCollection.name,
@@ -80,7 +86,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
          * Cleans up everything to free up memory
          */
         this.onDestroy.then(() => {
-            this._changeStreams.forEach(stream => stream.cancel());
+            this._changeStreams.forEach((stream: any) => stream.cancel());
             this.pouch.destroy();
         });
 
@@ -109,10 +115,10 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
     private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
-    public _changeStreams;
-    public _oldPouchPut;
-    public _nonPersistentRevisions;
-    public _nonPersistentRevisionsSubject;
+    public _changeStreams: any
+    public _oldPouchPut: any;
+    public _nonPersistentRevisions: any;
+    public _nonPersistentRevisionsSubject: any;
 
 
     /**
@@ -124,7 +130,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         return setIndexes(this.schema, this.pouch)
             .then(() => {
                 this._subs.push(
-                    this._observable$.subscribe(cE => {
+                    (this._observable$ as any).subscribe((cE: RxChangeEvent) => {
                         // when data changes, send it to RxDocument in docCache
                         const doc = this._docCache.get(cE.data.doc);
                         if (doc) doc._handleChangeEvent(cE);
@@ -181,14 +187,15 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
      * the _pouchPut is wrapped
      * @overwrite
      */
-    _pouchPut(obj, overwrite) {
-        return this._oldPouchPut(obj, overwrite).then(ret => {
+    _pouchPut(obj: any, overwrite: any) {
+        return this._oldPouchPut(obj, overwrite).then((ret: any) => {
             this._nonPersistentRevisions.add(ret.rev);
             return ret;
         });
     }
-    $emit(changeEvent) {
-        if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev)) return;
+    $emit(changeEvent: RxChangeEvent) {
+        if ((this._changeEventBuffer as any).hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev))
+            return;
 
         (this._observable$ as any).next(changeEvent);
 
@@ -223,7 +230,7 @@ function toCleanSchema(rxSchema: RxSchema): RxSchema {
     delete newSchemaJson.properties._rev;
     delete newSchemaJson.properties._attachments;
 
-    const removeEncryption = (schema, complete) => {
+    const removeEncryption = (schema: any, complete: any) => {
         delete schema.encrypted;
         Object.values(schema)
             .filter(val => typeof val === 'object')
@@ -248,11 +255,11 @@ export function replicateExistingDocuments(
     }).then(allRows => {
         const docs = allRows
             .rows
-            .map(row => row.doc)
-            .filter(doc => !doc.language) // do not replicate design-docs
-            .map(doc => fromCollection._handleFromPouch(doc))
+            .map((row: any) => row.doc)
+            .filter((doc: any) => !doc.language) // do not replicate design-docs
+            .map((doc: any) => fromCollection._handleFromPouch(doc))
             // swap back primary because keyCompression:false
-            .map(doc => fromCollection.schema.swapPrimaryToId(doc));
+            .map((doc: any) => fromCollection.schema.swapPrimaryToId(doc));
 
         if (docs.length === 0) return Promise.resolve([]); // nothing to replicate
         else {
@@ -303,7 +310,7 @@ export function streamChangedDocuments(
             include_docs: true
         }), 'change')
         .pipe(
-            map(changeAr => changeAr[0]), // rxjs emits an array for whatever reason
+            map((changeAr: any) => changeAr[0]), // rxjs emits an array for whatever reason
             filter(change => {
                 // changes on the doNotEmit-list shell not be fired
                 const emitFlag = change.id + ':' + change.doc._rev;
@@ -355,7 +362,9 @@ let INIT_DONE = false;
 /**
  * called in the proto of RxCollection
  */
-export function spawnInMemory(): Promise<RxCollection> {
+export function spawnInMemory(
+    this: RxCollection
+): Promise<RxCollection> {
     if (!INIT_DONE) {
         INIT_DONE = true;
         // ensure memory-adapter is added
@@ -380,7 +389,7 @@ export function spawnInMemory(): Promise<RxCollection> {
 
 export const rxdb = true;
 export const prototypes = {
-    RxCollection: proto => {
+    RxCollection: (proto: any) => {
         proto.inMemory = spawnInMemory;
     }
 };

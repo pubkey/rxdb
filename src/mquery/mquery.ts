@@ -22,8 +22,8 @@ export class MQueryBase {
 
     public options: any = {};
     public _conditions: RxQueryObject = {} as RxQueryObject;
-    public _fields = undefined;
-    public _path: string;
+    public _fields: any;
+    public _path: any;
     public _update: any;
     private _distinct: any;
 
@@ -44,7 +44,7 @@ export class MQueryBase {
      * returns a cloned version of the query
      */
     clone(): MQuery {
-        const same = new MQueryBase();
+        const same: any = new MQueryBase();
         Object
             .entries(this)
             .forEach(([k, v]) => same[k] = clone(v));
@@ -78,7 +78,7 @@ export class MQueryBase {
      * ####Example
      *     User.where('age').equals(49);
      */
-    equals(val): MQueryBase {
+    equals(val: any): MQueryBase {
         this._ensurePath('equals');
         const path = this._path;
         this._conditions[path] = val;
@@ -89,7 +89,7 @@ export class MQueryBase {
      * Specifies the complementary comparison value for paths specified with `where()`
      * This is alias of `equals`
      */
-    eq(val): MQueryBase {
+    eq(val: any): MQueryBase {
         this._ensurePath('eq');
         const path = this._path;
         this._conditions[path] = val;
@@ -101,7 +101,7 @@ export class MQueryBase {
      * ####Example
      *     query.or([{ color: 'red' }, { status: 'emergency' }])
      */
-    or(array): MQueryBase {
+    or(array: any[]): MQueryBase {
         const or = this._conditions.$or || (this._conditions.$or = []);
         if (!Array.isArray(array)) array = [array];
         or.push.apply(or, array);
@@ -113,7 +113,7 @@ export class MQueryBase {
      * ####Example
      *     query.nor([{ color: 'green' }, { status: 'ok' }])
      */
-    nor(array): MQueryBase {
+    nor(array: any[]): MQueryBase {
         const nor = this._conditions.$nor || (this._conditions.$nor = []);
         if (!Array.isArray(array)) array = [array];
         nor.push.apply(nor, array);
@@ -126,7 +126,7 @@ export class MQueryBase {
      *     query.and([{ color: 'green' }, { status: 'ok' }])
      * @see $and http://docs.mongodb.org/manual/reference/operator/and/
      */
-    and(array): MQueryBase {
+    and(array: any[]): MQueryBase {
         const and = this._conditions.$and || (this._conditions.$and = []);
         if (!Array.isArray(array)) array = [array];
         and.push.apply(and, array);
@@ -362,7 +362,7 @@ export class MQueryBase {
      *
      * @parmam {String} method
      */
-    _ensurePath(method) {
+    _ensurePath(method: any) {
         if (!this._path) {
             throw newRxError('MQ5', {
                 method
@@ -394,7 +394,7 @@ export interface MQuery extends MQueryBase {
     size: ReturnSelfFunction;
 }
 
-declare type ReturnSelfFunction = (any) => MQueryBase;
+declare type ReturnSelfFunction = (v: any) => MQueryBase;
 
 /**
  * limit, skip, maxScan, batchSize, comment
@@ -404,7 +404,7 @@ declare type ReturnSelfFunction = (any) => MQueryBase;
  *     query.comment('feed query');
  */
 ['limit', 'skip', 'maxScan', 'batchSize', 'comment'].forEach(function (method) {
-    MQueryBase.prototype[method] = function (v) {
+    (MQueryBase.prototype as any)[method] = function (v: any) {
         this.options[method] = v;
         return this;
     };
@@ -418,7 +418,7 @@ declare type ReturnSelfFunction = (any) => MQueryBase;
  */
 ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size']
     .forEach(function ($conditional) {
-        MQueryBase.prototype[$conditional] = function () {
+        (MQueryBase.prototype as any)[$conditional] = function () {
             let path;
             let val;
             if (1 === arguments.length) {
@@ -441,7 +441,7 @@ declare type ReturnSelfFunction = (any) => MQueryBase;
 /*!
  * @ignore
  */
-function push(opts, field, value) {
+function push(opts: any, field: string, value: any) {
     if (Array.isArray(opts.sort)) {
         throw newRxTypeError('MQ6', {
             opts,
@@ -476,7 +476,7 @@ function push(opts, field, value) {
     s[field] = parseInt(valueStr, 10);
 }
 
-function _pushArr(opts, field, value) {
+function _pushArr(opts: any, field: string, value: any) {
     opts.sort = opts.sort || [];
     if (!Array.isArray(opts.sort)) {
         throw newRxTypeError('MQ8', {

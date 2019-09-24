@@ -115,32 +115,32 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         .pipe(
             filter(cEvent => isInstanceOfRxChangeEvent(cEvent))
         );
-    public broadcastChannel: BroadcastChannel;
-    public storageToken: string;
-    public broadcastChannel$: Subject<RxChangeEvent>;
-    public _adminPouch: PouchDBInstance;
+    public broadcastChannel?: BroadcastChannel;
+    public storageToken?: string;
+    public broadcastChannel$?: Subject<RxChangeEvent>;
+    public _adminPouch?: PouchDBInstance;
 
-    public _collectionsPouch;
+    public _collectionsPouch?: PouchDBInstance;
 
-    private _leaderElector;
+    private _leaderElector?: any;
     /**
      * removes all internal collection-info
      * only use this if you have to upgrade from a major rxdb-version
      * do NEVER use this to change the schema of a collection
      */
     dangerousRemoveCollectionInfo(): Promise<void> {
-        const colPouch = this._collectionsPouch;
+        const colPouch: any = this._collectionsPouch;
         return colPouch.allDocs()
-            .then(docsRes => {
+            .then((docsRes: any) => {
                 return Promise.all(
                     docsRes.rows
-                        .map(row => ({
+                        .map((row: any) => ({
                             _id: row.key,
                             _rev: row.value.rev
                         }))
-                        .map(doc => colPouch.remove(doc._id, doc._rev))
+                        .map((doc: any) => colPouch.remove(doc._id, doc._rev))
                 );
-            });
+            }) as any;
     }
 
     /**
@@ -188,13 +188,12 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * removes the collection-doc from this._collectionsPouch
      */
-    removeCollectionDoc(name, schema): Promise<void> {
+    removeCollectionDoc(name: string, schema: any): Promise<void> {
         const docId = _collectionNamePrimary(name, schema);
-        return this
-            ._collectionsPouch
+        return (this._collectionsPouch as any)
             .get(docId)
-            .then(doc => this.lockedRun(
-                () => this._collectionsPouch.remove(doc)
+            .then((doc: any) => this.lockedRun(
+                () => (this._collectionsPouch as any).remove(doc)
             ));
     }
 
@@ -226,7 +225,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 name: args.name
             });
         }
-        if (this.collections[args.name]) {
+        if ((this.collections as any)[args.name]) {
             throw newRxError('DB3', {
                 name: args.name
             });
@@ -253,13 +252,13 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
         // check schemaHash
         const schemaHash = schema.hash;
 
-        let colDoc;
-        let col;
+        let colDoc: any;
+        let col: any;
         return this.lockedRun(
-            () => this._collectionsPouch.get(internalPrimary)
+            () => (this._collectionsPouch as any).get(internalPrimary)
         )
             .catch(() => null)
-            .then(collectionDoc => {
+            .then((collectionDoc: any) => {
                 colDoc = collectionDoc;
 
                 if (collectionDoc && collectionDoc.schemaHash !== schemaHash) {
@@ -284,7 +283,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 } else return collectionDoc;
             })
             .then(() => createRxCollection(args as any))
-            .then(collection => {
+            .then((collection: any) => {
                 col = collection;
                 if (
                     Object.keys(collection.schema.encryptedPaths).length > 0 &&
@@ -297,7 +296,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
                 if (!colDoc) {
                     return this.lockedRun(
-                        () => this._collectionsPouch.put({
+                        () => (this._collectionsPouch as any).put({
                             _id: internalPrimary,
                             schemaHash,
                             schema: collection.schema.normalized,
@@ -315,11 +314,11 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
                 cEvent.data.v = col.name;
                 cEvent.data.col = '_collections';
 
-                this.collections[args.name] = col;
+                (this.collections as any)[args.name] = col;
 
-                if (!this[args.name]) {
+                if (!(this as any)[args.name]) {
                     Object.defineProperty(this, args.name, {
-                        get: () => this.collections[args.name]
+                        get: () => (this.collections as any)[args.name]
                     });
                 }
 
@@ -333,8 +332,8 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
      * delete all data of the collection and its previous versions
      */
     removeCollection(collectionName: string): Promise<string[]> {
-        if (this.collections[collectionName])
-            this.collections[collectionName].destroy();
+        if ((this.collections as any)[collectionName])
+            (this.collections as any)[collectionName].destroy();
 
         // remove schemas from internal db
         return _removeAllOfCollection(this as any, collectionName)
@@ -353,7 +352,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     /**
      * runs the given function between idleQueue-locking
      */
-    lockedRun(fun): any {
+    lockedRun(fun: any): any {
         return this.idleQueue.wrapCall(fun);
     }
 
@@ -400,7 +399,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
              * to ensure that all pending change-events
              * get emitted
              */
-            setTimeout(() => this.broadcastChannel.close(), 1000);
+            setTimeout(() => (this.broadcastChannel as any).close(), 1000);
         }
 
         if (this._leaderElector)
@@ -410,7 +409,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 
         // destroy all collections
         return Promise.all(Object.keys(this.collections)
-            .map(key => this.collections[key])
+            .map(key => (this.collections as any)[key])
             .map(col => col.destroy())
         )
             // remove combination from USED_COMBINATIONS-map
@@ -432,7 +431,7 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
 /**
  * returns all possible properties of a RxDatabase-instance
  */
-let _properties = null;
+let _properties: any = null;
 export function properties(): string[] {
     if (!_properties) {
         const pseudoInstance: RxDatabaseBase = new (RxDatabaseBase as any)();
@@ -470,7 +469,7 @@ function _isNameAdapterUsed(
     }
 }
 
-function _removeUsedCombination(name, adapter) {
+function _removeUsedCombination(name: string, adapter: any) {
     if (!USED_COMBINATIONS[name])
         return;
 
@@ -489,9 +488,9 @@ export function _preparePasswordHash(
 
     const pwHash = hash(rxDatabase.password);
 
-    return rxDatabase._adminPouch.get('_local/pwHash')
+    return (rxDatabase._adminPouch as any).get('_local/pwHash')
         .catch(() => null)
-        .then(pwHashDoc => {
+        .then((pwHashDoc: any) => {
 
             /**
              * if pwHash was not saved, we save it,
@@ -499,7 +498,7 @@ export function _preparePasswordHash(
              * also we do not await the output because it does not mather
              */
             if (!pwHashDoc) {
-                rxDatabase._adminPouch.put({
+                (rxDatabase._adminPouch as any).put({
                     _id: '_local/pwHash',
                     value: pwHash
                 }).catch(() => null);
@@ -525,18 +524,18 @@ export function _preparePasswordHash(
  * we set a storage-token and use it in the broadcast-channel
  */
 export function _ensureStorageTokenExists(rxDatabase: RxDatabase): Promise<string> {
-    return rxDatabase._adminPouch.get('_local/storageToken')
+    return (rxDatabase._adminPouch as any).get('_local/storageToken')
         .catch(() => {
             // no doc exists -> insert
-            return rxDatabase._adminPouch.put({
+            return (rxDatabase._adminPouch as any).put({
                 _id: '_local/storageToken',
                 value: randomToken(10)
             })
                 .catch(() => { })
                 .then(() => promiseWait(0));
         })
-        .then(() => rxDatabase._adminPouch.get('_local/storageToken'))
-        .then(storageTokenDoc2 => storageTokenDoc2.value);
+        .then(() => (rxDatabase._adminPouch as any).get('_local/storageToken'))
+        .then((storageTokenDoc2: any) => storageTokenDoc2.value);
 }
 
 /**
@@ -584,22 +583,22 @@ export function _removeAllOfCollection(
 ): Promise<number[]> {
 
     return rxDatabase.lockedRun(
-        () => rxDatabase._collectionsPouch.allDocs({
+        () => (rxDatabase._collectionsPouch as any).allDocs({
             include_docs: true
         })
-    ).then(data => {
+    ).then((data: any) => {
         const relevantDocs = data.rows
-            .map(row => row.doc)
-            .filter(doc => {
+            .map((row: any) => row.doc)
+            .filter((doc: any) => {
                 const name = doc._id.split('-')[0];
                 return name === collectionName;
             });
         return Promise.all(
             relevantDocs
-                .map(doc => rxDatabase.lockedRun(
-                    () => rxDatabase._collectionsPouch.remove(doc)
+                .map((doc: any) => rxDatabase.lockedRun(
+                    () => (rxDatabase._collectionsPouch as any).remove(doc)
                 ))
-        ).then(() => relevantDocs.map(doc => doc.version));
+        ).then(() => relevantDocs.map((doc: any) => doc.version));
     });
 }
 
@@ -615,7 +614,7 @@ function _prepareBroadcastChannel(rxDatabase: RxDatabase) {
         if (msg.st !== rxDatabase.storageToken) return; // not same storage-state
         if (msg.db === rxDatabase.token) return; // same db
         const changeEvent = changeEventfromJSON(msg.d);
-        rxDatabase.broadcastChannel$.next(changeEvent);
+        (rxDatabase.broadcastChannel$ as any).next(changeEvent);
     };
 
 
@@ -805,8 +804,8 @@ export function removeDatabase(
         // remove collections
         .then(collectionsData => Promise.all(
             collectionsData.rows
-                .map(colDoc => colDoc.id)
-                .map(id => {
+                .map((colDoc: any) => colDoc.id)
+                .map((id: string) => {
                     const split = id.split('-');
                     const name = split[0];
                     const version = parseInt(split[1], 10);

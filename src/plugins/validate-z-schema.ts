@@ -10,6 +10,9 @@ import {
 import {
     requestIdleCallbackIfAvailable
 } from '../util';
+import {
+    RxSchema
+} from '../rx-schema';
 
 /**
  * cache the validators by the schema-hash
@@ -23,7 +26,9 @@ const validatorsCache: { [k: string]: any } = {};
  * @param schemaPath if given, the schema for the sub-path is used
  * @
  */
-function _getValidator(rxSchema, schemaPath: string = '') {
+function _getValidator(
+    rxSchema: RxSchema,
+    schemaPath: string = '') {
     const hash = rxSchema.hash;
     if (!validatorsCache[hash]) validatorsCache[hash] = {};
     const validatorsOfHash = validatorsCache[hash];
@@ -38,7 +43,7 @@ function _getValidator(rxSchema, schemaPath: string = '') {
         }
 
         const validator = new (ZSchema as any)();
-        validatorsOfHash[schemaPath] = (obj) => {
+        validatorsOfHash[schemaPath] = (obj: any) => {
             validator.validate(obj, schemaPart);
             return validator;
         };
@@ -53,6 +58,7 @@ function _getValidator(rxSchema, schemaPath: string = '') {
  * @throws {RxError} if not valid
  */
 const validate = function (
+    this: RxSchema,
     obj: any,
     schemaPath: string = ''
 ): any {
@@ -61,7 +67,11 @@ const validate = function (
     const errors: ZSchema.SchemaErrorDetail[] = useValidator.getLastErrors();
     if (!errors) return obj;
     else {
-        const formattedZSchemaErrors = (errors as any).map(({ title, description, message }) => ({
+        const formattedZSchemaErrors = (errors as any).map(({
+            title,
+            description,
+            message
+        }: any) => ({
             title,
             description,
             message
@@ -75,7 +85,7 @@ const validate = function (
     }
 };
 
-const runAfterSchemaCreated = rxSchema => {
+const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     // pre-generate the validator-z-schema from the schema
     requestIdleCallbackIfAvailable(() => _getValidator.bind(rxSchema, rxSchema));
 };
@@ -85,7 +95,7 @@ export const prototypes = {
     /**
      * set validate-function for the RxSchema.prototype
      */
-    RxSchema: (proto) => {
+    RxSchema: (proto: any) => {
         proto._getValidator = _getValidator;
         proto.validate = validate;
     }

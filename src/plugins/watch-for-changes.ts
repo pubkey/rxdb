@@ -21,7 +21,7 @@ import {
  * listens to changes of the internal pouchdb
  * and ensures they are emitted to the internal RxChangeEvent-Stream
  */
-export function watchForChanges() {
+export function watchForChanges(this: RxCollection) {
     // do not call twice on same collection
     if (this.synced) return;
     this.synced = true;
@@ -41,7 +41,7 @@ export function watchForChanges() {
             }),
             'change'
         ).pipe(
-            map(ar => ar[0]), // rxjs6.x fires an array for whatever reason
+            map((ar: any) => ar[0]), // rxjs6.x fires an array for whatever reason
         ).subscribe(change => {
             const resPromise = _handleSingleChange(this, change);
 
@@ -71,7 +71,7 @@ function _handleSingleChange(
         .then(() => {
             const docData = change.doc;
             // already handled by internal event-stream
-            if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) {
+            if ((collection._changeEventBuffer as any).hasChangeWithRevision(docData._rev)) {
                 return false;
             }
 
@@ -84,7 +84,7 @@ function _handleSingleChange(
 
 export const rxdb = true;
 export const prototypes = {
-    RxCollection: (proto) => {
+    RxCollection: (proto: any) => {
         proto.watchForChanges = watchForChanges;
     }
 };

@@ -11,8 +11,11 @@ import {
 import {
     newRxError
 } from '../rx-error';
+import {
+    RxDocument
+} from '../types';
 
-function ensureSchemaSupportsAttachments(doc) {
+function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonID;
     if (!schemaJson.attachments) {
         throw newRxError('AT1', {
@@ -21,8 +24,8 @@ function ensureSchemaSupportsAttachments(doc) {
     }
 }
 
-function resyncRxDocument(doc) {
-    return doc.collection.pouch.get(doc.primary).then(docData => {
+function resyncRxDocument(doc: any) {
+    return doc.collection.pouch.get(doc.primary).then((docData: any) => {
         const data = doc.collection._handleFromPouch(docData);
         const changeEvent = createChangeEvent(
             'UPDATE',
@@ -41,7 +44,7 @@ export const blobBufferUtil = {
      * we have to use Buffer(node) or Blob(browser)
      */
     createBlobBuffer(data: string, type: string): Buffer {
-        let blobBuffer;
+        let blobBuffer: any;
 
         if (isElectronRenderer) {
             // if we are inside of electron-renderer, always use the node-buffer
@@ -63,7 +66,7 @@ export const blobBufferUtil = {
         }
         return blobBuffer;
     },
-    toString(blobBuffer) {
+    toString(blobBuffer: any) {
         if (blobBuffer instanceof Buffer) {
             // node
             return nextTick()
@@ -94,7 +97,7 @@ export const blobBufferUtil = {
 };
 
 
-const _assignMethodsToAttachment = function (attachment) {
+const _assignMethodsToAttachment = function (attachment: any) {
     Object
         .entries(attachment.doc.collection.attachments)
         .forEach(([funName, fun]) => {
@@ -109,7 +112,7 @@ const _assignMethodsToAttachment = function (attachment) {
  * wrapped so that you can access the attachment-data
  */
 export class RxAttachment {
-    public doc;
+    public doc: any;
     public id: string;
     public type: string;
     public length: number;
@@ -122,7 +125,7 @@ export class RxAttachment {
         length,
         digest,
         rev
-    }) {
+    }: any) {
         this.doc = doc;
         this.id = id;
         this.type = type;
@@ -146,7 +149,7 @@ export class RxAttachment {
      */
     getData(): Promise<Buffer | Blob> {
         return this.doc.collection.pouch.getAttachment(this.doc.primary, this.id)
-            .then(data => {
+            .then((data: any) => {
                 if (shouldEncrypt(this.doc)) {
                     return blobBufferUtil.toString(data)
                         .then(dataString => blobBufferUtil.createBlobBuffer(
@@ -162,7 +165,11 @@ export class RxAttachment {
     }
 }
 
-export function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
+export function fromPouchDocument(
+    id: string,
+    pouchDocAttachment: any,
+    rxDocument: RxDocument
+) {
     return new RxAttachment({
         doc: rxDocument,
         id,
@@ -173,19 +180,21 @@ export function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
     });
 }
 
-function shouldEncrypt(doc) {
+function shouldEncrypt(doc: any) {
     return !!doc.collection.schema.jsonID.attachments.encrypted;
 }
 
-export function putAttachment({
-    id,
-    data,
-    type = 'text/plain'
-}): Promise<any> {
+export function putAttachment(
+    this: RxDocument,
+    {
+        id,
+        data,
+        type = 'text/plain'
+    }: any): Promise<any> {
     ensureSchemaSupportsAttachments(this);
 
     if (shouldEncrypt(this))
-        data = this.collection._crypter._encryptValue(data);
+        data = (this.collection._crypter as any)._encryptValue(data);
 
     const blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
 
@@ -217,9 +226,12 @@ export function putAttachment({
 /**
  * get an attachment of the document by its id
  */
-export function getAttachment(id: string): RxAttachment {
+export function getAttachment(
+    this: RxDocument,
+    id: string
+): RxAttachment | null {
     ensureSchemaSupportsAttachments(this);
-    const docData = this._dataSync$.getValue();
+    const docData: any = this._dataSync$.getValue();
     if (!docData._attachments || !docData._attachments[id])
         return null;
 
@@ -235,9 +247,11 @@ export function getAttachment(id: string): RxAttachment {
 /**
  * returns all attachments of the document
  */
-export function allAttachments(): RxAttachment[] {
+export function allAttachments(
+    this: RxDocument
+): RxAttachment[] {
     ensureSchemaSupportsAttachments(this);
-    const docData = this._dataSync$.getValue();
+    const docData: any = this._dataSync$.getValue();
 
     // if there are no attachments, the field is missing
     if (!docData._attachments) return [];
@@ -252,12 +266,12 @@ export function allAttachments(): RxAttachment[] {
         });
 }
 
-export function preMigrateDocument(action) {
+export function preMigrateDocument(action: any) {
     delete action.migrated._attachments;
     return action;
 }
 
-export function postMigrateDocument(action): Promise<any> {
+export function postMigrateDocument(action: any): Promise<any> {
     const primaryPath = action.oldCollection.schema.primaryPath;
 
     const attachments = action.doc._attachments;
@@ -285,7 +299,7 @@ export function postMigrateDocument(action): Promise<any> {
 
 export const rxdb = true;
 export const prototypes = {
-    RxDocument: proto => {
+    RxDocument: (proto: any) => {
         proto.putAttachment = putAttachment;
         proto.getAttachment = getAttachment;
         proto.allAttachments = allAttachments;
@@ -293,15 +307,17 @@ export const prototypes = {
             get: function allAttachments$() {
                 return this._dataSync$
                     .pipe(
-                        map(data => {
+                        map((data: any) => {
                             if (!data['_attachments'])
                                 return {};
                             return data['_attachments'];
                         }),
-                        map(attachmentsData => Object.entries(attachmentsData)),
+                        map((attachmentsData: any) => Object.entries(
+                            attachmentsData
+                        )),
                         map(entries => {
                             return (entries as any)
-                                .map(([id, attachmentData]) => {
+                                .map(([id, attachmentData]: any) => {
                                     return fromPouchDocument(
                                         id,
                                         attachmentData,

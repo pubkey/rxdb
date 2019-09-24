@@ -8,13 +8,16 @@ import {
 export const PLUGIN_IDENT = 'rxdbreplicationgraphql';
 
 // does nothing
-export const DEFAULT_MODIFIER = d => d;
+export const DEFAULT_MODIFIER = (d: any) => d;
 
 /**
  * pouchdb will throw if a document is not found
  * this instead return null
  */
-export function getDocFromPouchOrNull(collection, id) {
+export function getDocFromPouchOrNull(
+    collection: RxCollection,
+    id: string
+) {
     return collection.pouch.get(id, {
         open_revs: true
     })
@@ -51,8 +54,8 @@ export async function getDocsWithRevisionsFromPouch(
     // console.log(JSON.stringify(allDocs, null, 2));
 
     const docsSearch = allDocs.rows
-        .filter(row => !row.error)
-        .map(row => {
+        .filter((row: any) => !row.error)
+        .map((row: any) => {
             return {
                 id: row.id,
                 rev: row.value.rev
@@ -68,8 +71,8 @@ export async function getDocsWithRevisionsFromPouch(
     // console.log('bulkGetDocs:');
     // console.log(JSON.stringify(bulkGetDocs, null, 2));
 
-    const ret = {};
-    bulkGetDocs.results.forEach(result => {
+    const ret: any = {};
+    bulkGetDocs.results.forEach((result: any) => {
         const doc = result.docs[0].ok;
         const data = {
             revisions: doc._revisions,
@@ -83,8 +86,8 @@ export async function getDocsWithRevisionsFromPouch(
 }
 
 export function createRevisionForPulledDocument(
-    endpointHash,
-    doc
+    endpointHash: string,
+    doc: any
 ) {
     const dataHash = hash(doc);
 
@@ -97,8 +100,8 @@ export function createRevisionForPulledDocument(
 }
 
 export function wasRevisionfromPullReplication(
-    endpointHash,
-    revision
+    endpointHash: string,
+    revision: string
 ) {
     const ending = endpointHash.substring(0, 8) + PLUGIN_IDENT;
     const ret = revision.endsWith(ending);
