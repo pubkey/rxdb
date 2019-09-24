@@ -34,16 +34,16 @@ config.parallel('plugin.test.js', () => {
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout = [];
-            const stderr = [];
+            const stdout: any[] = [];
+            const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/core.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => {
+            childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
                 //                console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
-            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
             try {
                 await promise;
             } catch (err) {
@@ -63,12 +63,12 @@ config.parallel('plugin.test.js', () => {
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout = [];
-            const stderr = [];
+            const stdout: any[] = [];
+            const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => stdout.push(data.toString()));
-            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
             try {
                 await promise;
             } catch (err) {
@@ -88,16 +88,16 @@ config.parallel('plugin.test.js', () => {
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout = [];
-            const stderr = [];
+            const stdout: any[] = [];
+            const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/in-memory.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => {
+            childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
                 // console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
-            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
             try {
                 await promise;
             } catch (err) {
@@ -117,16 +117,16 @@ config.parallel('plugin.test.js', () => {
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout = [];
-            const stderr = [];
+            const stdout: any[] = [];
+            const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/ajv-validate.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => {
+            childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
                 // console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
-            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
             try {
                 await promise;
             } catch (err) {
@@ -146,16 +146,16 @@ config.parallel('plugin.test.js', () => {
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout = [];
-            const stderr = [];
+            const stdout: any[] = [];
+            const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/validate-z-schema.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => {
+            childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
                 // console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
-            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
             try {
                 await promise;
             } catch (err) {
@@ -175,16 +175,16 @@ config.parallel('plugin.test.js', () => {
                 return;
 
             const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout = [];
-            const stderr = [];
+            const stdout: any[] = [];
+            const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/no-validate.node.js']);
             const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', data => {
+            childProcess.stdout.on('data', (data: any) => {
                 // comment in to debug
                 // console.log(':: ' + data.toString());
                 stdout.push(data.toString());
             });
-            childProcess.stderr.on('data', data => stderr.push(data.toString()));
+            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
             try {
                 await promise;
             } catch (err) {
@@ -201,7 +201,7 @@ config.parallel('plugin.test.js', () => {
     describe('hooks', () => {
         it('createRxDatabase', async () => {
 
-            const createRxDatabase = (db) => {
+            const createRxDatabase = (db: any) => {
                 db.foo = 'bar_createRxDatabase';
             };
             const plugin = {
@@ -218,7 +218,7 @@ config.parallel('plugin.test.js', () => {
             clearHook('createRxDatabase', createRxDatabase);
         });
         it('createRxCollection', async () => {
-            const createRxCollection = (c) => {
+            const createRxCollection = (c: any) => {
                 c.foo = 'bar_createRxCollection';
             };
             const plugin = {
@@ -234,7 +234,7 @@ config.parallel('plugin.test.js', () => {
             clearHook('createRxCollection', createRxCollection);
         });
         it('createRxSchema', async () => {
-            const createRxSchema = (c) => {
+            const createRxSchema = (c: any) => {
                 c.foo = 'bar_createRxSchema';
             };
             const plugin = {
@@ -244,13 +244,13 @@ config.parallel('plugin.test.js', () => {
                 }
             };
             RxDB.plugin(plugin);
-            const col = await humansCollection.create();
+            const col: any = await humansCollection.create();
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
             col.database.destroy();
             clearHook('createRxSchema', createRxSchema);
         });
         it('createRxQuery', async () => {
-            const createRxQuery = (c) => {
+            const createRxQuery = (c: any) => {
                 c.foo = 'bar_createRxQuery';
             };
             const plugin = {
@@ -261,13 +261,13 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create();
-            const query = col.find();
+            const query: any = col.find();
             assert.strictEqual(query['foo'], 'bar_createRxQuery');
             col.database.destroy();
             clearHook('createRxQuery', createRxQuery);
         });
         it('createRxDocument', async () => {
-            const createRxDocument = (c) => {
+            const createRxDocument = (c: any) => {
                 c.foo = 'bar_createRxDocument';
             };
             const plugin = {
@@ -284,7 +284,7 @@ config.parallel('plugin.test.js', () => {
             clearHook('createRxDocument', createRxDocument);
         });
         it('postCreateRxDocument', async () => {
-            const postCreateRxDocument = (c) => {
+            const postCreateRxDocument = (c: any) => {
                 c.fooPostCreate = 'bar_postCreateRxDocument';
             };
             const plugin = {
@@ -302,7 +302,7 @@ config.parallel('plugin.test.js', () => {
         });
         it('preCreatePouchDb', async () => {
             const collectionName = util.randomCouchString(10);
-            const preCreatePouchDb = pouchDbParameters => {
+            const preCreatePouchDb = (pouchDbParameters: any) => {
                 if (pouchDbParameters.location.includes(collectionName)) {
                     // only do sth at this specific collection-pouch
                     pouchDbParameters.location = pouchDbParameters.location + 'foobar';

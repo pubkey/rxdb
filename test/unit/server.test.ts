@@ -76,7 +76,7 @@ config.parallel('server.test.js', () => {
             }, (error, response) => {
                 if (error) rej(error);
 
-                const responseHeaders = Object.keys(response.headers).reduce((acc, header) => ({
+                const responseHeaders: any = Object.keys(response.headers).reduce((acc, header) => ({
                     ...acc,
                     [header.toLowerCase()]: response.headers[header]
                 }), {});
@@ -121,7 +121,7 @@ config.parallel('server.test.js', () => {
             }, (error, response) => {
                 if (error) rej(error);
 
-                const responseHeaders = Object.keys(response.headers).reduce((acc, header) => ({
+                const responseHeaders: any = Object.keys(response.headers).reduce((acc, header) => ({
                     ...acc,
                     [header.toLowerCase()]: response.headers[header]
                 }), {});

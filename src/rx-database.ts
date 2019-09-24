@@ -118,9 +118,9 @@ export class RxDatabaseBase<Collections = CollectionsOfDatabase> {
     public broadcastChannel?: BroadcastChannel;
     public storageToken?: string;
     public broadcastChannel$?: Subject<RxChangeEvent>;
-    public _adminPouch?: PouchDBInstance;
+    public _adminPouch: PouchDBInstance = {} as PouchDBInstance;
 
-    public _collectionsPouch?: PouchDBInstance;
+    public _collectionsPouch: PouchDBInstance = {} as PouchDBInstance;
 
     private _leaderElector?: any;
     /**

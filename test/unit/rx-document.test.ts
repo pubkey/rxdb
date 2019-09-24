@@ -631,10 +631,10 @@ config.parallel('rx-document.test.js', () => {
                 const c = await humansCollection.create(1);
                 const doc = await c.findOne().exec();
                 const obs = doc.firstName$;
-                assert.strictEqual(obs.constructor.name, 'Observable');
+                assert.ok(obs.subscribe);
 
                 let value = null;
-                obs.subscribe(newVal => {
+                obs.subscribe((newVal: any) => {
                     value = newVal;
                 });
 
@@ -645,7 +645,7 @@ config.parallel('rx-document.test.js', () => {
 
                 // resubscribe should emit again
                 let value2 = null;
-                obs.subscribe(newVal => {
+                obs.subscribe((newVal: any) => {
                     value2 = newVal;
                 });
                 await util.promiseWait(5);
@@ -656,10 +656,10 @@ config.parallel('rx-document.test.js', () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec();
                 const obs = doc.mainSkill.level$;
-                assert.strictEqual(obs.constructor.name, 'Observable');
+                assert.ok(obs.subscribe);
 
                 let value = null;
-                doc.mainSkill.level$.subscribe(newVal => {
+                doc.mainSkill.level$.subscribe((newVal: any) => {
                     value = newVal;
                 });
 
@@ -672,10 +672,10 @@ config.parallel('rx-document.test.js', () => {
                 const c = await humansCollection.createDeepNested(1);
                 const doc = await c.findOne().exec();
                 const obs = doc.mainSkill.attack.good$;
-                assert.strictEqual(obs.constructor.name, 'Observable');
+                assert.ok(obs.subscribe);
 
                 let value = null;
-                doc.mainSkill.attack.good$.subscribe(newVal => {
+                doc.mainSkill.attack.good$.subscribe((newVal: any) => {
                     value = newVal;
                 });
                 await doc.atomicSet('mainSkill.attack.good', true);

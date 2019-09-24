@@ -374,7 +374,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'humanfinal',
                         schema: schemas.humanFinal
                     });
-                    const human = schemaObjects.human();
+                    const human: any = schemaObjects.human();
                     human['_id'] = util.randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
@@ -407,7 +407,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: schemas.human
                     });
-                    const human = schemaObjects.human();
+                    const human: any = schemaObjects.human();
                     human['any'] = util.randomCouchString(20);
                     await AsyncTestUtil.assertThrows(
                         () => collection.insert(human),
@@ -542,7 +542,7 @@ config.parallel('rx-collection.test.js', () => {
                         docs = util.shuffleArray(docs);
                         const last = docs.pop();
                         const passportId = last._data.passportId;
-                        let doc = await c.find({
+                        let doc: any = await c.find({
                             passportId
                         }).exec();
                         assert.strictEqual(doc.length, 1);
@@ -564,7 +564,7 @@ config.parallel('rx-collection.test.js', () => {
                         docs = util.shuffleArray(docs);
                         const last = docs.pop();
                         const passportId = last._data.passportId;
-                        let doc = await c.find({
+                        let doc: any = await c.find({
                             passportId: {
                                 $eq: passportId
                             }
@@ -685,7 +685,7 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await query.exec();
 
                         let lastAge = 0;
-                        docs.forEach(doc => {
+                        docs.forEach((doc: any) => {
                             assert.ok(doc.other.age >= lastAge);
                             lastAge = doc.other.age;
                         });
@@ -719,7 +719,7 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await query.exec();
 
                         let lastAge = 0;
-                        docs.forEach(doc => {
+                        docs.forEach((doc: any) => {
                             assert.ok(doc.other.age >= lastAge);
                             lastAge = doc.other.age;
                         });
@@ -804,11 +804,11 @@ config.parallel('rx-collection.test.js', () => {
                         const docs = await c.find().sort({
                             passportId: 1
                         }).exec();
-                        let first = await c.find().sort({
+                        let first: any = await c.find().sort({
                             passportId: 1
                         }).limit(1).exec();
                         first = first[0];
-                        let last = await c.find().sort({
+                        let last: any = await c.find().sort({
                             passportId: -1
                         }).limit(1).exec();
                         last = last[0];
@@ -1211,7 +1211,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: schemas.primaryHuman
                     });
-                    const obj = schemaObjects.simpleHuman();
+                    const obj: any = schemaObjects.simpleHuman();
                     obj.firstName = 'foobar';
                     obj['foo'] = 'bar';
                     await AsyncTestUtil.assertThrows(
@@ -1294,7 +1294,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('should process in the given order', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
-                    const order = [];
+                    const order: any[] = [];
                     await Promise.all([
                         c.atomicUpsert(docData).then(() => order.push(0)),
                         c.atomicUpsert(docData).then(() => order.push(1)),
@@ -1424,7 +1424,7 @@ config.parallel('rx-collection.test.js', () => {
                         name: 'human',
                         schema: otherSchema,
                         migrationStrategies: {
-                            1: function (doc) {
+                            1: function (doc: any) {
                                 return doc;
                             }
                         }
@@ -1558,14 +1558,14 @@ config.parallel('rx-collection.test.js', () => {
             });
 
             // test with auto_compaction
-            const collection = await db.collection({
+            const collection: any = await db.collection({
                 name: 'human_compact',
                 schema: schemas.primaryHuman,
                 pouchSettings: {
                     auto_compaction: true
                 }
             });
-            assert.ok(collection.pouch['auto_compaction']);
+            assert.ok(collection.pouch.auto_compaction);
             db.destroy();
         });
         it('#939 creating a collection mutates the given parameters-object', async () => {

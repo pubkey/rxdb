@@ -506,26 +506,26 @@ config.parallel('rx-schema.test.js', () => {
             describe('positive', () => {
                 it('validate one human', () => {
                     const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj: any = schemaObjects.human();
                     obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate one point', () => {
                     const schema = createRxSchema(schemas.point);
-                    const obj = schemaObjects.point();
+                    const obj: any = schemaObjects.point();
                     obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
                 it('validate without non-required', () => {
                     const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj: any = schemaObjects.human();
                     obj['_id'] = util.generateId();
                     delete obj.age;
                     schema.validate(obj);
                 });
                 it('validate nested', () => {
                     const schema = createRxSchema(schemas.nestedHuman);
-                    const obj = schemaObjects.nestedHuman();
+                    const obj: any = schemaObjects.nestedHuman();
                     obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
@@ -533,28 +533,28 @@ config.parallel('rx-schema.test.js', () => {
             describe('negative', () => {
                 it('required field not given', () => {
                     const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj: any = schemaObjects.human();
                     obj['_id'] = util.generateId();
                     delete obj.lastName;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overflow maximum int', () => {
                     const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj: any = schemaObjects.human();
                     obj['_id'] = util.generateId();
                     obj.age = 1000;
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('overadditional property', () => {
                     const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj: any = schemaObjects.human();
                     obj['_id'] = util.generateId();
                     obj['token'] = util.randomCouchString(5);
                     assert.throws(() => schema.validate(obj), Error);
                 });
                 it('::after', () => {
                     const schema = createRxSchema(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj: any = schemaObjects.human();
                     obj['_id'] = util.generateId();
                     schema.validate(obj);
                 });
@@ -572,7 +572,7 @@ config.parallel('rx-schema.test.js', () => {
                     assert.ok(hasThrown);
                 });
                 it('should respect nested additionalProperties: false', () => {
-                    const jsonSchema = clone(schemas.heroArray);
+                    const jsonSchema: any = clone(schemas.heroArray);
                     jsonSchema.properties.skills.items['additionalProperties'] = false;
                     const schema = createRxSchema(jsonSchema);
                     const obj = {

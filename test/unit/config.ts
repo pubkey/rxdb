@@ -1,3 +1,4 @@
+import 'mocha';
 const {
     detect
 } = require('detect-browser');

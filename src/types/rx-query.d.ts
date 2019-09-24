@@ -55,8 +55,8 @@ export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentTyp
     exists(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     sort(params: any): RxQuery<RxDocumentType, RxQueryResult>;
-    limit(amount: number): RxQuery<RxDocumentType, RxQueryResult>;
-    skip(amount: number): RxQuery<RxDocumentType, RxQueryResult>;
+    limit(amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
+    skip(amount: number | null): RxQuery<RxDocumentType, RxQueryResult>;
 
     // TODO fix attribute-types of this function
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult>;

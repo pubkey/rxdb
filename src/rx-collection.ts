@@ -166,10 +166,10 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         RxDocument<RxDocumentType, OrmMethods>
     > = createDocCache();
     public _queryCache: QueryCache = createQueryCache();
-    public _dataMigrator?: DataMigrator;
-    public _crypter?: CrypterClass;
+    public _dataMigrator: DataMigrator = {} as DataMigrator;
+    public _crypter: CrypterClass = {} as CrypterClass;
     public _observable$?: Observable<any>; // TODO type
-    public _changeEventBuffer?: ChangeEventBuffer;
+    public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
     // other
     public _keyCompressor?: any;

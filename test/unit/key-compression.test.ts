@@ -119,7 +119,7 @@ config.parallel('key-compression.test.js', () => {
 
             Object.keys(table).forEach(key => {
                 const val = table[key];
-                const field = key.split('.').pop();
+                const field: any = key.split('.').pop();
                 assert.ok(reverse[val].includes(field));
             });
         });
@@ -138,20 +138,20 @@ config.parallel('key-compression.test.js', () => {
     describe('.compress()', () => {
         it('normal', () => {
             const k = createKeyCompressor(createRxSchema(schemas.human));
-            const human = schemaObjects.human();
+            const human: any = schemaObjects.human();
             const compressed = k.compress(human);
 
             const values = Object.keys(compressed)
                 .map(key => compressed[key]);
 
             Object.keys(human).forEach(key => {
-                const value = human[key];
+                const value: any = human[key];
                 assert.ok(values.includes(value));
             });
         });
         it('primary', () => {
             const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
-            const human = schemaObjects.human();
+            const human: any = schemaObjects.human();
             const compressed = k.compress(human);
 
             const values = Object.keys(compressed)
@@ -164,7 +164,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('should not compress _rev', () => {
             const k = createKeyCompressor(createRxSchema(schemas.primaryHuman));
-            const human = schemaObjects.human();
+            const human: any = schemaObjects.human();
             human['_rev'] = 'foobar';
             const compressed = k.compress(human);
             assert.strictEqual(human['_rev'], 'foobar');
@@ -172,7 +172,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('nested', () => {
             const k = createKeyCompressor(createRxSchema(schemas.nestedHuman));
-            const human = schemaObjects.nestedHuman();
+            const human: any = schemaObjects.nestedHuman();
             const compressed = k.compress(human);
 
             const values = Object.keys(compressed)
@@ -200,7 +200,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('deep nested', () => {
             const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
-            const human = schemaObjects.deepNestedHuman();
+            const human: any = schemaObjects.deepNestedHuman();
             const compressed = k.compress(human);
 
             const json = JSON.stringify(compressed);
@@ -212,7 +212,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('additional value', () => {
             const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
-            const human = schemaObjects.deepNestedHuman();
+            const human: any = schemaObjects.deepNestedHuman();
             const additionalValue = {
                 foo: 'bar'
             };
@@ -231,7 +231,7 @@ config.parallel('key-compression.test.js', () => {
 
         it('schema with array', () => {
             const k = createKeyCompressor(createRxSchema(schemas.heroArray));
-            const human = schemaObjects.heroArray();
+            const human: any = schemaObjects.heroArray();
             const compressed = k.compress(human);
             const json = JSON.stringify(compressed);
             Object.keys(human).forEach(key => {
@@ -241,7 +241,7 @@ config.parallel('key-compression.test.js', () => {
             });
 
             // array elements
-            human.skills.forEach(skill => {
+            human.skills.forEach((skill: any) => {
                 assert.ok(json.includes(skill.name));
                 assert.ok(json.includes(skill.damage + ''));
             });
@@ -274,7 +274,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('additional value', () => {
             const k = createKeyCompressor(createRxSchema(schemas.deepNestedHuman));
-            const human = schemaObjects.deepNestedHuman();
+            const human: any = schemaObjects.deepNestedHuman();
             const additionalValue = {
                 foo: 'bar'
             };
@@ -311,7 +311,7 @@ config.parallel('key-compression.test.js', () => {
     describe('RxQuery().keyCompress()', () => {
         it('transform basic search keys', async () => {
             const c = await humansCollection.create(0);
-            const query = c.find()
+            const query: any = c.find()
                 .where('firstName').eq('myFirstName')
                 .keyCompress();
             const jsonString = JSON.stringify(query);
@@ -323,7 +323,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('primary', async () => {
             const c = await humansCollection.createPrimary(0);
-            const query = c.find()
+            const query: any = c.find()
                 .where('passportId').eq('myPassportId')
                 .keyCompress();
             const jsonString = JSON.stringify(query);
@@ -334,7 +334,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('nested', async () => {
             const c = await humansCollection.createNested(0);
-            const query = c.find()
+            const query: any = c.find()
                 .where('mainSkill.level').eq(5)
                 .keyCompress();
 
@@ -351,7 +351,7 @@ config.parallel('key-compression.test.js', () => {
 
         it('additional attribute', async () => {
             const c = await humansCollection.create(0);
-            const query = c.find()
+            const query: any = c.find()
                 .where('foobar').eq(5)
                 .keyCompress();
 
@@ -360,7 +360,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('additional nested attribute', async () => {
             const c = await humansCollection.createNested(0);
-            const query = c.find()
+            const query: any = c.find()
                 .where('mainSkill.foobar').eq(5)
                 .keyCompress();
 
@@ -373,7 +373,7 @@ config.parallel('key-compression.test.js', () => {
         });
         it('additional deep nested attribute', async () => {
             const c = await humansCollection.createDeepNested(0);
-            const query = c.find()
+            const query: any = c.find()
                 .where('mainSkill.attack.foobar').eq(5)
                 .keyCompress();
 
@@ -387,14 +387,14 @@ config.parallel('key-compression.test.js', () => {
         });
         it('.sort()', async () => {
             const c = await humansCollection.createDeepNested(0);
-            const query = c.find().sort('mainSkill');
+            const query: any = c.find().sort('mainSkill');
             const compressed = query.keyCompress();
             assert.strictEqual(compressed.sort[0][c._keyCompressor.table['mainSkill']], 'asc');
             c.database.destroy();
         });
         it('.sort() nested', async () => {
             const c = await humansCollection.createNested(0);
-            const query = c.find()
+            const query: any = c.find()
                 .sort('mainSkill.level')
                 .keyCompress();
 

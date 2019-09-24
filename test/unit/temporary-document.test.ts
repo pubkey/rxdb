@@ -87,7 +87,7 @@ config.parallel('temporary-document.test.js', () => {
         describe('negative', () => {
             it('throw if schema missmatch', async () => {
                 const c = await humansCollection.create(0);
-                const docData = schemaObjects.human();
+                const docData: any = schemaObjects.human();
                 docData['foo'] = 'bar';
                 const newDoc = c.newDocument(docData);
                 await AsyncTestUtil.assertThrows(
@@ -124,8 +124,8 @@ config.parallel('temporary-document.test.js', () => {
             const c = await humansCollection.create(0);
             const newDoc = c.newDocument(schemaObjects.human());
             await newDoc.save();
-            const emitted = [];
-            const sub = newDoc.firstName$.subscribe(val => emitted.push(val));
+            const emitted: any[] = [];
+            const sub = newDoc.firstName$.subscribe((val: any) => emitted.push(val));
 
             await newDoc.atomicSet('firstName', 'foobar1');
             await newDoc.atomicSet('firstName', 'foobar2');

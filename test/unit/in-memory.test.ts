@@ -71,7 +71,7 @@ config.parallel('in-memory.test.js', () => {
             it('should stream a doc-change of a normal collection', async () => {
                 const col = await humansCollection.create(0);
                 const obs = streamChangedDocuments(col);
-                const emitted = [];
+                const emitted: any[] = [];
                 const sub = obs.subscribe(doc => emitted.push(doc));
 
                 await col.insert(schemaObjects.human('foobar'));
@@ -85,10 +85,10 @@ config.parallel('in-memory.test.js', () => {
                 const col = await humansCollection.create(0);
                 const inMem = new (InMemoryRxCollection as any)(col);
                 const obs = streamChangedDocuments(inMem);
-                const emitted = [];
+                const emitted: any[] = [];
                 const sub = obs.subscribe(d => emitted.push(d));
 
-                const doc = schemaObjects.human('foobar');
+                const doc: any = schemaObjects.human('foobar');
                 doc['_id'] = 'foobar1';
                 await inMem.pouch.put(doc);
                 await AsyncTestUtil.waitUntil(() => emitted.length === 1);
@@ -116,7 +116,7 @@ config.parallel('in-memory.test.js', () => {
             it('should write the data into the collection', async () => {
                 const col = await humansCollection.create(0);
 
-                const docData = schemaObjects.human();
+                const docData: any = schemaObjects.human();
                 docData['_id'] = 'foobar1';
                 docData['_rev'] = '1-51b2fae5721cc4d3cf7392f19e6cc118';
                 await applyChangedDocumentToPouch(col, docData);
@@ -135,7 +135,7 @@ config.parallel('in-memory.test.js', () => {
                 const emitted = [];
                 const sub = obs.subscribe(doc => emitted.push(doc));
 
-                const docData = schemaObjects.human();
+                const docData: any = schemaObjects.human();
                 docData['_id'] = 'foobar1';
                 docData['_rev'] = '1-51b2fae5721cc4d3cf7392f19e6cc118';
                 await applyChangedDocumentToPouch(col, docData);
@@ -152,14 +152,14 @@ config.parallel('in-memory.test.js', () => {
                 const emitted = [];
 
                 // insert existing doc, then overwrite
-                const docData = schemaObjects.human();
+                const docData: any = schemaObjects.human();
                 docData['_id'] = 'foobar1';
                 const ret = await col.pouch.put(docData);
 
                 await AsyncTestUtil.wait(100);
                 const sub = obs.subscribe(doc => emitted.push(doc));
 
-                const docData2 = util.clone(docData);
+                const docData2 = (util as any).clone(docData);
                 docData2._rev = ret.rev;
                 docData2._deleted = true;
                 await applyChangedDocumentToPouch(col, docData2);
@@ -321,7 +321,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
 
-            const emitted = [];
+            const emitted: any[] = [];
             memCol.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0].length, 5);
@@ -338,7 +338,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
 
-            const emitted = [];
+            const emitted: any[] = [];
             col.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0].length, 5);
@@ -378,7 +378,7 @@ config.parallel('in-memory.test.js', () => {
             });
             const memCol = await c1.inMemory();
 
-            const emitted = [];
+            const emitted: any[] = [];
             c2.find().$.subscribe(docs => emitted.push(docs));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 

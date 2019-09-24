@@ -155,7 +155,7 @@ config.parallel('attachments.test.js', () => {
             });
             const attachment = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
-            const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
+            const dataString = await (AttachmentPlugin as any).blobBufferUtil.toString(data);
             assert.strictEqual(dataString, dat);
             c.database.destroy();
         });
@@ -226,7 +226,7 @@ config.parallel('attachments.test.js', () => {
             const attachment = attachments[0];
 
             const data = await attachment.getData();
-            const dataString = await AttachmentPlugin.blobBufferUtil.toString(data);
+            const dataString = await (AttachmentPlugin as any).blobBufferUtil.toString(data);
             assert.deepStrictEqual(dataString, 'foo bar');
             c.database.destroy();
         });
@@ -258,7 +258,7 @@ config.parallel('attachments.test.js', () => {
             });
 
             const encryptedData = await doc.collection.pouch.getAttachment(doc.primary, 'cat.txt');
-            const dataString = await AttachmentPlugin.blobBufferUtil.toString(encryptedData);
+            const dataString = await (AttachmentPlugin as any).blobBufferUtil.toString(encryptedData);
             assert.notStrictEqual(dataString, 'foo bar');
 
             const data = await attachment.getStringData();
@@ -277,8 +277,8 @@ config.parallel('attachments.test.js', () => {
                 type: 'text/plain'
             });
 
-            const emited = [];
-            const sub = doc.allAttachments$.subscribe(attachments => emited.push(attachments));
+            const emited: any[] = [];
+            const sub = doc.allAttachments$.subscribe((attachments: any[]) => emited.push(attachments));
             await AsyncTestUtil.waitUntil(() => emited.length === 1);
 
             assert.strictEqual(emited[0].length, 1);
@@ -320,9 +320,9 @@ config.parallel('attachments.test.js', () => {
             const doc2 = await c2.findOne().exec();
             assert.strictEqual(doc.age, doc2.age);
 
-            const doc2Streamed = [];
+            const doc2Streamed: any[] = [];
             const sub = doc2.allAttachments$
-                .subscribe(atc => doc2Streamed.push(atc));
+                .subscribe((atc: any) => doc2Streamed.push(atc));
 
             const putAttachment = await doc.putAttachment({
                 id: 'cat.txt',
@@ -394,7 +394,7 @@ config.parallel('attachments.test.js', () => {
                 schema: schemaJsonV2,
                 autoMigrate: true,
                 migrationStrategies: {
-                    1: docData => docData
+                    1: (docData: any) => docData
                 }
             });
 

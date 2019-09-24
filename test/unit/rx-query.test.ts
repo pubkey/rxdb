@@ -1176,7 +1176,7 @@ config.parallel('rx-query.test.js', () => {
                     created_at: 'desc'
                 })
                 .exec();
-            const resultData1 = resultDocs1.map(doc => doc.toJSON());
+            const resultData1: any[] = resultDocs1.map(doc => doc.toJSON());
 
             const resultDocs2 = await collection
                 .find()

@@ -26,8 +26,8 @@ import {
     RxReplicationState
 } from '../../';
 
-let request;
-let SpawnServer;
+let request: any;
+let SpawnServer: any;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     request = require('request-promise');

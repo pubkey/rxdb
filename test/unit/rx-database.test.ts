@@ -2,7 +2,7 @@ import config from './config';
 import assert from 'assert';
 import memdown from 'memdown';
 
-let leveldown;
+let leveldown: any;
 if (config.platform.isNode())
     leveldown = require('leveldown');
 
@@ -140,7 +140,7 @@ config.parallel('rx-database.test.js', () => {
                     () => createRxDatabase({
                         name: null,
                         adapter: 'memory'
-                    }),
+                    } as any),
                     'RxTypeError',
                     'null'
                 );

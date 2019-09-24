@@ -25,7 +25,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.encrypted, false); // false because db has no encrypted field
                 assert.strictEqual(json.passwordHash, null);
                 assert.strictEqual(json.docs.length, 5);
-                json.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
+                json.docs.map((doc: any) => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
@@ -49,7 +49,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.encrypted, true);
                 assert.strictEqual(typeof json.passwordHash, 'string');
                 assert.strictEqual(json.docs.length, 10);
-                json.docs.forEach(doc => {
+                json.docs.forEach((doc: any) => {
                     assert.strictEqual(typeof doc.secret, 'string');
                 });
                 db.destroy();
@@ -74,7 +74,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.encrypted, false);
                 assert.strictEqual(json.passwordHash, null); // no hash when not encrypted
                 assert.strictEqual(json.docs.length, 10);
-                json.docs.map(doc => {
+                json.docs.map((doc: any) => {
                     assert.strictEqual(typeof doc.secret, 'object');
                     assert.strictEqual(typeof doc.secret.name, 'string');
                     assert.strictEqual(typeof doc.secret.subname, 'string');
@@ -99,7 +99,7 @@ config.parallel('import-export.test.js', () => {
                 const json = await col.dump(false);
 
                 const firstDoc = json.docs.pop();
-                const decrypted = col._crypter._decryptValue(firstDoc.secret);
+                const decrypted: any = col._crypter._decryptValue(firstDoc.secret);
                 assert.strictEqual(typeof decrypted, 'object');
                 assert.strictEqual(typeof decrypted['name'], 'string');
                 assert.strictEqual(typeof decrypted['subname'], 'string');
@@ -160,7 +160,7 @@ config.parallel('import-export.test.js', () => {
 
                     // try to decrypt first
                     const firstDoc = json.docs[0];
-                    const decrypted = emptyCol._crypter._decryptValue(firstDoc.secret);
+                    const decrypted: any = emptyCol._crypter._decryptValue(firstDoc.secret);
                     assert.strictEqual(typeof decrypted, 'object');
                     assert.strictEqual(typeof decrypted['name'], 'string');
                     assert.strictEqual(typeof decrypted['subname'], 'string');
@@ -282,7 +282,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(colDump.encrypted, false);
                 assert.strictEqual(colDump.passwordHash, null);
                 assert.strictEqual(colDump.docs.length, 5);
-                colDump.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
+                colDump.docs.map((doc: any) => assert.strictEqual(typeof doc, 'object'));
                 col.database.destroy();
             });
             it('export encrypted as encrypted', async () => {
@@ -305,7 +305,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.collections[0].encrypted, true);
                 assert.strictEqual(typeof json.collections[0].passwordHash, 'string');
                 json.collections[0].docs
-                    .forEach(docData => assert.strictEqual(typeof docData.secret, 'string'));
+                    .forEach((docData: any) => assert.strictEqual(typeof docData.secret, 'string'));
                 db.destroy();
             });
             it('export encrypted as decrypted', async () => {
@@ -329,7 +329,7 @@ config.parallel('import-export.test.js', () => {
                 assert.strictEqual(json.collections[0].encrypted, false);
                 assert.strictEqual(json.collections[0].passwordHash, null);
                 json.collections[0].docs
-                    .forEach(docData => {
+                    .forEach((docData: any) => {
                         assert.strictEqual(typeof docData.secret, 'object');
                         assert.strictEqual(typeof docData.secret.name, 'string');
                         assert.strictEqual(typeof docData.secret.subname, 'string');
@@ -361,7 +361,7 @@ config.parallel('import-export.test.js', () => {
                 const json: any = await col.database.dump();
                 assert.strictEqual(json.collections.length, 2);
                 json.collections
-                    .forEach(c => assert.strictEqual(c.docs.length, 10));
+                    .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
                 db.destroy();
             });
             it('export 1 of 2 collections', async () => {
@@ -389,7 +389,7 @@ config.parallel('import-export.test.js', () => {
                 const json: any = await col.database.dump(false, ['enchuman']);
                 assert.strictEqual(json.collections.length, 1);
                 json.collections
-                    .forEach(c => assert.strictEqual(c.docs.length, 10));
+                    .forEach((c: any) => assert.strictEqual(c.docs.length, 10));
                 db.destroy();
             });
         });
