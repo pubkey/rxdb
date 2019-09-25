@@ -11,11 +11,15 @@ import {
 
 import * as RxDB from '../../';
 
+import {
+    HumanDocumentType
+} from './schema-objects';
+
 export async function create(
     size: number = 20,
     name: string = 'human',
     multiInstance: boolean = true
-) {
+): Promise<RxCollection<HumanDocumentType>> {
     if (!name) name = 'human';
     RxDB.PouchDB.plugin(require('pouchdb-adapter-memory'));
     const db = await createRxDatabase({
@@ -276,7 +280,7 @@ export async function createEncrypted(
 }
 
 export async function createMultiInstance(
-    name,
+    name: string,
     amount = 0,
     password = null
 ) {
@@ -354,10 +358,10 @@ export async function createMigrationCollection(
     name = util.randomCouchString(10),
     autoMigrate = false
 ) {
-    const migrationStrategies = {
-        1: doc => doc,
-        2: doc => doc,
-        3: doc => doc
+    const migrationStrategies: any = {
+        1: (doc: any) => doc,
+        2: (doc: any) => doc,
+        3: (doc: any) => doc
     };
 
     Object.entries(addMigrationStrategies)

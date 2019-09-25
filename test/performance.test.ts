@@ -11,7 +11,7 @@ import RxDB from '../';
 import * as util from '../dist/lib/util';
 RxDB.plugin(require('pouchdb-adapter-memory'));
 
-const elapsedTime = before => {
+const elapsedTime = (before: any) => {
     try {
         return convertHrtime(process.hrtime(before)).milliseconds;
     } catch (err) {
@@ -27,7 +27,7 @@ const nowTime = () => {
 };
 
 // each test can take about 10seconds
-const benchmark = {
+const benchmark: any = {
     spawnDatabases: {
         amount: 1000,
         collections: 5,
@@ -72,7 +72,7 @@ describe('performance.test.js', function() {
     });
     it('spawnDatabases', async () => {
         // create databases with some collections each
-        const dbs = [];
+        const dbs: any[] = [];
 
         const startTime = nowTime();
         for (let i = 0; i < benchmark.spawnDatabases.amount; i++) {

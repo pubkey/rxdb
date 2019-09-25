@@ -122,7 +122,7 @@ config.parallel('cross-instance.test.js', () => {
                 since: 'now',
                 live: true,
                 include_docs: true
-            }).on('change', function (change) {
+            }).on('change', function (change: any) {
                 if (!change.id.startsWith('_'))
                     got = change;
             });
@@ -150,8 +150,8 @@ config.parallel('cross-instance.test.js', () => {
                 recieved = recieved + 1;
             });
 
-            let firstNameAfter;
-            doc2.get$('firstName').subscribe(newValue => {
+            let firstNameAfter: any;
+            doc2.get$('firstName').subscribe((newValue: any) => {
                 firstNameAfter = newValue;
             });
 
@@ -204,8 +204,8 @@ config.parallel('cross-instance.test.js', () => {
                 recieved = recieved + 1;
             });
 
-            let secretAfter;
-            doc2.get$('secret').subscribe(newValue => {
+            let secretAfter: any;
+            doc2.get$('secret').subscribe((newValue: any) => {
                 secretAfter = newValue;
             });
 
@@ -257,8 +257,8 @@ config.parallel('cross-instance.test.js', () => {
                 recieved = recieved + 1;
             });
 
-            let secretAfter;
-            doc2.get$('secret').subscribe(newValue => {
+            let secretAfter: any;
+            doc2.get$('secret').subscribe((newValue: any) => {
                 secretAfter = newValue;
             });
 

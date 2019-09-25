@@ -23,7 +23,7 @@ import {
     map
 } from 'rxjs/operators';
 
-let SpawnServer;
+let SpawnServer: any;
 if (config.platform.isNode()) {
     SpawnServer = require('../helper/spawn-server');
     RxDB.plugin(require('pouchdb-adapter-http'));
@@ -168,7 +168,7 @@ config.parallel('query-change-detector.test.js', () => {
             it('should jump in and return false', async () => {
                 const col = await humansCollection.createPrimary(0);
                 const q = col.find().where('firstName').ne('Alice');
-                const changeEvents = [];
+                const changeEvents: any[] = [];
                 const docData = schemaObjects.simpleHuman();
                 docData.passportId = 'foobar';
                 docData.firstName = 'Alice';
@@ -286,7 +286,7 @@ config.parallel('query-change-detector.test.js', () => {
                     assert.strictEqual(results.length, 4);
                     assert.strictEqual(q._execOverDatabaseCount, 1);
 
-                    const last = await col.findOne().skip(4).exec();
+                    const last: any = await col.findOne().skip(4).exec();
                     assert.ok(!results.map(doc => doc.passportId).includes(last.passportId));
 
                     await last.remove();
@@ -430,7 +430,7 @@ config.parallel('query-change-detector.test.js', () => {
                     .exec();
 
                 assert.deepStrictEqual(
-                    docs.map(d => d['id']), [
+                    docs.map((d: any) => d['id']), [
                         'aaa',
                         'bbb',
                         'ccc'
@@ -445,7 +445,7 @@ config.parallel('query-change-detector.test.js', () => {
                         .ne('foobar3').toJSON()
                 );
                 assert.deepStrictEqual(
-                    docs.map(d => d['id']),
+                    docs.map((d: any) => d['id']),
                     pouchResult.docs.map(doc => doc._id)
                 );
 
@@ -457,11 +457,11 @@ config.parallel('query-change-detector.test.js', () => {
                     .ne('foobar3')
                     .$;
 
-                const results = [];
+                const results: any[] = [];
                 const sub = docs$
                     .pipe(
                         filter(ds => ds !== null),
-                        map(ds => ds.map(doc => doc['id']))
+                        map(ds => ds.map((doc: any) => doc['id']))
                     ).subscribe(docsIds => results.push(docsIds));
 
                 await AsyncTestUtil.waitUntil(() => results.length === 1);
@@ -513,7 +513,7 @@ config.parallel('query-change-detector.test.js', () => {
                 }
             });
 
-            const results = [];
+            const results: any[] = [];
             const q = col.find().sort('passportId');
             const sub = q.$.subscribe(res => results.push(res));
             await AsyncTestUtil.waitUntil(() => results.length === 1);

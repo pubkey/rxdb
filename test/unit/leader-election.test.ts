@@ -82,7 +82,7 @@ config.parallel('leader-election.test.js', () => {
         });
         it('when many instances apply, one should win', async () => {
             const name = util.randomCouchString(10);
-            const dbs = [];
+            const dbs: any[] = [];
             while (dbs.length < 10) {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
@@ -108,7 +108,7 @@ config.parallel('leader-election.test.js', () => {
         it('when the leader dies, a new one should be elected', async function () {
             this.timeout(5 * 1000);
             const name = util.randomCouchString(10);
-            const dbs = [];
+            const dbs: any[] = [];
             while (dbs.length < 6) {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);

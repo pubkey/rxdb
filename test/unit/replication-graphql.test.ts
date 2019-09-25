@@ -49,15 +49,15 @@ describe('replication-graphql.test.js', () => {
     const getEndpointHash = () => util.hash(AsyncTestUtil.randomString(10));
     const getTimestamp = () => Math.round(new Date().getTime() / 1000);
     const endpointHash = getEndpointHash(); // used when we not care about it's value
-    const getTestData = (amount) => {
+    const getTestData = (amount: any) => {
         return new Array(amount).fill(0)
             .map(() => schemaObjects.humanWithTimestamp())
-            .map(doc => {
+            .map((doc: any) => {
                 doc['deleted'] = false;
                 return doc;
             });
     };
-    const queryBuilder = doc => {
+    const queryBuilder = (doc: any) => {
         if (!doc) {
             doc = {
                 id: '',
@@ -79,7 +79,7 @@ describe('replication-graphql.test.js', () => {
             variables
         };
     };
-    const pushQueryBuilder = doc => {
+    const pushQueryBuilder = (doc: any) => {
         const query = `
             mutation CreateHuman($human: HumanInput) {
                 setHuman(human: $human) {
@@ -128,13 +128,13 @@ describe('replication-graphql.test.js', () => {
             }`;
 
             const ret = client.request({ query });
-            const emitted = [];
+            const emitted: any[] = [];
             const emittedError = [];
             ret.subscribe({
-                next(data) {
+                next(data: any) {
                     emitted.push(data);
                 },
-                error(error) {
+                error(error: any) {
                     emittedError.push(error);
                 }
             });
@@ -169,8 +169,8 @@ describe('replication-graphql.test.js', () => {
                 deleted: 'ok'
             });
             assert.strictEqual(deletedDocs.rows.length, 2);
-            const deletedDoc = deletedDocs.rows.find(d => d.value.deleted);
-            const notDeletedDoc = deletedDocs.rows.find(d => !d.value.deleted);
+            const deletedDoc = deletedDocs.rows.find((d: any) => d.value.deleted);
+            const notDeletedDoc = deletedDocs.rows.find((d: any) => !d.value.deleted);
             assert.ok(deletedDoc);
             assert.ok(notDeletedDoc);
 
@@ -414,7 +414,7 @@ describe('replication-graphql.test.js', () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
 
                 const id = 'foobarid';
-                const docData = {
+                const docData: any = {
                     _id: id,
                     name: 'Jermain',
                     age: 67,
@@ -573,7 +573,7 @@ describe('replication-graphql.test.js', () => {
                     10
                 );
                 assert.strictEqual(changes.results.length, amount);
-                const deleted = changes.results.find(change => change.doc._deleted === true);
+                const deleted = changes.results.find((change: any) => change.doc._deleted === true);
                 assert.ok(deleted);
                 c.database.destroy();
             });
@@ -592,7 +592,7 @@ describe('replication-graphql.test.js', () => {
             it('should have filtered out replicated docs from the endpoint', async () => {
                 const amount = 5;
                 const c = await humansCollection.createHumanWithTimestamp(amount);
-                const toPouch = schemaObjects.humanWithTimestamp();
+                const toPouch: any = schemaObjects.humanWithTimestamp();
                 toPouch['_rev'] = '1-' + createRevisionForPulledDocument(
                     endpointHash,
                     toPouch
@@ -612,7 +612,7 @@ describe('replication-graphql.test.js', () => {
                 );
 
                 assert.strictEqual(changes.results.length, amount);
-                const shouldNotBeFound = changes.results.find(change => change.id === toPouch.id);
+                const shouldNotBeFound = changes.results.find((change: any) => change.id === toPouch.id);
                 assert.ok(!shouldNotBeFound);
                 assert.strictEqual(changes.last_seq, amount + 1);
                 c.database.destroy();
@@ -796,7 +796,7 @@ describe('replication-graphql.test.js', () => {
             c.database.destroy();
         });
         it('should handle deleted documents', async () => {
-            const doc = schemaObjects.humanWithTimestamp();
+            const doc: any = schemaObjects.humanWithTimestamp();
             doc['deleted'] = true;
             const [c, server] = await Promise.all([
                 humansCollection.createHumanWithTimestamp(0),
@@ -950,7 +950,7 @@ describe('replication-graphql.test.js', () => {
         });
         it('should overwrite the local doc if it was deleted locally', async () => {
             const c = await humansCollection.createHumanWithTimestamp(0);
-            const localDoc = schemaObjects.humanWithTimestamp();
+            const localDoc: any = schemaObjects.humanWithTimestamp();
             const rxDoc = await c.insert(localDoc);
             await rxDoc.remove();
 
@@ -1049,7 +1049,7 @@ describe('replication-graphql.test.js', () => {
             await replicationState.awaitInitialReplication();
             const docsOnServer = server.getDocuments();
 
-            const shouldBeDeleted = docsOnServer.find(d => d.id === doc.primary);
+            const shouldBeDeleted = docsOnServer.find((d: any) => d.id === doc.primary);
             assert.strictEqual(shouldBeDeleted.deleted, true);
 
             server.close();
@@ -1090,7 +1090,7 @@ describe('replication-graphql.test.js', () => {
             await c.findOne().remove();
             await AsyncTestUtil.waitUntil(async () => {
                 const docsOnServer2 = server.getDocuments();
-                const oneShouldBeDeleted = docsOnServer2.find(d => d.deleted === true);
+                const oneShouldBeDeleted = docsOnServer2.find((d: any) => d.deleted === true);
                 return !!oneShouldBeDeleted;
             });
 
@@ -1202,7 +1202,7 @@ describe('replication-graphql.test.js', () => {
 
 
             // insert one on local and one on server
-            const doc = schemaObjects.humanWithTimestamp();
+            const doc: any = schemaObjects.humanWithTimestamp();
             doc['deleted'] = false;
             await server.setDocument(doc);
 
@@ -1258,7 +1258,7 @@ describe('replication-graphql.test.js', () => {
 
 
             // insert one on local and one on server
-            const doc = schemaObjects.humanWithTimestamp();
+            const doc: any = schemaObjects.humanWithTimestamp();
             doc['deleted'] = false;
             await server.setDocument(doc);
             await c.insert(schemaObjects.humanWithTimestamp());
@@ -1408,7 +1408,7 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted'
             });
 
-            const emitted = [];
+            const emitted: any[] = [];
             const sub = replicationState.recieved$.subscribe(doc => emitted.push(doc));
 
             await replicationState.awaitInitialReplication();
@@ -1435,7 +1435,7 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted'
             });
 
-            const emitted = [];
+            const emitted: any[] = [];
             const sub = replicationState.send$.subscribe(doc => emitted.push(doc));
             await replicationState.awaitInitialReplication();
 
@@ -1487,7 +1487,7 @@ describe('replication-graphql.test.js', () => {
                 deletedFlag: 'deleted'
             });
 
-            const emitted = [];
+            const emitted: any[] = [];
             const sub = replicationState.active$.subscribe(d => emitted.push(d));
 
             await replicationState.awaitInitialReplication();
@@ -1538,7 +1538,7 @@ describe('replication-graphql.test.js', () => {
                 return docsAfter2.length === 1;
             });
 
-            const doc = schemaObjects.humanWithTimestamp();
+            const doc: any = schemaObjects.humanWithTimestamp();
             doc['deleted'] = false;
             await server.setDocument(doc);
 

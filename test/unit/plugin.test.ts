@@ -278,7 +278,7 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create(5);
-            const doc = await col.findOne().exec();
+            const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.foo, 'bar_createRxDocument');
             col.database.destroy();
             clearHook('createRxDocument', createRxDocument);
@@ -295,7 +295,7 @@ config.parallel('plugin.test.js', () => {
             };
             RxDB.plugin(plugin);
             const col = await humansCollection.create(5);
-            const doc = await col.findOne().exec();
+            const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
             col.database.destroy();
             clearHook('postCreateRxDocument', postCreateRxDocument);

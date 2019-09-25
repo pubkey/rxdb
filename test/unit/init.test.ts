@@ -20,7 +20,7 @@ console.log('PLATFORM-NAME: ' + config.platform.name);
 console.log('PLATFORM-VERSION: ' + config.platform.version);
 
 if (config.platform.name !== 'node') {
-    console.dir = (d) => {
+    console.dir = (d: any) => {
         console.log(JSON.stringify(d));
     };
 } else {
@@ -46,7 +46,7 @@ if (config.platform.name !== 'node') {
  */
 if (config.platform.name === 'firefox') {
     const consoleErrorBefore = console.error.bind(console);
-    console.error = function(msg) {
+    console.error = function(msg: string) {
         if (msg !== 'Unhandled promise rejection')
             consoleErrorBefore(msg);
     };

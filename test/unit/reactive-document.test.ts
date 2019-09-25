@@ -20,7 +20,7 @@ config.parallel('reactive-document.test.js', () => {
         describe('positive', () => {
             it('should fire on save', async () => {
                 const c = await humansCollection.create();
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
 
                 await doc.atomicSet('firstName', util.randomCouchString(8));
 
@@ -30,11 +30,11 @@ config.parallel('reactive-document.test.js', () => {
             });
             it('should observe a single field', async () => {
                 const c = await humansCollection.create();
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
                 const valueObj = {
                     v: doc.get('firstName')
                 };
-                doc.get$('firstName').subscribe(newVal => {
+                doc.get$('firstName').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
                 const setName = util.randomCouchString(10);
@@ -49,7 +49,7 @@ config.parallel('reactive-document.test.js', () => {
                 const valueObj = {
                     v: doc.get('mainSkill.name')
                 };
-                doc.get$('mainSkill.name').subscribe(newVal => {
+                doc.get$('mainSkill.name').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
                 const setName = util.randomCouchString(10);
@@ -60,15 +60,15 @@ config.parallel('reactive-document.test.js', () => {
             });
             it('get equal values when subscribing again later', async () => {
                 const c = await humansCollection.create(1);
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
                 let v1;
-                const sub = doc.get$('firstName').subscribe(newVal => v1 = newVal);
+                const sub = doc.get$('firstName').subscribe((newVal: any) => v1 = newVal);
                 await util.promiseWait(5);
 
                 await doc.atomicSet('firstName', 'foobar');
 
                 let v2;
-                doc.get$('firstName').subscribe(newVal => v2 = newVal);
+                doc.get$('firstName').subscribe((newVal: any) => v2 = newVal);
 
                 assert.strictEqual(v1, v2);
                 assert.strictEqual(v1, 'foobar');
@@ -79,9 +79,9 @@ config.parallel('reactive-document.test.js', () => {
         describe('negative', () => {
             it('cannot observe non-existend field', async () => {
                 const c = await humansCollection.create();
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
                 await AsyncTestUtil.assertThrows(
-                    () => doc.get$('foobar').subscribe(newVal => newVal),
+                    () => doc.get$('foobar').subscribe((newVal: any) => newVal),
                     'RxError',
                     'observe'
                 );
@@ -93,9 +93,9 @@ config.parallel('reactive-document.test.js', () => {
         describe('positive', () => {
             it('deleted$ is true, on delete', async () => {
                 const c = await humansCollection.create();
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
                 let deleted = null;
-                doc.deleted$.subscribe(v => deleted = v);
+                doc.deleted$.subscribe((v: any) => deleted = v);
                 util.promiseWait(5);
                 assert.deepStrictEqual(deleted, false);
                 await doc.remove();

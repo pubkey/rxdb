@@ -540,7 +540,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         let docs = await c.find().exec();
                         docs = util.shuffleArray(docs);
-                        const last = docs.pop();
+                        const last: any = docs.pop();
                         const passportId = last._data.passportId;
                         let doc: any = await c.find({
                             passportId
@@ -562,7 +562,7 @@ config.parallel('rx-collection.test.js', () => {
                         const c = await humansCollection.create();
                         let docs = await c.find().exec();
                         docs = util.shuffleArray(docs);
-                        const last = docs.pop();
+                        const last: any = docs.pop();
                         const passportId = last._data.passportId;
                         let doc: any = await c.find({
                             passportId: {
@@ -857,8 +857,8 @@ config.parallel('rx-collection.test.js', () => {
                     });
                     it('skip first and limit', async () => {
                         const c = await humansCollection.create();
-                        const docs = await c.find().exec();
-                        const second = await c.find().skip(1).limit(1).exec();
+                        const docs: any = await c.find().exec();
+                        const second: any = await c.find().skip(1).limit(1).exec();
                         assert.deepStrictEqual(second[0].data, docs[1].data);
                         c.database.destroy();
                     });
@@ -971,7 +971,7 @@ config.parallel('rx-collection.test.js', () => {
                 it('remove on findOne', async () => {
                     const c = await humansCollection.create(10);
                     const query = c.findOne();
-                    const removed = await query.remove();
+                    const removed: any = await query.remove();
                     assert.ok(RxDocument.isInstanceOf(removed));
                     assert.strictEqual(removed.deleted, true);
                     const docsAfter = await c.find().exec();
@@ -1026,8 +1026,8 @@ config.parallel('rx-collection.test.js', () => {
                 });
                 it('find different on .skip()', async () => {
                     const c = await humansCollection.create();
-                    const doc = await c.findOne().exec();
-                    const doc2 = await c.findOne().skip(2).exec();
+                    const doc: any = await c.findOne().exec();
+                    const doc2: any = await c.findOne().skip(2).exec();
                     assert.ok(RxDocument.isInstanceOf(doc));
                     assert.ok(RxDocument.isInstanceOf(doc2));
                     assert.notStrictEqual(doc._data.passportId, doc2._data.passportId);
@@ -1035,10 +1035,10 @@ config.parallel('rx-collection.test.js', () => {
                 });
                 it('find by primary', async () => {
                     const c = await humansCollection.create();
-                    const doc = await c.findOne().exec();
+                    const doc: any = await c.findOne().exec();
                     const _id = doc.primary;
                     assert.strictEqual(typeof _id, 'string');
-                    const docById = await c.findOne(_id).exec();
+                    const docById: any = await c.findOne(_id).exec();
                     assert.deepStrictEqual(docById.data, doc.data);
                     c.database.destroy();
                 });

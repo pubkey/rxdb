@@ -392,7 +392,7 @@ config.parallel('rx-query.test.js', () => {
             // it is assumed that this query can never handled by the QueryChangeDetector
             const query = col.find().sort('-passportId').limit(1);
 
-            const fired = [];
+            const fired: any [] = [];
             const sub1 = query.$.subscribe(res => {
                 fired.push(res);
             });
@@ -1201,7 +1201,7 @@ config.parallel('rx-query.test.js', () => {
             const query = c.find();
 
             // exec-calls
-            const result1 = await query.exec();
+            const result1: any = await query.exec();
             assert.strictEqual(result1.length, 2);
             result1.push({
                 foo: 'bar'
@@ -1214,7 +1214,7 @@ config.parallel('rx-query.test.js', () => {
             // subscriptions
             const c2 = await humansCollection.create(2);
             const query2 = c2.find();
-            const res1 = await query2.$
+            const res1: any = await query2.$
                 .pipe(
                     first()
                 ).toPromise();

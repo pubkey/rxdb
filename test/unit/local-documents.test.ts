@@ -349,7 +349,7 @@ config.parallel('local-documents.test.js', () => {
                 }
             );
 
-            const emitted = [];
+            const emitted: any[] = [];
             const localDoc = await myCollection.getLocal('foobar');
             localDoc.get$('foo').subscribe(val => emitted.push(val));
 

@@ -27,7 +27,7 @@ config.parallel('temporary-document.test.js', () => {
         });
         it('should not check the schema on changing values', async () => {
             const c = await humansCollection.create(0);
-            const newDoc = c.newDocument({
+            const newDoc: any = c.newDocument({
                 firstName: 'foobar'
             });
             newDoc.lastName = 1337;
@@ -122,7 +122,7 @@ config.parallel('temporary-document.test.js', () => {
     describe('reactive', () => {
         it('should be emit the correct values', async () => {
             const c = await humansCollection.create(0);
-            const newDoc = c.newDocument(schemaObjects.human());
+            const newDoc: any = c.newDocument(schemaObjects.human());
             await newDoc.save();
             const emitted: any[] = [];
             const sub = newDoc.firstName$.subscribe((val: any) => emitted.push(val));
@@ -140,7 +140,7 @@ config.parallel('temporary-document.test.js', () => {
         describe('#215 setting field to null throws', () => {
             it('reproduce', async () => {
                 const c = await humansCollection.create(0);
-                const newDoc = c.newDocument();
+                const newDoc: any = c.newDocument();
                 newDoc.age = null;
                 newDoc.age = 10;
                 assert.strictEqual(newDoc.age, 10);

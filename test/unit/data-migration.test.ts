@@ -26,8 +26,8 @@ import {
 } from '../../dist/lib/data-migrator';
 
 config.parallel('data-migration.test.js', () => {
-    function createDataMigrator(newestCollection, migrationStrategies): DataMigrator {
-        return create(newestCollection, migrationStrategies) as DataMigrator;
+    function createDataMigrator(newestCollection: any, migrationStrategies: any): DataMigrator {
+        return (create as any)(newestCollection as any, migrationStrategies as any) as DataMigrator;
     }
     describe('.create() with migrationStrategies', () => {
         describe('positive', () => {
@@ -251,7 +251,7 @@ config.parallel('data-migration.test.js', () => {
             describe('.migrateDocumentData()', () => {
                 it('get a valid migrated document', async () => {
                     const col = await humansCollection.createMigrationCollection(1, {
-                        3: doc => {
+                        3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -267,7 +267,7 @@ config.parallel('data-migration.test.js', () => {
                 });
                 it('get a valid migrated document from async strategy', async () => {
                     const col = await humansCollection.createMigrationCollection(1, {
-                        3: async (doc) => {
+                        3: async (doc: any) => {
                             await util.promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
@@ -338,7 +338,7 @@ config.parallel('data-migration.test.js', () => {
                  */
                 it('should not crash when doc already at new collection', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: doc => {
+                        3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -368,7 +368,7 @@ config.parallel('data-migration.test.js', () => {
                 });
                 it('should resolve finished when some docs', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: doc => {
+                        3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -380,7 +380,7 @@ config.parallel('data-migration.test.js', () => {
                         include_docs: false,
                         attachments: false
                     });
-                    const preFiltered = docsPrev.rows.filter(doc => !doc.id.startsWith('_design'));
+                    const preFiltered = docsPrev.rows.filter((doc: any) => !doc.id.startsWith('_design'));
                     assert.strictEqual(preFiltered.length, 0);
 
                     await oldCol.migratePromise();
@@ -392,7 +392,7 @@ config.parallel('data-migration.test.js', () => {
                 });
                 it('should emit status for every handled document', async () => {
                     const col = await humansCollection.createMigrationCollection(10, {
-                        3: async (doc) => {
+                        3: async (doc: any) => {
                             await util.promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
@@ -406,7 +406,7 @@ config.parallel('data-migration.test.js', () => {
                     // batchSize is doc.length / 2 to make sure it takes a bit
                     const state$ = oldCol.migrate(5);
                     const states = [];
-                    state$.subscribe(state => {
+                    state$.subscribe((state: any) => {
                         assert.strictEqual(state.type, 'success');
                         assert.ok(state.doc._id);
                         states.push(state);
@@ -431,7 +431,7 @@ config.parallel('data-migration.test.js', () => {
                     // batchSize is doc.length / 2 to make sure it takes a bit
                     const state$ = oldCol.migrate(5);
                     const states = [];
-                    state$.subscribe(state => {
+                    state$.subscribe((state: any) => {
                         assert.strictEqual(state.type, 'deleted');
                         states.push(state);
                     });
@@ -461,7 +461,7 @@ config.parallel('data-migration.test.js', () => {
                 it('should not crash when nothing to migrate', async () => {
                     const col = await humansCollection.createMigrationCollection(0, {});
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
-                    const states = [];
+                    const states: any[] = [];
                     const state$ = col.migrate();
                     state$['subscribe'](s => {
                         states.push(s);
@@ -480,13 +480,13 @@ config.parallel('data-migration.test.js', () => {
 
                 it('should not crash when migrating data', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
-                        3: doc => {
+                        3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
                     });
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
-                    const states = [];
+                    const states: any[] = [];
                     const state$ = col.migrate();
                     state$['subscribe'](s => {
                         states.push(s);
@@ -523,7 +523,7 @@ config.parallel('data-migration.test.js', () => {
                     });
                     const pw8 = AsyncTestUtil.waitResolveable(5000); // higher than test-timeout
                     const state$ = col.migrate();
-                    state$['subscribe'](null, pw8.resolve as any, null);
+                    state$['subscribe'](undefined, pw8.resolve as any, undefined);
 
                     await pw8.promise;
                     col.database.destroy();
@@ -540,7 +540,7 @@ config.parallel('data-migration.test.js', () => {
 
                 it('should resolve when migrating data', async () => {
                     const col = await humansCollection.createMigrationCollection(5, {
-                        3: doc => {
+                        3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -569,7 +569,7 @@ config.parallel('data-migration.test.js', () => {
             it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                        3: doc => {
+                        3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
                         }
@@ -585,7 +585,7 @@ config.parallel('data-migration.test.js', () => {
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                        3: async (doc) => {
+                        3: async (doc: any) => {
                             util.promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
@@ -610,7 +610,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('return false if nothing to migrate', async () => {
                 const col = await humansCollection.createMigrationCollection(5, {
-                    3: doc => {
+                    3: (doc: any) => {
                         doc.age = parseInt(doc.age, 10);
                         return doc;
                     }
@@ -622,7 +622,7 @@ config.parallel('data-migration.test.js', () => {
             });
             it('return true if something to migrate', async () => {
                 const col = await humansCollection.createMigrationCollection(5, {
-                    3: doc => {
+                    3: (doc: any) => {
                         doc.age = parseInt(doc.age, 10);
                         return doc;
                     }
@@ -694,7 +694,7 @@ config.parallel('data-migration.test.js', () => {
                     name: 'heroes',
                     schema: schema1,
                     migrationStrategies: {
-                        1: (oldDoc) => {
+                        1: (oldDoc: any) => {
                             // console.log('migrate from 0 to 1...' + oldDoc.name);
                             oldDoc.level = 'ss';
                             return oldDoc;

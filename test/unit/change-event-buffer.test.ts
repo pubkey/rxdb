@@ -100,7 +100,7 @@ config.parallel('change-event-buffer.test.js', () => {
             const lastDoc = schemaObjects.human();
             await col.insert(lastDoc);
 
-            const gotIndex = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
+            const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
             assert.strictEqual(col._changeEventBuffer.buffer[gotIndex].data.v.firstName, lastDoc.firstName);
 
             col.database.destroy();
@@ -115,8 +115,8 @@ config.parallel('change-event-buffer.test.js', () => {
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            const evs = [];
-            col._changeEventBuffer.runFrom(1, function (cE) {
+            const evs: any[] = [];
+            col._changeEventBuffer.runFrom(1, function (cE: any) {
                 evs.push(cE);
             });
             assert.strictEqual(evs.length, 10);
@@ -134,7 +134,7 @@ config.parallel('change-event-buffer.test.js', () => {
             );
 
             const evs = [];
-            assert.throws(() => col._changeEventBuffer.runFrom(5, function (cE) {
+            assert.throws(() => col._changeEventBuffer.runFrom(5, function (cE: any) {
                 evs.push(cE);
             }), Error);
 
@@ -150,9 +150,9 @@ config.parallel('change-event-buffer.test.js', () => {
                 new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
             );
 
-            const evs = col._changeEventBuffer.getFrom(1);
+            const evs: any[] = col._changeEventBuffer.getFrom(1) as any;
             assert.strictEqual(evs.length, 10);
-            evs.forEach(cE => assert.strictEqual(cE.constructor.name, 'RxChangeEvent'));
+            evs.forEach((cE: any) => assert.strictEqual(cE.constructor.name, 'RxChangeEvent'));
 
 
             col.database.destroy();
@@ -165,11 +165,11 @@ config.parallel('change-event-buffer.test.js', () => {
             await q.exec();
 
             // remove the doc
-            const doc = await col.findOne().exec();
+            const doc: any = await col.findOne().exec();
             await doc.remove();
             await AsyncTestUtil.waitUntil(() => col._changeEventBuffer.counter === 2);
 
-            const evs = col._changeEventBuffer.getFrom(q._latestChangeEvent + 1);
+            const evs: any[] = col._changeEventBuffer.getFrom(q._latestChangeEvent + 1) as any;
             assert.strictEqual(evs.length, 1);
             assert.strictEqual(evs[0].data.op, 'REMOVE');
 
@@ -181,18 +181,18 @@ config.parallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(5);
             const q = col.find();
             await q.exec();
-            const oneDoc = await col.findOne().exec();
+            const oneDoc: any = await col.findOne().exec();
             let newVal = 0;
             while (newVal < 5) {
                 newVal++;
                 await oneDoc.atomicSet('age', newVal);
             }
 
-            const allEvents = q.collection._changeEventBuffer.getFrom(1);
+            const allEvents: any[] = q.collection._changeEventBuffer.getFrom(1) as any;
             const reduced = q.collection._changeEventBuffer.reduceByLastOfDoc(allEvents);
 
             assert.strictEqual(reduced.length, 5);
-            const lastEvent = reduced.find(cE => cE.data.doc === oneDoc.primary);
+            const lastEvent: any = reduced.find(cE => cE.data.doc === oneDoc.primary);
             assert.strictEqual(lastEvent.data.v.age, 5);
             col.database.destroy();
         });

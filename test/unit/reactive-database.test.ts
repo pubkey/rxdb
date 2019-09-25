@@ -27,7 +27,7 @@ describe('reactive-database.test.js', () => {
                 });
                 const changeEvent = await db.$
                     .pipe(
-                        filter((cEvent: RxChangeEvent) => cEvent.data.op === 'RxDatabase.collection'),
+                        filter((cEvent: any) => cEvent.data.op === 'RxDatabase.collection'),
                         first()
                     ).toPromise().then(event => {
                         assert.notStrictEqual(db[event.data.v], undefined);

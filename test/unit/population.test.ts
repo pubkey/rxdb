@@ -166,7 +166,7 @@ config.parallel('population.test.js', () => {
                 await col.insert(oneGuy);
                 const doc = await col.findOne(oneGuy.name).exec();
                 const friendDocs = await doc.friends_;
-                friendDocs.forEach(friend => {
+                friendDocs.forEach((friend: any) => {
                     assert.ok(isRxDocument(friend));
                 });
                 db.destroy();

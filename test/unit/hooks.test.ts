@@ -124,7 +124,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.createPrimary(0);
                     c.foo = 'bar';
                     let hasRun = false;
-                    c.preInsert(function () {
+                    c.preInsert(function (this: any) {
                         hasRun = true;
                         assert.strictEqual(this.foo, 'bar');
                     }, false);
@@ -140,7 +140,7 @@ config.parallel('hooks.test.js', () => {
                     const c = await humansCollection.create(0);
                     const human = schemaObjects.human();
 
-                    c.preInsert(function (doc) {
+                    c.preInsert(function (doc: any) {
                         doc.lastName = 1337;
                     }, false);
 
@@ -393,7 +393,7 @@ config.parallel('hooks.test.js', () => {
                     c.foo2 = 'bar2';
                     let hasRun = false;
 
-                    c.postRemove(function () {
+                    c.postRemove(function (this: any) {
                         hasRun = true;
                         assert.strictEqual(this.foo2, 'bar2');
                     }, true);
@@ -447,7 +447,7 @@ config.parallel('hooks.test.js', () => {
                     schema: schemas.primaryHuman
                 });
 
-                const hookFun = function (doc) {
+                const hookFun = function (doc: any) {
                     Object.defineProperty(doc, 'myField', {
                         get: () => 'foobar',
                     });

@@ -192,7 +192,7 @@ config.parallel('in-memory.test.js', () => {
             const memCol = await col.inMemory();
             const docs = await memCol.find().exec();
             assert.strictEqual(docs.length, 5);
-            const firstDoc = await memCol.findOne().exec();
+            const firstDoc: any = await memCol.findOne().exec();
             assert.ok(firstDoc.firstName);
             col.database.destroy();
         });
@@ -209,7 +209,7 @@ config.parallel('in-memory.test.js', () => {
         it('should replicate change from memory to original', async () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
-            const memDoc = await memCol.findOne().exec();
+            const memDoc: any = await memCol.findOne().exec();
 
             await memDoc.atomicSet('firstName', 'foobar');
 
@@ -226,7 +226,7 @@ config.parallel('in-memory.test.js', () => {
             const col = await humansCollection.create(5);
             const memCol = await col.inMemory();
 
-            const doc = await col.findOne().exec();
+            const doc: any = await col.findOne().exec();
 
             await doc.atomicSet('firstName', 'foobar');
 
@@ -282,9 +282,9 @@ config.parallel('in-memory.test.js', () => {
             const doc = await memCol.insert(docData);
             await AsyncTestUtil.wait(100);
             assert.strictEqual(emitted.length, 1); // one event should be fired
-            let foundCol = await col.find().where('firstName').ne('foobar1').exec();
+            let foundCol: any = await col.find().where('firstName').ne('foobar1').exec();
             assert.strictEqual(foundCol.length, 1);
-            let foundMem = await memCol.find().where('firstName').ne('foobar1').exec();
+            let foundMem: any = await memCol.find().where('firstName').ne('foobar1').exec();
             assert.strictEqual(foundMem.length, 1);
 
             // update event
@@ -460,10 +460,10 @@ config.parallel('in-memory.test.js', () => {
 
             await memCol.awaitPersistence();
 
-            await memCol.insert(schemaObjects.simpleHuman());
+            await memCol.insert(schemaObjects.simpleHuman() as any);
             await memCol.awaitPersistence();
 
-            const doc = await memCol.findOne().exec();
+            const doc: any = await memCol.findOne().exec();
             await doc.atomicSet('age', 6);
             await memCol.awaitPersistence();
 
@@ -623,7 +623,7 @@ config.parallel('in-memory.test.js', () => {
             await col
                 .findOne()
                 .exec()
-                .then(x => x.remove());
+                .then((x: any) => x.remove());
 
 
             // wait until remove was replicated

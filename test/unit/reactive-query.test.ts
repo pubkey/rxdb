@@ -28,7 +28,7 @@ config.parallel('reactive-query.test.js', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
-            let lastValue = null;
+            let lastValue: any = null;
             let count = 0;
             query.$.subscribe(newResults => {
                 count++;
@@ -43,7 +43,7 @@ config.parallel('reactive-query.test.js', () => {
         it('get the updated docs on Collection.insert()', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
-            let lastValue = [];
+            let lastValue: any[] = [];
             const pw8 = AsyncTestUtil.waitResolveable(500);
             query.$.subscribe(newResults => {
                 lastValue = newResults;
@@ -69,11 +69,11 @@ config.parallel('reactive-query.test.js', () => {
         it('get the value twice when subscribing 2 times', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
-            let lastValue = [];
+            let lastValue: any[] = [];
             query.$.subscribe(newResults => {
                 lastValue = newResults;
             });
-            let lastValue2 = [];
+            let lastValue2: any[] = [];
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
@@ -86,12 +86,12 @@ config.parallel('reactive-query.test.js', () => {
         it('get the base-value when subscribing again later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
-            let lastValue = [];
+            let lastValue: any[] = [];
             query.$.subscribe(newResults => {
                 lastValue = newResults;
             });
             await AsyncTestUtil.waitUntil(() => lastValue.length > 0);
-            let lastValue2 = [];
+            let lastValue2: any[] = [];
             query.$.subscribe(newResults => {
                 lastValue2 = newResults;
             });
@@ -103,10 +103,10 @@ config.parallel('reactive-query.test.js', () => {
         });
         it('get new values on RxDocument.save', async () => {
             const c = await humansCollection.create(1);
-            const doc = await c.findOne().exec();
+            const doc: any = await c.findOne().exec();
             const pw8 = AsyncTestUtil.waitResolveable(500);
 
-            let values;
+            let values: any;
             const querySub = c.find({
                 firstName: doc.get('firstName')
             }).$.subscribe(newV => {
@@ -219,9 +219,9 @@ config.parallel('reactive-query.test.js', () => {
             const subs = [];
             const col = await humansCollection.create(3);
             const docData = schemaObjects.human();
-            const doc = await col.insert(docData);
+            const doc: any = await col.insert(docData);
             const _id = doc._id;
-            const streamed = [];
+            const streamed: any[] = [];
             subs.push(
                 col.findOne(_id).$
                     .pipe(
@@ -235,7 +235,7 @@ config.parallel('reactive-query.test.js', () => {
             assert.ok(isRxDocument(streamed[0]));
             assert.strictEqual(streamed[0]._id, _id);
 
-            const streamed2 = [];
+            const streamed2: any[] = [];
             subs.push(
                 col.findOne().where('_id').eq(_id).$
                     .pipe(
@@ -255,7 +255,7 @@ config.parallel('reactive-query.test.js', () => {
         });
         it('#138 : findOne().$ returns every doc if no id given', async () => {
             const col = await humansCollection.create(3);
-            const streamed = [];
+            const streamed: any[] = [];
             const sub = col.findOne().$
                 .pipe(
                     filter(doc => doc !== null)
@@ -304,7 +304,7 @@ config.parallel('reactive-query.test.js', () => {
                 schema: crawlStateSchema
             });
 
-            const emitted = [];
+            const emitted: any[] = [];
             const sub = db.crawlstate
                 .findOne('registry').$
                 .pipe(
@@ -396,7 +396,7 @@ config.parallel('reactive-query.test.js', () => {
 
             await collection.insert(schemaObjects.human());
 
-            const results = [];
+            const results: any[] = [];
 
             const subs1 = collection.find().$.subscribe(x => {
                 results.push(x);

@@ -107,8 +107,8 @@ describe('replication.test.js', () => {
             });
             it('Observable.fromEvent should fire on sync-change', async () => {
                 const server = await SpawnServer.spawn();
-                const c = await humansCollection.create(0, null, false);
-                const c2 = await humansCollection.create(0, null, false);
+                const c = await humansCollection.create(0, undefined, false);
+                const c2 = await humansCollection.create(0, undefined, false);
                 c.pouch.sync(server.url, {
                     live: true
                 });
@@ -125,7 +125,7 @@ describe('replication.test.js', () => {
                             include_docs: true
                         }), 'change')
                         .pipe(
-                            map(ar => ar[0]),
+                            map((ar: any) => ar[0]),
                             filter(e => !e.id.startsWith('_'))
                         ).subscribe(e => e1.push(e));
                 const e2 = [];
@@ -135,7 +135,7 @@ describe('replication.test.js', () => {
                         live: true,
                         include_docs: true
                     }), 'change').pipe(
-                        map(ar => ar[0]),
+                        map((ar: any) => ar[0]),
                         filter(e => !e.id.startsWith('_'))
                     ).subscribe(e => e2.push(e));
 
@@ -157,8 +157,8 @@ describe('replication.test.js', () => {
     describe('sync-directions', () => {
         describe('positive', () => {
             it('push-only-sync', async () => {
-                const c = await humansCollection.create(10, null, false);
-                const c2 = await humansCollection.create(10, null, false);
+                const c = await humansCollection.create(10, undefined, false);
+                const c2 = await humansCollection.create(10, undefined, false);
                 c.sync({
                     remote: c2,
                     waitForLeadership: false,
@@ -179,8 +179,8 @@ describe('replication.test.js', () => {
                 await c2.database.destroy();
             });
             it('pull-only-sync', async () => {
-                const c = await humansCollection.create(10, null, false);
-                const c2 = await humansCollection.create(10, null, false);
+                const c = await humansCollection.create(10, undefined, false);
+                const c2 = await humansCollection.create(10, undefined, false);
                 c.sync({
                     remote: c2,
                     waitForLeadership: false,
@@ -204,7 +204,7 @@ describe('replication.test.js', () => {
         describe('negative', () => {
             it('should not allow non-way-sync', async () => {
                 const c = await humansCollection.create(0);
-                const c2 = await humansCollection.create(10, null, false);
+                const c2 = await humansCollection.create(10, undefined, false);
                 await AsyncTestUtil.assertThrows(
                     () => c.sync({
                         remote: c2,
@@ -224,8 +224,8 @@ describe('replication.test.js', () => {
     describe('query-based sync', () => {
         describe('positive', () => {
             it('should only sync documents that match the query', async () => {
-                const c = await humansCollection.create(0, null, false);
-                const c2 = await humansCollection.create(10, null, false);
+                const c = await humansCollection.create(0, undefined, false);
+                const c2 = await humansCollection.create(10, undefined, false);
                 const query = c.find().where('firstName').eq('foobar');
 
                 const matchingDoc = schemaObjects.human();
@@ -253,9 +253,9 @@ describe('replication.test.js', () => {
         });
         describe('negative', () => {
             it('should not allow queries from other collection', async () => {
-                const c = await humansCollection.create(0, null, false);
-                const c2 = await humansCollection.create(10, null, false);
-                const otherCollection = await humansCollection.create(0, null, false);
+                const c = await humansCollection.create(0, undefined, false);
+                const c2 = await humansCollection.create(10, undefined, false);
+                const otherCollection = await humansCollection.create(0, undefined, false);
 
                 const query = otherCollection.find().where('firstName').eq('foobar');
                 await AsyncTestUtil.assertThrows(
@@ -286,7 +286,7 @@ describe('replication.test.js', () => {
                 await AsyncTestUtil.waitUntil(
                     () => !!repState._pouchEventEmitterObject
                 );
-                const pouchEventEmitter = repState._pouchEventEmitterObject;
+                const pouchEventEmitter: any = repState._pouchEventEmitterObject;
                 assert.ok(pouchEventEmitter);
                 assert.strictEqual(typeof pouchEventEmitter.on, 'function');
 
@@ -320,7 +320,7 @@ describe('replication.test.js', () => {
                     remote: c2,
                     waitForLeadership: false
                 });
-                const emited = [];
+                const emited: any[] = [];
                 repState.active$.subscribe(cE => emited.push(cE));
                 await AsyncTestUtil.waitUntil(() => emited.pop() === true);
 
@@ -338,7 +338,7 @@ describe('replication.test.js', () => {
                     remote: server.url
                 });
 
-                const emited = [];
+                const emited: any[] = [];
                 repState.alive$.subscribe(cE => emited.push(cE));
 
                 assert.strictEqual(emited[emited.length - 1], false);
@@ -353,7 +353,7 @@ describe('replication.test.js', () => {
                     remote: server.url
                 });
 
-                const emited = [];
+                const emited: any[] = [];
                 repState.alive$.subscribe(cE => emited.push(cE));
                 await AsyncTestUtil.waitUntil(() => !!emited[emited.length - 1]);
 
@@ -399,7 +399,7 @@ describe('replication.test.js', () => {
                     }
                 });
 
-                const emited = [];
+                const emited: any[] = [];
                 const sub = repState.complete$.subscribe(ev => emited.push(ev));
                 await AsyncTestUtil.waitUntil(() => {
                     const lastEv = emited[emited.length - 1];
@@ -425,7 +425,7 @@ describe('replication.test.js', () => {
                     remote: c2,
                     waitForLeadership: false
                 });
-                const emitedDocs = [];
+                const emitedDocs: any[] = [];
                 repState.docs$.subscribe(doc => emitedDocs.push(doc));
 
                 await AsyncTestUtil.waitUntil(() => emitedDocs.length === 10);
@@ -470,7 +470,7 @@ describe('replication.test.js', () => {
                 });
 
                 const pw8 = AsyncTestUtil.waitResolveable(1700);
-                const events = [];
+                const events: any[] = [];
                 c2.$.subscribe(e => {
                     events.push(e);
                     pw8.resolve();
@@ -544,15 +544,15 @@ describe('replication.test.js', () => {
                 await c.insert(obj);
                 await pw8.promise;
 
-                const doc = await c.findOne().exec();
-                const doc2 = await c2.findOne().exec();
+                const doc: any = await c.findOne().exec();
+                const doc2: any = await c2.findOne().exec();
 
                 // update and w8 for sync
                 let lastValue = null;
                 const newPromiseWait = AsyncTestUtil.waitResolveable(1400);
                 doc2
                     .get$('firstName')
-                    .subscribe(newValue => {
+                    .subscribe((newValue: any) => {
                         lastValue = newValue;
                         if (lastValue === 'foobar') newPromiseWait.resolve();
                     });

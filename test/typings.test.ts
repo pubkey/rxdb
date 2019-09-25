@@ -35,10 +35,10 @@ describe('typings.test.js', function () {
             foobar(): string;
         };
     `;
-    const transpileCode = async (code) => {
+    const transpileCode = async (code: string) => {
         const spawn = require('child-process-promise').spawn;
-        const stdout = [];
-        const stderr = [];
+        const stdout: string[] = [];
+        const stderr: string[] = [];
         const tsConfig = {
             target: 'es6',
             strict: true,
@@ -50,8 +50,8 @@ describe('typings.test.js', function () {
             '-e', code
         ]);
         const childProcess = promise.childProcess;
-        childProcess.stdout.on('data', data => stdout.push(data.toString()));
-        childProcess.stderr.on('data', data => stderr.push(data.toString()));
+        childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
+        childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
         try {
             await promise;
         } catch (err) {

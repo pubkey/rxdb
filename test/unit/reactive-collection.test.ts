@@ -69,7 +69,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on remove', async () => {
                 const c = await humansCollection.create(0);
                 const q = c.find();
-                const ar = [];
+                const ar: any[] = [];
                 const sub = q.$
                     .subscribe(docs => {
                         ar.push(docs);
@@ -86,7 +86,7 @@ config.parallel('reactive-collection.test.js', () => {
                 await c.insert(schemaObjects.human());
                 await AsyncTestUtil.waitUntil(() => ar.length === 2);
 
-                const doc = await c.findOne().exec();
+                const doc: any = await c.findOne().exec();
                 await doc.remove();
                 await AsyncTestUtil.waitUntil(() => ar.length === 3);
                 sub.unsubscribe();
@@ -99,7 +99,7 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit inserts', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted = [];
+            const emitted: any[] = [];
             c.insert$.subscribe(cE => emitted.push(cE));
 
             await c.insert(schemaObjects.human());
@@ -118,7 +118,7 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit updates', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted = [];
+            const emitted: any[] = [];
             c.update$.subscribe(cE => emitted.push(cE));
 
             const doc1 = await c.insert(schemaObjects.human());
@@ -139,7 +139,7 @@ config.parallel('reactive-collection.test.js', () => {
         it('should only emit removes', async () => {
             const c = await humansCollection.create(0);
 
-            const emitted = [];
+            const emitted: any[] = [];
             c.remove$.subscribe(cE => emitted.push(cE));
             await c.insert(schemaObjects.human());
             const doc1 = await c.insert(schemaObjects.human());

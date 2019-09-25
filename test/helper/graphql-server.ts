@@ -19,7 +19,7 @@ const graphqlHTTP = require('express-graphql');
 
 let lastPort = 16121;
 
-function sortByUpdatedAtAndPrimary(a, b) {
+function sortByUpdatedAtAndPrimary(a: any, b: any): 0 | 1 | -1 {
     if (a.updatedAt > b.updatedAt) return 1;
     if (a.updatedAt < b.updatedAt) return -1;
 
@@ -28,9 +28,10 @@ function sortByUpdatedAtAndPrimary(a, b) {
         if (a.id < b.id) return -1;
         else return 0;
     }
+    return 0;
 }
 
-export async function spawn(documents = []) {
+export async function spawn(documents: any[] = []) {
     const app = express();
     const port = lastPort++;
 
@@ -80,14 +81,14 @@ export async function spawn(documents = []) {
     // The root provides a resolver function for each API endpoint
     const root = {
         info: () => 1,
-        feedForRxDBReplication: args => {
+        feedForRxDBReplication: (args: any) => {
             // console.log('## feedForRxDBReplication');
             // console.dir(args);
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
             // only return where updatedAt >= minUpdatedAt
-            const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
+            const filterForMinUpdatedAtAndId = sortedDocuments.filter((doc: any) => {
                 if (doc.updatedAt < args.minUpdatedAt) return false;
                 if (doc.updatedAt > args.minUpdatedAt) return true;
                 if (doc.updatedAt === args.minUpdatedAt) {
@@ -110,11 +111,11 @@ export async function spawn(documents = []) {
 */
             return limited;
         },
-        setHuman: args => {
+        setHuman: (args: any) => {
             // console.log('## setHuman()');
             // console.dir(args);
-            const doc = args.human;
-            documents = documents.filter(d => d.id !== doc.id);
+            const doc: any = args.human;
+            documents = documents.filter((d: any) => d.id !== doc.id);
             doc.updatedAt = Math.round(new Date().getTime() / 1000);
             documents.push(doc);
             // console.dir(documents);
@@ -170,7 +171,7 @@ export async function spawn(documents = []) {
                     subServer,
                     client,
                     url: ret,
-                    async setDocument(doc) {
+                    async setDocument(doc: any) {
                         const result = await client.query(
                             `
             mutation CreateHuman($human: HumanInput) {
@@ -187,7 +188,7 @@ export async function spawn(documents = []) {
                         // console.dir(result);
                         return result;
                     },
-                    overwriteDocuments(docs) {
+                    overwriteDocuments(docs: any[]) {
                         documents = docs.slice();
                     },
                     getDocuments() {

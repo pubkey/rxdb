@@ -64,7 +64,7 @@ config.parallel('orm.test.js', () => {
                     ];
                     let t = 0;
                     while (t < reserved.length) {
-                        const statics = {};
+                        const statics: any = {};
                         statics[reserved[t]] = function() {};
                         await AsyncTestUtil.assertThrows(
                             () => db.collection({
@@ -127,7 +127,7 @@ config.parallel('orm.test.js', () => {
                     name: 'humans',
                     schema: schemas.human,
                     statics: {
-                        foobar: function(obj) {
+                        foobar: function(obj: any) {
                             return this.insert(obj);
                         }
                     }
@@ -221,7 +221,7 @@ config.parallel('orm.test.js', () => {
                     ];
                     let t = 0;
                     while (t < reserved.length) {
-                        const methods = {};
+                        const methods: any = {};
                         methods[reserved[t]] = function() {};
                         await AsyncTestUtil.assertThrows(
                             () => db.collection({
@@ -249,7 +249,7 @@ config.parallel('orm.test.js', () => {
                     ];
                     let t = 0;
                     while (t < reserved.length) {
-                        const methods = {};
+                        const methods: any = {};
                         methods[reserved[t]] = function() {};
                         await AsyncTestUtil.assertThrows(
                             () => db.collection({
@@ -398,8 +398,8 @@ config.parallel('orm.test.js', () => {
 
             // nested getter-method
             const obs = nestedObj.foo$;
-            const emitted = [];
-            const sub = obs.subscribe(v => emitted.push(v));
+            const emitted: any[] = [];
+            const sub = obs.subscribe((v: any) => emitted.push(v));
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0], 'bar');
             sub.unsubscribe();

@@ -39,7 +39,7 @@ config.parallel('primary.test.js', () => {
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
                 it('throw if primary is also unique', async () => {
-                    const schemaObj = clone(schemas.primaryHuman);
+                    const schemaObj: any = clone(schemas.primaryHuman);
                     schemaObj.properties.passportId['unique'] = true;
                     assert.throws(() => createRxSchema(schemaObj), Error);
                 });
@@ -131,7 +131,7 @@ config.parallel('primary.test.js', () => {
                 });
                 it('do not allow primary==null', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const obj = schemaObjects.simpleHuman();
+                    const obj: any = schemaObjects.simpleHuman();
                     obj.passportId = null;
                     await AsyncTestUtil.assertThrows(
                         () => c.insert(obj),
@@ -260,7 +260,7 @@ config.parallel('primary.test.js', () => {
                     await c.insert(obj);
                     const doc = await c.findOne().exec();
                     let value;
-                    const sub = doc.get$('firstName').subscribe(newVal => value = newVal);
+                    const sub = doc.get$('firstName').subscribe((newVal: any) => value = newVal);
                     await doc.atomicSet('firstName', 'foobar');
                     await util.promiseWait(10);
                     assert.strictEqual(value, 'foobar');
@@ -269,7 +269,7 @@ config.parallel('primary.test.js', () => {
                 });
                 it('subscribe to query', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    let docs;
+                    let docs: any[];
                     const sub = c.find().$.subscribe(newDocs => {
                         docs = newDocs;
                     });
@@ -282,7 +282,7 @@ config.parallel('primary.test.js', () => {
                     const name = util.randomCouchString(10);
                     const c1 = await humansCollection.createPrimary(0, name);
                     const c2 = await humansCollection.createPrimary(0, name);
-                    let docs;
+                    let docs: any[];
                     c2.find().$.subscribe(newDocs => docs = newDocs);
                     await c1.insert(schemaObjects.simpleHuman());
                     await AsyncTestUtil.waitUntil(() => docs && docs.length === 1);
@@ -299,10 +299,10 @@ config.parallel('primary.test.js', () => {
                     const doc = await c1.findOne().exec();
 
 
-                    let value;
+                    let value: any;
                     let count = 0;
                     const pW8 = AsyncTestUtil.waitResolveable(1000);
-                    doc.firstName$.subscribe(newVal => {
+                    doc.firstName$.subscribe((newVal: any) => {
                         value = newVal;
                         count++;
                         if (count >= 2) pW8.resolve();

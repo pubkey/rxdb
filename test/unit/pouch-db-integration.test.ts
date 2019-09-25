@@ -2,7 +2,7 @@ import config from './config';
 import assert from 'assert';
 import memdown from 'memdown';
 
-let leveldb;
+let leveldb: any;
 if (config.platform.isNode())
     leveldb = require('pouchdb-adapter-leveldb');
 
@@ -472,13 +472,13 @@ config.parallel('pouch-db-integration.test.js', () => {
                 new_edits: false
             };
 
-            const docData = schemaObjects.human();
+            const docData: any = schemaObjects.human();
             docData['_id'] = 'foobar1';
             const ret = await pouch.put(docData);
 
             await AsyncTestUtil.wait(100);
 
-            const docData2 = util.clone(docData);
+            const docData2: any = (util as any).clone(docData);
             docData2._rev = ret.rev;
             docData2._deleted = true;
 

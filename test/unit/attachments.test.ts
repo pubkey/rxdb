@@ -234,7 +234,7 @@ config.parallel('attachments.test.js', () => {
     describe('schema', () => {
         it('should throw when attachments not defined in the schema', async () => {
             const c = await humansCollection.create(1);
-            const doc = await c.findOne().exec();
+            const doc: any = await c.findOne().exec();
             await AsyncTestUtil.assertThrows(
                 () => doc.putAttachment({
                     id: AsyncTestUtil.randomString(5) + '.txt',

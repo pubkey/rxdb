@@ -153,7 +153,7 @@ export function refHuman(bestFriend?: string): RefHumanDocumentType {
     return {
         name: randomToken(12),
         bestFriend
-    };
+    } as any;
 }
 
 export interface RefHumanNestedDocumentType {
@@ -167,7 +167,7 @@ export function refHumanNested(bestFriend?: string): RefHumanNestedDocumentType 
         name: randomToken(12),
         foo: {
             bestFriend
-        }
+        } as any
     };
 }
 
