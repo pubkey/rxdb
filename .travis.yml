@@ -56,6 +56,9 @@ jobs:
       script: travis_retry npm run test:typings
       env: LABEL=test:typings:ci
     - stage: code format
+      script: travis_retry npm run check-types
+      env: LABEL=check-types
+    - stage: code format
       script: npm run test:deps
       env: LABEL=test:deps
     - stage: code format

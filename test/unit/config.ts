@@ -1,4 +1,4 @@
-import 'mocha';
+/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 const {
     detect
 } = require('detect-browser');
