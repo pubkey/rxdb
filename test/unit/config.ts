@@ -2,13 +2,18 @@
 const {
     detect
 } = require('detect-browser');
+import BroadcastChannel from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 
 let useParallel = describe;
 try {
-    if (process.env.NODE_ENV === 'fast')
+    if (process.env.NODE_ENV === 'fast') {
         useParallel = parallel;
+        BroadcastChannel.enforceOptions({
+            type: 'simulate'
+        });
+    }
 } catch (err) {
 
 }
