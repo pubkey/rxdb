@@ -662,14 +662,15 @@ export function create<Collections = { [key: string]: RxCollection }>({
 
     // check if pouchdb-adapter
     if (typeof adapter === 'string') {
-        if (!PouchDB.adapters || !PouchDB.adapters[adapter]) {
+        // TODO make a function hasAdapter()
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters[adapter]) {
             throw newRxError('DB9', {
                 adapter
             });
         }
     } else {
         isLevelDown(adapter);
-        if (!PouchDB.adapters || !PouchDB.adapters.leveldb) {
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.leveldb) {
             throw newRxError('DB10', {
                 adapter
             });

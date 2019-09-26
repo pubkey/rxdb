@@ -21,28 +21,29 @@ export type RxDocumentTypeWithRev<RxDocumentType> = RxDocumentType & { _rev: str
 
 declare type AtomicUpdateFunction<RxDocumentType> = (doc: RxDocumentType) => RxDocumentType | Promise<RxDocumentType>;
 
-export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
-    public isInstanceOfRxDocument: true;
-    public collection: RxCollection<RxDocumentType, OrmMethods>;
+export declare interface RxDocumentBase<RxDocumentType, OrmMethods = {}> {
+    isInstanceOfRxDocument: true;
+    collection: RxCollection<RxDocumentType, OrmMethods>;
     readonly deleted: boolean;
 
     readonly $: Observable<any>;
     readonly deleted$: Observable<boolean>;
 
-    // internal things
-    public _isTemporary: boolean;
-    public _dataSync$: BehaviorSubject<RxDocumentType>;
-    public _data: any;
-    public _deleted$: BehaviorSubject<boolean>;
-    public primaryPath: string;
-    public revision: string;
-    public $emit(cE: RxChangeEvent): void;
-    public _atomicQueue: Promise<any>;
-    public _saveData(newData: any, oldData: any): Promise<void>;
-    // /internal things
-
     readonly primary: string;
     readonly allAttachments$: Observable<RxAttachment<RxDocumentType, OrmMethods>[]>;
+
+    // internal things
+    _isTemporary: boolean;
+    _dataSync$: BehaviorSubject<RxDocumentType>;
+    _data: any;
+    _deleted$: BehaviorSubject<boolean>;
+    primaryPath: string;
+    revision: string;
+    _atomicQueue: Promise<any>;
+    $emit(cE: RxChangeEvent): void;
+    _saveData(newData: any, oldData: any): Promise<void>;
+    // /internal things
+
     get$(path: string): Observable<any>;
     get(objPath: string): any;
     populate(objPath: string): Promise<RxDocument<RxDocumentType, OrmMethods> | any | null>;
@@ -69,7 +70,7 @@ export declare class RxDocumentBase<RxDocumentType, OrmMethods = {}> {
     destroy(): void;
 }
 
-export declare class RxLocalDocument<Parent> extends RxDocumentBase<{}> {
+export declare interface RxLocalDocument<Parent> extends RxDocumentBase<{}> {
     readonly parent: Parent;
     isLocal(): true;
 }

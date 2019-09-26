@@ -115,7 +115,7 @@ export class InMemoryRxCollection<RxDocumentType, OrmMethods> extends RxCollecti
         this._nonPersistentRevisionsSubject = new Subject(); // emits Set.size() when Set is changed
     }
     private _parentCollection: RxCollection<RxDocumentType, OrmMethods>;
-    public _changeStreams: any
+    public _changeStreams: any;
     public _oldPouchPut: any;
     public _nonPersistentRevisions: any;
     public _nonPersistentRevisionsSubject: any;
@@ -368,7 +368,7 @@ export function spawnInMemory(
     if (!INIT_DONE) {
         INIT_DONE = true;
         // ensure memory-adapter is added
-        if (!PouchDB.adapters || !PouchDB.adapters.memory)
+        if (!(PouchDB as any).adapters || !(PouchDB as any).adapters.memory)
             throw newRxError('IM1');
     }
 
