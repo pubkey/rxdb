@@ -53,7 +53,7 @@
     "lint:js": "eslint config",
     "lint:ts": "tslint --project ./",
     "lint:ts:fix": "tslint --project ./ --fix",
-    "check-types": "tsc",
+    "check-types": "npm run transpile && tsc",
     "transpile": "node scripts/transpile.js",
     "build:es": "rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\"",
     "build:remove:typings": "rimraf ./dist/lib/types/* && touch ./dist/lib/types/index.js && rimraf ./dist/es/types/* && touch ./dist/es/types/index.js",

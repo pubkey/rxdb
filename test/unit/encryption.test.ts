@@ -25,7 +25,7 @@ config.parallel('encryption.test.js', () => {
         name: string,
         schema: RxSchema
     ): Crypter {
-        return create(name, schema) as Crypter;
+        return create(name, schema) as any;
     }
     describe('Schema.encryptedPaths', () => {
         describe('positive', () => {

@@ -2,5 +2,6 @@
   "name": "rxdb-plugin-leader-election",
   "main": "../../dist/lib/plugins/leader-election.js",
   "jsnext:main": "../../dist/es/plugins/leader-election.js",
-  "module": "../../dist/es/plugins/leader-election.js"
+  "module": "../../dist/es/plugins/leader-election.js",
+  "types": "../../src/plugins/leader-election.ts"
 }

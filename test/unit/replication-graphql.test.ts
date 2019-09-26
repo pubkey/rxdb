@@ -1,6 +1,9 @@
 import assert from 'assert';
-import config from './config';
+import AsyncTestUtil, {
+    clone
+} from 'async-test-util';
 
+import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
@@ -8,9 +11,6 @@ import * as util from '../../dist/lib/util';
 import {
     PouchDB
 } from '../../dist/lib/pouch-db';
-import AsyncTestUtil, {
-    clone
-} from 'async-test-util';
 import RxDB from '../../';
 import GraphQLPlugin from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';

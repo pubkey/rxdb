@@ -3,10 +3,10 @@ import config from './config';
 import * as RxDB from '../../';
 import {
     PouchDB
-} from '../../dist/lib/pouch-db';
+} from '../../';
 import {
     POUCHDB_LOCATION
-} from '../../dist/lib/plugins/adapter-check.js';
+} from '../../plugins/adapter-check';
 import {
     adapterObject
 } from '../../dist/lib/util';
@@ -41,9 +41,10 @@ config.parallel('adapter-check.test.js', () => {
             assert.ok(ok);
 
             // ensure the test-document is removed
-            const pouch = new PouchDB(
+            const pouch = new (PouchDB as any)(
                 POUCHDB_LOCATION,
-                adapterObject(memdown), {
+                adapterObject(memdown) as any,
+                {
                     auto_compaction: false, // no compaction because this only stores local documents
                     revs_limit: 1
                 }

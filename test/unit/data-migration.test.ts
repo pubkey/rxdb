@@ -1,17 +1,16 @@
 import assert from 'assert';
 import config from './config';
+import AsyncTestUtil from 'async-test-util';
 import {
-    PouchDB,
     countAllUndeleted
 } from '../../dist/lib/pouch-db';
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
-
 import * as util from '../../dist/lib/util';
-import AsyncTestUtil from 'async-test-util';
 
 import {
     create as createRxDatabase,
+    PouchDB
 } from '../../';
 import {
     _collectionNamePrimary

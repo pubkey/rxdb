@@ -24,8 +24,8 @@ before_install:
 stages:
   - install
   - build
-  - unit tests
   - code format
+  - unit tests
   - other
   - examples
 
@@ -34,7 +34,20 @@ jobs:
     - stage: install
       script: travis_retry npm install --depth 0 --silent
 
-    - stage: build
+    - stage: code format
+      script: travis_retry npm run test:typings
+      env: LABEL=test:typings:ci
+    - stage: code format
+      script: travis_retry npm run check-types
+      env: LABEL=check-types
+    - stage: code format
+      script: npm run test:deps
+      env: LABEL=test:deps
+    - stage: code format
+      script: npm run lint
+      env: LABEL=lint
+
+      - stage: build
       script: npm run build
     - stage: unit tests
       script: travis_retry npm run test:node
@@ -51,19 +64,6 @@ jobs:
     - stage: unit tests
       script: travis_retry npm run test:performance
       env: LABEL=test:performance
-
-    - stage: code format
-      script: travis_retry npm run test:typings
-      env: LABEL=test:typings:ci
-    - stage: code format
-      script: travis_retry npm run check-types
-      env: LABEL=check-types
-    - stage: code format
-      script: npm run test:deps
-      env: LABEL=test:deps
-    - stage: code format
-      script: npm run lint
-      env: LABEL=lint
 
     - stage: other
       script: npm run build:size
