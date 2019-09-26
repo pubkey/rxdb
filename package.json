@@ -41,7 +41,7 @@
     "test:core": "npm run pretest && mocha ./test_tmp/unit/core.node.js",
     "test:typings": "npm run pretest && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
     "test:typings:ci": "npm run pretest && mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
-    "test:deps": "dependency-check ./package.json ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/server.js ./dist/lib/plugins/validate-z-schema.js --no-dev --ignore-module util --ignore-module url",
+    "test:deps": "dependency-check ./package.json ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/server.js ./dist/lib/plugins/validate-z-schema.js --no-dev --ignore-module util --ignore-module url --ignore-module \"@types/*\"",
     "test:performance": "npm run pretest && NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js",
     "couch:start": "docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
