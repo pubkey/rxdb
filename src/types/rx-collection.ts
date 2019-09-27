@@ -39,13 +39,22 @@ export interface MigrationState {
 export type RxCollectionHookCallback<
     RxDocumentType,
     OrmMethods
-    > = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void | Promise<void>;
-export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void>;
-export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (data: RxDocumentType, instance: RxDocument<RxDocumentType, OrmMethods>) => void;
+    > = (
+        data: RxDocumentType,
+        instance: RxDocument<RxDocumentType, OrmMethods>
+    ) => void | Promise<void> | any;
+export type RxCollectionHookNoInstance<RxDocumentType, OrmMethods> = (data: RxDocumentType) => void | Promise<void> | any;
+export type RxCollectionHookCallbackNonAsync<RxDocumentType, OrmMethods> = (
+    data: RxDocumentType,
+    instance: RxDocument<RxDocumentType, OrmMethods>
+) => void | any;
 export type RxCollectionHookNoInstanceCallback<
     RxDocumentType,
     OrmMethods
-    > = (data: RxDocumentType, instance: RxCollection) => Promise<void> | void;
+    > = (
+        data: RxDocumentType,
+        instance: RxCollection
+    ) => Promise<void> | void | any;
 
 export type RxCollection<
     RxDocumentType = any,
