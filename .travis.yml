@@ -72,7 +72,7 @@ jobs:
       script: npm run build:rollup
       env: LABEL=build:rollup
     - stage: other
-      script: (cd ./test/tutorials/ && npm install && travis_retry npm test)
+      script: npm run build && (cd ./test/tutorials/ && npm install && travis_retry npm test)
       env: LABEL=docs
 
     - stage: examples
