@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/watch-for-changes.js",
   "jsnext:main": "../../dist/es/plugins/watch-for-changes.js",
   "module": "../../dist/es/plugins/watch-for-changes.js",
-  "types": "../../src/plugins/watch-for-changes.ts"
+  "types": "../../dist/typings/plugins/watch-for-changes.d.ts"
 }

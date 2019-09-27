@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/adapter-check.js",
   "jsnext:main": "../../dist/es/plugins/adapter-check.js",
   "module": "../../dist/es/plugins/adapter-check.js",
-  "types": "../../src/plugins/adapter-check.ts"
+  "types": "../../dist/typings/plugins/adapter-check.d.ts"
 }

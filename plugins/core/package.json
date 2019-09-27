@@ -3,5 +3,5 @@
   "main": "../../dist/lib/core.js",
   "jsnext:main": "../../dist/es/core.js",
   "module": "../../dist/es/core.js",
-  "types": "../../src/core.ts"
+  "types": "../../dist/typings/core.d.ts"
 }

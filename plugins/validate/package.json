@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/validate.js",
   "jsnext:main": "../../dist/es/plugins/validate.js",
   "module": "../../dist/es/plugins/validate.js",
-  "types": "../../src/plugins/validate.ts"
+  "types": "../../dist/typings/plugins/validate.d.ts"
 }

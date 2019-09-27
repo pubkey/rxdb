@@ -6,15 +6,20 @@
         // Search under node_modules for non-relative imports.
         "moduleResolution": "node",
         // Process & infer types from .js files.
-        "allowJs": true,
-        // Don't emit; allow Babel to transform files.
-        "noEmit": true,
+        "allowJs": false,
         // Enable strictest settings like strictNullChecks & noImplicitAny.
         "strict": true,
-        // Disallow features that require cross-file information for emit.
-        "isolatedModules": true,
+        // Disallow features that require 
+        // cross-file information for emit.
+        "isolatedModules": false,
         // Import non-ES modules as default imports.
         "esModuleInterop": true,
+
+        "outDir": "./dist/typings",
+        "noEmit": false,
+        "emitDeclarationOnly": true,
+        "declaration": true,
+
         "typeRoots": [
             "./src/typings/modules"
         ]
@@ -24,8 +29,7 @@
         "tabSize": 2
     },
     "include": [
-        "src",
-        "test"
+        "src"
     ],
     "exclude": [
         "node_modules",

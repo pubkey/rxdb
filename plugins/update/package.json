@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/update.js",
   "jsnext:main": "../../dist/es/plugins/update.js",
   "module": "../../dist/es/plugins/update.js",
-  "types": "../../src/plugins/update.ts"
+  "types": "../../dist/typings/plugins/update.d.ts"
 }

@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/in-memory.js",
   "jsnext:main": "../../dist/es/plugins/in-memory.js",
   "module": "../../dist/es/plugins/in-memory.js",
-  "types": "../../src/plugins/in-memory.ts"
+  "types": "../../dist/typings/plugins/in-memory.d.ts"
 }

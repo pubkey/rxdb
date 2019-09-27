@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/server.js",
   "jsnext:main": "../../dist/es/plugins/server.js",
   "module": "../../dist/es/plugins/server.js",
-  "types": "../../src/plugins/server.ts"
+  "types": "../../dist/typings/plugins/server.d.ts"
 }

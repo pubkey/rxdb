@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/replication.js",
   "jsnext:main": "../../dist/es/plugins/replication.js",
   "module": "../../dist/es/plugins/replication.js",
-  "types": "../../src/plugins/replication.ts"
+  "types": "../../dist/typings/plugins/replication.d.ts"
 }

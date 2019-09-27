@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/attachments.js",
   "jsnext:main": "../../dist/es/plugins/attachments.js",
   "module": "../../dist/es/plugins/attachments.js",
-  "types": "../../src/plugins/attachments.ts"
+  "types": "../../dist/typings/plugins/attachments.d.ts"
 }

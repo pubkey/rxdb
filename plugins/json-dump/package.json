@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/json-dump.js",
   "jsnext:main": "../../dist/es/plugins/json-dump.js",
   "module": "../../dist/es/plugins/json-dump.js",
-  "types": "../../src/plugins/json-dump.ts"
+  "types": "../../dist/typings/plugins/json-dump.d.ts"
 }

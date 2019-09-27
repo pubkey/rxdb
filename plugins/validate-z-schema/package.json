@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/validate-z-schema.js",
   "jsnext:main": "../../dist/es/plugins/validate-z-schema.js",
   "module": "../../dist/es/plugins/validate-z-schema.js",
-  "types": "../../src/plugins/validate-z-schema.ts"
+  "types": "../../dist/typings/plugins/validate-z-schema.d.ts"
 }

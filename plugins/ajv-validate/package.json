@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/ajv-validate.js",
   "jsnext:main": "../../dist/es/plugins/ajv-validate.js",
   "module": "../../dist/es/plugins/ajv-validate.js",
-  "types": "../../src/plugins/ajv-validate.ts"
+  "types": "../../dist/typings/plugins/ajv-validated.d.ts"
 }

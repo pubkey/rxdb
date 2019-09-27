@@ -3,5 +3,5 @@
   "main": "../../dist/lib/plugins/error-messages.js",
   "jsnext:main": "../../dist/es/plugins/error-messages.js",
   "module": "../../dist/es/plugins/error-messages.js",
-  "types": "../../src/plugins/error-messages.ts"
+  "types": "../../dist/typings/plugins/error-messages.d.ts"
 }
