@@ -71,6 +71,7 @@ export function spawnServer({
     startServer = true,
 }) {
     const db = this;
+    const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db))
         SERVERS_OF_DB.set(db, []);
 
@@ -83,7 +84,7 @@ export function spawnServer({
     APP_OF_DB.set(db, app);
 
     // tunnel requests so collection-names can be used as paths
-    Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, path, app, colName));
+    Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, collectionsPath, app, colName));
 
     // show error if collection is created afterwards
     DBS_WITH_SERVER.add(db);
@@ -99,7 +100,7 @@ export function spawnServer({
         }));
     }
 
-    app.use(path, ExpressPouchDB(pseudo));
+    app.use(collectionsPath, ExpressPouchDB(pseudo));
 
     let server = null;
     if (startServer) {
