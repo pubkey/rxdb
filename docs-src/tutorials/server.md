@@ -71,19 +71,50 @@ await db.items.insert({
 Now we can spawn the server.
 
 ```typescript
-const serverState = db.server({
+const {app, server} = db.server({
     path: '/db', // (optional)
     port: 3000,  // (optional)
-    cors: true   // (optional), enable CORS-headers
+    cors: true,   // (optional), enable CORS-headers
+    startServer: true // (optional), start express server
 });
 ```
 
-To ensure that every thing is ok,
+To ensure that everything is ok,
 
 - Open http://localhost:3000/db to get the database-info
 - Open http://localhost:3000/db/items to get the collection-info
 
+### Server as a part of bigger Express app
+You can create server without starting it. It allows to use server as a part of bigger Express app.
 
+```typescript
+const {app, server} = db.server({
+    path: '/', // omitted when startServer is false and force set to /
+    port: 3000,  // omitted when startServer is false
+    cors: false,  // disable CORS-headers (default) - you probably want to configure CORS in your main app
+    startServer: false // do not start express server
+});
+```
+
+Then you can mount rxdb server express app in your express app
+
+```typescript
+const {app, server} = db.server({
+    startServer: false
+});
+const mainApp = express();
+
+// configure CORS, other middlewares...
+
+mainApp.use('/db', app);
+mainApp.use('/', (req, res) => res.send('hello'));
+mainApp.listen(3000, () => console.log(`Server listening on port 3000`));
+```
+
+To ensure that everything is ok,
+
+- Open http://localhost:3000/db to get the database-info
+- Open http://localhost:3000/db/items to get the collection-info
 
 ## On the client
 
