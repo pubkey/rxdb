@@ -176,7 +176,7 @@ function () {
       }
     } else {
       // U1 doc not matched and also not matches now
-      if (!options.skip && !options.limit && !wasDocInResults && !doesMatchNow) {
+      if (!options.skip && !wasDocInResults && !doesMatchNow) {
         DEBUG && _debugMessage(this, 'U1', docData);
         return false;
       } // U2 still matching -> only resort
@@ -215,6 +215,7 @@ function () {
     } // if no optimisation-algo matches, return mustReExec:true
 
 
+    DEBUG && console.log(this, 'NO_MATCH', docData);
     return true;
   };
 

@@ -15,7 +15,8 @@
         "sidebar": {
             "Follow @twitter ": "https://twitter.com/rxdbjs",
             "Chat @gitter ": "https://gitter.im/pubkey/rxdb",
-            "Star @github ": "https://github.com/pubkey/rxdb"
+            "Star @github ": "https://github.com/pubkey/rxdb",
+            "Donate @patreon ": "https://www.patreon.com/rxdb/"
         }
     },
     "pluginsConfig": {
