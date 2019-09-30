@@ -3,7 +3,6 @@ import config from './config';
 import AsyncTestUtil from 'async-test-util';
 import request from 'request-promise-native';
 import requestR from 'request';
-import express from 'express';
 
 import RxDB from '../../dist/lib/index';
 import * as humansCollection from '../helper/humans-collection';
@@ -13,6 +12,9 @@ import * as util from '../../dist/lib/util';
 
 config.parallel('server.test.js', () => {
     if (!config.platform.isNode()) return;
+
+    // below imports have to be conditionally imported (only for Node) that's why we use require here instead of import:
+    const express = require('express');
 
     const NodeWebsqlAdapter = require('pouchdb-adapter-leveldb');
 
