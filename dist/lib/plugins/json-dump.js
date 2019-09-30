@@ -16,11 +16,7 @@ var _rxChangeEvent = require("../rx-change-event");
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-
-/**
- * @return {Promise}
- */
-var dumpRxDatabase = function dumpRxDatabase() {
+function dumpRxDatabase() {
   var _this = this;
 
   var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
@@ -51,7 +47,7 @@ var dumpRxDatabase = function dumpRxDatabase() {
     json.collections = cols;
     return json;
   });
-};
+}
 
 var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   var _this2 = this;
@@ -103,12 +99,8 @@ var dumpRxCollection = function dumpRxCollection() {
     return json;
   });
 };
-/**
- * @return {Promise}
- */
 
-
-var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
+function importDumpRxCollection(exportedJSON) {
   var _this3 = this;
 
   // check schemaHash
@@ -145,7 +137,7 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
     });
   });
   return Promise.all(importFns);
-};
+}
 
 var rxdb = true;
 exports.rxdb = rxdb;

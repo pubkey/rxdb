@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.pluginMissing = pluginMissing;
-exports.newRxTypeError = exports.newRxError = exports.RxTypeError = exports.RxError = void 0;
+exports.newRxError = newRxError;
+exports.newRxTypeError = newRxTypeError;
+exports.RxTypeError = exports.RxError = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
@@ -24,8 +26,6 @@ var _overwritable = _interopRequireDefault(require("./overwritable"));
 
 /**
  * transform an object of parameters to a presentable string
- * @param  {any} parameters
- * @return {string}
  */
 function parametersToString(parameters) {
   var ret = '';
@@ -35,7 +35,7 @@ function parametersToString(parameters) {
     var paramStr = '[object Object]';
 
     try {
-      paramStr = JSON.stringify(parameters[k], function (k, v) {
+      paramStr = JSON.stringify(parameters[k], function (_k, v) {
         return v === undefined ? null : v;
       }, 2);
     } catch (e) {}
@@ -140,16 +140,12 @@ function pluginMissing(pluginKey) {
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
 
-var newRxError = function newRxError(code, parameters) {
+function newRxError(code, parameters) {
   return new RxError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
-};
+}
 
-exports.newRxError = newRxError;
-
-var newRxTypeError = function newRxTypeError(code, parameters) {
+function newRxTypeError(code, parameters) {
   return new RxTypeError(code, _overwritable["default"].tunnelErrorMessage(code), parameters);
-};
-
-exports.newRxTypeError = newRxTypeError;
+}
 
 //# sourceMappingURL=rx-error.js.map

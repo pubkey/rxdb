@@ -5,7 +5,10 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.countAllUndeleted = countAllUndeleted;
+exports.getBatch = getBatch;
+exports.isInstanceOf = isInstanceOf;
+exports.PouchDB = void 0;
 
 var _pouchdbCore = _interopRequireDefault(require("pouchdb-core"));
 
@@ -19,22 +22,20 @@ var _rxError = require("./rx-error");
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-
+// pouchdb-find
+_pouchdbCore["default"].plugin(_pouchdbFind["default"]);
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-// pouchdb-find
-_pouchdbCore["default"].plugin(_pouchdbFind["default"]);
+
 
 /**
  * get the number of all undeleted documents
- * @param  {PouchDB}  pouchdb instance
- * @return {Promise<number>} number of documents
  */
-_pouchdbCore["default"].countAllUndeleted = function (pouchdb) {
+function countAllUndeleted(pouchdb) {
   return pouchdb.allDocs({
     include_docs: false,
     attachments: false
@@ -43,16 +44,13 @@ _pouchdbCore["default"].countAllUndeleted = function (pouchdb) {
       return !row.id.startsWith('_design/');
     }).length;
   });
-};
+}
 /**
  * get a batch of documents from the pouch-instance
- * @param  {PouchDB}  pouchdb instance
- * @param  {number}  limit
- * @return {Promise<{}[]>} array with documents
  */
 
 
-_pouchdbCore["default"].getBatch = function (pouchdb, limit) {
+function getBatch(pouchdb, limit) {
   if (limit <= 1) {
     throw (0, _rxError.newRxError)('P1', {
       limit: limit
@@ -70,13 +68,13 @@ _pouchdbCore["default"].getBatch = function (pouchdb, limit) {
       return !doc._id.startsWith('_design');
     });
   });
-};
+}
 
-_pouchdbCore["default"].isInstanceOf = function (obj) {
+function isInstanceOf(obj) {
   return obj instanceof _pouchdbCore["default"];
-};
+}
 
-var _default = _pouchdbCore["default"];
-exports["default"] = _default;
+var PouchDB = _pouchdbCore["default"];
+exports.PouchDB = PouchDB;
 
 //# sourceMappingURL=pouch-db.js.map

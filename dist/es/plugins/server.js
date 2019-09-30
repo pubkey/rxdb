@@ -1,6 +1,6 @@
 import express from 'express';
 import corsFn from 'cors';
-import PouchDB from '../pouch-db';
+import { PouchDB } from '../pouch-db';
 import { newRxError } from '../rx-error';
 import Core from '../core';
 import ReplicationPlugin from './replication';
@@ -144,3 +144,4 @@ export default {
   hooks: hooks,
   spawnServer: spawnServer
 };
+//# sourceMappingURL=server.js.map

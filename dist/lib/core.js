@@ -5,62 +5,166 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.dbCount = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = void 0;
+var _exportNames = {
+  plugin: true,
+  QueryChangeDetector: true,
+  PouchDB: true,
+  create: true,
+  removeDatabase: true,
+  checkAdapter: true,
+  isRxDatabase: true,
+  dbCount: true,
+  createRxDatabase: true,
+  isRxCollection: true,
+  isRxDocument: true,
+  isRxQuery: true,
+  isRxSchema: true,
+  createRxSchema: true,
+  RxSchema: true,
+  RxChangeEvent: true
+};
+Object.defineProperty(exports, "QueryChangeDetector", {
+  enumerable: true,
+  get: function get() {
+    return _queryChangeDetector.QueryChangeDetector;
+  }
+});
+Object.defineProperty(exports, "PouchDB", {
+  enumerable: true,
+  get: function get() {
+    return _pouchDb.PouchDB;
+  }
+});
+Object.defineProperty(exports, "create", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.create;
+  }
+});
+Object.defineProperty(exports, "removeDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.removeDatabase;
+  }
+});
+Object.defineProperty(exports, "checkAdapter", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.checkAdapter;
+  }
+});
+Object.defineProperty(exports, "isRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "dbCount", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.dbCount;
+  }
+});
+Object.defineProperty(exports, "createRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.create;
+  }
+});
+Object.defineProperty(exports, "isRxCollection", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollection.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "isRxDocument", {
+  enumerable: true,
+  get: function get() {
+    return _rxDocument.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "isRxQuery", {
+  enumerable: true,
+  get: function get() {
+    return _rxQuery.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "isRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "createRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.createRxSchema;
+  }
+});
+Object.defineProperty(exports, "RxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.RxSchema;
+  }
+});
+Object.defineProperty(exports, "RxChangeEvent", {
+  enumerable: true,
+  get: function get() {
+    return _rxChangeEvent.RxChangeEvent;
+  }
+});
+exports["default"] = exports.plugin = void 0;
 
-var _rxDatabase = _interopRequireDefault(require("./rx-database"));
-
-var _rxSchema = require("./rx-schema");
-
-var _rxDocument = _interopRequireDefault(require("./rx-document"));
-
-var _rxQuery = require("./rx-query");
-
-var _rxCollection = _interopRequireDefault(require("./rx-collection"));
-
-var _queryChangeDetector = _interopRequireDefault(require("./query-change-detector"));
+var _queryChangeDetector = require("./query-change-detector");
 
 var _plugin = _interopRequireDefault(require("./plugin"));
 
-var _pouchDb = _interopRequireDefault(require("./pouch-db"));
+var _pouchDb = require("./pouch-db");
+
+var _types = require("./types");
+
+Object.keys(_types).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _types[key];
+    }
+  });
+});
+
+var _rxDatabase = require("./rx-database");
+
+var _rxCollection = require("./rx-collection");
+
+var _rxDocument = require("./rx-document");
+
+var _rxQuery = require("./rx-query");
+
+var _rxSchema = require("./rx-schema");
+
+var _rxChangeEvent = require("./rx-change-event");
 
 /**
  * this is the main entry-point for custom builds
  * it can be used as standalone but is also used in the batteries-included main-export
  */
-var create = _rxDatabase["default"].create;
-exports.create = create;
-var removeDatabase = _rxDatabase["default"].removeDatabase;
-exports.removeDatabase = removeDatabase;
-var checkAdapter = _rxDatabase["default"].checkAdapter;
-exports.checkAdapter = checkAdapter;
 var plugin = _plugin["default"];
 exports.plugin = plugin;
-var isRxDatabase = _rxDatabase["default"].isInstanceOf;
-exports.isRxDatabase = isRxDatabase;
-var dbCount = _rxDatabase["default"].dbCount;
-exports.dbCount = dbCount;
-var isRxCollection = _rxCollection["default"].isInstanceOf;
-exports.isRxCollection = isRxCollection;
-var isRxDocument = _rxDocument["default"].isInstanceOf;
-exports.isRxDocument = isRxDocument;
-var isRxQuery = _rxQuery.isInstanceOf;
-exports.isRxQuery = isRxQuery;
-var isRxSchema = _rxSchema.isInstanceOf;
-exports.isRxSchema = isRxSchema;
 var _default = {
-  create: create,
-  removeDatabase: removeDatabase,
-  checkAdapter: checkAdapter,
+  create: _rxDatabase.create,
+  removeDatabase: _rxDatabase.removeDatabase,
+  checkAdapter: _rxDatabase.checkAdapter,
   plugin: plugin,
-  dbCount: dbCount,
-  isRxDatabase: isRxDatabase,
-  isRxCollection: isRxCollection,
-  isRxDocument: isRxDocument,
-  isRxQuery: isRxQuery,
-  isRxSchema: isRxSchema,
-  PouchDB: _pouchDb["default"],
-  QueryChangeDetector: _queryChangeDetector["default"],
-  RxDatabase: _rxDatabase["default"]
+  dbCount: _rxDatabase.dbCount,
+  isRxDatabase: _rxDatabase.isInstanceOf,
+  isRxCollection: _rxCollection.isInstanceOf,
+  isRxDocument: _rxDocument.isInstanceOf,
+  isRxQuery: _rxQuery.isInstanceOf,
+  isRxSchema: _rxSchema.isInstanceOf,
+  PouchDB: _pouchDb.PouchDB,
+  QueryChangeDetector: _queryChangeDetector.QueryChangeDetector
 };
 exports["default"] = _default;
 

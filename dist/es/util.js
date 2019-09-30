@@ -5,11 +5,11 @@
 import randomToken from 'random-token';
 import { newRxError, newRxTypeError } from './rx-error';
 import { default as deepClone } from 'clone';
+
 /**
  * check if the given module is a leveldown-adapter
  * throws if not
  */
-
 export function isLevelDown(adapter) {
   if (!adapter || typeof adapter.super_ !== 'function') {
     throw newRxError('UT4', {
@@ -20,26 +20,27 @@ export function isLevelDown(adapter) {
 /**
  * this is a very fast hashing but its unsecure
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
- * @param  {object} obj
- * @return {number} a number as hash-result
+ * @return a number as hash-result
  */
 
 export function fastUnsecureHash(obj) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj);
-  var hash = 0,
+  var hashValue = 0,
       i,
       chr,
       len;
-  if (obj.length === 0) return hash;
+  if (obj.length === 0) return hashValue;
 
   for (i = 0, len = obj.length; i < len; i++) {
-    chr = obj.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
+    chr = obj.charCodeAt(i); // tslint:disable-next-line
+
+    hashValue = (hashValue << 5) - hashValue + chr; // tslint:disable-next-line
+
+    hashValue |= 0; // Convert to 32bit integer
   }
 
-  if (hash < 0) hash = hash * -1;
-  return hash;
+  if (hashValue < 0) hashValue = hashValue * -1;
+  return hashValue;
 }
 /**
  *  spark-md5 is used here
@@ -55,7 +56,6 @@ export function hash(obj) {
 }
 /**
  * generate a new _id as db-primary-key
- * @return {string}
  */
 
 export function generateId() {
@@ -63,7 +63,6 @@ export function generateId() {
 }
 /**
  * returns a promise that resolves on the next tick
- * @return {Promise}
  */
 
 export function nextTick() {
@@ -71,23 +70,12 @@ export function nextTick() {
     return setTimeout(res, 0);
   });
 }
-/**
- * [promiseWait description]
- * @param  {Number}  [ms=0]
- * @return {Promise}
- */
-
 export function promiseWait() {
   var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
   return new Promise(function (res) {
     return setTimeout(res, ms);
   });
 }
-/**
- * @param {any | Promise} maybePromise
- * @return {Promise}
- */
-
 export function toPromise(maybePromise) {
   if (maybePromise && typeof maybePromise.then === 'function') {
     // is promise
@@ -99,9 +87,9 @@ export function toPromise(maybePromise) {
 export function requestIdlePromise() {
   var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-  if (typeof window === 'object' && window.requestIdleCallback) {
+  if (typeof window === 'object' && window['requestIdleCallback']) {
     return new Promise(function (res) {
-      return window.requestIdleCallback(res, {
+      return window['requestIdleCallback'](res, {
         timeout: timeout
       });
     });
@@ -110,8 +98,7 @@ export function requestIdlePromise() {
 /**
  * like Promise.all() but runs in series instead of parallel
  * @link https://github.com/egoist/promise.series/blob/master/index.js
- * @param {Function[]} tasks array with functions that return a promise
- * @return {Promise<Array>}
+ * @param tasks array with functions that return a promise
  */
 
 export function promiseSeries(tasks, initial) {
@@ -123,17 +110,13 @@ export function promiseSeries(tasks, initial) {
  * run the callback if requestIdleCallback available
  * do nothing if not
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
- * @param  {function} fun
- * @return {void}
  */
 
 export function requestIdleCallbackIfAvailable(fun) {
-  if (typeof window === 'object' && window.requestIdleCallback) window.requestIdleCallback(fun);
+  if (typeof window === 'object' && window['requestIdleCallback']) window['requestIdleCallback'](fun);
 }
 /**
  * uppercase first char
- * @param  {string} str
- * @return {string} Str
  */
 
 export function ucfirst(str) {
@@ -151,8 +134,8 @@ var base58Length = base58Chars.length;
 /**
  * transform a number to a string by using only base58 chars
  * @link https://github.com/matthewmueller/number-to-letter/blob/master/index.js
- * @param {number} nr                                       | 10000000
- * @return {string} the string-representation of the number | '2oMX'
+ * @param nr                                       | 10000000
+ * @return the string-representation of the number | '2oMX'
  */
 
 export function numberToLetter(nr) {
@@ -170,8 +153,6 @@ export function numberToLetter(nr) {
 }
 /**
  * removes trailing and ending dots from the string
- * @param  {string} str
- * @return {string} str without wrapping dots
  */
 
 export function trimDots(str) {
@@ -190,9 +171,7 @@ export function trimDots(str) {
 /**
  * validates that a given string is ok to be used with couchdb-collection-names
  * @link https://wiki.apache.org/couchdb/HTTP_database_API
- * @param  {string} name
  * @throws  {Error}
- * @return {boolean} true
  */
 
 export function validateCouchDBString(name) {
@@ -221,9 +200,6 @@ export function validateCouchDBString(name) {
 /**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
- * @param  {Object} obj unsorted
- * @param  {?boolean} noArraysort
- * @return {Object} sorted
  */
 
 export function sortObject(obj) {
@@ -266,8 +242,6 @@ export function stringifyFilter(key, value) {
 }
 /**
  * get the correct function-name for pouchdb-replication
- * @param {object} pouch - instance of pouchdb
- * @return {function}
  */
 
 export function pouchReplicationFunction(pouch, _ref) {
@@ -289,8 +263,6 @@ export function pouchReplicationFunction(pouch, _ref) {
 /**
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137
- * @param {number} [length=10] length
- * @return {string}
  */
 
 export function randomCouchString() {
@@ -306,8 +278,6 @@ export function randomCouchString() {
 }
 /**
  * shuffle the given array
- * @param  {Array<any>} arr
- * @return {Array<any>}
  */
 
 export function shuffleArray(arr) {
@@ -317,7 +287,6 @@ export function shuffleArray(arr) {
 }
 /**
  * transforms the given adapter into a pouch-compatible object
- * @return {Object} adapterObject
  */
 
 export function adapterObject(adapter) {
@@ -353,7 +322,7 @@ export function flattenObject(ob) {
   for (var i in ob) {
     if (!ob.hasOwnProperty(i)) continue;
 
-    if (typeof ob[i] == 'object') {
+    if (typeof ob[i] === 'object') {
       var flatObject = flattenObject(ob[i]);
 
       for (var x in flatObject) {
@@ -367,15 +336,9 @@ export function flattenObject(ob) {
 
   return toReturn;
 }
-/**
- *
- * @param {string} revString
- * @return {number}
- */
-
 export function getHeightOfRevision(revString) {
   var first = revString.split('-')[0];
-  return parseInt(first);
+  return parseInt(first, 10);
 }
 /**
  * prefix of local documents
@@ -383,3 +346,4 @@ export function getHeightOfRevision(revString) {
  */
 
 export var LOCAL_PREFIX = '_local/';
+//# sourceMappingURL=util.js.map

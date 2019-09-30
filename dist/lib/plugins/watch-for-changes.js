@@ -53,9 +53,6 @@ function watchForChanges() {
 /**
  * handles a single change-event
  * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
  */
 
 
@@ -70,7 +67,10 @@ function _handleSingleChange(collection, change) {
   }).then(function () {
     var docData = change.doc; // already handled by internal event-stream
 
-    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
+    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) {
+      return false;
+    }
+
     var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection);
     collection.$emit(cE);
     return true;
@@ -85,10 +85,11 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var _default = {
+var plugin = {
   rxdb: rxdb,
   prototypes: prototypes
 };
+var _default = plugin;
 exports["default"] = _default;
 
 //# sourceMappingURL=watch-for-changes.js.map

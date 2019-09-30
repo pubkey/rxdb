@@ -3,7 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = createQueryCache;
+exports.createQueryCache = createQueryCache;
+exports.QueryCache = void 0;
 
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
@@ -20,8 +21,6 @@ function () {
    * check if an equal query is in the cache,
    * if true, return the cached one,
    * if false, save the given one and return it
-   * @param  {RxQuery} query
-   * @return {RxQuery}
    */
 
 
@@ -42,6 +41,8 @@ function () {
 
   return QueryCache;
 }();
+
+exports.QueryCache = QueryCache;
 
 function createQueryCache() {
   return new QueryCache();

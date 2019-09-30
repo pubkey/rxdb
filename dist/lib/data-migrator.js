@@ -8,16 +8,15 @@ Object.defineProperty(exports, "__esModule", {
 exports._getOldCollections = _getOldCollections;
 exports.mustMigrate = mustMigrate;
 exports.createDataMigrator = createDataMigrator;
+exports.DataMigrator = void 0;
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-var _pouchDb = _interopRequireDefault(require("./pouch-db"));
+var _pouchDb = require("./pouch-db");
 
 var _util = require("./util");
 
 var _rxSchema = require("./rx-schema");
-
-var _crypter = _interopRequireDefault(require("./crypter"));
 
 var _rxError = require("./rx-error");
 
@@ -27,6 +26,8 @@ var _hooks = require("./hooks");
 
 var _rxjs = require("rxjs");
 
+var _crypter = require("./crypter");
+
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -35,17 +36,13 @@ var DataMigrator =
 /*#__PURE__*/
 function () {
   function DataMigrator(newestCollection, migrationStrategies) {
+    this._migrated = false;
     this.newestCollection = newestCollection;
     this.migrationStrategies = migrationStrategies;
     this.currentSchema = newestCollection.schema;
     this.database = newestCollection.database;
     this.name = newestCollection.name;
   }
-  /**
-   * @param {number} [batchSize=10] amount of documents handled in parallel
-   * @return {Observable} emits the migration-state
-   */
-
 
   var _proto = DataMigrator.prototype;
 
@@ -58,7 +55,7 @@ function () {
     var state = {
       done: false,
       // true if finished
-      total: null,
+      total: 0,
       // will be the doc-count
       handled: 0,
       // amount of handled docs
@@ -80,16 +77,16 @@ function () {
       var oldCols;
       return _getOldCollections(_this).then(function (ret) {
         oldCols = ret;
-        return Promise.all(oldCols.map(function (oldCol) {
-          return oldCol.countAllUndeleted();
+        var countAll = Promise.all(oldCols.map(function (oldCol) {
+          return (0, _pouchDb.countAllUndeleted)(oldCol.pouchdb);
         }));
+        return countAll;
       }).then(function (countAll) {
         var totalCount = countAll.reduce(function (cur, prev) {
           return prev = cur + prev;
         }, 0);
         state.total = totalCount;
         observer.next((0, _util.clone)(state));
-      }).then(function () {
         var currentCol = oldCols.shift();
         var currentPromise = Promise.resolve();
 
@@ -128,11 +125,7 @@ function () {
     })();
 
     return observer.asObservable();
-  }
-  /**
-   * @return {Promise}
-   */
-  ;
+  };
 
   _proto.migratePromise = function migratePromise(batchSize) {
     var _this2 = this;
@@ -142,7 +135,7 @@ function () {
         if (!must) return Promise.resolve(false);else return new Promise(function (res, rej) {
           var state$ = _this2.migrate(batchSize);
 
-          state$.subscribe(null, rej, res);
+          state$['subscribe'](null, rej, res);
         });
       });
     }
@@ -153,30 +146,25 @@ function () {
   return DataMigrator;
 }();
 
+exports.DataMigrator = DataMigrator;
+
 var OldCollection =
 /*#__PURE__*/
 function () {
   function OldCollection(version, schemaObj, dataMigrator) {
     this.version = version;
-    this.dataMigrator = dataMigrator;
     this.schemaObj = schemaObj;
+    this.dataMigrator = dataMigrator;
     this.newestCollection = dataMigrator.newestCollection;
     this.database = dataMigrator.newestCollection.database;
   }
 
   var _proto2 = OldCollection.prototype;
 
-  /**
-   * @return {Promise}
-   */
-  _proto2.countAllUndeleted = function countAllUndeleted() {
-    return _pouchDb["default"].countAllUndeleted(this.pouchdb);
-  };
-
   _proto2.getBatch = function getBatch(batchSize) {
     var _this3 = this;
 
-    return _pouchDb["default"].getBatch(this.pouchdb, batchSize).then(function (docs) {
+    return (0, _pouchDb.getBatch)(this.pouchdb, batchSize).then(function (docs) {
       return docs.map(function (doc) {
         return _this3._handleFromPouch(doc);
       });
@@ -205,11 +193,7 @@ function () {
     data = this.schema.swapPrimaryToId(data);
     if (this.schema.doKeyCompression()) data = this.keyCompressor.compress(data);
     return data;
-  }
-  /**
-   * @return {Promise<object|null>}
-   */
-  ;
+  };
 
   _proto2._runStrategyIfNotNull = function _runStrategyIfNotNull(version, docOrNull) {
     if (docOrNull === null) return Promise.resolve(null);
@@ -221,17 +205,17 @@ function () {
    * runs the doc-data through all following migrationStrategies
    * so it will match the newest schema.
    * @throws Error if final doc does not match final schema or migrationStrategy crashes
-   * @return {Promise<Object|null>} final object or null if migrationStrategy deleted it
+   * @return final object or null if migrationStrategy deleted it
    */
   ;
 
-  _proto2.migrateDocumentData = function migrateDocumentData(doc) {
+  _proto2.migrateDocumentData = function migrateDocumentData(docData) {
     var _this4 = this;
 
-    doc = (0, _util.clone)(doc);
+    docData = (0, _util.clone)(docData);
     var nextVersion = this.version + 1; // run the document throught migrationStrategies
 
-    var currentPromise = Promise.resolve(doc);
+    var currentPromise = Promise.resolve(docData);
 
     var _loop2 = function _loop2() {
       var version = nextVersion;
@@ -263,7 +247,7 @@ function () {
   }
   /**
    * transform docdata and save to new collection
-   * @return {Promise<{type: string, doc: {}}>} status-action with status and migrated document
+   * @return status-action with status and migrated document
    */
   ;
 
@@ -271,6 +255,9 @@ function () {
     var _this5 = this;
 
     var action = {
+      res: null,
+      type: '',
+      migrated: null,
       doc: doc,
       oldCollection: this,
       newestCollection: this.newestCollection
@@ -297,7 +284,6 @@ function () {
   }
   /**
    * deletes this.pouchdb and removes it from the database.collectionsCollection
-   * @return {Promise}
    */
   ;
 
@@ -307,11 +293,7 @@ function () {
     return this.pouchdb.destroy().then(function () {
       return _this6.database.removeCollectionDoc(_this6.dataMigrator.name, _this6.schema);
     });
-  }
-  /**
-   * runs the migration on all documents and deletes the pouchdb afterwards
-   */
-  ;
+  };
 
   _proto2.migrate = function migrate() {
     var _this7 = this;
@@ -328,6 +310,13 @@ function () {
     (function () {
       var error;
 
+      var allBatchesDone = function allBatchesDone() {
+        // remove this oldCollection
+        return _this7["delete"]().then(function () {
+          return observer.complete();
+        });
+      };
+
       var handleOneBatch = function handleOneBatch() {
         return _this7.getBatch(batchSize).then(function (batch) {
           if (batch.length === 0) {
@@ -340,7 +329,9 @@ function () {
               });
             }))["catch"](function (e) {
               return error = e;
-            }).then(true);
+            }).then(function () {
+              return true;
+            });
           }
         }).then(function (next) {
           if (!next) return;
@@ -349,13 +340,6 @@ function () {
       };
 
       handleOneBatch();
-
-      var allBatchesDone = function allBatchesDone() {
-        // remove this oldCollection
-        return _this7["delete"]().then(function () {
-          return observer.complete();
-        });
-      };
     })();
 
     return observer.asObservable();
@@ -368,7 +352,7 @@ function () {
       this._migratePromise = new Promise(function (res, rej) {
         var state$ = _this8.migrate(batchSize);
 
-        state$.subscribe(null, rej, res);
+        state$['subscribe'](null, rej, res);
       });
     }
 
@@ -394,7 +378,7 @@ function () {
   }, {
     key: "crypter",
     get: function get() {
-      if (!this._crypter) this._crypter = _crypter["default"].create(this.database.password, this.schema);
+      if (!this._crypter) this._crypter = (0, _crypter.create)(this.database.password, this.schema);
       return this._crypter;
     }
   }, {
@@ -411,7 +395,6 @@ function () {
 }();
 /**
  * get an array with OldCollection-instances from all existing old pouchdb-instance
- * @return {Promise<OldCollection[]>}
  */
 
 
@@ -433,7 +416,6 @@ function _getOldCollections(dataMigrator) {
 }
 /**
  * returns true if a migration is needed
- * @return {Promise<boolean>}
  */
 
 
