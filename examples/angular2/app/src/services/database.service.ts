@@ -101,7 +101,7 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     // hooks
     console.log('DatabaseService: add hooks');
-    db.collections.hero.preInsert(function(docObj: RxHeroDocumentType) {
+    db.collections.hero.preInsert(function (docObj: RxHeroDocumentType) {
         const color = docObj.color;
         return db.collections.hero.findOne({ color }).exec()
             .then((has: RxHeroDocument | null) => {
@@ -111,7 +111,7 @@ async function _create(): Promise<RxHeroesDatabase> {
                 }
                 return db;
             });
-    });
+    }, false);
 
     // sync with server
     console.log('DatabaseService: sync');
