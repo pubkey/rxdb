@@ -9,7 +9,7 @@ const mochaSettings = {
 if (process.env.TRAVIS) {
     // this is so high because travis has different machines
     // that are randomly slow
-    mochaSettings.timeout = 90 * 1000;
+    mochaSettings.timeout = 120 * 1000;
     mochaSettings.reporter = 'min';
 };
 if (process.env.NODE_PROF) {

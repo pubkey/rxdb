@@ -21,7 +21,7 @@
     "pouchdb-adapter-http": "7.0.0",
     "pouchdb-adapter-idb": "7.0.0",
     "pouchdb-server": "4.1.0",
-    "random-int": "2.0.0",
+    "random-int": "2.0.1",
     "register-service-worker": "1.6.2",
     "rxdb": "../../",
     "vue": "2.6.10",
@@ -38,7 +38,7 @@
     "less-loader": "5.0.0",
     "local-web-server": "3.0.7",
     "testcafe": "1.4.3",
-    "typescript": "3.6.2",
+    "typescript": "3.6.3",
     "vue-template-compiler": "2.6.10"
   }
 }
