@@ -1,5 +1,14 @@
 # Changelog
 
+### 8.5.0-beta.2 (1 October 2019)
+
+Bugfixes:
+  - Fixed typings of `preCreateRxCollection` [#1533](https://github.com/pubkey/rxdb/issues/1533) Thanks [@yanshiyason](https://github.com/yanshiyason)
+
+### 8.5.0-beta.1 (30 September 2019)
+
+Migrated to typescript.
+
 ### 8.5.0 (18 September 2019)
 
 Bugfixes:

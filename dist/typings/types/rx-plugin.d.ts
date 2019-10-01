@@ -18,6 +18,7 @@ export interface RxPlugin {
     hooks?: {
         createRxDatabase?: Function;
         createRxCollection?: Function;
+        preCreateRxCollection?: Function;
         preCreateRxSchema?: Function;
         createRxSchema?: Function;
         createRxQuery?: Function;
