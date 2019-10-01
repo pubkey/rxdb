@@ -1,5 +1,9 @@
 # Changelog
 
+### 8.5.0-beta.3 (1 October 2019)
+
+  - Fixed import of `@types/pouchdb-core` and `@types/pouchdb-find`
+
 ### 8.5.0-beta.2 (1 October 2019)
 
 Bugfixes:
