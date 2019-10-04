@@ -65,7 +65,7 @@ function tunnelCollectionPath(
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
     app.use(collectionPath, function (req: any, res: any, next: any) {
-        if (req.baseUrl === collectionPath) {
+        if (req.baseUrl.endsWith(collectionPath)) {
             const to = normalizeDbName(db) + '-rxdb-0-' + colName;
             const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
             req.originalUrl = toFull;
@@ -79,9 +79,11 @@ export function spawnServer(
     {
         path = '/db',
         port = 3000,
-        cors = false
-    }) {
+        cors = false,
+    startServer = true,
+}) {
     const db = this;
+    const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db))
         SERVERS_OF_DB.set(db, []);
 
@@ -94,7 +96,7 @@ export function spawnServer(
     APP_OF_DB.set(db, app);
 
     // tunnel requests so collection-names can be used as paths
-    Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, path, app, colName));
+    Object.keys(db.collections).forEach(colName => tunnelCollectionPath(db, collectionsPath, app, colName));
 
     // show error if collection is created afterwards
     DBS_WITH_SERVER.add(db);
@@ -110,10 +112,13 @@ export function spawnServer(
         }));
     }
 
-    app.use(path, ExpressPouchDB(pseudo));
+    app.use(collectionsPath, ExpressPouchDB(pseudo));
 
-    const server = app.listen(port);
-    SERVERS_OF_DB.get(db).push(server);
+    let server = null;
+    if (startServer) {
+        server = app.listen(port);
+        SERVERS_OF_DB.get(db).push(server);
+    }
 
     return {
         app,
