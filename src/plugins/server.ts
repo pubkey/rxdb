@@ -80,8 +80,8 @@ export function spawnServer(
         path = '/db',
         port = 3000,
         cors = false,
-    startServer = true,
-}) {
+        startServer = true,
+    }) {
     const db = this;
     const collectionsPath = startServer ? path : '/';
     if (!SERVERS_OF_DB.has(db))

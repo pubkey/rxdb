@@ -1,5 +1,13 @@
 # Changelog
 
+### X.X.X
+
+Features:
+  - RxDB server can now be used with an existing express-app. [#1448](https://github.com/pubkey/rxdb/issues/1448) Thanks [@dstudzinski](https://github.com/dstudzinski)
+
+### 8.6.0 (4 October 2019)
+Migrated to typescript.
+
 ### 8.5.0-beta.3 (1 October 2019)
 
   - Fixed import of `@types/pouchdb-core` and `@types/pouchdb-find`
