@@ -10,8 +10,6 @@ exports.validateFieldsDeep = validateFieldsDeep;
 exports.checkSchema = checkSchema;
 exports["default"] = exports.hooks = exports.rxdb = void 0;
 
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
 var _objectPath = _interopRequireDefault(require("object-path"));
 
 var _rxDocument = _interopRequireDefault(require("../rx-document"));
@@ -29,7 +27,6 @@ var _rxSchema = require("../rx-schema");
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
  * and does not conquer the observe$ and populate_ fields
- * @param  {string} fieldName
  * @throws {Error}
  */
 function checkFieldNameRegex(fieldName) {
@@ -54,14 +51,12 @@ function checkFieldNameRegex(fieldName) {
 }
 /**
  * validate that all schema-related things are ok
- * @param  {object} jsonSchema
- * @return {boolean} true always
  */
 
 
 function validateFieldsDeep(jsonSchema) {
   function checkField(fieldName, schemaObj, path) {
-    if (typeof fieldName === 'string' && (0, _typeof2["default"])(schemaObj) === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
+    if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName); // 'item' only allowed it type=='array'
 
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
       throw (0, _rxError.newRxError)('SC2', {
@@ -142,9 +137,8 @@ function validateFieldsDeep(jsonSchema) {
   }
 
   function traverse(currentObj, currentPath) {
-    if ((0, _typeof2["default"])(currentObj) !== 'object') return;
-
-    for (var attributeName in currentObj) {
+    if (typeof currentObj !== 'object') return;
+    Object.keys(currentObj).forEach(function (attributeName) {
       if (!currentObj.properties) {
         checkField(attributeName, currentObj[attributeName], currentPath);
       }
@@ -152,7 +146,7 @@ function validateFieldsDeep(jsonSchema) {
       var nextPath = currentPath;
       if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
       traverse(currentObj[attributeName], nextPath);
-    }
+    });
   }
 
   traverse(jsonSchema, '');
@@ -160,7 +154,6 @@ function validateFieldsDeep(jsonSchema) {
 }
 /**
  * does the checking
- * @param  {object} jsonId json-object like in json-schema-standard
  * @throws {Error} if something is not ok
  */
 
@@ -262,7 +255,7 @@ function checkSchema(jsonID) {
 
     var schemaObj = _objectPath["default"].get(jsonID, path);
 
-    if (!schemaObj || (0, _typeof2["default"])(schemaObj) !== 'object') {
+    if (!schemaObj || typeof schemaObj !== 'object') {
       throw (0, _rxError.newRxError)('SC21', {
         key: key
       });

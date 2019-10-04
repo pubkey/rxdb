@@ -13,7 +13,7 @@ var _express = _interopRequireDefault(require("express"));
 
 var _cors = _interopRequireDefault(require("cors"));
 
-var _pouchDb = _interopRequireDefault(require("../pouch-db"));
+var _pouchDb = require("../pouch-db");
 
 var _rxError = require("../rx-error");
 
@@ -39,7 +39,7 @@ try {
 
 var PouchdbAllDbs = require('pouchdb-all-dbs');
 
-PouchdbAllDbs(_pouchDb["default"]);
+PouchdbAllDbs(_pouchDb.PouchDB);
 var APP_OF_DB = new WeakMap();
 var SERVERS_OF_DB = new WeakMap();
 var DBS_WITH_SERVER = new WeakSet();
@@ -92,7 +92,7 @@ function spawnServer(_ref) {
   var db = this;
   if (!SERVERS_OF_DB.has(db)) SERVERS_OF_DB.set(db, []);
 
-  var pseudo = _pouchDb["default"].defaults({
+  var pseudo = _pouchDb.PouchDB.defaults({
     adapter: db.adapter,
     prefix: getPrefix(db)
   });

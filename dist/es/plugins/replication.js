@@ -7,24 +7,22 @@ import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { skipUntil } from 'rxjs/operators';
 import { promiseWait, clone, pouchReplicationFunction } from '../util';
 import Core from '../core';
-import RxCollection from '../rx-collection';
 import { newRxError } from '../rx-error';
-import PouchDB from '../pouch-db';
-import RxDBWatchForChangesPlugin from './watch-for-changes'; // add pouchdb-replication-plugin
-
+import { isInstanceOf as isInstanceOfPouchDB } from '../pouch-db';
+import RxDBWatchForChangesPlugin from './watch-for-changes';
+import { isInstanceOf as isRxCollection } from '../rx-collection';
+// add pouchdb-replication-plugin
 Core.plugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
 
 Core.plugin(RxDBWatchForChangesPlugin);
 var INTERNAL_POUCHDBS = new WeakSet();
-export var RxReplicationState =
+export var RxReplicationStateBase =
 /*#__PURE__*/
 function () {
-  function RxReplicationState(collection) {
+  function RxReplicationStateBase(collection) {
     var _this = this;
 
     this._subs = [];
-    this.collection = collection;
-    this._pouchEventEmitterObject = null;
     this._subjects = {
       change: new Subject(),
       docs: new Subject(),
@@ -33,8 +31,9 @@ function () {
       complete: new BehaviorSubject(false),
       alive: new BehaviorSubject(false),
       error: new Subject()
-    }; // create getters
-
+    };
+    this.collection = collection;
+    // create getters
     Object.keys(this._subjects).forEach(function (key) {
       Object.defineProperty(_this, key + '$', {
         get: function get() {
@@ -44,7 +43,7 @@ function () {
     });
   }
 
-  var _proto = RxReplicationState.prototype;
+  var _proto = RxReplicationStateBase.prototype;
 
   _proto.cancel = function cancel() {
     if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
@@ -54,10 +53,9 @@ function () {
     });
   };
 
-  return RxReplicationState;
+  return RxReplicationStateBase;
 }();
-
-function setPouchEventEmitter(rxRepState, evEmitter) {
+export function setPouchEventEmitter(rxRepState, evEmitter) {
   if (rxRepState._pouchEventEmitterObject) throw newRxError('RC1');
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
@@ -110,10 +108,6 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
       return rxRepState._subjects.complete.next(info);
     });
   }));
-  /**
-   * @return {Promise}
-   */
-
 
   function getIsAlive(emitter) {
     // "state" will live in emitter.state if single direction replication
@@ -145,9 +139,8 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     });
   }));
 }
-
 export function createRxReplicationState(collection) {
-  return new RxReplicationState(collection);
+  return new RxReplicationStateBase(collection);
 }
 export function sync(_ref) {
   var _this2 = this;
@@ -166,9 +159,9 @@ export function sync(_ref) {
     retry: true
   } : _ref$options,
       query = _ref.query;
-  options = clone(options); // prevent #641 by not allowing internal pouchdbs as remote
+  var useOptions = clone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
-  if (PouchDB.isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
+  if (isInstanceOfPouchDB(remote) && INTERNAL_POUCHDBS.has(remote)) {
     throw newRxError('RC3', {
       database: this.database.name,
       collection: this.name
@@ -176,7 +169,7 @@ export function sync(_ref) {
   } // if remote is RxCollection, get internal pouchdb
 
 
-  if (RxCollection.isInstanceOf(remote)) {
+  if (isRxCollection(remote)) {
     remote.watchForChanges();
     remote = remote.pouch;
   }
@@ -188,12 +181,12 @@ export function sync(_ref) {
   }
 
   var syncFun = pouchReplicationFunction(this.pouch, direction);
-  if (query) options.selector = query.keyCompress().selector;
+  if (query) useOptions.selector = query.keyCompress().selector;
   var repState = createRxReplicationState(this); // run internal so .sync() does not have to be async
 
   var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
   waitTillRun.then(function () {
-    var pouchSync = syncFun(remote, options);
+    var pouchSync = syncFun(remote, useOptions);
 
     _this2.watchForChanges();
 
@@ -220,3 +213,4 @@ export default {
   hooks: hooks,
   sync: sync
 };
+//# sourceMappingURL=replication.js.map

@@ -42,14 +42,8 @@ function getDocFromPouchOrNull(collection, id) {
   });
 }
 /**
- * 
- * @param {} collection 
- * @param {string[]} docIds
- * @return {Promise<{[k: string]: {
- *  deleted: boolean,
- *  revisions: {start: number, ids: string[]},
- *  doc: any
- * }}>} revisions and docs, indexed by id
+ *
+ * @return  revisions and docs, indexed by id
  */
 
 

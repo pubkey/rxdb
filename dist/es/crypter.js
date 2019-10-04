@@ -8,31 +8,27 @@ export var Crypter =
 /*#__PURE__*/
 function () {
   function Crypter(password, schema) {
-    this._password = password;
-    this._schema = schema;
+    this.password = password;
+    this.schema = schema;
   }
   /**
    * encrypt and stringify data
    * @overwritten by plugin (optional)
-   * @param  {any} value
-   * @return {string}
    */
 
 
   var _proto = Crypter.prototype;
 
-  _proto._encryptValue = function _encryptValue() {
+  _proto._encryptValue = function _encryptValue(_value) {
     throw pluginMissing('encryption');
   }
   /**
    * decrypt and json-parse an encrypted value
    * @overwritten by plugin (optional)
-   * @param  {string} encValue
-   * @return {any}
    */
   ;
 
-  _proto._decryptValue = function _decryptValue() {
+  _proto._decryptValue = function _decryptValue(_value) {
     throw pluginMissing('encryption');
   };
 
@@ -40,8 +36,8 @@ function () {
     var _this = this;
 
     obj = clone(obj);
-    if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
+    if (!this.password) return obj;
+    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = objectPath.get(obj, path);
       if (typeof value === 'undefined') return;
 
@@ -56,8 +52,8 @@ function () {
     var _this2 = this;
 
     obj = clone(obj);
-    if (!this._password) return obj;
-    Object.keys(this._schema.encryptedPaths).forEach(function (path) {
+    if (!this.password) return obj;
+    Object.keys(this.schema.encryptedPaths).forEach(function (path) {
       var value = objectPath.get(obj, path);
       if (typeof value === 'undefined') return;
 
@@ -77,3 +73,4 @@ export default {
   create: create,
   Crypter: Crypter
 };
+//# sourceMappingURL=crypter.js.map

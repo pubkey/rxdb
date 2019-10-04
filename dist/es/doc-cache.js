@@ -1,8 +1,9 @@
 // TODO add a function to run a cache-clear
-var DocCache =
+export var DocCache =
 /*#__PURE__*/
 function () {
   function DocCache() {
+    this._map = new Map();
     this._map = new Map();
   }
 
@@ -17,12 +18,12 @@ function () {
   };
 
   _proto["delete"] = function _delete(id) {
-    delete this._map["delete"](id);
+    return this._map["delete"](id);
   };
 
   return DocCache;
 }();
-
-export default function createDocCache() {
+export function createDocCache() {
   return new DocCache();
 }
+//# sourceMappingURL=doc-cache.js.map

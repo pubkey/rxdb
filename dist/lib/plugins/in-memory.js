@@ -12,8 +12,6 @@ exports.applyChangedDocumentToPouch = applyChangedDocumentToPouch;
 exports.spawnInMemory = spawnInMemory;
 exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.InMemoryRxCollection = void 0;
 
-var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
@@ -22,7 +20,7 @@ var _rxjs = require("rxjs");
 
 var _operators = require("rxjs/operators");
 
-var _rxCollection = _interopRequireDefault(require("../rx-collection"));
+var _rxCollection = require("../rx-collection");
 
 var _util = require("../util");
 
@@ -30,11 +28,11 @@ var _core = _interopRequireDefault(require("../core"));
 
 var _crypter = _interopRequireDefault(require("../crypter"));
 
-var _changeEventBuffer = _interopRequireDefault(require("../change-event-buffer"));
+var _changeEventBuffer = require("../change-event-buffer");
 
 var _rxSchema = require("../rx-schema");
 
-var _pouchDb = _interopRequireDefault(require("../pouch-db"));
+var _pouchDb = require("../pouch-db");
 
 var _rxError = require("../rx-error");
 
@@ -60,15 +58,16 @@ var BULK_DOC_OPTIONS_FALSE = {
 
 var InMemoryRxCollection =
 /*#__PURE__*/
-function (_RxCollection$RxColle) {
-  (0, _inheritsLoose2["default"])(InMemoryRxCollection, _RxCollection$RxColle);
+function (_RxCollectionBase) {
+  (0, _inheritsLoose2["default"])(InMemoryRxCollection, _RxCollectionBase);
 
   function InMemoryRxCollection(parentCollection) {
     var _this;
 
     var pouchSettings = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    _this = _RxCollection$RxColle.call(this, parentCollection.database, parentCollection.name, toCleanSchema(parentCollection.schema), pouchSettings, // pouchSettings
+    _this = _RxCollectionBase.call(this, parentCollection.database, parentCollection.name, toCleanSchema(parentCollection.schema), pouchSettings, // pouchSettings
     {}, parentCollection._methods) || this;
+    _this._eventCounter = 0;
     _this._isInMemory = true;
     _this._parentCollection = parentCollection;
 
@@ -93,16 +92,18 @@ function (_RxCollection$RxColle) {
 
 
     _this.options = parentCollection.options;
-    Object.entries(parentCollection._statics).forEach(function (_ref) {
+    Object.entries(parentCollection.statics).forEach(function (_ref) {
       var funName = _ref[0],
           fun = _ref[1];
-      return _this.__defineGetter__(funName, function () {
-        return fun.bind((0, _assertThisInitialized2["default"])(_this));
+      Object.defineProperty((0, _assertThisInitialized2["default"])(_this), funName, {
+        get: function get() {
+          return fun.bind((0, _assertThisInitialized2["default"])(_this));
+        }
       });
     });
-    _this.pouch = new _pouchDb["default"]('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'), {});
+    _this.pouch = new _pouchDb.PouchDB('rxdb-in-memory-' + (0, _util.randomCouchString)(10), (0, _util.adapterObject)('memory'));
     _this._observable$ = new _rxjs.Subject();
-    _this._changeEventBuffer = (0, _changeEventBuffer["default"])((0, _assertThisInitialized2["default"])(_this));
+    _this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)((0, _assertThisInitialized2["default"])(_this));
     var parentProto = Object.getPrototypeOf(parentCollection);
     _this._oldPouchPut = parentProto._pouchPut.bind((0, _assertThisInitialized2["default"])(_this));
     _this._nonPersistentRevisions = new Set();
@@ -113,7 +114,7 @@ function (_RxCollection$RxColle) {
 
   var _proto = InMemoryRxCollection.prototype;
 
-  _proto.prepare = function prepare() {
+  _proto.prepareChild = function prepareChild() {
     var _this2 = this;
 
     return setIndexes(this.schema, this.pouch).then(function () {
@@ -142,7 +143,7 @@ function (_RxCollection$RxColle) {
 
       var thisToParentSub = streamChangedDocuments(_this2).pipe((0, _operators.mergeMap)(function (doc) {
         return applyChangedDocumentToPouch(_this2._parentCollection, doc).then(function () {
-          return doc._rev;
+          return doc['_rev'];
         });
       })).subscribe(function (changeRev) {
         _this2._nonPersistentRevisions["delete"](changeRev);
@@ -162,7 +163,6 @@ function (_RxCollection$RxColle) {
   /**
    * waits until all writes are persistent
    * in the parent collection
-   * @return {Promise}
    */
   ;
 
@@ -189,11 +189,7 @@ function (_RxCollection$RxColle) {
 
       return ret;
     });
-  }
-  /**
-   * @overwrite
-   */
-  ;
+  };
 
   _proto.$emit = function $emit(changeEvent) {
     if (this._changeEventBuffer.hasChangeWithRevision(changeEvent.data.v && changeEvent.data.v._rev)) return;
@@ -201,7 +197,6 @@ function (_RxCollection$RxColle) {
     this._observable$.next(changeEvent); // run compaction each 10 events
 
 
-    if (!this._eventCounter) this._eventCounter = 0;
     this._eventCounter++;
 
     if (this._eventCounter === 10) {
@@ -221,14 +216,12 @@ function (_RxCollection$RxColle) {
   };
 
   return InMemoryRxCollection;
-}(_rxCollection["default"].RxCollection);
+}(_rxCollection.RxCollectionBase);
 /**
  * returns a version of the schema that:
  * - disabled the keyCompression
  * - has no encryption
  * - has no attachments
- * @param  {RxSchema} rxSchema
- * @return {RxSchema}
  */
 
 
@@ -244,7 +237,7 @@ function toCleanSchema(rxSchema) {
   var removeEncryption = function removeEncryption(schema, complete) {
     delete schema.encrypted;
     Object.values(schema).filter(function (val) {
-      return (0, _typeof2["default"])(val) === 'object';
+      return typeof val === 'object';
     }).forEach(function (val) {
       return removeEncryption(val, complete);
     });
@@ -255,9 +248,7 @@ function toCleanSchema(rxSchema) {
 }
 /**
  * replicates all documents from the parent to the inMemoryCollection
- * @param  {RxCollection} fromCollection
- * @param  {RxCollection} toCollection
- * @return {Promise<{}[]>} Promise that resolves with an array of the docs data
+ * @return Promise that resolves with an array of the docs data
  */
 
 
@@ -289,9 +280,6 @@ function replicateExistingDocuments(fromCollection, toCollection) {
 }
 /**
  * sets the indexes from the schema at the pouchdb
- * @param {RxSchema} schema
- * @param {PouchDB} pouch
- * @return {Promise<void>}
  */
 
 
@@ -308,14 +296,13 @@ function setIndexes(schema, pouch) {
  * returns an observable that streams all changes
  * as plain documents that have no encryption or keyCompression.
  * We use this to replicate changes from one collection to the other
- * @param {RxCollection} rxCollection
- * @param {Function?} prevFilter can be used to filter changes before doing anything
- * @return {Observable<any>} observable that emits document-data
+ * @param prevFilter can be used to filter changes before doing anything
+ * @return observable that emits document-data
  */
 
 
 function streamChangedDocuments(rxCollection) {
-  var prevFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {
+  var prevFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function (i) {
     return true;
   };
   if (!rxCollection._doNotEmitSet) rxCollection._doNotEmitSet = new Set();
@@ -340,9 +327,6 @@ function streamChangedDocuments(rxCollection) {
 /**
  * writes the doc-data into the pouchdb of the collection
  * without changeing the revision
- * @param  {RxCollection} rxCollection
- * @param  {any} docData
- * @return {Promise<any>} promise that resolved with the transformed doc-data
  */
 
 
@@ -381,7 +365,6 @@ function applyChangedDocumentToPouch(rxCollection, docData) {
 var INIT_DONE = false;
 /**
  * called in the proto of RxCollection
- * @return {Promise<RxCollection>}
  */
 
 function spawnInMemory() {
@@ -390,7 +373,7 @@ function spawnInMemory() {
   if (!INIT_DONE) {
     INIT_DONE = true; // ensure memory-adapter is added
 
-    if (!_pouchDb["default"].adapters || !_pouchDb["default"].adapters.memory) throw (0, _rxError.newRxError)('IM1');
+    if (!_pouchDb.PouchDB.adapters || !_pouchDb.PouchDB.adapters.memory) throw (0, _rxError.newRxError)('IM1');
   }
 
   if (collectionCacheMap.has(this)) {
@@ -401,7 +384,7 @@ function spawnInMemory() {
   }
 
   var col = new InMemoryRxCollection(this);
-  var preparePromise = col.prepare();
+  var preparePromise = col.prepareChild();
   collectionCacheMap.set(this, col);
   collectionPromiseCacheMap.set(this, preparePromise);
   return preparePromise.then(function () {

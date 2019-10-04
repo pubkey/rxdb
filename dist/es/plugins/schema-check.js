@@ -6,14 +6,13 @@ import objectPath from 'object-path';
 import RxDocument from '../rx-document';
 import { newRxError } from '../rx-error';
 import { getIndexes } from '../rx-schema';
+
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
  * and does not conquer the observe$ and populate_ fields
- * @param  {string} fieldName
  * @throws {Error}
  */
-
 export function checkFieldNameRegex(fieldName) {
   if (fieldName === '') return;
   if (fieldName === '_id') return;
@@ -36,8 +35,6 @@ export function checkFieldNameRegex(fieldName) {
 }
 /**
  * validate that all schema-related things are ok
- * @param  {object} jsonSchema
- * @return {boolean} true always
  */
 
 export function validateFieldsDeep(jsonSchema) {
@@ -124,8 +121,7 @@ export function validateFieldsDeep(jsonSchema) {
 
   function traverse(currentObj, currentPath) {
     if (typeof currentObj !== 'object') return;
-
-    for (var attributeName in currentObj) {
+    Object.keys(currentObj).forEach(function (attributeName) {
       if (!currentObj.properties) {
         checkField(attributeName, currentObj[attributeName], currentPath);
       }
@@ -133,7 +129,7 @@ export function validateFieldsDeep(jsonSchema) {
       var nextPath = currentPath;
       if (attributeName !== 'properties') nextPath = nextPath + '.' + attributeName;
       traverse(currentObj[attributeName], nextPath);
-    }
+    });
   }
 
   traverse(jsonSchema, '');
@@ -141,7 +137,6 @@ export function validateFieldsDeep(jsonSchema) {
 }
 /**
  * does the checking
- * @param  {object} jsonId json-object like in json-schema-standard
  * @throws {Error} if something is not ok
  */
 
@@ -268,3 +263,4 @@ export default {
   rxdb: rxdb,
   hooks: hooks
 };
+//# sourceMappingURL=schema-check.js.map

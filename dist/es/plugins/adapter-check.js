@@ -2,21 +2,15 @@
  * this plugin adds the checkAdapter-function to rxdb
  * you can use it to check if the given adapter is working in the current environmet
  */
-import PouchDB from '../pouch-db';
+import { PouchDB } from '../pouch-db';
 import { generateId, adapterObject } from '../util';
+
 /**
  * The same pouchdb-location is used on each run
  * To ensure when this is run multiple times,
  * there will not be many created databases
  */
-
 export var POUCHDB_LOCATION = 'rxdb-adapter-check';
-/**
- * 
- * @param {*} adapter
- * @return {Promise}
- */
-
 export function checkAdapter(adapter) {
   // id of the document which is stored and removed to ensure everything works
   var _id = POUCHDB_LOCATION + '-' + generateId();
@@ -77,3 +71,4 @@ export default {
   prototypes: prototypes,
   overwritable: overwritable
 };
+//# sourceMappingURL=adapter-check.js.map

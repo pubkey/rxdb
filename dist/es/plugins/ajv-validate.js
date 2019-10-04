@@ -6,16 +6,14 @@
 import Ajv from 'ajv';
 import { newRxError } from '../rx-error';
 import { requestIdleCallbackIfAvailable } from '../util';
+
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
- * @type {Object<string, any>}
  */
-
 var validatorsCache = {};
 /**
  * returns the parsed validator from ajv
- * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
 
@@ -43,10 +41,6 @@ export function _getValidator(rxSchema) {
 }
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- * @return {any} obj if validation successful
  */
 
 function validate(obj) {
@@ -76,7 +70,6 @@ export var rxdb = true;
 export var prototypes = {
   /**
    * set validate-function for the RxSchema.prototype
-   * @param {[type]} prototype of RxSchema
    */
   RxSchema: function RxSchema(proto) {
     proto.validate = validate;
@@ -90,3 +83,4 @@ export default {
   prototypes: prototypes,
   hooks: hooks
 };
+//# sourceMappingURL=ajv-validate.js.map

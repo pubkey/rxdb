@@ -9,8 +9,6 @@ import { ucfirst } from './util';
 import overwritable from './overwritable';
 /**
  * transform an object of parameters to a presentable string
- * @param  {any} parameters
- * @return {string}
  */
 
 function parametersToString(parameters) {
@@ -21,7 +19,7 @@ function parametersToString(parameters) {
     var paramStr = '[object Object]';
 
     try {
-      paramStr = JSON.stringify(parameters[k], function (k, v) {
+      paramStr = JSON.stringify(parameters[k], function (_k, v) {
         return v === undefined ? null : v;
       }, 2);
     } catch (e) {}
@@ -121,9 +119,10 @@ export function pluginMissing(pluginKey) {
 } // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
-export var newRxError = function newRxError(code, parameters) {
+export function newRxError(code, parameters) {
   return new RxError(code, overwritable.tunnelErrorMessage(code), parameters);
-};
-export var newRxTypeError = function newRxTypeError(code, parameters) {
+}
+export function newRxTypeError(code, parameters) {
   return new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
-};
+}
+//# sourceMappingURL=rx-error.js.map

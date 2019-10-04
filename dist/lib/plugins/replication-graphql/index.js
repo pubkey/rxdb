@@ -49,21 +49,6 @@ var RxGraphQLReplicationState =
 /*#__PURE__*/
 function () {
   function RxGraphQLReplicationState(collection, url, headers, pull, push, deletedFlag, live, liveInterval, retryTime) {
-    this.collection = collection;
-    this.client = (0, _graphqlClient["default"])({
-      url: url,
-      headers: headers
-    });
-    this.endpointHash = (0, _util.hash)(url);
-    this.pull = pull;
-    this.push = push;
-    this.deletedFlag = deletedFlag;
-    this.live = live;
-    this.liveInterval = liveInterval;
-    this.retryTime = retryTime;
-    this._runQueueCount = 0;
-    this._subs = [];
-    this._runningPromise = Promise.resolve();
     this._subjects = {
       recieved: new _rxjs.Subject(),
       // all documents that are recieved from the endpoint
@@ -78,16 +63,36 @@ function () {
       initialReplicationComplete: new _rxjs.BehaviorSubject(false) // true the initial replication-cycle is over
 
     };
+    this._runningPromise = Promise.resolve();
+    this._subs = [];
+    this._runQueueCount = 0;
+    this.initialReplicationComplete$ = undefined;
+    this.recieved$ = undefined;
+    this.send$ = undefined;
+    this.error$ = undefined;
+    this.canceled$ = undefined;
+    this.active$ = undefined;
+    this.collection = collection;
+    this.pull = pull;
+    this.push = push;
+    this.deletedFlag = deletedFlag;
+    this.live = live;
+    this.liveInterval = liveInterval;
+    this.retryTime = retryTime;
+    this.client = (0, _graphqlClient["default"])({
+      url: url,
+      headers: headers
+    });
+    this.endpointHash = (0, _util.hash)(url);
 
     this._prepare();
   }
-  /**
-   * things that are more complex to not belong into the constructor
-   */
-
 
   var _proto = RxGraphQLReplicationState.prototype;
 
+  /**
+   * things that are more complex to not belong into the constructor
+   */
   _proto._prepare = function _prepare() {
     var _this = this;
 
@@ -106,8 +111,8 @@ function () {
   };
 
   _proto.isStopped = function isStopped() {
-    if (!this.live && this._subjects.initialReplicationComplete._value) return true;
-    if (this._subjects.canceled._value) return true;else return false;
+    if (!this.live && this._subjects.initialReplicationComplete['_value']) return true;
+    if (this._subjects.canceled['_value']) return true;else return false;
   };
 
   _proto.awaitInitialReplication = function awaitInitialReplication() {
@@ -166,7 +171,7 @@ function () {
 
                         _this2._subjects.active.next(false);
 
-                        if (!willRetry && _this2._subjects.initialReplicationComplete._value === false) _this2._subjects.initialReplicationComplete.next(true);
+                        if (!willRetry && _this2._subjects.initialReplicationComplete['_value'] === false) _this2._subjects.initialReplicationComplete.next(true);
                         _this2._runQueueCount--;
 
                       case 7:
@@ -264,7 +269,7 @@ function () {
     return _run;
   }()
   /**
-   * @return {boolean} true if no errors occured
+   * @return true if no errors occured
    */
   ;
 
@@ -286,7 +291,7 @@ function () {
                 break;
               }
 
-              return _context4.abrupt("return");
+              return _context4.abrupt("return", Promise.resolve(false));
 
             case 2:
               _context4.next = 4;
@@ -408,8 +413,8 @@ function () {
             case 2:
               changes = _context5.sent;
               changesWithDocs = changes.results.map(function (change) {
-                var doc = change.doc;
-                doc[_this5.deletedFlag] = !!change.deleted;
+                var doc = change['doc'];
+                doc[_this5.deletedFlag] = !!change['deleted'];
                 delete doc._rev;
                 delete doc._deleted;
                 delete doc._attachments;
@@ -588,11 +593,13 @@ function () {
   }();
 
   _proto.cancel = function cancel() {
-    if (this.isStopped()) return;
+    if (this.isStopped()) return Promise.resolve(false);
     if (this.changesSub) this.changesSub.cancel();
 
     this._subjects.canceled.next(true); // TODO
 
+
+    return Promise.resolve(true);
   };
 
   return RxGraphQLReplicationState;

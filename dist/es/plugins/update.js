@@ -10,12 +10,6 @@ export function update(updateObj) {
   var newDocData = modifyjs(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
-/**
- * 
- * @param {*} updateObj 
- * @return {Promise}
- */
-
 export function RxQueryUpdate(updateObj) {
   return this.exec().then(function (docs) {
     if (!docs) return null;
@@ -47,3 +41,4 @@ export default {
   rxdb: rxdb,
   prototypes: prototypes
 };
+//# sourceMappingURL=update.js.map

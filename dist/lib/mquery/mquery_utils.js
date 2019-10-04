@@ -15,10 +15,7 @@ var _util = require("../util");
  */
 
 /**
- * Merges `from` into `to` without overwriting existing properties.
- *
- * @param {object} to
- * @param {object} from
+ * Merges 'from' into 'to' without overwriting existing properties.
  */
 function merge(to, from) {
   Object.keys(from).forEach(function (key) {
@@ -31,9 +28,6 @@ function merge(to, from) {
 }
 /**
  * Same as merge but clones the assigned values.
- *
- * @param {object} to
- * @param {object} from
  */
 
 
@@ -42,25 +36,18 @@ function mergeClone(to, from) {
     if ('undefined' === typeof to[key]) {
       // make sure to retain key order here because of a bug handling the $each
       // operator in mongodb 2.4.4
-      to[key] = (0, _util.clone)(from[key], {
-        retainKeyOrder: 1
-      });
+      to[key] = (0, _util.clone)(from[key]);
     } else {
       if (isObject(from[key])) mergeClone(to[key], from[key]);else {
         // make sure to retain key order here because of a bug handling the
         // $each operator in mongodb 2.4.4
-        to[key] = (0, _util.clone)(from[key], {
-          retainKeyOrder: 1
-        });
+        to[key] = (0, _util.clone)(from[key]);
       }
     }
   });
 }
 /**
  * Determines if `arg` is an object.
- *
- * @param {Object|Array|String|Function|RegExp|any} arg
- * @return {Boolean}
  */
 
 

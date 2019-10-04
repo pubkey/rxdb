@@ -12,7 +12,7 @@ exports._getSortOptions = _getSortOptions;
 exports._isDocInResultData = _isDocInResultData;
 exports.enableDebugging = enableDebugging;
 exports.create = create;
-exports["default"] = void 0;
+exports["default"] = exports.QueryChangeDetector = void 0;
 
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
 
@@ -32,15 +32,11 @@ var QueryChangeDetector =
 /*#__PURE__*/
 function () {
   function QueryChangeDetector(query) {
-    /**
-     * @type {RxQuery}
-     */
     this.query = query;
-    this.primaryKey = this.query.collection.schema.primaryPath;
+    this.primaryKey = query.collection.schema.primaryPath;
   }
   /**
-   * @param {ChangeEvent[]} changeEvents
-   * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
+   * @return true if mustReExec, false if no change, array if calculated new results
    */
 
 
@@ -71,9 +67,7 @@ function () {
   }
   /**
    * handle a single ChangeEvent and try to calculate the new results
-   * @param {Object[]} resultsData of previous results
-   * @param {ChangeEvent} changeEvent
-   * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
+   * @return true if mustReExec, false if no change, array if calculated new results
    */
   ;
 
@@ -134,20 +128,23 @@ function () {
     if (changeEvent.data.op === 'REMOVE') {
       // R1 (never matched)
       if (!wasDocInResults && !doesMatchNow) {
-        DEBUG && _debugMessage(this, 'R1', docData);
+        _debugMessage(this, 'R1', docData);
+
         return false;
       } // R2 sorted before got removed but results not filled
 
 
       if (options.skip && doesMatchNow && sortBefore() && !isFilled) {
-        DEBUG && _debugMessage(this, 'R2', docData);
+        _debugMessage(this, 'R2', docData);
+
         results.shift();
         return results;
       } // R3 (was in results and got removed)
 
 
       if (doesMatchNow && wasDocInResults && !isFilled) {
-        DEBUG && _debugMessage(this, 'R3', docData);
+        _debugMessage(this, 'R3', docData);
+
         results = results.filter(function (doc) {
           return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
         });
@@ -156,13 +153,15 @@ function () {
 
 
       if (options.limit === 1 && !doesMatchNow && wasDocInResults) {
-        DEBUG && _debugMessage(this, 'R3.05', docData);
+        _debugMessage(this, 'R3.05', docData);
+
         return true;
       } // R3.1 was in results and got removed, no limit, no skip
 
 
       if (doesMatchNow && wasDocInResults && !options.limit && !options.skip) {
-        DEBUG && _debugMessage(this, 'R3.1', docData);
+        _debugMessage(this, 'R3.1', docData);
+
         results = results.filter(function (doc) {
           return doc[_this2.primaryKey] !== docData[_this2.primaryKey];
         });
@@ -171,13 +170,15 @@ function () {
 
 
       if (doesMatchNow && options.limit && sortAfter()) {
-        DEBUG && _debugMessage(this, 'R4', docData);
+        _debugMessage(this, 'R4', docData);
+
         return false;
       }
     } else {
       // U1 doc not matched and also not matches now
       if (!options.skip && !wasDocInResults && !doesMatchNow) {
-        DEBUG && _debugMessage(this, 'U1', docData);
+        _debugMessage(this, 'U1', docData);
+
         return false;
       } // U2 still matching -> only resort
 
@@ -192,17 +193,20 @@ function () {
         results[i] = docData;
 
         if (sortFieldChanged()) {
-          DEBUG && _debugMessage(this, 'U2 - resort', docData);
+          _debugMessage(this, 'U2 - resort', docData);
+
           return _resortDocData(this, results);
         } else {
-          DEBUG && _debugMessage(this, 'U2 - no-resort', docData);
+          _debugMessage(this, 'U2 - no-resort', docData);
+
           return results;
         }
       } // U3 not matched, but matches now, no.skip, limit < length
 
 
       if (!options.skip && !limitAndFilled && !wasDocInResults && doesMatchNow) {
-        DEBUG && _debugMessage(this, 'U3', docData);
+        _debugMessage(this, 'U3', docData);
+
         results.push(docData); //    console.log('U3: preSort:');
         //    console.dir(results);
 
@@ -215,16 +219,24 @@ function () {
     } // if no optimisation-algo matches, return mustReExec:true
 
 
-    DEBUG && console.log(this, 'NO_MATCH', docData);
+    _debugMessage(this, 'NO_MATCH', docData);
+
     return true;
   };
 
   return QueryChangeDetector;
 }();
 
+exports.QueryChangeDetector = QueryChangeDetector;
+
 function _debugMessage(queryChangeDetector, key) {
   var changeEventData = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var title = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'optimized';
+
+  if (!DEBUG) {
+    return;
+  }
+
   console.dir({
     name: 'QueryChangeDetector',
     title: title,
@@ -235,8 +247,6 @@ function _debugMessage(queryChangeDetector, key) {
 }
 /**
  * reruns the sort on the given resultsData
- * @param  {object[]} resultsData
- * @return {object[]}
  */
 
 
@@ -264,9 +274,7 @@ function _resortDocData(queryChangeDetector, resultsData) {
 /**
  * checks if the newDocLeft would be placed before docDataRight
  * when the query would be reExecuted
- * @param  {Object} docDataNew
- * @param  {Object} docDataIs
- * @return {boolean} true if before, false if after
+ * @return true if before, false if after
  */
 
 
@@ -291,9 +299,6 @@ function _isSortedBefore(queryChangeDetector, docDataLeft, docDataRight) {
 }
 /**
  * checks if the sort-relevant fields have changed
- * @param  {object} docDataBefore
- * @param  {object} docDataAfter
- * @return {boolean}
  */
 
 
@@ -340,8 +345,6 @@ function _getSortOptions(queryChangeDetector) {
 }
 /**
  * check if the document exists in the results data
- * @param {object} docData
- * @param {object[]} resultData
  */
 
 
@@ -357,11 +360,6 @@ function enableDebugging() {
   console.log('QueryChangeDetector.enableDebugging()');
   DEBUG = true;
 }
-/**
- * @param  {RxQuery} query
- * @return {QueryChangeDetector}
- */
-
 
 function create(query) {
   var ret = new QueryChangeDetector(query);

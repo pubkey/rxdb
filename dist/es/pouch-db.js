@@ -4,25 +4,23 @@
  * Adapters can be found here:
  * @link https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules
  */
-import PouchDB from 'pouchdb-core';
+import PouchDBCore from 'pouchdb-core'; // pouchdb-find
+
+import PouchDBFind from 'pouchdb-find';
+PouchDBCore.plugin(PouchDBFind);
 /*
 // comment in to debug
 const pouchdbDebug = require('pouchdb-debug');
 PouchDB.plugin(pouchdbDebug);
 PouchDB.debug.enable('*');
 */
-// pouchdb-find
 
-import PouchDBFind from 'pouchdb-find';
-PouchDB.plugin(PouchDBFind);
 import { newRxError } from './rx-error';
+
 /**
  * get the number of all undeleted documents
- * @param  {PouchDB}  pouchdb instance
- * @return {Promise<number>} number of documents
  */
-
-PouchDB.countAllUndeleted = function (pouchdb) {
+export function countAllUndeleted(pouchdb) {
   return pouchdb.allDocs({
     include_docs: false,
     attachments: false
@@ -31,16 +29,12 @@ PouchDB.countAllUndeleted = function (pouchdb) {
       return !row.id.startsWith('_design/');
     }).length;
   });
-};
+}
 /**
  * get a batch of documents from the pouch-instance
- * @param  {PouchDB}  pouchdb instance
- * @param  {number}  limit
- * @return {Promise<{}[]>} array with documents
  */
 
-
-PouchDB.getBatch = function (pouchdb, limit) {
+export function getBatch(pouchdb, limit) {
   if (limit <= 1) {
     throw newRxError('P1', {
       limit: limit
@@ -58,10 +52,9 @@ PouchDB.getBatch = function (pouchdb, limit) {
       return !doc._id.startsWith('_design');
     });
   });
-};
-
-PouchDB.isInstanceOf = function (obj) {
-  return obj instanceof PouchDB;
-};
-
-export default PouchDB;
+}
+export function isInstanceOf(obj) {
+  return obj instanceof PouchDBCore;
+}
+export var PouchDB = PouchDBCore;
+//# sourceMappingURL=pouch-db.js.map

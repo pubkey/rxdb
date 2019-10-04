@@ -23,12 +23,6 @@ function update(updateObj) {
   var newDocData = (0, _modifyjs["default"])(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
-/**
- * 
- * @param {*} updateObj 
- * @return {Promise}
- */
-
 
 function RxQueryUpdate(updateObj) {
   return this.exec().then(function (docs) {

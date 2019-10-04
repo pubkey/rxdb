@@ -8,3 +8,4 @@ import RxDB from './index.js';
 RxDB.plugin(require('pouchdb-adapter-idb'));
 RxDB.plugin(require('pouchdb-adapter-http'));
 window['RxDB'] = RxDB;
+//# sourceMappingURL=browserify.index.js.map

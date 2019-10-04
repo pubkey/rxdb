@@ -2,12 +2,26 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.checkAdapter = exports.RxDatabase = exports.QueryChangeDetector = exports.PouchDB = exports.RxSchema = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.isRxDatabase = exports.dbCount = exports.plugin = exports.removeDatabase = exports.create = void 0;
+var _exportNames = {};
+exports["default"] = void 0;
 
-var _core = _interopRequireDefault(require("./core"));
+var _core = _interopRequireWildcard(require("./core"));
+
+Object.keys(_core).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _core[key];
+    }
+  });
+});
 
 var _schemaCheck = _interopRequireDefault(require("./plugins/schema-check"));
 
@@ -69,70 +83,23 @@ _core["default"].plugin(_inMemory["default"]);
 
 _core["default"].plugin(_attachments["default"]);
 
-_core["default"].plugin(_localDocuments["default"]);
-/**
- * create a database
- * @param  {string} prefix as databaseName for the storage (this can be the foldername)
- * @param  {Object} storageEngine any leveldown instance
- * @param  {String} password if the database contains encrypted fields
- * @param  {boolean} multiInstance if true, multiInstance-handling will be done
- * @return {Promise<Database>}
- */
+_core["default"].plugin(_localDocuments["default"]); // rexport things from core
 
 
-var create = _core["default"].create;
-/**
- * removes the database and all its known data
- * @param  {string} databaseName
- * @param  {Object} adapter
- * @return {Promise}
- */
-
-exports.create = create;
-var removeDatabase = _core["default"].removeDatabase;
-/**
- * add a plugin for rxdb or pouchdb
- */
-
-exports.removeDatabase = removeDatabase;
-var plugin = _core["default"].plugin;
-exports.plugin = plugin;
-var dbCount = _core["default"].dbCount;
-exports.dbCount = dbCount;
-var isRxDatabase = _core["default"].isRxDatabase;
-exports.isRxDatabase = isRxDatabase;
-var isRxCollection = _core["default"].isRxCollection;
-exports.isRxCollection = isRxCollection;
-var isRxDocument = _core["default"].isRxDocument;
-exports.isRxDocument = isRxDocument;
-var isRxQuery = _core["default"].isRxQuery;
-exports.isRxQuery = isRxQuery;
-var isRxSchema = _core["default"].isRxSchema;
-exports.isRxSchema = isRxSchema;
-var RxSchema = _core["default"].RxSchema;
-exports.RxSchema = RxSchema;
-var PouchDB = _core["default"].PouchDB;
-exports.PouchDB = PouchDB;
-var QueryChangeDetector = _core["default"].QueryChangeDetector;
-exports.QueryChangeDetector = QueryChangeDetector;
-var RxDatabase = _core["default"].RxDatabase;
-exports.RxDatabase = RxDatabase;
-var checkAdapter = _core["default"].checkAdapter;
-exports.checkAdapter = checkAdapter;
+// TODO no more default exports
 var _default = {
-  create: create,
-  checkAdapter: checkAdapter,
-  removeDatabase: removeDatabase,
-  plugin: plugin,
-  dbCount: dbCount,
-  isRxDatabase: isRxDatabase,
-  isRxCollection: isRxCollection,
-  isRxDocument: isRxDocument,
-  isRxQuery: isRxQuery,
-  isRxSchema: isRxSchema,
-  PouchDB: PouchDB,
-  QueryChangeDetector: QueryChangeDetector,
-  RxDatabase: RxDatabase
+  create: _core.create,
+  checkAdapter: _core.checkAdapter,
+  removeDatabase: _core.removeDatabase,
+  plugin: _core.plugin,
+  dbCount: _core.dbCount,
+  isRxDatabase: _core.isRxDatabase,
+  isRxCollection: _core.isRxCollection,
+  isRxDocument: _core.isRxDocument,
+  isRxQuery: _core.isRxQuery,
+  isRxSchema: _core.isRxSchema,
+  PouchDB: _core.PouchDB,
+  QueryChangeDetector: _core.QueryChangeDetector
 };
 exports["default"] = _default;
 

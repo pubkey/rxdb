@@ -3,9 +3,9 @@ import deepEqual from 'deep-equal';
 import { merge, BehaviorSubject } from 'rxjs';
 import { mergeMap, filter, map, first, tap } from 'rxjs/operators';
 import { massageSelector, rowFilter } from 'pouchdb-selector-core';
-import MQuery from './mquery/mquery';
+import { createMQuery } from './mquery/mquery';
 import { sortObject, stringifyFilter, clone } from './util';
-import QueryChangeDetector from './query-change-detector';
+import { create as createQueryChangeDetector } from './query-change-detector';
 import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
 import { runPluginHooks } from './hooks';
 var _queryCount = 0;
@@ -14,34 +14,26 @@ var newQueryID = function newQueryID() {
   return ++_queryCount;
 };
 
-export var RxQuery =
+export var RxQueryBase =
 /*#__PURE__*/
 function () {
-  function RxQuery(op, queryObj, collection) {
-    this.op = op;
-    this.collection = collection;
+  function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
-    if (!queryObj) queryObj = _getDefaultQuery(this.collection);
-    this.mquery = new MQuery(queryObj);
-    this._subs = []; // contains the results as plain json-data
-
-    this._resultsData = null; // contains the results as RxDocument[]
-
-    this._resultsDocs$ = new BehaviorSubject(null);
-    this._queryChangeDetector = QueryChangeDetector.create(this); // stores the changeEvent-Number of the last handled change-event
-
+    this._subs = [];
     this._latestChangeEvent = -1;
-    /**
-     * counts how often the execution on the whole db was done
-     * (used for tests and debugging)
-     * @type {Number}
-     */
-
+    this._resultsData = null;
+    this._resultsDocs$ = new BehaviorSubject(null);
     this._execOverDatabaseCount = 0;
-    this._ensureEqualQueue = Promise.resolve();
+    this._ensureEqualQueue = Promise.resolve(false);
+    this.op = op;
+    this.queryObj = queryObj;
+    this.collection = collection;
+    this._queryChangeDetector = createQueryChangeDetector(this);
+    if (!queryObj) queryObj = _getDefaultQuery(this.collection);
+    this.mquery = createMQuery(queryObj);
   }
 
-  var _proto = RxQuery.prototype;
+  var _proto = RxQueryBase.prototype;
 
   _proto.toString = function toString() {
     if (!this.stringRep) {
@@ -60,14 +52,13 @@ function () {
   ;
 
   _proto._clone = function _clone() {
-    var cloned = new RxQuery(this.op, _getDefaultQuery(this.collection), this.collection);
+    var cloned = new RxQueryBase(this.op, _getDefaultQuery(this.collection), this.collection);
     cloned.mquery = this.mquery.clone();
     return cloned;
   }
   /**
    * set the new result-data as result-docs of the query
-   * @param {{}[]} newResultData json-docs that were recieved from pouchdb
-   * @return {RxDocument[]}
+   * @param newResultData json-docs that were recieved from pouchdb
    */
   ;
 
@@ -82,7 +73,7 @@ function () {
   }
   /**
    * executes the query on the database
-   * @return {Promise<{}[]>} results-array with document-data
+   * @return results-array with document-data
    */
   ;
 
@@ -108,21 +99,12 @@ function () {
     return docsPromise;
   }
   /**
-   * Returns an observable that emits the results
-   * This should behave like an rxjs-BehaviorSubject which means:
-   * - Emit the current result-set on subscribe
-   * - Emit the new result-set when an RxChangeEvent comes in
-   * - Do not emit anything before the first result-set was created (no null)
-   * @return {BehaviorSubject<RxDocument[]>}
-   */
-  ;
-
-  /**
    * Execute the query
    * To have an easier implementations,
    * just subscribe and use the first result
-   * @return {Promise<RxDocument|RxDocument[]>} found documents
    */
+  ;
+
   _proto.exec = function exec() {
     var _this = this;
 
@@ -212,12 +194,7 @@ function () {
 
     this._toJSON = json;
     return this._toJSON;
-  }
-  /**
-   * get the key-compression version of this query
-   * @return {{selector: {}, sort: []}} compressedQuery
-   */
-  ;
+  };
 
   _proto.keyCompress = function keyCompress() {
     if (!this.collection.schema.doKeyCompression()) {
@@ -231,16 +208,11 @@ function () {
     }
   }
   /**
-   * cached call to get the massageSelector
+   * returns true if the document matches the query,
+   * does not use the 'skip' and 'limit'
    */
   ;
 
-  /**
-   * returns true if the document matches the query,
-   * does not use the 'skip' and 'limit'
-   * @param {any} docData 
-   * @return {boolean} true if matches
-   */
   _proto.doesDocumentDataMatch = function doesDocumentDataMatch(docData) {
     // if doc is deleted, it cannot match
     if (docData._deleted) return false;
@@ -252,7 +224,7 @@ function () {
   }
   /**
    * deletes all found documents
-   * @return {Promise(RxDocument|RxDocument[])} promise with deleted documents
+   * @return promise with deleted documents
    */
   ;
 
@@ -270,12 +242,10 @@ function () {
   /**
    * updates all found documents
    * @overwritten by plugin (optinal)
-   * @param  {object} updateObj
-   * @return {Promise(RxDocument|RxDocument[])} promise with updated documents
    */
   ;
 
-  _proto.update = function update() {
+  _proto.update = function update(_updateObj) {
     throw pluginMissing('update');
   }
   /**
@@ -330,7 +300,7 @@ function () {
     }
   };
 
-  _createClass(RxQuery, [{
+  _createClass(RxQueryBase, [{
     key: "$",
     get: function get() {
       var _this2 = this;
@@ -359,7 +329,7 @@ function () {
           // copy the array so it wont matter if the user modifies it
           var ret = Array.isArray(docs) ? docs.slice() : docs;
           return ret;
-        })).asObservable();
+        }))['asObservable']();
         /**
          * subscribe to the changeEvent-stream so it detects changed if it has subscribers
          */
@@ -370,7 +340,8 @@ function () {
         }), filter(function () {
           return false;
         }));
-        this._$ = merge(results$, changeEvents$);
+        this._$ = // tslint:disable-next-line
+        merge(results$, changeEvents$);
       }
 
       return this._$;
@@ -387,7 +358,7 @@ function () {
     }
   }]);
 
-  return RxQuery;
+  return RxQueryBase;
 }();
 
 function _getDefaultQuery(collection) {
@@ -397,7 +368,6 @@ function _getDefaultQuery(collection) {
 }
 /**
  * run this query through the QueryCache
- * @return {RxQuery} can be this or another query with the equal state
  */
 
 
@@ -406,9 +376,6 @@ function _tunnelQueryCache(rxQuery) {
 }
 /**
  * tunnel the proto-functions of mquery to RxQuery
- * @param  {any} rxQueryProto    [description]
- * @param  {string[]} mQueryProtoKeys [description]
- * @return {void}                 [description]
  */
 
 
@@ -442,13 +409,13 @@ export function createRxQuery(op, queryObj, collection) {
     });
   }
 
-  var ret = new RxQuery(op, queryObj, collection); // ensure when created with same params, only one is created
+  var ret = new RxQueryBase(op, queryObj, collection); // ensure when created with same params, only one is created
 
   ret = _tunnelQueryCache(ret);
 
   if (!protoMerged) {
     protoMerged = true;
-    protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(ret.mquery.__proto__));
+    protoMerge(Object.getPrototypeOf(ret), Object.getOwnPropertyNames(Object.getPrototypeOf(ret.mquery)));
   }
 
   runPluginHooks('createRxQuery', ret);
@@ -496,16 +463,19 @@ function _sortAddToIndex(checkParam, clonedThis) {
 }
 /**
  * check if the current results-state is in sync with the database
- * @return {Boolean} false if not which means it should re-execute
+ * @return false if not which means it should re-execute
  */
 
 
 function _isResultsInSync(rxQuery) {
-  if (rxQuery._latestChangeEvent >= rxQuery.collection._changeEventBuffer.counter) return true;else return false;
+  if (rxQuery._latestChangeEvent >= rxQuery.collection._changeEventBuffer.counter) {
+    return true;
+  } else return false;
 }
 /**
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
+ * @return true if has changed, false if not
  */
 
 
@@ -527,7 +497,7 @@ function _ensureEqual(rxQuery) {
 }
 /**
  * ensures that the results of this query is equal to the results which a query over the database would give
- * @return {Promise<boolean>|boolean} true if results have changed
+ * @return true if results have changed
  */
 
 
@@ -593,5 +563,6 @@ function __ensureEqual(rxQuery) {
 }
 
 export function isInstanceOf(obj) {
-  return obj instanceof RxQuery;
+  return obj instanceof RxQueryBase;
 }
+//# sourceMappingURL=rx-query.js.map

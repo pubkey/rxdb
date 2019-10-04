@@ -9,6 +9,7 @@ export var RxChangeEvent =
 /*#__PURE__*/
 function () {
   function RxChangeEvent(data) {
+    this._hash = null;
     this.data = data;
   }
 
@@ -16,6 +17,9 @@ function () {
 
   _proto.toJSON = function toJSON() {
     var ret = {
+      col: null,
+      doc: null,
+      v: null,
       op: this.data.op,
       t: this.data.t,
       db: this.data.db,
@@ -70,17 +74,18 @@ export function changeEventfromPouchChange(changeDoc, collection) {
 export function createChangeEvent(op, database, collection, doc, value) {
   var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
   var data = {
+    col: collection ? collection.name : null,
+    doc: doc ? doc.primary : null,
+    v: value ? value : null,
     op: op,
     t: new Date().getTime(),
     db: database.name,
     it: database.token,
     isLocal: isLocal
   };
-  if (collection) data.col = collection.name;
-  if (doc) data.doc = doc.primary;
-  if (value) data.v = value;
   return new RxChangeEvent(data);
 }
 export function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;
 }
+//# sourceMappingURL=rx-change-event.js.map

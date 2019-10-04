@@ -1,14 +1,12 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.checkAdapter = checkAdapter;
 exports["default"] = exports.overwritable = exports.prototypes = exports.rxdb = exports.POUCHDB_LOCATION = void 0;
 
-var _pouchDb = _interopRequireDefault(require("../pouch-db"));
+var _pouchDb = require("../pouch-db");
 
 var _util = require("../util");
 
@@ -23,12 +21,6 @@ var _util = require("../util");
  * there will not be many created databases
  */
 var POUCHDB_LOCATION = 'rxdb-adapter-check';
-/**
- * 
- * @param {*} adapter
- * @return {Promise}
- */
-
 exports.POUCHDB_LOCATION = POUCHDB_LOCATION;
 
 function checkAdapter(adapter) {
@@ -38,7 +30,7 @@ function checkAdapter(adapter) {
   var pouch;
 
   try {
-    pouch = new _pouchDb["default"](POUCHDB_LOCATION, (0, _util.adapterObject)(adapter), {
+    pouch = new _pouchDb.PouchDB(POUCHDB_LOCATION, (0, _util.adapterObject)(adapter), {
       auto_compaction: true,
       revs_limit: 1
     });

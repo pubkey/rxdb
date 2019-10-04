@@ -23,12 +23,10 @@ var _util = require("../util");
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
- * @type {Object<string, any>}
  */
 var validatorsCache = {};
 /**
  * returns the parsed validator from ajv
- * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
  * @
  */
 
@@ -56,10 +54,6 @@ function _getValidator(rxSchema) {
 }
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- * @return {any} obj if validation successful
  */
 
 
@@ -91,7 +85,6 @@ exports.rxdb = rxdb;
 var prototypes = {
   /**
    * set validate-function for the RxSchema.prototype
-   * @param {[type]} prototype of RxSchema
    */
   RxSchema: function RxSchema(proto) {
     proto.validate = validate;

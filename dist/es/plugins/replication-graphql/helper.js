@@ -21,14 +21,8 @@ export function getDocFromPouchOrNull(collection, id) {
   });
 }
 /**
- * 
- * @param {} collection 
- * @param {string[]} docIds
- * @return {Promise<{[k: string]: {
- *  deleted: boolean,
- *  revisions: {start: number, ids: string[]},
- *  doc: any
- * }}>} revisions and docs, indexed by id
+ *
+ * @return  revisions and docs, indexed by id
  */
 
 export function getDocsWithRevisionsFromPouch(_x, _x2) {
@@ -125,3 +119,4 @@ export function wasRevisionfromPullReplication(endpointHash, revision) {
   var ret = revision.endsWith(ending);
   return ret;
 }
+//# sourceMappingURL=helper.js.map

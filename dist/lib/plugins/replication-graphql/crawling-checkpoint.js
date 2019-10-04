@@ -26,7 +26,7 @@ var _helper = require("./helper");
  * For push-replication, we use the pouchdb-sequence:
  * We get the documents newer then the last sequence-id
  * and push them to the server.
- * 
+ *
  * For pull-replication, we use the last document we got from the server:
  * We send the last document to the queryBuilder()
  * and recieve newer documents sorted in a batch
@@ -38,7 +38,7 @@ var pushSequenceId = function pushSequenceId(endpointHash) {
   return _util.LOCAL_PREFIX + _helper.PLUGIN_IDENT + '-push-checkpoint-' + endpointHash;
 };
 /**
- * @return {number} last sequence checkpoint
+ * @return last sequence checkpoint
  */
 
 
@@ -84,14 +84,6 @@ function _getLastPushSequence() {
 function setLastPushSequence(_x3, _x4, _x5) {
   return _setLastPushSequence.apply(this, arguments);
 }
-/**
- * 
- * @param {*} collection 
- * @param {*} endpointHash 
- * @param {*} batchSize 
- * @return {Promise<{results: {id: string, seq: number, changes: {rev: string}[]}[], last_seq: number}>}
- */
-
 
 function _setLastPushSequence() {
   _setLastPushSequence = (0, _asyncToGenerator2["default"])(

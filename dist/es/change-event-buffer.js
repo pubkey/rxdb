@@ -2,24 +2,22 @@
  * a buffer-cache which holds the last X changeEvents of the collection
  * TODO this could be optimized to only store the last event of one document
  */
-var ChangeEventBuffer =
+export var ChangeEventBuffer =
 /*#__PURE__*/
 function () {
+  /**
+   * array with changeEvents
+   * starts with oldest known event, ends with newest
+   */
   function ChangeEventBuffer(collection) {
     var _this = this;
 
-    this.collection = collection;
     this.subs = [];
     this.limit = 100;
-    /**
-     * array with changeEvents
-     * starts with oldest known event, ends with newest
-     * @type {RxChangeEvent[]}
-     */
-
-    this.buffer = [];
     this.counter = 0;
     this.eventCounterMap = new WeakMap();
+    this.buffer = [];
+    this.collection = collection;
     this.subs.push(this.collection.$.subscribe(function (cE) {
       return _this._handleChangeEvent(cE);
     }));
@@ -39,8 +37,7 @@ function () {
   }
   /**
    * gets the array-index for the given pointer
-   * @param  {number} pointer
-   * @return {number|null} arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
+   * @return arrayIndex which can be used to itterate from there. If null, pointer is out of lower bound
    */
   ;
 
@@ -54,8 +51,7 @@ function () {
   }
   /**
    * get all changeEvents which came in later than the pointer-event
-   * @param  {number} pointer
-   * @return {RxChangeEvent[]|null} array with change-events. Iif null, pointer out of bounds
+   * @return array with change-events. Iif null, pointer out of bounds
    */
   ;
 
@@ -73,16 +69,20 @@ function () {
   };
 
   _proto.runFrom = function runFrom(pointer, fn) {
-    this.getFrom(pointer).forEach(function (cE) {
-      return fn(cE);
-    });
+    var ret = this.getFrom(pointer);
+
+    if (ret === null) {
+      throw new Error('out of bounds');
+    } else {
+      ret.forEach(function (cE) {
+        return fn(cE);
+      });
+    }
   }
   /**
    * no matter how many operations are done on one document,
    * only the last operation has to be checked to calculate the new state
    * this function reduces the events to the last ChangeEvent of each doc
-   * @param {ChangeEvent[]} changeEvents
-   * @return {ChangeEvents[]}
    */
   ;
 
@@ -95,9 +95,8 @@ function () {
   }
   /**
    * use this to check if a change has already been handled
-   * @param {string} revision 
-   * @returns {boolean} true if change with revision exists
-   * 
+   * @returns true if change with revision exists
+   *
    */
   ;
 
@@ -122,7 +121,7 @@ function () {
 
   return ChangeEventBuffer;
 }();
-
-export default function createChangeEventBuffer(collection) {
+export function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
+//# sourceMappingURL=change-event-buffer.js.map

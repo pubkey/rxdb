@@ -13,8 +13,6 @@ exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @return {any} obj
  */
 var validate = function validate(obj) {
   return obj;
@@ -25,7 +23,6 @@ exports.rxdb = rxdb;
 var prototypes = {
   /**
    * set validate-function for the RxSchema.prototype
-   * @param {[type]} prototype of RxSchema
    */
   RxSchema: function RxSchema(proto) {
     proto.validate = validate;

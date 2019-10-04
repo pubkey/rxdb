@@ -37,11 +37,11 @@ function decrypt(cipherText, password) {
 }
 
 var _encryptValue = function _encryptValue(value) {
-  return encrypt(JSON.stringify(value), this._password);
+  return encrypt(JSON.stringify(value), this.password);
 };
 
 var _decryptValue = function _decryptValue(encryptedValue) {
-  var decrypted = decrypt(encryptedValue, this._password);
+  var decrypted = decrypt(encryptedValue, this.password);
   return JSON.parse(decrypted);
 };
 
@@ -50,7 +50,6 @@ exports.rxdb = rxdb;
 var prototypes = {
   /**
    * set crypto-functions for the Crypter.prototype
-   * @param {[type]} prototype of Crypter
    */
   Crypter: function Crypter(proto) {
     proto._encryptValue = _encryptValue;
