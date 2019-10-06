@@ -346,8 +346,8 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         obj = this._handleToPouch(obj);
         return this.database.lockedRun(
             () => this.pouch.put(obj)
-        ).catch((e: any) => {
-            if (overwrite && e.status === 409) {
+        ).catch((err: any) => {
+            if (overwrite && err.status === 409) {
 
                 return this.database.lockedRun(
                     () => this.pouch.get(obj._id)
@@ -357,7 +357,13 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
                         () => this.pouch.put(obj)
                     );
                 });
-            } else throw e;
+            } else if (err.status === 409) {
+                throw newRxError('COL19', {
+                    id: obj._id,
+                    pouchDbError: err,
+                    data: obj
+                });
+            } else throw err;
         });
     }
 
@@ -491,7 +497,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         const primary = useJson[this.schema.primaryPath];
         if (!primary) {
             throw newRxError('COL3', {
-                primaryPath: this.schema.primaryPath,
+                primaryPath: this.schema.primaryPath as string,
                 data: useJson
             });
         }

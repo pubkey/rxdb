@@ -125,7 +125,8 @@ config.parallel('primary.test.js', () => {
                     obj2.passportId = obj.passportId;
                     await AsyncTestUtil.assertThrows(
                         () => c.insert(obj2),
-                        'PouchError'
+                        'RxError',
+                        'conflict'
                     );
                     c.database.destroy();
                 });

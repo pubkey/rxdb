@@ -4,6 +4,10 @@
 
 Features:
   - RxDB server can now be used with an existing express-app. [#1448](https://github.com/pubkey/rxdb/issues/1448) Thanks [@dstudzinski](https://github.com/dstudzinski)
+  - Wrapped pouchdb conflict error into `RxError`
+
+Other:
+  - Fixed typings of `RxError` parameters
 
 ### 8.6.0 (4 October 2019)
 Migrated to typescript.

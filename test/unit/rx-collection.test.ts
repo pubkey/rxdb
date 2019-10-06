@@ -15,7 +15,8 @@ import {
     isRxQuery,
     isRxDocument,
     createRxDatabase,
-    createRxSchema
+    createRxSchema,
+    RxError
 } from '../../';
 import * as RxDocument from '../../dist/lib/rx-document';
 import * as RxCollection from '../../dist/lib/rx-collection';
@@ -434,6 +435,27 @@ config.parallel('rx-collection.test.js', () => {
                         'RxError',
                         'is required'
                     );
+                    db.destroy();
+                });
+                it('should throw a conflict-error', async () => {
+                    const db = await createRxDatabase({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const docData = schemaObjects.human();
+                    await collection.insert(docData);
+
+                    const err: RxError = await AsyncTestUtil.assertThrows(
+                        () => collection.insert(docData),
+                        'RxError',
+                        'conflict'
+                    ) as any;
+                    assert.deepStrictEqual(err.parameters.id, docData.passportId);
+
                     db.destroy();
                 });
             });
