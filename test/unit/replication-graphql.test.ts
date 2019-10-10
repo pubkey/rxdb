@@ -117,9 +117,13 @@ describe('replication-graphql.test.js', () => {
             const server = await SpawnServer.spawn();
 
             const endpointUrl = 'ws://localhost:' + server.wsPort + '/subscriptions';
-            const client = new SubscriptionClient(endpointUrl, {
-                reconnect: true,
-            }, ws);
+            const client = new SubscriptionClient(
+                endpointUrl,
+                {
+                    reconnect: true,
+                },
+                ws
+            );
 
             const query = `subscription onHumanChanged {
                 humanChanged {
@@ -431,8 +435,8 @@ describe('replication-graphql.test.js', () => {
                     [
                         docData
                     ], {
-                        new_edits: false
-                    }
+                    new_edits: false
+                }
                 );
 
                 const result = await getDocsWithRevisionsFromPouch(

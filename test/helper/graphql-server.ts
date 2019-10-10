@@ -128,7 +128,7 @@ export async function spawn(documents: any[] = []) {
             );
             return doc;
         },
-        humanChanged: pubsub.asyncIterator('humanChanged')
+        humanChanged: () => pubsub.asyncIterator('humanChanged')
     };
 
     const path = '/graphql';
@@ -155,14 +155,11 @@ export async function spawn(documents: any[] = []) {
                         execute,
                         subscribe,
                         schema,
-                        context: {
-                            pubsub,
-                        },
                         rootValue: root
-                    } as any, {
-                        server: ws,
-                        path: '/subscriptions',
-                    }
+                    }, {
+                    server: ws,
+                    path: '/subscriptions',
+                }
                 );
 
                 res({
@@ -182,8 +179,8 @@ export async function spawn(documents: any[] = []) {
               }
 
                         `, {
-                                human: doc
-                            }
+                            human: doc
+                        }
                         );
                         // console.dir(result);
                         return result;

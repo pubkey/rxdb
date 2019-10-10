@@ -4,7 +4,6 @@
     "dev": "webpack-dev-server",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "node -r esm ./server/index.js",
-    "server2": "node -r esm ./server/test.js",
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack --env.ENV production",
     "build:serve": "ws -p 8888 -d dist/",

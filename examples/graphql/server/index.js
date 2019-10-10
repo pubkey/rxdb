@@ -115,7 +115,8 @@ export async function run() {
             log('published humanChanged ' + doc.id);
 
             return doc;
-        }
+        },
+        humanChanged: () => pubsub.asyncIterator('humanChanged')
     };
 
     // server multitab.html - used in the e2e test
@@ -129,14 +130,16 @@ export async function run() {
     }));
 
 
-    const server = app.listen(GRAPHQL_PORT, function () {
+    app.listen(GRAPHQL_PORT, function () {
         log('Started graphql-endpoint at http://localhost:' +
             GRAPHQL_PORT + GRAPHQL_PATH
         );
     });
 
 
+
     const appSubscription = express();
+    appSubscription.use(cors);
     const serverSubscription = createServer(appSubscription);
     serverSubscription.listen(GRAPHQL_SUBSCRIPTION_PORT, () => {
         log(
@@ -148,31 +151,32 @@ export async function run() {
                 execute,
                 subscribe,
                 schema,
-                rootValue: {
-                    humanChanged: pubsub.asyncIterator('humanChanged')
-                }
+                rootValue: root
             },
             {
                 server: serverSubscription,
                 path: GRAPHQL_SUBSCRIPTION_PATH,
             }
         );
+        return subServer;
     });
 
 
     // comment this in for testing of the subscriptions
     /*
     setInterval(() => {
+        const flag = new Date().getTime();
         pubsub.publish(
             'humanChanged',
             {
                 humanChanged: {
-                    id: 'foobar'
+                    id: 'foobar-' + flag,
+                    name: 'name-' + flag
                 }
             }
         );
-        console.log('published humanChanged');
-    }, 1000); */
+        console.log('published humanChanged ' + flag);
+    }, 1000);*/
 }
 
 run();

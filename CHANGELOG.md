@@ -8,6 +8,7 @@ Features:
 
 Other:
   - Fixed typings of `RxError` parameters
+  - Fix GraphQL-Example to propper use Websocket-Pub-Sub
 
 ### 8.6.0 (4 October 2019)
 Migrated to typescript.
