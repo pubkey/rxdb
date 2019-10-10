@@ -201,8 +201,8 @@ function () {
     obj = this._handleToPouch(obj);
     return this.database.lockedRun(function () {
       return _this2.pouch.put(obj);
-    })["catch"](function (e) {
-      if (overwrite && e.status === 409) {
+    })["catch"](function (err) {
+      if (overwrite && err.status === 409) {
         return _this2.database.lockedRun(function () {
           return _this2.pouch.get(obj._id);
         }).then(function (exist) {
@@ -211,7 +211,13 @@ function () {
             return _this2.pouch.put(obj);
           });
         });
-      } else throw e;
+      } else if (err.status === 409) {
+        throw newRxError('COL19', {
+          id: obj._id,
+          pouchDbError: err,
+          data: obj
+        });
+      } else throw err;
     });
   }
   /**

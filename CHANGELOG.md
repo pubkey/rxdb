@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X
+### 8.7.0 (11 October 2019)
 
 Features:
   - RxDB server can now be used with an existing express-app. [#1448](https://github.com/pubkey/rxdb/issues/1448) Thanks [@dstudzinski](https://github.com/dstudzinski)
@@ -8,7 +8,7 @@ Features:
 
 Other:
   - Fixed typings of `RxError` parameters
-  - Fix GraphQL-Example to propper use Websocket-Pub-Sub
+  - Fix GraphQL-example to propper use Websocket-Pub-Sub
 
 ### 8.6.0 (4 October 2019)
 Migrated to typescript.

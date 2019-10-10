@@ -2386,6 +2386,7 @@ var CODES = {
   COL16: 'given static method is not a function',
   COL17: 'RxCollection.ORM: statics-name not allowed',
   COL18: 'collection-method not allowed because fieldname is in the schema',
+  COL19: 'Pouchdb document update conflict',
   // rx-document.js
   DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
   DOC2: 'cannot observe primary path',
@@ -5415,8 +5416,8 @@ function () {
     obj = this._handleToPouch(obj);
     return this.database.lockedRun(function () {
       return _this2.pouch.put(obj);
-    })["catch"](function (e) {
-      if (overwrite && e.status === 409) {
+    })["catch"](function (err) {
+      if (overwrite && err.status === 409) {
         return _this2.database.lockedRun(function () {
           return _this2.pouch.get(obj._id);
         }).then(function (exist) {
@@ -5425,7 +5426,13 @@ function () {
             return _this2.pouch.put(obj);
           });
         });
-      } else throw e;
+      } else if (err.status === 409) {
+        throw (0, _rxError.newRxError)('COL19', {
+          id: obj._id,
+          pouchDbError: err,
+          data: obj
+        });
+      } else throw err;
     });
   }
   /**

@@ -72,7 +72,7 @@ function tunnelCollectionPath(db, path, app, colName) {
   var pathWithSlash = path.endsWith('/') ? path : path + '/';
   var collectionPath = pathWithSlash + colName;
   app.use(collectionPath, function (req, res, next) {
-    if (req.baseUrl === collectionPath) {
+    if (req.baseUrl.endsWith(collectionPath)) {
       var to = normalizeDbName(db) + '-rxdb-0-' + colName;
       var toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
       req.originalUrl = toFull;
@@ -88,8 +88,11 @@ function spawnServer(_ref) {
       _ref$port = _ref.port,
       port = _ref$port === void 0 ? 3000 : _ref$port,
       _ref$cors = _ref.cors,
-      cors = _ref$cors === void 0 ? false : _ref$cors;
+      cors = _ref$cors === void 0 ? false : _ref$cors,
+      _ref$startServer = _ref.startServer,
+      startServer = _ref$startServer === void 0 ? true : _ref$startServer;
   var db = this;
+  var collectionsPath = startServer ? path : '/';
   if (!SERVERS_OF_DB.has(db)) SERVERS_OF_DB.set(db, []);
 
   var pseudo = _pouchDb.PouchDB.defaults({
@@ -101,7 +104,7 @@ function spawnServer(_ref) {
   APP_OF_DB.set(db, app); // tunnel requests so collection-names can be used as paths
 
   Object.keys(db.collections).forEach(function (colName) {
-    return tunnelCollectionPath(db, path, app, colName);
+    return tunnelCollectionPath(db, collectionsPath, app, colName);
   }); // show error if collection is created afterwards
 
   DBS_WITH_SERVER.add(db);
@@ -117,9 +120,14 @@ function spawnServer(_ref) {
     }));
   }
 
-  app.use(path, ExpressPouchDB(pseudo));
-  var server = app.listen(port);
-  SERVERS_OF_DB.get(db).push(server);
+  app.use(collectionsPath, ExpressPouchDB(pseudo));
+  var server = null;
+
+  if (startServer) {
+    server = app.listen(port);
+    SERVERS_OF_DB.get(db).push(server);
+  }
+
   return {
     app: app,
     server: server

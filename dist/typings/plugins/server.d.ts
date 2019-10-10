@@ -1,12 +1,13 @@
 /// <reference types="node" />
 import { RxDatabase } from '../types';
-export declare function spawnServer(this: RxDatabase, { path, port, cors }: {
+export declare function spawnServer(this: RxDatabase, { path, port, cors, startServer, }: {
     path?: string | undefined;
     port?: number | undefined;
     cors?: boolean | undefined;
+    startServer?: boolean | undefined;
 }): {
     app: import("express-serve-static-core").Express;
-    server: import("http").Server;
+    server: import("http").Server | null;
 };
 /**
  * when a server is created, no more collections can be spawned

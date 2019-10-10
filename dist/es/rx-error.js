@@ -7,10 +7,10 @@ import _wrapNativeSuper from "@babel/runtime/helpers/wrapNativeSuper";
  */
 import { ucfirst } from './util';
 import overwritable from './overwritable';
+
 /**
  * transform an object of parameters to a presentable string
  */
-
 function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
