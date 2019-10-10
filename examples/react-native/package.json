@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "babel-preset-expo": "7.0.0",
-    "expo-cli": "3.2.3",
+    "expo-cli": "3.3.0",
     "jest-expo": "35.0.0",
     "react-native-gesture-handler": "1.4.1",
     "react-test-renderer": "16.10.2",
