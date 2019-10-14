@@ -14,7 +14,7 @@
     "postinstall": "npm run fix-jest-expo"
   },
   "devDependencies": {
-    "babel-preset-expo": "7.0.0",
+    "babel-preset-expo": "7.1.0",
     "expo-cli": "3.3.0",
     "jest-expo": "35.0.0",
     "react-native-gesture-handler": "1.4.1",
