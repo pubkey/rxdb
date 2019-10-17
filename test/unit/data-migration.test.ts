@@ -21,7 +21,10 @@ import {
 } from '../../src/data-migrator';
 import {
     createDataMigrator as create,
-    _getOldCollections
+    _getOldCollections,
+    getBatchOfOldCollection,
+    migrateDocumentData,
+    _migrateDocument
 } from '../../dist/lib/data-migrator';
 
 config.parallel('data-migration.test.js', () => {
@@ -236,13 +239,13 @@ config.parallel('data-migration.test.js', () => {
                 it('create', async () => {
                     const col = await humansCollection.createMigrationCollection();
 
-                    const old: any = await _getOldCollections(col._dataMigrator);
+                    const old = await _getOldCollections(col._dataMigrator);
                     const oldCol = old.pop();
 
                     assert.strictEqual(oldCol.schema.constructor.name, 'RxSchema');
                     assert.strictEqual(oldCol.version, 0);
-                    assert.strictEqual(oldCol.crypter.constructor.name, 'Crypter');
-                    assert.strictEqual(oldCol.keyCompressor.constructor.name, 'KeyCompressor');
+                    assert.strictEqual(oldCol._crypter.constructor.name, 'Crypter');
+                    assert.strictEqual(oldCol._keyCompressor.constructor.name, 'KeyCompressor');
                     assert.ok(oldCol.pouchdb.constructor.name.includes('PouchDB'));
                     col.database.destroy();
                 });
@@ -256,11 +259,11 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
 
-                    const old: any = await _getOldCollections(col._dataMigrator);
+                    const old = await _getOldCollections(col._dataMigrator);
                     const oldCol = old.pop();
 
-                    const oldDocs = await oldCol.getBatch(10);
-                    const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
+                    const oldDocs = await getBatchOfOldCollection(oldCol, 10);
+                    const newDoc = await migrateDocumentData(oldCol, oldDocs[0]);
                     assert.deepStrictEqual(newDoc.age, parseInt(oldDocs[0].age, 10));
                     col.database.destroy();
                 });
@@ -273,11 +276,11 @@ config.parallel('data-migration.test.js', () => {
                         }
                     });
 
-                    const old: any = await _getOldCollections(col._dataMigrator);
+                    const old = await _getOldCollections(col._dataMigrator);
                     const oldCol = old.pop();
 
-                    const oldDocs = await oldCol.getBatch(10);
-                    const newDoc = await oldCol.migrateDocumentData(oldDocs[0]);
+                    const oldDocs = await getBatchOfOldCollection(oldCol, 10);
+                    const newDoc = await migrateDocumentData(oldCol, oldDocs[0]);
                     assert.deepStrictEqual(newDoc.age, parseInt(oldDocs[0].age, 10));
                     col.database.destroy();
                 });
@@ -286,7 +289,7 @@ config.parallel('data-migration.test.js', () => {
                 it('should delete the pouchdb with all its content', async () => {
                     const dbName = util.randomCouchString(10);
                     const col = await humansCollection.createMigrationCollection(10, {}, dbName);
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const old = olds.pop();
 
                     const amount = await countAllUndeleted(old.pouchdb);
@@ -342,24 +345,24 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     // simluate prerun of migrate()
-                    const oldDocs = await oldCol.getBatch(10);
+                    const oldDocs = await getBatchOfOldCollection(oldCol, 10);
                     const tryDoc = oldDocs.shift();
-                    const action = await oldCol._migrateDocument(tryDoc);
+                    const action = await _migrateDocument(oldCol, tryDoc);
                     assert.strictEqual(action.type, 'success');
 
                     // this should no crash because existing doc will be overwritten
-                    await oldCol._migrateDocument(tryDoc);
+                    await _migrateDocument(oldCol, tryDoc);
                     col.database.destroy();
                 });
             });
             describe('.migrate()', () => {
                 it('should resolve finished when no docs', async () => {
                     const col = await humansCollection.createMigrationCollection(0);
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     await oldCol.migratePromise();
@@ -372,7 +375,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     const docsPrev = await col.pouch.allDocs({
@@ -397,7 +400,7 @@ config.parallel('data-migration.test.js', () => {
                             return doc;
                         }
                     });
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     const pw8 = AsyncTestUtil.waitResolveable(1000);
@@ -424,7 +427,7 @@ config.parallel('data-migration.test.js', () => {
                             return null;
                         }
                     });
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
@@ -444,7 +447,7 @@ config.parallel('data-migration.test.js', () => {
                             throw new Error('foobar');
                         }
                     });
-                    const olds: any = await _getOldCollections(col._dataMigrator);
+                    const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
                     await AsyncTestUtil.assertThrows(
                         () => oldCol.migratePromise(),
@@ -568,11 +571,11 @@ config.parallel('data-migration.test.js', () => {
             it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                        3: (doc: any) => {
-                            doc.age = parseInt(doc.age, 10);
-                            return doc;
-                        }
-                    },
+                    3: (doc: any) => {
+                        doc.age = parseInt(doc.age, 10);
+                        return doc;
+                    }
+                },
                     util.randomCouchString(10),
                     true
                 );
@@ -584,12 +587,12 @@ config.parallel('data-migration.test.js', () => {
             it('should auto-run on creation (async)', async () => {
                 const col = await humansCollection.createMigrationCollection(
                     10, {
-                        3: async (doc: any) => {
-                            util.promiseWait(10);
-                            doc.age = parseInt(doc.age, 10);
-                            return doc;
-                        }
-                    },
+                    3: async (doc: any) => {
+                        util.promiseWait(10);
+                        doc.age = parseInt(doc.age, 10);
+                        return doc;
+                    }
+                },
                     util.randomCouchString(10),
                     true
                 );

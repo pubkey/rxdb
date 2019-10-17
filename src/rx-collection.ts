@@ -320,22 +320,18 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     /**
      * wrappers for Pouch.put/get to handle keycompression etc
      */
-    _handleToPouch(docData: any) {
-        let data = clone(docData);
-        data = (this._crypter as any).encrypt(data);
-        data = this.schema.swapPrimaryToId(data);
-        if (this.schema.doKeyCompression())
-            data = this._keyCompressor.compress(data);
-        return data;
+    _handleToPouch(docData: any): any {
+        return _handleToPouch(
+            this,
+            docData
+        );
     }
     _handleFromPouch(docData: any, noDecrypt = false) {
-        let data = clone(docData);
-        data = this.schema.swapIdToPrimary(data);
-        if (this.schema.doKeyCompression())
-            data = this._keyCompressor.decompress(data);
-        if (noDecrypt) return data;
-        data = (this._crypter as any).decrypt(data);
-        return data;
+        return _handleFromPouch(
+            this,
+            docData,
+            noDecrypt
+        );
     }
 
     /**
@@ -935,6 +931,37 @@ function _prepareCreateIndexes(
                 );
             })
     );
+}
+
+
+/**
+ * wrappers for Pouch.put/get to handle keycompression etc
+ */
+export function _handleToPouch(
+    col: RxCollection | RxCollectionBase | any,
+    docData: any
+) {
+    let data = clone(docData);
+    data = (col._crypter as any).encrypt(data);
+    data = col.schema.swapPrimaryToId(data);
+    if (col.schema.doKeyCompression())
+        data = col._keyCompressor.compress(data);
+    return data;
+}
+export function _handleFromPouch(
+    col: RxCollection | RxCollectionBase | any,
+    docData: any,
+    noDecrypt = false
+) {
+    let data = clone(docData);
+    data = col.schema.swapIdToPrimary(data);
+    if (col.schema.doKeyCompression())
+        data = col._keyCompressor.decompress(data);
+    if (noDecrypt) return data;
+
+
+    data = (col._crypter as any).decrypt(data);
+    return data;
 }
 
 
