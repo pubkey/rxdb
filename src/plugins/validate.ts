@@ -18,32 +18,21 @@ import {
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
-const validatorsCache: { [k: string]: any } = {};
+const VALIDATOR_CACHE: Map<string, any> = new Map();
 
 
 /**
  * returns the parsed validator from is-my-json-valid
- * @param [schemaPath=''] if given, the schema for the sub-path is used
- * @
  */
 function _getValidator(
-    this: RxSchema,
-    schemaPath: string = ''
+    rxSchema: RxSchema
 ) {
-    const hash = this.hash;
-    if (!validatorsCache[hash])
-        validatorsCache[hash] = {};
-    const validatorsOfHash = validatorsCache[hash];
-    if (!validatorsOfHash[schemaPath]) {
-        const schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
-        if (!schemaPart) {
-            throw newRxError('VD1', {
-                schemaPath
-            });
-        }
-        validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart as any);
+    const hash = rxSchema.hash;
+    if (!VALIDATOR_CACHE.has(hash)) {
+        const validator = isMyJsonValid(rxSchema.jsonID as any);
+        VALIDATOR_CACHE.set(hash, validator);
     }
-    return validatorsOfHash[schemaPath];
+    return VALIDATOR_CACHE.get(hash);
 }
 
 /**
@@ -53,16 +42,14 @@ function _getValidator(
  */
 const validate = function (
     this: RxSchema,
-    obj: any,
-    schemaPath: string = ''
+    obj: any
 ): any {
-    const useValidator = (this as any)._getValidator(schemaPath);
+    const useValidator = (this as any)._getValidator(this);
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
         throw newRxError('VD2', {
             errors: useValidator.errors,
-            schemaPath,
             obj,
             schema: this.jsonID
         });

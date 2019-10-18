@@ -6,6 +6,7 @@ Other:
   - Json-Import now uses `bulkDocs` for better performance
   - Refactored prototype merging so it can be optimised later
   - Moved some check into the check-plugin to optimize production build size
+  - Refactor schema-validation-plugins since sub-path validation is no longer needed
 
 ### 8.7.0 (11 October 2019)
 

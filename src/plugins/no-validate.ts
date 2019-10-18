@@ -8,7 +8,7 @@
 /**
  * validates the given object against the schema
  */
-const validate = function(obj: any): any {
+const validate = function (obj: any): any {
     return obj;
 };
 

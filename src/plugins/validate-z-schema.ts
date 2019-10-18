@@ -18,7 +18,7 @@ import {
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
-const validatorsCache: { [k: string]: any } = {};
+const VALIDATOR_CACHE: Map<string, any> = new Map();
 
 
 /**
@@ -27,29 +27,18 @@ const validatorsCache: { [k: string]: any } = {};
  * @
  */
 function _getValidator(
-    rxSchema: RxSchema,
-    schemaPath: string = '') {
+    rxSchema: RxSchema
+) {
     const hash = rxSchema.hash;
-    if (!validatorsCache[hash]) validatorsCache[hash] = {};
-    const validatorsOfHash = validatorsCache[hash];
-
-    if (!validatorsOfHash[schemaPath]) {
-        const schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
-
-        if (!schemaPart) {
-            throw newRxError('VD1', {
-                schemaPath: schemaPath
-            });
-        }
-
+    if (!VALIDATOR_CACHE.has(hash)) {
         const validator = new (ZSchema as any)();
-        validatorsOfHash[schemaPath] = (obj: any) => {
-            validator.validate(obj, schemaPart);
+        const validatorFun = (obj: any) => {
+            validator.validate(obj, rxSchema.jsonID);
             return validator;
         };
+        VALIDATOR_CACHE.set(hash, validatorFun);
     }
-
-    return validatorsOfHash[schemaPath];
+    return VALIDATOR_CACHE.get(hash);
 }
 
 /**
@@ -59,10 +48,9 @@ function _getValidator(
  */
 const validate = function (
     this: RxSchema,
-    obj: any,
-    schemaPath: string = ''
+    obj: any
 ): any {
-    const validator = _getValidator(this, schemaPath);
+    const validator = _getValidator(this);
     const useValidator = validator(obj);
     const errors: ZSchema.SchemaErrorDetail[] = useValidator.getLastErrors();
     if (!errors) return obj;
@@ -78,7 +66,6 @@ const validate = function (
         }));
         throw newRxError('VD2', {
             errors: formattedZSchemaErrors,
-            schemaPath,
             obj,
             schema: this.jsonID
         });

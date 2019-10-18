@@ -126,7 +126,6 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
     }
     public id: number = newQueryID();
     public mquery: MQuery;
-    private _subs: Subscription[] = [];
 
     // stores the changeEvent-Number of the last handled change-event
     public _latestChangeEvent: -1 | any = -1;
