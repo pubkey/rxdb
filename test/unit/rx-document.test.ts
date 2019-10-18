@@ -13,6 +13,13 @@ import {
     createRxSchema
 } from '../../';
 
+import {
+    getDocumentOrmPrototype,
+    getDocumentPrototype
+} from '../../dist/lib/rx-document-prototype-merge';
+
+
+
 config.parallel('rx-document.test.js', () => {
     describe('statics', () => { });
     describe('prototype-merge', () => {
@@ -69,7 +76,7 @@ config.parallel('rx-document.test.js', () => {
                     }
                 });
 
-                const proto = RxCollection.getDocumentOrmPrototype(col);
+                const proto = getDocumentOrmPrototype(col);
                 const testObj: any = {};
                 Object.setPrototypeOf(
                     testObj,
@@ -95,7 +102,7 @@ config.parallel('rx-document.test.js', () => {
                         }
                     }
                 });
-                const proto = col.getDocumentPrototype();
+                const proto = getDocumentPrototype(col);
 
                 assert.strictEqual(typeof proto.remove, 'function'); // from baseProto
                 assert.strictEqual(proto.foo(), 'bar'); // from orm-proto

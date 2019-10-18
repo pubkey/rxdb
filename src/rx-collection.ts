@@ -70,8 +70,7 @@ import {
     SyncOptionsGraphQL,
     RxChangeEventUpdate,
     RxChangeEventInsert,
-    RxChangeEventRemove,
-    RxCollectionCreator
+    RxChangeEventRemove
 } from './types';
 import {
     RxGraphQLReplicationState
@@ -81,14 +80,15 @@ import {
     RxSchema
 } from './rx-schema';
 import {
-    basePrototype as RxDocumentBasePrototype,
-    createRxDocumentConstructor,
     createWithConstructor as createRxDocumentWithConstructor,
     isInstanceOf as isRxDocument,
     properties as rxDocumentProperties
 } from './rx-document';
 
-
+import {
+    createRxDocument,
+    getRxDocumentConstructor
+} from './rx-document-prototype-merge';
 
 
 const HOOKS_WHEN = ['pre', 'post'];
@@ -175,14 +175,6 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     public _keyCompressor?: any;
 
     /**
-     * merge the prototypes of schema, orm-methods and document-base
-     * so we do not have to assing getters/setters and orm methods to each document-instance
-     */
-    private _getDocumentPrototype?: any;
-
-    private _getDocumentConstructor?: any;
-
-    /**
      * only emits the change-events that change something with the documents
      */
     private __docChanges$?: any;
@@ -233,66 +225,6 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
             spawnedPouchPromise,
             createIndexesPromise
         ]);
-    }
-    getDocumentPrototype() {
-        if (!this._getDocumentPrototype) {
-            const schemaProto = this.schema.getDocumentPrototype();
-            const ormProto = getDocumentOrmPrototype(this as any);
-            const baseProto = RxDocumentBasePrototype;
-            const proto = {};
-            [
-                schemaProto,
-                ormProto,
-                baseProto
-            ].forEach(obj => {
-                const props = Object.getOwnPropertyNames(obj);
-                props.forEach(key => {
-                    const desc: any = Object.getOwnPropertyDescriptor(obj, key);
-
-
-                    /**
-                     * When enumerable is true, it will show on console.dir(instance)
-                     * To not polute the output, only getters and methods are enumerable
-                     */
-                    let enumerable = true;
-                    if (
-                        key.startsWith('_') ||
-                        key.endsWith('_') ||
-                        key.startsWith('$') ||
-                        key.endsWith('$')
-                    ) enumerable = false;
-
-                    if (typeof desc.value === 'function') {
-                        // when getting a function, we automatically do a .bind(this)
-                        Object.defineProperty(proto, key, {
-                            get() {
-                                return desc.value.bind(this);
-                            },
-                            enumerable,
-                            configurable: false
-                        });
-
-                    } else {
-                        desc.enumerable = enumerable;
-                        desc.configurable = false;
-                        if (desc.writable)
-                            desc.writable = false;
-                        Object.defineProperty(proto, key, desc);
-                    }
-                });
-            });
-
-            this._getDocumentPrototype = proto;
-        }
-        return this._getDocumentPrototype;
-    }
-    getDocumentConstructor() {
-        if (!this._getDocumentConstructor) {
-            this._getDocumentConstructor = createRxDocumentConstructor(
-                this.getDocumentPrototype()
-            );
-        }
-        return this._getDocumentConstructor;
     }
 
     /**
@@ -394,34 +326,6 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
         });
     }
 
-    /**
-     * create a RxDocument-instance from the jsonData
-     */
-    _createDocument(json: any): RxDocument {
-        // return from cache if exsists
-        const id = json[this.schema.primaryPath];
-        const cacheDoc = this._docCache.get(id);
-        if (cacheDoc) return cacheDoc as any;
-
-
-        const doc = createRxDocumentWithConstructor(
-            this.getDocumentConstructor(),
-            this as any,
-            json
-        );
-
-        this._docCache.set(id, doc as any);
-        this._runHooksSync('post', 'create', json, doc);
-        runPluginHooks('postCreateRxDocument', doc);
-        return doc as RxDocument;
-    }
-    /**
-     * create RxDocument from the docs-array
-     */
-    _createDocuments(docsJSON: any[]): Promise<RxDocument[]> {
-        return docsJSON.map(json => this._createDocument(json)) as any;
-    }
-
     $emit(changeEvent: RxChangeEvent) {
         return this.database.$emit(changeEvent);
     }
@@ -467,7 +371,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
                 if (tempDoc) {
                     tempDoc._dataSync$.next(useJson);
-                } else newDoc = this._createDocument(useJson);
+                } else newDoc = createRxDocument(this as any, useJson);
 
                 return this._runHooks('post', 'insert', useJson, newDoc);
             }).then(() => {
@@ -710,7 +614,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     newDocument(docData: Partial<RxDocumentType> = {}): RxDocument<RxDocumentType, OrmMethods> {
         docData = this.schema.fillObjectWithDefaults(docData);
         const doc: any = createRxDocumentWithConstructor(
-            this.getDocumentConstructor(),
+            getRxDocumentConstructor(this as any),
             this as any,
             docData
         );
@@ -887,21 +791,6 @@ function _atomicUpsertEnsureRxDocumentExists(
                 };
             }
         });
-}
-
-/**
- * returns the prototype-object
- * that contains the orm-methods,
- * used in the proto-merge
- */
-export function getDocumentOrmPrototype(rxCollection: RxCollection): any {
-    const proto: any = {};
-    Object
-        .entries(rxCollection.methods)
-        .forEach(([k, v]) => {
-            proto[k] = v;
-        });
-    return proto;
 }
 
 /**

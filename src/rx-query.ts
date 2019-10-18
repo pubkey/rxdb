@@ -46,6 +46,10 @@ import {
     RxQuery
 } from './types';
 
+import {
+    createRxDocuments
+} from './rx-document-prototype-merge';
+
 let _queryCount = 0;
 const newQueryID = function (): number {
     return ++_queryCount;
@@ -198,7 +202,10 @@ export class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumentType[] 
      */
     _setResultData(newResultData: any[]): RxDocument[] {
         this._resultsData = newResultData;
-        const docs = this.collection._createDocuments(this._resultsData);
+        const docs = createRxDocuments(
+            this.collection,
+            this._resultsData
+        );
         this._resultsDocs$.next(docs);
         return docs as any;
     }
