@@ -2,7 +2,7 @@
  * does additional checks over the schema-json
  * to ensure nothing is broken or not supported
  */
-import { RxJsonSchema } from '../types';
+import { RxJsonSchema, RxCollectionCreator } from '../types';
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
@@ -22,11 +22,13 @@ export declare function checkSchema(jsonID: RxJsonSchema): void;
 export declare const rxdb = true;
 export declare const hooks: {
     preCreateRxSchema: typeof checkSchema;
+    createRxCollection: (args: RxCollectionCreator) => void;
 };
 declare const _default: {
     rxdb: boolean;
     hooks: {
         preCreateRxSchema: typeof checkSchema;
+        createRxCollection: (args: RxCollectionCreator) => void;
     };
 };
 export default _default;

@@ -29,6 +29,8 @@ var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
 
+var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
+
 var _queryCount = 0;
 
 var newQueryID = function newQueryID() {
@@ -40,7 +42,6 @@ var RxQueryBase =
 function () {
   function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
-    this._subs = [];
     this._latestChangeEvent = -1;
     this._resultsData = null;
     this._resultsDocs$ = new _rxjs.BehaviorSubject(null);
@@ -85,8 +86,7 @@ function () {
 
   _proto._setResultData = function _setResultData(newResultData) {
     this._resultsData = newResultData;
-
-    var docs = this.collection._createDocuments(this._resultsData);
+    var docs = (0, _rxDocumentPrototypeMerge.createRxDocuments)(this.collection, this._resultsData);
 
     this._resultsDocs$.next(docs);
 

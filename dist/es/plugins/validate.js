@@ -11,32 +11,20 @@ import { requestIdleCallbackIfAvailable } from '../util';
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
-var validatorsCache = {};
+var VALIDATOR_CACHE = new Map();
 /**
  * returns the parsed validator from is-my-json-valid
- * @param [schemaPath=''] if given, the schema for the sub-path is used
- * @
  */
 
-function _getValidator() {
-  var schemaPath = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-  var hash = this.hash;
-  if (!validatorsCache[hash]) validatorsCache[hash] = {};
-  var validatorsOfHash = validatorsCache[hash];
+function _getValidator(rxSchema) {
+  var hash = rxSchema.hash;
 
-  if (!validatorsOfHash[schemaPath]) {
-    var schemaPart = schemaPath === '' ? this.jsonID : this.getSchemaByObjectPath(schemaPath);
-
-    if (!schemaPart) {
-      throw newRxError('VD1', {
-        schemaPath: schemaPath
-      });
-    }
-
-    validatorsOfHash[schemaPath] = isMyJsonValid(schemaPart);
+  if (!VALIDATOR_CACHE.has(hash)) {
+    var validator = isMyJsonValid(rxSchema.jsonID);
+    VALIDATOR_CACHE.set(hash, validator);
   }
 
-  return validatorsOfHash[schemaPath];
+  return VALIDATOR_CACHE.get(hash);
 }
 /**
  * validates the given object against the schema
@@ -46,15 +34,12 @@ function _getValidator() {
 
 
 var validate = function validate(obj) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-  var useValidator = this._getValidator(schemaPath);
+  var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
     throw newRxError('VD2', {
       errors: useValidator.errors,
-      schemaPath: schemaPath,
       obj: obj,
       schema: this.jsonID
     });
@@ -64,7 +49,7 @@ var validate = function validate(obj) {
 var runAfterSchemaCreated = function runAfterSchemaCreated(rxSchema) {
   // pre-generate the isMyJsonValid-validator from the schema
   requestIdleCallbackIfAvailable(function () {
-    rxSchema._getValidator();
+    _getValidator(rxSchema);
   });
 };
 

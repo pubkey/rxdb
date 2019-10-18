@@ -1,9 +1,8 @@
 import { RxSchema } from '../rx-schema';
 /**
  * returns the parsed validator from ajv
- * @
  */
-export declare function _getValidator(rxSchema: RxSchema, schemaPath?: string): any;
+export declare function _getValidator(rxSchema: RxSchema): any;
 export declare const rxdb = true;
 export declare const prototypes: {
     /**

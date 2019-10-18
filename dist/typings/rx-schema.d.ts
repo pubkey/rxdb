@@ -7,10 +7,6 @@ export declare class RxSchema<T = any> {
     finalFields: string[];
     constructor(jsonID: RxJsonSchema<T>);
     readonly version: number;
-    /**
-     * array with previous version-numbers
-     */
-    readonly previousVersions: number[];
     readonly crypt: boolean;
     readonly normalized: RxJsonSchema;
     readonly topLevelFields: (keyof T)[];
@@ -82,6 +78,10 @@ export declare function getIndexes<T = any>(jsonID: RxJsonSchema<T>): string[][]
  * @return primaryPath which is _id if none defined
  */
 export declare function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T;
+/**
+ * array with previous version-numbers
+ */
+export declare function getPreviousVersions(schema: RxJsonSchema): number[];
 /**
  * returns the final-fields of the schema
  * @return field-names of the final-fields

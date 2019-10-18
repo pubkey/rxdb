@@ -4,15 +4,18 @@
  */
 import objectPath from 'object-path';
 import RxDocument from '../rx-document';
-import { newRxError } from '../rx-error';
+import { newRxError, newRxTypeError } from '../rx-error';
 import { getIndexes } from '../rx-schema';
-
+import { properties as rxDocumentProperties } from '../rx-document';
+import { properties as rxCollectionProperties } from '../rx-collection';
+import { getPreviousVersions } from '../rx-schema';
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
  * and does not conquer the observe$ and populate_ fields
  * @throws {Error}
  */
+
 export function checkFieldNameRegex(fieldName) {
   if (fieldName === '') return;
   if (fieldName === '_id') return;
@@ -255,9 +258,100 @@ export function checkSchema(jsonID) {
     });
   });
 }
+/**
+ * checks if the given static methods are allowed
+ * @throws if not allowed
+ */
+
+var checkOrmMethods = function checkOrmMethods(statics) {
+  if (!statics) {
+    return;
+  }
+
+  Object.entries(statics).forEach(function (_ref) {
+    var k = _ref[0],
+        v = _ref[1];
+
+    if (typeof k !== 'string') {
+      throw newRxTypeError('COL14', {
+        name: k
+      });
+    }
+
+    if (k.startsWith('_')) {
+      throw newRxTypeError('COL15', {
+        name: k
+      });
+    }
+
+    if (typeof v !== 'function') {
+      throw newRxTypeError('COL16', {
+        name: k,
+        type: typeof k
+      });
+    }
+
+    if (rxCollectionProperties().includes(k) || rxDocumentProperties().includes(k)) {
+      throw newRxError('COL17', {
+        name: k
+      });
+    }
+  });
+};
+/**
+ * checks if the migrationStrategies are ok, throws if not
+ * @throws {Error|TypeError} if not ok
+ */
+
+
+function checkMigrationStrategies(schema, migrationStrategies) {
+  // migrationStrategies must be object not array
+  if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
+    throw newRxTypeError('COL11', {
+      schema: schema
+    });
+  }
+
+  var previousVersions = getPreviousVersions(schema); // for every previousVersion there must be strategy
+
+  if (previousVersions.length !== Object.keys(migrationStrategies).length) {
+    throw newRxError('COL12', {
+      have: Object.keys(migrationStrategies),
+      should: previousVersions
+    });
+  } // every strategy must have number as property and be a function
+
+
+  previousVersions.map(function (vNr) {
+    return {
+      v: vNr,
+      s: migrationStrategies[vNr + 1]
+    };
+  }).filter(function (strat) {
+    return typeof strat.s !== 'function';
+  }).forEach(function (strat) {
+    throw newRxTypeError('COL13', {
+      version: strat.v,
+      type: typeof strat,
+      schema: schema
+    });
+  });
+  return true;
+}
+
 export var rxdb = true;
 export var hooks = {
-  preCreateRxSchema: checkSchema
+  preCreateRxSchema: checkSchema,
+  createRxCollection: function createRxCollection(args) {
+    // check ORM-methods
+    checkOrmMethods(args.statics);
+    checkOrmMethods(args.methods);
+    checkOrmMethods(args.attachments); // check migration strategies
+
+    if (args.schema && args.migrationStrategies) {
+      checkMigrationStrategies(args.schema, args.migrationStrategies);
+    }
+  }
 };
 export default {
   rxdb: rxdb,

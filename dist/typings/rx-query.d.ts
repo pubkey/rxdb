@@ -11,7 +11,6 @@ export declare class RxQueryBase<RxDocumentType = any, RxQueryResult = RxDocumen
     readonly massageSelector: any;
     id: number;
     mquery: MQuery;
-    private _subs;
     _latestChangeEvent: -1 | any;
     _resultsData: any;
     _resultsDocs$: BehaviorSubject<any>;

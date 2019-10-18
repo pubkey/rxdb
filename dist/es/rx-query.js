@@ -8,6 +8,7 @@ import { sortObject, stringifyFilter, clone } from './util';
 import { create as createQueryChangeDetector } from './query-change-detector';
 import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
 import { runPluginHooks } from './hooks';
+import { createRxDocuments } from './rx-document-prototype-merge';
 var _queryCount = 0;
 
 var newQueryID = function newQueryID() {
@@ -19,7 +20,6 @@ export var RxQueryBase =
 function () {
   function RxQueryBase(op, queryObj, collection) {
     this.id = newQueryID();
-    this._subs = [];
     this._latestChangeEvent = -1;
     this._resultsData = null;
     this._resultsDocs$ = new BehaviorSubject(null);
@@ -64,8 +64,7 @@ function () {
 
   _proto._setResultData = function _setResultData(newResultData) {
     this._resultsData = newResultData;
-
-    var docs = this.collection._createDocuments(this._resultsData);
+    var docs = createRxDocuments(this.collection, this._resultsData);
 
     this._resultsDocs$.next(docs);
 

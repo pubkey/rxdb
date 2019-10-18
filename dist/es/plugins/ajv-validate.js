@@ -11,48 +11,34 @@ import { requestIdleCallbackIfAvailable } from '../util';
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
-var validatorsCache = {};
+var VALIDATOR_CACHE = new Map();
 /**
  * returns the parsed validator from ajv
- * @
  */
 
 export function _getValidator(rxSchema) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var hash = rxSchema.hash;
-  if (!validatorsCache[hash]) validatorsCache[hash] = {};
-  var validatorsOfHash = validatorsCache[hash];
 
-  if (!validatorsOfHash[schemaPath]) {
-    var schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
+  if (!VALIDATOR_CACHE.has(hash)) {
+    var ajv = new Ajv(); // TODO should we reuse this instance?
 
-    if (!schemaPart) {
-      throw newRxError('VD1', {
-        schemaPath: schemaPath
-      });
-    } // const ajv = new Ajv({errorDataPath: 'property'});
-
-
-    var ajv = new Ajv();
-    validatorsOfHash[schemaPath] = ajv.compile(schemaPart);
+    var validator = ajv.compile(rxSchema.jsonID);
+    VALIDATOR_CACHE.set(hash, validator);
   }
 
-  return validatorsOfHash[schemaPath];
+  return VALIDATOR_CACHE.get(hash);
 }
 /**
  * validates the given object against the schema
  */
 
 function validate(obj) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-  var useValidator = _getValidator(this, schemaPath);
+  var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
     throw newRxError('VD2', {
       errors: useValidator.errors,
-      schemaPath: schemaPath,
       obj: obj,
       schema: this.jsonID
     });

@@ -1,6 +1,6 @@
 # Changelog
 
-### 8.X.X (comming soon)
+### 8.7.1 (18 October 2019)
 
 Other:
   - Json-Import now uses `bulkDocs` for better performance

@@ -12,7 +12,8 @@ import { createQueryCache } from './query-cache';
 import { createChangeEventBuffer } from './change-event-buffer';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
-import { basePrototype as RxDocumentBasePrototype, createRxDocumentConstructor, createWithConstructor as createRxDocumentWithConstructor, isInstanceOf as isRxDocument, properties as rxDocumentProperties } from './rx-document';
+import { createWithConstructor as createRxDocumentWithConstructor, isInstanceOf as isRxDocument } from './rx-document';
+import { createRxDocument, getRxDocumentConstructor } from './rx-document-prototype-merge';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -89,55 +90,6 @@ function () {
     }));
 
     return Promise.all([spawnedPouchPromise, createIndexesPromise]);
-  };
-
-  _proto.getDocumentPrototype = function getDocumentPrototype() {
-    if (!this._getDocumentPrototype) {
-      var schemaProto = this.schema.getDocumentPrototype();
-      var ormProto = getDocumentOrmPrototype(this);
-      var baseProto = RxDocumentBasePrototype;
-      var proto = {};
-      [schemaProto, ormProto, baseProto].forEach(function (obj) {
-        var props = Object.getOwnPropertyNames(obj);
-        props.forEach(function (key) {
-          var desc = Object.getOwnPropertyDescriptor(obj, key);
-          /**
-           * When enumerable is true, it will show on console.dir(instance)
-           * To not polute the output, only getters and methods are enumerable
-           */
-
-          var enumerable = true;
-          if (key.startsWith('_') || key.endsWith('_') || key.startsWith('$') || key.endsWith('$')) enumerable = false;
-
-          if (typeof desc.value === 'function') {
-            // when getting a function, we automatically do a .bind(this)
-            Object.defineProperty(proto, key, {
-              get: function get() {
-                return desc.value.bind(this);
-              },
-              enumerable: enumerable,
-              configurable: false
-            });
-          } else {
-            desc.enumerable = enumerable;
-            desc.configurable = false;
-            if (desc.writable) desc.writable = false;
-            Object.defineProperty(proto, key, desc);
-          }
-        });
-      });
-      this._getDocumentPrototype = proto;
-    }
-
-    return this._getDocumentPrototype;
-  };
-
-  _proto.getDocumentConstructor = function getDocumentConstructor() {
-    if (!this._getDocumentConstructor) {
-      this._getDocumentConstructor = createRxDocumentConstructor(this.getDocumentPrototype());
-    }
-
-    return this._getDocumentConstructor;
   }
   /**
    * checks if a migration is needed
@@ -172,21 +124,12 @@ function () {
   ;
 
   _proto._handleToPouch = function _handleToPouch(docData) {
-    var data = clone(docData);
-    data = this._crypter.encrypt(data);
-    data = this.schema.swapPrimaryToId(data);
-    if (this.schema.doKeyCompression()) data = this._keyCompressor.compress(data);
-    return data;
+    return _handleToPouch2(this, docData);
   };
 
   _proto._handleFromPouch = function _handleFromPouch(docData) {
     var noDecrypt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    var data = clone(docData);
-    data = this.schema.swapIdToPrimary(data);
-    if (this.schema.doKeyCompression()) data = this._keyCompressor.decompress(data);
-    if (noDecrypt) return data;
-    data = this._crypter.decrypt(data);
-    return data;
+    return _handleFromPouch2(this, docData, noDecrypt);
   }
   /**
    * every write on the pouchdb
@@ -251,39 +194,6 @@ function () {
       });
       return docs;
     });
-  }
-  /**
-   * create a RxDocument-instance from the jsonData
-   */
-  ;
-
-  _proto._createDocument = function _createDocument(json) {
-    // return from cache if exsists
-    var id = json[this.schema.primaryPath];
-
-    var cacheDoc = this._docCache.get(id);
-
-    if (cacheDoc) return cacheDoc;
-    var doc = createRxDocumentWithConstructor(this.getDocumentConstructor(), this, json);
-
-    this._docCache.set(id, doc);
-
-    this._runHooksSync('post', 'create', json, doc);
-
-    runPluginHooks('postCreateRxDocument', doc);
-    return doc;
-  }
-  /**
-   * create RxDocument from the docs-array
-   */
-  ;
-
-  _proto._createDocuments = function _createDocuments(docsJSON) {
-    var _this5 = this;
-
-    return docsJSON.map(function (json) {
-      return _this5._createDocument(json);
-    });
   };
 
   _proto.$emit = function $emit(changeEvent) {
@@ -291,7 +201,7 @@ function () {
   };
 
   _proto.insert = function insert(json) {
-    var _this6 = this;
+    var _this5 = this;
 
     // inserting a temporary-document
     var tempDoc = null;
@@ -321,23 +231,23 @@ function () {
     if (this.schema.primaryPath === '_id' && !useJson._id) useJson._id = generateId();
     var newDoc = tempDoc;
     return this._runHooks('pre', 'insert', useJson).then(function () {
-      _this6.schema.validate(useJson);
+      _this5.schema.validate(useJson);
 
-      return _this6._pouchPut(useJson);
+      return _this5._pouchPut(useJson);
     }).then(function (insertResult) {
-      useJson[_this6.schema.primaryPath] = insertResult.id;
+      useJson[_this5.schema.primaryPath] = insertResult.id;
       useJson._rev = insertResult.rev;
 
       if (tempDoc) {
         tempDoc._dataSync$.next(useJson);
-      } else newDoc = _this6._createDocument(useJson);
+      } else newDoc = createRxDocument(_this5, useJson);
 
-      return _this6._runHooks('post', 'insert', useJson, newDoc);
+      return _this5._runHooks('post', 'insert', useJson, newDoc);
     }).then(function () {
       // event
-      var emitEvent = createChangeEvent('INSERT', _this6.database, _this6, newDoc, useJson);
+      var emitEvent = createChangeEvent('INSERT', _this5.database, _this5, newDoc, useJson);
 
-      _this6.$emit(emitEvent);
+      _this5.$emit(emitEvent);
 
       return newDoc;
     });
@@ -348,7 +258,7 @@ function () {
   ;
 
   _proto.upsert = function upsert(json) {
-    var _this7 = this;
+    var _this6 = this;
 
     var useJson = clone(json);
     var primary = useJson[this.schema.primaryPath];
@@ -369,7 +279,7 @@ function () {
           return existing;
         });
       } else {
-        return _this7.insert(json);
+        return _this6.insert(json);
       }
     });
   }
@@ -379,7 +289,7 @@ function () {
   ;
 
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this8 = this;
+    var _this7 = this;
 
     json = clone(json);
     var primary = json[this.schema.primaryPath];
@@ -400,7 +310,7 @@ function () {
     }
 
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this8, primary, json);
+      return _atomicUpsertEnsureRxDocumentExists(_this7, primary, json);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
         return _atomicUpsertUpdate(wasInserted.doc, json).then(function () {
@@ -597,7 +507,7 @@ function () {
   _proto.newDocument = function newDocument() {
     var docData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     docData = this.schema.fillObjectWithDefaults(docData);
-    var doc = createRxDocumentWithConstructor(this.getDocumentConstructor(), this, docData);
+    var doc = createRxDocumentWithConstructor(getRxDocumentConstructor(this), this, docData);
     doc._isTemporary = true;
 
     this._runHooksSync('post', 'create', docData, doc);
@@ -679,10 +589,10 @@ function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this9 = this;
+      var _this8 = this;
 
       if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-        return _this9._onDestroyCall = res;
+        return _this8._onDestroyCall = res;
       });
       return this._onDestroy;
     }
@@ -691,48 +601,9 @@ function () {
   return RxCollectionBase;
 }();
 /**
- * checks if the migrationStrategies are ok, throws if not
- * @throws {Error|TypeError} if not ok
- */
-
-function checkMigrationStrategies(schema, migrationStrategies) {
-  // migrationStrategies must be object not array
-  if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
-    throw newRxTypeError('COL11', {
-      schema: schema
-    });
-  } // for every previousVersion there must be strategy
-
-
-  if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-    throw newRxError('COL12', {
-      have: Object.keys(migrationStrategies),
-      should: schema.previousVersions
-    });
-  } // every strategy must have number as property and be a function
-
-
-  schema.previousVersions.map(function (vNr) {
-    return {
-      v: vNr,
-      s: migrationStrategies[vNr + 1 + '']
-    };
-  }).filter(function (strat) {
-    return typeof strat.s !== 'function';
-  }).forEach(function (strat) {
-    throw newRxTypeError('COL13', {
-      version: strat.v,
-      type: typeof strat,
-      schema: schema
-    });
-  });
-  return true;
-}
-/**
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
-
 
 function _applyHookFunctions(collection) {
   if (hooksApplied) return; // already run
@@ -765,42 +636,6 @@ export function properties() {
 
   return _properties;
 }
-/**
- * checks if the given static methods are allowed
- * @throws if not allowed
- */
-
-var checkOrmMethods = function checkOrmMethods(statics) {
-  Object.entries(statics).forEach(function (_ref) {
-    var k = _ref[0],
-        v = _ref[1];
-
-    if (typeof k !== 'string') {
-      throw newRxTypeError('COL14', {
-        name: k
-      });
-    }
-
-    if (k.startsWith('_')) {
-      throw newRxTypeError('COL15', {
-        name: k
-      });
-    }
-
-    if (typeof v !== 'function') {
-      throw newRxTypeError('COL16', {
-        name: k,
-        type: typeof k
-      });
-    }
-
-    if (properties().includes(k) || rxDocumentProperties().includes(k)) {
-      throw newRxError('COL17', {
-        name: k
-      });
-    }
-  });
-};
 
 function _atomicUpsertUpdate(doc, json) {
   return doc.atomicUpdate(function (innerDoc) {
@@ -835,24 +670,9 @@ function _atomicUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
   });
 }
 /**
- * returns the prototype-object
- * that contains the orm-methods,
- * used in the proto-merge
- */
-
-
-export function getDocumentOrmPrototype(rxCollection) {
-  var proto = {};
-  Object.entries(rxCollection.methods).forEach(function (_ref2) {
-    var k = _ref2[0],
-        v = _ref2[1];
-    proto[k] = v;
-  });
-  return proto;
-}
-/**
  * creates the indexes in the pouchdb
  */
+
 
 function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   return Promise.all(rxCollection.schema.indexes.map(function (indexAr) {
@@ -869,36 +689,56 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   }));
 }
 /**
+ * wrappers for Pouch.put/get to handle keycompression etc
+ */
+
+
+function _handleToPouch2(col, docData) {
+  var data = clone(docData);
+  data = col._crypter.encrypt(data);
+  data = col.schema.swapPrimaryToId(data);
+  if (col.schema.doKeyCompression()) data = col._keyCompressor.compress(data);
+  return data;
+}
+
+export { _handleToPouch2 as _handleToPouch };
+
+function _handleFromPouch2(col, docData) {
+  var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  var data = clone(docData);
+  data = col.schema.swapIdToPrimary(data);
+  if (col.schema.doKeyCompression()) data = col._keyCompressor.decompress(data);
+  if (noDecrypt) return data;
+  data = col._crypter.decrypt(data);
+  return data;
+}
+/**
  * creates and prepares a new collection
  */
 
 
-export function create(_ref3) {
-  var database = _ref3.database,
-      name = _ref3.name,
-      schema = _ref3.schema,
-      _ref3$pouchSettings = _ref3.pouchSettings,
-      pouchSettings = _ref3$pouchSettings === void 0 ? {} : _ref3$pouchSettings,
-      _ref3$migrationStrate = _ref3.migrationStrategies,
-      migrationStrategies = _ref3$migrationStrate === void 0 ? {} : _ref3$migrationStrate,
-      _ref3$autoMigrate = _ref3.autoMigrate,
-      autoMigrate = _ref3$autoMigrate === void 0 ? true : _ref3$autoMigrate,
-      _ref3$statics = _ref3.statics,
-      statics = _ref3$statics === void 0 ? {} : _ref3$statics,
-      _ref3$methods = _ref3.methods,
-      methods = _ref3$methods === void 0 ? {} : _ref3$methods,
-      _ref3$attachments = _ref3.attachments,
-      attachments = _ref3$attachments === void 0 ? {} : _ref3$attachments,
-      _ref3$options = _ref3.options,
-      options = _ref3$options === void 0 ? {} : _ref3$options;
+export { _handleFromPouch2 as _handleFromPouch };
+export function create(_ref) {
+  var database = _ref.database,
+      name = _ref.name,
+      schema = _ref.schema,
+      _ref$pouchSettings = _ref.pouchSettings,
+      pouchSettings = _ref$pouchSettings === void 0 ? {} : _ref$pouchSettings,
+      _ref$migrationStrateg = _ref.migrationStrategies,
+      migrationStrategies = _ref$migrationStrateg === void 0 ? {} : _ref$migrationStrateg,
+      _ref$autoMigrate = _ref.autoMigrate,
+      autoMigrate = _ref$autoMigrate === void 0 ? true : _ref$autoMigrate,
+      _ref$statics = _ref.statics,
+      statics = _ref$statics === void 0 ? {} : _ref$statics,
+      _ref$methods = _ref.methods,
+      methods = _ref$methods === void 0 ? {} : _ref$methods,
+      _ref$attachments = _ref.attachments,
+      attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
+      _ref$options = _ref.options,
+      options = _ref$options === void 0 ? {} : _ref$options;
   validateCouchDBString(name); // ensure it is a schema-object
 
   if (!isInstanceOfRxSchema(schema)) schema = createRxSchema(schema);
-  checkMigrationStrategies(schema, migrationStrategies); // check ORM-methods
-
-  checkOrmMethods(statics);
-  checkOrmMethods(methods);
-  checkOrmMethods(attachments);
   Object.keys(methods).filter(function (funName) {
     return schema.topLevelFields.includes(funName);
   }).forEach(function (funName) {
@@ -909,9 +749,9 @@ export function create(_ref3) {
   var collection = new RxCollectionBase(database, name, schema, pouchSettings, migrationStrategies, methods, attachments, options, statics);
   return collection.prepare().then(function () {
     // ORM add statics
-    Object.entries(statics).forEach(function (_ref4) {
-      var funName = _ref4[0],
-          fun = _ref4[1];
+    Object.entries(statics).forEach(function (_ref2) {
+      var funName = _ref2[0],
+          fun = _ref2[1];
       Object.defineProperty(collection, funName, {
         get: function get() {
           return fun.bind(collection);
