@@ -645,50 +645,6 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 }
 
 /**
- * checks if the migrationStrategies are ok, throws if not
- * @throws {Error|TypeError} if not ok
- */
-function checkMigrationStrategies(
-    schema: RxSchema,
-    migrationStrategies: KeyFunctionMap
-): boolean {
-    // migrationStrategies must be object not array
-    if (
-        typeof migrationStrategies !== 'object' ||
-        Array.isArray(migrationStrategies)
-    ) {
-        throw newRxTypeError('COL11', {
-            schema
-        });
-    }
-
-    // for every previousVersion there must be strategy
-    if (schema.previousVersions.length !== Object.keys(migrationStrategies).length) {
-        throw newRxError('COL12', {
-            have: Object.keys(migrationStrategies),
-            should: schema.previousVersions
-        });
-    }
-
-    // every strategy must have number as property and be a function
-    schema.previousVersions
-        .map(vNr => ({
-            v: vNr,
-            s: migrationStrategies[(vNr + 1) + '']
-        }))
-        .filter(strat => typeof strat.s !== 'function')
-        .forEach(strat => {
-            throw newRxTypeError('COL13', {
-                version: strat.v,
-                type: typeof strat,
-                schema
-            });
-        });
-
-    return true;
-}
-
-/**
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
@@ -724,41 +680,6 @@ export function properties(): string[] {
     }
     return _properties;
 }
-
-/**
- * checks if the given static methods are allowed
- * @throws if not allowed
- */
-const checkOrmMethods = function (statics: KeyFunctionMap) {
-    Object
-        .entries(statics)
-        .forEach(([k, v]) => {
-            if (typeof k !== 'string') {
-                throw newRxTypeError('COL14', {
-                    name: k
-                });
-            }
-
-            if (k.startsWith('_')) {
-                throw newRxTypeError('COL15', {
-                    name: k
-                });
-            }
-
-            if (typeof v !== 'function') {
-                throw newRxTypeError('COL16', {
-                    name: k,
-                    type: typeof k
-                });
-            }
-
-            if (properties().includes(k) || rxDocumentProperties().includes(k)) {
-                throw newRxError('COL17', {
-                    name: k
-                });
-            }
-        });
-};
 
 function _atomicUpsertUpdate(doc: any, json: any): Promise<any> {
     return doc.atomicUpdate((innerDoc: any) => {
@@ -876,12 +797,6 @@ export function create({
     if (!isInstanceOfRxSchema(schema))
         schema = createRxSchema(schema);
 
-    checkMigrationStrategies(schema, migrationStrategies);
-
-    // check ORM-methods
-    checkOrmMethods(statics);
-    checkOrmMethods(methods);
-    checkOrmMethods(attachments);
     Object.keys(methods)
         .filter(funName => schema.topLevelFields.includes(funName))
         .forEach(funName => {

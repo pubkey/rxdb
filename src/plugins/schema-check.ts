@@ -7,14 +7,31 @@ import objectPath from 'object-path';
 
 import RxDocument from '../rx-document';
 import {
-    newRxError
+    newRxError,
+    newRxTypeError
 } from '../rx-error';
 import {
     getIndexes
 } from '../rx-schema';
 import {
-    RxJsonSchema
+    RxJsonSchema,
+    KeyFunctionMap,
+    NumberFunctionMap,
+    RxCollectionCreator
 } from '../types';
+import {
+    createWithConstructor as createRxDocumentWithConstructor,
+    isInstanceOf as isRxDocument,
+    properties as rxDocumentProperties
+} from '../rx-document';
+import {
+    properties as rxCollectionProperties
+} from '../rx-collection';
+import {
+    getPreviousVersions,
+    RxSchema,
+    createRxSchema
+} from '../rx-schema';
 
 /**
  * checks if the fieldname is allowed
@@ -276,12 +293,111 @@ export function checkSchema(jsonID: RxJsonSchema) {
 }
 
 
+/**
+ * checks if the given static methods are allowed
+ * @throws if not allowed
+ */
+const checkOrmMethods = function (statics?: KeyFunctionMap) {
+    if (!statics) {
+        return;
+    }
+    Object
+        .entries(statics)
+        .forEach(([k, v]) => {
+            if (typeof k !== 'string') {
+                throw newRxTypeError('COL14', {
+                    name: k
+                });
+            }
 
+            if (k.startsWith('_')) {
+                throw newRxTypeError('COL15', {
+                    name: k
+                });
+            }
+
+            if (typeof v !== 'function') {
+                throw newRxTypeError('COL16', {
+                    name: k,
+                    type: typeof k
+                });
+            }
+
+            if (rxCollectionProperties().includes(k) || rxDocumentProperties().includes(k)) {
+                throw newRxError('COL17', {
+                    name: k
+                });
+            }
+        });
+};
+
+/**
+ * checks if the migrationStrategies are ok, throws if not
+ * @throws {Error|TypeError} if not ok
+ */
+function checkMigrationStrategies(
+    schema: RxJsonSchema,
+    migrationStrategies: NumberFunctionMap
+): boolean {
+    // migrationStrategies must be object not array
+    if (
+        typeof migrationStrategies !== 'object' ||
+        Array.isArray(migrationStrategies)
+    ) {
+        throw newRxTypeError('COL11', {
+            schema
+        });
+    }
+
+    const previousVersions = getPreviousVersions(schema);
+
+    // for every previousVersion there must be strategy
+    if (
+        previousVersions.length !== Object
+            .keys(migrationStrategies).length
+    ) {
+        throw newRxError('COL12', {
+            have: Object.keys(migrationStrategies),
+            should: previousVersions
+        });
+    }
+
+    // every strategy must have number as property and be a function
+    previousVersions
+        .map(vNr => ({
+            v: vNr,
+            s: migrationStrategies[(vNr + 1)]
+        }))
+        .filter(strat => typeof strat.s !== 'function')
+        .forEach(strat => {
+            throw newRxTypeError('COL13', {
+                version: strat.v,
+                type: typeof strat,
+                schema
+            });
+        });
+
+    return true;
+}
 
 
 export const rxdb = true;
 export const hooks = {
-    preCreateRxSchema: checkSchema
+    preCreateRxSchema: checkSchema,
+    createRxCollection: (args: RxCollectionCreator) => {
+        // check ORM-methods
+        checkOrmMethods(args.statics);
+        checkOrmMethods(args.methods);
+        checkOrmMethods(args.attachments);
+
+        // check migration strategies
+        if (args.schema && args.migrationStrategies) {
+            checkMigrationStrategies(
+                args.schema,
+                args.migrationStrategies
+            );
+        }
+    }
 };
 
 

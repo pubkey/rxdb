@@ -38,7 +38,8 @@ import {
 } from './types';
 
 import {
-    RxSchema
+    RxSchema,
+    getPreviousVersions
 } from './rx-schema';
 import {
     KeyCompressor
@@ -215,7 +216,7 @@ export function _getOldCollections(
 ): Promise<OldCollection[]> {
     return Promise
         .all(
-            dataMigrator.currentSchema.previousVersions
+            getPreviousVersions(dataMigrator.currentSchema.jsonID)
                 .map(v => (dataMigrator.database._collectionsPouch as any).get(dataMigrator.name + '-' + v))
                 .map(fun => fun.catch(() => null)) // auto-catch so Promise.all continues
         )

@@ -61,15 +61,6 @@ export class RxSchema<T = any> {
         return this.jsonID.version;
     }
 
-    /**
-     * array with previous version-numbers
-     */
-    public get previousVersions(): number[] {
-        let c = 0;
-        return new Array(this.version)
-            .fill(0)
-            .map(() => c++);
-    }
     get crypt(): boolean {
         if (!this._crypt)
             this._crypt = hasCrypt(this.jsonID);
@@ -288,6 +279,17 @@ export function getPrimary<T = any>(jsonID: RxJsonSchema<T>): keyof T {
         .shift();
     if (!ret) return '_id' as keyof T;
     else return ret as keyof T;
+}
+
+/**
+ * array with previous version-numbers
+ */
+export function getPreviousVersions(schema: RxJsonSchema): number[] {
+    const version = schema.version ? schema.version : 0;
+    let c = 0;
+    return new Array(version)
+        .fill(0)
+        .map(() => c++);
 }
 
 /**

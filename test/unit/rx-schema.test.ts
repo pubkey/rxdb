@@ -18,7 +18,8 @@ import {
     getIndexes,
     normalize,
     hasCrypt,
-    getFinalFields
+    getFinalFields,
+    getPreviousVersions
 } from '../../dist/lib/rx-schema';
 
 config.parallel('rx-schema.test.js', () => {
@@ -457,7 +458,7 @@ config.parallel('rx-schema.test.js', () => {
                 assert.notStrictEqual(normalized, null);
             });
         });
-        describe('.previousVersions', () => {
+        describe('.getPreviousVersions()', () => {
             it('get empty array when current==0', () => {
                 const schema = createRxSchema({
                     title: 'schema',
@@ -469,7 +470,10 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }
                 });
-                assert.deepStrictEqual(schema.previousVersions, []);
+                assert.deepStrictEqual(
+                    getPreviousVersions(schema.jsonID),
+                    []
+                );
             });
             it('get valid array when current==5', () => {
                 const schema = createRxSchema({
@@ -482,7 +486,10 @@ config.parallel('rx-schema.test.js', () => {
                         }
                     }
                 });
-                assert.deepStrictEqual(schema.previousVersions, [0, 1, 2, 3, 4]);
+                assert.deepStrictEqual(
+                    getPreviousVersions(schema.jsonID),
+                    [0, 1, 2, 3, 4]
+                );
             });
         });
         describe('.hash', () => {
