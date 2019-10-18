@@ -24,7 +24,10 @@ import {
     _getOldCollections,
     getBatchOfOldCollection,
     migrateDocumentData,
-    _migrateDocument
+    _migrateDocument,
+    deleteOldCollection,
+    migrateOldCollection,
+    migratePromise
 } from '../../dist/lib/data-migrator';
 
 config.parallel('data-migration.test.js', () => {
@@ -229,7 +232,10 @@ config.parallel('data-migration.test.js', () => {
                 const old = await _getOldCollections(col2._dataMigrator);
                 assert.ok(Array.isArray(old));
                 assert.strictEqual(old.length, 1);
-                assert.strictEqual(old[0].constructor.name, 'OldCollection');
+
+                // ensure it is an OldCollection
+                assert.ok(old[0].newestCollection);
+
                 db.destroy();
                 db2.destroy();
             });
@@ -308,7 +314,7 @@ config.parallel('data-migration.test.js', () => {
                     assert.strictEqual(typeof iDoc.schemaHash, 'string');
 
 
-                    await old.delete();
+                    await deleteOldCollection(old);
 
                     // check that all docs deleted
                     const checkPouch2 = new PouchDB(pouchLocation, {
@@ -365,7 +371,7 @@ config.parallel('data-migration.test.js', () => {
                     const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
 
-                    await oldCol.migratePromise();
+                    await migratePromise(oldCol);
                     col.database.destroy();
                 });
                 it('should resolve finished when some docs', async () => {
@@ -385,7 +391,7 @@ config.parallel('data-migration.test.js', () => {
                     const preFiltered = docsPrev.rows.filter((doc: any) => !doc.id.startsWith('_design'));
                     assert.strictEqual(preFiltered.length, 0);
 
-                    await oldCol.migratePromise();
+                    await migratePromise(oldCol);
 
                     // check if in new collection
                     const docs = await col.find().exec();
@@ -406,7 +412,7 @@ config.parallel('data-migration.test.js', () => {
                     const pw8 = AsyncTestUtil.waitResolveable(1000);
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
-                    const state$ = oldCol.migrate(5);
+                    const state$ = migrateOldCollection(oldCol, 5);
                     const states = [];
                     state$.subscribe((state: any) => {
                         assert.strictEqual(state.type, 'success');
@@ -414,7 +420,7 @@ config.parallel('data-migration.test.js', () => {
                         states.push(state);
                     }, () => {
                         throw new Error('this test should not call error');
-                    }, pw8.resolve);
+                    }, () => pw8.resolve());
 
                     await pw8.promise;
                     assert.strictEqual(states.length, 10);
@@ -431,7 +437,7 @@ config.parallel('data-migration.test.js', () => {
                     const oldCol = olds.pop();
 
                     // batchSize is doc.length / 2 to make sure it takes a bit
-                    const state$ = oldCol.migrate(5);
+                    const state$ = migrateOldCollection(oldCol, 5);
                     const states = [];
                     state$.subscribe((state: any) => {
                         assert.strictEqual(state.type, 'deleted');
@@ -450,7 +456,7 @@ config.parallel('data-migration.test.js', () => {
                     const olds = await _getOldCollections(col._dataMigrator);
                     const oldCol = olds.pop();
                     await AsyncTestUtil.assertThrows(
-                        () => oldCol.migratePromise(),
+                        () => migratePromise(oldCol),
                         Error
                     );
                     col.database.destroy();
