@@ -44,7 +44,7 @@ const validate = function (
     this: RxSchema,
     obj: any
 ): any {
-    const useValidator = (this as any)._getValidator(this);
+    const useValidator = _getValidator(this);
     const isValid = useValidator(obj);
     if (isValid) return obj;
     else {
@@ -59,7 +59,7 @@ const validate = function (
 const runAfterSchemaCreated = (rxSchema: RxSchema) => {
     // pre-generate the isMyJsonValid-validator from the schema
     requestIdleCallbackIfAvailable(() => {
-        (rxSchema as any)._getValidator();
+        _getValidator(rxSchema);
     });
 };
 
