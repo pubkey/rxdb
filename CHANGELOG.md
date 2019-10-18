@@ -1,5 +1,12 @@
 # Changelog
 
+### 8.X.X (comming soon)
+
+Other:
+  - Json-Import now uses `bulkDocs` for better performance
+  - Refactored prototype merging so it can be optimised later
+  - Moved some check into the check-plugin to optimize production build size
+
 ### 8.7.0 (11 October 2019)
 
 Features:

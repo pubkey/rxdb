@@ -14,13 +14,14 @@ import {
     createChangeEvent
 } from '../rx-change-event';
 import {
-    RxDatabase
+    RxDatabase,
+    RxCollection
 } from '../types';
 
 function dumpRxDatabase(
     this: RxDatabase,
     decrypted = false,
-    collections: any = null
+    collections?: string[]
 ): Promise<any> {
     const json: any = {
         name: this.name,
@@ -74,7 +75,7 @@ const importDumpRxDatabase = function (
 };
 
 const dumpRxCollection = function (
-    this: any,
+    this: RxCollection,
     decrypted = false
 ) {
     const encrypted = !decrypted;
@@ -93,7 +94,7 @@ const dumpRxCollection = function (
     }
 
     const query = createRxQuery('find', {}, this);
-    return this._pouchFind(query, null, encrypted)
+    return this._pouchFind(query, undefined, encrypted)
         .then((docs: any) => {
             json.docs = docs.map((docData: any) => {
                 delete docData._rev;
@@ -104,7 +105,10 @@ const dumpRxCollection = function (
         });
 };
 
-function importDumpRxCollection(this: any, exportedJSON: any): Promise<any> {
+function importDumpRxCollection(
+    this: RxCollection,
+    exportedJSON: any
+): Promise<any> {
     // check schemaHash
     if (exportedJSON.schemaHash !== this.schema.hash) {
         throw newRxError('JD2', {
@@ -124,28 +128,32 @@ function importDumpRxCollection(this: any, exportedJSON: any): Promise<any> {
         });
     }
 
-    const importFns = exportedJSON.docs
+    const docs = exportedJSON.docs
         // decrypt
         .map((doc: any) => this._crypter.decrypt(doc))
         // validate schema
         .map((doc: any) => this.schema.validate(doc))
-        // import
-        .map((doc: any) => {
-            return this._pouchPut(doc).then(() => {
-                const primary = doc[this.schema.primaryPath];
-                // emit changeEvents
-                const emitEvent = createChangeEvent(
-                    'INSERT',
-                    this.database,
-                    this,
-                    null,
-                    doc
-                );
-                emitEvent.data.doc = primary;
-                this.$emit(emitEvent);
-            });
+        // transform
+        .map((doc: any) => this._handleToPouch(doc));
+
+    return this.database.lockedRun(
+        // write to disc
+        () => this.pouch.bulkDocs(docs)
+    ).then(() => {
+        docs.forEach((doc: any) => {
+            // emit change events
+            const primary = doc[this.schema.primaryPath];
+            const emitEvent = createChangeEvent(
+                'INSERT',
+                this.database,
+                this,
+                null,
+                doc
+            );
+            emitEvent.data.doc = primary;
+            this.$emit(emitEvent);
         });
-    return Promise.all(importFns);
+    });
 }
 
 export const rxdb = true;

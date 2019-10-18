@@ -11,7 +11,8 @@ import {
     promiseSeries
 } from './util';
 import {
-    createRxQuery
+    createRxQuery,
+    RxQueryBase
 } from './rx-query';
 import {
     isInstanceOf as isInstanceOfRxSchema,
@@ -309,7 +310,7 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
      * wrapps pouch-find
      */
     _pouchFind(
-        rxQuery: RxQuery,
+        rxQuery: RxQuery | RxQueryBase,
         limit?: number,
         noDecrypt: boolean = false
     ): Promise<any[]> {
