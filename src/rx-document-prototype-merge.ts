@@ -7,14 +7,6 @@
  * In the future we should do this by chaining the __proto__ objects
  */
 
-import clone from 'clone';
-import {
-    BehaviorSubject
-} from 'rxjs';
-
-import {
-    RxSchema
-} from './rx-schema';
 import {
     RxCollectionBase
 } from './rx-collection';
