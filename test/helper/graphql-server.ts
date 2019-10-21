@@ -15,11 +15,25 @@ import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
 const express = require('express');
+// we need cors because this server is also used in browser-tests
+const cors = require('cors');
 const graphqlHTTP = require('express-graphql');
 
-let lastPort = 16121;
+import {
+    GRAPHQL_PATH,
+    GRAPHQL_SUBSCRIPTION_PATH
+} from './graphql-config';
 
-function sortByUpdatedAtAndPrimary(a: any, b: any): 0 | 1 | -1 {
+let lastPort = 16121;
+export function getPort() {
+    lastPort = lastPort + 1;
+    return lastPort;
+}
+
+function sortByUpdatedAtAndPrimary(
+    a: any,
+    b: any
+): 0 | 1 | -1 {
     if (a.updatedAt > b.updatedAt) return 1;
     if (a.updatedAt < b.updatedAt) return -1;
 
@@ -47,9 +61,12 @@ export interface GraphQLServerModule {
     spawn<T>(docs?: T[]): Promise<GraphqlServer<T>>;
 }
 
-export async function spawn<T>(documents: T[] = []): Promise<GraphqlServer<T>> {
+export async function spawn<T>(
+    documents: T[] = [],
+    port = getPort()
+): Promise<GraphqlServer<T>> {
     const app = express();
-    const port = lastPort++;
+    app.use(cors());
 
     /**
      * schema in graphql
@@ -59,6 +76,7 @@ export async function spawn<T>(documents: T[] = []): Promise<GraphqlServer<T>> {
         type Query {
             info: Int
             feedForRxDBReplication(lastId: String!, minUpdatedAt: Int!, limit: Int!): [Human!]!
+            getAll: [Human!]!
         }
         type Mutation {
             setHuman(human: HumanInput): Human
@@ -127,6 +145,9 @@ export async function spawn<T>(documents: T[] = []): Promise<GraphqlServer<T>> {
 */
             return limited;
         },
+        getAll: () => {
+            return documents;
+        },
         setHuman: (args: any) => {
             // console.log('## setHuman()');
             // console.dir(args);
@@ -147,14 +168,13 @@ export async function spawn<T>(documents: T[] = []): Promise<GraphqlServer<T>> {
         humanChanged: () => pubsub.asyncIterator('humanChanged')
     };
 
-    const path = '/graphql';
-    app.use(path, graphqlHTTP({
+    app.use(GRAPHQL_PATH, graphqlHTTP({
         schema: schema,
         rootValue: root,
         graphiql: true,
     }));
 
-    const ret = 'http://localhost:' + port + path;
+    const ret = 'http://localhost:' + port + GRAPHQL_PATH;
     const client = graphQlClient({
         url: ret
     });
@@ -174,7 +194,7 @@ export async function spawn<T>(documents: T[] = []): Promise<GraphqlServer<T>> {
                         rootValue: root
                     }, {
                     server: ws,
-                    path: '/subscriptions',
+                    path: GRAPHQL_SUBSCRIPTION_PATH,
                 }
                 );
 
