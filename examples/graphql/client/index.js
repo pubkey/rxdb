@@ -43,10 +43,12 @@ const heroSchema = {
             index: true
         },
         color: {
-            type: 'string'
+            type: 'string',
+            index: true
         },
         updatedAt: {
-            type: 'number'
+            type: 'number',
+            index: true
         }
     },
     required: ['color']
@@ -151,7 +153,7 @@ async function run() {
          * when something has changed,
          * we can set the liveIntervall to a high value
          */
-        liveInterval: 1000 * 10, // 10 minutes
+        liveInterval: 1000 * 60 * 10, // 10 minutes
         deletedFlag: 'deleted'
     });
     // show replication-errors in logs

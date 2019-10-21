@@ -174,6 +174,40 @@ export const humanSubIndex: RxJsonSchema = {
     }
 };
 
+/**
+ * each field is an index,
+ * use this to slow down inserts in tests
+ */
+export const humanWithAllIndex: RxJsonSchema = {
+    title: 'human schema',
+    description: 'describes a human being',
+    version: 0,
+    keyCompression: true,
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            index: true
+        },
+        firstName: {
+            type: 'string',
+            index: true
+        },
+        lastName: {
+            type: 'string',
+            index: true
+        },
+        age: {
+            description: 'age in years',
+            type: 'integer',
+            minimum: 0,
+            maximum: 150,
+            index: true
+        }
+    },
+    required: ['firstName', 'lastName']
+};
+
 export const nestedHuman: RxJsonSchema = {
     title: 'human nested',
     version: 0,
@@ -792,6 +826,34 @@ export const humanWithTimestamp: RxJsonSchema = {
         },
         updatedAt: {
             type: 'number'
+        }
+    },
+    required: ['id', 'name', 'age', 'updatedAt']
+};
+
+/**
+ * each field is an index,
+ * use this to slow down inserts in tests
+ */
+export const humanWithTimestampAllIndex: RxJsonSchema = {
+    version: 0,
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            primary: true
+        },
+        name: {
+            type: 'string',
+            index: true
+        },
+        age: {
+            type: 'number',
+            index: true
+        },
+        updatedAt: {
+            type: 'number',
+            index: true
         }
     },
     required: ['id', 'name', 'age', 'updatedAt']

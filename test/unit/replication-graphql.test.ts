@@ -5,6 +5,9 @@ import AsyncTestUtil, {
 
 import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
+import {
+    HumanWithTimestampDocumentType
+} from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import * as util from '../../dist/lib/util';
@@ -14,6 +17,11 @@ import {
 import RxDB from '../../';
 import GraphQLPlugin from '../../plugins/replication-graphql';
 import * as schemas from '../helper/schemas';
+
+import {
+    GraphqlServer,
+    GraphQLServerModule
+} from '../helper/graphql-server';
 
 RxDB.plugin(GraphQLPlugin);
 
@@ -37,11 +45,13 @@ import {
     first
 } from 'rxjs/operators';
 
+declare type WithDeleted<T> = T & { deleted: boolean };
+
 describe('replication-graphql.test.js', () => {
     if (!config.platform.isNode()) return;
     const REQUIRE_FUN = require;
     RxDB.plugin(REQUIRE_FUN('pouchdb-adapter-http'));
-    const SpawnServer = REQUIRE_FUN('../helper/graphql-server');
+    const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
     const ws = REQUIRE_FUN('ws');
     const { SubscriptionClient } = REQUIRE_FUN('subscriptions-transport-ws');
     const ERROR_URL = 'http://localhost:15898/foobar';
@@ -1034,7 +1044,7 @@ describe('replication-graphql.test.js', () => {
             const amount = batchSize;
             const [c, server] = await Promise.all([
                 humansCollection.createHumanWithTimestamp(amount),
-                SpawnServer.spawn()
+                SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>()
             ]);
 
             const doc = await c.findOne().exec();
@@ -1645,4 +1655,58 @@ describe('replication-graphql.test.js', () => {
         });
     });
 
+    config.parallel('issues', () => {
+        it('push not working on slow db', async () => {
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                multiInstance: true,
+                queryChangeDetection: true,
+                ignoreDuplicate: true,
+                password: util.randomCouchString(10)
+            });
+            const schema = clone(schemas.humanWithTimestampAllIndex);
+            schema.properties.name.encrypted = true;
+            const collection = await db.collection({
+                name: 'humans',
+                schema
+            });
+
+            // insert data to slow down the db
+            const amount = 30;
+            await Promise.all(
+                new Array(amount).fill(0)
+                    .map(() => schemaObjects.humanWithTimestamp())
+                    .map(d => collection.insert(d))
+            );
+
+            const testData = getTestData(0);
+            const server = await SpawnServer.spawn(testData);
+
+            const replicationState = collection.syncGraphQL({
+                url: server.url,
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder
+                },
+                live: true,
+                deletedFlag: 'deleted'
+            });
+            await replicationState.awaitInitialReplication();
+            const docsOnServer = server.getDocuments();
+            assert.strictEqual(docsOnServer.length, amount);
+
+            // insert one which will trigger an auto push
+            await collection.insert(schemaObjects.humanWithTimestamp());
+
+            await AsyncTestUtil.waitUntil(async () => {
+                const docs = await server.getDocuments();
+                console.log(docs.length);
+                return docs.length === (amount + 1);
+            });
+
+            server.close();
+            db.destroy();
+        });
+    });
 });

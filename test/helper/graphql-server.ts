@@ -31,7 +31,23 @@ function sortByUpdatedAtAndPrimary(a: any, b: any): 0 | 1 | -1 {
     return 0;
 }
 
-export async function spawn(documents: any[] = []) {
+export interface GraphqlServer<T> {
+    port: number;
+    wsPort: number;
+    subServer: any;
+    client: any;
+    url: string;
+    setDocument(doc: T): Promise<{ data: any }>;
+    overwriteDocuments(docs: T[]): void;
+    getDocuments(): T[];
+    close(now?: boolean): void;
+}
+
+export interface GraphQLServerModule {
+    spawn<T>(docs?: T[]): Promise<GraphqlServer<T>>;
+}
+
+export async function spawn<T>(documents: T[] = []): Promise<GraphqlServer<T>> {
     const app = express();
     const port = lastPort++;
 
@@ -142,7 +158,7 @@ export async function spawn(documents: any[] = []) {
     const client = graphQlClient({
         url: ret
     });
-    return new Promise(res => {
+    const retServer: Promise<GraphqlServer<T>> = new Promise(res => {
         const server = app.listen(port, function () {
 
             const wsPort = port + 500;
@@ -209,4 +225,5 @@ export async function spawn(documents: any[] = []) {
             });
         });
     });
+    return retServer;
 }
