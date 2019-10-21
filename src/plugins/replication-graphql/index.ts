@@ -94,8 +94,6 @@ export class RxGraphQLReplicationState {
     public _runQueueCount: number = 0;
     public initialReplicationComplete$: Observable<any> = undefined as any;
 
-    public changesSub: any;
-
     public recieved$: Observable<any> = undefined as any;
     public send$: Observable<any> = undefined as any;
     public error$: Observable<any> = undefined as any;
@@ -356,8 +354,8 @@ export class RxGraphQLReplicationState {
             [
                 toPouch
             ], {
-                new_edits: false
-            }
+            new_edits: false
+        }
         );
 
         /**
@@ -378,9 +376,7 @@ export class RxGraphQLReplicationState {
     }
     cancel(): Promise<any> {
         if (this.isStopped()) return Promise.resolve(false);
-
-        if (this.changesSub) this.changesSub.cancel();
-
+        this._subs.forEach(sub => sub.unsubscribe());
         this._subjects.canceled.next(true);
         // TODO
 
@@ -451,22 +447,25 @@ export function syncGraphQL(
             }
 
             if (push) {
-                replicationState.changesSub = collection.pouch.changes({
-                    since: 'now',
-                    live: true,
-                    include_docs: true
-                }).on('change', function (change: any) {
+                /**
+                 * we have to use the rxdb changestream
+                 * because the pouchdb.changes stream sometimes
+                 * does not emit events or stucks
+                 */
+                const changeEventsSub = collection.$.subscribe(changeEvent => {
                     if (replicationState.isStopped()) return;
-
-                    const rev = change.doc._rev;
-                    if (!wasRevisionfromPullReplication(
-                        replicationState.endpointHash,
-                        rev
-                    )) {
+                    const rev = changeEvent.data.v._rev;
+                    if (
+                        rev &&
+                        !wasRevisionfromPullReplication(
+                            replicationState.endpointHash,
+                            rev
+                        )
+                    ) {
                         replicationState.run();
                     }
                 });
-
+                replicationState._subs.push(changeEventsSub);
             }
         }
     });

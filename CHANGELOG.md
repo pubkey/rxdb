@@ -1,5 +1,10 @@
 # Changelog
 
+### X.X.X (comming soon)
+
+Bugfixes:
+  - GraphQL replication sometimes not pushed a document because pouchdb.changes stuck
+
 ### 8.7.1 (18 October 2019)
 
 Other:
