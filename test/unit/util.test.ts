@@ -4,6 +4,10 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
+import {
+    validateCouchDBString
+} from '../../dist/lib/pouch-db';
+
 
 describe('util.test.js', () => {
     describe('.fastUnsecureHash()', () => {
@@ -64,34 +68,34 @@ describe('util.test.js', () => {
     describe('.validateCouchDBString()', () => {
         describe('positive', () => {
             it('should validate a normal string', () => {
-                util.validateCouchDBString('foobar');
+                validateCouchDBString('foobar');
             });
             it('should allow _ and $ after the first character', () => {
-                util.validateCouchDBString('foo_bar');
-                util.validateCouchDBString('foobar_');
-                util.validateCouchDBString('foobar$');
+                validateCouchDBString('foo_bar');
+                validateCouchDBString('foobar_');
+                validateCouchDBString('foobar$');
             });
             it('should not allow _ and $ as the first character', async () => {
                 await AsyncTestUtil.assertThrows(
-                    () => util.validateCouchDBString('$foobar'),
+                    () => validateCouchDBString('$foobar'),
                     'RxError',
                     'match the regex'
                 );
                 await AsyncTestUtil.assertThrows(
-                    () => util.validateCouchDBString('_foobar'),
+                    () => validateCouchDBString('_foobar'),
                     'RxError',
                     'match the regex'
                 );
             });
             it('should validate foldernames', () => {
-                util.validateCouchDBString('./foobar'); // unix
-                util.validateCouchDBString('.\\foobar'); // windows
+                validateCouchDBString('./foobar'); // unix
+                validateCouchDBString('.\\foobar'); // windows
             });
         });
         describe('negative', () => {
             it('should not validate a spaced string', async () => {
                 await AsyncTestUtil.assertThrows(
-                    () => util.validateCouchDBString('foo bar'),
+                    () => validateCouchDBString('foo bar'),
                     'RxError',
                     'match the regex'
                 );

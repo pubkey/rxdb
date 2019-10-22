@@ -5,17 +5,14 @@ import BroadcastChannel from 'broadcast-channel';
 import {
     adapterObject,
     hash,
-    validateCouchDBString,
-    isLevelDown,
-    promiseWait
+    promiseWait,
+    pluginMissing
 } from './util';
 import {
-    newRxError,
-    pluginMissing
+    newRxError
 } from './rx-error';
 import {
-    createRxSchema,
-    RxSchema
+    createRxSchema
 } from './rx-schema';
 import {
     isInstanceOf as isInstanceOfRxChangeEvent,
@@ -36,7 +33,9 @@ import {
 } from 'rxjs/operators';
 
 import {
-    PouchDB
+    PouchDB,
+    validateCouchDBString,
+    isLevelDown
 } from './pouch-db';
 
 import {

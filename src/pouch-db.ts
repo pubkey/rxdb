@@ -7,7 +7,9 @@
 import PouchDBCore from 'pouchdb-core';
 // pouchdb-find
 import PouchDBFind from 'pouchdb-find';
+
 PouchDBCore.plugin(PouchDBFind);
+
 
 /*
 // comment in to debug
@@ -18,7 +20,8 @@ PouchDB.debug.enable('*');
 
 
 import {
-    newRxError
+    newRxError,
+    newRxTypeError
 } from './rx-error';
 import {
     PouchDBInstance
@@ -64,6 +67,75 @@ export function getBatch(
             .map(row => row.doc)
             .filter(doc => !doc._id.startsWith('_design'))
         );
+}
+
+
+/**
+ * check if the given module is a leveldown-adapter
+ * throws if not
+ */
+export function isLevelDown(adapter: any) {
+    if (!adapter || typeof adapter.super_ !== 'function') {
+        throw newRxError('UT4', {
+            adapter
+        });
+    }
+}
+
+/**
+ * validates that a given string is ok to be used with couchdb-collection-names
+ * @link https://wiki.apache.org/couchdb/HTTP_database_API
+ * @throws  {Error}
+ */
+export function validateCouchDBString(name: string): true {
+    if (
+        typeof name !== 'string' ||
+        name.length === 0
+    ) {
+        throw newRxTypeError('UT1', {
+            name
+        });
+    }
+
+
+    // do not check, if foldername is given
+    if (
+        name.includes('/') || // unix
+        name.includes('\\') // windows
+    ) return true;
+
+
+    const regStr = '^[a-z][_$a-z0-9]*$';
+    const reg = new RegExp(regStr);
+    if (!name.match(reg)) {
+        throw newRxError('UT2', {
+            regex: regStr,
+            givenName: name,
+        });
+    }
+
+    return true;
+}
+
+/**
+ * get the correct function-name for pouchdb-replication
+ */
+export function pouchReplicationFunction(
+    pouch: PouchDBInstance,
+    {
+        pull = true,
+        push = true
+    }
+): any {
+    if (pull && push) return pouch.sync.bind(pouch);
+    if (!pull && push) return (pouch.replicate as any).to.bind(pouch);
+    if (pull && !push) return (pouch.replicate as any).from.bind(pouch);
+    if (!pull && !push) {
+        throw newRxError('UT3', {
+            pull,
+            push
+        });
+    }
 }
 
 export function isInstanceOf(obj: any) {

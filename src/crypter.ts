@@ -4,12 +4,10 @@
 
 import objectPath from 'object-path';
 import {
-    clone
+    clone,
+    pluginMissing
 } from './util';
 
-import {
-    pluginMissing
-} from './rx-error';
 import {
     RxSchema
 } from './rx-schema';

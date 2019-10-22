@@ -52,7 +52,7 @@ import {
 import {
     _handleToPouch,
     _handleFromPouch
-} from './rx-collection';
+} from './rx-collection-helper';
 
 export class DataMigrator {
 

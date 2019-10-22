@@ -6,11 +6,11 @@ import {
     hash,
     sortObject,
     trimDots,
-    flattenObject
+    flattenObject,
+    pluginMissing
 } from './util';
 import {
     newRxError,
-    pluginMissing
 } from './rx-error';
 import {
     runPluginHooks

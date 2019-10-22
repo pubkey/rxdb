@@ -15,15 +15,14 @@ import { skipUntil } from 'rxjs/operators';
 
 import {
     promiseWait,
-    clone,
-    pouchReplicationFunction
+    clone
 } from '../util';
 import Core from '../core';
 import {
     newRxError
 } from '../rx-error';
 import {
-    PouchDB,
+    pouchReplicationFunction,
     isInstanceOf as isInstanceOfPouchDB
 } from '../pouch-db';
 

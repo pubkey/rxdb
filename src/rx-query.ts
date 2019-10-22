@@ -1,8 +1,7 @@
 import deepEqual from 'deep-equal';
 import {
     merge,
-    BehaviorSubject,
-    Subscription
+    BehaviorSubject
 } from 'rxjs';
 import {
     mergeMap,
@@ -15,8 +14,6 @@ import {
     massageSelector,
     rowFilter
 } from 'pouchdb-selector-core';
-
-
 import {
     MQuery,
     createMQuery
@@ -24,7 +21,8 @@ import {
 import {
     sortObject,
     stringifyFilter,
-    clone
+    clone,
+    pluginMissing
 } from './util';
 import {
     create as createQueryChangeDetector,
@@ -32,8 +30,7 @@ import {
 } from './query-change-detector';
 import {
     newRxError,
-    newRxTypeError,
-    pluginMissing
+    newRxTypeError
 } from './rx-error';
 import {
     runPluginHooks

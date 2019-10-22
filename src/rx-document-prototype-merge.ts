@@ -8,9 +8,6 @@
  */
 
 import {
-    RxCollectionBase
-} from './rx-collection';
-import {
     RxCollection,
     RxDocument
 } from './types';
@@ -24,8 +21,8 @@ import {
 } from './hooks';
 
 // caches
-const protoForCollection: WeakMap<RxCollectionBase, any> = new WeakMap();
-const constructorForCollection: WeakMap<RxCollectionBase, any> = new WeakMap();
+const protoForCollection: WeakMap<RxCollection, any> = new WeakMap();
+const constructorForCollection: WeakMap<RxCollection, any> = new WeakMap();
 
 export function getDocumentPrototype(
     rxCollection: RxCollection

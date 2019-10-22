@@ -2,9 +2,6 @@
  * here we use custom errors with the additional field 'parameters'
  */
 
-import {
-    ucfirst
-} from './util';
 import overwritable from './overwritable';
 import {
     RxErrorParameters
@@ -98,25 +95,6 @@ export class RxTypeError extends TypeError {
     get typeError(): boolean {
         return true;
     }
-}
-
-
-export function pluginMissing(
-    pluginKey: string
-): RxError {
-    return new RxError(
-        'PU',
-        `You are using a function which must be overwritten by a plugin.
-        You should either prevent the usage of this function or add the plugin via:
-          - es5-require:
-            RxDB.plugin(require('rxdb/plugins/${pluginKey}'))
-          - es6-import:
-            import ${ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
-            RxDB.plugin(${ucfirst(pluginKey)}Plugin);
-        `, {
-            pluginKey
-        }
-    );
 }
 
 // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';

@@ -44,6 +44,9 @@ jobs:
       script: npm run test:deps
       env: LABEL=test:deps
     - stage: code format
+      script: npm run test:circular
+      env: LABEL=test:circular
+    - stage: code format
       script: npm run lint
       env: LABEL=lint
 

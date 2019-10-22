@@ -4,10 +4,6 @@
  */
 import randomToken from 'random-token';
 import {
-    newRxError,
-    newRxTypeError
-} from './rx-error';
-import {
     default as deepClone
 } from 'clone';
 import {
@@ -15,17 +11,24 @@ import {
 } from './types';
 
 /**
- * check if the given module is a leveldown-adapter
- * throws if not
+ * Returns an error that indicates that a plugin is missing
+ * We do not throw a RxError because this should not be handled
+ * programmatically but by using the correct import
  */
-export function isLevelDown(adapter: any) {
-    if (!adapter || typeof adapter.super_ !== 'function') {
-        throw newRxError('UT4', {
-            adapter
-        });
-    }
+export function pluginMissing(
+    pluginKey: string
+): Error {
+    return new Error(
+        `You are using a function which must be overwritten by a plugin.
+        You should either prevent the usage of this function or add the plugin via:
+          - es5-require:
+            RxDB.plugin(require('rxdb/plugins/${pluginKey}'))
+          - es6-import:
+            import ${ucfirst(pluginKey)}Plugin from 'rxdb/plugins/${pluginKey}';
+            RxDB.plugin(${ucfirst(pluginKey)}Plugin);
+        `
+    );
 }
-
 
 /**
  * this is a very fast hashing but its unsecure
@@ -184,41 +187,6 @@ export function trimDots(str: string): string {
 }
 
 /**
- * validates that a given string is ok to be used with couchdb-collection-names
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
- * @throws  {Error}
- */
-export function validateCouchDBString(name: string): true {
-    if (
-        typeof name !== 'string' ||
-        name.length === 0
-    ) {
-        throw newRxTypeError('UT1', {
-            name
-        });
-    }
-
-
-    // do not check, if foldername is given
-    if (
-        name.includes('/') || // unix
-        name.includes('\\') // windows
-    ) return true;
-
-
-    const regStr = '^[a-z][_$a-z0-9]*$';
-    const reg = new RegExp(regStr);
-    if (!name.match(reg)) {
-        throw newRxError('UT2', {
-            regex: regStr,
-            givenName: name,
-        });
-    }
-
-    return true;
-}
-
-/**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
@@ -265,28 +233,6 @@ export function stringifyFilter(key: string, value: any) {
     if (value instanceof RegExp)
         return value.toString();
     return value;
-}
-
-
-/**
- * get the correct function-name for pouchdb-replication
- */
-export function pouchReplicationFunction(
-    pouch: PouchDBInstance,
-    {
-        pull = true,
-        push = true
-    }
-): any {
-    if (pull && push) return pouch.sync.bind(pouch);
-    if (!pull && push) return (pouch.replicate as any).to.bind(pouch);
-    if (pull && !push) return (pouch.replicate as any).from.bind(pouch);
-    if (!pull && !push) {
-        throw newRxError('UT3', {
-            pull,
-            push
-        });
-    }
 }
 
 /**

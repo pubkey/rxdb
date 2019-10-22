@@ -1,12 +1,19 @@
 import objectPath from 'object-path';
 import {
-    Observable
+    Observable,
+    BehaviorSubject
 } from 'rxjs';
+import {
+    distinctUntilChanged,
+    map
+} from 'rxjs/operators';
+
 import {
     clone,
     trimDots,
     getHeightOfRevision,
-    toPromise
+    toPromise,
+    pluginMissing
 } from './util';
 import {
     createChangeEvent,
@@ -14,20 +21,11 @@ import {
 } from './rx-change-event';
 import {
     newRxError,
-    newRxTypeError,
-    pluginMissing
+    newRxTypeError
 } from './rx-error';
 import {
     runPluginHooks
 } from './hooks';
-
-import {
-    BehaviorSubject
-} from 'rxjs';
-import {
-    distinctUntilChanged,
-    map
-} from 'rxjs/operators';
 
 import {
     RxDocument,

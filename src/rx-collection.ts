@@ -4,12 +4,19 @@ import {
 
 import {
     clone,
-    validateCouchDBString,
     ucfirst,
     nextTick,
     generateId,
-    promiseSeries
+    promiseSeries,
+    pluginMissing
 } from './util';
+import {
+    validateCouchDBString
+} from './pouch-db';
+import {
+    _handleToPouch,
+    _handleFromPouch
+} from './rx-collection-helper';
 import {
     createRxQuery,
     RxQueryBase
@@ -24,8 +31,7 @@ import {
 } from './rx-change-event';
 import {
     newRxError,
-    newRxTypeError,
-    pluginMissing
+    newRxTypeError
 } from './rx-error';
 import {
     mustMigrate,
@@ -743,38 +749,6 @@ function _prepareCreateIndexes(
             })
     );
 }
-
-
-/**
- * wrappers for Pouch.put/get to handle keycompression etc
- */
-export function _handleToPouch(
-    col: RxCollection | RxCollectionBase | any,
-    docData: any
-) {
-    let data = clone(docData);
-    data = (col._crypter as any).encrypt(data);
-    data = col.schema.swapPrimaryToId(data);
-    if (col.schema.doKeyCompression())
-        data = col._keyCompressor.compress(data);
-    return data;
-}
-export function _handleFromPouch(
-    col: RxCollection | RxCollectionBase | any,
-    docData: any,
-    noDecrypt = false
-) {
-    let data = clone(docData);
-    data = col.schema.swapIdToPrimary(data);
-    if (col.schema.doKeyCompression())
-        data = col._keyCompressor.decompress(data);
-    if (noDecrypt) return data;
-
-
-    data = (col._crypter as any).decrypt(data);
-    return data;
-}
-
 
 /**
  * creates and prepares a new collection

@@ -3,22 +3,11 @@
  */
 
 import {
-    pluginMissing
-} from './rx-error';
-
-import {
     RxDatabase
 } from './types';
 import {
-    RxSchema
-} from './rx-schema';
-import {
-    LeaderElector
-} from './plugins/leader-election';
-
-import {
-    KeyCompressor
-} from './plugins/key-compression';
+    pluginMissing
+} from './util';
 
 const funs: { [k: string]: Function } = {
     /**
@@ -32,13 +21,13 @@ const funs: { [k: string]: Function } = {
     /**
      * creates a key-compressor for the given schema
      */
-    createKeyCompressor(_schema: RxSchema): KeyCompressor {
+    createKeyCompressor(_rxSchema: any): any {
         throw pluginMissing('key-compression');
     },
     /**
      * creates a leader-elector for the given database
      */
-    createLeaderElector(_database: RxDatabase | RxDatabase): LeaderElector {
+    createLeaderElector(_database: RxDatabase | RxDatabase): any {
         throw pluginMissing('leader-election');
     },
 
