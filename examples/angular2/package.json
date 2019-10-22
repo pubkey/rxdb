@@ -93,7 +93,7 @@
     "url-loader": "2.2.0",
     "webpack": "4.39.3",
     "webpack-dev-middleware": "3.7.2",
-    "webpack-dev-server": "3.8.2",
+    "webpack-dev-server": "3.9.0",
     "webpack-merge": "4.2.2"
   }
 }
