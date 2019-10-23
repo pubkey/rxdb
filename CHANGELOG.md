@@ -3,7 +3,12 @@
 ### X.X.X (comming soon)
 
 Bugfixes:
-  - GraphQL replication sometimes not pushed a document because pouchdb.changes stuck
+  - GraphQL replication sometimes not pushes when a big amount of documents has been pulled before
+  - Fixed typings of PouchdbReplicationOptions
+
+Other:
+  - Upgrade pouchdb to `7.1.1`
+  - Refactor some internals
 
 ### 8.7.1 (18 October 2019)
 

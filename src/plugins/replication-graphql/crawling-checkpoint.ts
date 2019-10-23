@@ -77,35 +77,54 @@ export async function getChangesSinceLastPushSequence(
     endpointHash: string,
     batchSize = 10,
 ): Promise<{ results: { id: string, seq: number, changes: { rev: string }[] }[], last_seq: number }> {
-    const lastPushSequence = await getLastPushSequence(
+    let lastPushSequence = await getLastPushSequence(
         collection,
         endpointHash
     );
 
-    const changes = await collection.pouch.changes({
-        since: lastPushSequence,
-        limit: batchSize,
-        include_docs: true
-    } as any);
+    let retry = true;
+    let changes;
 
-    changes.results = changes.results.filter((change: any) => {
-        /**
-         * filter out changes with revisions resulting from the pull-stream
-         * so that they will not be upstreamed again
-         */
-        if (wasRevisionfromPullReplication(
-            endpointHash,
-            change.doc._rev
-        )) return false;
+    /**
+     * it can happen that all docs in the batch
+     * do not have to be replicated.
+     * Then we have to continue grapping the feed
+     * until we reach the end of it
+     */
+    while (retry) {
+        changes = await collection.pouch.changes({
+            since: lastPushSequence,
+            limit: batchSize,
+            include_docs: true
+        });
+        const useResults = changes.results.filter((change: any) => {
+            /**
+             * filter out changes with revisions resulting from the pull-stream
+             * so that they will not be upstreamed again
+             */
+            if (wasRevisionfromPullReplication(
+                endpointHash,
+                change.doc._rev
+            )) return false;
 
-        /**
-         * filter out internal docs
-         * that are used for views or indexes in pouchdb
-         */
-        if (change.id.startsWith('_design/')) return false;
+            /**
+             * filter out internal docs
+             * that are used for views or indexes in pouchdb
+             */
+            if (change.id.startsWith('_design/')) return false;
 
-        return true;
-    });
+            return true;
+        });
+
+        if (useResults.length === 0 && changes.results.length === batchSize) {
+            // no pushable docs found but also not reached the end -> re-run
+            lastPushSequence = changes.last_seq;
+            retry = true;
+        } else {
+            changes.results = useResults;
+            retry = false;
+        }
+    }
 
 
     changes.results.forEach((change: any) => {

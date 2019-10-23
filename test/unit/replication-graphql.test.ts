@@ -1719,6 +1719,54 @@ describe('replication-graphql.test.js', () => {
                 server.close();
                 db.destroy();
             });
+            it('push not working when big amount of docs is pulled before', async () => {
+                const db = await RxDB.create({
+                    name: util.randomCouchString(10),
+                    adapter: 'memory',
+                    multiInstance: true,
+                    queryChangeDetection: true,
+                    ignoreDuplicate: true,
+                    password: util.randomCouchString(10)
+                });
+                const schema = clone(schemas.humanWithTimestampAllIndex);
+                schema.properties.name.encrypted = true;
+                const collection = await db.collection({
+                    name: 'humans',
+                    schema
+                });
+
+                const amount = 50;
+                const testData = getTestData(amount);
+                const server = await SpawnServer.spawn(testData);
+
+                const replicationState = collection.syncGraphQL({
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    pull: {
+                        queryBuilder
+                    },
+                    live: true,
+                    deletedFlag: 'deleted'
+                });
+                await replicationState.awaitInitialReplication();
+
+                const docsOnServer = server.getDocuments();
+                assert.strictEqual(docsOnServer.length, amount);
+
+                // insert one which will trigger an auto push
+                await collection.insert(schemaObjects.humanWithTimestamp());
+
+                await AsyncTestUtil.waitUntil(async () => {
+                    const docs = await server.getDocuments();
+                    return docs.length === (amount + 1);
+                });
+
+                server.close();
+                db.destroy();
+            });
         });
     });
     describe('browser', () => {
