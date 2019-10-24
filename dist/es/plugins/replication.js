@@ -5,10 +5,10 @@
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
 import { skipUntil } from 'rxjs/operators';
-import { promiseWait, clone, pouchReplicationFunction } from '../util';
+import { promiseWait, clone } from '../util';
 import Core from '../core';
 import { newRxError } from '../rx-error';
-import { isInstanceOf as isInstanceOfPouchDB } from '../pouch-db';
+import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB } from '../pouch-db';
 import RxDBWatchForChangesPlugin from './watch-for-changes';
 import { isInstanceOf as isRxCollection } from '../rx-collection';
 // add pouchdb-replication-plugin

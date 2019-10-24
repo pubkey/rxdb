@@ -150,11 +150,6 @@ export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 }
 export declare function properties(): string[];
 /**
- * wrappers for Pouch.put/get to handle keycompression etc
- */
-export declare function _handleToPouch(col: RxCollection | RxCollectionBase | any, docData: any): any;
-export declare function _handleFromPouch(col: RxCollection | RxCollectionBase | any, docData: any, noDecrypt?: boolean): any;
-/**
  * creates and prepares a new collection
  */
 export declare function create({ database, name, schema, pouchSettings, migrationStrategies, autoMigrate, statics, methods, attachments, options }: any): Promise<RxCollection>;

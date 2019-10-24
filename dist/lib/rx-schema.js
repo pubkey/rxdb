@@ -101,7 +101,7 @@ function () {
   ;
 
   _proto.validate = function validate(_obj, _schemaPath) {
-    throw (0, _rxError.pluginMissing)('validate');
+    throw (0, _util.pluginMissing)('validate');
   }
   /**
    * fills all unset fields with default-values if set

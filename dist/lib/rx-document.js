@@ -14,6 +14,10 @@ exports["default"] = exports.basePrototype = void 0;
 
 var _objectPath = _interopRequireDefault(require("object-path"));
 
+var _rxjs = require("rxjs");
+
+var _operators = require("rxjs/operators");
+
 var _util = require("./util");
 
 var _rxChangeEvent = require("./rx-change-event");
@@ -21,10 +25,6 @@ var _rxChangeEvent = require("./rx-change-event");
 var _rxError = require("./rx-error");
 
 var _hooks = require("./hooks");
-
-var _rxjs = require("rxjs");
-
-var _operators = require("rxjs/operators");
 
 var basePrototype = {
   get _data() {
@@ -244,20 +244,20 @@ var basePrototype = {
    * @param updateObj mongodb-like syntax
    */
   update: function update(_updateObj) {
-    throw (0, _rxError.pluginMissing)('update');
+    throw (0, _util.pluginMissing)('update');
   },
   putAttachment: function putAttachment() {
-    throw (0, _rxError.pluginMissing)('attachments');
+    throw (0, _util.pluginMissing)('attachments');
   },
   getAttachment: function getAttachment() {
-    throw (0, _rxError.pluginMissing)('attachments');
+    throw (0, _util.pluginMissing)('attachments');
   },
   allAttachments: function allAttachments() {
-    throw (0, _rxError.pluginMissing)('attachments');
+    throw (0, _util.pluginMissing)('attachments');
   },
 
   get allAttachments$() {
-    throw (0, _rxError.pluginMissing)('attachments');
+    throw (0, _util.pluginMissing)('attachments');
   },
 
   /**

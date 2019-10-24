@@ -5,7 +5,6 @@ import _wrapNativeSuper from "@babel/runtime/helpers/wrapNativeSuper";
 /**
  * here we use custom errors with the additional field 'parameters'
  */
-import { ucfirst } from './util';
 import overwritable from './overwritable';
 
 /**
@@ -111,12 +110,7 @@ function (_TypeError) {
   }]);
 
   return RxTypeError;
-}(_wrapNativeSuper(TypeError));
-export function pluginMissing(pluginKey) {
-  return new RxError('PU', "You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require('rxdb/plugins/" + pluginKey + "'))\n          - es6-import:\n            import " + ucfirst(pluginKey) + "Plugin from 'rxdb/plugins/" + pluginKey + "';\n            RxDB.plugin(" + ucfirst(pluginKey) + "Plugin);\n        ", {
-    pluginKey: pluginKey
-  });
-} // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
+}(_wrapNativeSuper(TypeError)); // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
 // const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
 
 export function newRxError(code, parameters) {

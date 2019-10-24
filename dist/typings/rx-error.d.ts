@@ -22,6 +22,5 @@ export declare class RxTypeError extends TypeError {
     toString(): string;
     readonly typeError: boolean;
 }
-export declare function pluginMissing(pluginKey: string): RxError;
 export declare function newRxError(code: string, parameters?: RxErrorParameters): RxError;
 export declare function newRxTypeError(code: string, parameters?: RxErrorParameters): RxTypeError;

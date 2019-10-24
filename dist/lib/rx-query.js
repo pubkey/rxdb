@@ -267,7 +267,7 @@ function () {
   ;
 
   _proto.update = function update(_updateObj) {
-    throw (0, _rxError.pluginMissing)('update');
+    throw (0, _util.pluginMissing)('update');
   }
   /**
    * regex cannot run on primary _id

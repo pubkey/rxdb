@@ -34,7 +34,7 @@ var _rxjs = require("rxjs");
 
 var _crypter = require("./crypter");
 
-var _rxCollection = require("./rx-collection");
+var _rxCollectionHelper = require("./rx-collection-helper");
 
 /**
  * The DataMigrator handles the documents from collections with older schemas
@@ -225,7 +225,7 @@ function _runStrategyIfNotNull(oldCollection, version, docOrNull) {
 function getBatchOfOldCollection(oldCollection, batchSize) {
   return (0, _pouchDb.getBatch)(oldCollection.pouchdb, batchSize).then(function (docs) {
     return docs.map(function (doc) {
-      return (0, _rxCollection._handleFromPouch)(oldCollection, doc);
+      return (0, _rxCollectionHelper._handleFromPouch)(oldCollection, doc);
     });
   });
 }
@@ -301,7 +301,7 @@ function _migrateDocument(oldCollection, doc) {
     } else action.type = 'deleted';
   }).then(function () {
     // remove from old collection
-    return oldCollection.pouchdb.remove((0, _rxCollection._handleToPouch)(oldCollection, doc))["catch"](function () {});
+    return oldCollection.pouchdb.remove((0, _rxCollectionHelper._handleToPouch)(oldCollection, doc))["catch"](function () {});
   }).then(function () {
     return action;
   });

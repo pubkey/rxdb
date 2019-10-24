@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _rxError = require("./rx-error");
+var _util = require("./util");
 
 /**
  * functions that can or should be overwritten by plugins
@@ -17,28 +17,28 @@ var funs = {
    * @throws if password not valid
    */
   validatePassword: function validatePassword(_password) {
-    throw (0, _rxError.pluginMissing)('encryption');
+    throw (0, _util.pluginMissing)('encryption');
   },
 
   /**
    * creates a key-compressor for the given schema
    */
-  createKeyCompressor: function createKeyCompressor(_schema) {
-    throw (0, _rxError.pluginMissing)('key-compression');
+  createKeyCompressor: function createKeyCompressor(_rxSchema) {
+    throw (0, _util.pluginMissing)('key-compression');
   },
 
   /**
    * creates a leader-elector for the given database
    */
   createLeaderElector: function createLeaderElector(_database) {
-    throw (0, _rxError.pluginMissing)('leader-election');
+    throw (0, _util.pluginMissing)('leader-election');
   },
 
   /**
    * checks if the given adapter can be used
    */
   checkAdapter: function checkAdapter(_adapter) {
-    throw (0, _rxError.pluginMissing)('adapter-check');
+    throw (0, _util.pluginMissing)('adapter-check');
   },
 
   /**

@@ -2,8 +2,7 @@
  * handle the en/decryption of documents-data
  */
 import objectPath from 'object-path';
-import { clone } from './util';
-import { pluginMissing } from './rx-error';
+import { clone, pluginMissing } from './util';
 export var Crypter =
 /*#__PURE__*/
 function () {

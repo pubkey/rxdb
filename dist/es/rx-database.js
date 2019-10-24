@@ -2,15 +2,15 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
 import BroadcastChannel from 'broadcast-channel';
-import { adapterObject, hash, validateCouchDBString, isLevelDown, promiseWait } from './util';
-import { newRxError, pluginMissing } from './rx-error';
+import { adapterObject, hash, promiseWait, pluginMissing } from './util';
+import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
 import { isInstanceOf as isInstanceOfRxChangeEvent, createChangeEvent, changeEventfromJSON } from './rx-change-event';
 import overwritable from './overwritable';
 import { runPluginHooks } from './hooks';
 import { Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { PouchDB } from './pouch-db';
+import { PouchDB, validateCouchDBString, isLevelDown } from './pouch-db';
 import { create as createRxCollection } from './rx-collection';
 
 /**

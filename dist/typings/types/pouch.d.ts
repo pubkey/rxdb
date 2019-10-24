@@ -18,6 +18,7 @@ export interface PouchReplicationOptions {
     back_off_function?: Function;
     checkpoint?: false | 'source' | 'target';
     include_docs?: boolean;
+    limit?: number;
 }
 /**
  * possible pouch-settings

@@ -1,7 +1,7 @@
 /**
  * functions that can or should be overwritten by plugins
  */
-import { pluginMissing } from './rx-error';
+import { pluginMissing } from './util';
 var funs = {
   /**
    * validates if a password can be used
@@ -15,7 +15,7 @@ var funs = {
   /**
    * creates a key-compressor for the given schema
    */
-  createKeyCompressor: function createKeyCompressor(_schema) {
+  createKeyCompressor: function createKeyCompressor(_rxSchema) {
     throw pluginMissing('key-compression');
   },
 

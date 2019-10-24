@@ -1,10 +1,10 @@
 import objectPath from 'object-path';
-import { clone, trimDots, getHeightOfRevision, toPromise } from './util';
-import { createChangeEvent } from './rx-change-event';
-import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
-import { runPluginHooks } from './hooks';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
+import { clone, trimDots, getHeightOfRevision, toPromise, pluginMissing } from './util';
+import { createChangeEvent } from './rx-change-event';
+import { newRxError, newRxTypeError } from './rx-error';
+import { runPluginHooks } from './hooks';
 export var basePrototype = {
   get _data() {
     /**

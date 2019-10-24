@@ -209,7 +209,7 @@ function sync(_ref) {
     });
   }
 
-  var syncFun = (0, _util.pouchReplicationFunction)(this.pouch, direction);
+  var syncFun = (0, _pouchDb.pouchReplicationFunction)(this.pouch, direction);
   if (query) useOptions.selector = query.keyCompress().selector;
   var repState = createRxReplicationState(this); // run internal so .sync() does not have to be async
 

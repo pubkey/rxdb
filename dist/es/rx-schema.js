@@ -1,8 +1,8 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import objectPath from 'object-path';
 import deepEqual from 'deep-equal';
-import { clone, hash, sortObject, trimDots, flattenObject } from './util';
-import { newRxError, pluginMissing } from './rx-error';
+import { clone, hash, sortObject, trimDots, flattenObject, pluginMissing } from './util';
+import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
 export var RxSchema =

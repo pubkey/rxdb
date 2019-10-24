@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isLevelDown = isLevelDown;
+exports.pluginMissing = pluginMissing;
 exports.fastUnsecureHash = fastUnsecureHash;
 exports.hash = hash;
 exports.generateId = generateId;
@@ -18,10 +18,8 @@ exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.ucfirst = ucfirst;
 exports.numberToLetter = numberToLetter;
 exports.trimDots = trimDots;
-exports.validateCouchDBString = validateCouchDBString;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
-exports.pouchReplicationFunction = pouchReplicationFunction;
 exports.randomCouchString = randomCouchString;
 exports.shuffleArray = shuffleArray;
 exports.adapterObject = adapterObject;
@@ -30,8 +28,6 @@ exports.getHeightOfRevision = getHeightOfRevision;
 exports.LOCAL_PREFIX = exports.isElectronRenderer = exports.clone = void 0;
 
 var _randomToken = _interopRequireDefault(require("random-token"));
-
-var _rxError = require("./rx-error");
 
 var _clone = _interopRequireDefault(require("clone"));
 
@@ -45,15 +41,12 @@ var _isElectron = _interopRequireDefault(require("is-electron"));
  */
 
 /**
- * check if the given module is a leveldown-adapter
- * throws if not
+ * Returns an error that indicates that a plugin is missing
+ * We do not throw a RxError because this should not be handled
+ * programmatically but by using the correct import
  */
-function isLevelDown(adapter) {
-  if (!adapter || typeof adapter.super_ !== 'function') {
-    throw (0, _rxError.newRxError)('UT4', {
-      adapter: adapter
-    });
-  }
+function pluginMissing(pluginKey) {
+  return new Error("You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require('rxdb/plugins/" + pluginKey + "'))\n          - es6-import:\n            import " + ucfirst(pluginKey) + "Plugin from 'rxdb/plugins/" + pluginKey + "';\n            RxDB.plugin(" + ucfirst(pluginKey) + "Plugin);\n        ");
 }
 /**
  * this is a very fast hashing but its unsecure
@@ -218,36 +211,6 @@ function trimDots(str) {
   return str;
 }
 /**
- * validates that a given string is ok to be used with couchdb-collection-names
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
- * @throws  {Error}
- */
-
-
-function validateCouchDBString(name) {
-  if (typeof name !== 'string' || name.length === 0) {
-    throw (0, _rxError.newRxTypeError)('UT1', {
-      name: name
-    });
-  } // do not check, if foldername is given
-
-
-  if (name.includes('/') || // unix
-  name.includes('\\') // windows
-  ) return true;
-  var regStr = '^[a-z][_$a-z0-9]*$';
-  var reg = new RegExp(regStr);
-
-  if (!name.match(reg)) {
-    throw (0, _rxError.newRxError)('UT2', {
-      regex: regStr,
-      givenName: name
-    });
-  }
-
-  return true;
-}
-/**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
@@ -291,27 +254,6 @@ function sortObject(obj) {
 function stringifyFilter(key, value) {
   if (value instanceof RegExp) return value.toString();
   return value;
-}
-/**
- * get the correct function-name for pouchdb-replication
- */
-
-
-function pouchReplicationFunction(pouch, _ref) {
-  var _ref$pull = _ref.pull,
-      pull = _ref$pull === void 0 ? true : _ref$pull,
-      _ref$push = _ref.push,
-      push = _ref$push === void 0 ? true : _ref$push;
-  if (pull && push) return pouch.sync.bind(pouch);
-  if (!pull && push) return pouch.replicate.to.bind(pouch);
-  if (pull && !push) return pouch.replicate.from.bind(pouch);
-
-  if (!pull && !push) {
-    throw (0, _rxError.newRxError)('UT3', {
-      pull: pull,
-      push: push
-    });
-  }
 }
 /**
  * get a random string which can be used with couchdb

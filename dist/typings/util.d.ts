@@ -1,9 +1,9 @@
-import { PouchDBInstance } from './types';
 /**
- * check if the given module is a leveldown-adapter
- * throws if not
+ * Returns an error that indicates that a plugin is missing
+ * We do not throw a RxError because this should not be handled
+ * programmatically but by using the correct import
  */
-export declare function isLevelDown(adapter: any): void;
+export declare function pluginMissing(pluginKey: string): Error;
 /**
  * this is a very fast hashing but its unsecure
  * @link http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
@@ -50,12 +50,6 @@ export declare function numberToLetter(nr: number): string;
  */
 export declare function trimDots(str: string): string;
 /**
- * validates that a given string is ok to be used with couchdb-collection-names
- * @link https://wiki.apache.org/couchdb/HTTP_database_API
- * @throws  {Error}
- */
-export declare function validateCouchDBString(name: string): true;
-/**
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
@@ -65,13 +59,6 @@ export declare function sortObject(obj: any, noArraySort?: boolean): any;
  * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
  */
 export declare function stringifyFilter(key: string, value: any): any;
-/**
- * get the correct function-name for pouchdb-replication
- */
-export declare function pouchReplicationFunction(pouch: PouchDBInstance, { pull, push }: {
-    pull?: boolean | undefined;
-    push?: boolean | undefined;
-}): any;
 /**
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137

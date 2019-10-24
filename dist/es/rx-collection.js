@@ -1,10 +1,12 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter } from 'rxjs/operators';
-import { clone, validateCouchDBString, ucfirst, nextTick, generateId, promiseSeries } from './util';
+import { clone, ucfirst, nextTick, generateId, promiseSeries, pluginMissing } from './util';
+import { validateCouchDBString } from './pouch-db';
+import { _handleToPouch as _handleToPouch2, _handleFromPouch as _handleFromPouch2 } from './rx-collection-helper';
 import { createRxQuery } from './rx-query';
 import { isInstanceOf as isInstanceOfRxSchema, createRxSchema } from './rx-schema';
 import { createChangeEvent } from './rx-change-event';
-import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
+import { newRxError, newRxTypeError } from './rx-error';
 import { mustMigrate, createDataMigrator } from './data-migrator';
 import Crypter from './crypter';
 import { createDocCache } from './doc-cache';
@@ -689,35 +691,10 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   }));
 }
 /**
- * wrappers for Pouch.put/get to handle keycompression etc
- */
-
-
-function _handleToPouch2(col, docData) {
-  var data = clone(docData);
-  data = col._crypter.encrypt(data);
-  data = col.schema.swapPrimaryToId(data);
-  if (col.schema.doKeyCompression()) data = col._keyCompressor.compress(data);
-  return data;
-}
-
-export { _handleToPouch2 as _handleToPouch };
-
-function _handleFromPouch2(col, docData) {
-  var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-  var data = clone(docData);
-  data = col.schema.swapIdToPrimary(data);
-  if (col.schema.doKeyCompression()) data = col._keyCompressor.decompress(data);
-  if (noDecrypt) return data;
-  data = col._crypter.decrypt(data);
-  return data;
-}
-/**
  * creates and prepares a new collection
  */
 
 
-export { _handleFromPouch2 as _handleFromPouch };
 export function create(_ref) {
   var database = _ref.database,
       name = _ref.name,

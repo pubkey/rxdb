@@ -6,8 +6,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.properties = properties;
-exports._handleToPouch = _handleToPouch2;
-exports._handleFromPouch = _handleFromPouch2;
 exports.create = create;
 exports.isInstanceOf = isInstanceOf;
 exports["default"] = exports.RxCollectionBase = void 0;
@@ -17,6 +15,10 @@ var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/creat
 var _operators = require("rxjs/operators");
 
 var _util = require("./util");
+
+var _pouchDb = require("./pouch-db");
+
+var _rxCollectionHelper = require("./rx-collection-helper");
 
 var _rxQuery = require("./rx-query");
 
@@ -155,12 +157,12 @@ function () {
   ;
 
   _proto._handleToPouch = function _handleToPouch(docData) {
-    return _handleToPouch2(this, docData);
+    return (0, _rxCollectionHelper._handleToPouch)(this, docData);
   };
 
   _proto._handleFromPouch = function _handleFromPouch(docData) {
     var noDecrypt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    return _handleFromPouch2(this, docData, noDecrypt);
+    return (0, _rxCollectionHelper._handleFromPouch)(this, docData, noDecrypt);
   }
   /**
    * every write on the pouchdb
@@ -399,7 +401,7 @@ function () {
   _proto.dump = function dump() {
     var _decrytped = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-    throw (0, _rxError.pluginMissing)('json-dump');
+    throw (0, _util.pluginMissing)('json-dump');
   }
   /**
    * imports the json-data into the collection
@@ -408,7 +410,7 @@ function () {
   ;
 
   _proto.importDump = function importDump(_exportedJSON) {
-    throw (0, _rxError.pluginMissing)('json-dump');
+    throw (0, _util.pluginMissing)('json-dump');
   }
   /**
    * waits for external changes to the database
@@ -418,7 +420,7 @@ function () {
   ;
 
   _proto.watchForChanges = function watchForChanges() {
-    throw (0, _rxError.pluginMissing)('watch-for-changes');
+    throw (0, _util.pluginMissing)('watch-for-changes');
   }
   /**
    * sync with another database
@@ -426,7 +428,7 @@ function () {
   ;
 
   _proto.sync = function sync(_syncOptions) {
-    throw (0, _rxError.pluginMissing)('replication');
+    throw (0, _util.pluginMissing)('replication');
   }
   /**
    * sync with a GraphQL endpoint
@@ -434,7 +436,7 @@ function () {
   ;
 
   _proto.syncGraphQL = function syncGraphQL(options) {
-    throw (0, _rxError.pluginMissing)('replication-graphql');
+    throw (0, _util.pluginMissing)('replication-graphql');
   }
   /**
    * Create a replicated in-memory-collection
@@ -442,7 +444,7 @@ function () {
   ;
 
   _proto.inMemory = function inMemory() {
-    throw (0, _rxError.pluginMissing)('in-memory');
+    throw (0, _util.pluginMissing)('in-memory');
   }
   /**
    * HOOKS
@@ -723,28 +725,6 @@ function _prepareCreateIndexes(rxCollection, spawnedPouchPromise) {
   }));
 }
 /**
- * wrappers for Pouch.put/get to handle keycompression etc
- */
-
-
-function _handleToPouch2(col, docData) {
-  var data = (0, _util.clone)(docData);
-  data = col._crypter.encrypt(data);
-  data = col.schema.swapPrimaryToId(data);
-  if (col.schema.doKeyCompression()) data = col._keyCompressor.compress(data);
-  return data;
-}
-
-function _handleFromPouch2(col, docData) {
-  var noDecrypt = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-  var data = (0, _util.clone)(docData);
-  data = col.schema.swapIdToPrimary(data);
-  if (col.schema.doKeyCompression()) data = col._keyCompressor.decompress(data);
-  if (noDecrypt) return data;
-  data = col._crypter.decrypt(data);
-  return data;
-}
-/**
  * creates and prepares a new collection
  */
 
@@ -767,7 +747,7 @@ function create(_ref) {
       attachments = _ref$attachments === void 0 ? {} : _ref$attachments,
       _ref$options = _ref.options,
       options = _ref$options === void 0 ? {} : _ref$options;
-  (0, _util.validateCouchDBString)(name); // ensure it is a schema-object
+  (0, _pouchDb.validateCouchDBString)(name); // ensure it is a schema-object
 
   if (!(0, _rxSchema.isInstanceOf)(schema)) schema = (0, _rxSchema.createRxSchema)(schema);
   Object.keys(methods).filter(function (funName) {
