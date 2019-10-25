@@ -4,7 +4,7 @@ In this tutorial you learn how to use the server plugin and replicate data from 
 
 The server plugin is usefull
 
-- To simulate the couchdb in develope-mode without setting up a real one
+- To simulate the couchdb in developer-mode without setting up a real one
 - To replicate data between the renderer and the node-process in an electron-app
 - To fast spin up a prototype-app without having to define an API
 
