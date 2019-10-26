@@ -13,65 +13,18 @@ import {
 
 import heroSchema from '../schemas/hero.schema';
 
-// batteries-included
-// import RxDB from 'rxdb';
-
 /**
- * custom build
+ * Instead of using the default rxdb-import,
+ * we do a custom build which lets us cherry-pick
+ * only the modules that we need.
+ * A default import would be: import RxDB from 'rxdb';
  */
 import RxDB from 'rxdb/plugins/core';
 import RxDBNoValidateModule from 'rxdb/plugins/no-validate';
-
-// import modules
-
-let DYNAMIC_LOAD_PROMISE: Promise<any> = Promise.resolve();
-
-
-/**
- * to reduce the build-size,
- * we use some modules in dev-mode only
- */
-if (isDevMode()) {
-    DYNAMIC_LOAD_PROMISE = Promise.all([
-
-        // schema-checks should be used in dev-mode only
-        // this module checks if your schema is correct
-        import('rxdb/plugins/schema-check').then(
-            module => RxDB.plugin(module)
-        ),
-
-        // in dev-mode we show full error-messages
-        // instead of RxErrors with theirs keys
-        import('rxdb/plugins/error-messages').then(
-            module => RxDB.plugin(module)
-        ),
-
-        // we use the schema-validation only in dev-mode
-        // this validates each document if it is matching the jsonschema
-        import('rxdb/plugins/validate').then(
-            module => RxDB.plugin(module)
-        )
-    ]);
-} else {
-    // in production we use the no-validate module instead of the schema-validation
-    // to reduce the build-size
-    RxDB.plugin(RxDBNoValidateModule);
-}
-
 import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
-RxDB.plugin(RxDBLeaderElectionModule);
-
 import RxDBReplicationModule from 'rxdb/plugins/replication';
-RxDB.plugin(RxDBReplicationModule);
-// always needed for replication with the node-server
 import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-RxDB.plugin(PouchdbAdapterHttp);
-
-
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-RxDB.plugin(PouchdbAdapterIdb);
-const useAdapter = 'idb';
-
 
 let collections = [
     {
@@ -93,17 +46,64 @@ let doSync = true;
 if (window.location.hash == '#nosync') doSync = false;
 
 
+async function loadRxDBPlugins(): Promise<any> {
+
+
+    RxDB.plugin(RxDBLeaderElectionModule);
+
+    RxDB.plugin(RxDBReplicationModule);
+    // http-adapter is always needed for replication with the node-server
+    RxDB.plugin(PouchdbAdapterHttp);
+
+    /**
+     * indexed-db adapter
+     */
+    RxDB.plugin(PouchdbAdapterIdb);
+
+    /**
+     * to reduce the build-size,
+     * we use some modules in dev-mode only
+     */
+    if (isDevMode()) {
+        await Promise.all([
+
+            // schema-checks should be used in dev-mode only
+            // this module checks if your schema is correct
+            import('rxdb/plugins/schema-check').then(
+                module => RxDB.plugin(module)
+            ),
+
+            // in dev-mode we show full error-messages
+            // instead of RxErrors with theirs keys
+            import('rxdb/plugins/error-messages').then(
+                module => RxDB.plugin(module)
+            ),
+
+            // we use the schema-validation only in dev-mode
+            // this validates each document if it is matching the jsonschema
+            import('rxdb/plugins/validate').then(
+                module => RxDB.plugin(module)
+            )
+        ]);
+    } else {
+        // in production we use the no-validate module instead of the schema-validation
+        // to reduce the build-size
+        RxDB.plugin(RxDBNoValidateModule);
+    }
+
+}
+
 /**
  * creates the database
  */
 async function _create(): Promise<RxHeroesDatabase> {
 
-    await DYNAMIC_LOAD_PROMISE;
+    await loadRxDBPlugins();
 
     console.log('DatabaseService: creating database..');
     const db = await RxDB.create<RxHeroesCollections>({
         name: 'angularheroes',
-        adapter: useAdapter,
+        adapter: 'idb',
         queryChangeDetection: true
         // password: 'myLongAndStupidPassword' // no password needed
     });
