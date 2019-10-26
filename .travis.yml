@@ -79,7 +79,7 @@ jobs:
       env: LABEL=docs
 
     - stage: examples
-      script: npm run build && (cd ./examples/angular2 && npm install > "/dev/null" 2>&1 && npm run build && travis_retry npm run test:build)
+      script: npm run build && (cd ./examples/angular && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test:build)
       env: LABEL=angular
     - stage: examples
       script: npm run build && (cd ./examples/vue && npm install > "/dev/null" 2>&1 && npm run lint && npm run build && travis_retry npm run test)
