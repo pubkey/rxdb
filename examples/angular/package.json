@@ -16,7 +16,8 @@
     "build:copy": "cp test/multitab.html dist/angular/multitab.html",
     "test": "testcafe chromium test/ --selector-timeout 30000",
     "test:build": "concurrently \"npm run build:serve\" \"npm run test\" --kill-others --success first",
-    "lint": "tslint app/src/**/*.ts"
+    "lint": "tslint app/src/**/*.ts",
+    "analyze": "webpack-bundle-analyzer dist/angular/stats-es2015.json"
   },
   "private": true,
   "author": "pubkey",
@@ -58,6 +59,7 @@
     "testcafe": "1.6.0",
     "ts-node": "7.0.0",
     "tslint": "5.20.0",
-    "typescript": "3.5.3"
+    "typescript": "3.5.3",
+    "webpack-bundle-analyzer": "^3.6.0"
   }
 }
