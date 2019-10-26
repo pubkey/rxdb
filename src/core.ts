@@ -18,8 +18,6 @@ export {
     PouchDB
 } from './pouch-db';
 
-export * from './types';
-
 export const plugin = addPlugin;
 
 import {
