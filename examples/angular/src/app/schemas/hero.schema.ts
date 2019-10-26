@@ -15,7 +15,8 @@ const schema: RxJsonSchema = {
         },
         color: {
             type: 'string',
-            default: ''
+            default: '',
+            minLength: 3
         },
         maxHP: {
             type: 'number',

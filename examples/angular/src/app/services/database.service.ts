@@ -1,10 +1,7 @@
 import {
     Injectable,
-    ChangeDetectorRef
+    isDevMode
 } from '@angular/core';
-import {
-    tap
-} from 'rxjs/operators';
 
 // import typings
 import {
@@ -23,22 +20,43 @@ import heroSchema from '../schemas/hero.schema';
  * custom build
  */
 import RxDB from 'rxdb/plugins/core';
+import RxDBNoValidateModule from 'rxdb/plugins/no-validate';
 
 // import modules
-import RxDBSchemaCheckModule from 'rxdb/plugins/schema-check';
-import RxDBErrorMessagesModule from 'rxdb/plugins/error-messages';
 
-// if (ENV === 'development') {
-if (true) {
-    // in dev-mode we show full error-messages
-    RxDB.plugin(RxDBErrorMessagesModule);
+let DYNAMIC_LOAD_PROMISE: Promise<any> = Promise.resolve();
 
-    // schema-checks should be used in dev-mode only
-    RxDB.plugin(RxDBSchemaCheckModule);
+
+/**
+ * to reduce the build-size,
+ * we use some modules in dev-mode only
+ */
+if (isDevMode()) {
+    DYNAMIC_LOAD_PROMISE = Promise.all([
+
+        // schema-checks should be used in dev-mode only
+        // this module checks if your schema is correct
+        import('rxdb/plugins/schema-check').then(
+            module => RxDB.plugin(module)
+        ),
+
+        // in dev-mode we show full error-messages
+        // instead of RxErrors with theirs keys
+        import('rxdb/plugins/error-messages').then(
+            module => RxDB.plugin(module)
+        ),
+
+        // we use the schema-validation only in dev-mode
+        // this validates each document if it is matching the jsonschema
+        import('rxdb/plugins/validate').then(
+            module => RxDB.plugin(module)
+        )
+    ]);
+} else {
+    // in production we use the no-validate module instead of the schema-validation
+    // to reduce the build-size
+    RxDB.plugin(RxDBNoValidateModule);
 }
-
-import RxDBValidateModule from 'rxdb/plugins/validate';
-RxDB.plugin(RxDBValidateModule);
 
 import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
 RxDB.plugin(RxDBLeaderElectionModule);
@@ -79,6 +97,9 @@ if (window.location.hash == '#nosync') doSync = false;
  * creates the database
  */
 async function _create(): Promise<RxHeroesDatabase> {
+
+    await DYNAMIC_LOAD_PROMISE;
+
     console.log('DatabaseService: creating database..');
     const db = await RxDB.create<RxHeroesCollections>({
         name: 'angularheroes',
@@ -115,10 +136,12 @@ async function _create(): Promise<RxHeroesDatabase> {
     }, false);
 
     // sync with server
-    console.log('DatabaseService: sync');
-    await db.hero.sync({
-        remote: syncURL + '/hero'
-    });
+    if (doSync) {
+        console.log('DatabaseService: sync');
+        await db.hero.sync({
+            remote: syncURL + '/hero'
+        });
+    }
 
     return db;
 }
