@@ -5,7 +5,7 @@
     <hero-edit
         *ngIf="editedHero"
         [(hero)]="editedHero"
-        (done)="editedHero=null"
+        (done)="editedHero = undefined"
     ></hero-edit>
 
     <mat-card>

@@ -11,7 +11,7 @@ import {
 export class AppComponent {
   title = 'angular';
 
-  editedHero: RxHeroDocument;
+  public editedHero?: RxHeroDocument;
 
   constructor() { }
   ngOnInit() { }
@@ -20,10 +20,10 @@ export class AppComponent {
    * this method exists to play arround with the typings
    */
   foo() {
-      const x: number = this.editedHero.hpPercent();
+    // const x: number = this.editedHero.hpPercent();
   }
 
   editHero(hero: RxHeroDocument) {
-      this.editedHero = hero;
+    this.editedHero = hero;
   }
 }
