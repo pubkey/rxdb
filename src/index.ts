@@ -49,8 +49,9 @@ Core.plugin(AttachmentsPlugin);
 import LocalDocumentsPlugin from './plugins/local-documents';
 Core.plugin(LocalDocumentsPlugin);
 
+export * from './types';
 
-// rexport things from core
+// re-export things from core
 export * from './core';
 import {
     create,
@@ -66,6 +67,7 @@ import {
     QueryChangeDetector,
     checkAdapter
 } from './core';
+
 
 // TODO no more default exports
 export default {
