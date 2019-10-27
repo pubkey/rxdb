@@ -19,7 +19,10 @@ import heroSchema from '../schemas/hero.schema';
  * only the modules that we need.
  * A default import would be: import RxDB from 'rxdb';
  */
-import RxDB from 'rxdb/plugins/core';
+import {
+    create as createRxDatabase,
+    plugin as addRxDBPlugin
+} from 'rxdb/plugins/core';
 import RxDBNoValidateModule from 'rxdb/plugins/no-validate';
 import RxDBLeaderElectionModule from 'rxdb/plugins/leader-election';
 import RxDBReplicationModule from 'rxdb/plugins/replication';
@@ -49,16 +52,16 @@ if (window.location.hash == '#nosync') doSync = false;
 async function loadRxDBPlugins(): Promise<any> {
 
 
-    RxDB.plugin(RxDBLeaderElectionModule);
+    addRxDBPlugin(RxDBLeaderElectionModule);
 
-    RxDB.plugin(RxDBReplicationModule);
+    addRxDBPlugin(RxDBReplicationModule);
     // http-adapter is always needed for replication with the node-server
-    RxDB.plugin(PouchdbAdapterHttp);
+    addRxDBPlugin(PouchdbAdapterHttp);
 
     /**
      * indexed-db adapter
      */
-    RxDB.plugin(PouchdbAdapterIdb);
+    addRxDBPlugin(PouchdbAdapterIdb);
 
     /**
      * to reduce the build-size,
@@ -70,25 +73,25 @@ async function loadRxDBPlugins(): Promise<any> {
             // schema-checks should be used in dev-mode only
             // this module checks if your schema is correct
             import('rxdb/plugins/schema-check').then(
-                module => RxDB.plugin(module)
+                module => addRxDBPlugin(module)
             ),
 
             // in dev-mode we show full error-messages
             // instead of RxErrors with theirs keys
             import('rxdb/plugins/error-messages').then(
-                module => RxDB.plugin(module)
+                module => addRxDBPlugin(module)
             ),
 
             // we use the schema-validation only in dev-mode
             // this validates each document if it is matching the jsonschema
             import('rxdb/plugins/validate').then(
-                module => RxDB.plugin(module)
+                module => addRxDBPlugin(module)
             )
         ]);
     } else {
         // in production we use the no-validate module instead of the schema-validation
         // to reduce the build-size
-        RxDB.plugin(RxDBNoValidateModule);
+        addRxDBPlugin(RxDBNoValidateModule);
     }
 
 }
@@ -101,7 +104,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     await loadRxDBPlugins();
 
     console.log('DatabaseService: creating database..');
-    const db = await RxDB.create<RxHeroesCollections>({
+    const db = await createRxDatabase<RxHeroesCollections>({
         name: 'angularheroes',
         adapter: 'idb',
         queryChangeDetection: true
