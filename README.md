@@ -39,6 +39,10 @@
       <img src="https://img.shields.io/twitter/follow/rxdbjs.svg?style=social&logo=twitter"
           alt="follow on Twitter"></a>
   </a>
+  <a href="https://app.releasly.co/sites/pubkey/rxdb?utm_source=github_badge&utm_campaign=rxdb">
+      <img src="https://app.releasly.co/assets/badges/badge-blue.svg"
+          alt="Subscribe to new releases"></a>
+  </a>
 <!--  <a href="https://www.patreon.com/rxdb">
     <img src="https://cdn.rawgit.com/pubkey/rxdb/4e7dd18f/docs/files/icons/patreon.png" width="111px" />
   </a> -->
