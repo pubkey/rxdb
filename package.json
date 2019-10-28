@@ -191,7 +191,7 @@
     "rollup-plugin-node-resolve": "5.2.0",
     "rxjs": "6.5.3",
     "shelljs": "0.8.3",
-    "source-map-support": "0.5.13",
+    "source-map-support": "0.5.15",
     "subscriptions-transport-ws": "0.9.16",
     "ts-node": "8.4.1",
     "tslint": "5.20.0",
