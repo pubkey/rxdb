@@ -1,6 +1,6 @@
 # Adapters
 
-RxDB itself is not a self-contained database. It uses adapters that define where the data is stored. Depending on which environment you work in, you can choose between different adapters. For example in the browser you want to store the data inside of indexeddb but on NodeJs you want to store the data on the filesystem.
+RxDB itself is not a self-contained database. It uses adapters that define where the data is stored. Depending on which environment you work in, you can choose between different adapters. For example in the browser you want to store the data inside of IndexedDB but on NodeJs you want to store the data on the filesystem.
 
 This page is an overview over the different adapters with recommendations on what to use where.
 
@@ -44,9 +44,9 @@ const database = await RxDB.create({
 
 # Browser
 
-## IndexedDb
+## IndexedDB
 
-The IndexeDb adapter stores the data inside of [Indexeddb](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) use this in browsers environments as default.
+The IndexedDB adapter stores the data inside of [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) use this in browsers environments as default.
 
 ```js
 // npm install pouchdb-adapter-idb --save
