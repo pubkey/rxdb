@@ -76,7 +76,7 @@ const database = await RxDB.create({
 
 ## leveldown
 
-This adapter uses a [LevelDB C++ binding](https://github.com/Level/leveldown) to store that data on the filesystem. I has the best performance compared to other filesystem adapters. This adapter can **not** be used when multiple nodejs-processes access the same filesystem folders for storage.
+This adapter uses a [LevelDB C++ binding](https://github.com/Level/leveldown) to store that data on the filesystem. It has the best performance compared to other filesystem adapters. This adapter can **not** be used when multiple nodejs-processes access the same filesystem folders for storage.
 
 ```js
 // npm install leveldown --save
