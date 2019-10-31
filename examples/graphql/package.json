@@ -41,7 +41,7 @@
     "testcafe": "1.6.0",
     "testcafe-hammerhead": "14.10.2",
     "webpack": "4.39.1",
-    "webpack-cli": "3.3.9",
+    "webpack-cli": "3.3.10",
     "webpack-dev-server": "3.9.0"
   }
 }
