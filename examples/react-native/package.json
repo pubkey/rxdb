@@ -24,7 +24,7 @@
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
-    "expo": "35.0.0",
+    "expo": "35.0.1",
     "global": "4.4.0",
     "pouchdb-adapter-asyncstorage": "6.4.1",
     "pouchdb-adapter-http": "7.0.0",
