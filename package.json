@@ -183,7 +183,7 @@
     "pre-commit": "1.2.2",
     "random-int": "2.0.1",
     "request": "2.88.0",
-    "request-promise": "4.2.4",
+    "request-promise": "4.2.5",
     "request-promise-native": "1.0.7",
     "rimraf": "3.0.0",
     "rollup": "1.26.2",
