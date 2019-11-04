@@ -1,5 +1,7 @@
 # Changelog
 
+### X.X.X (comming soon)
+
 ### 8.7.2 (24 October 2019)
 
 Bugfixes:
