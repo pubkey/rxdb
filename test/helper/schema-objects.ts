@@ -40,6 +40,17 @@ export function simpleHuman(): SimpleHumanDocumentType {
     };
 }
 
+export interface SimpleHumanV3DocumentType {
+    passportId: string;
+    age: string;
+}
+export function simpleHumanV3(): SimpleHumanV3DocumentType {
+    return {
+        passportId: randomToken(12),
+        age: randomInt(10, 50)
+    };
+}
+
 export interface SimpleHumanAgeDocumentType {
     passportId: string;
     age: string;

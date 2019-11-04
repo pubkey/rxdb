@@ -287,6 +287,43 @@ config.parallel('server.test.js', () => {
         db1.destroy();
         db2.destroy();
     });
+    it('should work for collections with later schema versions', async function () {
+        this.timeout(12 * 1000);
+        const port = nexPort();
+        const serverCollection = await humansCollection.createMigrationCollection(0)
+        await serverCollection.database.server({
+            path: '/db',
+            port
+        });
+
+
+        // check access to path
+        const colUrl = 'http://localhost:' + port + '/db/human';
+        const gotJson = await request(colUrl);
+        const got = JSON.parse(gotJson);
+        assert.strictEqual(got.doc_count, 1);
+
+        const clientCollection = await humansCollection.createMigrationCollection(0)
+
+        // sync
+        clientCollection.sync({
+            remote: colUrl
+        });
+
+        // insert one doc on each side
+        await clientCollection.insert(schemaObjects.simpleHumanV3());
+        await serverCollection.insert(schemaObjects.simpleHumanV3());
+
+        // both collections should have 2 documents
+        await AsyncTestUtil.waitUntil(async () => {
+            const serverDocs = await serverCollection.find().exec();
+            const clientDocs = await clientCollection.find().exec();
+            return (clientDocs.length === 2 && serverDocs.length === 2);
+        });
+
+        clientCollection.database.destroy();
+        serverCollection.database.destroy();
+    });
     it('should work for dynamic collection-names', async () => {
         const port = nexPort();
         const name = 'foobar';
