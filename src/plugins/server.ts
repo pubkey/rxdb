@@ -66,7 +66,7 @@ function tunnelCollectionPath(
     const collectionPath = pathWithSlash + colName;
     app.use(collectionPath, function (req: any, res: any, next: any) {
         if (req.baseUrl.endsWith(collectionPath)) {
-            const to = normalizeDbName(db) + '-rxdb-0-' + colName;
+            const to = normalizeDbName(db) + '-rxdb-' + db[colName].schema.version + '-' + colName;
             const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
             req.originalUrl = toFull;
         }
