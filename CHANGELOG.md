@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Bugfixes:
+  - Fix replication of migrated schemas in the server plugin
+
 ### 8.7.2 (24 October 2019)
 
 Bugfixes:
