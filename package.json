@@ -166,7 +166,7 @@
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
     "leveldown": "5.4.1",
-    "madge": "3.5.0",
+    "madge": "3.5.1",
     "memdown": "5.1.0",
     "mocha": "6.2.2",
     "mocha.parallel": "0.15.6",
