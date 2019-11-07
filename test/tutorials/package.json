@@ -15,7 +15,7 @@
     "@types/request-promise-native": "1.0.17",
     "async-test-util": "1.7.3",
     "request": "2.88.0",
-    "request-promise-native": "1.0.7",
+    "request-promise-native": "1.0.8",
     "ts-node": "8.4.1",
     "typescript": "3.6.4"
   }
