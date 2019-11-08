@@ -308,3 +308,59 @@ AFTER:
 101382
 101347
 98576
+
+
+
+## 8 November 2019
+
+BEFORE:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10066.766161,
+    "perInstance": 10.066766161
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5963.456396,
+    "perBlock": 2.981728198
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1808.460181,
+    "perDocument": 0.1808460181
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4475.968576
+  }
+}
+
+AFTER CUSTOM BUILD:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9502.918219,
+    "perInstance": 9.502918219
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5624.821419,
+    "perBlock": 2.8124107095
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1742.657245,
+    "perDocument": 0.1742657245
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4957.095949
+  }
+}

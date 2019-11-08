@@ -7,9 +7,16 @@ import convertHrtime from 'convert-hrtime';
 import * as schemas from './helper/schemas';
 import * as schemaObjects from './helper/schema-objects';
 
-import RxDB from '../';
 import * as util from '../dist/lib/util';
+
+// we do a custom build without dev-plugins,
+// like you would use in production
+import RxDB from '../plugins/core';
 RxDB.plugin(require('pouchdb-adapter-memory'));
+import NoValidate from '../plugins/no-validate';
+RxDB.plugin(NoValidate);
+import KeyCompression from '../plugins/key-compression';
+RxDB.plugin(KeyCompression);
 
 const elapsedTime = (before: any) => {
     try {
@@ -44,6 +51,10 @@ const benchmark: any = {
         amount: 10000,
         total: null,
         perDocument: null
+    },
+    migrateDocuments: {
+        amount: 1000,
+        total: null
     }
 };
 
@@ -62,7 +73,7 @@ const ormMethods = {
 
 
 
-describe('performance.test.js', function() {
+describe('performance.test.js', function () {
     this.timeout(90 * 1000);
     it('clear broadcast-channel tmp-folder', async () => {
         await BroadcastChannel.clearNodeFolder();
@@ -84,14 +95,14 @@ describe('performance.test.js', function() {
 
             await Promise.all(
                 new Array(benchmark.spawnDatabases.collections)
-                .fill(0)
-                .map(() => {
-                    return db.collection({
-                        name: 'human' + util.randomCouchString(10),
-                        schema: schemas.averageSchema(),
-                        statics: ormMethods
-                    });
-                })
+                    .fill(0)
+                    .map(() => {
+                        return db.collection({
+                            name: 'human' + util.randomCouchString(10),
+                            schema: schemas.averageSchema(),
+                            statics: ormMethods
+                        });
+                    })
             );
         }
         const elapsed = elapsedTime(startTime);
@@ -122,11 +133,11 @@ describe('performance.test.js', function() {
         for (let i = 0; i < benchmark.insertDocuments.blocks; i++) {
             await Promise.all(
                 new Array(benchmark.insertDocuments.blockSize)
-                .fill(0)
-                .map(async () => {
-                    const doc = await col.insert(docsData.pop());
-                    lastDoc = doc;
-                })
+                    .fill(0)
+                    .map(async () => {
+                        const doc = await col.insert(docsData.pop());
+                        lastDoc = doc;
+                    })
             );
         }
         const elapsed = elapsedTime(startTime);
@@ -154,9 +165,9 @@ describe('performance.test.js', function() {
 
         await Promise.all(
             new Array(benchmark.findDocuments.amount)
-            .fill(0)
-            .map(() => schemaObjects.averageSchema())
-            .map(data => col.insert(data))
+                .fill(0)
+                .map(() => schemaObjects.averageSchema())
+                .map(data => col.insert(data))
         );
         await db.destroy();
 
@@ -185,6 +196,57 @@ describe('performance.test.js', function() {
         await AsyncTestUtil.wait(1000);
     });
 
+    it('migrateDocuments', async () => {
+        const name = util.randomCouchString(10);
+        const db = await RxDB.create({
+            name,
+            queryChangeDetection: true,
+            adapter: 'memory'
+        });
+        const col = await db.collection({
+            name: 'human',
+            schema: schemas.averageSchema()
+        });
+
+        // insert into old collection
+        await Promise.all(
+            new Array(benchmark.migrateDocuments.amount)
+                .fill(0)
+                .map(() => schemaObjects.averageSchema())
+                .map(docData => col.insert(docData))
+        );
+
+        const db2 = await RxDB.create({
+            name,
+            queryChangeDetection: true,
+            adapter: 'memory',
+            ignoreDuplicate: true
+        });
+        const newSchema = schemas.averageSchema();
+        newSchema.version = 1;
+        newSchema.properties.var2.type = 'string';
+        const col2 = await db2.collection({
+            name: 'human',
+            schema: newSchema,
+            migrationStrategies: {
+                1: oldDoc => {
+                    oldDoc.var2 = oldDoc.var2 + '';
+                    return oldDoc;
+                }
+            },
+            autoMigrate: false
+        });
+
+        const startTime = nowTime();
+
+        await col2.migratePromise();
+        const elapsed = elapsedTime(startTime);
+        benchmark.migrateDocuments.total = elapsed;
+
+        await db.destroy();
+        await db2.destroy();
+        await AsyncTestUtil.wait(1000);
+    });
 
     it('show results:', () => {
         console.log(JSON.stringify(benchmark, null, 2));
