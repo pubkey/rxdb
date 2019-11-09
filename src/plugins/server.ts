@@ -64,8 +64,13 @@ function tunnelCollectionPath(
     db[colName].watchForChanges();
     const pathWithSlash = path.endsWith('/') ? path : path + '/';
     const collectionPath = pathWithSlash + colName;
-    app.use(collectionPath, function (req: any, res: any, next: any) {
+    app.use(collectionPath, async function (req: any, res: any, next: any) {
         if (req.baseUrl.endsWith(collectionPath)) {
+            if (!db[colName]) {
+                // if the collection is migrated,
+                // it can happen that it does not exist at this moment
+                await new Promise(res1 => setTimeout(res1, 100));
+            }
             const to = normalizeDbName(db) + '-rxdb-' + db[colName].schema.version + '-' + colName;
             const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
             req.originalUrl = toFull;
@@ -133,9 +138,9 @@ function ensureNoMoreCollections(args: any) {
     if (DBS_WITH_SERVER.has(args.database)) {
         const err = newRxError(
             'S1', {
-                collection: args.name,
-                database: args.database.name
-            }
+            collection: args.name,
+            database: args.database.name
+        }
         );
         throw err;
     }
