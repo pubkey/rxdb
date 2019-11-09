@@ -66,10 +66,11 @@ function tunnelCollectionPath(
     const collectionPath = pathWithSlash + colName;
     app.use(collectionPath, async function (req: any, res: any, next: any) {
         if (req.baseUrl.endsWith(collectionPath)) {
-            if (!db[colName]) {
+
+            while (!db[colName]) {
                 // if the collection is migrated,
                 // it can happen that it does not exist at this moment
-                await new Promise(res1 => setTimeout(res1, 100));
+                await new Promise(res1 => setTimeout(res1, 50));
             }
             const to = normalizeDbName(db) + '-rxdb-' + db[colName].schema.version + '-' + colName;
             const toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);

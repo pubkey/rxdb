@@ -460,6 +460,48 @@ config.parallel('rx-collection.test.js', () => {
                 });
             });
         });
+        describe('.bulkInsert()', () => {
+            describe('positive', () => {
+                it('should insert some humans', async () => {
+                    const db = await createRxDatabase({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.human
+                    });
+                    const docs = new Array(10).fill(0).map(() => schemaObjects.human());
+                    const ret = await collection.bulkInsert(docs);
+
+                    assert.strictEqual(ret.success.length, 10);
+                    db.destroy();
+                });
+            });
+            describe('negative', () => {
+                it('should throw if one already exists', async () => {
+                    const db = await createRxDatabase({
+                        name: util.randomCouchString(10),
+                        adapter: 'memory'
+                    });
+                    const collection = await db.collection({
+                        name: 'human',
+                        schema: schemas.primaryHuman
+                    });
+                    const double = schemaObjects.human();
+                    double.passportId = 'foobar';
+                    await collection.insert(double);
+                    const docs = new Array(10).fill(0).map(() => schemaObjects.human());
+                    docs.push(double);
+                    const ret = await collection.bulkInsert(docs);
+
+                    assert.strictEqual(ret.success.length, 10);
+                    assert.strictEqual(ret.error.length, 1);
+                    db.destroy();
+                });
+
+            });
+        });
         describe('.find()', () => {
             describe('find all', () => {
                 describe('positive', () => {

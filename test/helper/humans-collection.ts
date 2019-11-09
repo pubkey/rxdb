@@ -36,12 +36,12 @@ export async function create(
     });
 
     // insert data
-    await Promise.all(
-        new Array(size)
+    if (size > 0) {
+        const docsData = new Array(size)
             .fill(0)
-            .map(() => collection.insert(schemaObjects.human()))
-    );
-
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+    }
     return collection;
 }
 
@@ -85,11 +85,14 @@ export async function createAttachments(size = 20, name = 'human', multiInstance
         schema: schemaJson
     });
 
+
     // insert data
-    const fns = [];
-    for (let i = 0; i < size; i++)
-        fns.push(collection.insert(schemaObjects.human()));
-    await Promise.all(fns);
+    if (size > 0) {
+        const docsData = new Array(size)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -117,10 +120,12 @@ export async function createEncryptedAttachments(size = 20, name = 'human', mult
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < size; i++)
-        fns.push(collection.insert(schemaObjects.human()));
-    await Promise.all(fns);
+    if (size > 0) {
+        const docsData = new Array(size)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -143,10 +148,12 @@ export async function createNoCompression(size = 20, name = 'human') {
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < size; i++)
-        fns.push(collection.insert(schemaObjects.human()));
-    await Promise.all(fns);
+    if (size > 0) {
+        const docsData = new Array(size)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -167,10 +174,12 @@ export async function createAgeIndex(amount = 20) {
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.human()));
-    await Promise.all(fns);
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -195,10 +204,18 @@ export async function multipleOnSameDB(size = 10) {
     });
 
     // insert data
-    for (let i = 0; i < size; i++) {
-        await collection.insert(schemaObjects.human());
-        await collection2.insert(schemaObjects.human());
+    if (size > 0) {
+        const docsData = new Array(size)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+
+        const docsData2 = new Array(size)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection2.bulkInsert(docsData2);
     }
+
     return {
         db,
         collection,
@@ -222,11 +239,12 @@ export async function createNested(amount = 5, adapter = 'memory') {
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.nestedHuman()));
-    await Promise.all(fns);
-
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.nestedHuman());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -245,10 +263,12 @@ export async function createDeepNested(amount = 5, adapter = 'memory') {
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.deepNestedHuman()));
-    await Promise.all(fns);
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.deepNestedHuman());
+        await collection.bulkInsert(docsData);
+    }
 
 
     return collection;
@@ -271,10 +291,12 @@ export async function createEncrypted(
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.encryptedHuman()));
-    await Promise.all(fns);
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.encryptedHuman());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -298,10 +320,12 @@ export async function createMultiInstance(
         schema: schemas.human
     });
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.human()));
-    await Promise.all(fns);
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.human());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -321,10 +345,12 @@ export async function createPrimary(amount = 10, name = util.randomCouchString(1
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.simpleHuman()));
-    await Promise.all(fns);
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.simpleHuman());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }
@@ -344,10 +370,12 @@ export async function createHumanWithTimestamp(amount = 0, name = util.randomCou
     });
 
     // insert data
-    const fns = [];
-    for (let i = 0; i < amount; i++)
-        fns.push(collection.insert(schemaObjects.humanWithTimestamp()));
-    await Promise.all(fns);
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.humanWithTimestamp());
+        await collection.bulkInsert(docsData);
+    }
 
     return collection;
 }

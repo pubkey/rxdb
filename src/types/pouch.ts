@@ -75,7 +75,11 @@ export declare class PouchDBInstance {
     bulkDocs(
         docs: { docs: any[] } | any[],
         options?: any
-    ): Promise<any>;
+    ): Promise<{
+        ok: boolean;
+        id: string;
+        rev: string;
+    }[]>;
 
     find(mangoQuery: any): Promise<{
         docs: any[]

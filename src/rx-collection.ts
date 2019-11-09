@@ -15,7 +15,8 @@ import {
 } from './pouch-db';
 import {
     _handleToPouch,
-    _handleFromPouch
+    _handleFromPouch,
+    fillObjectDataBeforeInsert
 } from './rx-collection-helper';
 import {
     createRxQuery,
@@ -352,20 +353,8 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
             json = tempDoc.toJSON() as any;
         }
 
-        let useJson: any = clone(json);
-        useJson = this.schema.fillObjectWithDefaults(useJson);
 
-        if (useJson._id && this.schema.primaryPath !== '_id') {
-            throw newRxError('COL2', {
-                data: json
-            });
-        }
-
-        // fill _id
-        if (
-            this.schema.primaryPath === '_id' &&
-            !useJson._id
-        ) useJson._id = generateId();
+        const useJson = fillObjectDataBeforeInsert(this, json);
 
         let newDoc = tempDoc;
         return this._runHooks('pre', 'insert', useJson)
@@ -394,6 +383,65 @@ export class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
 
                 return newDoc as any;
             });
+    }
+
+    bulkInsert(
+        docsData: RxDocumentType[]
+    ): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[],
+        error: any[]
+    }> {
+        const useDocs: RxDocumentType[] = docsData.map(docData => {
+            const useDocData = fillObjectDataBeforeInsert(this, docData);
+            return useDocData;
+        });
+
+        return Promise.all(
+            useDocs.map(doc => {
+                return this._runHooks('pre', 'insert', doc).then(() => {
+                    this.schema.validate(doc);
+                    return doc;
+                });
+            })
+        ).then(docs => {
+            const insertDocs: RxDocumentType[] = docs.map(d => this._handleToPouch(d));
+            const docsMap: Map<string, RxDocumentType> = new Map();
+            docs.forEach(d => {
+                docsMap.set(d[this.schema.primaryPath] as any, d);
+            });
+            return this.database.lockedRun(
+                () => this.pouch.bulkDocs(insertDocs)
+                    .then(results => {
+                        const okResults = results.filter(r => r.ok);
+
+                        // create documents
+                        const rxDocuments: any[] = okResults.map(r => {
+                            const docData: any = docsMap.get(r.id);
+                            docData._rev = r.rev;
+                            const doc = createRxDocument(this as any, docData);
+                            return doc;
+                        });
+
+                        // emit events
+                        rxDocuments.forEach(doc => {
+                            const emitEvent = createChangeEvent(
+                                'INSERT',
+                                this.database,
+                                this as any,
+                                doc,
+                                docsMap.get(doc.primary)
+                            );
+                            this.$emit(emitEvent);
+                        });
+
+                        return {
+                            success: rxDocuments,
+                            error: results.filter(r => !r.ok)
+                        };
+                    })
+            );
+        });
+
     }
 
     /**

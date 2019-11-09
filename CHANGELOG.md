@@ -2,6 +2,9 @@
 
 ### X.X.X (comming soon)
 
+Features:
+  - Added `RxCollection.bulkInsert()`
+
 Bugfixes:
   - Fix replication of migrated schemas in the server plugin
 

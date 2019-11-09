@@ -78,6 +78,29 @@ const doc = await myCollection.insert({
 });
 ```
 
+### bulkInsert()
+
+When you have to insert many documents at once, use bulk insert. This is much faster then calling `.insert()` multiple times.
+Returns an object with a `success`- and `error`-array.
+
+```js
+const result = await myCollection.bulkInsert([{
+  name: 'foo1',
+  lastname: 'bar1'
+},
+{
+  name: 'foo2',
+  lastname: 'bar2'
+}]);
+
+// > {
+//   success: [RxDocument, RxDocument],
+//   error: []
+// }
+```
+
+NOTICE: `bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted.
+
 ### newDocument()
 Sometimes it can be helpful to spawn and use documents before saving them into the database.
 This is useful especially when you want to use the ORM methods or prefill values from form data.

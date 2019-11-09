@@ -2,8 +2,12 @@ import {
     RxCollection
 } from './types';
 import {
-    clone
+    clone,
+    generateId
 } from './util';
+import {
+    newRxError
+} from './rx-error';
 
 /**
  * wrappers for Pouch.put/get to handle keycompression etc
@@ -33,4 +37,31 @@ export function _handleFromPouch(
 
     data = (col._crypter as any).decrypt(data);
     return data;
+}
+
+/**
+ * fills in the _id and the
+ * default data.
+ * This also clones the data
+ */
+export function fillObjectDataBeforeInsert(
+    collection: RxCollection | any,
+    data: any
+): any {
+    const useJson = collection.schema.fillObjectWithDefaults(data);
+    if (useJson._id && collection.schema.primaryPath !== '_id') {
+        throw newRxError('COL2', {
+            data: data
+        });
+    }
+
+    // fill _id
+    if (
+        collection.schema.primaryPath === '_id' &&
+        !useJson._id
+    ) {
+        useJson._id = generateId();
+    }
+
+    return useJson;
 }
