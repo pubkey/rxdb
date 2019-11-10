@@ -4,6 +4,7 @@
  * It basically just rxdb-core with some default plugins
  */
 /// <reference types="pouchdb-core" />
+export * from './types';
 export * from './core';
 import { create, removeDatabase, dbCount, isRxCollection, isRxDatabase, isRxDocument, isRxQuery, isRxSchema, QueryChangeDetector, checkAdapter } from './core';
 declare const _default: {

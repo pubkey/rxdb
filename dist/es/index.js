@@ -32,7 +32,8 @@ Core.plugin(InMemoryPlugin);
 import AttachmentsPlugin from './plugins/attachments';
 Core.plugin(AttachmentsPlugin);
 import LocalDocumentsPlugin from './plugins/local-documents';
-Core.plugin(LocalDocumentsPlugin); // rexport things from core
+Core.plugin(LocalDocumentsPlugin);
+export * from './types'; // re-export things from core
 
 export * from './core';
 import { create, removeDatabase, plugin, dbCount, isRxCollection, isRxDatabase, isRxDocument, isRxQuery, isRxSchema, PouchDB, QueryChangeDetector, checkAdapter } from './core'; // TODO no more default exports

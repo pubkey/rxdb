@@ -251,17 +251,7 @@ function () {
       json = tempDoc.toJSON();
     }
 
-    var useJson = (0, _util.clone)(json);
-    useJson = this.schema.fillObjectWithDefaults(useJson);
-
-    if (useJson._id && this.schema.primaryPath !== '_id') {
-      throw (0, _rxError.newRxError)('COL2', {
-        data: json
-      });
-    } // fill _id
-
-
-    if (this.schema.primaryPath === '_id' && !useJson._id) useJson._id = (0, _util.generateId)();
+    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this, json);
     var newDoc = tempDoc;
     return this._runHooks('pre', 'insert', useJson).then(function () {
       _this5.schema.validate(useJson);
@@ -284,6 +274,56 @@ function () {
 
       return newDoc;
     });
+  };
+
+  _proto.bulkInsert = function bulkInsert(docsData) {
+    var _this6 = this;
+
+    var useDocs = docsData.map(function (docData) {
+      var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this6, docData);
+      return useDocData;
+    });
+    return Promise.all(useDocs.map(function (doc) {
+      return _this6._runHooks('pre', 'insert', doc).then(function () {
+        _this6.schema.validate(doc);
+
+        return doc;
+      });
+    })).then(function (docs) {
+      var insertDocs = docs.map(function (d) {
+        return _this6._handleToPouch(d);
+      });
+      var docsMap = new Map();
+      docs.forEach(function (d) {
+        docsMap.set(d[_this6.schema.primaryPath], d);
+      });
+      return _this6.database.lockedRun(function () {
+        return _this6.pouch.bulkDocs(insertDocs).then(function (results) {
+          var okResults = results.filter(function (r) {
+            return r.ok;
+          }); // create documents
+
+          var rxDocuments = okResults.map(function (r) {
+            var docData = docsMap.get(r.id);
+            docData._rev = r.rev;
+            var doc = (0, _rxDocumentPrototypeMerge.createRxDocument)(_this6, docData);
+            return doc;
+          }); // emit events
+
+          rxDocuments.forEach(function (doc) {
+            var emitEvent = (0, _rxChangeEvent.createChangeEvent)('INSERT', _this6.database, _this6, doc, docsMap.get(doc.primary));
+
+            _this6.$emit(emitEvent);
+          });
+          return {
+            success: rxDocuments,
+            error: results.filter(function (r) {
+              return !r.ok;
+            })
+          };
+        });
+      });
+    });
   }
   /**
    * same as insert but overwrites existing document with same primary
@@ -291,7 +331,7 @@ function () {
   ;
 
   _proto.upsert = function upsert(json) {
-    var _this6 = this;
+    var _this7 = this;
 
     var useJson = (0, _util.clone)(json);
     var primary = useJson[this.schema.primaryPath];
@@ -312,7 +352,7 @@ function () {
           return existing;
         });
       } else {
-        return _this6.insert(json);
+        return _this7.insert(json);
       }
     });
   }
@@ -322,7 +362,7 @@ function () {
   ;
 
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this7 = this;
+    var _this8 = this;
 
     json = (0, _util.clone)(json);
     var primary = json[this.schema.primaryPath];
@@ -343,7 +383,7 @@ function () {
     }
 
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this7, primary, json);
+      return _atomicUpsertEnsureRxDocumentExists(_this8, primary, json);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
         return _atomicUpsertUpdate(wasInserted.doc, json).then(function () {
@@ -622,10 +662,10 @@ function () {
   }, {
     key: "onDestroy",
     get: function get() {
-      var _this8 = this;
+      var _this9 = this;
 
       if (!this._onDestroy) this._onDestroy = new Promise(function (res) {
-        return _this8._onDestroyCall = res;
+        return _this9._onDestroyCall = res;
       });
       return this._onDestroy;
     }

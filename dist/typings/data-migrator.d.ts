@@ -1,7 +1,3 @@
-/**
- * The DataMigrator handles the documents from collections with older schemas
- * and transforms/saves them into the newest collection
- */
 import { Observable } from 'rxjs';
 import { RxCollection, RxDatabase, MigrationState, PouchDBInstance, NumberFunctionMap } from './types';
 import { RxSchema } from './rx-schema';

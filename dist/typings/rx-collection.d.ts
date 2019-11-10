@@ -87,6 +87,10 @@ export declare class RxCollectionBase<RxDocumentType = any, OrmMethods = {}> {
     _pouchFind(rxQuery: RxQuery | RxQueryBase, limit?: number, noDecrypt?: boolean): Promise<any[]>;
     $emit(changeEvent: RxChangeEvent): void;
     insert(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    bulkInsert(docsData: RxDocumentType[]): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: any[];
+    }>;
     /**
      * same as insert but overwrites existing document with same primary
      */

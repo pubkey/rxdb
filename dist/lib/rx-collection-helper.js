@@ -5,8 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports._handleToPouch = _handleToPouch;
 exports._handleFromPouch = _handleFromPouch;
+exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 
 var _util = require("./util");
+
+var _rxError = require("./rx-error");
 
 /**
  * wrappers for Pouch.put/get to handle keycompression etc
@@ -27,6 +30,29 @@ function _handleFromPouch(col, docData) {
   if (noDecrypt) return data;
   data = col._crypter.decrypt(data);
   return data;
+}
+/**
+ * fills in the _id and the
+ * default data.
+ * This also clones the data
+ */
+
+
+function fillObjectDataBeforeInsert(collection, data) {
+  var useJson = collection.schema.fillObjectWithDefaults(data);
+
+  if (useJson._id && collection.schema.primaryPath !== '_id') {
+    throw (0, _rxError.newRxError)('COL2', {
+      data: data
+    });
+  } // fill _id
+
+
+  if (collection.schema.primaryPath === '_id' && !useJson._id) {
+    useJson._id = (0, _util.generateId)();
+  }
+
+  return useJson;
 }
 
 //# sourceMappingURL=rx-collection-helper.js.map

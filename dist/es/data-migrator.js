@@ -2,6 +2,13 @@
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
  */
+
+/**
+ * TODO this should be completely rewritten because:
+ * - The current implemetation does not use pouchdb'S bulkDocs which is much faster
+ * - This could have been done in much less code which would be easier to uderstand
+ *
+ */
 import { countAllUndeleted, getBatch } from './pouch-db';
 import { clone, toPromise } from './util';
 import { createRxSchema } from './rx-schema';

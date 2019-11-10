@@ -1,6 +1,6 @@
 # Changelog
 
-### X.X.X (comming soon)
+### 8.7.3 (10 November 2019)
 
 Features:
   - Added `RxCollection.bulkInsert()`

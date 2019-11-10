@@ -5,24 +5,6 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var _exportNames = {
-  plugin: true,
-  QueryChangeDetector: true,
-  PouchDB: true,
-  create: true,
-  removeDatabase: true,
-  checkAdapter: true,
-  isRxDatabase: true,
-  dbCount: true,
-  createRxDatabase: true,
-  isRxCollection: true,
-  isRxDocument: true,
-  isRxQuery: true,
-  isRxSchema: true,
-  createRxSchema: true,
-  RxSchema: true,
-  RxChangeEvent: true
-};
 Object.defineProperty(exports, "QueryChangeDetector", {
   enumerable: true,
   get: function get() {
@@ -120,19 +102,6 @@ var _queryChangeDetector = require("./query-change-detector");
 var _plugin = _interopRequireDefault(require("./plugin"));
 
 var _pouchDb = require("./pouch-db");
-
-var _types = require("./types");
-
-Object.keys(_types).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _types[key];
-    }
-  });
-});
 
 var _rxDatabase = require("./rx-database");
 

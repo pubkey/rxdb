@@ -7,7 +7,6 @@ import { QueryChangeDetector } from './query-change-detector';
 export { QueryChangeDetector } from './query-change-detector';
 import addPlugin from './plugin';
 export { PouchDB } from './pouch-db';
-export * from './types';
 export declare const plugin: typeof addPlugin;
 import { create, removeDatabase, checkAdapter, isInstanceOf as isRxDatabase, dbCount } from './rx-database';
 export { create, removeDatabase, checkAdapter, isInstanceOf as isRxDatabase, dbCount } from './rx-database';

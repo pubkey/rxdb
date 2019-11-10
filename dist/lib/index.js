@@ -51,6 +51,19 @@ var _attachments = _interopRequireDefault(require("./plugins/attachments"));
 
 var _localDocuments = _interopRequireDefault(require("./plugins/local-documents"));
 
+var _types = require("./types");
+
+Object.keys(_types).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _types[key];
+    }
+  });
+});
+
 /**
  * this is the default rxdb-export
  * It has a batteries-included guarantee.
@@ -83,8 +96,7 @@ _core["default"].plugin(_inMemory["default"]);
 
 _core["default"].plugin(_attachments["default"]);
 
-_core["default"].plugin(_localDocuments["default"]); // rexport things from core
-
+_core["default"].plugin(_localDocuments["default"]);
 
 // TODO no more default exports
 var _default = {

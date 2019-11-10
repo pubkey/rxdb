@@ -9,6 +9,10 @@ exports.spawnServer = spawnServer;
 exports.onDestroy = onDestroy;
 exports["default"] = exports.overwritable = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
 var _express = _interopRequireDefault(require("express"));
 
 var _cors = _interopRequireDefault(require("cors"));
@@ -71,26 +75,68 @@ function tunnelCollectionPath(db, path, app, colName) {
   db[colName].watchForChanges();
   var pathWithSlash = path.endsWith('/') ? path : path + '/';
   var collectionPath = pathWithSlash + colName;
-  app.use(collectionPath, function (req, res, next) {
-    if (req.baseUrl.endsWith(collectionPath)) {
-      var to = normalizeDbName(db) + '-rxdb-0-' + colName;
-      var toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
-      req.originalUrl = toFull;
-    }
+  app.use(collectionPath,
+  /*#__PURE__*/
+  function () {
+    var _ref = (0, _asyncToGenerator2["default"])(
+    /*#__PURE__*/
+    _regenerator["default"].mark(function _callee(req, res, next) {
+      var to, toFull;
+      return _regenerator["default"].wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              if (!req.baseUrl.endsWith(collectionPath)) {
+                _context.next = 9;
+                break;
+              }
 
-    next();
-  });
+            case 1:
+              if (db[colName]) {
+                _context.next = 6;
+                break;
+              }
+
+              _context.next = 4;
+              return new Promise(function (res1) {
+                return setTimeout(res1, 50);
+              });
+
+            case 4:
+              _context.next = 1;
+              break;
+
+            case 6:
+              to = normalizeDbName(db) + '-rxdb-' + db[colName].schema.version + '-' + colName;
+              toFull = req.originalUrl.replace(collectionPath, pathWithSlash + to);
+              req.originalUrl = toFull;
+
+            case 9:
+              next();
+
+            case 10:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }));
+
+    return function (_x, _x2, _x3) {
+      return _ref.apply(this, arguments);
+    };
+  }());
 }
 
-function spawnServer(_ref) {
-  var _ref$path = _ref.path,
-      path = _ref$path === void 0 ? '/db' : _ref$path,
-      _ref$port = _ref.port,
-      port = _ref$port === void 0 ? 3000 : _ref$port,
-      _ref$cors = _ref.cors,
-      cors = _ref$cors === void 0 ? false : _ref$cors,
-      _ref$startServer = _ref.startServer,
-      startServer = _ref$startServer === void 0 ? true : _ref$startServer;
+function spawnServer(_ref2) {
+  var _ref2$path = _ref2.path,
+      path = _ref2$path === void 0 ? '/db' : _ref2$path,
+      _ref2$port = _ref2.port,
+      port = _ref2$port === void 0 ? 3000 : _ref2$port,
+      _ref2$cors = _ref2.cors,
+      cors = _ref2$cors === void 0 ? false : _ref2$cors,
+      _ref2$startServer = _ref2.startServer,
+      startServer = _ref2$startServer === void 0 ? true : _ref2$startServer;
   var db = this;
   var collectionsPath = startServer ? path : '/';
   if (!SERVERS_OF_DB.has(db)) SERVERS_OF_DB.set(db, []);
