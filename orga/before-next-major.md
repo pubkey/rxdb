@@ -36,6 +36,12 @@ Instead of mergin the prototype into a single object, we should chain them toget
 ### remove the default export
 Using the default export is never a good idea because it automatically bundles every unused function into the build.
 
+### Refactor data-migrator
+
+ - The current implemetation does not use pouchdb's bulkDocs which is much faster
+ - This could have been done in much less code which would be easier to uderstand
+
+
 # Maybe
 
 ## Use Proxy instead of getters/setter on RxDocument
