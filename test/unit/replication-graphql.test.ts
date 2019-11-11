@@ -456,8 +456,8 @@ describe('replication-graphql.test.js', () => {
                         [
                             docData
                         ], {
-                        new_edits: false
-                    }
+                            new_edits: false
+                        }
                     );
 
                     const result = await getDocsWithRevisionsFromPouch(
@@ -1131,7 +1131,7 @@ describe('replication-graphql.test.js', () => {
                 });
 
                 const schema = clone(schemas.humanWithTimestamp);
-                schema.properties.name.index = true;
+                schema.indexes = ['name'];
                 const collection = await db.collection({
                     name: 'humans',
                     schema

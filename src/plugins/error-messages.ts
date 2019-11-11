@@ -146,6 +146,9 @@ const CODES: { [k: string]: string } = {
     SC22: 'SchemaCheck: given indexKey is not type:string',
     SC23: 'SchemaCheck: fieldname is not allowed',
     SC24: 'SchemaCheck: required fields must be set via array. See https://spacetelescope.github.io/understanding-json-schema/reference/object.html#required',
+    SC25: 'SchemaCheck: indexes must be an array',
+    SC26: 'SchemaCheck: indexes must contain strings',
+    SC27: 'SchemaCheck: indexes needs to be specified at collection schema level',
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',

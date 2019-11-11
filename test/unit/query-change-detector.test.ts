@@ -22,6 +22,7 @@ import {
     filter,
     map
 } from 'rxjs/operators';
+import {RxJsonSchema} from '../../src/types';
 
 let SpawnServer: any;
 if (config.platform.isNode()) {
@@ -397,10 +398,10 @@ config.parallel('query-change-detector.test.js', () => {
                             primary: true
                         },
                         passportId: {
-                            type: 'string',
-                            index: true
+                            type: 'string'
                         }
-                    }
+                    },
+                    indexes: ['passportId']
                 };
                 const col = await humansCollection.createBySchema(schema);
 
@@ -548,7 +549,7 @@ config.parallel('query-change-detector.test.js', () => {
         });
     });
     it('BUG: no optimisation for irrelevant insert', async () => {
-        const schema = {
+        const schema: RxJsonSchema = {
             title: 'messages schema',
             description: 'describes a message',
             version: 0,
@@ -563,8 +564,7 @@ config.parallel('query-change-detector.test.js', () => {
                     type: 'string'
                 },
                 time: {
-                    type: 'number',
-                    index: true
+                    type: 'number'
                 },
                 read: {
                     description: 'true if was read by the reciever',
@@ -579,6 +579,7 @@ config.parallel('query-change-detector.test.js', () => {
                     ref: 'users'
                 }
             },
+            indexes: ['time'],
             compoundIndexes: [
                 ['sender', 'time'],
                 ['reciever', 'time']

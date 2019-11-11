@@ -1,5 +1,9 @@
 # Changelog
 
+### X.X.X (comming soon)
+Features:
+   - Indexes can now be specified at the top-level of the schema-definition. [#1655](https://github.com/pubkey/rxdb/issues/1655)
+
 ### 8.7.3 (10 November 2019)
 
 Features:

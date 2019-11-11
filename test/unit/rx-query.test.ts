@@ -17,6 +17,7 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
+import {RxJsonSchema} from '../../src/types';
 
 config.parallel('rx-query.test.js', () => {
     describe('mquery', () => {
@@ -495,18 +496,18 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(2)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -533,9 +534,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -556,9 +557,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => schemaObjects.averageSchema())
-                .map(data => col.insert(data))
+                    .fill(0)
+                    .map(() => schemaObjects.averageSchema())
+                    .map(data => col.insert(data))
             );
 
             await db.destroy();
@@ -711,16 +712,16 @@ config.parallel('rx-query.test.js', () => {
                 db.destroy();
             });
             it('schema example 2', async () => {
-                const schema = {
+                const schema: RxJsonSchema = {
                     keyCompression: false,
                     version: 0,
                     type: 'object',
                     properties: {
                         value: {
-                            type: 'number',
-                            index: true
+                            type: 'number'
                         }
-                    }
+                    },
+                    indexes: ['value']
                 };
                 const db = await createRxDatabase({
                     name: util.randomCouchString(10),
@@ -757,10 +758,10 @@ config.parallel('rx-query.test.js', () => {
                     version: 0,
                     properties: {
                         name: {
-                            type: 'string',
-                            index: true
+                            type: 'string'
                         }
-                    }
+                    },
+                    indexes: ['name']
                 }
             });
 
@@ -800,9 +801,9 @@ config.parallel('rx-query.test.js', () => {
             // insert 100
             await Promise.all(
                 new Array(100)
-                .fill(0)
-                .map(() => schemaObjects.human())
-                .map(data => c.insert(data))
+                    .fill(0)
+                    .map(() => schemaObjects.human())
+                    .map(data => c.insert(data))
             );
 
             // make and exec query
@@ -813,9 +814,9 @@ config.parallel('rx-query.test.js', () => {
             // produces changeEvents
             await Promise.all(
                 new Array(300) // higher than ChangeEventBuffer.limit
-                .fill(0)
-                .map(() => schemaObjects.human())
-                .map(data => c.insert(data))
+                    .fill(0)
+                    .map(() => schemaObjects.human())
+                    .map(data => c.insert(data))
             );
 
             // re-exec query
@@ -1017,12 +1018,12 @@ config.parallel('rx-query.test.js', () => {
                         type: 'object',
                         properties: {
                             title: {
-                                type: 'string',
-                                index: true
+                                type: 'string'
                             },
                         },
                     }
-                }
+                },
+                indexes: ['info.title']
             };
             const db = await createRxDatabase({
                 name: util.randomCouchString(10),
@@ -1080,7 +1081,7 @@ config.parallel('rx-query.test.js', () => {
             db.destroy();
         });
         it('#609 default index on _id when better possible', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
                 keyCompression: false,
                 type: 'object',
@@ -1089,10 +1090,10 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     passportId: {
-                        type: 'string',
-                        index: true
+                        type: 'string'
                     }
-                }
+                },
+                indexes: ['passportId']
             };
             const collection = await humansCollection.createBySchema(mySchema);
 
@@ -1120,7 +1121,7 @@ config.parallel('rx-query.test.js', () => {
             collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
-            const mySchema = {
+            const mySchema: RxJsonSchema = {
                 version: 0,
                 keyCompression: false,
                 type: 'object',
@@ -1132,10 +1133,10 @@ config.parallel('rx-query.test.js', () => {
                         type: 'string'
                     },
                     created_at: {
-                        type: 'number',
-                        index: true
+                        type: 'number'
                     }
-                }
+                },
+                indexes: ['created_at']
             };
             const collection = await humansCollection.createBySchema(mySchema);
 
@@ -1154,14 +1155,14 @@ config.parallel('rx-query.test.js', () => {
             /* eslint-disable */
             const selector = {
                 $and: [{
-                        event_id: {
-                            $eq: 2
-                        }
-                    }, {
-                        user_id: {
-                            $eq: '6'
-                        }
-                    },
+                    event_id: {
+                        $eq: 2
+                    }
+                }, {
+                    user_id: {
+                        $eq: '6'
+                    }
+                },
                     {
                         created_at: {
                             $gt: null

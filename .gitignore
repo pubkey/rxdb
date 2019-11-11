@@ -18,3 +18,4 @@ pouch__all_dbs__/
 pouch__all_dbs__/
 .DS_Store
 .DS_Store?
+dist/

@@ -14,8 +14,7 @@ const schema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -24,6 +23,7 @@ const schema = {
             type: 'string'
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'lastName']
 };
 

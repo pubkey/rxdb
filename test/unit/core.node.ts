@@ -9,10 +9,11 @@ import AsyncTestUtil from 'async-test-util';
 import * as util from '../../dist/lib/util';
 
 import Core from '../../plugins/core';
+import {RxJsonSchema} from '../../src/types';
 Core.plugin(require('../../plugins/validate'));
 Core.plugin(require('pouchdb-adapter-memory'));
 
-const schema = {
+const schema: RxJsonSchema = {
     title: 'human schema',
     description: 'describes a human being',
     version: 0,
@@ -20,8 +21,7 @@ const schema = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string',
-            index: true
+            type: 'string'
         },
         firstName: {
             type: 'string'
@@ -30,6 +30,7 @@ const schema = {
             type: 'string'
         }
     },
+    indexes: ['passportId'],
     required: ['firstName', 'lastName']
 };
 

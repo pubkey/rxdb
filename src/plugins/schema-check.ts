@@ -32,6 +32,7 @@ import {
     RxSchema,
     createRxSchema
 } from '../rx-schema';
+import {flattenObject, trimDots} from '../util';
 
 /**
  * checks if the fieldname is allowed
@@ -170,6 +171,21 @@ export function validateFieldsDeep(jsonSchema: any): true {
     return true;
 }
 
+/**
+ * computes real path of the index in the collection schema
+ */
+function getIndexRealPath(shortPath: string) {
+    const pathParts = shortPath.split('.');
+    let realPath = '';
+    for (let i = 0; i < pathParts.length; i += 1) {
+        if (pathParts[i] !== '[]') {
+            realPath = realPath.concat('.properties.'.concat(pathParts[i]));
+        } else {
+            realPath = realPath.concat('.items');
+        }
+    }
+    return trimDots(realPath);
+}
 
 /**
  * does the checking
@@ -262,22 +278,59 @@ export function checkSchema(jsonID: RxJsonSchema) {
         });
     }
 
-    // check that indexes are string or number
-    getIndexes(jsonID)
-        .reduce((a, b) => a.concat(b), [])
-        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
-        .map(key => {
-            const path = 'properties.' + key.replace(/\./g, '.properties.');
-            const schemaObj = objectPath.get(jsonID, path);
-            if (!schemaObj || typeof schemaObj !== 'object') {
-                throw newRxError('SC21', {
-                    key
+    // check format of jsonID.indexes
+    if (jsonID.indexes) {
+        // should be an array
+        if (!Array.isArray(jsonID.indexes)) {
+            throw newRxError('SC25', {
+                indexes: jsonID.indexes
+            });
+        }
+        // should contain strings
+        jsonID.indexes.forEach(indexPath => {
+            if (typeof indexPath !== 'string') {
+                throw newRxError('SC26', {
+                    indexPath
                 });
             }
-            return {
-                key,
-                schemaObj
-            };
+        });
+    }
+
+    /** TODO this check has to exist only in beta-version, to help developers migrate their schemas */
+    // remove backward-compatibility
+    Object.keys(flattenObject(jsonID))
+        .map(key => {
+            // flattenObject returns only ending paths, we need all paths pointing to an object
+            const splitted = key.split('.');
+            splitted.pop(); // all but last
+            return splitted.join('.');
+        })
+        .filter(key => key !== '')
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
+        .filter(key => { // check if this path defines an index
+            const value = objectPath.get(jsonID, key);
+            return !!value.index;
+        })
+        .forEach(key => { // replace inner properties
+            key = key.replace('properties.', ''); // first
+            key = key.replace(/\.properties\./g, '.'); // middle
+            throw newRxError('SC27', {
+                indexPath: trimDots(key)
+            });
+        });
+
+    // check that indexes are string or number
+    (jsonID.compoundIndexes || [])
+        .reduce((a, b) => a.concat(b), []) // break compound indexes into index parts
+        .concat(jsonID.indexes || [])
+        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
+        .map(indexPath => {
+            const realPath = getIndexRealPath(indexPath); // real path in the collection schema
+            const schemaObj = objectPath.get(jsonID, realPath); // get the schema of the indexed property
+            if (!schemaObj || typeof schemaObj !== 'object') {
+                throw newRxError('SC21', { indexPath });
+            }
+            return { indexPath, schemaObj };
         })
         .filter(index =>
             index.schemaObj.type !== 'string' &&
@@ -286,7 +339,7 @@ export function checkSchema(jsonID: RxJsonSchema) {
         )
         .forEach(index => {
             throw newRxError('SC22', {
-                key: index.key,
+                key: index.indexPath,
                 type: index.schemaObj.type
             });
         });

@@ -232,41 +232,14 @@ export function getEncryptedPaths(jsonSchema: RxJsonSchema): { [k: string]: Json
  */
 export function hasCrypt(jsonSchema: RxJsonSchema): boolean {
     const paths = getEncryptedPaths(jsonSchema);
-    if (Object.keys(paths).length > 0) return true;
-    else return false;
+    return Object.keys(paths).length > 0;
 }
 
 
 export function getIndexes<T = any>(
     jsonID: RxJsonSchema<T>
 ): string[][] {
-    const flattened = flattenObject(jsonID);
-    const keys = Object.keys(flattened);
-    let indexes = keys
-        // flattenObject returns only ending paths, we need all paths pointing to an object
-        .map(key => {
-            const splitted = key.split('.');
-            splitted.pop(); // all but last
-            return splitted.join('.');
-        })
-        .filter(key => key !== '')
-        .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
-        .filter(key => { // check if this path defines an index
-            const value = objectPath.get(jsonID, key);
-            if (value.index) return true;
-            else return false;
-        })
-        .map(key => { // replace inner properties
-            key = key.replace('properties.', ''); // first
-            key = key.replace(/\.properties\./g, '.'); // middle
-            return [trimDots(key)];
-        });
-
-    // add compound-indexes
-    const addCompound = jsonID.compoundIndexes || [];
-    indexes = indexes.concat(addCompound);
-
-    return indexes as any;
+    return (jsonID.indexes || []).map(indexPath => [indexPath]).concat(jsonID.compoundIndexes || []);
 }
 
 /**
