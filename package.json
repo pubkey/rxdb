@@ -83,7 +83,7 @@
     "@types/cors": "2.8.6",
     "@types/express": "4.17.2",
     "@types/is-my-json-valid": "0.0.20",
-    "@types/pouchdb-core": "7.0.4",
+    "@types/pouchdb-core": "7.0.5",
     "@types/pouchdb-find": "6.3.4",
     "@types/spark-md5": "3.0.1",
     "broadcast-channel": "2.3.3",
