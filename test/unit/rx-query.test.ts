@@ -392,7 +392,7 @@ config.parallel('rx-query.test.js', () => {
             // it is assumed that this query can never handled by the QueryChangeDetector
             const query = col.find().sort('-passportId').limit(1);
 
-            const fired: any [] = [];
+            const fired: any[] = [];
             const sub1 = query.$.subscribe(res => {
                 fired.push(res);
             });
@@ -495,18 +495,18 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(2)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -533,9 +533,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => otherData())
-                .map(data => col.atomicUpsert(data))
+                    .fill(0)
+                    .map(() => otherData())
+                    .map(data => col.atomicUpsert(data))
             );
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -556,9 +556,9 @@ config.parallel('rx-query.test.js', () => {
 
             await Promise.all(
                 new Array(10)
-                .fill(0)
-                .map(() => schemaObjects.averageSchema())
-                .map(data => col.insert(data))
+                    .fill(0)
+                    .map(() => schemaObjects.averageSchema())
+                    .map(data => col.insert(data))
             );
 
             await db.destroy();
@@ -800,9 +800,9 @@ config.parallel('rx-query.test.js', () => {
             // insert 100
             await Promise.all(
                 new Array(100)
-                .fill(0)
-                .map(() => schemaObjects.human())
-                .map(data => c.insert(data))
+                    .fill(0)
+                    .map(() => schemaObjects.human())
+                    .map(data => c.insert(data))
             );
 
             // make and exec query
@@ -813,9 +813,9 @@ config.parallel('rx-query.test.js', () => {
             // produces changeEvents
             await Promise.all(
                 new Array(300) // higher than ChangeEventBuffer.limit
-                .fill(0)
-                .map(() => schemaObjects.human())
-                .map(data => c.insert(data))
+                    .fill(0)
+                    .map(() => schemaObjects.human())
+                    .map(data => c.insert(data))
             );
 
             // re-exec query
@@ -1154,19 +1154,19 @@ config.parallel('rx-query.test.js', () => {
             /* eslint-disable */
             const selector = {
                 $and: [{
-                        event_id: {
-                            $eq: 2
-                        }
-                    }, {
-                        user_id: {
-                            $eq: '6'
-                        }
-                    },
-                    {
-                        created_at: {
-                            $gt: null
-                        }
+                    event_id: {
+                        $eq: 2
                     }
+                }, {
+                    user_id: {
+                        $eq: '6'
+                    }
+                },
+                {
+                    created_at: {
+                        $gt: null
+                    }
+                }
                 ]
             };
             /* eslint-enable */
@@ -1348,9 +1348,72 @@ config.parallel('rx-query.test.js', () => {
 
             db.destroy();
         });
-    });
+        /**
+         * via gitter at 11 November 2019 10:10
+         */
+        it('gitter: query with regex does not return correct results', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        primary: true
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: ['string', 'null']
+                    }
+                }
+            };
+            const db = await RxDB.create({
+                name: util.randomCouchString(10),
+                adapter: 'memory',
+                queryChangeDetection: true,
+                ignoreDuplicate: true
+            });
 
-    describe('e', () => {
-        // it('e', () => process.exit());
+            // create a collection
+            const collection = await db.collection({
+                name: 'mycollection',
+                schema: mySchema
+            });
+
+            // insert documents
+            await collection.bulkInsert([
+                {
+                    passportId: 'doc1',
+                    firstName: 'John',
+                    lastName: 'Doe'
+                }, {
+                    passportId: 'doc2',
+                    firstName: 'Martin',
+                    lastName: 'Smith'
+                }
+            ]);
+            const allDocs = await collection.find().exec();
+            assert.strictEqual(allDocs.length, 2);
+
+            // test 1 with RegExp object
+            const regexp = new RegExp('^Doe$', 'i');
+            const result1 = await collection.find({ lastName: { $regex: regexp } }).exec();
+
+            // test 2 with regex string
+            const result2 = await collection.find({ lastName: { $regex: '^Doe$' } }).exec();
+
+
+            // both results should only have the doc1
+            assert.strictEqual(result1.length, 1);
+            assert.strictEqual(result1[0].passportId, 'doc1');
+            assert.deepStrictEqual(
+                result1.map(d => d.toJSON()),
+                result2.map(d => d.toJSON())
+            );
+
+            db.destroy();
+        });
     });
 });
