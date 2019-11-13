@@ -46,7 +46,6 @@ describe('typings.test.js', function () {
         };
         const promise = spawn('ts-node', [
             '--compiler-options', JSON.stringify(tsConfig),
-            '--type-check',
             '-e', code
         ]);
         const childProcess = promise.childProcess;
