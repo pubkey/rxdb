@@ -3,9 +3,9 @@
  */
 
 import {
-    create as createLeaderElection,
+    createLeaderElection,
     LeaderElector as BroadcastChannelLeaderElector
-} from 'broadcast-channel/leader-election';
+} from 'broadcast-channel';
 
 import {
     RxDatabase,

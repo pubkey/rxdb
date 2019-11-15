@@ -1,6 +1,6 @@
 import randomToken from 'random-token';
 import IdleQueue from 'custom-idle-queue';
-import BroadcastChannel from 'broadcast-channel';
+import { BroadcastChannel } from 'broadcast-channel';
 
 import {
     adapterObject,
@@ -762,10 +762,10 @@ function _internalAdminPouch(
         adapter,
         '_admin',
         0, {
-            // no compaction because this only stores local documents
-            auto_compaction: false,
-            revs_limit: 1
-        },
+        // no compaction because this only stores local documents
+        auto_compaction: false,
+        revs_limit: 1
+    },
         pouchSettingsFromRxDatabaseCreator
     );
 }
